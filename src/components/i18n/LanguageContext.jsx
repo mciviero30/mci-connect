@@ -1,0 +1,1412 @@
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation } from '@tanstack/react-query';
+
+const LanguageContext = createContext();
+
+export const translations = {
+  en: {
+    // Navigation
+    dashboard: "Dashboard",
+    employees: "Employees",
+    documents: "Documents",
+    quotes: "Quotes",
+    invoices: "Invoices",
+    accounting: "Accounting",
+    payroll: "Payroll",
+    // expenses: "Expenses", // This key will be replaced by my_expenses in the specific section
+    jobs: "Jobs",
+    calendar: "Calendar",
+    schedules: "Schedules",
+    chat: "Chat",
+    announcements: "Announcements",
+    forms: "Forms",
+    training: "Training",
+    
+    // Sections
+    main: "Main",
+    documentsAndFinances: "Documents & Finances",
+    operations: "Operations",
+    communication: "Communication",
+    resources: "Resources",
+    timeAndExpenses: "Time & Expenses",
+    
+    // Common Actions
+    add: "Add",
+    edit: "Edit",
+    delete: "Delete",
+    save: "Save",
+    cancel: "Cancel",
+    submit: "Submit",
+    search: "Search",
+    filter: "Filter",
+    download: "Download",
+    upload: "Upload",
+    create: "Create",
+    update: "Update",
+    // view: "View", // This key will be replaced by the one in the Expense Actions section
+    close: "Close",
+    loading: "Loading",
+    logout: "Logout",
+    back: "Back",
+    next: "Next",
+    previous: "Previous",
+    confirm: "Confirm",
+    // actions: "Actions", // This key will be replaced by the one in Expense List Columns
+    
+    // Status
+    active: "Active",
+    inactive: "Inactive",
+    pending: "Pending",
+    // approved: "Approved", // This key will be replaced by the one in Expense Actions
+    // rejected: "Rejected", // This key will be replaced by the one in Expense Actions
+    completed: "Completed",
+    draft: "Draft",
+    sent: "Sent",
+    paid: "Paid",
+    overdue: "Overdue",
+    cancelled: "Cancelled",
+    archived: "Archived",
+    invited: "Invited",
+    
+    // Dashboard
+    monthlyBalance: "Monthly Balance",
+    income: "Income",
+    totalIncome: "Total Income",
+    totalExpenses: "Total Expenses",
+    balance: "Balance",
+    workHours: "Work Hours",
+    drivingHours: "Driving Hours",
+    weeklyPay: "Weekly Pay",
+    pendingExpenses: "Pending Expenses",
+    incomeVsExpenses: "Income vs Expenses",
+    hoursByProject: "Hours by Project",
+    employeeDirectory: "Employee Directory",
+    quickActions: "Quick Actions",
+    myJobsThisWeek: "My Jobs This Week",
+    
+    // Employees
+    employeeManagement: "Employee Management",
+    newEmployee: "New Employee",
+    fullName: "Full Name",
+    email: "Email",
+    phone: "Phone",
+    position: "Position",
+    department: "Department",
+    hireDate: "Hire Date",
+    hourlyRate: "Hourly Rate",
+    address: "Address",
+    dateOfBirth: "Date of Birth",
+    ssnTaxId: "SSN/Tax ID",
+    tshirtSize: "T-Shirt Size",
+    reactivate: "Reactivate",
+    temporarilyOut: "Temporarily Out",
+    noTemporarilyOut: "No employees temporarily out",
+    employeeCreated: "Employee created successfully",
+    employeeUpdated: "Employee updated successfully",
+    employeeReactivated: "Employee reactivated",
+    archiveReason: "Reason for archiving:",
+    terminationDate: "Termination date (YYYY-MM-DD):",
+    reactivateConfirm: "Reactivate employee",
+    pauseDate: "Pause Date",
+    returnDate: "Return Date",
+    reason: "Reason",
+    
+    // Employee specific
+    manageYourTeamMembers: "Manage your team members",
+    youHaveXPendingEmployees: "You have pending employees to review",
+    searchEmployees: "Search employees...",
+    manualSync: "Manual Sync",
+    addEmployee: "Add Employee",
+    syncing: "Syncing",
+    viewProfile: "View Profile",
+    editEmployee: "Edit Employee",
+    inviteEmployee: "Invite Employee",
+    deletePermanently: "Delete Permanently",
+    restoreToPending: "Restore to Pending",
+    archive: "Archive",
+    noPosition: "No position",
+    noName: "No name",
+    directorySyncedSuccessfully: "Directory synced successfully",
+    failedToSyncDirectory: "Failed to sync directory",
+    employeeDeletedSuccessfully: "Employee deleted successfully",
+    failedToDeleteEmployee: "Failed to delete employee",
+    employeeArchived: "Employee archived",
+    failedToArchiveEmployee: "Failed to archive employee",
+    employeeRestoredToPending: "Employee restored to pending",
+    failedToRestoreEmployee: "Failed to restore employee",
+    emailCopiedToClipboard: "Email copied to clipboard",
+    dashboardOpenedNewTab: "Dashboard opened in new tab",
+    clickInviteUser: "Click 'Invite User'",
+    pasteEmail: "Paste the email",
+    selectRoleUser: "Select role as 'User'",
+    // sendInvitation: "Send the invitation", // Replaced below
+    onceAcceptedWillAppearDirectory: "Once accepted, employee will appear in directory",
+    employeeMarkedAsInvited: "Employee marked as invited",
+    dashboardOpenedNewTabCopyEmail: "Dashboard opened in new tab. Copy the email manually",
+    noEmailCannotInvite: "No email - cannot invite",
+    born: "Born",
+    cannotInviteWithoutEmail: "Cannot invite without email",
+    confirmDeleteEmployeePermanently: "Are you sure you want to delete this employee permanently?",
+    confirmArchiveEmployee: "Are you sure you want to archive this employee?",
+    confirmRestoreEmployeeToPending: "Are you sure you want to restore this employee to pending?",
+    noActiveEmployeesFound: "No active employees found",
+    noPendingEmployees: "No pending employees",
+    noInvitedEmployees: "No invited employees",
+    noArchivedEmployees: "No archived employees",
+    unknownEmployee: "Unknown Employee",
+    nameNeedsConfigurationInstruction: "Name needs configuration. Click Edit to set first name and last name.",
+    youHaveXDeletedEmployees: "You have deleted employees",
+    deletedAndBlocked: "Deleted & Blocked",
+    allDataDeletedEmployeeBlocked: "All data deleted, employee blocked from accessing the app",
+    noDeletedEmployees: "No deleted employees",
+    
+    // Add new translations for resend invitation
+    resendInvitation: "Re-send Invitation",
+    resendingInvitation: "Re-sending invitation",
+    resendInstructions: "Go to 'Pending Invitations' and click 'Resend' on the invitation for this email.",
+    failedToResendInvitation: "Failed to resend invitation",
+
+    // Departments
+    administration: "Administration",
+    sales: "Sales",
+    operations: "Operations",
+    it: "IT",
+    marketing: "Marketing",
+    hr: "Human Resources",
+    
+    // Documents
+    documentsAndFiles: "Documents & Files",
+    uploadDocument: "Upload Document",
+    fileName: "File Name",
+    fileType: "FileType",
+    category: "Category", // Keep general category
+    folder: "Folder",
+    description: "Description", // Keep general description
+    uploadedBy: "Uploaded By",
+    uploadDate: "Upload Date",
+    tags: "Tags",
+    plans: "Plans",
+    photos: "Photos",
+    reports: "Reports",
+    scam: "SCAM",
+    noDocuments: "No documents found",
+    searchDocuments: "Search documents...",
+    allCategories: "All Categories",
+    viewMode: "View Mode",
+    gridView: "Grid View",
+    listView: "List View",
+    documentDeleted: "Document deleted successfully",
+    confirmDeleteDocument: "Are you sure you want to delete this document?",
+    uploadedDate: "Uploaded Date",
+    fileSize: "File Size",
+    sharedWith: "Shared With",
+    visibleToAll: "Visible to all employees",
+    
+    // Quotes & Invoices
+    newQuote: "New Quote",
+    editQuote: "Edit Quote",
+    quoteNumber: "Quote Number",
+    invoiceNumber: "Invoice Number",
+    customerName: "Customer Name",
+    customerEmail: "Customer Email",
+    customerPhone: "Customer Phone",
+    jobName: "Job Name",
+    jobAddress: "Job Address",
+    quoteDate: "Quote Date",
+    invoiceDate: "Invoice Date",
+    validUntil: "Valid Until",
+    dueDate: "Due Date",
+    items: "Items",
+    quantity: "Quantity",
+    unitPrice: "Unit Price",
+    total: "Total", // Keep general total
+    subtotal: "Subtotal",
+    tax: "Tax",
+    notes: "Notes",
+    termsAndConditions: "Terms & Conditions",
+    saveDraft: "Save Draft",
+    saveAndSend: "Save & Send",
+    quoteManagement: "Quote Management",
+    invoiceManagement: "Invoice Management",
+    totalValue: "Total Value",
+    drafts: "Drafts",
+    converted: "Converted",
+    customer: "Customer",
+    // date: "Date", // This key will be replaced by the one in Expense List Columns
+    noQuotes: "No quotes found",
+    noInvoices: "No invoices found",
+    quoteDeleted: "Quote deleted successfully",
+    confirmDeleteQuote: "Are you sure you want to delete this quote?",
+    newInvoice: "New Invoice",
+    editInvoice: "Edit Invoice",
+    totalBilled: "Total Billed",
+    totalCollected: "Total Collected",
+    toCollect: "To Collect",
+    invoiceList: "Invoice List",
+    // balance: "Balance", // Keep general balance
+    partialPayment: "Partial Payment",
+    customerInformation: "Customer Information",
+    jobDetails: "Job Details",
+    invoiceItems: "Invoice Items",
+    notesAndTerms: "Notes & Terms",
+    additionalNotes: "Additional Notes",
+    paymentTerms: "Payment Terms",
+    saving: "Saving...",
+    sending: "Sending...",
+    addItem: "Add Item",
+    serviceDescription: "Service description",
+    jobDescription: "Job or project description",
+    fullAddress: "Full address",
+    selectExistingJob: "Select existing job",
+    projectNotes: "Project notes or special instructions",
+    invoice: "Invoice",
+    
+    // Additional Quote/Invoice translations
+    quote: "Quote",
+    dear: "Dear",
+    quoteEmailBody: "Please find your quote for",
+    sendToCustomer: "Send to Customer",
+    approve: "Approve", // Keep general approve
+    reject: "Reject", // Keep general reject
+    convertToInvoice: "Convert to Invoice",
+    converting: "Converting...",
+    quoteUpdated: "Quote updated successfully",
+    convertedToInvoice: "Quote converted to invoice",
+    quoteNotFound: "Quote not found",
+    thankYou: "Thank you for your business",
+    terms: "Terms",
+    job: "Job", // Keep general job
+    
+    // Accounting
+    accountingManagement: "Accounting Management",
+    newTransaction: "New Transaction",
+    transactionType: "Transaction Type",
+    amount: "Amount", // Keep general amount
+    // paymentMethod: "Payment Method", // This key will be replaced by payment_method in Payment Methods
+    cash: "Cash",
+    bankTransfer: "Bank Transfer",
+    card: "Card",
+    check: "Check",
+    monthlyIncome: "Monthly Income",
+    monthlyExpenses: "Monthly Expenses",
+    expensesByCategory: "Expenses by Category",
+    transactionList: "Transaction List",
+    noTransactions: "No transactions found",
+    
+    // Payroll
+    weeklyPayroll: "Weekly Payroll",
+    week: "Week",
+    currentWeek: "Current Week",
+    lastWeek: "Last Week",
+    normalHours: "Normal Hours",
+    overtimeHours: "Overtime Hours",
+    workPay: "Work Pay",
+    drivingPay: "Driving Pay",
+    miles: "Miles",
+    printPayroll: "Print Payroll",
+    totalWorkPay: "Total Work Pay",
+    totalDrivingPay: "Total Driving Pay",
+    totalReimbursements: "Total Reimbursements",
+    totalPayroll: "Total Payroll",
+    reimbursements: "Reimbursements",
+    totalPay: "Total Pay",
+    myPayroll: "My Payroll",
+    
+    // Expenses
+    // myExpenses: "My Expenses", // replaced below
+    // newExpense: "New Expense", // replaced below
+    // requestPerDiem: "Request Per Diem", // replaced below
+    // expenseCategory: "Expense Category", // replaced below
+    // receipt: "Receipt", // replaced below
+    uploadReceipt: "Upload Receipt", // keep this as it is specific
+    // travel: "Travel", // replaced below
+    // meals: "Meals", // replaced below
+    // transport: "Transport", // replaced below
+    // supplies: "Supplies", // replaced below
+    // perDiem: "Per Diem", // replaced below
+    // other: "Other", // replaced below
+    // trackExpensesAndReceipts: "Track your expenses and receipts", // replaced below
+    reviewAndApproveExpenses: "Review and approve expenses",
+    myRecords: "My Records",
+    totalPending: "Total Pending",
+    totalApproved: "Total Approved",
+    expenseUpdated: "Expense updated successfully",
+
+    // Expenses specific
+    my_expenses: "My Expenses",
+    track_your_expenses_and_receipts: "Track your expenses and receipts",
+    new_expense: "New Expense",
+    expense_created_pending_approval: "Expense created! Pending approval.",
+    
+    // Per Diem specific
+    per_diem: "Per Diem",
+    request_per_diem_for_work_days: "Request per diem for your work days",
+    request_per_diem: "Request Per Diem",
+    per_diem_information: "Per Diem Information",
+    fixed_amount: "Fixed amount",
+    per_day: "per day",
+    new_per_diem_request: "New Per Diem Request",
+    associate_with_job: "Associate with Job",
+    select_job: "Select job",
+    additional_notes: "Additional notes",
+    per_diem_request_submitted: "Per Diem request submitted! Pending approval.",
+    my_per_diem_requests: "My Per Diem Requests",
+    no_per_diem_requests: "No per diem requests",
+    
+    // Expense List columns
+    employee: "Employee",
+    date: "Date",
+    description: "Description",
+    category: "Category",
+    job: "Job",
+    payment_method: "Payment Method",
+    amount: "Amount",
+    status: "Status",
+    receipt: "Receipt",
+    actions: "Actions",
+    
+    // Categories
+    travel: "Travel",
+    meals: "Meals",
+    transport: "Transport",
+    supplies: "Supplies",
+    client_entertainment: "Client Entertainment",
+    equipment: "Equipment",
+    other: "Other",
+    
+    // Payment Methods
+    personal: "Personal",
+    company_card: "Company Card",
+    
+    // Actions
+    approve: "Approve",
+    reject: "Reject",
+    view: "View",
+    no_receipt: "No receipt",
+    no_expenses_found: "No expenses found",
+    
+    // Reject Dialog
+    reject_expense: "Reject Expense",
+    reason_for_rejection: "Reason for Rejection",
+    explain_rejection_reason: "Explain why this expense is being rejected...",
+    
+    // Jobs
+    jobsManagement: "Jobs Management",
+    newJob: "New Job",
+    editJob: "Edit Job",
+    contractAmount: "Contract Amount",
+    startDate: "Start Date",
+    endDate: "End Date",
+    financialSummary: "Financial Summary",
+    payrollCost: "Payroll Cost",
+    profitLoss: "Profit/Loss",
+    totalWorkedHours: "Total Worked Hours",
+    noJobs: "No jobs found",
+    startByAddingJob: "Start by adding your first job",
+    createJob: "Create Job",
+    jobCreated: "Job created successfully",
+    jobUpdated: "Job updated successfully",
+    viewDetails: "View Details",
+    
+    // Calendar & Schedules
+    calendarManagement: "Calendar Management",
+    scheduleManagement: "Schedule Management",
+    myHours: "My Hours",
+    newTimeEntry: "New Time Entry",
+    checkIn: "Check In",
+    checkOut: "Check Out",
+    lunchBreak: "Lunch Break",
+    hoursWorked: "Hours Worked",
+    thisWeek: "This Week",
+    yearToDate: "Year to Date",
+    today: "Today",
+    manageJobAssignments: "Manage job assignments and schedules",
+    reviewAndApproveHours: "Review and approve work hours",
+    trackYourWorkHours: "Track your work hours",
+    logHours: "Log Hours",
+    hoursThisWeek: "hours this week",
+    hoursThisYear: "hours this year",
+    pendingHours: "Pending Hours",
+    approvedHours: "Approved Hours",
+    confirmDeleteAssignment: "Are you sure you want to delete this assignment?",
+    assignmentCreated: "Assignment created successfully",
+    assignmentDeleted: "Assignment deleted successfully",
+    
+    // Driving & Mileage
+    drivingAndMileage: "Driving & Mileage",
+    mileageLog: "Mileage Log",
+    newMileageLog: "New Mileage Log",
+    milesDriven: "Miles Driven",
+    ratePerMile: "Rate per Mile",
+    startLocation: "Start Location",
+    endLocation: "End Location",
+    trackDrivingHours: "Track driving hours and mileage",
+    
+    // Chat
+    chatCommunication: "Chat Communication",
+    channels: "Channels",
+    general: "General",
+    sendMessage: "Send Message",
+    typeMessage: "Type a message...",
+    realTimeCommunication: "Real-time communication with your team",
+    
+    // Announcements
+    companyNews: "Company News & Announcements",
+    newAnnouncement: "New Announcement",
+    title: "Title",
+    content: "Content",
+    priority: "Priority",
+    normal: "Normal",
+    important: "Important",
+    urgent: "Urgent",
+    postAnnouncement: "Post Announcement",
+    noAnnouncements: "No announcements yet",
+    
+    // Forms
+    formTemplates: "Form Templates",
+    newForm: "New Form",
+    formSubmissions: "Form Submissions",
+    inspection: "Inspection",
+    incident: "Incident",
+    maintenance: "Maintenance",
+    opening: "Opening",
+    closing: "Closing",
+    custom: "Custom",
+    noForms: "No forms available",
+    
+    // Training
+    trainingAndCertification: "Training & Certification",
+    myCourses: "My Courses",
+    startCourse: "Start Course",
+    continueCourse: "Continue",
+    completeCourse: "Mark as Completed",
+    required: "Required",
+    inProgress: "In Progress",
+    coursesCompleted: "courses completed",
+    duration: "Duration",
+    minutes: "minutes",
+    noCoursesAvailable: "No courses available",
+    courseStarted: "Course started",
+    courseCompleted: "Course completed",
+    viewCertificate: "View Certificate",
+    
+    // Time Off
+    requestTimeOff: "Request Time Off",
+    timeOffRequest: "Time Off Request",
+    unpaidDaysOff: "Request unpaid days off",
+    
+    // Customers
+    customers: "Customers",
+    customerManagement: "Customer Management",
+    newCustomer: "New Customer",
+    editCustomer: "Edit Customer",
+    company: "Company",
+    city: "City",
+    state: "State",
+    zip: "ZIP Code",
+    noCustomers: "No customers found",
+    customerCreated: "Customer created successfully",
+    customerUpdated: "Customer updated successfully",
+    customerDeleted: "Customer deleted successfully",
+    confirmDeleteCustomer: "Are you sure you want to delete this customer?",
+    selectCustomer: "Select Customer",
+    selectExistingCustomer: "Select existing customer",
+    
+    // Settings
+    language: "Language",
+    english: "English",
+    spanish: "Spanish",
+    selectLanguage: "Select Language",
+    
+    // Messages
+    success: "Success",
+    error: "Error",
+    confirmDelete: "Are you sure you want to delete this?",
+    savedSuccessfully: "Saved successfully",
+    deletedSuccessfully: "Deleted successfully",
+    noResults: "No results found",
+    noData: "No data available",
+    
+    // Roles
+    admin: "Administrator",
+    user: "Employee",
+    
+    // Other
+    period: "Period",
+    yesterday: "Yesterday",
+    thisMonth: "This Month",
+    lastMonth: "Last Month",
+    thisYear: "This Year",
+    details: "Details",
+    information: "Information",
+    // employee: "Employee", // Replaced in Expense List Columns
+    // job: "Job", // Replaced in Expense List Columns
+    project: "Project",
+    client: "Client",
+    optional: "Optional",
+    requiredField: "Required",
+    // status: "Status", // Replaced in Expense List Columns
+    location: "Location",
+
+    // New translations for employee features
+    myProfile: "My Profile",
+    directory: "Directory",
+    certifications: "Certifications",
+    recognitions: "Recognitions",
+    performance: "Performance",
+    celebrations: "Celebrations",
+    birthdayToday: "Birthday Today!",
+    upcomingBirthdays: "Upcoming Birthdays",
+    totalPoints: "Total Points",
+    awards: "Awards",
+    addCertification: "Add Certification",
+    certificationType: "Certification Type",
+    certificationName: "Certification Name",
+    issuingOrganization: "Issuing Organization",
+    issueDate: "Issue Date",
+    expirationDate: "Expiration Date",
+    certificateNumber: "Certificate Number",
+    uploadCertificate: "Upload Certificate",
+    // viewCertificate: "View Certificate", // Duplicated key, keep one from Training section
+    certificationsExpiringSoon: "Certifications Expiring Soon",
+    expiredCertifications: "Expired Certifications",
+    noCertifications: "No certifications added yet",
+    noRecognitions: "No recognitions yet. Keep up the great work!",
+    recentRecognitions: "Recent Recognitions",
+    performanceManagement: "Performance & Recognition",
+    leaderboard: "Leaderboard",
+    topPerformers: "Top Performers",
+    allEmployeeStats: "All Employee Stats",
+    rank: "Rank",
+    latestRecognition: "Latest Recognition",
+    addRecognition: "Add Recognition",
+    editRecognition: "Edit Recognition",
+    recognitionType: "Recognition Type",
+    givenBy: "Given By",
+    allRecognitions: "All Recognitions",
+    allEmployees: "All Employees",
+    dailyBreakdown: "Daily Breakdown",
+
+    selectEmployee: "Select Employee",
+    
+    start_date: "Start Date",
+    end_date: "End Date",
+    days: "days",
+    invalid_dates: "Invalid dates",
+    select_date_range_to_calculate: "Select the date range to automatically calculate the total",
+    
+    // Invitation email translations
+    invitationToJoin: "Invitation to join",
+    hello: "Hello",
+    youHaveBeenInvitedMessage: "You have been invited to join MCI Connect, our company management system.",
+    toAcceptInvitation: "To accept this invitation",
+    checkYourEmail: "Check your email inbox at",
+    lookForInvitationFromBase44: "Look for an invitation email from Base44 (our platform provider)",
+    clickAcceptInvitation: "Click 'Accept Invitation' in that email",
+    createYourPassword: "Create your password and complete your profile",
+    startUsingMCIConnect: "Start using MCI Connect!",
+    ifYouDontSeeEmail: "If you don't see the Base44 invitation email, check your spam folder or contact your administrator.",
+    welcomeToTeam: "Welcome to the team!",
+    invitationEmailSent: "Invitation email sent!",
+    nowSendSystemInvitation: "Now send the system invitation",
+    alreadyCopied: "already copied",
+    employeeWillReceiveTwoEmails: "Employee will receive 2 emails: one from us and one from Base44 system",
+    pleaseCompleteDashboardInvitation: "Please complete the invitation through the Dashboard",
+    reminder: "Reminder",
+    thisIsReminder: "This is a friendly reminder about your invitation to join",
+    reminderEmailSent: "Reminder email sent",
+    nowResendSystemInvitation: "Now resend the system invitation through the Dashboard",
+    employeesActivated: "employees automatically activated after registration",
+    
+    // Invitation translations
+    sendInvitation: "Send Invitation",
+    invitationSentSuccessfully: "Invitation sent successfully",
+    invitationResent: "Invitation resent",
+    checkSpamFolder: "Check SPAM folder",
+    linkCopiedForSMS: "Link copied for SMS",
+
+    restoreAccessFor: "To restore access for",
+    openDashboardInBrowser: "Open Dashboard in your browser",
+    goToDataUser: "Go to: Data → User",
+    searchFor: "Search for:",
+    clickEdit: "Click 'Edit'",
+    changeEmploymentStatusFromDeletedToActive: "Change 'employment_status' from 'deleted' to 'active'",
+    saveChanges: "Save changes",
+    employeeCanAccessAppAgain: "The employee will be able to access the app again",
+
+    // Add new translations for invitation flow
+    invitationInstructions: "Dashboard opened. Follow these quick steps",
+    step1InviteUser: "1. Click 'Invite User' button",
+    step2PasteEmail: "2. Paste email (already copied!)",
+    step3SelectRole: "3. Select role: 'User'",
+    step4SendInvite: "4. Click 'Send Invitation'",
+    resendInstructions: "Dashboard opened. Quick steps to resend",
+    step1FindPending: "1. Go to 'Pending Invitations' tab",
+    step2FindEmail: "2. Find the email (already copied!)",
+    step3ClickResend: "3. Click 'Resend' button",
+    employeeWillReceiveEmail: "Employee will receive email from Base44",
+
+    // AI Categorization translations
+    needsReview: "Needs Review",
+    lowConfidence: "Low Confidence",
+    aiSuggestion: "AI Suggestion",
+    suggestedCategory: "Suggested Category",
+    highConfidence: "High Confidence",
+    mediumConfidence: "Medium Confidence",
+    acceptSuggestion: "Accept",
+    rejectSuggestion: "Reject",
+    reanalyze: "Reanalyze",
+    analyzingExpense: "Analyzing expense with AI...",
+    aiCategorization: "AI Categorization",
+    accuracy: "Accuracy",
+    userCorrections: "User Corrections",
+    learning: "Learning",
+
+    // Budget Forecasting translations
+    budgetForecasting: "Budget Forecasting",
+    aiBudgetForecast: "AI Budget Forecast",
+    forecastProjections: "Forecast Projections",
+    nextMonth: "Next Month",
+    nextThreeMonths: "Next 3 Months",
+    nextSixMonths: "Next 6 Months",
+    dailyVelocity: "Daily Velocity",
+    overspendingRisks: "Overspending Risks",
+    costOptimization: "Cost Optimization",
+    potentialSavings: "Potential Savings",
+    categoryTrends: "Category Trends",
+    increasing: "Increasing",
+    stable: "Stable",
+    decreasing: "Decreasing",
+    analyzeBudget: "Analyze Budget",
+    budgetAlerts: "Budget Alerts",
+    actionRequired: "Action Required",
+    spendingByCategory: "Spending by Category",
+    monthlyTrend: "Monthly Trend",
+  },
+  es: {
+    // Navigation
+    dashboard: "Dashboard",
+    employees: "Empleados",
+    documents: "Documentos",
+    quotes: "Estimados",
+    invoices: "Facturas",
+    accounting: "Contabilidad",
+    payroll: "Nómina",
+    // expenses: "Gastos", // This key will be replaced by my_expenses in the specific section
+    jobs: "Trabajos",
+    calendar: "Calendario",
+    schedules: "Horarios",
+    chat: "Chat",
+    announcements: "Anuncios",
+    forms: "Formularios",
+    training: "Capacitación",
+    
+    // Sections
+    main: "Principal",
+    documentsAndFinances: "Documentos y Finanzas",
+    operations: "Operaciones",
+    communication: "Comunicación",
+    resources: "Recursos",
+    timeAndExpenses: "Tiempo y Gastos",
+    
+    // Common Actions
+    add: "Agregar",
+    edit: "Editar",
+    delete: "Eliminar",
+    save: "Guardar",
+    cancel: "Cancelar",
+    submit: "Enviar",
+    search: "Buscar",
+    filter: "Filtrar",
+    download: "Descargar",
+    upload: "Subir",
+    create: "Crear",
+    update: "Actualizar",
+    // view: "Ver", // This key will be replaced by the one in the Expense Actions section
+    close: "Cerrar",
+    loading: "Cargando",
+    logout: "Cerrar Sesión",
+    back: "Atrás",
+    next: "Siguiente",
+    previous: "Anterior",
+    confirm: "Confirmar",
+    // actions: "Acciones", // This key will be replaced by the one in Expense List Columns
+    
+    // Status
+    active: "Activo",
+    inactive: "Inactivo",
+    pending: "Pendiente",
+    // approved: "Aprobado", // This key will be replaced by the one in the Expense Actions
+    // rejected: "Rechazado", // This key will be replaced by the one in the Expense Actions
+    completed: "Completado",
+    draft: "Borrador",
+    sent: "Enviado",
+    paid: "Pagado",
+    overdue: "Vencido",
+    cancelled: "Cancelado",
+    archived: "Archivado",
+    invited: "Invitado",
+    
+    // Dashboard
+    monthlyBalance: "Balance Mensual",
+    income: "Ingresos",
+    totalIncome: "Total Ingresos",
+    totalExpenses: "Total Gastos",
+    balance: "Saldo",
+    workHours: "Horas de Trabajo",
+    drivingHours: "Horas de Manejo",
+    weeklyPay: "Pago Semanal",
+    pendingExpenses: "Gastos Pendientes",
+    incomeVsExpenses: "Ingresos vs Gastos",
+    hoursByProject: "Horas por Proyecto",
+    employeeDirectory: "Directorio de Empleados",
+    quickActions: "Acciones Rápidas",
+    myJobsThisWeek: "Mis Trabajos Esta Semana",
+    
+    // Employees
+    employeeManagement: "Gestión de Empleados",
+    newEmployee: "Nuevo Empleado",
+    fullName: "Nombre Completo",
+    email: "Email",
+    phone: "Teléfono",
+    position: "Puesto",
+    department: "Departamento",
+    hireDate: "Fecha de Contratación",
+    hourlyRate: "Tarifa por Hora",
+    address: "Dirección",
+    dateOfBirth: "Fecha de Nacimiento",
+    ssnTaxId: "SSN/Tax ID",
+    tshirtSize: "Talla de Camiseta",
+    reactivate: "Reactivar",
+    temporarilyOut: "Temporalmente Fuera",
+    noTemporarilyOut: "No hay empleados temporalmente fuera",
+    employeeCreated: "Empleado creado exitosamente",
+    employeeUpdated: "Empleado actualizado exitosamente",
+    employeeReactivated: "Empleado reactivado",
+    archiveReason: "Razón para archivar:",
+    terminationDate: "Fecha de terminación (AAAA-MM-DD):",
+    reactivateConfirm: "Reactivar empleado",
+    pauseDate: "Fecha de Pausa",
+    returnDate: "Fecha de Retorno",
+    reason: "Razón",
+    
+    // Employee specific
+    manageYourTeamMembers: "Gestiona los miembros de tu equipo",
+    youHaveXPendingEmployees: "Tienes empleados pendientes por revisar",
+    searchEmployees: "Buscar empleados...",
+    manualSync: "Sincronización Manual",
+    addEmployee: "Agregar Empleado",
+    syncing: "Sincronizando",
+    viewProfile: "Ver Perfil",
+    editEmployee: "Editar Empleado",
+    inviteEmployee: "Invitar Empleado",
+    deletePermanently: "Eliminar Permanentemente",
+    restoreToPending: "Restaurar a Pendiente",
+    archive: "Archivar",
+    noPosition: "Sin puesto",
+    noName: "Sin nombre",
+    directorySyncedSuccessfully: "Directorio sincronizado exitosamente",
+    failedToSyncDirectory: "Error al sincronizar directorio",
+    employeeDeletedSuccessfully: "Empleado eliminado exitosamente",
+    failedToDeleteEmployee: "Error al eliminar empleado",
+    employeeArchived: "Empleado archivado",
+    failedToArchiveEmployee: "Error al archivar empleado",
+    employeeRestoredToPending: "Empleado restaurado a pendiente",
+    failedToRestoreEmployee: "Error al restaurar empleado",
+    emailCopiedToClipboard: "Email copiado al portapapeles",
+    dashboardOpenedNewTab: "Dashboard abierto en nueva pestaña",
+    clickInviteUser: "Haz clic en 'Invitar Usuario'",
+    pasteEmail: "Pega el email",
+    selectRoleUser: "Selecciona el rol como 'Usuario'",
+    // sendInvitation: "Envía la invitación", // Replaced below
+    onceAcceptedWillAppearDirectory: "Una vez aceptado, el empleado aparecerá en el directorio",
+    employeeMarkedAsInvited: "Empleado marcado como invitado",
+    dashboardOpenedNewTabCopyEmail: "Dashboard abierto en nueva pestaña. Copia el email manualmente",
+    noEmailCannotInvite: "No se puede invitar sin email",
+    born: "Nacido",
+    cannotInviteWithoutEmail: "No se puede invitar sin email",
+    confirmDeleteEmployeePermanently: "¿Estás seguro de que quieres eliminar este empleado permanentemente?",
+    confirmArchiveEmployee: "¿Estás seguro de que quieres archivar este empleado?",
+    confirmRestoreEmployeeToPending: "¿Estás seguro de que quieres restaurar este empleado a pendiente?",
+    noActiveEmployeesFound: "No se encontraron empleados activos",
+    noPendingEmployees: "No hay empleados pendientes",
+    noInvitedEmployees: "No hay empleados invitados",
+    noArchivedEmployees: "No hay empleados archivados",
+    unknownEmployee: "Empleado Desconocido",
+    nameNeedsConfigurationInstruction: "El nombre necesita configuración. Haz clic en Editar para establecer nombre y apellido.",
+    youHaveXDeletedEmployees: "Tienes empleados eliminados",
+    deletedAndBlocked: "Eliminado y Bloqueado",
+    allDataDeletedEmployeeBlocked: "Todos los datos eliminados, empleado bloqueado del acceso a la app",
+    noDeletedEmployees: "No hay empleados eliminados",
+    
+    // Add new translations for resend invitation
+    resendInvitation: "Reenviar Invitación",
+    resendingInvitation: "Reenviando invitación",
+    resendInstructions: "Ve a 'Invitaciones Pendientes' y haz clic en 'Reenviar' en la invitación de este email.",
+    failedToResendInvitation: "Error al reenviar invitación",
+
+    // Departments
+    administration: "Administración",
+    sales: "Ventas",
+    operations: "Operaciones",
+    it: "IT",
+    marketing: "Marketing",
+    hr: "Recursos Humanos",
+    
+    // Documents
+    documentsAndFiles: "Documentos y Archivos",
+    uploadDocument: "Subir Documento",
+    fileName: "Nombre del Archivo",
+    fileType: "Tipo de Archivo",
+    category: "Categoría", // Keep general category
+    folder: "Carpeta",
+    description: "Descripción", // Keep general description
+    uploadedBy: "Subido Por",
+    uploadDate: "Fecha de Subida",
+    tags: "Etiquetas",
+    plans: "Planos",
+    photos: "Fotos",
+    reports: "Reportes",
+    scam: "SCAM",
+    noDocuments: "No hay documentos",
+    searchDocuments: "Buscar documentos...",
+    allCategories: "Todas las Categorías",
+    viewMode: "Modo de Vista",
+    gridView: "Vista de Cuadrícula",
+    listView: "Vista de Lista",
+    documentDeleted: "Documento eliminado exitosamente",
+    confirmDeleteDocument: "¿Estás seguro de que quieres eliminar este documento?",
+    uploadedDate: "Fecha de Subida",
+    fileSize: "Tamaño de Archivo",
+    sharedWith: "Compartido Con",
+    visibleToAll: "Visible para todos los empleados",
+    
+    // Quotes & Invoices
+    newQuote: "Nuevo Estimado",
+    editQuote: "Editar Estimado",
+    quoteNumber: "Número de Estimado",
+    invoiceNumber: "Número de Factura",
+    customerName: "Nombre del Cliente",
+    customerEmail: "Email del Cliente",
+    customerPhone: "Teléfono del Cliente",
+    jobName: "Nombre del Trabajo",
+    jobAddress: "Dirección del Trabajo",
+    quoteDate: "Fecha del Estimado",
+    invoiceDate: "Fecha de Factura",
+    validUntil: "Válido Hasta",
+    dueDate: "Fecha de Vencimiento",
+    items: "Items",
+    quantity: "Cantidad",
+    unitPrice: "Precio Unitario",
+    total: "Total", // Keep general total
+    subtotal: "Subtotal",
+    tax: "Impuesto",
+    notes: "Notas",
+    termsAndConditions: "Términos y Condiciones",
+    saveDraft: "Guardar Borrador",
+    saveAndSend: "Guardar y Enviar",
+    quoteManagement: "Gestión de Estimados",
+    invoiceManagement: "Gestión de Facturas",
+    totalValue: "Valor Total",
+    drafts: "Borradores",
+    converted: "Convertidos",
+    customer: "Cliente",
+    // date: "Fecha", // This key will be replaced by the one in Expense List Columns
+    noQuotes: "No hay estimados",
+    noInvoices: "No hay facturas",
+    quoteDeleted: "Estimado eliminado exitosamente",
+    confirmDeleteQuote: "¿Estás seguro de que quieres eliminar este estimado?",
+    newInvoice: "Nueva Factura",
+    editInvoice: "Editar Factura",
+    totalBilled: "Total Facturado",
+    totalCollected: "Total Cobrado",
+    toCollect: "Por Cobrar",
+    invoiceList: "Lista de Facturas",
+    // balance: "Saldo", // Keep general balance
+    partialPayment: "Pago Parcial",
+    customerInformation: "Información del Cliente",
+    jobDetails: "Detalles del Trabajo",
+    invoiceItems: "Items de la Factura",
+    notesAndTerms: "Notas y Términos",
+    additionalNotes: "Notas Adicionales",
+    paymentTerms: "Términos de Pago",
+    saving: "Guardando...",
+    sending: "Enviando...",
+    addItem: "Agregar Item",
+    serviceDescription: "Descripción del servicio",
+    jobDescription: "Descripción del trabajo o proyecto",
+    fullAddress: "Dirección completa",
+    selectExistingJob: "Seleccionar trabajo existente",
+    projectNotes: "Notas del proyecto o instrucciones especiales",
+    invoice: "Factura",
+    
+    // Additional Quote/Invoice translations
+    quote: "Estimado",
+    dear: "Estimado(a)",
+    quoteEmailBody: "Adjunto encontrará el estimado para",
+    sendToCustomer: "Enviar al Cliente",
+    approve: "Aprobar", // Keep general approve
+    reject: "Rechazar", // Keep general reject
+    convertToInvoice: "Convertir a Factura",
+    converting: "Convirtiendo...",
+    quoteUpdated: "Estimado actualizado exitosamente",
+    convertedToInvoice: "Estimado convertido a factura",
+    quoteNotFound: "Estimado no encontrado",
+    thankYou: "Gracias por su confianza",
+    terms: "Términos",
+    job: "Trabajo", // Keep general job
+    
+    // Accounting
+    accountingManagement: "Gestión de Contabilidad",
+    newTransaction: "Nueva Transacción",
+    transactionType: "Tipo de Transacción",
+    amount: "Monto", // Keep general amount
+    // paymentMethod: "Método de Pago", // This key will be replaced by payment_method in Payment Methods
+    cash: "Efectivo",
+    bankTransfer: "Transferencia Bancaria",
+    card: "Tarjeta",
+    check: "Cheque",
+    monthlyIncome: "Ingresos Mensuales",
+    monthlyExpenses: "Gastos Mensuales",
+    expensesByCategory: "Gastos por Categoría",
+    transactionList: "Lista de Transacciones",
+    noTransactions: "No hay transacciones",
+    
+    // Payroll
+    weeklyPayroll: "Nómina Semanal",
+    week: "Semana",
+    currentWeek: "Semana Actual",
+    lastWeek: "Semana Pasada",
+    normalHours: "Horas Normales",
+    overtimeHours: "Horas Extra",
+    workPay: "Pago Trabajo",
+    drivingPay: "Pago Manejo",
+    miles: "Millas",
+    printPayroll: "Imprimir Nómina",
+    totalWorkPay: "Total Pago Trabajo",
+    totalDrivingPay: "Total Pago Manejo",
+    totalReimbursements: "Total Reembolsos",
+    totalPayroll: "Total Nómina",
+    reimbursements: "Reembolsos",
+    totalPay: "Pago Total",
+    myPayroll: "Mi Nómina",
+    
+    // Expenses
+    // myExpenses: "Mis Gastos", // replaced below
+    // newExpense: "Nuevo Gasto", // replaced below
+    // requestPerDiem: "Solicitar Per Diem", // replaced below
+    // expenseCategory: "Categoría de Gasto", // replaced below
+    // receipt: "Recibo", // replaced below
+    uploadReceipt: "Subir Recibo", // keep this as it is specific
+    // travel: "Viaje", // replaced below
+    // meals: "Comidas", // replaced below
+    // transport: "Transporte", // replaced below
+    // supplies: "Suministros", // replaced below
+    // perDiem: "Per Diem", // replaced below
+    // other: "Otro", // replaced below
+    // trackExpensesAndReceipts: "Registra tus gastos y recibos", // replaced below
+    reviewAndApproveExpenses: "Revisar y aprobar gastos",
+    myRecords: "Mis Registros",
+    totalPending: "Total Pendiente",
+    totalApproved: "Total Aprobado",
+    expenseUpdated: "Gasto actualizado",
+
+    // Expenses specific
+    my_expenses: "Mis Gastos",
+    track_your_expenses_and_receipts: "Registra tus gastos y recibos",
+    new_expense: "Nuevo Gasto",
+    expense_created_pending_approval: "¡Gasto creado! Pendiente de aprobación.",
+    
+    // Per Diem specific
+    per_diem: "Per Diem",
+    request_per_diem_for_work_days: "Solicita per diem para tus días de trabajo",
+    request_per_diem: "Solicitar Per Diem",
+    per_diem_information: "Información de Per Diem",
+    fixed_amount: "Monto fijo",
+    per_day: "por día",
+    new_per_diem_request: "Nueva Solicitud de Per Diem",
+    associate_with_job: "Asociar a Trabajo",
+    select_job: "Seleccionar trabajo",
+    additional_notes: "Notas adicionales",
+    per_diem_request_submitted: "¡Solicitud de Per Diem enviada! Pendiente de aprobación.",
+    my_per_diem_requests: "Mis Solicitudes de Per Diem",
+    no_per_diem_requests: "No hay solicitudes de per diem",
+    
+    // Expense List columns
+    employee: "Empleado",
+    date: "Fecha",
+    description: "Descripción",
+    category: "Categoría",
+    job: "Trabajo",
+    payment_method: "Método de Pago",
+    amount: "Monto",
+    status: "Estado",
+    receipt: "Recibo",
+    actions: "Acciones",
+    
+    // Categories
+    travel: "Viaje",
+    meals: "Comidas",
+    transport: "Transporte",
+    supplies: "Suministros",
+    client_entertainment: "Entretenimiento Cliente",
+    equipment: "Equipo",
+    other: "Otro",
+    
+    // Payment Methods
+    personal: "Personal",
+    company_card: "Tarjeta",
+    
+    // Actions
+    approve: "Aprobar",
+    reject: "Rechazar",
+    view: "Ver",
+    no_receipt: "Sin recibo",
+    no_expenses_found: "No se encontraron gastos",
+    
+    // Reject Dialog
+    reject_expense: "Rechazar Gasto",
+    reason_for_rejection: "Razón del Rechazo",
+    explain_rejection_reason: "Explica por qué se rechaza este gasto...",
+    
+    // Jobs
+    jobsManagement: "Gestión de Trabajos",
+    newJob: "Nuevo Trabajo",
+    editJob: "Editar Trabajo",
+    contractAmount: "Monto del Contrato",
+    startDate: "Fecha de Inicio",
+    endDate: "Fecha de Fin",
+    financialSummary: "Resumen Financiero",
+    payrollCost: "Costo de Nómina",
+    profitLoss: "Ganancia/Pérdida",
+    totalWorkedHours: "Total de Horas Trabajadas",
+    noJobs: "No hay trabajos",
+    startByAddingJob: "Comienza agregando tu primer trabajo",
+    createJob: "Crear Trabajo",
+    jobCreated: "Trabajo creado exitosamente",
+    jobUpdated: "Trabajo actualizado exitosamente",
+    viewDetails: "Ver Detalles",
+    
+    // Calendar & Schedules
+    calendarManagement: "Gestión de Calendario",
+    scheduleManagement: "Gestión de Horarios",
+    myHours: "Mis Horas",
+    newTimeEntry: "Nuevo Registro de Tiempo",
+    checkIn: "Entrada",
+    checkOut: "Salida",
+    lunchBreak: "Hora de Almuerzo",
+    hoursWorked: "Horas Trabajadas",
+    thisWeek: "Esta Semana",
+    yearToDate: "Año a la Fecha",
+    today: "Hoy",
+    manageJobAssignments: "Gestionar asignaciones de trabajos",
+    reviewAndApproveHours: "Revisar y aprobar horas",
+    trackYourWorkHours: "Registra tus horas de trabajo",
+    logHours: "Registrar Horas",
+    hoursThisWeek: "horas esta semana",
+    hoursThisYear: "horas este año",
+    pendingHours: "Horas Pendientes",
+    approvedHours: "Horas Aprobadas",
+    confirmDeleteAssignment: "¿Seguro que quieres eliminar esta asignación?",
+    assignmentCreated: "Asignación creada",
+    assignmentDeleted: "Asignación eliminada",
+    
+    // Driving & Mileage
+    drivingAndMileage: "Manejo y Millaje",
+    mileageLog: "Registro de Millas",
+    newMileageLog: "Nuevo Registro de Millas",
+    milesDriven: "Millas Recorridas",
+    ratePerMile: "Tarifa por Milla",
+    startLocation: "Ubicación de Inicio",
+    endLocation: "Ubicación de Destino",
+    trackDrivingHours: "Registra horas de conducción y millaje",
+    
+    // Chat
+    chatCommunication: "Comunicación por Chat",
+    channels: "Canales",
+    general: "General",
+    sendMessage: "Enviar Mensaje",
+    typeMessage: "Escribe un mensaje...",
+    realTimeCommunication: "Comunicación en tiempo real con tu equipo",
+    
+    // Announcements
+    companyNews: "Noticias y Anuncios de la Empresa",
+    newAnnouncement: "Nuevo Anuncio",
+    title: "Título",
+    content: "Contenido",
+    priority: "Prioridad",
+    normal: "Normal",
+    important: "Importante",
+    urgent: "Urgente",
+    postAnnouncement: "Publicar Anuncio",
+    noAnnouncements: "No hay anuncios aún",
+    
+    // Forms
+    formTemplates: "Plantillas de Formularios",
+    newForm: "Nuevo Formulario",
+    formSubmissions: "Envíos de Formularios",
+    inspection: "Inspección",
+    incident: "Incidente",
+    maintenance: "Mantenimiento",
+    opening: "Apertura",
+    closing: "Cierre",
+    custom: "Personalizado",
+    noForms: "No hay formularios disponibles",
+    
+    // Training
+    trainingAndCertification: "Capacitación y Certificación",
+    myCourses: "Mis Cursos",
+    startCourse: "Comenzar Curso",
+    continueCourse: "Continuar",
+    completeCourse: "Marcar como Completado",
+    required: "Obligatorio",
+    inProgress: "En Progreso",
+    coursesCompleted: "cursos completados",
+    duration: "Duración",
+    minutes: "minutos",
+    noCoursesAvailable: "No hay cursos disponibles",
+    courseStarted: "Curso iniciado",
+    courseCompleted: "Curso completado",
+    viewCertificate: "Ver Certificado",
+    
+    // Time Off
+    requestTimeOff: "Solicitar Tiempo Libre",
+    timeOffRequest: "Solicitud de Tiempo Libre",
+    unpaidDaysOff: "Solicita días libres no pagados",
+    
+    // Customers
+    customers: "Clientes",
+    customerManagement: "Gestión de Clientes",
+    newCustomer: "Nuevo Cliente",
+    editCustomer: "Editar Cliente",
+    company: "Empresa",
+    city: "Ciudad",
+    state: "Estado",
+    zip: "Código Postal",
+    noCustomers: "No hay clientes",
+    customerCreated: "Cliente creado exitosamente",
+    customerUpdated: "Cliente actualizado exitosamente",
+    customerDeleted: "Cliente eliminado exitosamente",
+    confirmDeleteCustomer: "¿Estás seguro de que quieres eliminar este cliente?",
+    selectCustomer: "Seleccionar Cliente",
+    selectExistingCustomer: "Seleccionar cliente existente",
+    
+    // Settings
+    language: "Idioma",
+    english: "Inglés",
+    spanish: "Español",
+    selectLanguage: "Seleccionar Idioma",
+    
+    // Messages
+    success: "Éxito",
+    error: "Error",
+    confirmDelete: "¿Estás seguro de que quieres eliminar esto?",
+    savedSuccessfully: "Guardado exitosamente",
+    deletedSuccessfully: "Eliminado exitosamente",
+    noResults: "No se encontraron resultados",
+    noData: "No hay datos disponibles",
+    
+    // Roles
+    admin: "Administrador",
+    user: "Empleado",
+    
+    // Other
+    period: "Período",
+    yesterday: "Ayer",
+    thisMonth: "Este Mes",
+    lastMonth: "Mes Pasado",
+    thisYear: "Este Año",
+    details: "Detalles",
+    information: "Información",
+    // employee: "Empleado", // Replaced in Expense List Columns
+    // job: "Trabajo", // Replaced in Expense List Columns
+    project: "Proyecto",
+    client: "Cliente",
+    optional: "Opcional",
+    requiredField: "Requerido",
+    // status: "Estado", // Replaced in Expense List Columns
+    location: "Ubicación",
+    
+    // New translations in Spanish
+    myProfile: "Mi Perfil",
+    directory: "Directorio",
+    certifications: "Certificaciones",
+    recognitions: "Reconocimientos",
+    performance: "Desempeño",
+    celebrations: "Celebraciones",
+    birthdayToday: "¡Cumpleaños Hoy!",
+    upcomingBirthdays: "Próximos Cumpleaños",
+    totalPoints: "Puntos Totales",
+    awards: "Premios",
+    addCertification: "Agregar Certificación",
+    certificationType: "Tipo de Certificación",
+    certificationName: "Nombre de Certificación",
+    issuingOrganization: "Organización Emisora",
+    issueDate: "Fecha de Emisión",
+    expirationDate: "Fecha de Vencimiento",
+    certificateNumber: "Número de Certificado",
+    uploadCertificate: "Subir Certificado",
+    // viewCertificate: "Ver Certificado", // Duplicated key, keep one from Training section
+    certificationsExpiringSoon: "Certificaciones por Vencer",
+    expiredCertifications: "Certificaciones Vencidas",
+    noCertifications: "No hay certificaciones agregadas",
+    noRecognitions: "No hay reconocimientos aún. ¡Sigue con el buen trabajo!",
+    recentRecognitions: "Reconocimientos Recientes",
+    performanceManagement: "Desempeño y Reconocimientos",
+    leaderboard: "Tabla de Clasificación",
+    topPerformers: "Mejores Empleados",
+    allEmployeeStats: "Estadísticas de Todos los Empleados",
+    rank: "Rango",
+    latestRecognition: "Último Reconocimiento",
+    addRecognition: "Agregar Reconocimiento",
+    editRecognition: "Editar Reconocimiento",
+    recognitionType: "Tipo de Reconocimiento",
+    givenBy: "Otorgado Por",
+    allRecognitions: "Todos los Reconocimientos",
+    allEmployees: "Todos los Empleados",
+    dailyBreakdown: "Desglose Diario",
+
+    selectEmployee: "Seleccionar Empleado",
+    
+    start_date: "Fecha de Inicio",
+    end_date: "Fecha de Fin",
+    days: "días",
+    invalid_dates: "Fechas inválidas",
+    select_date_range_to_calculate: "Selecciona el rango de fechas para calcular el total automáticamente",
+    
+    // Invitation email translations
+    invitationToJoin: "Invitación para unirte a",
+    hello: "Hola",
+    youHaveBeenInvitedMessage: "Has sido invitado a unirte a MCI Connect, nuestro sistema de gestión empresarial.",
+    toAcceptInvitation: "Para aceptar esta invitación",
+    checkYourEmail: "Revisa tu bandeja de entrada en",
+    lookForInvitationFromBase44: "Busca un email de invitación de Base44 (nuestro proveedor de plataforma)",
+    clickAcceptInvitation: "Haz clic en 'Aceptar Invitación' en ese email",
+    createYourPassword: "Crea tu contraseña y completa tu perfil",
+    startUsingMCIConnect: "¡Comienza a usar MCI Connect!",
+    ifYouDontSeeEmail: "Si no ves el email de invitación de Base44, revisa tu carpeta de spam o contacta a tu administrador.",
+    welcomeToTeam: "¡Bienvenido al equipo!",
+    invitationEmailSent: "¡Email de invitación enviado!",
+    nowSendSystemInvitation: "Ahora envía la invitación del sistema",
+    alreadyCopied: "ya copiado",
+    employeeWillReceiveTwoEmails: "El empleado recibirá 2 emails: uno nuestro y uno del sistema Base44",
+    pleaseCompleteDashboardInvitation: "Por favor completa la invitación a través del Dashboard",
+    reminder: "Recordatorio",
+    thisIsReminder: "Este es un recordatorio amistoso sobre tu invitación para unirte a",
+    reminderEmailSent: "Email de recordatorio enviado",
+    nowResendSystemInvitation: "Ahora reenvía la invitación del sistema a través del Dashboard",
+    employeesActivated: "empleados activados automáticamente después del registro",
+    
+    // Invitation translations  
+    sendInvitation: "Enviar Invitación",
+    invitationSentSuccessfully: "Invitación enviada exitosamente",
+    invitationResent: "Invitación reenviada",
+    checkSpamFolder: "Revisar carpeta de SPAM",
+    linkCopiedForSMS: "Link copiado para SMS",
+
+    restoreAccessFor: "Para restaurar acceso para",
+    openDashboardInBrowser: "Abre el Dashboard en tu navegador",
+    goToDataUser: "Ve a: Data → User",
+    searchFor: "Busca:",
+    clickEdit: "Haz clic en 'Edit'",
+    changeEmploymentStatusFromDeletedToActive: "Cambia 'employment_status' de 'deleted' a 'active'",
+    saveChanges: "Guarda los cambios",
+    employeeCanAccessAppAgain: "El empleado podrá acceder a la app nuevamente",
+
+    // Spanish translations
+    invitationInstructions: "Dashboard abierto. Sigue estos pasos rápidos",
+    step1InviteUser: "1. Haz clic en 'Invite User'",
+    step2PasteEmail: "2. Pega el email (¡ya copiado!)",
+    step3SelectRole: "3. Selecciona rol: 'User'",
+    step4SendInvite: "4. Haz clic en 'Send Invitation'",
+    resendInstructions: "Dashboard abierto. Pasos rápidos para reenviar",
+    step1FindPending: "1. Ve a la pestaña 'Pending Invitations'",
+    step2FindEmail: "2. Encuentra el email (¡ya copiado!)",
+    step3ClickResend: "3. Haz clic en 'Resend'",
+    employeeWillReceiveEmail: "El empleado recibirá email de Base44",
+
+    // AI Categorization translations
+    needsReview: "Necesita Revisión",
+    lowConfidence: "Baja Confianza",
+    aiSuggestion: "Sugerencia de AI",
+    suggestedCategory: "Categoría Sugerida",
+    highConfidence: "Alta Confianza",
+    mediumConfidence: "Confianza Media",
+    acceptSuggestion: "Aceptar",
+    rejectSuggestion: "Rechazar",
+    reanalyze: "Reanalizar",
+    analyzingExpense: "Analizando gasto con AI...",
+    aiCategorization: "Categorización AI",
+    accuracy: "Precisión",
+    userCorrections: "Correcciones de Usuario",
+    learning: "Aprendiendo",
+
+    // Budget Forecasting translations
+    budgetForecasting: "Pronóstico Presupuestario",
+    aiBudgetForecast: "Pronóstico Presupuestario AI",
+    forecastProjections: "Proyecciones de Pronóstico",
+    nextMonth: "Próximo Mes",
+    nextThreeMonths: "Próximos 3 Meses",
+    nextSixMonths: "Próximos 6 Meses",
+    dailyVelocity: "Velocidad Diaria",
+    overspendingRisks: "Riesgos de Sobregasto",
+    costOptimization: "Optimización de Costos",
+    potentialSavings: "Ahorro Potencial",
+    categoryTrends: "Tendencias por Categoría",
+    increasing: "Aumentando",
+    stable: "Estable",
+    decreasing: "Disminuyendo",
+    analyzeBudget: "Analizar Presupuesto",
+    budgetAlerts: "Alertas de Presupuesto",
+    actionRequired: "Acción Requerida",
+    spendingByCategory: "Gasto por Categoría",
+    monthlyTrend: "Tendencia Mensual",
+  }
+};
+
+export const LanguageProvider = ({ children }) => {
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    retry: false,
+  });
+
+  const [language, setLanguage] = useState('en');
+
+  useEffect(() => {
+    if (user?.preferred_language) {
+      setLanguage(user.preferred_language);
+    }
+  }, [user]);
+
+  const updateLanguageMutation = useMutation({
+    mutationFn: (lang) => base44.auth.updateMe({ preferred_language: lang }),
+  });
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    if (user) {
+      updateLanguageMutation.mutate(lang);
+    }
+  };
+
+  const t = (key) => {
+    return translations[language]?.[key] || translations.en[key] || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, changeLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+};

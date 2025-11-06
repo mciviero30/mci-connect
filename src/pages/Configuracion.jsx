@@ -1,0 +1,714 @@
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Settings,
+  User,
+  Building2,
+  Bell,
+  Shield,
+  Save,
+  Upload,
+  Users,
+  DollarSign,
+  HardDrive,
+  Loader2
+} from "lucide-react";
+import PageHeader from "../components/shared/PageHeader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLanguage } from "@/components/i18n/LanguageContext";
+import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { format } from 'date-fns';
+
+export default function Configuracion() {
+  const { language } = useLanguage();
+  const queryClient = useQueryClient();
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const { data: companySettings, isLoading: loadingSettings } = useQuery({
+    queryKey: ['companySettings'],
+    queryFn: async () => {
+      const settings = await base44.entities.CompanySettings.list();
+      return settings[0] || {};
+    },
+    initialData: {}
+  });
+
+  const [profileForm, setProfileForm] = useState({
+    full_name: user?.full_name || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    profile_photo_url: user?.profile_photo_url || ''
+  });
+
+  const [settings, setSettings] = useState({
+    company_name: '',
+    company_logo_url: '',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    zip: '',
+    phone: '',
+    email: '',
+    website: '',
+    default_hourly_rate: 25,
+    default_per_diem_amount: 50,
+    default_vacation_accrual_rate: 1.5,
+    notifications_email_fallback_enabled: true,
+    notifications_email_subject_prefix: 'MCI Connect Alert'
+  });
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        full_name: user.full_name || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        profile_photo_url: user.profile_photo_url || ''
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (companySettings && Object.keys(companySettings).length > 0) {
+      setSettings({
+        company_name: companySettings.company_name || '',
+        company_logo_url: companySettings.company_logo_url || '',
+        address_line_1: companySettings.address_line_1 || '',
+        address_line_2: companySettings.address_line_2 || '',
+        city: companySettings.city || '',
+        state: companySettings.state || '',
+        zip: companySettings.zip || '',
+        phone: companySettings.phone || '',
+        email: companySettings.email || '',
+        website: companySettings.website || '',
+        default_hourly_rate: companySettings.default_hourly_rate || 25,
+        default_per_diem_amount: companySettings.default_per_diem_amount || 50,
+        default_vacation_accrual_rate: companySettings.default_vacation_accrual_rate || 1.5,
+        notifications_email_fallback_enabled: companySettings.notifications_email_fallback_enabled !== false,
+        notifications_email_subject_prefix: companySettings.notifications_email_subject_prefix || 'MCI Connect Alert'
+      });
+    }
+  }, [companySettings]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (data) => base44.auth.updateMe(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Perfil actualizado exitosamente.' : 'Profile updated successfully!',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al actualizar perfil: ${error.message}` : `Error updating profile: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data) => {
+      if (companySettings.id) {
+        return await base44.entities.CompanySettings.update(companySettings.id, data);
+      } else {
+        return await base44.entities.CompanySettings.create(data);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companySettings'] });
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Configuración guardada exitosamente.' : 'Settings saved successfully!',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al guardar configuración: ${error.message}` : `Error saving settings: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleProfilePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setProfileForm({ ...profileForm, profile_photo_url: file_url });
+      await base44.auth.updateMe({ profile_photo_url: file_url });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Foto de perfil actualizada.' : 'Profile photo updated!',
+      });
+    } catch (error) {
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al subir foto: ${error.message}` : `Error uploading photo: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+    setUploading(false);
+  };
+
+  const handleCompanyLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setSettings({ ...settings, company_logo_url: file_url });
+    } catch (error) {
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al subir logo: ${error.message}` : `Error uploading logo: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+    setUploading(false);
+  };
+
+  const handleSaveSettings = () => {
+    updateSettingsMutation.mutate(settings);
+  };
+
+  const isAdmin = user?.role === 'admin';
+
+  return (
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title={language === 'es' ? 'Configuración' : 'Settings'}
+          description={language === 'es' ? 'Configura tu empresa y preferencias' : 'Configure your company and preferences'}
+          icon={Settings}
+        />
+
+        <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
+          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+            {isAdmin && (
+              <>
+                <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                  <Building2 className="w-4 h-4" />
+                  {language === 'es' ? 'Empresa' : 'Company'}
+                </TabsTrigger>
+                <TabsTrigger value="defaults" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                  <DollarSign className="w-4 h-4" />
+                  {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
+                </TabsTrigger>
+                <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                  <Bell className="w-4 h-4" />
+                  {language === 'es' ? 'Notificaciones' : 'Notifications'}
+                </TabsTrigger>
+              </>
+            )}
+            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <Users className="w-4 h-4" />
+              {language === 'es' ? 'Mi Perfil' : 'My Profile'}
+            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                <HardDrive className="w-4 h-4" />
+                {language === 'es' ? 'Sistema' : 'System'}
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          {isAdmin && (
+            <TabsContent value="company">
+              <Card className="bg-white shadow-xl border-slate-200">
+                <CardHeader className="border-b border-slate-200">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                    <Building2 className="w-5 h-5 text-[#3B9FF3]" />
+                    {language === 'es' ? 'Información de la Empresa' : 'Company Information'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-6 mb-6">
+                    {settings.company_logo_url ? (
+                      <img
+                        src={settings.company_logo_url}
+                        alt="Company Logo"
+                        className="w-24 h-24 rounded-lg object-cover border-2 border-slate-300"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-lg flex items-center justify-center">
+                        <Building2 className="w-12 h-12 text-white" />
+                      </div>
+                    )}
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCompanyLogoUpload}
+                        disabled={uploading}
+                        className="hidden"
+                        id="company-logo-upload"
+                      />
+                      <Button
+                        onClick={() => document.getElementById('company-logo-upload').click()}
+                        disabled={uploading}
+                        variant="outline"
+                        className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Subir Logo' : 'Upload Logo')}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre de la Empresa' : 'Company Name'}</Label>
+                      <Input
+                        value={settings.company_name}
+                        onChange={(e) => setSettings({...settings, company_name: e.target.value})}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Dirección Línea 1' : 'Address Line 1'}</Label>
+                      <Input
+                        value={settings.address_line_1}
+                        onChange={(e) => setSettings({...settings, address_line_1: e.target.value})}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Ciudad' : 'City'}</Label>
+                      <Input
+                        value={settings.city}
+                        onChange={(e) => setSettings({...settings, city: e.target.value})}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Estado' : 'State'}</Label>
+                      <Input
+                        value={settings.state}
+                        onChange={(e) => setSettings({...settings, state: e.target.value})}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                      <Input
+                        value={settings.phone}
+                        onChange={(e) => setSettings({...settings, phone: e.target.value})}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
+                      <Input
+                        value={settings.email}
+                        onChange={(e) => setSettings({...settings, email: e.target.value})}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end mt-6">
+                    <Button
+                      onClick={handleSaveSettings}
+                      disabled={updateSettingsMutation.isPending}
+                      className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {updateSettingsMutation.isPending
+                        ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                        : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
+                      }
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="defaults">
+              <Card className="bg-white shadow-xl border-slate-200">
+                <CardHeader className="border-b border-slate-200">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                    <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+                    {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label className="text-slate-700 font-semibold">
+                          {language === 'es' ? 'Tarifa Por Hora Predeterminada' : 'Default Hourly Rate'}
+                        </Label>
+                        <div className="relative mt-2">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.50"
+                            value={settings.default_hourly_rate}
+                            onChange={(e) => setSettings({...settings, default_hourly_rate: parseFloat(e.target.value)})}
+                            className="pl-7 bg-slate-50 border-slate-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-slate-700 font-semibold">
+                          {language === 'es' ? 'Monto Per Diem Predeterminado' : 'Default Per Diem Amount'}
+                        </Label>
+                        <div className="relative mt-2">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="5"
+                            value={settings.default_per_diem_amount}
+                            onChange={(e) => setSettings({...settings, default_per_diem_amount: parseFloat(e.target.value)})}
+                            className="pl-7 bg-slate-50 border-slate-200"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold">
+                        {language === 'es' ? 'Tasa de Acumulación de Vacaciones' : 'Vacation Accrual Rate'}
+                      </Label>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={settings.default_vacation_accrual_rate}
+                          onChange={(e) => setSettings({...settings, default_vacation_accrual_rate: parseFloat(e.target.value)})}
+                          className="w-32 bg-slate-50 border-slate-200"
+                        />
+                        <span className="text-slate-700">
+                          {language === 'es' ? 'días por mes' : 'days per month'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                      <Button
+                        onClick={handleSaveSettings}
+                        disabled={updateSettingsMutation.isPending}
+                        className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {updateSettingsMutation.isPending
+                          ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                          : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
+                        }
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          {isAdmin && (
+            <TabsContent value="notifications">
+              <Card className="bg-white shadow-xl border-slate-200">
+                <CardHeader className="border-b border-slate-200">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                    <Bell className="w-5 h-5 text-[#3B9FF3]" />
+                    {language === 'es' ? 'Configuración de Notificaciones' : 'Notification Settings'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-6">
+                    <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <input
+                        type="checkbox"
+                        id="email_fallback"
+                        checked={settings.notifications_email_fallback_enabled}
+                        onChange={(e) => setSettings({...settings, notifications_email_fallback_enabled: e.target.checked})}
+                        className="w-5 h-5 mt-1 accent-[#3B9FF3]"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="email_fallback" className="text-slate-900 font-semibold cursor-pointer">
+                          {language === 'es' ? 'Habilitar Email Fallback' : 'Enable Email Fallback'}
+                        </Label>
+                        <p className="text-sm text-slate-600 mt-1">
+                          {language === 'es'
+                            ? 'Enviar alertas urgentes por email si las notificaciones push fallan'
+                            : 'Send urgent alerts via email if push notifications fail'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold">
+                        {language === 'es' ? 'Prefijo del Asunto de Email' : 'Email Subject Prefix'}
+                      </Label>
+                      <Input
+                        value={settings.notifications_email_subject_prefix}
+                        onChange={(e) => setSettings({...settings, notifications_email_subject_prefix: e.target.value})}
+                        className="mt-2 bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                      <Button
+                        onClick={handleSaveSettings}
+                        disabled={updateSettingsMutation.isPending}
+                        className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {updateSettingsMutation.isPending
+                          ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                          : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
+                        }
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          <TabsContent value="profile">
+            <Card className="bg-white shadow-xl border-slate-200">
+              <CardHeader className="border-b border-slate-200">
+                <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <User className="w-5 h-5 text-[#3B9FF3]" />
+                  {language === 'es' ? 'Mi Perfil' : 'My Profile'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-6 mb-6">
+                  {profileForm.profile_photo_url ? (
+                    <img
+                      src={profileForm.profile_photo_url}
+                      alt="Profile"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-slate-300"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold text-3xl">
+                      {user?.full_name?.[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePhotoUpload}
+                      disabled={uploading}
+                      className="hidden"
+                      id="profile-photo-upload"
+                    />
+                    <Button
+                      onClick={() => document.getElementById('profile-photo-upload').click()}
+                      disabled={uploading}
+                      variant="outline"
+                      className="bg-white border-slate-300 text-slate-700"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Cambiar Foto' : 'Change Photo')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre Completo' : 'Full Name'}</Label>
+                    <Input
+                      value={profileForm.full_name}
+                      onChange={(e) => setProfileForm({...profileForm, full_name: e.target.value})}
+                      className="bg-slate-50 border-slate-200"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
+                    <Input
+                      value={user?.email || ''}
+                      disabled
+                      className="bg-slate-100 border-slate-200 text-slate-500"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                    <Input
+                      value={profileForm.phone}
+                      onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
+                      className="bg-slate-50 border-slate-200"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={() => updateProfileMutation.mutate(profileForm)}
+                    disabled={updateProfileMutation.isPending}
+                    className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white w-full"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="system">
+              <SystemMaintenanceTools />
+            </TabsContent>
+          )}
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+function SystemMaintenanceTools() {
+  const { language } = useLanguage();
+  const { toast } = useToast();
+  const [fileAudit, setFileAudit] = useState(null);
+  const [scanning, setScanning] = useState(false);
+
+  const { data: loginAttempts = [] } = useQuery({
+    queryKey: ['loginAttempts'],
+    queryFn: () => base44.entities.LoginAttempt.filter({ success: false }, '-attempt_date', 50),
+    initialData: []
+  });
+
+  const scanFiles = async () => {
+    setScanning(true);
+    try {
+      const [expenses, jobFiles, employeeDocuments, aiDocuments] = await Promise.all([
+        base44.entities.Expense.list(),
+        base44.entities.JobFile.list(),
+        base44.entities.EmployeeDocument.list(),
+        base44.entities.AIDocument.list()
+      ]);
+
+      const totalFiles =
+        expenses.filter(e => e.receipt_url).length +
+        jobFiles.length +
+        employeeDocuments.length +
+        aiDocuments.filter(d => d.file_url).length;
+
+      setFileAudit({
+        totalFiles,
+        estimatedSizeMB: (totalFiles * 0.5).toFixed(2),
+        lastRun: new Date().toISOString(),
+        breakdown: {
+          receipts: expenses.filter(e => e.receipt_url).length,
+          jobFiles: jobFiles.length,
+          employeeDocuments: employeeDocuments.length,
+          aiDocuments: aiDocuments.filter(d => d.file_url).length
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: language === 'es' ? 'Error al escanear archivos' : 'Error scanning files',
+        variant: "destructive",
+      });
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card className="bg-white shadow-xl border-slate-200">
+        <CardHeader className="border-b border-slate-200">
+          <CardTitle className="flex items-center gap-2 text-slate-900">
+            <HardDrive className="w-5 h-5 text-[#3B9FF3]" />
+            {language === 'es' ? 'Auditoría de Archivos' : 'File Audit'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <Button
+            onClick={scanFiles}
+            disabled={scanning}
+            className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white mb-4"
+          >
+            {scanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <HardDrive className="w-4 h-4 mr-2" />}
+            {scanning ? (language === 'es' ? 'Escaneando...' : 'Scanning...') : (language === 'es' ? 'Escanear Archivos' : 'Scan Files')}
+          </Button>
+
+          {fileAudit && (
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-900 font-semibold">{language === 'es' ? 'Total de Archivos' : 'Total Files'}</p>
+                  <p className="text-3xl font-bold text-blue-900">{fileAudit.totalFiles}</p>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <p className="text-sm text-purple-900 font-semibold">{language === 'es' ? 'Espacio Estimado' : 'Estimated Space'}</p>
+                  <p className="text-3xl font-bold text-purple-900">{fileAudit.estimatedSizeMB} MB</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="bg-white shadow-xl border-slate-200">
+        <CardHeader className="border-b border-slate-200">
+          <CardTitle className="flex items-center gap-2 text-slate-900">
+            <Shield className="w-5 h-5 text-[#3B9FF3]" />
+            {language === 'es' ? 'Intentos de Login Fallidos' : 'Failed Login Attempts'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {loginAttempts.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              {language === 'es' ? 'No hay intentos fallidos' : 'No failed attempts'}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{language === 'es' ? 'Email' : 'Email'}</TableHead>
+                  <TableHead>{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loginAttempts.map((attempt, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{attempt.email_attempted}</TableCell>
+                    <TableCell>{format(new Date(attempt.attempt_date), 'MMM dd, yyyy HH:mm')}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

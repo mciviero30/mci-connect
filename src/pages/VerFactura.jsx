@@ -1,0 +1,434 @@
+
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Edit,
+  Mail,
+  Share2,
+  Printer,
+  DollarSign,
+  CheckCircle,
+  Copy,
+  Trash2,
+  MoreHorizontal,
+  XCircle,
+  Download,
+  ArrowLeft // Added ArrowLeft icon for back button
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
+import { useLanguage } from "@/components/i18n/LanguageContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import InvoiceDocument from "../components/documentos/InvoiceDocument";
+
+export default function VerFactura() {
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const urlParams = new URLSearchParams(window.location.search);
+  const invoiceId = urlParams.get('id');
+
+  const [paymentDialog, setPaymentDialog] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+
+  const { data: invoice, isLoading } = useQuery({
+    queryKey: ['invoice', invoiceId],
+    queryFn: () => base44.entities.Invoice.get(invoiceId),
+    enabled: !!invoiceId,
+  });
+
+  const recordPaymentMutation = useMutation({
+    mutationFn: async (amount) => {
+      const newAmountPaid = (invoice.amount_paid || 0) + amount;
+      const newBalance = invoice.total - newAmountPaid;
+      const newStatus = newBalance <= 0 ? 'paid' : 'partial';
+
+      await base44.entities.Invoice.update(invoiceId, {
+        amount_paid: newAmountPaid,
+        balance: newBalance,
+        status: newStatus,
+        payment_date: newStatus === 'paid' ? format(new Date(), 'yyyy-MM-dd') : invoice.payment_date
+      });
+
+      await base44.entities.Transaction.create({
+        type: 'income',
+        amount: amount,
+        category: 'sales',
+        description: `Payment for Invoice ${invoice.invoice_number} - ${invoice.customer_name}`,
+        date: format(new Date(), 'yyyy-MM-dd'),
+        payment_method: 'bank_transfer'
+      });
+
+      await base44.integrations.Core.SendEmail({
+        to: invoice.customer_email,
+        subject: `Payment Received - Invoice ${invoice.invoice_number}`,
+        body: `Dear ${invoice.customer_name},\n\nWe have received your payment of $${amount.toFixed(2)} for invoice ${invoice.invoice_number}.\n\nNew balance: $${newBalance.toFixed(2)}\n\nThank you for your payment.`
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      setPaymentDialog(false);
+      setPaymentAmount('');
+      toast.success('Payment recorded successfully');
+    }
+  });
+
+  const sendInvoiceMutation = useMutation({
+    mutationFn: async () => {
+      const itemsList = invoice.items.map(item =>
+        `${item.quantity}x ${item.description} - $${item.unit_price.toFixed(2)} = $${item.total.toFixed(2)}`
+      ).join('\n');
+
+      await base44.integrations.Core.SendEmail({
+        to: invoice.customer_email,
+        subject: `Invoice ${invoice.invoice_number} - ${invoice.job_name}`,
+        body: `Dear ${invoice.customer_name},\n\nPlease find your invoice for: ${invoice.job_name}\n\nInvoice #: ${invoice.invoice_number}\nDate: ${format(new Date(invoice.invoice_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\nDue Date: ${format(new Date(invoice.due_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${invoice.subtotal.toFixed(2)}\nTax (${invoice.tax_rate}%): $${invoice.tax_amount.toFixed(2)}\nTOTAL: $${invoice.total.toFixed(2)}\n\nAmount Paid: $${(invoice.amount_paid || 0).toFixed(2)}\nBalance Due: $${(invoice.balance || invoice.total).toFixed(2)}\n\nNotes:\n${invoice.notes}\n\nTerms:\n${invoice.terms}\n\nThank you for your business.`
+      });
+
+      await base44.entities.Invoice.update(invoiceId, { status: 'sent' });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast.success('Invoice sent successfully');
+    }
+  });
+
+  const cloneMutation = useMutation({
+    mutationFn: async () => {
+      const invoices = await base44.entities.Invoice.list();
+      const existingNumbers = invoices
+        .map(inv => inv.invoice_number)
+        .filter(n => n?.startsWith('INV-'))
+        .map(n => parseInt(n.replace('INV-', '')))
+        .filter(n => !isNaN(n));
+
+      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+      const new_invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
+
+      const clonedInvoice = {
+        ...invoice,
+        invoice_number: new_invoice_number,
+        invoice_date: format(new Date(), 'yyyy-MM-dd'),
+        due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+        status: 'draft',
+        amount_paid: 0,
+        balance: invoice.total
+      };
+
+      delete clonedInvoice.id;
+      delete clonedInvoice.created_date;
+      delete clonedInvoice.updated_date;
+      delete clonedInvoice.created_by;
+      delete clonedInvoice.quote_id;
+      delete clonedInvoice.payment_date;
+
+      return base44.entities.Invoice.create(clonedInvoice);
+    },
+    onSuccess: (newInvoice) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast.success('Invoice cloned successfully');
+      navigate(createPageUrl(`CrearFactura?id=${newInvoice.id}`));
+    }
+  });
+
+  const cancelInvoiceMutation = useMutation({
+    mutationFn: () => base44.entities.Invoice.update(invoiceId, { status: 'cancelled' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast.success('Invoice cancelled');
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => base44.entities.Invoice.delete(invoiceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast.success('Invoice deleted successfully');
+      navigate(createPageUrl('Facturas'));
+    }
+  });
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPDF = () => {
+    // Note: The `if (!invoice) return;` check is safe to remove here
+    // because the component's rendering logic ensures `invoice` exists before this handler is callable.
+    const originalTitle = document.title;
+    document.title = `${invoice.invoice_number} - ${invoice.customer_name}`;
+    window.print();
+    document.title = originalTitle;
+  };
+
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Invoice ${invoice.invoice_number}`,
+          text: `Invoice for ${invoice.customer_name}`,
+          url: shareUrl
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied to clipboard');
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this invoice?')) {
+      deleteMutation.mutate();
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">{t('loading')}...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-slate-500">Invoice not found</p>
+      </div>
+    );
+  }
+
+  const statusConfig = {
+    draft: { label: t('draft'), color: "bg-slate-100 text-slate-800" },
+    sent: { label: t('sent'), color: "bg-blue-100 text-blue-800" },
+    paid: { label: t('paid'), color: "bg-green-100 text-green-800" },
+    partial: { label: t('partialPayment'), color: "bg-yellow-100 text-yellow-800" },
+    overdue: { label: t('overdue'), color: "bg-red-100 text-red-800" },
+    cancelled: { label: t('cancelled'), color: "bg-slate-100 text-slate-800" }
+  };
+
+  const config = statusConfig[invoice.status];
+  const canEdit = invoice.status === 'draft';
+  const canDelete = invoice.status === 'draft';
+  const canRecordPayment = !['paid', 'cancelled'].includes(invoice.status);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Action Bar */}
+      <div className="no-print bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(createPageUrl('Facturas'))}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('back')}
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{invoice.invoice_number}</h1>
+              <Badge className={`${config.color} mt-1`}>{config.label}</Badge>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(createPageUrl(`CrearFactura?id=${invoice.id}`))}
+                className="border-gray-300 hover:bg-gray-50"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {t('edit')}
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => sendInvoiceMutation.mutate()}
+              disabled={sendInvoiceMutation.isPending}
+              className="border-gray-300 hover:bg-gray-50"
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              {sendInvoiceMutation.isPending ? t('sending') : t('sendToCustomer')}
+            </Button>
+
+            {canRecordPayment && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setPaymentDialog(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <DollarSign className="w-4 h-4 mr-2" />
+                {t('recordPayment')}
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="border-gray-300">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200">
+                <DropdownMenuItem onClick={handlePrint} className="cursor-pointer hover:bg-slate-100">
+                  <Printer className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Imprimir' : 'Print'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer hover:bg-slate-100">
+                  <Download className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleShare} className="cursor-pointer hover:bg-slate-100">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  {t('share')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => cloneMutation.mutate()} className="cursor-pointer hover:bg-slate-100">
+                  <Copy className="w-4 h-4 mr-2" />
+                  {t('clone')}
+                </DropdownMenuItem>
+                {invoice.status !== 'cancelled' && invoice.status !== 'paid' && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => cancelInvoiceMutation.mutate()} className="cursor-pointer hover:bg-slate-100">
+                      <XCircle className="w-4 h-4 mr-2 text-amber-600" />
+                      {t('cancelInvoice')}
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="text-red-600 focus:text-red-700 cursor-pointer hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {t('delete')}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+
+      {/* Invoice Document */}
+       <div className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
+          <InvoiceDocument invoice={invoice} />
+      </div>
+
+      {/* Payment Dialog */}
+      <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('recordPayment')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <p className="text-sm text-slate-600">{t('balanceDue')}</p>
+              <p className="text-2xl font-bold text-amber-700">
+                ${(invoice.balance || invoice.total).toFixed(2)}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('paymentAmount')}</Label>
+              <Input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                max={invoice.balance || invoice.total}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentDialog(false)}>
+              {t('cancel')}
+            </Button>
+            <Button
+              onClick={() => recordPaymentMutation.mutate(parseFloat(paymentAmount))}
+              disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || recordPaymentMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {recordPaymentMutation.isPending ? t('processing') : t('confirmPayment')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <style jsx>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          
+          #root, #root * {
+            visibility: hidden;
+          }
+          
+          .max-w-4xl, .max-w-4xl * {
+            visibility: visible;
+          }
+          
+          .max-w-4xl {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+          }
+          
+          .no-print, .no-print * {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          
+          @page {
+            size: auto;
+            margin: 0.5in;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
