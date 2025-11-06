@@ -15,7 +15,6 @@ export const translations = {
     invoices: "Invoices",
     accounting: "Accounting",
     payroll: "Payroll",
-    // expenses: "Expenses", // This key will be replaced by my_expenses in the specific section
     jobs: "Jobs",
     calendar: "Calendar",
     schedules: "Schedules",
@@ -45,7 +44,7 @@ export const translations = {
     upload: "Upload",
     create: "Create",
     update: "Update",
-    // view: "View", // This key will be replaced by the one in the Expense Actions section
+    view: "View",
     close: "Close",
     loading: "Loading",
     logout: "Logout",
@@ -53,14 +52,14 @@ export const translations = {
     next: "Next",
     previous: "Previous",
     confirm: "Confirm",
-    // actions: "Actions", // This key will be replaced by the one in Expense List Columns
+    actions: "Actions",
     
     // Status
     active: "Active",
     inactive: "Inactive",
     pending: "Pending",
-    // approved: "Approved", // This key will be replaced by the one in Expense Actions
-    // rejected: "Rejected", // This key will be replaced by the one in Expense Actions
+    approved: "Approved",
+    rejected: "Rejected",
     completed: "Completed",
     draft: "Draft",
     sent: "Sent",
@@ -141,7 +140,7 @@ export const translations = {
     clickInviteUser: "Click 'Invite User'",
     pasteEmail: "Paste the email",
     selectRoleUser: "Select role as 'User'",
-    // sendInvitation: "Send the invitation", // Replaced below
+    sendInvitation: "Send Invitation",
     onceAcceptedWillAppearDirectory: "Once accepted, employee will appear in directory",
     employeeMarkedAsInvited: "Employee marked as invited",
     dashboardOpenedNewTabCopyEmail: "Dashboard opened in new tab. Copy the email manually",
@@ -161,17 +160,13 @@ export const translations = {
     deletedAndBlocked: "Deleted & Blocked",
     allDataDeletedEmployeeBlocked: "All data deleted, employee blocked from accessing the app",
     noDeletedEmployees: "No deleted employees",
-    
-    // Add new translations for resend invitation
     resendInvitation: "Re-send Invitation",
     resendingInvitation: "Re-sending invitation",
-    resendInstructions: "Go to 'Pending Invitations' and click 'Resend' on the invitation for this email.",
     failedToResendInvitation: "Failed to resend invitation",
 
     // Departments
     administration: "Administration",
     sales: "Sales",
-    operations: "Operations",
     it: "IT",
     marketing: "Marketing",
     hr: "Human Resources",
@@ -181,9 +176,9 @@ export const translations = {
     uploadDocument: "Upload Document",
     fileName: "File Name",
     fileType: "FileType",
-    category: "Category", // Keep general category
+    category: "Category",
     folder: "Folder",
-    description: "Description", // Keep general description
+    description: "Description",
     uploadedBy: "Uploaded By",
     uploadDate: "Upload Date",
     tags: "Tags",
@@ -221,7 +216,7 @@ export const translations = {
     items: "Items",
     quantity: "Quantity",
     unitPrice: "Unit Price",
-    total: "Total", // Keep general total
+    total: "Total",
     subtotal: "Subtotal",
     tax: "Tax",
     notes: "Notes",
@@ -234,7 +229,7 @@ export const translations = {
     drafts: "Drafts",
     converted: "Converted",
     customer: "Customer",
-    // date: "Date", // This key will be replaced by the one in Expense List Columns
+    date: "Date",
     noQuotes: "No quotes found",
     noInvoices: "No invoices found",
     quoteDeleted: "Quote deleted successfully",
@@ -245,7 +240,6 @@ export const translations = {
     totalCollected: "Total Collected",
     toCollect: "To Collect",
     invoiceList: "Invoice List",
-    // balance: "Balance", // Keep general balance
     partialPayment: "Partial Payment",
     customerInformation: "Customer Information",
     jobDetails: "Job Details",
@@ -262,14 +256,10 @@ export const translations = {
     selectExistingJob: "Select existing job",
     projectNotes: "Project notes or special instructions",
     invoice: "Invoice",
-    
-    // Additional Quote/Invoice translations
     quote: "Quote",
     dear: "Dear",
     quoteEmailBody: "Please find your quote for",
     sendToCustomer: "Send to Customer",
-    approve: "Approve", // Keep general approve
-    reject: "Reject", // Keep general reject
     convertToInvoice: "Convert to Invoice",
     converting: "Converting...",
     quoteUpdated: "Quote updated successfully",
@@ -277,14 +267,14 @@ export const translations = {
     quoteNotFound: "Quote not found",
     thankYou: "Thank you for your business",
     terms: "Terms",
-    job: "Job", // Keep general job
+    job: "Job",
     
     // Accounting
     accountingManagement: "Accounting Management",
     newTransaction: "New Transaction",
     transactionType: "Transaction Type",
-    amount: "Amount", // Keep general amount
-    // paymentMethod: "Payment Method", // This key will be replaced by payment_method in Payment Methods
+    amount: "Amount",
+    payment_method: "Payment Method",
     cash: "Cash",
     bankTransfer: "Bank Transfer",
     card: "Card",
@@ -315,32 +305,16 @@ export const translations = {
     myPayroll: "My Payroll",
     
     // Expenses
-    // myExpenses: "My Expenses", // replaced below
-    // newExpense: "New Expense", // replaced below
-    // requestPerDiem: "Request Per Diem", // replaced below
-    // expenseCategory: "Expense Category", // replaced below
-    // receipt: "Receipt", // replaced below
-    uploadReceipt: "Upload Receipt", // keep this as it is specific
-    // travel: "Travel", // replaced below
-    // meals: "Meals", // replaced below
-    // transport: "Transport", // replaced below
-    // supplies: "Supplies", // replaced below
-    // perDiem: "Per Diem", // replaced below
-    // other: "Other", // replaced below
-    // trackExpensesAndReceipts: "Track your expenses and receipts", // replaced below
+    uploadReceipt: "Upload Receipt",
     reviewAndApproveExpenses: "Review and approve expenses",
     myRecords: "My Records",
     totalPending: "Total Pending",
     totalApproved: "Total Approved",
     expenseUpdated: "Expense updated successfully",
-
-    // Expenses specific
     my_expenses: "My Expenses",
     track_your_expenses_and_receipts: "Track your expenses and receipts",
     new_expense: "New Expense",
     expense_created_pending_approval: "Expense created! Pending approval.",
-    
-    // Per Diem specific
     per_diem: "Per Diem",
     request_per_diem_for_work_days: "Request per diem for your work days",
     request_per_diem: "Request Per Diem",
@@ -354,20 +328,9 @@ export const translations = {
     per_diem_request_submitted: "Per Diem request submitted! Pending approval.",
     my_per_diem_requests: "My Per Diem Requests",
     no_per_diem_requests: "No per diem requests",
-    
-    // Expense List columns
     employee: "Employee",
-    date: "Date",
-    description: "Description",
-    category: "Category",
-    job: "Job",
-    payment_method: "Payment Method",
-    amount: "Amount",
     status: "Status",
     receipt: "Receipt",
-    actions: "Actions",
-    
-    // Categories
     travel: "Travel",
     meals: "Meals",
     transport: "Transport",
@@ -375,19 +338,12 @@ export const translations = {
     client_entertainment: "Client Entertainment",
     equipment: "Equipment",
     other: "Other",
-    
-    // Payment Methods
     personal: "Personal",
     company_card: "Company Card",
-    
-    // Actions
     approve: "Approve",
     reject: "Reject",
-    view: "View",
     no_receipt: "No receipt",
     no_expenses_found: "No expenses found",
-    
-    // Reject Dialog
     reject_expense: "Reject Expense",
     reason_for_rejection: "Reason for Rejection",
     explain_rejection_reason: "Explain why this expense is being rejected...",
@@ -541,13 +497,10 @@ export const translations = {
     thisYear: "This Year",
     details: "Details",
     information: "Information",
-    // employee: "Employee", // Replaced in Expense List Columns
-    // job: "Job", // Replaced in Expense List Columns
     project: "Project",
     client: "Client",
     optional: "Optional",
     requiredField: "Required",
-    // status: "Status", // Replaced in Expense List Columns
     location: "Location",
 
     // New translations for employee features
@@ -569,7 +522,6 @@ export const translations = {
     expirationDate: "Expiration Date",
     certificateNumber: "Certificate Number",
     uploadCertificate: "Upload Certificate",
-    // viewCertificate: "View Certificate", // Duplicated key, keep one from Training section
     certificationsExpiringSoon: "Certifications Expiring Soon",
     expiredCertifications: "Expired Certifications",
     noCertifications: "No certifications added yet",
@@ -619,9 +571,6 @@ export const translations = {
     reminderEmailSent: "Reminder email sent",
     nowResendSystemInvitation: "Now resend the system invitation through the Dashboard",
     employeesActivated: "employees automatically activated after registration",
-    
-    // Invitation translations
-    sendInvitation: "Send Invitation",
     invitationSentSuccessfully: "Invitation sent successfully",
     invitationResent: "Invitation resent",
     checkSpamFolder: "Check SPAM folder",
@@ -636,7 +585,7 @@ export const translations = {
     saveChanges: "Save changes",
     employeeCanAccessAppAgain: "The employee will be able to access the app again",
 
-    // Add new translations for invitation flow
+    // Invitation flow
     invitationInstructions: "Dashboard opened. Follow these quick steps",
     step1InviteUser: "1. Click 'Invite User' button",
     step2PasteEmail: "2. Paste email (already copied!)",
