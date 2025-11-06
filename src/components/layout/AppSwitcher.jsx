@@ -25,7 +25,6 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
       icon: Briefcase,
       color: 'from-[#3B9FF3] to-blue-500',
       action: () => {
-        // Just reload if already on MCI Connect
         if (currentApp === 'mci-connect') {
           window.location.href = '/';
         }
@@ -41,13 +40,14 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
       color: 'from-purple-500 to-indigo-500',
       external: true,
       action: () => {
-        // FIXED: Direct redirect to Base44 dashboard with SSO
-        // The Base44 platform will automatically handle SSO and show available apps
+        console.log('🔄 REDIRECT: Starting redirect to Modern Components Web...');
         setSwitching(true);
-        console.log('🔄 Redirecting to Modern Components Web via Base44 Dashboard...');
         
-        // Direct redirect - SSO is handled automatically by Base44
-        window.location.href = 'https://dashboard.base44.com';
+        // CRITICAL FIX: Use setTimeout to ensure state updates, then redirect
+        setTimeout(() => {
+          console.log('🔄 REDIRECT: Executing window.location.href...');
+          window.location.href = 'https://dashboard.base44.com';
+        }, 100);
       }
     }
   ];
@@ -59,26 +59,26 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="ghost" 
-          className="flex items-center gap-2 px-3 h-12 hover:bg-slate-100 transition-colors"
+          className="flex items-center gap-2 px-2 lg:px-3 h-10 hover:bg-slate-100 transition-colors rounded-lg"
           disabled={switching}
         >
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentAppData.color} flex items-center justify-center shadow-md`}>
-              <currentAppData.icon className="w-6 h-6 text-white" />
+          <div className="flex items-center gap-2 lg:gap-3">
+            <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${currentAppData.color} flex items-center justify-center shadow-md flex-shrink-0`}>
+              <currentAppData.icon className="w-5 h-5 text-white" />
             </div>
-            <div className="text-left hidden md:block">
+            <div className="text-left hidden lg:block min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-slate-900 text-base">
+                <span className="font-bold text-slate-900 text-sm truncate max-w-[150px]">
                   {currentAppData.name}
                 </span>
-                <ChevronDown className="w-4 h-4 text-slate-500" />
+                {!switching && <ChevronDown className="w-4 h-4 text-slate-500 flex-shrink-0" />}
               </div>
-              <p className="text-xs text-slate-600 leading-none mt-0.5">
+              <p className="text-xs text-slate-600 leading-none mt-0.5 truncate max-w-[180px]">
                 {currentAppData.subtitle}
               </p>
             </div>
-            <div className="md:hidden">
-              <ChevronDown className="w-4 h-4 text-slate-500" />
+            <div className="lg:hidden">
+              {!switching && <ChevronDown className="w-4 h-4 text-slate-500" />}
             </div>
           </div>
         </Button>
@@ -99,7 +99,8 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
               key={app.id}
               onClick={(e) => {
                 e.preventDefault();
-                console.log(`Switching to app: ${app.id}`);
+                e.stopPropagation();
+                console.log(`📱 APP SWITCH: User clicked on ${app.id}`);
                 app.action();
               }}
               disabled={switching}
@@ -114,7 +115,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
                   <Icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <p className={`font-semibold text-sm ${
                       isActive ? 'text-[#3B9FF3]' : 'text-slate-900'
                     }`}>
@@ -124,7 +125,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
                       <ExternalLink className="w-3 h-3 text-slate-400 flex-shrink-0" />
                     )}
                     {isActive && (
-                      <span className="ml-auto px-2 py-0.5 bg-[#3B9FF3] text-white text-xs rounded-full font-medium">
+                      <span className="px-2 py-0.5 bg-[#3B9FF3] text-white text-xs rounded-full font-medium">
                         {language === 'es' ? 'Actual' : 'Current'}
                       </span>
                     )}
@@ -139,10 +140,12 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
         })}
 
         {switching && (
-          <div className="px-3 py-4 text-center border-t border-slate-200 mt-2">
-            <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
+          <div className="px-3 py-4 text-center border-t border-slate-200 mt-2 bg-blue-50">
+            <div className="flex items-center justify-center gap-2 text-sm text-slate-700">
               <div className="w-4 h-4 border-2 border-[#3B9FF3] border-t-transparent rounded-full animate-spin"></div>
-              {language === 'es' ? 'Redirigiendo a Modern Components Web...' : 'Redirecting to Modern Components Web...'}
+              <span className="font-medium">
+                {language === 'es' ? 'Redirigiendo...' : 'Redirecting...'}
+              </span>
             </div>
           </div>
         )}

@@ -16,7 +16,6 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useLanguage } from '../i18n/LanguageContext';
 import AppSwitcher from './AppSwitcher';
-import { useQuery } from '@tanstack/react-query';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export default function GlobalHeader({ user, onNotificationsClick, unreadNotifications = 0 }) {
@@ -36,12 +35,12 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
   const profileImage = getProfileImage();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        {/* Left: App Switcher + Mobile Menu */}
-        <div className="flex items-center gap-4">
-          {/* Mobile sidebar trigger */}
-          <div className="md:hidden">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm">
+      <div className="flex h-16 items-center justify-between gap-4 px-4 lg:px-6">
+        {/* LEFT SECTION: Mobile Menu + App Switcher */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 lg:flex-initial">
+          {/* Mobile Sidebar Trigger */}
+          <div className="lg:hidden flex-shrink-0">
             <SidebarTrigger>
               <Button variant="ghost" size="icon" className="hover:bg-slate-100">
                 <Menu className="w-5 h-5 text-slate-700" />
@@ -50,58 +49,66 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
           </div>
 
           {/* App Switcher */}
-          <AppSwitcher currentApp="mci-connect" />
+          <div className="min-w-0">
+            <AppSwitcher currentApp="mci-connect" />
+          </div>
         </div>
 
-        {/* Right: Global Functions */}
-        <div className="flex items-center gap-2 md:gap-3">
-          {/* Language Selector */}
+        {/* RIGHT SECTION: Language + Notifications + User Menu */}
+        <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
+          {/* Language Selector - Desktop */}
           <div className="hidden sm:block">
             <Select value={language} onValueChange={changeLanguage}>
-              <SelectTrigger className="h-10 w-32 bg-white border-slate-300 text-slate-900 hover:bg-slate-50 transition-colors">
-                <Languages className="w-4 h-4 mr-2 text-slate-600" />
+              <SelectTrigger className="h-9 w-[110px] bg-white border-slate-300 text-slate-900 hover:bg-slate-50 transition-colors focus:ring-1 focus:ring-[#3B9FF3]">
+                <Languages className="w-4 h-4 mr-1.5 text-slate-600" />
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border-slate-200">
-                <SelectItem value="en" className="text-slate-900 hover:bg-slate-100">
-                  🇺🇸 English
+              <SelectContent className="bg-white border-slate-200 shadow-lg">
+                <SelectItem value="en" className="text-slate-900 hover:bg-slate-100 cursor-pointer">
+                  🇺🇸 EN
                 </SelectItem>
-                <SelectItem value="es" className="text-slate-900 hover:bg-slate-100">
-                  🇪🇸 Español
+                <SelectItem value="es" className="text-slate-900 hover:bg-slate-100 cursor-pointer">
+                  🇪🇸 ES
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Language Selector (Mobile - Icon Only) */}
+          {/* Language Selector - Mobile (Icon Only) */}
           <div className="sm:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-slate-100">
+                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-100">
                   <Languages className="w-5 h-5 text-slate-600" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white">
-                <DropdownMenuItem onClick={() => changeLanguage('en')} className="hover:bg-slate-100">
+              <DropdownMenuContent align="end" className="bg-white border-slate-200 shadow-lg">
+                <DropdownMenuItem 
+                  onClick={() => changeLanguage('en')} 
+                  className="hover:bg-slate-100 cursor-pointer"
+                >
                   🇺🇸 English
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => changeLanguage('es')} className="hover:bg-slate-100">
+                <DropdownMenuItem 
+                  onClick={() => changeLanguage('es')} 
+                  className="hover:bg-slate-100 cursor-pointer"
+                >
                   🇪🇸 Español
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
-          {/* Notifications */}
+          {/* Notifications Bell */}
           <Button
             variant="ghost"
             size="icon"
             onClick={onNotificationsClick}
-            className="relative hover:bg-slate-100 transition-colors"
+            className="relative h-9 w-9 hover:bg-slate-100 transition-colors"
           >
             <Bell className="w-5 h-5 text-slate-600" />
             {unreadNotifications > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 text-white text-xs">
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 text-white text-[10px] font-bold border-2 border-white">
                 {unreadNotifications > 9 ? '9+' : unreadNotifications}
               </Badge>
             )}
@@ -110,7 +117,10 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 h-10 px-2 hover:bg-slate-100 transition-colors">
+              <Button 
+                variant="ghost" 
+                className="flex items-center gap-2 h-9 px-2 hover:bg-slate-100 transition-colors rounded-lg"
+              >
                 {profileImage ? (
                   <img
                     src={profileImage}
@@ -124,8 +134,8 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
                     </span>
                   </div>
                 )}
-                <div className="text-left hidden lg:block">
-                  <p className="text-sm font-medium text-slate-900 leading-none">
+                <div className="text-left hidden xl:block max-w-[120px]">
+                  <p className="text-sm font-medium text-slate-900 leading-none truncate">
                     {user?.full_name || 'User'}
                   </p>
                   <p className="text-xs text-slate-500 leading-none mt-0.5">
@@ -142,14 +152,14 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
               <DropdownMenuSeparator />
               
               <Link to={createPageUrl('MyProfile')}>
-                <DropdownMenuItem className="cursor-pointer hover:bg-slate-50">
+                <DropdownMenuItem className="cursor-pointer hover:bg-slate-50 focus:bg-slate-50">
                   <User className="w-4 h-4 mr-2 text-slate-600" />
                   {t('myProfile')}
                 </DropdownMenuItem>
               </Link>
 
               <Link to={createPageUrl('Configuracion')}>
-                <DropdownMenuItem className="cursor-pointer hover:bg-slate-50">
+                <DropdownMenuItem className="cursor-pointer hover:bg-slate-50 focus:bg-slate-50">
                   <Settings className="w-4 h-4 mr-2 text-slate-600" />
                   {t('settings')}
                 </DropdownMenuItem>
