@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Settings,
   User,
@@ -17,7 +19,13 @@ import {
   Users,
   DollarSign,
   HardDrive,
-  Loader2
+  Loader2,
+  AlertTriangle, // New import
+  Receipt,       // New import
+  Clock,         // New import
+  Briefcase,     // New import
+  Calendar as CalendarIcon, // Alias to avoid conflict with Calendar from date-fns
+  CalendarClock  // New import
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +34,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // New imports
 
 export default function Configuracion() {
   const { language } = useLanguage();
@@ -72,6 +81,24 @@ export default function Configuracion() {
     notifications_email_subject_prefix: 'MCI Connect Alert'
   });
 
+  // NEW: Notification preferences state
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    enabled: true,
+    expense_approved: true,
+    expense_rejected: true,
+    timesheet_approved: true,
+    timesheet_rejected: true,
+    job_assigned: true,
+    job_deadline: true,
+    company_announcements: true,
+    sync_complete: true,
+    sync_failed: true,
+    schedule_changes: true,
+    time_off_approved: true,
+    time_off_rejected: true,
+    urgent_only: false
+  });
+
   useEffect(() => {
     if (user) {
       setProfileForm({
@@ -80,6 +107,11 @@ export default function Configuracion() {
         address: user.address || '',
         profile_photo_url: user.profile_photo_url || ''
       });
+
+      // Load notification preferences
+      if (user.notification_preferences) {
+        setNotificationPrefs(prev => ({ ...prev, ...user.notification_preferences }));
+      }
     }
   }, [user]);
 
@@ -147,6 +179,48 @@ export default function Configuracion() {
     }
   });
 
+  // NEW: Notification preferences mutation
+  const updateNotificationPrefsMutation = useMutation({
+    mutationFn: async (prefs) => {
+      return await base44.auth.updateMe({ notification_preferences: prefs });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Preferencias de notificaciones guardadas.' : 'Notification preferences saved!',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al guardar preferencias: ${error.message}` : `Error saving preferences: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // NEW: Request notification permission
+  const requestNotificationPermission = async () => {
+    if ('Notification' in window) {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        toast({
+          title: "✅ Success!",
+          description: language === 'es' ? 'Notificaciones habilitadas exitosamente.' : 'Notifications enabled successfully!',
+        });
+        setNotificationPrefs(prev => ({ ...prev, enabled: true }));
+      } else {
+        toast({
+          title: "⚠️ Warning",
+          description: language === 'es' ? 'Permisos de notificación denegados.' : 'Notification permission denied.',
+          variant: "destructive",
+        });
+        setNotificationPrefs(prev => ({ ...prev, enabled: false }));
+      }
+    }
+  };
+
   const handleProfilePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -193,7 +267,13 @@ export default function Configuracion() {
     updateSettingsMutation.mutate(settings);
   };
 
+  const handleSaveNotificationPrefs = () => {
+    updateNotificationPrefsMutation.mutate(notificationPrefs);
+  };
+
   const isAdmin = user?.role === 'admin';
+  const browserSupportsNotifications = 'Notification' in window;
+  const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -218,13 +298,18 @@ export default function Configuracion() {
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
                   <Bell className="w-4 h-4" />
-                  {language === 'es' ? 'Notificaciones' : 'Notifications'}
+                  {language === 'es' ? 'Notificaciones (Admin)' : 'Notifications (Admin)'}
                 </TabsTrigger>
               </>
             )}
             <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Users className="w-4 h-4" />
               {language === 'es' ? 'Mi Perfil' : 'My Profile'}
+            </TabsTrigger>
+            {/* NEW: My Notifications Tab Trigger */}
+            <TabsTrigger value="my-notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <Bell className="w-4 h-4" />
+              {language === 'es' ? 'Mis Notificaciones' : 'My Notifications'}
             </TabsTrigger>
             {isAdmin && (
               <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
@@ -442,7 +527,7 @@ export default function Configuracion() {
                 <CardHeader className="border-b border-slate-200">
                   <CardTitle className="flex items-center gap-2 text-slate-900">
                     <Bell className="w-5 h-5 text-[#3B9FF3]" />
-                    {language === 'es' ? 'Configuración de Notificaciones' : 'Notification Settings'}
+                    {language === 'es' ? 'Configuración de Notificaciones (Admin)' : 'Admin Notification Settings'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -580,6 +665,266 @@ export default function Configuracion() {
             </Card>
           </TabsContent>
 
+          {/* NEW: My Notifications Tab */}
+          <TabsContent value="my-notifications">
+            <Card className="bg-white shadow-xl border-slate-200">
+              <CardHeader className="border-b border-slate-200">
+                <CardTitle className="flex items-center gap-2 text-slate-900">
+                  <Bell className="w-5 h-5 text-[#3B9FF3]" />
+                  {language === 'es' ? 'Mis Preferencias de Notificaciones' : 'My Notification Preferences'}
+                </CardTitle>
+                <CardDescription>
+                  {language === 'es'
+                    ? 'Personaliza qué notificaciones deseas recibir'
+                    : 'Customize which notifications you want to receive'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  {/* Permission Alert */}
+                  {!browserSupportsNotifications && (
+                    <Alert className="bg-amber-50 border-amber-300">
+                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      <AlertTitle className="text-amber-900 font-semibold">
+                        {language === 'es' ? 'Navegador no compatible' : 'Browser Not Supported'}
+                      </AlertTitle>
+                      <AlertDescription className="text-amber-700">
+                        {language === 'es'
+                          ? 'Tu navegador no soporta notificaciones push. Considera usar Chrome, Firefox o Safari.'
+                          : 'Your browser does not support push notifications. Consider using Chrome, Firefox, or Safari.'}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {browserSupportsNotifications && notificationPermission === 'default' && (
+                    <Alert className="bg-blue-50 border-blue-300">
+                      <Bell className="h-4 w-4 text-blue-600" />
+                      <AlertTitle className="text-blue-900 font-semibold">
+                        {language === 'es' ? 'Habilita las Notificaciones' : 'Enable Notifications'}
+                      </AlertTitle>
+                      <AlertDescription className="text-blue-700 flex items-center justify-between">
+                        <span>
+                          {language === 'es'
+                            ? 'Necesitas dar permisos para recibir notificaciones push.'
+                            : 'You need to grant permission to receive push notifications.'}
+                        </span>
+                        <Button
+                          onClick={requestNotificationPermission}
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 text-white ml-4"
+                        >
+                          {language === 'es' ? 'Habilitar' : 'Enable'}
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {browserSupportsNotifications && notificationPermission === 'denied' && (
+                    <Alert className="bg-red-50 border-red-300">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <AlertTitle className="text-red-900 font-semibold">
+                        {language === 'es' ? 'Notificaciones Bloqueadas' : 'Notifications Blocked'}
+                      </AlertTitle>
+                      <AlertDescription className="text-red-700">
+                        {language === 'es'
+                          ? 'Has bloqueado las notificaciones. Ve a la configuración de tu navegador para habilitarlas.'
+                          : 'You have blocked notifications. Go to your browser settings to enable them.'}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Master Toggle */}
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <div>
+                      <Label className="text-lg font-semibold text-slate-900">
+                        {language === 'es' ? 'Habilitar Notificaciones Push' : 'Enable Push Notifications'}
+                      </Label>
+                      <p className="text-sm text-slate-600 mt-1">
+                        {language === 'es'
+                          ? 'Recibir alertas en tiempo real sobre eventos importantes'
+                          : 'Receive real-time alerts about important events'}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={notificationPrefs.enabled && notificationPermission === 'granted'}
+                      onCheckedChange={(checked) => {
+                        if (checked && notificationPermission !== 'granted') {
+                          requestNotificationPermission();
+                        } else {
+                          setNotificationPrefs({ ...notificationPrefs, enabled: checked });
+                        }
+                      }}
+                      disabled={!browserSupportsNotifications || notificationPermission === 'denied'}
+                      className="data-[state=checked]:bg-[#3B9FF3]"
+                    />
+                  </div>
+
+                  {/* Notification Categories */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                      {language === 'es' ? 'Tipos de Notificaciones' : 'Notification Types'}
+                    </h3>
+
+                    {/* Expenses */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Receipt className="w-4 h-4 text-purple-600" />
+                        {language === 'es' ? 'Gastos' : 'Expenses'}
+                      </h4>
+                      <NotificationToggle
+                        label={language === 'es' ? 'Gasto Aprobado' : 'Expense Approved'}
+                        checked={notificationPrefs.expense_approved}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, expense_approved: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                      <NotificationToggle
+                        label={language === 'es' ? 'Gasto Rechazado' : 'Expense Rejected'}
+                        checked={notificationPrefs.expense_rejected}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, expense_rejected: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                    </div>
+
+                    {/* Timesheets */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                        {language === 'es' ? 'Horas de Trabajo' : 'Timesheets'}
+                      </h4>
+                      <NotificationToggle
+                        label={language === 'es' ? 'Horas Aprobadas' : 'Timesheet Approved'}
+                        checked={notificationPrefs.timesheet_approved}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, timesheet_approved: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                      <NotificationToggle
+                        label={language === 'es' ? 'Horas Rechazadas' : 'Timesheet Rejected'}
+                        checked={notificationPrefs.timesheet_rejected}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, timesheet_rejected: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                    </div>
+
+                    {/* Jobs */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-green-600" />
+                        {language === 'es' ? 'Trabajos' : 'Jobs'}
+                      </h4>
+                      <NotificationToggle
+                        label={language === 'es' ? 'Nuevo Trabajo Asignado' : 'New Job Assigned'}
+                        checked={notificationPrefs.job_assigned}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, job_assigned: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                      <NotificationToggle
+                        label={language === 'es' ? 'Plazo de Trabajo Próximo' : 'Job Deadline Approaching'}
+                        checked={notificationPrefs.job_deadline}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, job_deadline: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                    </div>
+
+                    {/* Schedule */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4 text-amber-600" />
+                        {language === 'es' ? 'Horario' : 'Schedule'}
+                      </h4>
+                      <NotificationToggle
+                        label={language === 'es' ? 'Cambios en el Horario' : 'Schedule Changes'}
+                        checked={notificationPrefs.schedule_changes}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, schedule_changes: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                    </div>
+
+                    {/* Time Off */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <CalendarClock className="w-4 h-4 text-indigo-600" />
+                        {language === 'es' ? 'Tiempo Libre' : 'Time Off'}
+                      </h4>
+                      <NotificationToggle
+                        label={language === 'es' ? 'Solicitud Aprobada' : 'Request Approved'}
+                        checked={notificationPrefs.time_off_approved}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, time_off_approved: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                      <NotificationToggle
+                        label={language === 'es' ? 'Solicitud Rechazada' : 'Request Rejected'}
+                        checked={notificationPrefs.time_off_rejected}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, time_off_rejected: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                    </div>
+
+                    {/* System */}
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-slate-600" />
+                        {language === 'es' ? 'Sistema' : 'System'}
+                      </h4>
+                      <NotificationToggle
+                        label={language === 'es' ? 'Anuncios de la Empresa' : 'Company Announcements'}
+                        checked={notificationPrefs.company_announcements}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, company_announcements: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                      <NotificationToggle
+                        label={language === 'es' ? 'Sincronización Completada' : 'Sync Completed'}
+                        checked={notificationPrefs.sync_complete}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, sync_complete: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                      <NotificationToggle
+                        label={language === 'es' ? 'Error de Sincronización' : 'Sync Failed'}
+                        checked={notificationPrefs.sync_failed}
+                        onChange={(checked) => setNotificationPrefs({ ...notificationPrefs, sync_failed: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                      />
+                    </div>
+
+                    {/* Urgent Only Mode */}
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+                      <div>
+                        <Label className="font-semibold text-red-900">
+                          {language === 'es' ? 'Solo Notificaciones Urgentes' : 'Urgent Notifications Only'}
+                        </Label>
+                        <p className="text-sm text-red-700 mt-1">
+                          {language === 'es'
+                            ? 'Recibir solo alertas críticas (anula las opciones anteriores)'
+                            : 'Only receive critical alerts (overrides options above)'}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notificationPrefs.urgent_only}
+                        onCheckedChange={(checked) => setNotificationPrefs({ ...notificationPrefs, urgent_only: checked })}
+                        disabled={!notificationPrefs.enabled || notificationPermission !== 'granted'}
+                        className="data-[state=checked]:bg-red-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={handleSaveNotificationPrefs}
+                      disabled={updateNotificationPrefsMutation.isPending || !browserSupportsNotifications || notificationPermission !== 'granted'}
+                      className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {updateNotificationPrefsMutation.isPending
+                        ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                        : (language === 'es' ? 'Guardar Preferencias' : 'Save Preferences')
+                      }
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {isAdmin && (
             <TabsContent value="system">
               <SystemMaintenanceTools />
@@ -587,6 +932,24 @@ export default function Configuracion() {
           )}
         </Tabs>
       </div>
+    </div>
+  );
+}
+
+// Helper component for notification toggles
+function NotificationToggle({ label, checked, onChange, disabled }) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <Label className="text-slate-700 cursor-pointer" htmlFor={label}>
+        {label}
+      </Label>
+      <Switch
+        id={label}
+        checked={checked}
+        onCheckedChange={onChange}
+        disabled={disabled}
+        className="data-[state=checked]:bg-[#3B9FF3]"
+      />
     </div>
   );
 }
