@@ -17,7 +17,6 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
   const handleAppSwitch = (app) => {
     console.log('🔄 APP SWITCH: Switching to', app.id);
     console.log('🔄 APP SWITCH: URL:', app.url);
-    console.log('🔄 APP SWITCH: Internal navigation');
     
     // Internal navigation - reload to ensure fresh state
     window.location.href = app.url;
@@ -44,7 +43,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
       icon: Building2,
       color: 'from-purple-500 to-indigo-500',
       url: '/Dashboard',
-      external: false // FIXED: Internal navigation - all in one app
+      external: false // Internal navigation - unified portal
     }
   ];
 
