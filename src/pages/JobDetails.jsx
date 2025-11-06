@@ -23,7 +23,8 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Image
+  Image,
+  ExternalLink
 } from "lucide-react";
 import { createPageUrl } from '@/utils';
 import PageHeader from "../components/shared/PageHeader";
@@ -31,12 +32,16 @@ import StatsCard from "../components/shared/StatsCard";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import BlueprintViewer from "../components/trabajos/BlueprintViewer";
+import ClientAccessManager from "../components/trabajos/ClientAccessManager";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get('id');
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
+
+  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const isAdmin = user?.role === 'admin';
 
   const { data: job, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
@@ -173,6 +178,13 @@ export default function JobDetails() {
               <Image className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Planos y Tareas' : 'Blueprints & Tasks'}
             </TabsTrigger>
+            {/* NEW TAB: Client Portal */}
+            {isAdmin && (
+              <TabsTrigger value="client-portal" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Portal Cliente' : 'Client Portal'}
+              </TabsTrigger>
+            )}
             <TabsTrigger value="hours" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Clock className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Horas' : 'Hours'}
@@ -267,10 +279,17 @@ export default function JobDetails() {
             </div>
           </TabsContent>
 
-          {/* NEW: Blueprints Tab */}
+          {/* Blueprints Tab */}
           <TabsContent value="blueprints">
             <BlueprintViewer jobId={jobId} jobName={job.name} isClientView={false} />
           </TabsContent>
+
+          {/* NEW: Client Portal Tab */}
+          {isAdmin && (
+            <TabsContent value="client-portal">
+              <ClientAccessManager job={job} />
+            </TabsContent>
+          )}
 
           {/* Hours Tab */}
           <TabsContent value="hours">
