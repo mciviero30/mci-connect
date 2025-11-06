@@ -9,7 +9,6 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown, Briefcase, Building2, ExternalLink } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export default function AppSwitcher({ currentApp = 'mci-connect' }) {
@@ -41,24 +40,14 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
       icon: Building2,
       color: 'from-purple-500 to-indigo-500',
       external: true,
-      action: async () => {
+      action: () => {
+        // FIXED: Direct redirect to Base44 dashboard with SSO
+        // The Base44 platform will automatically handle SSO and show available apps
         setSwitching(true);
-        try {
-          // Get current user's authentication
-          const user = await base44.auth.me();
-          
-          // Construct SSO URL to dashboard
-          const dashboardUrl = 'https://dashboard.base44.com';
-          
-          // Redirect with SSO
-          window.location.href = dashboardUrl;
-        } catch (error) {
-          console.error('Failed to switch apps:', error);
-          alert(language === 'es' 
-            ? 'Error al cambiar de aplicación. Por favor intenta de nuevo.' 
-            : 'Failed to switch applications. Please try again.');
-          setSwitching(false);
-        }
+        console.log('🔄 Redirecting to Modern Components Web via Base44 Dashboard...');
+        
+        // Direct redirect - SSO is handled automatically by Base44
+        window.location.href = 'https://dashboard.base44.com';
       }
     }
   ];
@@ -108,7 +97,11 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
           return (
             <DropdownMenuItem
               key={app.id}
-              onClick={app.action}
+              onClick={(e) => {
+                e.preventDefault();
+                console.log(`Switching to app: ${app.id}`);
+                app.action();
+              }}
               disabled={switching}
               className={`px-3 py-3 cursor-pointer transition-all ${
                 isActive 
@@ -149,7 +142,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
           <div className="px-3 py-4 text-center border-t border-slate-200 mt-2">
             <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
               <div className="w-4 h-4 border-2 border-[#3B9FF3] border-t-transparent rounded-full animate-spin"></div>
-              {language === 'es' ? 'Cambiando...' : 'Switching...'}
+              {language === 'es' ? 'Redirigiendo a Modern Components Web...' : 'Redirecting to Modern Components Web...'}
             </div>
           </div>
         )}
