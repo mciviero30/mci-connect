@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -6,54 +5,47 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Users, Search, Phone, Mail, AlertCircle } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
-import { Button } from "@/components/ui/button"; // Button is still used for refresh, but refresh is removed from page header actions. Will remove if not used.
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
-import { Link } from 'react-router-dom'; // Assuming react-router-dom for Link
-import { useTranslation } from 'react-i18next';
-
+import { Link } from 'react-router-dom';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function Directory() {
   const [searchTerm, setSearchTerm] = useState('');
-  const { t } = useTranslation();
+  const { t } = useLanguage();
 
-  const { data: user } = useQuery({ // Renamed currentUser to user as per outline
+  const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  // Removed local getDisplayName helper function, now imported
-
-  // Get employee directory - accessible by ALL employees
   const { data: employees, isLoading, refetch } = useQuery({
     queryKey: ['employeeDirectory'],
-    // Updated queryFn to request specific fields needed for the display and filtering
     queryFn: () => base44.entities.EmployeeDirectory.filter(
       { status: 'active' },
       'first_name',
       'last_name',
       'full_name',
-      'email', // Changed from employee_email as per outline's usage
+      'email',
       'phone',
       'position',
       'department',
       'profile_photo_url'
     ),
     initialData: [],
-    enabled: !!user, // Using 'user' instead of 'currentUser'
+    enabled: !!user,
   });
 
-  const filteredEmployees = employees.filter(emp => // Renamed filteredDirectory to filteredEmployees
-    getDisplayName(emp)?.toLowerCase().includes(searchTerm.toLowerCase()) || // Use getDisplayName for searching by name
-    emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) || // Changed from emp.employee_email
+  const filteredEmployees = employees.filter(emp =>
+    getDisplayName(emp)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     emp.position?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Removed handleEmail and handleCall functions as the dropdown is no longer present in the cards.
-
-  if (!user) { // Using 'user' instead of 'currentUser'
+  if (!user) {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         <div className="text-center py-12">
@@ -71,7 +63,6 @@ export default function Directory() {
           title={t('directory')}
           description={t('employeeDirectory')}
           icon={Users}
-          // Removed 'actions' prop and the refresh button
         />
 
         {employees.length === 0 && !isLoading && (
@@ -100,13 +91,13 @@ export default function Directory() {
             <div className="w-16 h-16 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-slate-600">Loading employees...</p>
           </div>
-        ) : filteredEmployees.length > 0 ? ( // Using filteredEmployees
+        ) : filteredEmployees.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEmployees.map((emp) => { // Using filteredEmployees
-              const isCurrentUser = emp.email === user?.email; // Using 'user' and 'emp.email'
+            {filteredEmployees.map((emp) => {
+              const isCurrentUser = emp.email === user?.email;
               
               return (
-                <Link key={emp.id} to={`/employee-profile?id=${emp.id}`}> {/* Using template literal directly for `to` prop */}
+                <Link key={emp.id} to={`/employee-profile?id=${emp.id}`}>
                   <Card className={`group hover:shadow-xl transition-all duration-300 border-slate-200 ${
                     isCurrentUser ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300' : 'bg-white'
                   }`}>
@@ -153,7 +144,7 @@ export default function Directory() {
                                 <span>{emp.phone}</span>
                               </div>
                             )}
-                            {emp.email && ( // Changed from emp.employee_email
+                            {emp.email && (
                               <div className="flex items-center gap-2 text-xs text-slate-600">
                                 <Mail className="w-3 h-3" />
                                 <span className="truncate">{emp.email}</span>
