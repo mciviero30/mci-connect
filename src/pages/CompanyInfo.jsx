@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe, ExternalLink, AlertTriangle, Settings } from 'lucide-react';
@@ -7,8 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function CompanyInfo() {
-  // ⚠️ CONFIGURACIÓN: Cambia esta URL por la URL real de tu compañía
-  const COMPANY_WEBSITE_URL = ""; // Déjalo vacío si no has configurado aún
+  // ⚠️ CONFIGURACIÓN: URL configurada para MCI
+  const COMPANY_WEBSITE_URL = "https://mci-us.com";
 
   const [showConfig, setShowConfig] = useState(!COMPANY_WEBSITE_URL);
   const [customUrl, setCustomUrl] = useState(COMPANY_WEBSITE_URL);
