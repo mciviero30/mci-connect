@@ -80,6 +80,14 @@ export const ToastDescription = ({ children }) => (
   <p className="text-sm">{children}</p>
 );
 
+export const ToastViewport = ({ children }) => (
+  <div className="fixed bottom-4 right-4 z-[9999] space-y-2 max-w-md pointer-events-none">
+    <div className="pointer-events-auto">
+      {children}
+    </div>
+  </div>
+);
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
@@ -115,21 +123,19 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={toastMethods}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[9999] space-y-2 max-w-md pointer-events-none">
-        <div className="pointer-events-auto">
-          <AnimatePresence>
-            {toasts.map(({ id, message, type }) => (
-              <Toast
-                key={id}
-                id={id}
-                message={message}
-                type={type}
-                onRemove={removeToast}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-      </div>
+      <ToastViewport>
+        <AnimatePresence>
+          {toasts.map(({ id, message, type }) => (
+            <Toast
+              key={id}
+              id={id}
+              message={message}
+              type={type}
+              onRemove={removeToast}
+            />
+          ))}
+        </AnimatePresence>
+      </ToastViewport>
     </ToastContext.Provider>
   );
 };
