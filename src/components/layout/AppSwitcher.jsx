@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,6 +13,21 @@ import { useLanguage } from '../i18n/LanguageContext';
 
 export default function AppSwitcher({ currentApp = 'mci-connect' }) {
   const { language } = useLanguage();
+
+  const handleAppSwitch = (app) => {
+    console.log('🔄 APP SWITCH: Switching to', app.id);
+    console.log('🔄 APP SWITCH: URL:', app.url);
+    console.log('🔄 APP SWITCH: External:', app.external);
+    
+    if (app.external) {
+      // CRITICAL FIX: Use window.open with _top to force navigation in same window
+      console.log('🔄 APP SWITCH: Executing window.open(_top)...');
+      window.open(app.url, '_top');
+    } else {
+      console.log('🔄 APP SWITCH: Internal navigation to', app.url);
+      window.location.href = app.url;
+    }
+  };
 
   const apps = [
     {
@@ -80,47 +95,12 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
           const isActive = app.id === currentApp;
           const Icon = app.icon;
           
-          // CRITICAL FIX: Use native <a> tag for external links
-          if (app.external) {
-            return (
-              <a 
-                key={app.id}
-                href={app.url}
-                target="_top"
-                className="block"
-                onClick={() => console.log(`🔄 REDIRECT: Navigating to ${app.url}`)}
-              >
-                <DropdownMenuItem
-                  className="px-3 py-3 cursor-pointer transition-all hover:bg-slate-50"
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${app.color} flex items-center justify-center shadow-sm flex-shrink-0`}>
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-sm text-slate-900">
-                          {app.name}
-                        </p>
-                        <ExternalLink className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                      </div>
-                      <p className="text-xs text-slate-600 mt-0.5 leading-snug">
-                        {app.subtitle}
-                      </p>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              </a>
-            );
-          }
-          
-          // Internal navigation
           return (
             <DropdownMenuItem
               key={app.id}
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = app.url;
+                handleAppSwitch(app);
               }}
               className={`px-3 py-3 cursor-pointer transition-all ${
                 isActive 
@@ -139,6 +119,9 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
                     }`}>
                       {app.name}
                     </p>
+                    {app.external && (
+                      <ExternalLink className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                    )}
                     {isActive && (
                       <span className="px-2 py-0.5 bg-[#3B9FF3] text-white text-xs rounded-full font-medium">
                         {language === 'es' ? 'Actual' : 'Current'}
