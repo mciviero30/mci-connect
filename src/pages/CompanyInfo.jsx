@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe, ExternalLink, AlertTriangle, Settings } from 'lucide-react';
@@ -101,7 +102,7 @@ export default function CompanyInfo() {
                 <div>
                   <Label className="text-slate-700 mb-2 block">URL de tu página web</Label>
                   <Input
-                    type="url"
+                    type="text" // Changed from type="url" to type="text"
                     value={customUrl}
                     onChange={handleUrlChange}
                     placeholder="https://www.tuempresa.com"
@@ -230,7 +231,7 @@ export default function CompanyInfo() {
                 <h3 className="font-bold text-amber-900 mb-2">Configuración Temporal</h3>
                 <div className="space-y-2">
                   <Input
-                    type="url"
+                    type="text" // Changed from type="url" to type="text"
                     value={customUrl}
                     onChange={handleUrlChange}
                     placeholder="https://www.tuempresa.com"
