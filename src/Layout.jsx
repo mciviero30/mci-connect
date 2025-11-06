@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -8,7 +7,7 @@ import {
   Users,
   Clock,
   Receipt,
-  Menu, // Menu is still used for the mobile sidebar trigger, but the header is changed
+  Menu,
   Briefcase,
   CalendarDays,
   MessageSquare,
@@ -85,7 +84,7 @@ const ThemeToggle = () => {
 
 const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
-  const { language, changeLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -97,7 +96,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     cacheTime: Infinity,
   });
 
-  // CRITICAL: Auto-activate user on first login - FIXED: Added proper dependencies and guard
   useEffect(() => {
     if (!user) return;
     if (user.employment_status !== 'pending_registration') return;
@@ -106,12 +104,10 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         console.log('🔄 Auto-activating user on first login:', user.email);
         
-        // Update User entity to 'active'
         await base44.auth.updateMe({ 
           employment_status: 'active' 
         });
         
-        // Update PendingEmployee entity if exists
         try {
           const pendingEmployees = await base44.entities.PendingEmployee.filter({ 
             email: user.email 
@@ -130,7 +126,6 @@ const LayoutContent = ({ children, currentPageName }) => {
         
         console.log('✅ User auto-activated successfully');
         
-        // Refresh user data after a short delay
         setTimeout(() => {
           window.location.reload();
         }, 500);
@@ -142,31 +137,29 @@ const LayoutContent = ({ children, currentPageName }) => {
     autoActivateUser();
   }, [user?.id, user?.employment_status]);
 
-  // Only load pending expenses count when needed
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
     queryFn: async () => {
       if (!user) return 0;
       if (user.role === 'admin') {
-        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100); // Limit
+        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
         return expenses.length;
       } else {
         const expenses = await base44.entities.Expense.filter({
           employee_email: user.email,
           status: 'pending'
-        }, '', 20); // Limit
+        }, '', 20);
         return expenses.length;
       }
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 60000, // Cache for 1 minute
-    refetchInterval: false, // Don't auto-refetch
-    refetchOnMount: false, // Don't refetch on mount
-    refetchOnWindowFocus: false, // Don't refetch on focus
+    staleTime: 60000,
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  // Get unread notifications count
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.email],
     queryFn: async () => {
@@ -183,7 +176,6 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   const unreadNotifications = notifications.length;
 
-  // Restore scroll position when the component mounts or location changes
   useEffect(() => {
     const sidebar = sidebarContentRef.current;
     if (sidebar) {
@@ -192,9 +184,8 @@ const LayoutContent = ({ children, currentPageName }) => {
         sidebar.scrollTop = parseInt(savedPosition, 10);
       }
     }
-  }, [location.pathname]); // Dependency on location.pathname ensures it attempts to restore on navigation
+  }, [location.pathname]);
 
-  // Save scroll position when the sidebar content is scrolled
   useEffect(() => {
     const sidebar = sidebarContentRef.current;
     if (!sidebar) return;
@@ -204,9 +195,8 @@ const LayoutContent = ({ children, currentPageName }) => {
     };
 
     sidebar.addEventListener('scroll', handleScroll);
-    return () => sidebar.removeEventListener('scroll', handleScroll); // Clean up event listener
-  }, []); // Empty dependency array ensures this effect runs once on mount and cleans up on unmount
-
+    return () => sidebar.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const adminNavigation = [
     {
@@ -352,7 +342,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     );
   }
 
-  // BLOCK DELETED EMPLOYEES FROM ACCESSING THE APP
   if (user && user.employment_status === 'deleted') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
@@ -376,16 +365,13 @@ const LayoutContent = ({ children, currentPageName }) => {
   const navigation = user?.role === 'admin' ? adminNavigation : employeeNavigation;
   const isAdmin = user?.role === 'admin';
 
-  // Get the profile image based on user preference
   const getProfileImage = () => {
     if (!user) return null;
     
-    // If user prefers avatar and has one, use it
     if (user.preferred_profile_image === 'avatar' && user.avatar_image_url) {
       return user.avatar_image_url;
     }
     
-    // Otherwise use photo if available
     if (user.profile_photo_url) {
       return user.profile_photo_url;
     }
@@ -431,7 +417,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               --sidebar-border: 226 232 240;
             }
             
-            /* Prompt #75: High contrast text colors (removed pink/low contrast) */
             .bg-background { background-color: rgb(var(--background)); }
             .text-foreground { color: rgb(var(--foreground)); }
             .bg-card { background-color: rgb(var(--card)); }
@@ -442,18 +427,16 @@ const LayoutContent = ({ children, currentPageName }) => {
             .text-muted-foreground { color: rgb(var(--muted-foreground)); }
             .bg-muted { background-color: rgb(var(--muted)); }
             
-            /* Ensure all text has sufficient contrast */
             .text-slate-600 { color: rgb(71, 85, 105) !important; }
             .text-slate-700 { color: rgb(51, 65, 85) !important; }
             .text-slate-900 { color: rgb(15, 23, 42) !important; }
             
-            /* Remove all pink/rose colors globally (Prompt #75) */
             .text-pink-600, .text-pink-700, .text-pink-800,
             .text-rose-600, .text-rose-700, .text-rose-800 {
-              color: rgb(51, 65, 85) !important; /* slate-700 */
+              color: rgb(51, 65, 85) !important;
             }
             .bg-pink-50, .bg-pink-100, .bg-rose-50, .bg-rose-100 {
-              background-color: rgb(241, 245, 249) !important; /* slate-100 */
+              background-color: rgb(241, 245, 249) !important;
             }
             
             [data-sidebar] {
@@ -470,12 +453,10 @@ const LayoutContent = ({ children, currentPageName }) => {
               border-bottom: none !important;
               display: flex !important;
               flex-direction: column !important;
-              /* height: 100vh !important; */ /* Height adjusted for GlobalHeader */
               position: sticky !important;
               top: 0 !important;
             }
 
-            /* Sidebar content scrollable independently - OPTIMIZED FOR iOS */
             .sidebar-scroll-content {
               overflow-y: auto !important;
               overflow-x: hidden !important;
@@ -485,7 +466,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               overscroll-behavior: contain !important;
             }
 
-            /* Hide scrollbar but keep functionality */
             .sidebar-scroll-content::-webkit-scrollbar {
               width: 6px;
             }
@@ -509,7 +489,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               border-color: rgba(226, 232, 240, 0.8) !important;
             }
 
-            /* Mobile and iPad optimizations */
             @media (max-width: 1024px) {
               * {
                 -webkit-tap-highlight-color: transparent;
@@ -521,7 +500,6 @@ const LayoutContent = ({ children, currentPageName }) => {
                 -moz-osx-font-smoothing: grayscale;
               }
               
-              /* Ensure scrollable areas work on iOS */
               .overflow-y-auto,
               [class*="overflow-"] {
                 -webkit-overflow-scrolling: touch !important;
@@ -530,21 +508,13 @@ const LayoutContent = ({ children, currentPageName }) => {
             }
           `}</style>
 
-          {/* NEW: Global Header */}
           <GlobalHeader 
             user={user} 
             onNotificationsClick={() => setShowNotifications(!showNotifications)}
             unreadNotifications={unreadNotifications}
-            language={language}
-            changeLanguage={changeLanguage}
-            t={t} // Pass translation function for use in GlobalHeader
-            ThemeToggle={ThemeToggle} // Pass ThemeToggle component
-            profileImage={profileImage} // Pass profile image
           />
 
-          {/* Main Content Area with Sidebar */}
           <div className="flex flex-1 overflow-hidden">
-            {/* Sidebar - Hidden on Mobile */}
             <div className="hidden md:block">
               <Sidebar className="border-none bg-white h-[calc(100vh-4rem)]" style={{background: 'rgb(255, 255, 255)', borderRight: '1px solid rgb(226, 232, 240)'}}>
                 <SidebarHeader className="p-6 border-b flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
@@ -640,13 +610,13 @@ const LayoutContent = ({ children, currentPageName }) => {
                         </p>
                       </div>
                     </div>
+                    <ThemeToggle />
                   </div>
                 </SidebarFooter>
               </Sidebar>
             </div>
 
-            {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gradient-to-br from-slate-50 to-white" data-scrollable="true">
+            <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-white" data-scrollable="true">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentPageName}
@@ -662,7 +632,6 @@ const LayoutContent = ({ children, currentPageName }) => {
             </main>
           </div>
           
-          {/* AI Assistant - Available on all pages */}
           <AIAssistant currentPage={currentPageName} />
         </div>
       </NotificationService>
