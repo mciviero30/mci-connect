@@ -9,7 +9,7 @@ import {
   Clock,
   Receipt,
   LogOut,
-  Menu,
+  Menu, // Menu is still used for the mobile sidebar trigger, but the header is changed
   Briefcase,
   CalendarDays,
   MessageSquare,
@@ -34,9 +34,9 @@ import {
   MapPin,
   Trash2,
   TrendingUp,
-  Sparkles, // Added Sparkles icon
-  Wallet, // Added Wallet icon for Cash Flow
-  Globe // Added Globe icon for Company Info
+  Sparkles,
+  Wallet,
+  Globe
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,9 +66,10 @@ import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
+import GlobalHeader from "@/components/layout/GlobalHeader";
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light'); // Changed default to light
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -92,12 +93,13 @@ const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
+  const [showNotifications, setShowNotifications] = useState(false); // Added showNotifications state
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: false,
-    staleTime: Infinity, // Cache forever
+    staleTime: Infinity,
     cacheTime: Infinity,
   });
 
@@ -169,6 +171,23 @@ const LayoutContent = ({ children, currentPageName }) => {
     refetchOnMount: false, // Don't refetch on mount
     refetchOnWindowFocus: false, // Don't refetch on focus
   });
+
+  // Get unread notifications count
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', user?.email],
+    queryFn: async () => {
+      if (!user) return [];
+      return await base44.entities.Notification.filter({ 
+        recipient_email: user.email,
+        is_read: false
+      }, '-created_date', 50);
+    },
+    enabled: !!user,
+    refetchInterval: 30000,
+    initialData: []
+  });
+
+  const unreadNotifications = notifications.length;
 
   // Restore scroll position when the component mounts or location changes
   useEffect(() => {
@@ -386,7 +405,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     <SidebarProvider>
       <MobileOptimizations />
       <NotificationService user={user}>
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-white">
+        <div className="min-h-screen flex flex-col w-full bg-gradient-to-br from-slate-50 to-white">
           <style>{`
             :root {
               --background: 248 250 252;
@@ -457,7 +476,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               border-bottom: none !important;
               display: flex !important;
               flex-direction: column !important;
-              height: 100vh !important;
+              /* height: 100vh !important; */ /* Height adjusted for GlobalHeader */
               position: sticky !important;
               top: 0 !important;
             }
@@ -486,7 +505,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               border-radius: 3px;
             }
             
-.sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
+            .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
               background: rgba(59, 159, 243, 0.5);
             }
             
@@ -517,151 +536,125 @@ const LayoutContent = ({ children, currentPageName }) => {
             }
           `}</style>
 
-          <Sidebar className="border-none bg-white" style={{background: 'rgb(255, 255, 255)', borderRight: '1px solid rgb(226, 232, 240)'}}>
-            <SidebarHeader className="p-6 border-b flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                  alt="MCI Connect"
-                  className="w-11 h-11 rounded-lg"
-                />
-                <div>
-                  <h2 className="font-bold text-slate-900 text-lg">MCI Connect</h2>
-                  {isAdmin && <p className="text-xs text-[#3B9FF3]">Management System</p>}
-                </div>
-              </div>
-            </SidebarHeader>
+          {/* NEW: Global Header */}
+          <GlobalHeader 
+            user={user} 
+            onNotificationsClick={() => setShowNotifications(!showNotifications)}
+            unreadNotifications={unreadNotifications}
+            language={language}
+            changeLanguage={changeLanguage}
+            t={t} // Pass translation function for use in GlobalHeader
+            ThemeToggle={ThemeToggle} // Pass ThemeToggle component
+            profileImage={profileImage} // Pass profile image
+          />
 
-            <SidebarContent 
-              ref={sidebarContentRef} 
-              className="p-3 sidebar-scroll-content bg-white"
-              data-scrollable="true"
-            >
-              {navigation.map((section, idx) => (
-                <SidebarGroup key={idx}>
-                  <SidebarGroupLabel className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mb-1">
-                    {section.section}
-                  </SidebarGroupLabel>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {section.items.map((item) => {
-                        const isActive = location.pathname === item.url;
-                        const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
-
-                        return (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton
-                              asChild
-                              className={`transition-all duration-200 rounded-2xl mb-1 border-none ${
-                                item.indent ? 'ml-8' : ''
-                              } ${
-                                isActive
-                                  ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                  : item.indent
-                                  ? 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
-                                  : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
-                              }`}
-                            >
-                              <Link to={item.url} className="flex items-center gap-3 px-4 py-3 relative">
-                                <item.icon className="w-5 h-5" />
-                                <span className={`font-medium flex-1 ${item.indent ? 'text-sm' : ''}`}>{item.title}</span>
-                                {showBadge && (
-                                  <Badge className="bg-[#3B9FF3] text-white text-xs px-2 shadow-lg shadow-blue-500/20">
-                                    {pendingExpenses}
-                                  </Badge>
-                                )}
-                                {item.badge && (
-                                  <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-2 py-1 rounded-full shadow-lg shadow-purple-500/30 font-semibold tracking-wide">
-                                    {item.badge}
-                                  </Badge>
-                                )}
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        );
-                      })}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              ))}
-            </SidebarContent>
-
-            <SidebarFooter className="border-t p-4 flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
-              <div className="mb-3 px-2 flex items-center gap-2">
-                <Select value={language} onValueChange={changeLanguage}>
-                  <SelectTrigger className="h-9 bg-slate-100 border-slate-300 text-slate-900 flex-1">
-                    <Languages className="w-4 h-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
-                    <SelectItem value="en" className="text-slate-900 hover:bg-slate-100">🇺🇸 English</SelectItem>
-                    <SelectItem value="es" className="text-slate-900 hover:bg-slate-100">🇪🇸 Español</SelectItem>
-                  </SelectContent>
-                </Select>
-                <ThemeToggle />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {profileImage ? (
+          {/* Main Content Area with Sidebar */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Sidebar - Hidden on Mobile */}
+            <div className="hidden md:block">
+              <Sidebar className="border-none bg-white h-[calc(100vh-4rem)]" style={{background: 'rgb(255, 255, 255)', borderRight: '1px solid rgb(226, 232, 240)'}}>
+                <SidebarHeader className="p-6 border-b flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
+                  <div className="flex items-center gap-3">
                     <img
-                      src={profileImage}
-                      alt={user.full_name}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-200"
+                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                      alt="MCI Connect"
+                      className="w-11 h-11 rounded-lg"
                     />
-                  ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20">
-                      <span className="text-white font-semibold text-sm">
-                        {user?.full_name?.[0]?.toUpperCase() || 'U'}
-                      </span>
+                    <div>
+                      <h2 className="font-bold text-slate-900 text-lg">MCI Connect</h2>
+                      {isAdmin && <p className="text-xs text-[#3B9FF3]">Management System</p>}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900 text-sm truncate">
-                      {user?.full_name || 'User'}
-                    </p>
-                    <p className="text-xs text-slate-500 truncate">
-                      {user?.role === 'admin' ? t('admin') : t('user')}
-                    </p>
                   </div>
-                </div>
-                <div className="flex items-center">
-                  <Link to={createPageUrl("Configuracion")} className="p-2 hover:bg-slate-100 rounded-lg transition-colors" title={t('settings')}>
-                    <Settings className="w-4 h-4 text-slate-600 hover:text-[#3B9FF3]" />
-                  </Link>
-                  <button
-                    onClick={() => base44.auth.logout()}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                    title={t('logout')}
-                  >
-                    <LogOut className="w-4 h-4 text-slate-600 hover:text-[#3B9FF3]" />
-                  </button>
-                </div>
-              </div>
-            </SidebarFooter>
-          </Sidebar>
+                </SidebarHeader>
 
-          <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <header className="backdrop-blur-xl bg-white/80 border-b border-slate-200 px-6 py-4 md:hidden shadow-sm flex-shrink-0">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-slate-100 p-2 rounded-lg transition-colors">
-                  <Menu className="w-5 h-5 text-slate-700" />
-                </SidebarTrigger>
-                <div className="flex items-center gap-2">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                    alt="MCI Connect"
-                    className="w-6 h-6"
-                  />
-                  <div>
-                    <h1 className="text-lg font-bold text-slate-900 leading-none">MCI Connect</h1>
-                    {isAdmin && <p className="text-[10px] text-[#3B9FF3] leading-none">Management System</p>}
+                <SidebarContent 
+                  ref={sidebarContentRef} 
+                  className="p-3 sidebar-scroll-content bg-white"
+                  data-scrollable="true"
+                >
+                  {navigation.map((section, idx) => (
+                    <SidebarGroup key={idx}>
+                      <SidebarGroupLabel className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mb-1">
+                        {section.section}
+                      </SidebarGroupLabel>
+                      <SidebarGroupContent>
+                        <SidebarMenu>
+                          {section.items.map((item) => {
+                            const isActive = location.pathname === item.url;
+                            const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
+
+                            return (
+                              <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton
+                                  asChild
+                                  className={`transition-all duration-200 rounded-2xl mb-1 border-none ${
+                                    item.indent ? 'ml-8' : ''
+                                  } ${
+                                    isActive
+                                      ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/20'
+                                      : item.indent
+                                      ? 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
+                                      : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
+                                  }`}
+                                >
+                                  <Link to={item.url} className="flex items-center gap-3 px-4 py-3 relative">
+                                    <item.icon className="w-5 h-5" />
+                                    <span className={`font-medium flex-1 ${item.indent ? 'text-sm' : ''}`}>{item.title}</span>
+                                    {showBadge && (
+                                      <Badge className="bg-[#3B9FF3] text-white text-xs px-2 shadow-lg shadow-blue-500/20">
+                                        {pendingExpenses}
+                                      </Badge>
+                                    )}
+                                    {item.badge && (
+                                      <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-2 py-1 rounded-full shadow-lg shadow-purple-500/30 font-semibold tracking-wide">
+                                        {item.badge}
+                                      </Badge>
+                                    )}
+                                  </Link>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            );
+                          })}
+                        </SidebarMenu>
+                      </SidebarGroupContent>
+                    </SidebarGroup>
+                  ))}
+                </SidebarContent>
+
+                <SidebarFooter className="border-t p-4 flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {profileImage ? (
+                        <img
+                          src={profileImage}
+                          alt={user.full_name}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-blue-200"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20">
+                          <span className="text-white font-semibold text-sm">
+                            {user?.full_name?.[0]?.toUpperCase() || 'U'}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-900 text-sm truncate">
+                          {user?.full_name || 'User'}
+                        </p>
+                        <p className="text-xs text-slate-500 truncate">
+                          {user?.role === 'admin' ? t('admin') : t('user')}
+                        </p>
+                      </div>
+                    </div>
+                    {/* ThemeToggle moved here as per outline */}
+                    <ThemeToggle /> 
                   </div>
-                </div>
-              </div>
-            </header>
+                </SidebarFooter>
+              </Sidebar>
+            </div>
 
-            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-white" data-scrollable="true">
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-gradient-to-br from-slate-50 to-white" data-scrollable="true">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentPageName}
@@ -674,11 +667,11 @@ const LayoutContent = ({ children, currentPageName }) => {
                   {children}
                 </motion.div>
               </AnimatePresence>
-            </div>
-            
-            {/* AI Assistant - Available on all pages */}
-            <AIAssistant currentPage={currentPageName} />
-          </main>
+            </main>
+          </div>
+          
+          {/* AI Assistant - Available on all pages */}
+          <AIAssistant currentPage={currentPageName} />
         </div>
       </NotificationService>
     </SidebarProvider>
