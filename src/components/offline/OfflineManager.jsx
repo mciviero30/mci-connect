@@ -1,12 +1,6 @@
-
-/**
- * Prompt #85: Offline Manager - Main orchestrator
- * Handles network detection, initialization, and coordination
- */
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { syncPendingMutations } from './mutationQueue';
+import { syncMutations } from './mutationQueue';
 import OfflineIndicator from './OfflineIndicator';
 import { base44 } from '@/api/base44Client';
 
@@ -20,7 +14,7 @@ export function OfflineProvider({ children }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
 
-  // NEW: Get current user for notifications
+  // Get current user for notifications
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -28,7 +22,7 @@ export function OfflineProvider({ children }) {
     base44.auth.me().then(user => setCurrentUser(user)).catch(() => {});
   }, []);
 
-  // NEW: Send notification helper
+  // Send notification helper
   const sendNotification = async (title, message, type = 'info', priority = 'medium') => {
     if (!currentUser) return;
 
@@ -95,23 +89,36 @@ export function OfflineProvider({ children }) {
       setIsSyncing(true);
 
       try {
-        const syncedCount = await syncPendingMutations(queryClient);
+        const { synced, failed } = await syncMutations();
         
-        if (syncedCount > 0) {
-          console.log(`✅ Synced ${syncedCount} operations successfully`);
+        if (synced > 0) {
+          console.log(`✅ Synced ${synced} operations successfully`);
           
-          // NEW: Send success notification
+          // Send success notification
           await sendNotification(
             '✅ Sync Complete!',
-            `Successfully synced ${syncedCount} pending ${syncedCount === 1 ? 'operation' : 'operations'}.`,
+            `Successfully synced ${synced} pending ${synced === 1 ? 'operation' : 'operations'}.`,
             'sync_complete',
             'medium'
           );
         }
+
+        if (failed > 0) {
+          // Send failure notification
+          await sendNotification(
+            '⚠️ Sync Partial',
+            `${synced} operations synced, but ${failed} failed. Please check your data.`,
+            'sync_failed',
+            'high'
+          );
+        }
+
+        // Invalidate queries to refresh data
+        queryClient.invalidateQueries();
       } catch (error) {
         console.error('❌ Sync failed:', error);
         
-        // NEW: Send failure notification
+        // Send failure notification
         await sendNotification(
           '❌ Sync Failed',
           'Some operations could not be synced. Please check your connection and try again.',
