@@ -209,17 +209,18 @@ export default function Empleados() {
     staleTime: Infinity
   });
   
+  // OPTIMIZED: Increased staleTime for employee data
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        return await base44.entities.User.list('full_name');
+        return await base44.entities.User.list('full_name', 200); // Added limit
       } catch (error) {
         console.error('Error loading employees:', error);
         return [];
       }
     },
-    staleTime: 60000,
+    staleTime: 300000, // Increased to 5 minutes
     retry: 1
   });
 
@@ -227,61 +228,69 @@ export default function Empleados() {
     queryKey: ['pendingEmployees'],
     queryFn: async () => {
       try {
-        return await base44.entities.PendingEmployee.list('-created_date');
+        return await base44.entities.PendingEmployee.list('-created_date', 100); // Added limit
       } catch (error) {
         console.error('Error loading pending employees:', error);
         return [];
       }
     },
-    staleTime: 60000,
+    staleTime: 180000, // 3 minutes
     retry: 1
   });
 
   const { data: teams } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('team_name'),
+    staleTime: 600000, // 10 minutes
     initialData: [],
   });
 
+  // OPTIMIZED: Only load heavy data when AI insights are actually open
   const { data: allTimeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date', 500),
+    queryFn: () => base44.entities.TimeEntry.list('-date', 200), // Reduced from 500
     enabled: showAIInsights,
+    staleTime: 300000,
     initialData: []
   });
 
   const { data: allJobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list('-created_date', 200),
+    queryFn: () => base44.entities.Job.list('-created_date', 100), // Reduced from 200
     enabled: showAIInsights,
+    staleTime: 300000,
     initialData: []
   });
 
   const { data: allExpenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 200),
+    queryFn: () => base44.entities.Expense.list('-date', 100), // Reduced from 200
     enabled: showAIInsights,
+    staleTime: 300000,
     initialData: []
   });
 
   const { data: allRecognitions = [] } = useQuery({
     queryKey: ['recognitions'],
-    queryFn: () => base44.entities.Recognition.list('-date'),
+    queryFn: () => base44.entities.Recognition.list('-date', 50), // Added limit
     enabled: showAIInsights,
+    staleTime: 300000,
     initialData: []
   });
 
   const { data: allCertifications = [] } = useQuery({
     queryKey: ['certifications'],
-    queryFn: () => base44.entities.Certification.list('-created_date'),
+    queryFn: () => base44.entities.Certification.list('-created_date', 100), // Added limit
     enabled: showAIInsights,
+    staleTime: 300000,
     initialData: []
   });
 
   const { data: allDrivingLogs = [] } = useQuery({
     queryKey: ['drivingLogs'],
-    queryFn: () => base44.entities.DrivingLog.list('-date', 200),
+    queryFn: () => base44.entities.DrivingLog.list('-date', 100), // Reduced from 200
     enabled: showAIInsights,
+    staleTime: 300000,
     initialData: []
   });
 
@@ -429,28 +438,30 @@ export default function Empleados() {
     }
   });
 
+  // OPTIMIZED: Increased delay and interval for auto-sync
   React.useEffect(() => {
     if (!isLoading && !isPendingLoading && pendingEmployees.length > 0) {
       const timeoutId = setTimeout(() => {
         if (!autoCreateUsersMutation.isPending && !autoCreateUsersMutation.isSuccess && !autoCreateUsersMutation.isError) {
            autoCreateUsersMutation.mutate();
         }
-      }, 2000);
+      }, 5000); // Increased from 2000 to 5000ms
 
       return () => clearTimeout(timeoutId);
     }
   }, [pendingEmployees.length, isLoading, isPendingLoading, autoCreateUsersMutation]);
 
+  // OPTIMIZED: Increased sync interval
   React.useEffect(() => {
     const now = Date.now();
     const timeSinceLastSync = now - lastSyncTime;
-    const minSyncInterval = 120000;
+    const minSyncInterval = 300000; // Increased to 5 minutes
 
     if (!isLoading && !isPendingLoading && employees.length > 0 && pendingEmployees.length > 0) {
       if (timeSinceLastSync > minSyncInterval) {
         const timeoutId = setTimeout(() => {
           syncUserDataMutation.mutate();
-        }, 5000);
+        }, 10000); // Increased from 5000 to 10000ms
 
         return () => clearTimeout(timeoutId);
       }

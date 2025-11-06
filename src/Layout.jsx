@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -137,29 +138,31 @@ const LayoutContent = ({ children, currentPageName }) => {
     autoActivateUser();
   }, [user?.id, user?.employment_status]);
 
+  // OPTIMIZED: Only load pending expenses count when needed, less frequently
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
     queryFn: async () => {
       if (!user) return 0;
       if (user.role === 'admin') {
-        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
+        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 50); // Reduced from 100
         return expenses.length;
       } else {
         const expenses = await base44.entities.Expense.filter({
           employee_email: user.email,
           status: 'pending'
-        }, '', 20);
+        }, '', 10); // Reduced from 20
         return expenses.length;
       }
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 60000,
+    staleTime: 180000, // Increased to 3 minutes
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 
+  // OPTIMIZED: Less frequent notifications polling
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.email],
     queryFn: async () => {
@@ -167,10 +170,11 @@ const LayoutContent = ({ children, currentPageName }) => {
       return await base44.entities.Notification.filter({ 
         recipient_email: user.email,
         is_read: false
-      }, '-created_date', 50);
+      }, '-created_date', 20); // Reduced from 50
     },
-    enabled: !!user,
-    refetchInterval: 30000,
+    enabled: !!user && typeof document !== 'undefined' && !document.hidden, // Only when page is visible
+    refetchInterval: 60000, // Increased to 60 seconds
+    staleTime: 30000,
     initialData: []
   });
 
