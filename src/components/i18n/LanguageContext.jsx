@@ -643,7 +643,6 @@ export const translations = {
     invoices: "Facturas",
     accounting: "Contabilidad",
     payroll: "Nómina",
-    // expenses: "Gastos", // This key will be replaced by my_expenses in the specific section
     jobs: "Trabajos",
     calendar: "Calendario",
     schedules: "Horarios",
@@ -673,7 +672,7 @@ export const translations = {
     upload: "Subir",
     create: "Crear",
     update: "Actualizar",
-    // view: "Ver", // This key will be replaced by the one in the Expense Actions section
+    view: "Ver",
     close: "Cerrar",
     loading: "Cargando",
     logout: "Cerrar Sesión",
@@ -681,14 +680,14 @@ export const translations = {
     next: "Siguiente",
     previous: "Anterior",
     confirm: "Confirmar",
-    // actions: "Acciones", // This key will be replaced by the one in Expense List Columns
+    actions: "Acciones",
     
     // Status
     active: "Activo",
     inactive: "Inactivo",
     pending: "Pendiente",
-    // approved: "Aprobado", // This key will be replaced by the one in the Expense Actions
-    // rejected: "Rechazado", // This key will be replaced by the one in the Expense Actions
+    approved: "Aprobado",
+    rejected: "Rechazado",
     completed: "Completado",
     draft: "Borrador",
     sent: "Enviado",
@@ -740,8 +739,6 @@ export const translations = {
     pauseDate: "Fecha de Pausa",
     returnDate: "Fecha de Retorno",
     reason: "Razón",
-    
-    // Employee specific
     manageYourTeamMembers: "Gestiona los miembros de tu equipo",
     youHaveXPendingEmployees: "Tienes empleados pendientes por revisar",
     searchEmployees: "Buscar empleados...",
@@ -769,7 +766,7 @@ export const translations = {
     clickInviteUser: "Haz clic en 'Invitar Usuario'",
     pasteEmail: "Pega el email",
     selectRoleUser: "Selecciona el rol como 'Usuario'",
-    // sendInvitation: "Envía la invitación", // Replaced below
+    sendInvitation: "Enviar Invitación",
     onceAcceptedWillAppearDirectory: "Una vez aceptado, el empleado aparecerá en el directorio",
     employeeMarkedAsInvited: "Empleado marcado como invitado",
     dashboardOpenedNewTabCopyEmail: "Dashboard abierto en nueva pestaña. Copia el email manualmente",
@@ -789,17 +786,13 @@ export const translations = {
     deletedAndBlocked: "Eliminado y Bloqueado",
     allDataDeletedEmployeeBlocked: "Todos los datos eliminados, empleado bloqueado del acceso a la app",
     noDeletedEmployees: "No hay empleados eliminados",
-    
-    // Add new translations for resend invitation
     resendInvitation: "Reenviar Invitación",
     resendingInvitation: "Reenviando invitación",
-    resendInstructions: "Ve a 'Invitaciones Pendientes' y haz clic en 'Reenviar' en la invitación de este email.",
     failedToResendInvitation: "Error al reenviar invitación",
 
     // Departments
     administration: "Administración",
     sales: "Ventas",
-    operations: "Operaciones",
     it: "IT",
     marketing: "Marketing",
     hr: "Recursos Humanos",
@@ -809,9 +802,9 @@ export const translations = {
     uploadDocument: "Subir Documento",
     fileName: "Nombre del Archivo",
     fileType: "Tipo de Archivo",
-    category: "Categoría", // Keep general category
+    category: "Categoría",
     folder: "Carpeta",
-    description: "Descripción", // Keep general description
+    description: "Descripción",
     uploadedBy: "Subido Por",
     uploadDate: "Fecha de Subida",
     tags: "Etiquetas",
@@ -849,7 +842,7 @@ export const translations = {
     items: "Items",
     quantity: "Cantidad",
     unitPrice: "Precio Unitario",
-    total: "Total", // Keep general total
+    total: "Total",
     subtotal: "Subtotal",
     tax: "Impuesto",
     notes: "Notas",
@@ -862,7 +855,7 @@ export const translations = {
     drafts: "Borradores",
     converted: "Convertidos",
     customer: "Cliente",
-    // date: "Fecha", // This key will be replaced by the one in Expense List Columns
+    date: "Fecha",
     noQuotes: "No hay estimados",
     noInvoices: "No hay facturas",
     quoteDeleted: "Estimado eliminado exitosamente",
@@ -873,7 +866,6 @@ export const translations = {
     totalCollected: "Total Cobrado",
     toCollect: "Por Cobrar",
     invoiceList: "Lista de Facturas",
-    // balance: "Saldo", // Keep general balance
     partialPayment: "Pago Parcial",
     customerInformation: "Información del Cliente",
     jobDetails: "Detalles del Trabajo",
@@ -890,14 +882,10 @@ export const translations = {
     selectExistingJob: "Seleccionar trabajo existente",
     projectNotes: "Notas del proyecto o instrucciones especiales",
     invoice: "Factura",
-    
-    // Additional Quote/Invoice translations
     quote: "Estimado",
     dear: "Estimado(a)",
     quoteEmailBody: "Adjunto encontrará el estimado para",
     sendToCustomer: "Enviar al Cliente",
-    approve: "Aprobar", // Keep general approve
-    reject: "Rechazar", // Keep general reject
     convertToInvoice: "Convertir a Factura",
     converting: "Convirtiendo...",
     quoteUpdated: "Estimado actualizado exitosamente",
@@ -905,14 +893,14 @@ export const translations = {
     quoteNotFound: "Estimado no encontrado",
     thankYou: "Gracias por su confianza",
     terms: "Términos",
-    job: "Trabajo", // Keep general job
+    job: "Trabajo",
     
     // Accounting
     accountingManagement: "Gestión de Contabilidad",
     newTransaction: "Nueva Transacción",
     transactionType: "Tipo de Transacción",
-    amount: "Monto", // Keep general amount
-    // paymentMethod: "Método de Pago", // This key will be replaced by payment_method in Payment Methods
+    amount: "Monto",
+    payment_method: "Método de Pago",
     cash: "Efectivo",
     bankTransfer: "Transferencia Bancaria",
     card: "Tarjeta",
@@ -943,32 +931,16 @@ export const translations = {
     myPayroll: "Mi Nómina",
     
     // Expenses
-    // myExpenses: "Mis Gastos", // replaced below
-    // newExpense: "Nuevo Gasto", // replaced below
-    // requestPerDiem: "Solicitar Per Diem", // replaced below
-    // expenseCategory: "Categoría de Gasto", // replaced below
-    // receipt: "Recibo", // replaced below
-    uploadReceipt: "Subir Recibo", // keep this as it is specific
-    // travel: "Viaje", // replaced below
-    // meals: "Comidas", // replaced below
-    // transport: "Transporte", // replaced below
-    // supplies: "Suministros", // replaced below
-    // perDiem: "Per Diem", // replaced below
-    // other: "Otro", // replaced below
-    // trackExpensesAndReceipts: "Registra tus gastos y recibos", // replaced below
+    uploadReceipt: "Subir Recibo",
     reviewAndApproveExpenses: "Revisar y aprobar gastos",
     myRecords: "Mis Registros",
     totalPending: "Total Pendiente",
     totalApproved: "Total Aprobado",
     expenseUpdated: "Gasto actualizado",
-
-    // Expenses specific
     my_expenses: "Mis Gastos",
     track_your_expenses_and_receipts: "Registra tus gastos y recibos",
     new_expense: "Nuevo Gasto",
     expense_created_pending_approval: "¡Gasto creado! Pendiente de aprobación.",
-    
-    // Per Diem specific
     per_diem: "Per Diem",
     request_per_diem_for_work_days: "Solicita per diem para tus días de trabajo",
     request_per_diem: "Solicitar Per Diem",
@@ -982,20 +954,9 @@ export const translations = {
     per_diem_request_submitted: "¡Solicitud de Per Diem enviada! Pendiente de aprobación.",
     my_per_diem_requests: "Mis Solicitudes de Per Diem",
     no_per_diem_requests: "No hay solicitudes de per diem",
-    
-    // Expense List columns
     employee: "Empleado",
-    date: "Fecha",
-    description: "Descripción",
-    category: "Categoría",
-    job: "Trabajo",
-    payment_method: "Método de Pago",
-    amount: "Monto",
     status: "Estado",
     receipt: "Recibo",
-    actions: "Acciones",
-    
-    // Categories
     travel: "Viaje",
     meals: "Comidas",
     transport: "Transporte",
@@ -1003,19 +964,12 @@ export const translations = {
     client_entertainment: "Entretenimiento Cliente",
     equipment: "Equipo",
     other: "Otro",
-    
-    // Payment Methods
     personal: "Personal",
     company_card: "Tarjeta",
-    
-    // Actions
     approve: "Aprobar",
     reject: "Rechazar",
-    view: "Ver",
     no_receipt: "Sin recibo",
     no_expenses_found: "No se encontraron gastos",
-    
-    // Reject Dialog
     reject_expense: "Rechazar Gasto",
     reason_for_rejection: "Razón del Rechazo",
     explain_rejection_reason: "Explica por qué se rechaza este gasto...",
@@ -1169,16 +1123,13 @@ export const translations = {
     thisYear: "Este Año",
     details: "Detalles",
     information: "Información",
-    // employee: "Empleado", // Replaced in Expense List Columns
-    // job: "Trabajo", // Replaced in Expense List Columns
     project: "Proyecto",
     client: "Cliente",
     optional: "Opcional",
     requiredField: "Requerido",
-    // status: "Estado", // Replaced in Expense List Columns
     location: "Ubicación",
-    
-    // New translations in Spanish
+
+    // Employee features
     myProfile: "Mi Perfil",
     directory: "Directorio",
     certifications: "Certificaciones",
@@ -1197,7 +1148,6 @@ export const translations = {
     expirationDate: "Fecha de Vencimiento",
     certificateNumber: "Número de Certificado",
     uploadCertificate: "Subir Certificado",
-    // viewCertificate: "Ver Certificado", // Duplicated key, keep one from Training section
     certificationsExpiringSoon: "Certificaciones por Vencer",
     expiredCertifications: "Certificaciones Vencidas",
     noCertifications: "No hay certificaciones agregadas",
@@ -1216,16 +1166,14 @@ export const translations = {
     allRecognitions: "Todos los Reconocimientos",
     allEmployees: "Todos los Empleados",
     dailyBreakdown: "Desglose Diario",
-
     selectEmployee: "Seleccionar Empleado",
-    
     start_date: "Fecha de Inicio",
     end_date: "Fecha de Fin",
     days: "días",
     invalid_dates: "Fechas inválidas",
     select_date_range_to_calculate: "Selecciona el rango de fechas para calcular el total automáticamente",
     
-    // Invitation email translations
+    // Invitation emails
     invitationToJoin: "Invitación para unirte a",
     hello: "Hola",
     youHaveBeenInvitedMessage: "Has sido invitado a unirte a MCI Connect, nuestro sistema de gestión empresarial.",
@@ -1247,14 +1195,10 @@ export const translations = {
     reminderEmailSent: "Email de recordatorio enviado",
     nowResendSystemInvitation: "Ahora reenvía la invitación del sistema a través del Dashboard",
     employeesActivated: "empleados activados automáticamente después del registro",
-    
-    // Invitation translations  
-    sendInvitation: "Enviar Invitación",
     invitationSentSuccessfully: "Invitación enviada exitosamente",
     invitationResent: "Invitación reenviada",
     checkSpamFolder: "Revisar carpeta de SPAM",
     linkCopiedForSMS: "Link copiado para SMS",
-
     restoreAccessFor: "Para restaurar acceso para",
     openDashboardInBrowser: "Abre el Dashboard en tu navegador",
     goToDataUser: "Ve a: Data → User",
@@ -1263,8 +1207,6 @@ export const translations = {
     changeEmploymentStatusFromDeletedToActive: "Cambia 'employment_status' de 'deleted' a 'active'",
     saveChanges: "Guarda los cambios",
     employeeCanAccessAppAgain: "El empleado podrá acceder a la app nuevamente",
-
-    // Spanish translations
     invitationInstructions: "Dashboard abierto. Sigue estos pasos rápidos",
     step1InviteUser: "1. Haz clic en 'Invite User'",
     step2PasteEmail: "2. Pega el email (¡ya copiado!)",
@@ -1276,7 +1218,7 @@ export const translations = {
     step3ClickResend: "3. Haz clic en 'Resend'",
     employeeWillReceiveEmail: "El empleado recibirá email de Base44",
 
-    // AI Categorization translations
+    // AI translations
     needsReview: "Necesita Revisión",
     lowConfidence: "Baja Confianza",
     aiSuggestion: "Sugerencia de AI",
@@ -1291,8 +1233,6 @@ export const translations = {
     accuracy: "Precisión",
     userCorrections: "Correcciones de Usuario",
     learning: "Aprendiendo",
-
-    // Budget Forecasting translations
     budgetForecasting: "Pronóstico Presupuestario",
     aiBudgetForecast: "Pronóstico Presupuestario AI",
     forecastProjections: "Proyecciones de Pronóstico",
