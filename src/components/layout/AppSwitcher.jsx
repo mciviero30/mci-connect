@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Briefcase, Building2, ExternalLink } from 'lucide-react';
+import { ChevronDown, Briefcase, Building2 } from 'lucide-react';
 import { useLanguage } from '../i18n/LanguageContext';
 
 export default function AppSwitcher({ currentApp = 'mci-connect' }) {
@@ -17,16 +17,10 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
   const handleAppSwitch = (app) => {
     console.log('🔄 APP SWITCH: Switching to', app.id);
     console.log('🔄 APP SWITCH: URL:', app.url);
-    console.log('🔄 APP SWITCH: External:', app.external);
+    console.log('🔄 APP SWITCH: Internal navigation');
     
-    if (app.external) {
-      // CRITICAL FIX: Use window.open with _top to force navigation in same window
-      console.log('🔄 APP SWITCH: Executing window.open(_top)...');
-      window.open(app.url, '_top');
-    } else {
-      console.log('🔄 APP SWITCH: Internal navigation to', app.url);
-      window.location.href = app.url;
-    }
+    // Internal navigation - reload to ensure fresh state
+    window.location.href = app.url;
   };
 
   const apps = [
@@ -38,7 +32,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
         : 'Field Execution & Technical Tasks',
       icon: Briefcase,
       color: 'from-[#3B9FF3] to-blue-500',
-      url: '/',
+      url: '/Dashboard',
       external: false
     },
     {
@@ -49,8 +43,8 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
         : 'Management, Sales & Finance',
       icon: Building2,
       color: 'from-purple-500 to-indigo-500',
-      url: 'https://dashboard.base44.com',
-      external: true
+      url: '/Dashboard',
+      external: false // FIXED: Internal navigation - all in one app
     }
   ];
 
@@ -87,7 +81,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
 
       <DropdownMenuContent align="start" className="w-80 bg-white border-slate-200 shadow-xl">
         <DropdownMenuLabel className="text-xs text-slate-500 uppercase tracking-wider px-3 py-2">
-          {language === 'es' ? 'Cambiar Aplicación' : 'Switch Application'}
+          {language === 'es' ? 'Vista de la Aplicación' : 'Application View'}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         
@@ -119,9 +113,6 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
                     }`}>
                       {app.name}
                     </p>
-                    {app.external && (
-                      <ExternalLink className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                    )}
                     {isActive && (
                       <span className="px-2 py-0.5 bg-[#3B9FF3] text-white text-xs rounded-full font-medium">
                         {language === 'es' ? 'Actual' : 'Current'}
@@ -136,6 +127,14 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
             </DropdownMenuItem>
           );
         })}
+
+        <div className="px-3 py-2 border-t border-slate-200 mt-2">
+          <p className="text-xs text-slate-500 text-center">
+            {language === 'es' 
+              ? 'Todas las herramientas en un solo portal' 
+              : 'All tools in one unified portal'}
+          </p>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
