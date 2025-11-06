@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe, ExternalLink, AlertTriangle, Settings } from 'lucide-react';
@@ -102,7 +101,7 @@ export default function CompanyInfo() {
                 <div>
                   <Label className="text-slate-700 mb-2 block">URL de tu página web</Label>
                   <Input
-                    type="text" // Changed from type="url" to type="text"
+                    type="text"
                     value={customUrl}
                     onChange={handleUrlChange}
                     placeholder="https://www.tuempresa.com"
@@ -152,33 +151,7 @@ export default function CompanyInfo() {
     );
   }
 
-  // Validar que la URL cargada sea válida
   const urlToLoad = customUrl || COMPANY_WEBSITE_URL;
-  if (!isValidUrl(urlToLoad)) {
-    return (
-      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 to-white">
-        <div className="max-w-4xl mx-auto">
-          <Alert className="bg-red-50 border-red-200">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <AlertTitle className="text-red-900 font-bold">URL Inválida</AlertTitle>
-            <AlertDescription className="text-red-800">
-              <p className="mb-4">La URL configurada no es válida: <code className="bg-red-100 px-2 py-1 rounded">{urlToLoad}</code></p>
-              <p className="mb-4">La URL debe comenzar con http:// o https://</p>
-              <Button
-                onClick={() => {
-                  setCustomUrl('');
-                  setShowConfig(true);
-                }}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Configurar Nueva URL
-              </Button>
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white">
@@ -231,7 +204,7 @@ export default function CompanyInfo() {
                 <h3 className="font-bold text-amber-900 mb-2">Configuración Temporal</h3>
                 <div className="space-y-2">
                   <Input
-                    type="text" // Changed from type="url" to type="text"
+                    type="text"
                     value={customUrl}
                     onChange={handleUrlChange}
                     placeholder="https://www.tuempresa.com"
