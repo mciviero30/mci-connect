@@ -19,7 +19,6 @@ const toastIcons = {
   info: Info
 };
 
-// Prompt #75: High contrast colors (removed pink/rose)
 const toastColors = {
   success: 'bg-green-50 border-green-300 text-green-900',
   error: 'bg-red-50 border-red-300 text-red-900',
@@ -34,11 +33,10 @@ const iconColors = {
   info: 'text-blue-700'
 };
 
-// Prompt #78: Individual toast with auto-dismiss
-function Toast({ id, message, type, onRemove }) {
+// Export Toast component for toaster.jsx
+export function Toast({ id, message, type, onRemove }) {
   const Icon = toastIcons[type];
   
-  // Auto-dismiss after 5 seconds (Prompt #78)
   useEffect(() => {
     const timer = setTimeout(() => {
       onRemove(id);
@@ -67,7 +65,22 @@ function Toast({ id, message, type, onRemove }) {
   );
 }
 
-export function ToastProvider({ children }) {
+// Export additional components for compatibility
+export const ToastClose = ({ onClick }) => (
+  <button onClick={onClick} className="flex-shrink-0 hover:opacity-70 transition-opacity p-0.5">
+    <X className="w-4 h-4" />
+  </button>
+);
+
+export const ToastTitle = ({ children }) => (
+  <p className="font-bold text-sm">{children}</p>
+);
+
+export const ToastDescription = ({ children }) => (
+  <p className="text-sm">{children}</p>
+);
+
+export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
   const addToast = useCallback((message, type = 'info') => {
@@ -102,7 +115,6 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={toastMethods}>
       {children}
-      {/* Prompt #78: Non-intrusive position (bottom-right corner) */}
       <div className="fixed bottom-4 right-4 z-[9999] space-y-2 max-w-md pointer-events-none">
         <div className="pointer-events-auto">
           <AnimatePresence>
@@ -120,4 +132,4 @@ export function ToastProvider({ children }) {
       </div>
     </ToastContext.Provider>
   );
-}
+};
