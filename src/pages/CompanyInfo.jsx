@@ -28,6 +28,15 @@ export default function CompanyInfo() {
     }
   };
 
+  const getHostname = (url) => {
+    if (!url) return 'Company website';
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  };
+
   // Si no hay URL configurada, mostrar pantalla de configuración
   if (!COMPANY_WEBSITE_URL && !customUrl) {
     return (
@@ -123,7 +132,7 @@ export default function CompanyInfo() {
               <div>
                 <h1 className="text-3xl font-bold text-slate-900">Company Info</h1>
                 <p className="text-slate-600 text-sm">
-                  {urlToLoad ? new URL(urlToLoad).hostname : 'Company website'}
+                  {getHostname(urlToLoad)}
                 </p>
               </div>
             </div>
