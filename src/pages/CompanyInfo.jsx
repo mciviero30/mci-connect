@@ -13,6 +13,7 @@ export default function CompanyInfo() {
   const [showConfig, setShowConfig] = useState(!COMPANY_WEBSITE_URL);
   const [customUrl, setCustomUrl] = useState(COMPANY_WEBSITE_URL);
   const [iframeError, setIframeError] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
   const openInNewTab = () => {
     const urlToOpen = customUrl || COMPANY_WEBSITE_URL;
@@ -21,11 +22,35 @@ export default function CompanyInfo() {
     }
   };
 
-  const handleUrlSubmit = () => {
-    if (customUrl) {
-      setShowConfig(false);
-      setIframeError(false);
+  const isValidUrl = (url) => {
+    if (!url || url.trim() === '') return false;
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
     }
+  };
+
+  const handleUrlSubmit = () => {
+    if (!customUrl || customUrl.trim() === '') {
+      setUrlError('Por favor ingresa una URL');
+      return;
+    }
+
+    if (!isValidUrl(customUrl)) {
+      setUrlError('Por favor ingresa una URL válida (debe comenzar con http:// o https://)');
+      return;
+    }
+
+    setUrlError('');
+    setShowConfig(false);
+    setIframeError(false);
+  };
+
+  const handleUrlChange = (e) => {
+    setCustomUrl(e.target.value);
+    setUrlError('');
   };
 
   const getHostname = (url) => {
@@ -78,10 +103,19 @@ export default function CompanyInfo() {
                   <Input
                     type="url"
                     value={customUrl}
-                    onChange={(e) => setCustomUrl(e.target.value)}
+                    onChange={handleUrlChange}
                     placeholder="https://www.tuempresa.com"
-                    className="bg-white border-slate-300 text-slate-900 text-lg"
+                    className={`bg-white border-slate-300 text-slate-900 text-lg ${urlError ? 'border-red-500' : ''}`}
                   />
+                  {urlError && (
+                    <p className="text-red-600 text-sm mt-2 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      {urlError}
+                    </p>
+                  )}
+                  <p className="text-slate-500 text-xs mt-2">
+                    Ejemplos: https://www.google.com, https://www.tuempresa.com
+                  </p>
                 </div>
                 <Button
                   onClick={handleUrlSubmit}
@@ -117,7 +151,33 @@ export default function CompanyInfo() {
     );
   }
 
+  // Validar que la URL cargada sea válida
   const urlToLoad = customUrl || COMPANY_WEBSITE_URL;
+  if (!isValidUrl(urlToLoad)) {
+    return (
+      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 to-white">
+        <div className="max-w-4xl mx-auto">
+          <Alert className="bg-red-50 border-red-200">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <AlertTitle className="text-red-900 font-bold">URL Inválida</AlertTitle>
+            <AlertDescription className="text-red-800">
+              <p className="mb-4">La URL configurada no es válida: <code className="bg-red-100 px-2 py-1 rounded">{urlToLoad}</code></p>
+              <p className="mb-4">La URL debe comenzar con http:// o https://</p>
+              <Button
+                onClick={() => {
+                  setCustomUrl('');
+                  setShowConfig(true);
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Configurar Nueva URL
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white">
@@ -168,27 +228,38 @@ export default function CompanyInfo() {
               <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-1" />
               <div className="flex-1">
                 <h3 className="font-bold text-amber-900 mb-2">Configuración Temporal</h3>
-                <div className="flex gap-2">
+                <div className="space-y-2">
                   <Input
                     type="url"
                     value={customUrl}
-                    onChange={(e) => setCustomUrl(e.target.value)}
+                    onChange={handleUrlChange}
                     placeholder="https://www.tuempresa.com"
-                    className="bg-white border-amber-300 text-slate-900"
+                    className={`bg-white text-slate-900 ${urlError ? 'border-red-500' : 'border-amber-300'}`}
                   />
-                  <Button
-                    onClick={handleUrlSubmit}
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
-                  >
-                    Cargar
-                  </Button>
-                  <Button
-                    onClick={() => setShowConfig(false)}
-                    variant="outline"
-                    className="bg-white border-amber-300 text-amber-700"
-                  >
-                    Cancelar
-                  </Button>
+                  {urlError && (
+                    <p className="text-red-600 text-sm flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      {urlError}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleUrlSubmit}
+                      className="bg-amber-600 hover:bg-amber-700 text-white"
+                    >
+                      Cargar
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setShowConfig(false);
+                        setUrlError('');
+                      }}
+                      variant="outline"
+                      className="bg-white border-amber-300 text-amber-700"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
