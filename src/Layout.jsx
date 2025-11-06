@@ -8,7 +8,6 @@ import {
   Users,
   Clock,
   Receipt,
-  LogOut,
   Menu, // Menu is still used for the mobile sidebar trigger, but the header is changed
   Briefcase,
   CalendarDays,
@@ -20,10 +19,8 @@ import {
   GraduationCap,
   FileText,
   FileCheck,
-  Languages,
   Moon,
   Sun,
-  Settings,
   Building2,
   User,
   Award,
@@ -50,7 +47,6 @@ import {
   SidebarHeader,
   SidebarFooter,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -59,11 +55,9 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { LanguageProvider, useLanguage } from "@/components/i18n/LanguageContext";
-import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
 import AIAssistant from "@/components/ai/AIAssistant";
-import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
 import GlobalHeader from "@/components/layout/GlobalHeader";
@@ -93,7 +87,7 @@ const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
-  const [showNotifications, setShowNotifications] = useState(false); // Added showNotifications state
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
@@ -646,8 +640,6 @@ const LayoutContent = ({ children, currentPageName }) => {
                         </p>
                       </div>
                     </div>
-                    {/* ThemeToggle moved here as per outline */}
-                    <ThemeToggle /> 
                   </div>
                 </SidebarFooter>
               </Sidebar>
