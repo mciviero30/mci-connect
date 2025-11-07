@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +43,7 @@ export default function AppSwitcher({ currentApp = 'mci-connect' }) {
         : 'Management, Sales & Finance',
       icon: Building2,
       color: 'from-purple-500 to-indigo-500',
-      url: '/Dashboard',
+      url: '/AdminDashboard', // ✅ FIXED: Now redirects to AdminDashboard
       external: false // Internal navigation - unified portal
     }
   ];

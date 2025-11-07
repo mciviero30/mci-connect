@@ -48,6 +48,7 @@ import Configuracion from './pages/Configuracion';
 import AIExpensesAudit from './pages/AIExpensesAudit';
 import CompanyInfo from './pages/CompanyInfo';
 import ClientPortal from './pages/ClientPortal';
+import AdminDashboard from './pages/AdminDashboard';
 import Layout from './Layout.jsx';
 
 
@@ -102,6 +103,7 @@ export const PAGES = {
     "AIExpensesAudit": AIExpensesAudit,
     "CompanyInfo": CompanyInfo,
     "ClientPortal": ClientPortal,
+    "AdminDashboard": AdminDashboard,
 }
 
 export const pagesConfig = {
