@@ -10,12 +10,13 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from '@/components/ui/select';
-import { Bell, Languages, User, Settings, LogOut, Menu, Briefcase } from 'lucide-react';
+import { Bell, Languages, User, Settings, LogOut, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useLanguage } from '../i18n/LanguageContext';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import AppSwitcher from './AppSwitcher';
 
 export default function GlobalHeader({ user, onNotificationsClick, unreadNotifications = 0 }) {
   const { language, changeLanguage, t } = useLanguage();
@@ -36,7 +37,7 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm">
       <div className="flex h-16 items-center justify-between gap-4 px-4 lg:px-6">
-        {/* LEFT SECTION: Mobile Menu + App Name/Logo */}
+        {/* LEFT SECTION: Mobile Menu + App Switcher */}
         <div className="flex items-center gap-3 min-w-0 flex-1 lg:flex-initial">
           {/* Mobile Sidebar Trigger */}
           <div className="lg:hidden flex-shrink-0">
@@ -47,20 +48,8 @@ export default function GlobalHeader({ user, onNotificationsClick, unreadNotific
             </SidebarTrigger>
           </div>
 
-          {/* App Name & Logo - UNIFIED PORTAL */}
-          <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-500 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <Briefcase className="w-6 h-6 text-white" />
-            </div>
-            <div className="hidden md:block">
-              <h1 className="text-lg font-bold text-slate-900 leading-none">
-                MCI Connect
-              </h1>
-              <p className="text-xs text-slate-600 leading-none mt-0.5">
-                {language === 'es' ? 'Portal Unificado de Gestión' : 'Unified Management Portal'}
-              </p>
-            </div>
-          </Link>
+          {/* App Switcher - RESTORED */}
+          <AppSwitcher currentApp="mci-connect" />
         </div>
 
         {/* RIGHT SECTION: Language + Notifications + User Menu */}
