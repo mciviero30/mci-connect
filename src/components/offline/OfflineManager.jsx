@@ -14,23 +14,32 @@ export function OfflineProvider({ children }) {
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
 
+  // Get current user for notifications
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    // Load current user
     base44.auth.me().then(user => setCurrentUser(user)).catch(() => {});
   }, []);
 
+  // Send notification helper
   const sendNotification = async (title, message, type = 'info', priority = 'medium') => {
     if (!currentUser) return;
 
     const prefs = currentUser.notification_preferences || {};
     
+    // Check if notifications are enabled
     if (!prefs.enabled) return;
+    
+    // Check if urgent only mode is on and this is not urgent
     if (prefs.urgent_only && priority !== 'urgent') return;
+
+    // Check specific preference
     if (type === 'sync_complete' && !prefs.sync_complete) return;
     if (type === 'sync_failed' && !prefs.sync_failed) return;
 
     try {
+      // Create notification in database
       await base44.entities.Notification.create({
         recipient_email: currentUser.email,
         recipient_name: currentUser.full_name,
@@ -41,6 +50,7 @@ export function OfflineProvider({ children }) {
         sent_via_push: false
       });
 
+      // Send browser notification if permission granted
       if ('Notification' in window && Notification.permission === 'granted') {
         new Notification(title, {
           body: message,
@@ -56,6 +66,7 @@ export function OfflineProvider({ children }) {
   };
 
   useEffect(() => {
+    // Update pending count from localStorage
     const updatePendingCount = () => {
       try {
         const queue = JSON.parse(localStorage.getItem('mutation_queue') || '[]');
@@ -66,7 +77,7 @@ export function OfflineProvider({ children }) {
     };
 
     updatePendingCount();
-    const interval = setInterval(updatePendingCount, 2000);
+    const interval = setInterval(updatePendingCount, 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -75,10 +86,6 @@ export function OfflineProvider({ children }) {
     const handleOnline = async () => {
       console.log('🌐 Back online - starting sync...');
       setIsOnline(true);
-      
-      // Small delay to ensure connection is stable
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setIsSyncing(true);
 
       try {
@@ -87,6 +94,7 @@ export function OfflineProvider({ children }) {
         if (synced > 0) {
           console.log(`✅ Synced ${synced} operations successfully`);
           
+          // Send success notification
           await sendNotification(
             '✅ Sync Complete!',
             `Successfully synced ${synced} pending ${synced === 1 ? 'operation' : 'operations'}.`,
@@ -96,6 +104,7 @@ export function OfflineProvider({ children }) {
         }
 
         if (failed > 0) {
+          // Send failure notification
           await sendNotification(
             '⚠️ Sync Partial',
             `${synced} operations synced, but ${failed} failed. Please check your data.`,
@@ -104,10 +113,12 @@ export function OfflineProvider({ children }) {
           );
         }
 
+        // Invalidate queries to refresh data
         queryClient.invalidateQueries();
       } catch (error) {
         console.error('❌ Sync failed:', error);
         
+        // Send failure notification
         await sendNotification(
           '❌ Sync Failed',
           'Some operations could not be synced. Please check your connection and try again.',
@@ -140,8 +151,7 @@ export function OfflineProvider({ children }) {
 
   return (
     <OfflineContext.Provider value={{ isOnline, pendingCount, isSyncing }}>
-      {/* FIXED: Pass isOnline and isSyncing to OfflineIndicator */}
-      <OfflineIndicator isOnline={isOnline} isSyncing={isSyncing} />
+      <OfflineIndicator />
       {children}
     </OfflineContext.Provider>
   );

@@ -46,7 +46,7 @@ export default function Dashboard() {
 
   const isAdmin = user?.role === 'admin';
 
-  // EMPLOYEE QUERIES - Only for non-admin users - OPTIMIZED
+  // EMPLOYEE QUERIES - Only for non-admin users
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['myTimeEntries', user?.email],
     queryFn: async () => {
@@ -54,10 +54,10 @@ export default function Dashboard() {
       return base44.entities.TimeEntry.filter({
         employee_email: user.email,
         status: 'approved'
-      }, '-date', 50); // Reduced from 100
+      }, '-date', 100);
     },
     enabled: !!user?.email && !isAdmin,
-    staleTime: 120000, // Increased from 60000 (2 minutes)
+    staleTime: 60000,
     initialData: [],
   });
 
@@ -67,10 +67,10 @@ export default function Dashboard() {
       if (!user?.email) return [];
       return base44.entities.Expense.filter({
         employee_email: user.email
-      }, '-date', 30); // Reduced from 50
+      }, '-date', 50);
     },
     enabled: !!user?.email && !isAdmin,
-    staleTime: 120000, // Increased
+    staleTime: 60000,
     initialData: [],
   });
 
@@ -81,18 +81,18 @@ export default function Dashboard() {
       return base44.entities.DrivingLog.filter({
         employee_email: user.email,
         status: 'approved'
-      }, '-date', 30); // Reduced from 50
+      }, '-date', 50);
     },
     enabled: !!user?.email && !isAdmin,
-    staleTime: 120000,
+    staleTime: 60000,
     initialData: [],
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name', 50), // Added limit
+    queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
     enabled: !!user,
-    staleTime: 300000, // Increased to 5 minutes
+    staleTime: 120000,
     initialData: [],
   });
 
@@ -106,7 +106,7 @@ export default function Dashboard() {
 
       const allAssignments = await base44.entities.JobAssignment.filter({
         employee_email: user.email
-      }, '-date', 20); // Added limit
+      }, '-date');
 
       return allAssignments.filter(a => {
         const assignDate = new Date(a.date);
@@ -114,32 +114,32 @@ export default function Dashboard() {
       });
     },
     enabled: !!user?.email && !isAdmin,
-    staleTime: 180000, // 3 minutes
+    staleTime: 120000,
     initialData: [],
   });
 
-  // ADMIN QUERIES - Consolidated and optimized with MUCH higher staleTime
+  // ADMIN QUERIES - Consolidated and optimized
   const { data: allEmployees = [], isLoading: employeesLoading } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name', 200), // Added limit
+    queryFn: () => base44.entities.User.list('full_name'),
     enabled: isAdmin,
-    staleTime: 600000, // 10 minutes - employees don't change frequently
+    staleTime: 300000,
     initialData: [],
   });
 
   const { data: allTimeEntries = [], isLoading: timeEntriesLoading } = useQuery({
     queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 100), // Reduced from 200
+    queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200),
     enabled: isAdmin,
-    staleTime: 180000, // 3 minutes
+    staleTime: 120000,
     initialData: [],
   });
 
   const { data: allExpenses = [], isLoading: expensesLoading } = useQuery({
     queryKey: ['allExpenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 100), // Reduced from 200
+    queryFn: () => base44.entities.Expense.list('-date', 200),
     enabled: isAdmin,
-    staleTime: 180000,
+    staleTime: 120000,
     initialData: [],
   });
 
@@ -147,17 +147,16 @@ export default function Dashboard() {
     queryKey: ['recentRecognitions'],
     queryFn: () => base44.entities.Recognition.list('-date', 5),
     enabled: !!user,
-    staleTime: 600000, // 10 minutes
+    staleTime: 300000,
     initialData: [],
   });
 
-  // OPTIMIZED: Lazy load pending time entries - only when admin and tab is visible
+  // NEW: Query for pending time entries (admin only)
   const { data: pendingTimeEntries = [] } = useQuery({
     queryKey: ['pendingTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 50), // Reduced from 100
-    enabled: isAdmin && typeof document !== 'undefined' && !document.hidden, // Only load when page is visible
+    queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100),
+    enabled: isAdmin,
     staleTime: 60000,
-    refetchInterval: 120000, // Refetch every 2 minutes instead of constant
     initialData: [],
   });
 
@@ -253,7 +252,7 @@ export default function Dashboard() {
 
   const pendingTimeEntriesCount = pendingTimeEntries.length;
 
-  // OPTIMIZED: Show loading only on initial load
+  // Loading state
   if (userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -268,6 +267,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto">
+        {/* NEW: Pending Timesheet Alert for Admins */}
         {isAdmin && pendingTimeEntriesCount > 0 && (
           <Alert className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 shadow-lg">
             <AlertTriangle className="h-5 w-5 text-amber-600" />

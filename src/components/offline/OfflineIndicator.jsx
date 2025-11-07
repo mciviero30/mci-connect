@@ -1,8 +1,14 @@
+/**
+ * Prompt #85: Offline Indicator UI Component
+ * Shows offline badge and sync progress
+ */
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WifiOff, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { WifiOff, Wifi, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { getPendingCount, syncMutations } from './mutationQueue';
+import { getPendingCount, syncMutations, clearFailedMutations } from './mutationQueue';
 import { useToast } from '@/components/ui/toast';
 
 export default function OfflineIndicator({ isOnline, onSyncComplete }) {
@@ -19,7 +25,7 @@ export default function OfflineIndicator({ isOnline, onSyncComplete }) {
     };
 
     updateCount();
-    const interval = setInterval(updateCount, 5000);
+    const interval = setInterval(updateCount, 5000); // Check every 5 seconds
 
     return () => clearInterval(interval);
   }, []);
@@ -72,77 +78,93 @@ export default function OfflineIndicator({ isOnline, onSyncComplete }) {
     }
   };
 
-  // CRITICAL FIX: Only show when actually offline OR when syncing
-  const shouldShow = !isOnline || isSyncing;
+  const handleClearFailed = async () => {
+    const cleared = await clearFailedMutations();
+    toast({
+      title: '🗑️ Cleared Failed Mutations',
+      description: `Removed ${cleared} failed changes`,
+      variant: 'info'
+    });
+    const count = await getPendingCount();
+    setPendingCount(count);
+  };
+
+  // Don't show anything if online and no pending changes
+  if (isOnline && pendingCount === 0) {
+    return null;
+  }
 
   return (
     <AnimatePresence>
-      {shouldShow && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="fixed top-16 left-0 right-0 z-40 px-4 py-2"
-        >
-          <div className="max-w-7xl mx-auto">
-            {/* Offline Badge */}
-            {!isOnline && !isSyncing && (
-              <div className="bg-red-500 text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <WifiOff className="w-5 h-5 animate-pulse flex-shrink-0" />
-                  <div>
-                    <p className="font-bold text-sm">Offline Mode</p>
-                    {pendingCount > 0 && (
-                      <p className="text-xs opacity-90">
-                        {pendingCount} {pendingCount === 1 ? 'change' : 'changes'} queued for sync
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -50 }}
+        className="fixed top-4 right-4 z-50 max-w-sm"
+      >
+        {/* Offline Badge */}
+        {!isOnline && (
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="bg-red-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 mb-2"
+          >
+            <WifiOff className="w-5 h-5 animate-pulse" />
+            <div className="flex-1">
+              <p className="font-bold text-sm">Offline Mode</p>
+              <p className="text-xs opacity-90">
+                {pendingCount > 0 
+                  ? `${pendingCount} changes queued for sync` 
+                  : 'Changes will sync when online'}
+              </p>
+            </div>
+          </motion.div>
+        )}
 
-            {/* Syncing Progress */}
-            {isSyncing && syncProgress && (
-              <div className="bg-blue-500 text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" />
-                  <div>
-                    <p className="font-bold text-sm">Syncing Changes...</p>
-                    <p className="text-xs opacity-90">
-                      {syncProgress.current} of {syncProgress.total}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+        {/* Syncing Progress */}
+        {isSyncing && syncProgress && (
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="bg-blue-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 mb-2"
+          >
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <div className="flex-1">
+              <p className="font-bold text-sm">Syncing Changes...</p>
+              <p className="text-xs opacity-90">
+                {syncProgress.current} / {syncProgress.total}
+              </p>
+            </div>
+          </motion.div>
+        )}
 
-            {/* Pending Changes Ready to Sync (online but has pending) */}
-            {isOnline && pendingCount > 0 && !isSyncing && (
-              <div className="bg-amber-50 border border-amber-300 px-4 py-2.5 rounded-lg shadow-lg flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                  <div>
-                    <p className="font-bold text-sm text-slate-900">
-                      {pendingCount} Pending {pendingCount === 1 ? 'Change' : 'Changes'}
-                    </p>
-                    <p className="text-xs text-slate-600">Ready to sync</p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleSync}
-                  className="bg-[#3B9FF3] hover:bg-blue-600 text-white flex-shrink-0"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1.5" />
-                  Sync Now
-                </Button>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      )}
+        {/* Pending Changes Badge (when online) */}
+        {isOnline && pendingCount > 0 && !isSyncing && (
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="bg-white border-2 border-amber-400 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-amber-600" />
+            <div className="flex-1">
+              <p className="font-bold text-sm text-slate-900">
+                {pendingCount} Pending Changes
+              </p>
+              <p className="text-xs text-slate-600">Ready to sync</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={handleSync}
+                className="bg-[#3B9FF3] hover:bg-blue-600 text-white"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                Sync
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
     </AnimatePresence>
   );
 }
