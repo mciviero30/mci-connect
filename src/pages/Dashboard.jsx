@@ -213,7 +213,8 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  const totalWorkedHours = allTimeEntries.reduce((sum, e => sum + (e.hours_worked || 0)), 0);
+  // FIXED: Added missing closing parenthesis for 'e' parameter
+  const totalWorkedHours = allTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
 
   const upcomingBirthdays = allEmployees.filter(emp => {
     if (!emp.dob) return false;
