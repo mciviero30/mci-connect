@@ -1,47 +1,34 @@
-
-import React, { useState, useMemo } from "react";
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DollarSign,
   Clock,
-  Users,
-  Calendar as CalendarIcon,
   MapPin,
   TrendingUp,
   Package,
   Camera,
   ClipboardList,
-  FileText,
   ArrowLeft,
   Loader2,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  Image,
-  ExternalLink
+  AlertTriangle
 } from "lucide-react";
-import { createPageUrl } from '@/utils';
+import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
 import StatsCard from "../components/shared/StatsCard";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import BlueprintViewer from "../components/trabajos/BlueprintViewer";
-import ClientAccessManager from "../components/trabajos/ClientAccessManager";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get('id');
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
-
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const isAdmin = user?.role === 'admin';
 
   const { data: job, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
@@ -73,13 +60,6 @@ export default function JobDetails() {
     initialData: []
   });
 
-  const { data: assignments = [] } = useQuery({
-    queryKey: ['jobAssignments', jobId],
-    queryFn: () => base44.entities.JobAssignment.filter({ job_id: jobId }, '-date'),
-    enabled: !!jobId,
-    initialData: []
-  });
-
   const { data: jobFiles = [] } = useQuery({
     queryKey: ['jobFiles', jobId],
     queryFn: () => base44.entities.JobFile.filter({ job_id: jobId }),
@@ -89,13 +69,8 @@ export default function JobDetails() {
 
   const totalHours = timeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
   const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-  const totalPayrollCost = totalHours * 25; // Assuming a flat rate of $25/hour for simplicity, adjust as needed
+  const totalPayrollCost = totalHours * 25;
   const profit = (job?.contract_amount || 0) - totalPayrollCost - totalExpenses;
-
-  const approvedTimeEntries = timeEntries.filter(e => e.status === 'approved');
-  const pendingTimeEntries = timeEntries.filter(e => e.status === 'pending');
-  const approvedExpenses = expenses.filter(e => e.status === 'approved');
-  const pendingExpenses = expenses.filter(e => e.status === 'pending');
 
   if (jobLoading) {
     return (
@@ -109,7 +84,9 @@ export default function JobDetails() {
     return (
       <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">{language === 'es' ? 'Trabajo no encontrado' : 'Job not found'}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-4">
+            {language === 'es' ? 'Trabajo no encontrado' : 'Job not found'}
+          </h1>
           <Link to={createPageUrl('Trabajos')}>
             <Button className="bg-[#3B9FF3] hover:bg-blue-600 text-white">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -124,7 +101,6 @@ export default function JobDetails() {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <Link to={createPageUrl('Trabajos')}>
             <Button variant="ghost" className="mb-4 hover:bg-slate-100">
@@ -174,17 +150,6 @@ export default function JobDetails() {
               <ClipboardList className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Resumen' : 'Overview'}
             </TabsTrigger>
-            <TabsTrigger value="blueprints" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
-              <Image className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Planos y Tareas' : 'Blueprints & Tasks'}
-            </TabsTrigger>
-            {/* NEW TAB: Client Portal */}
-            {isAdmin && (
-              <TabsTrigger value="client-portal" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Portal Cliente' : 'Client Portal'}
-              </TabsTrigger>
-            )}
             <TabsTrigger value="hours" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Clock className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Horas' : 'Hours'}
@@ -278,18 +243,6 @@ export default function JobDetails() {
               </Card>
             </div>
           </TabsContent>
-
-          {/* Blueprints Tab */}
-          <TabsContent value="blueprints">
-            <BlueprintViewer jobId={jobId} jobName={job.name} isClientView={false} />
-          </TabsContent>
-
-          {/* NEW: Client Portal Tab */}
-          {isAdmin && (
-            <TabsContent value="client-portal">
-              <ClientAccessManager job={job} />
-            </TabsContent>
-          )}
 
           {/* Hours Tab */}
           <TabsContent value="hours">
@@ -460,47 +413,36 @@ export default function JobDetails() {
                   <div className="text-center py-12">
                     <Camera className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                     <p className="text-slate-500">{language === 'es' ? 'No hay fotos subidas' : 'No photos uploaded yet'}</p>
-                    <Link to={createPageUrl(`JobPhotos?jobId=${jobId}`)}>
-                      <Button className="mt-4 bg-[#3B9FF3] hover:bg-blue-600 text-white">
-                        <Camera className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Subir Fotos' : 'Upload Photos'}
-                      </Button>
-                    </Link>
+                    <p className="text-sm text-slate-400 mt-2">
+                      {language === 'es' 
+                        ? 'Las fotos del proyecto se suben desde MCI Field' 
+                        : 'Project photos are uploaded from MCI Field'}
+                    </p>
                   </div>
                 ) : (
-                  <>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {jobFiles.map(file => (
-                        <div key={file.id} className="relative group">
-                          <img
-                            src={file.file_url}
-                            alt={file.file_name}
-                            className="w-full h-48 object-cover rounded-lg border-2 border-slate-200 group-hover:border-blue-400 transition-all"
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 rounded-lg transition-all flex items-center justify-center">
-                            <a
-                              href={file.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Button variant="secondary" size="sm">
-                                {language === 'es' ? 'Ver Completa' : 'View Full'}
-                              </Button>
-                            </a>
-                          </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {jobFiles.map(file => (
+                      <div key={file.id} className="relative group">
+                        <img
+                          src={file.file_url}
+                          alt={file.file_name}
+                          className="w-full h-48 object-cover rounded-lg border-2 border-slate-200 group-hover:border-blue-400 transition-all"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 rounded-lg transition-all flex items-center justify-center">
+                          <a
+                            href={file.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Button variant="secondary" size="sm">
+                              {language === 'es' ? 'Ver Completa' : 'View Full'}
+                            </Button>
+                          </a>
                         </div>
-                      ))}
-                    </div>
-                    <div className="mt-6">
-                      <Link to={createPageUrl(`JobPhotos?jobId=${jobId}`)}>
-                        <Button className="bg-[#3B9FF3] hover:bg-blue-600 text-white">
-                          <Camera className="w-4 h-4 mr-2" />
-                          {language === 'es' ? 'Gestionar Fotos' : 'Manage Photos'}
-                        </Button>
-                      </Link>
-                    </div>
-                  </>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>
