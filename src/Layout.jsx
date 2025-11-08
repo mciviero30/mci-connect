@@ -37,8 +37,6 @@ import {
   Sparkles,
   Wallet,
   Globe,
-  ChevronDown,
-  ExternalLink
 } from "lucide-react";
 import {
   Sidebar,
@@ -68,13 +66,8 @@ import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+
+// DropdownMenu and related imports are removed as AppSelector is removed.
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -97,82 +90,7 @@ const ThemeToggle = () => {
   );
 };
 
-// NEW: App Selector Component (Prompt #92)
-const AppSelector = ({ language }) => {
-  const handleNavigate = (app) => {
-    if (app === 'modern-components') {
-      // Redirect to Modern Components Web (Base44 Dashboard) with SSO
-      const dashboardUrl = window.location.origin.replace('/#/', '/dashboard');
-      window.location.href = dashboardUrl;
-    } else {
-      // Reload MCI Connect (current app)
-      window.location.href = window.location.origin;
-    }
-  };
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-3 w-full hover:bg-slate-50 rounded-lg p-2 transition-colors">
-          <img
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-            alt="MCI Connect"
-            className="w-11 h-11 rounded-lg flex-shrink-0"
-          />
-          <div className="flex-1 text-left">
-            <h2 className="font-bold text-slate-900 text-lg">MCI Connect</h2>
-            <p className="text-xs text-[#3B9FF3]">
-              {language === 'es' ? 'Ejecución de Campo' : 'Field Execution'}
-            </p>
-          </div>
-          <ChevronDown className="w-4 h-4 text-slate-600 flex-shrink-0" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 bg-white border-slate-200 shadow-xl" align="start">
-        <div className="p-2">
-          <DropdownMenuItem
-            onClick={() => handleNavigate('mci-connect')}
-            className="flex items-start gap-3 p-3 cursor-pointer hover:bg-slate-50 rounded-lg"
-          >
-            <div className="p-2 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-lg mt-1">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-slate-900">MCI Connect</h3>
-              <p className="text-xs text-slate-600 mt-0.5">
-                {language === 'es' 
-                  ? 'Ejecución de Campo y Tareas Técnicas' 
-                  : 'Field Execution & Technical Tasks'}
-              </p>
-            </div>
-          </DropdownMenuItem>
-          
-          <DropdownMenuSeparator className="my-2" />
-          
-          <DropdownMenuItem
-            onClick={() => handleNavigate('modern-components')}
-            className="flex items-start gap-3 p-3 cursor-pointer hover:bg-slate-50 rounded-lg"
-          >
-            <div className="p-2 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg mt-1">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                Modern Components Web
-                <ExternalLink className="w-3 h-3 text-slate-500" />
-              </h3>
-              <p className="text-xs text-slate-600 mt-0.5">
-                {language === 'es' 
-                  ? 'Gestión, Ventas y Finanzas' 
-                  : 'Management, Sales & Finance'}
-              </p>
-            </div>
-          </DropdownMenuItem>
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+// REMOVED: AppSelector Component - No longer needed
 
 const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
@@ -604,9 +522,21 @@ const LayoutContent = ({ children, currentPageName }) => {
           `}</style>
 
           <Sidebar className="border-none bg-white" style={{background: 'rgb(255, 255, 255)', borderRight: '1px solid rgb(226, 232, 240)'}}>
-            {/* NEW: Prompt #92 - App Selector in Header */}
+            {/* UPDATED: Simple Header without AppSelector */}
             <SidebarHeader className="p-4 border-b flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
-              <AppSelector language={language} />
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                  alt="MCI Connect"
+                  className="w-11 h-11 rounded-lg flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <h2 className="font-bold text-slate-900 text-lg">MCI Connect</h2>
+                  <p className="text-xs text-[#3B9FF3]">
+                    {language === 'es' ? 'Sistema Back-Office' : 'Back-Office System'}
+                  </p>
+                </div>
+              </div>
             </SidebarHeader>
 
             <SidebarContent 
