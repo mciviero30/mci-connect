@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -45,7 +46,7 @@ export default function AIAssistant({ currentPage, pageContext = {} }) {
     if (isOpen && messages.length === 0) {
       const welcomeMsg = language === 'es' 
         ? `¡Hola ${user?.first_name || 'Usuario'}! 👋 Soy tu asistente de IA para MCI Connect. Puedo ayudarte con:\n\n• Responder preguntas sobre funciones\n• Resumir reportes y rendimiento\n• Crear entradas de trabajo, gastos y facturas\n• Analizar datos y sugerir mejoras\n\n¿En qué puedo ayudarte hoy?`
-        : `Hi ${user?.first_name || 'User'}! 👋 I'm your AI assistant for MCI Connect. I can help you:\n\n• Answer questions about features\n• Summarize reports and performance\n• Create jobs, expenses, and invoices\n• Analyze data and suggest improvements\n\n What can I help you with today?`;
+        : `Hi ${user?.first_name || 'User'}! 👋 I'm your AI assistant for MCI Connect. I can help you:\n\n• Answer questions about features\n• Summarize reports and performance\n• Create jobs, expenses, and invoices\n• Analyze data and suggest improvements\n\nWhat can I help you with today?`;
       
       setMessages([{
         role: 'assistant',
@@ -208,18 +209,21 @@ User question: ${userMessage}`;
             <Button
               onClick={() => setIsOpen(true)}
               size="lg"
-              className="h-14 w-14 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-2xl shadow-purple-500/50 group"
+              className="h-16 px-6 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-2xl shadow-purple-500/50 group flex items-center gap-3"
             >
-              <Sparkles className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+              <Sparkles className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              <span className="text-white font-semibold text-sm">
+                {language === 'es' ? 'Asistente IA' : 'AI Assistant'}
+              </span>
             </Button>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="absolute bottom-full right-0 mb-2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs whitespace-nowrap shadow-lg"
+              className="absolute bottom-full right-0 mb-2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs whitespace-nowrap shadow-lg pointer-events-none"
             >
               {language === 'es' ? '¡Pregúntame algo!' : 'Ask me anything!'}
-              <div className="absolute top-full right-3 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900" />
+              <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900" />
             </motion.div>
           </motion.div>
         )}

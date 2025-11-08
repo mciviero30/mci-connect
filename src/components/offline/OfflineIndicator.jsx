@@ -89,82 +89,85 @@ export default function OfflineIndicator({ isOnline, onSyncComplete }) {
     setPendingCount(count);
   };
 
-  // Don't show anything if online and no pending changes
-  if (isOnline && pendingCount === 0) {
+  // FIXED: Don't show anything if online and no pending changes OR if syncing just completed
+  if ((isOnline && pendingCount === 0) || (isOnline && !isSyncing && pendingCount === 0)) {
     return null;
   }
 
   return (
     <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -50 }}
-        className="fixed top-4 right-4 z-50 max-w-sm"
-      >
-        {/* Offline Badge */}
-        {!isOnline && (
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="bg-red-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 mb-2"
-          >
-            <WifiOff className="w-5 h-5 animate-pulse" />
-            <div className="flex-1">
-              <p className="font-bold text-sm">Offline Mode</p>
-              <p className="text-xs opacity-90">
-                {pendingCount > 0 
-                  ? `${pendingCount} changes queued for sync` 
-                  : 'Changes will sync when online'}
-              </p>
-            </div>
-          </motion.div>
-        )}
+      {/* Only show if offline OR if there are pending changes OR if currently syncing */}
+      {(!isOnline || pendingCount > 0 || isSyncing) && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className="fixed top-4 right-4 z-50 max-w-sm"
+        >
+          {/* Offline Badge */}
+          {!isOnline && (
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="bg-red-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 mb-2"
+            >
+              <WifiOff className="w-5 h-5 animate-pulse" />
+              <div className="flex-1">
+                <p className="font-bold text-sm">Offline Mode</p>
+                <p className="text-xs opacity-90">
+                  {pendingCount > 0 
+                    ? `${pendingCount} changes queued for sync` 
+                    : 'Changes will sync when online'}
+                </p>
+              </div>
+            </motion.div>
+          )}
 
-        {/* Syncing Progress */}
-        {isSyncing && syncProgress && (
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="bg-blue-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 mb-2"
-          >
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <div className="flex-1">
-              <p className="font-bold text-sm">Syncing Changes...</p>
-              <p className="text-xs opacity-90">
-                {syncProgress.current} / {syncProgress.total}
-              </p>
-            </div>
-          </motion.div>
-        )}
+          {/* Syncing Progress */}
+          {isSyncing && syncProgress && (
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="bg-blue-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 mb-2"
+            >
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <div className="flex-1">
+                <p className="font-bold text-sm">Syncing Changes...</p>
+                <p className="text-xs opacity-90">
+                  {syncProgress.current} / {syncProgress.total}
+                </p>
+              </div>
+            </motion.div>
+          )}
 
-        {/* Pending Changes Badge (when online) */}
-        {isOnline && pendingCount > 0 && !isSyncing && (
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="bg-white border-2 border-amber-400 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3"
-          >
-            <AlertCircle className="w-5 h-5 text-amber-600" />
-            <div className="flex-1">
-              <p className="font-bold text-sm text-slate-900">
-                {pendingCount} Pending Changes
-              </p>
-              <p className="text-xs text-slate-600">Ready to sync</p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={handleSync}
-                className="bg-[#3B9FF3] hover:bg-blue-600 text-white"
-              >
-                <RefreshCw className="w-4 h-4 mr-1" />
-                Sync
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </motion.div>
+          {/* Pending Changes Badge (when online) - Only show if not syncing */}
+          {isOnline && pendingCount > 0 && !isSyncing && (
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="bg-white border-2 border-amber-400 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3"
+            >
+              <AlertCircle className="w-5 h-5 text-amber-600" />
+              <div className="flex-1">
+                <p className="font-bold text-sm text-slate-900">
+                  {pendingCount} Pending Changes
+                </p>
+                <p className="text-xs text-slate-600">Ready to sync</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSync}
+                  className="bg-[#3B9FF3] hover:bg-blue-600 text-white"
+                >
+                  <RefreshCw className="w-4 h-4 mr-1" />
+                  Sync
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }
