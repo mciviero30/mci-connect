@@ -197,7 +197,7 @@ User question: ${userMessage}`;
 
   return (
     <>
-      {/* FIXED: Floating Action Button positioned to avoid overlap with notifications */}
+      {/* FIXED: Cleaner button without separate tooltip */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
@@ -209,22 +209,21 @@ User question: ${userMessage}`;
             <Button
               onClick={() => setIsOpen(true)}
               size="lg"
-              className="h-16 px-6 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-2xl shadow-purple-500/50 group flex items-center gap-3"
+              className="h-14 px-5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-2xl shadow-purple-500/30 group flex items-center gap-2.5 transition-all hover:scale-105"
+              title={language === 'es' ? '¡Pregúntame algo!' : 'Ask me anything!'}
             >
-              <Sparkles className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-              <span className="text-white font-semibold text-sm">
-                {language === 'es' ? 'Asistente IA' : 'AI Assistant'}
-              </span>
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
+                <div className="flex flex-col items-start">
+                  <span className="text-white font-bold text-sm leading-tight">
+                    {language === 'es' ? 'Asistente IA' : 'AI Assistant'}
+                  </span>
+                  <span className="text-white/80 text-[10px] leading-tight">
+                    {language === 'es' ? '¡Pregúntame!' : 'Ask me anything!'}
+                  </span>
+                </div>
+              </div>
             </Button>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="absolute bottom-full right-0 mb-2 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs whitespace-nowrap shadow-lg pointer-events-none"
-            >
-              {language === 'es' ? '¡Pregúntame algo!' : 'Ask me anything!'}
-              <div className="absolute top-full right-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900" />
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
