@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -17,7 +16,8 @@ import {
   Briefcase,
   FileText,
   Users,
-  Lightbulb
+  Lightbulb,
+  MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -197,14 +197,14 @@ User question: ${userMessage}`;
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* FIXED: Floating Action Button positioned to avoid overlap with notifications */}
       <AnimatePresence>
         {!isOpen && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className="fixed bottom-6 right-6 z-40"
           >
             <Button
               onClick={() => setIsOpen(true)}
@@ -236,7 +236,7 @@ User question: ${userMessage}`;
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-48px)]"
+            className="fixed bottom-6 right-6 z-40 w-[380px] max-w-[calc(100vw-48px)]"
           >
             <Card className="shadow-2xl border-slate-200 overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-4">

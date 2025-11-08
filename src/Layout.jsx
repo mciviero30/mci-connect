@@ -37,6 +37,8 @@ import {
   Sparkles,
   Wallet,
   Globe,
+  ChevronDown,
+  ExternalLink
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,8 +68,13 @@ import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
-
-// DropdownMenu and related imports are removed as AppSelector is removed.
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -533,7 +540,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                 <div className="flex-1">
                   <h2 className="font-bold text-slate-900 text-lg">MCI Connect</h2>
                   <p className="text-xs text-[#3B9FF3]">
-                    {language === 'es' ? 'Sistema Back-Office' : 'Back-Office System'}
+                    {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
                   </p>
                 </div>
               </div>
