@@ -213,7 +213,7 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  const totalWorkedHours = allTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
+  const totalWorkedHours = allTimeEntries.reduce((sum, e => sum + (e.hours_worked || 0)), 0);
 
   const upcomingBirthdays = allEmployees.filter(emp => {
     if (!emp.dob) return false;
@@ -292,6 +292,7 @@ export default function Dashboard() {
           </Alert>
         )}
 
+        {/* Header with App Context Badge */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
             <button
@@ -320,9 +321,14 @@ export default function Dashboard() {
               <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#3B9FF3] to-blue-600 bg-clip-text text-transparent mb-2">
                 {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
               </h1>
-              <p className="text-slate-600 text-lg">
-                {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-slate-600 text-lg">
+                  {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
+                </p>
+                <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md">
+                  MCI Connect • Back-Office
+                </Badge>
+              </div>
             </div>
           </div>
         </div>

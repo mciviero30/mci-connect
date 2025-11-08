@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 export default function PageHeader({ 
   title, 
@@ -9,14 +10,15 @@ export default function PageHeader({
   icon: Icon, 
   actions, 
   showBack = false,
-  stats = []
+  stats = [],
+  appBadge = null
 }) {
   const navigate = useNavigate();
 
   return (
     <div className="mb-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 flex-1">
           {showBack && (
             <Button
               variant="outline"
@@ -27,14 +29,19 @@ export default function PageHeader({
               <ArrowLeft className="w-5 h-5" />
             </Button>
           )}
-          <div>
-            <div className="flex items-center gap-3 mb-2">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               {Icon && (
                 <div className="p-3 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl shadow-lg">
                   <Icon className="w-6 h-6 text-white" />
                 </div>
               )}
               <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{title}</h1>
+              {appBadge && (
+                <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md">
+                  {appBadge}
+                </Badge>
+              )}
             </div>
             {description && (
               <p className="text-slate-600 ml-[60px]">{description}</p>
