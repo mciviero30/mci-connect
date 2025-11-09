@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Eye, Trash2 } from "lucide-react";
+import { FileText, Plus, Eye, Trash2, FileSpreadsheet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -13,12 +12,15 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import QuoteXLSXImporter from "../components/quotes/QuoteXLSXImporter";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [showImporter, setShowImporter] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const { data: quotes, isLoading } = useQuery({
@@ -35,7 +37,6 @@ export default function Estimados() {
     }
   });
 
-  // NEW: Helper function to calculate days in current status
   const getDaysInStatus = (quote) => {
     const statusDate = quote.updated_date || quote.created_date;
     const daysDiff = Math.floor((new Date() - new Date(statusDate)) / (1000 * 60 * 60 * 24));
@@ -61,7 +62,6 @@ export default function Estimados() {
     converted_to_invoice: "bg-purple-50 text-purple-700 border-purple-200"
   };
 
-  // NEW: Status display labels
   const getStatusLabel = (status) => {
     const labels = {
       draft: language === 'es' ? 'Borrador' : 'Draft',
@@ -84,12 +84,23 @@ export default function Estimados() {
           icon={FileText}
           actions={
             isAdmin && (
-              <Link to={createPageUrl("CrearEstimado")}>
-                <Button size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] hover:to-blue-700 text-white shadow-lg">
-                  <Plus className="w-5 h-5 mr-2" />
-                  {t('newQuote')}
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowImporter(true)}
+                  variant="outline"
+                  size="lg" 
+                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
+                >
+                  <FileSpreadsheet className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Importar Excel' : 'Import Excel'}
                 </Button>
-              </Link>
+                <Link to={createPageUrl("CrearEstimado")}>
+                  <Button size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] hover:to-blue-700 text-white shadow-lg">
+                    <Plus className="w-5 h-5 mr-2" />
+                    {t('newQuote')}
+                  </Button>
+                </Link>
+              </div>
             )
           }
         />
@@ -174,13 +185,11 @@ export default function Estimados() {
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
-                      {/* NEW: Show Customer Name prominently */}
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-bold text-xl text-slate-900">{quote.customer_name}</h3>
                         <Badge className={statusColors[quote.status] || statusColors.draft}>
                           {getStatusLabel(quote.status)}
                         </Badge>
-                        {/* NEW: Days in status indicator */}
                         <Badge variant="outline" className="text-xs text-slate-600 border-slate-300">
                           {daysInStatus === 0 
                             ? (language === 'es' ? 'Hoy' : 'Today')
@@ -201,7 +210,6 @@ export default function Estimados() {
                             <span>{t('validUntil')}: {format(new Date(quote.valid_until), 'MMM dd, yyyy')}</span>
                           </>
                         )}
-                        {/* NEW: Show team name if available */}
                         {quote.team_name && (
                           <>
                             <span>•</span>
@@ -266,6 +274,18 @@ export default function Estimados() {
             </Card>
           )}
         </div>
+
+        {/* Import Dialog */}
+        <Dialog open={showImporter} onOpenChange={setShowImporter}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-slate-900">
+                {language === 'es' ? 'Importar Estimados desde Excel' : 'Import Quotes from Excel'}
+              </DialogTitle>
+            </DialogHeader>
+            <QuoteXLSXImporter onComplete={() => setShowImporter(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

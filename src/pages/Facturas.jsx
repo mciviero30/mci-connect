@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileCheck, Plus, Eye, Trash2, DollarSign } from "lucide-react";
+import { FileCheck, Plus, Eye, Trash2, DollarSign, FileSpreadsheet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -13,16 +12,19 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // NEW: Import Label
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import InvoiceXLSXImporter from "../components/invoices/InvoiceXLSXImporter";
 
 export default function Facturas() {
-  const { t, language } = useLanguage(); // NEW: Destructure 'language'
+  const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false); // NEW: State for payment dialog
-  const [selectedInvoice, setSelectedInvoice] = useState(null); // NEW: State for selected invoice
-  const [paymentAmount, setPaymentAmount] = useState(""); // NEW: State for payment amount
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [showImporter, setShowImporter] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const { data: invoices, isLoading } = useQuery({
@@ -39,7 +41,6 @@ export default function Facturas() {
     }
   });
 
-  // NEW: Payment mutation
   const registerPaymentMutation = useMutation({
     mutationFn: async ({ invoiceId, amount }) => {
       const invoice = invoices.find(inv => inv.id === invoiceId);
@@ -55,8 +56,8 @@ export default function Facturas() {
         newStatus = 'paid';
       } else if (newAmountPaid > 0 && newAmountPaid < invoice.total) {
         newStatus = 'partial';
-      } else if (newAmountPaid <= 0 && invoice.total > 0) { // If payment was somehow 0 or less, but there's a total
-         newStatus = 'sent'; // Revert to sent if no payment is registered, might need specific logic here
+      } else if (newAmountPaid <= 0 && invoice.total > 0) {
+         newStatus = 'sent';
       }
 
       const updateData = {
@@ -66,9 +67,9 @@ export default function Facturas() {
       };
 
       if (newBalance <= 0) {
-        updateData.payment_date = new Date().toISOString().split('T')[0]; // Set payment date if fully paid
+        updateData.payment_date = new Date().toISOString().split('T')[0];
       } else if (newStatus === 'partial' && !invoice.payment_date) {
-         updateData.payment_date = new Date().toISOString().split('T')[0]; // Set payment date on first partial payment
+         updateData.payment_date = new Date().toISOString().split('T')[0];
       }
 
       return base44.entities.Invoice.update(invoiceId, updateData);
@@ -85,14 +86,12 @@ export default function Facturas() {
     }
   });
 
-  // NEW: Handler for registering payment
   const handleRegisterPayment = () => {
     if (!paymentAmount || parseFloat(paymentAmount) <= 0) {
       toast.error(language === 'es' ? 'Ingresa un monto válido' : 'Enter a valid amount');
       return;
     }
 
-    // Ensure the amount does not exceed the outstanding balance
     const outstandingBalance = selectedInvoice.balance || selectedInvoice.total;
     if (parseFloat(paymentAmount) > outstandingBalance) {
         toast.error(language === 'es' ? `El monto no puede exceder el saldo pendiente ($${outstandingBalance.toFixed(2)})` : `Amount cannot exceed outstanding balance ($${outstandingBalance.toFixed(2)})`);
@@ -105,14 +104,11 @@ export default function Facturas() {
     });
   };
 
-  // NEW: Helper function to calculate days overdue
   const getDaysOverdue = (invoice) => {
-    // Only calculate for 'sent' or 'overdue' invoices that are not paid or cancelled
     if (invoice.status === 'paid' || invoice.status === 'cancelled' || !invoice.due_date) return 0;
     
     const dueDate = new Date(invoice.due_date);
     const today = new Date();
-    // Set hours, minutes, seconds, milliseconds to 0 for accurate day comparison
     dueDate.setHours(0,0,0,0);
     today.setHours(0,0,0,0);
 
@@ -142,7 +138,6 @@ export default function Facturas() {
     cancelled: "bg-slate-100 text-slate-500 border-slate-200"
   };
 
-  // Helper function for status label (used in badge)
   const getStatusLabel = (status) => {
     return t(status) || status;
   }
@@ -150,7 +145,7 @@ export default function Facturas() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50"> {/* Changed background gradient */}
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('invoices')}
@@ -158,12 +153,23 @@ export default function Facturas() {
           icon={FileCheck}
           actions={
             isAdmin && (
-              <Link to={createPageUrl("CrearFactura")}>
-                <Button size="lg" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg">
-                  <Plus className="w-5 h-5 mr-2" />
-                  {t('newInvoice')}
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowImporter(true)}
+                  variant="outline"
+                  size="lg" 
+                  className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  <FileSpreadsheet className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Importar Excel' : 'Import Excel'}
                 </Button>
-              </Link>
+                <Link to={createPageUrl("CrearFactura")}>
+                  <Button size="lg" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg">
+                    <Plus className="w-5 h-5 mr-2" />
+                    {t('newInvoice')}
+                  </Button>
+                </Link>
+              </div>
             )
           }
         />
@@ -262,12 +268,11 @@ export default function Facturas() {
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap"> {/* Added flex-wrap */}
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <h3 className="font-bold text-xl text-slate-900">{invoice.customer_name}</h3>
                         <Badge className={statusColors[invoice.status] || statusColors.draft}>
                           {getStatusLabel(invoice.status)}
                         </Badge>
-                        {/* NEW: Overdue Alert */}
                         {isOverdue && (
                           <Badge className="bg-red-500 text-white font-bold animate-pulse">
                             {language === 'es' 
@@ -277,11 +282,11 @@ export default function Facturas() {
                         )}
                       </div>
                       <p className="text-slate-600 font-medium mb-1">{invoice.job_name}</p>
-                      <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap"> {/* Added flex-wrap */}
+                      <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
                         <span>{invoice.invoice_number}</span>
                         <span>•</span>
                         <span>{format(new Date(invoice.invoice_date), 'MMM dd, yyyy')}</span>
-                        {invoice.due_date && ( // Only show due date if it exists
+                        {invoice.due_date && (
                           <>
                             <span>•</span>
                             <span className={isOverdue ? 'text-red-600 font-semibold' : ''}>
@@ -316,7 +321,6 @@ export default function Facturas() {
                       </div>
 
                       <div className="flex gap-2">
-                        {/* NEW: Quick Payment Button */}
                         {isAdmin && invoice.status !== 'paid' && invoice.total > (invoice.amount_paid || 0) && (
                           <Button
                             variant="outline"
@@ -333,7 +337,7 @@ export default function Facturas() {
                           </Button>
                         )}
                         <Link to={createPageUrl(`VerFactura?id=${invoice.id}`)}>
-                          <Button variant="outline" size="icon" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"> {/* Changed button color */}
+                          <Button variant="outline" size="icon" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
                             <Eye className="w-4 h-4" />
                           </Button>
                         </Link>
@@ -377,7 +381,7 @@ export default function Facturas() {
           )}
         </div>
 
-        {/* NEW: Payment Dialog */}
+        {/* Payment Dialog */}
         {paymentDialogOpen && selectedInvoice && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
@@ -400,7 +404,7 @@ export default function Facturas() {
                   type="number"
                   step="0.01"
                   min="0"
-                  max={(selectedInvoice.balance || selectedInvoice.total).toFixed(2)} // Set max to outstanding balance
+                  max={(selectedInvoice.balance || selectedInvoice.total).toFixed(2)}
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
                   className="text-lg"
@@ -434,6 +438,18 @@ export default function Facturas() {
             </div>
           </div>
         )}
+
+        {/* Import Dialog */}
+        <Dialog open={showImporter} onOpenChange={setShowImporter}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-slate-900">
+                {language === 'es' ? 'Importar Facturas desde Excel' : 'Import Invoices from Excel'}
+              </DialogTitle>
+            </DialogHeader>
+            <InvoiceXLSXImporter onComplete={() => setShowImporter(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
