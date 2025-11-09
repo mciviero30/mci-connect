@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Eye, Trash2, FileSpreadsheet, Download, Copy } from "lucide-react";
+import { FileText, Plus, Eye, Trash2, FileSpreadsheet, Download, Copy, Filter, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -12,7 +12,9 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import QuoteXLSXImporter from "../components/quotes/QuoteXLSXImporter";
 
 export default function Estimados() {
@@ -21,11 +23,27 @@ export default function Estimados() {
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [showImporter, setShowImporter] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Advanced filter states
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [teamFilter, setTeamFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [notesKeyword, setNotesKeyword] = useState("");
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => base44.entities.Quote.list('-created_date'),
+    initialData: [],
+  });
+
+  const { data: teams } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
     initialData: [],
   });
 
@@ -133,11 +151,49 @@ export default function Estimados() {
     return daysDiff;
   };
 
-  const filteredQuotes = quotes.filter(quote =>
-    quote.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quote.quote_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quote.job_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const clearFilters = () => {
+    setDateFrom("");
+    setDateTo("");
+    setMinAmount("");
+    setMaxAmount("");
+    setTeamFilter("all");
+    setStatusFilter("all");
+    setNotesKeyword("");
+    setSearchTerm("");
+  };
+
+  const hasActiveFilters = dateFrom || dateTo || minAmount || maxAmount || teamFilter !== "all" || statusFilter !== "all" || notesKeyword;
+
+  const filteredQuotes = quotes.filter(quote => {
+    // Basic search
+    const matchesSearch = !searchTerm || 
+      quote.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quote.quote_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quote.job_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Date range filter
+    const quoteDate = new Date(quote.quote_date);
+    const matchesDateFrom = !dateFrom || quoteDate >= new Date(dateFrom);
+    const matchesDateTo = !dateTo || quoteDate <= new Date(dateTo);
+
+    // Amount range filter
+    const matchesMinAmount = !minAmount || (quote.total || 0) >= parseFloat(minAmount);
+    const matchesMaxAmount = !maxAmount || (quote.total || 0) <= parseFloat(maxAmount);
+
+    // Team filter
+    const matchesTeam = teamFilter === "all" || quote.team_id === teamFilter;
+
+    // Status filter
+    const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
+
+    // Notes keyword filter
+    const matchesNotes = !notesKeyword || 
+      (quote.notes && quote.notes.toLowerCase().includes(notesKeyword.toLowerCase()));
+
+    return matchesSearch && matchesDateFrom && matchesDateTo && 
+           matchesMinAmount && matchesMaxAmount && matchesTeam && 
+           matchesStatus && matchesNotes;
+  });
 
   const drafts = filteredQuotes.filter(q => q.status === 'draft');
   const sent = filteredQuotes.filter(q => q.status === 'sent');
@@ -265,14 +321,178 @@ export default function Estimados() {
           </Card>
         </div>
 
+        {/* Search and Filters */}
         <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
           <CardContent className="p-4">
-            <Input
-              placeholder={t('search') + "..."}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
-            />
+            <div className="flex gap-2 mb-4">
+              <Input
+                placeholder={t('search') + "..."}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
+              />
+              <Button
+                onClick={() => setShowFilters(!showFilters)}
+                variant={showFilters ? "default" : "outline"}
+                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Filtros' : 'Filters'}
+                {hasActiveFilters && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5">
+                    {[dateFrom, dateTo, minAmount, maxAmount, teamFilter !== "all", statusFilter !== "all", notesKeyword].filter(Boolean).length}
+                  </Badge>
+                )}
+              </Button>
+              {hasActiveFilters && (
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="bg-white border-red-300 text-red-700 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                </Button>
+              )}
+            </div>
+
+            {/* Advanced Filters Panel */}
+            {showFilters && (
+              <div className="border-t border-slate-200 pt-4 space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Date Range */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Fecha Desde' : 'Date From'}
+                    </Label>
+                    <Input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Fecha Hasta' : 'Date To'}
+                    </Label>
+                    <Input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Estado' : 'Status'}
+                    </Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-slate-200">
+                        <SelectItem value="all" className="text-slate-900">
+                          {language === 'es' ? 'Todos' : 'All'}
+                        </SelectItem>
+                        <SelectItem value="draft" className="text-slate-900">
+                          {language === 'es' ? 'Borrador' : 'Draft'}
+                        </SelectItem>
+                        <SelectItem value="sent" className="text-slate-900">
+                          {language === 'es' ? 'Enviado' : 'Sent'}
+                        </SelectItem>
+                        <SelectItem value="approved" className="text-slate-900">
+                          {language === 'es' ? 'Aprobado' : 'Approved'}
+                        </SelectItem>
+                        <SelectItem value="rejected" className="text-slate-900">
+                          {language === 'es' ? 'Rechazado' : 'Rejected'}
+                        </SelectItem>
+                        <SelectItem value="converted_to_invoice" className="text-slate-900">
+                          {language === 'es' ? 'Convertido' : 'Converted'}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Amount Range */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={minAmount}
+                      onChange={(e) => setMinAmount(e.target.value)}
+                      placeholder="$0.00"
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={maxAmount}
+                      onChange={(e) => setMaxAmount(e.target.value)}
+                      placeholder="$999,999.99"
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  {/* Team Filter */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Equipo' : 'Team'}
+                    </Label>
+                    <Select value={teamFilter} onValueChange={setTeamFilter}>
+                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-slate-200">
+                        <SelectItem value="all" className="text-slate-900">
+                          {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
+                        </SelectItem>
+                        {teams.map(team => (
+                          <SelectItem key={team.id} value={team.id} className="text-slate-900">
+                            {team.team_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Notes Keyword */}
+                <div>
+                  <Label className="text-slate-700 font-medium mb-2 block">
+                    {language === 'es' ? 'Buscar en Notas' : 'Search in Notes'}
+                  </Label>
+                  <Input
+                    value={notesKeyword}
+                    onChange={(e) => setNotesKeyword(e.target.value)}
+                    placeholder={language === 'es' ? 'Palabra clave en notas...' : 'Keyword in notes...'}
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                  <p className="text-sm text-slate-600">
+                    {language === 'es' 
+                      ? `Mostrando ${filteredQuotes.length} de ${quotes.length} estimados`
+                      : `Showing ${filteredQuotes.length} of ${quotes.length} quotes`}
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -376,8 +596,17 @@ export default function Estimados() {
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
               <CardContent className="p-12 text-center">
                 <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-700 mb-2">{t('noQuotes')}</h3>
-                {isAdmin && (
+                <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                  {hasActiveFilters 
+                    ? (language === 'es' ? 'No se encontraron estimados con estos filtros' : 'No quotes found with these filters')
+                    : t('noQuotes')}
+                </h3>
+                {hasActiveFilters && (
+                  <Button onClick={clearFilters} variant="outline" className="mt-4">
+                    {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
+                  </Button>
+                )}
+                {!hasActiveFilters && isAdmin && (
                   <Link to={createPageUrl("CrearEstimado")}>
                     <Button className="mt-4 bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white">
                       <Plus className="w-4 h-4 mr-2" />

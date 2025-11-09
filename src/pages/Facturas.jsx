@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileCheck, Plus, Eye, Trash2, DollarSign, FileSpreadsheet, Download, Copy } from "lucide-react";
+import { FileCheck, Plus, Eye, Trash2, DollarSign, FileSpreadsheet, Download, Copy, Filter, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -15,6 +14,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InvoiceXLSXImporter from "../components/invoices/InvoiceXLSXImporter";
 
 export default function Facturas() {
@@ -26,11 +26,27 @@ export default function Facturas() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [showImporter, setShowImporter] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Advanced filter states
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
+  const [teamFilter, setTeamFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [notesKeyword, setNotesKeyword] = useState("");
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices'],
     queryFn: () => base44.entities.Invoice.list('-created_date'),
+    initialData: [],
+  });
+
+  const { data: teams } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
     initialData: [],
   });
 
@@ -133,27 +149,9 @@ export default function Facturas() {
     });
   };
 
-  const getDaysOverdue = (invoice) => {
-    if (invoice.status === 'paid' || invoice.status === 'cancelled' || !invoice.due_date) return 0;
-    
-    const dueDate = new Date(invoice.due_date);
-    const today = new Date();
-    dueDate.setHours(0,0,0,0);
-    today.setHours(0,0,0,0);
-
-    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-    return daysDiff > 0 ? daysDiff : 0;
-  };
-
-  const filteredInvoices = invoices.filter(invoice =>
-    invoice.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.job_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const exportToExcel = () => {
     if (filteredInvoices.length === 0) {
-      toast.warning(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
+      alert(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
       return;
     }
 
@@ -199,7 +197,7 @@ export default function Facturas() {
       headers.join(','),
       ...rows.map(row => row.map(cell => {
         const cellStr = String(cell);
-        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n') || cellStr.includes('\r')) {
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
           return `"${cellStr.replace(/"/g, '""')}"`;
         }
         return cellStr;
@@ -219,6 +217,62 @@ export default function Facturas() {
 
     toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
   };
+
+  const getDaysOverdue = (invoice) => {
+    if (invoice.status === 'paid' || invoice.status === 'cancelled' || !invoice.due_date) return 0;
+    
+    const dueDate = new Date(invoice.due_date);
+    const today = new Date();
+    dueDate.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+
+    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysDiff > 0 ? daysDiff : 0;
+  };
+
+  const clearFilters = () => {
+    setDateFrom("");
+    setDateTo("");
+    setMinAmount("");
+    setMaxAmount("");
+    setTeamFilter("all");
+    setStatusFilter("all");
+    setNotesKeyword("");
+    setSearchTerm("");
+  };
+
+  const hasActiveFilters = dateFrom || dateTo || minAmount || maxAmount || teamFilter !== "all" || statusFilter !== "all" || notesKeyword;
+
+  const filteredInvoices = invoices.filter(invoice => {
+    // Basic search
+    const matchesSearch = !searchTerm ||
+      invoice.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.job_name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Date range filter
+    const invoiceDate = new Date(invoice.invoice_date);
+    const matchesDateFrom = !dateFrom || invoiceDate >= new Date(dateFrom);
+    const matchesDateTo = !dateTo || invoiceDate <= new Date(dateTo);
+
+    // Amount range filter
+    const matchesMinAmount = !minAmount || (invoice.total || 0) >= parseFloat(minAmount);
+    const matchesMaxAmount = !maxAmount || (invoice.total || 0) <= parseFloat(maxAmount);
+
+    // Team filter
+    const matchesTeam = teamFilter === "all" || invoice.team_id === teamFilter;
+
+    // Status filter
+    const matchesStatus = statusFilter === "all" || invoice.status === statusFilter;
+
+    // Notes keyword filter
+    const matchesNotes = !notesKeyword || 
+      (invoice.notes && invoice.notes.toLowerCase().includes(notesKeyword.toLowerCase()));
+
+    return matchesSearch && matchesDateFrom && matchesDateTo && 
+           matchesMinAmount && matchesMaxAmount && matchesTeam && 
+           matchesStatus && matchesNotes;
+  });
 
   const drafts = filteredInvoices.filter(i => i.status === 'draft');
   const paid = filteredInvoices.filter(i => i.status === 'paid');
@@ -355,14 +409,181 @@ export default function Facturas() {
           </Card>
         </div>
 
+        {/* Search and Filters */}
         <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
           <CardContent className="p-4">
-            <Input
-              placeholder={t('search') + "..."}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
-            />
+            <div className="flex gap-2 mb-4">
+              <Input
+                placeholder={t('search') + "..."}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
+              />
+              <Button
+                onClick={() => setShowFilters(!showFilters)}
+                variant={showFilters ? "default" : "outline"}
+                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Filtros' : 'Filters'}
+                {hasActiveFilters && (
+                  <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5">
+                    {[dateFrom, dateTo, minAmount, maxAmount, teamFilter !== "all", statusFilter !== "all", notesKeyword].filter(Boolean).length}
+                  </Badge>
+                )}
+              </Button>
+              {hasActiveFilters && (
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="bg-white border-red-300 text-red-700 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                </Button>
+              )}
+            </div>
+
+            {/* Advanced Filters Panel */}
+            {showFilters && (
+              <div className="border-t border-slate-200 pt-4 space-y-4">
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Date Range */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Fecha Desde' : 'Date From'}
+                    </Label>
+                    <Input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Fecha Hasta' : 'Date To'}
+                    </Label>
+                    <Input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Estado' : 'Status'}
+                    </Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-slate-200">
+                        <SelectItem value="all" className="text-slate-900">
+                          {language === 'es' ? 'Todos' : 'All'}
+                        </SelectItem>
+                        <SelectItem value="draft" className="text-slate-900">
+                          {language === 'es' ? 'Borrador' : 'Draft'}
+                        </SelectItem>
+                        <SelectItem value="sent" className="text-slate-900">
+                          {language === 'es' ? 'Enviado' : 'Sent'}
+                        </SelectItem>
+                        <SelectItem value="paid" className="text-slate-900">
+                          {language === 'es' ? 'Pagado' : 'Paid'}
+                        </SelectItem>
+                        <SelectItem value="partial" className="text-slate-900">
+                          {language === 'es' ? 'Parcial' : 'Partial'}
+                        </SelectItem>
+                        <SelectItem value="overdue" className="text-slate-900">
+                          {language === 'es' ? 'Vencido' : 'Overdue'}
+                        </SelectItem>
+                        <SelectItem value="cancelled" className="text-slate-900">
+                          {language === 'es' ? 'Cancelado' : 'Cancelled'}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Amount Range */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={minAmount}
+                      onChange={(e) => setMinAmount(e.target.value)}
+                      placeholder="$0.00"
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
+                    </Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={maxAmount}
+                      onChange={(e) => setMaxAmount(e.target.value)}
+                      placeholder="$999,999.99"
+                      className="bg-white border-slate-300 text-slate-900"
+                    />
+                  </div>
+
+                  {/* Team Filter */}
+                  <div>
+                    <Label className="text-slate-700 font-medium mb-2 block">
+                      {language === 'es' ? 'Equipo' : 'Team'}
+                    </Label>
+                    <Select value={teamFilter} onValueChange={setTeamFilter}>
+                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-slate-200">
+                        <SelectItem value="all" className="text-slate-900">
+                          {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
+                        </SelectItem>
+                        {teams.map(team => (
+                          <SelectItem key={team.id} value={team.id} className="text-slate-900">
+                            {team.team_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Notes Keyword */}
+                <div>
+                  <Label className="text-slate-700 font-medium mb-2 block">
+                    {language === 'es' ? 'Buscar en Notas' : 'Search in Notes'}
+                  </Label>
+                  <Input
+                    value={notesKeyword}
+                    onChange={(e) => setNotesKeyword(e.target.value)}
+                    placeholder={language === 'es' ? 'Palabra clave en notas...' : 'Keyword in notes...'}
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+                  <p className="text-sm text-slate-600">
+                    {language === 'es' 
+                      ? `Mostrando ${filteredInvoices.length} de ${invoices.length} facturas`
+                      : `Showing ${filteredInvoices.length} of ${invoices.length} invoices`}
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -490,8 +711,17 @@ export default function Facturas() {
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
               <CardContent className="p-12 text-center">
                 <FileCheck className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-700 mb-2">{t('noInvoices')}</h3>
-                {isAdmin && (
+                <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                  {hasActiveFilters 
+                    ? (language === 'es' ? 'No se encontraron facturas con estos filtros' : 'No invoices found with these filters')
+                    : t('noInvoices')}
+                </h3>
+                {hasActiveFilters && (
+                  <Button onClick={clearFilters} variant="outline" className="mt-4">
+                    {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
+                  </Button>
+                )}
+                {!hasActiveFilters && isAdmin && (
                   <Link to={createPageUrl("CrearFactura")}>
                     <Button className="mt-4 bg-gradient-to-r from-green-500 to-green-600 text-white">
                       <Plus className="w-4 h-4 mr-2" />
