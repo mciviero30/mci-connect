@@ -18,7 +18,9 @@ import {
   Eye,
   Trash2,
   Sparkles,
-  FolderOpen
+  FolderOpen,
+  FileSpreadsheet,
+  Copy
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PageHeader from '../components/shared/PageHeader';
@@ -56,6 +58,123 @@ export default function QuoteImporter() {
 
   const removeFile = (index) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const exportToExcel = () => {
+    if (extractedQuotes.length === 0) {
+      alert(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
+      return;
+    }
+
+    // Create CSV content
+    const headers = [
+      'Archivo',
+      'Número de Estimado',
+      'Cliente',
+      'Email Cliente',
+      'Teléfono Cliente',
+      'Proyecto',
+      'Dirección',
+      'Fecha Estimado',
+      'Válido Hasta',
+      'Subtotal',
+      'Impuesto %',
+      'Monto Impuesto',
+      'Total',
+      'Notas'
+    ];
+
+    const rows = extractedQuotes.map(quote => [
+      quote.fileName || '',
+      quote.quote_number || '',
+      quote.customer_name || '',
+      quote.customer_email || '',
+      quote.customer_phone || '',
+      quote.job_name || '',
+      quote.job_address || '',
+      quote.quote_date || '',
+      quote.valid_until || '',
+      quote.subtotal || 0,
+      quote.tax_rate || 0,
+      quote.tax_amount || 0,
+      quote.total || 0,
+      (quote.notes || '').replace(/\n/g, ' ')
+    ]);
+
+    // Convert to CSV
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => {
+        // Escape commas and quotes
+        const cellStr = String(cell);
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+          return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+      }).join(','))
+    ].join('\n');
+
+    // Add BOM for Excel UTF-8 support
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `estimados-extraidos-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    alert('✅ ' + (language === 'es' 
+      ? 'Archivo CSV descargado! Ábrelo con Excel.' 
+      : 'CSV file downloaded! Open it with Excel.'));
+  };
+
+  const copyToClipboard = () => {
+    if (extractedQuotes.length === 0) {
+      alert(language === 'es' ? '⚠️ No hay datos para copiar' : '⚠️ No data to copy');
+      return;
+    }
+
+    // Create tab-separated text for Excel paste
+    const headers = [
+      'Archivo',
+      'Número',
+      'Cliente',
+      'Email',
+      'Teléfono',
+      'Proyecto',
+      'Dirección',
+      'Fecha',
+      'Total'
+    ];
+
+    const rows = extractedQuotes.map(quote => [
+      quote.fileName || '',
+      quote.quote_number || '',
+      quote.customer_name || '',
+      quote.customer_email || '',
+      quote.customer_phone || '',
+      quote.job_name || '',
+      quote.job_address || '',
+      quote.quote_date || '',
+      `$${quote.total?.toFixed(2) || '0.00'}`
+    ]);
+
+    const tsvContent = [
+      headers.join('\t'),
+      ...rows.map(row => row.join('\t'))
+    ].join('\n');
+
+    navigator.clipboard.writeText(tsvContent).then(() => {
+      alert('✅ ' + (language === 'es' 
+        ? 'Datos copiados! Ahora pégalos en Excel con Ctrl+V' 
+        : 'Data copied! Now paste in Excel with Ctrl+V'));
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+      alert('❌ ' + (language === 'es' ? 'Error al copiar' : 'Failed to copy'));
+    });
   };
 
   const processFiles = async () => {
@@ -409,9 +528,29 @@ export default function QuoteImporter() {
                   <CheckCircle className="w-5 h-5 text-green-500" />
                   {language === 'es' ? 'Paso 2: Revisar Datos Extraídos' : 'Step 2: Review Extracted Data'}
                 </span>
-                <Badge className="bg-green-100 text-green-700 border-green-300">
-                  {extractedQuotes.length} {language === 'es' ? 'extraídos' : 'extracted'}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={copyToClipboard}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Copiar' : 'Copy'}
+                  </Button>
+                  <Button
+                    onClick={exportToExcel}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white border-green-300 text-green-700 hover:bg-green-50"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Excel
+                  </Button>
+                  <Badge className="bg-green-100 text-green-700 border-green-300">
+                    {extractedQuotes.length} {language === 'es' ? 'extraídos' : 'extracted'}
+                  </Badge>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -433,7 +572,7 @@ export default function QuoteImporter() {
                         <TableCell className="text-slate-900 text-sm font-medium">
                           <div className="flex items-center gap-2">
                             <FileText className="w-4 h-4 text-blue-500" />
-                            {quote.fileName}
+                            <span className="truncate max-w-xs">{quote.fileName}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-slate-700">{quote.customer_name || '-'}</TableCell>
@@ -549,6 +688,11 @@ export default function QuoteImporter() {
                   {language === 'es'
                     ? 'Revisa los datos extraídos - puedes eliminar cualquier registro que no se vea correcto'
                     : 'Review extracted data - you can remove any record that doesn\'t look correct'}
+                </li>
+                <li>
+                  {language === 'es'
+                    ? '📊 OPCIONAL: Exporta a Excel o copia los datos para revisarlos en Excel antes de importar'
+                    : '📊 OPTIONAL: Export to Excel or copy data to review in Excel before importing'}
                 </li>
                 <li>
                   {language === 'es'
