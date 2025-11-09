@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,9 +27,9 @@ export default function MileageApproval() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [rejectDialog, setRejectDialog] = useState({ open: false, log: null, notes: "" });
-  const [showCreateDialog, setShowCreateDialog] = useState(false); // Controls the employee selection dialog
-  const [selectedEmployee, setSelectedEmployee] = useState(null); // Stores the selected employee for mileage/expense creation
-  const [showMileageForm, setShowMileageForm] = useState(false); // Controls the mileage creation form dialog
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showMileageForm, setShowMileageForm] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
@@ -55,7 +54,7 @@ export default function MileageApproval() {
   const [mileageFormData, setMileageFormData] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
     miles: '',
-    hours: '', // Added hours field
+    hours: '',
     start_location: '',
     end_location: '',
     job_id: '',
@@ -64,15 +63,14 @@ export default function MileageApproval() {
 
   const createMileageMutation = useMutation({
     mutationFn: async (data) => {
-      // Ensure selectedEmployee is not null before proceeding
       if (!selectedEmployee) {
         throw new Error("No employee selected for mileage creation.");
       }
 
       const miles = parseFloat(data.miles) || 0;
       const hours = parseFloat(data.hours) || 0;
-      const ratePerMile = 0.60; // Example fixed rate
-      const hourlyRate = parseFloat(selectedEmployee.hourly_rate || 25); // Default hourly rate if not set for employee
+      const ratePerMile = 0.60;
+      const hourlyRate = parseFloat(selectedEmployee.hourly_rate || 25);
       const totalAmount = (miles * ratePerMile) + (hours * hourlyRate);
       const selectedJob = jobs.find(j => j.id === data.job_id);
 
@@ -83,15 +81,15 @@ export default function MileageApproval() {
         rate_per_mile: ratePerMile,
         total_amount: totalAmount,
         job_name: selectedJob?.name,
-        status: 'pending' // Admin created logs are pending by default
+        status: 'pending'
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
       setShowMileageForm(false);
-      setShowCreateDialog(false); // Close both dialogs
-      setSelectedEmployee(null); // Reset selected employee
-      setMileageFormData({ // Reset form data
+      setShowCreateDialog(false);
+      setSelectedEmployee(null);
+      setMileageFormData({
         date: format(new Date(), 'yyyy-MM-dd'),
         miles: '',
         hours: '',
@@ -100,11 +98,11 @@ export default function MileageApproval() {
         job_id: '',
         notes: ''
       });
-      alert('✅ Mileage record created!');
+      alert('✅ ' + (language === 'es' ? 'Registro de millas creado!' : 'Mileage record created!'));
     },
     onError: (error) => {
       console.error("Error creating mileage record:", error);
-      alert('❌ Failed to create mileage record: ' + error.message);
+      alert('❌ ' + (language === 'es' ? 'Error al crear registro: ' : 'Failed to create mileage record: ') + error.message);
     }
   });
 
@@ -112,11 +110,11 @@ export default function MileageApproval() {
     mutationFn: ({ id }) => base44.entities.DrivingLog.update(id, { status: 'approved' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
-      alert('✅ Mileage approved!');
+      alert('✅ ' + (language === 'es' ? 'Millas aprobadas!' : 'Mileage approved!'));
     },
     onError: (error) => {
       console.error("Error approving mileage:", error);
-      alert('❌ Failed to approve mileage: ' + error.message);
+      alert('❌ ' + (language === 'es' ? 'Error al aprobar: ' : 'Failed to approve mileage: ') + error.message);
     }
   });
 
@@ -128,23 +126,26 @@ export default function MileageApproval() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
       setRejectDialog({ open: false, log: null, notes: "" });
-      alert('✅ Mileage rejected');
+      alert('✅ ' + (language === 'es' ? 'Millas rechazadas' : 'Mileage rejected'));
     },
     onError: (error) => {
       console.error("Error rejecting mileage:", error);
-      alert('❌ Failed to reject mileage: ' + error.message);
+      alert('❌ ' + (language === 'es' ? 'Error al rechazar: ' : 'Failed to reject mileage: ') + error.message);
     }
   });
 
   const handleApprove = (log) => {
-    if (confirm(`Approve ${log.miles} miles for ${log.employee_name}?`)) {
+    const message = language === 'es' 
+      ? `¿Aprobar ${log.miles} millas para ${log.employee_name}?`
+      : `Approve ${log.miles} miles for ${log.employee_name}?`;
+    if (confirm(message)) {
       approveMutation.mutate({ id: log.id });
     }
   };
 
   const handleReject = () => {
     if (!rejectDialog.notes.trim()) {
-      alert('Please provide a reason for rejection');
+      alert(language === 'es' ? 'Por favor proporciona una razón para el rechazo' : 'Please provide a reason for rejection');
       return;
     }
     rejectMutation.mutate({
@@ -155,49 +156,47 @@ export default function MileageApproval() {
 
   const handleSelectEmployee = () => {
     if (selectedEmployee) {
-      setShowMileageForm(true); // Open the mileage form
+      setShowMileageForm(true);
     }
   };
 
   const handleSubmitMileage = (e) => {
     e.preventDefault();
     if (!selectedEmployee) {
-      alert('Please select an employee.');
+      alert(language === 'es' ? 'Por favor selecciona un empleado.' : 'Please select an employee.');
       return;
     }
     if (!mileageFormData.job_id) {
-      alert('Please select a job.');
+      alert(language === 'es' ? 'Por favor selecciona un trabajo.' : 'Please select a job.');
       return;
     }
     const miles = parseFloat(mileageFormData.miles);
     const hours = parseFloat(mileageFormData.hours);
     if ((isNaN(miles) || miles <= 0) && (isNaN(hours) || hours <= 0)) {
-      alert('Miles or Hours must be greater than zero.');
+      alert(language === 'es' ? 'Millas o Horas deben ser mayores a cero.' : 'Miles or Hours must be greater than zero.');
       return;
     }
     createMileageMutation.mutate(mileageFormData);
   };
 
-  // Filter active employees and jobs
   const activeEmployees = employees.filter(e => !e.employment_status || e.employment_status === 'active');
   const activeJobs = jobs.filter(j => j.status === 'active');
 
   const pendingLogs = drivingLogs.filter(d => d.status === 'pending');
   const approvedLogs = drivingLogs.filter(d => d.status === 'approved');
-  const rejectedLogs = drivingLogs.filter(d => d.status === 'rejected');
 
   const totalPendingMiles = pendingLogs.reduce((sum, d) => sum + (d.miles || 0), 0);
   const totalPendingAmount = pendingLogs.reduce((sum, d) => sum + (d.total_amount || 0), 0);
   const totalApprovedAmount = approvedLogs.reduce((sum, d) => sum + (d.total_amount || 0), 0);
 
   const statusConfig = {
-    pending: { label: language === 'es' ? 'Pendiente' : 'Pending', color: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-    approved: { label: language === 'es' ? 'Aprobado' : 'Approved', color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-    rejected: { label: language === 'es' ? 'Rechazado' : 'Rejected', color: "bg-red-500/20 text-red-400 border-red-500/30" }
+    pending: { label: language === 'es' ? 'Pendiente' : 'Pending', color: "bg-amber-100 text-amber-700 border-amber-300" },
+    approved: { label: language === 'es' ? 'Aprobado' : 'Approved', color: "bg-green-100 text-green-700 border-green-300" },
+    rejected: { label: language === 'es' ? 'Rechazado' : 'Rejected', color: "bg-red-100 text-red-700 border-red-300" }
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8" style={{background: 'linear-gradient(135deg, #0f1117 0%, #1a1d29 100%)'}}>
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Aprobación de Millas' : 'Mileage Approval'}
@@ -206,7 +205,7 @@ export default function MileageApproval() {
           actions={
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30"
+              className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               {language === 'es' ? 'Nueva Milla' : 'New Mileage'}
@@ -245,9 +244,9 @@ export default function MileageApproval() {
           />
         </div>
 
-        <Card className="glass-card shadow-xl border-slate-800">
-          <CardHeader className="border-b border-slate-800">
-            <CardTitle className="flex items-center gap-2 text-white">
+        <Card className="bg-white shadow-xl border-slate-200">
+          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Car className="w-5 h-5 text-[#3B9FF3]" />
               {language === 'es' ? 'Registros de Millas' : 'Mileage Records'}
             </CardTitle>
@@ -256,56 +255,56 @@ export default function MileageApproval() {
             {isLoading ? (
               <div className="p-6">
                 {[1, 2, 3, 4, 5].map(i => (
-                  <Skeleton key={i} className="h-16 w-full mb-3 bg-slate-800" />
+                  <Skeleton key={i} className="h-16 w-full mb-3 bg-slate-100" />
                 ))}
               </div>
             ) : drivingLogs.length === 0 ? (
-              <div className="p-12 text-center text-slate-400">
+              <div className="p-12 text-center text-slate-500">
                 {language === 'es' ? 'No hay registros de millas' : 'No mileage records'}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-800/50 border-slate-800 hover:bg-slate-800/50">
-                      <TableHead className="text-slate-300">{language === 'es' ? 'Empleado' : 'Employee'}</TableHead>
-                      <TableHead className="text-slate-300">{t('date')}</TableHead>
-                      <TableHead className="text-slate-300">{language === 'es' ? 'Desde' : 'From'}</TableHead>
-                      <TableHead className="text-slate-300">{language === 'es' ? 'Hasta' : 'To'}</TableHead>
-                      <TableHead className="text-slate-300">{t('job')}</TableHead>
-                      <TableHead className="text-right text-slate-300">{language === 'es' ? 'Millas' : 'Miles'}</TableHead>
-                      <TableHead className="text-right text-slate-300">{language === 'es' ? 'Tarifa' : 'Rate'}</TableHead>
-                      <TableHead className="text-right text-slate-300">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
-                      <TableHead className="text-slate-300">{t('status')}</TableHead>
-                      <TableHead className="text-right text-slate-300">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+                    <TableRow className="bg-slate-50 border-slate-200 hover:bg-slate-50">
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Empleado' : 'Employee'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Desde' : 'From'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Hasta' : 'To'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Millas' : 'Miles'}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Tarifa' : 'Rate'}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {drivingLogs.map((log) => {
                       const config = statusConfig[log.status] || statusConfig.pending;
                       return (
-                        <TableRow key={log.id} className="hover:bg-slate-800/30 border-slate-800">
-                          <TableCell className="font-medium text-white">{log.employee_name}</TableCell>
-                          <TableCell className="text-slate-300">
+                        <TableRow key={log.id} className="hover:bg-slate-50 border-slate-200">
+                          <TableCell className="font-medium text-slate-900">{log.employee_name}</TableCell>
+                          <TableCell className="text-slate-700">
                             {format(new Date(log.date), 'MMM dd, yyyy')}
                           </TableCell>
-                          <TableCell className="text-slate-300 text-sm">
+                          <TableCell className="text-slate-700 text-sm">
                             {log.start_location || '-'}
                           </TableCell>
-                          <TableCell className="text-slate-300 text-sm">
+                          <TableCell className="text-slate-700 text-sm">
                             {log.end_location || '-'}
                           </TableCell>
                           <TableCell>
                             {log.job_name ? (
-                              <span className="text-sm text-slate-300">{log.job_name}</span>
+                              <span className="text-sm text-slate-900 font-medium">{log.job_name}</span>
                             ) : (
-                              <span className="text-sm text-slate-600">-</span>
+                              <span className="text-sm text-slate-500">-</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-right font-semibold text-white">
+                          <TableCell className="text-right font-semibold text-slate-900">
                             {log.miles} mi
                           </TableCell>
-                          <TableCell className="text-right text-slate-400 text-sm">
+                          <TableCell className="text-right text-slate-600 text-sm">
                             ${log.rate_per_mile?.toFixed(2)}
                           </TableCell>
                           <TableCell className="text-right font-bold text-[#3B9FF3]">
@@ -324,7 +323,7 @@ export default function MileageApproval() {
                                   size="sm"
                                   onClick={() => handleApprove(log)}
                                   disabled={approveMutation.isPending}
-                                  className="hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300"
+                                  className="hover:bg-green-50 hover:text-green-700 text-slate-700"
                                 >
                                   <CheckCircle className="w-4 h-4 mr-1" />
                                   {language === 'es' ? 'Aprobar' : 'Approve'}
@@ -333,7 +332,7 @@ export default function MileageApproval() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => setRejectDialog({ open: true, log, notes: "" })}
-                                  className="hover:bg-red-500/20 hover:text-red-400 text-slate-300"
+                                  className="hover:bg-red-50 hover:text-red-700 text-slate-700"
                                 >
                                   <XCircle className="w-4 h-4 mr-1" />
                                   {language === 'es' ? 'Rechazar' : 'Reject'}
@@ -341,7 +340,7 @@ export default function MileageApproval() {
                               </div>
                             )}
                             {log.status === 'rejected' && log.notes && (
-                              <p className="text-xs text-red-400 text-right">{log.notes}</p>
+                              <p className="text-xs text-red-600 text-right">{log.notes}</p>
                             )}
                           </TableCell>
                         </TableRow>
@@ -355,30 +354,29 @@ export default function MileageApproval() {
         </Card>
 
         {/* Select Employee Dialog */}
-        {/* This dialog is the first step for creating a new mileage record */}
         <Dialog open={showCreateDialog && !showMileageForm} onOpenChange={(open) => {
           if (!open) {
             setShowCreateDialog(false);
             setSelectedEmployee(null);
           }
         }}>
-          <DialogContent className="bg-slate-900 border-slate-800">
+          <DialogContent className="bg-white border-slate-200">
             <DialogHeader>
-              <DialogTitle className="text-white">{t('selectEmployee')}</DialogTitle>
+              <DialogTitle className="text-slate-900">{t('selectEmployee')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label className="text-slate-300 mb-2 block">{t('employee')}</Label>
+                <Label className="text-slate-700 font-medium mb-2 block">{t('employee')}</Label>
                 <Select value={selectedEmployee?.id} onValueChange={(id) => {
                   const emp = activeEmployees.find(e => e.id === id);
                   setSelectedEmployee(emp);
                 }}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                     <SelectValue placeholder={t('selectEmployee')} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectContent className="bg-white border-slate-200">
                     {activeEmployees.map(emp => (
-                      <SelectItem key={emp.id} value={emp.id} className="text-white hover:bg-slate-700">
+                      <SelectItem key={emp.id} value={emp.id} className="text-slate-900 hover:bg-slate-100">
                         {emp.full_name || `${emp.first_name} ${emp.last_name}`}
                       </SelectItem>
                     ))}
@@ -397,13 +395,12 @@ export default function MileageApproval() {
         </Dialog>
 
         {/* Mileage Form Dialog */}
-        {/* This dialog opens after an employee is selected */}
         <Dialog open={showMileageForm} onOpenChange={(open) => {
           if (!open) {
             setShowMileageForm(false);
-            setShowCreateDialog(false); // Close the initial dialog context as well
-            setSelectedEmployee(null); // Reset selected employee
-            setMileageFormData({ // Reset form data
+            setShowCreateDialog(false);
+            setSelectedEmployee(null);
+            setMileageFormData({
               date: format(new Date(), 'yyyy-MM-dd'),
               miles: '',
               hours: '',
@@ -414,26 +411,26 @@ export default function MileageApproval() {
             });
           }
         }}>
-          <DialogContent className="max-w-2xl bg-slate-900 border-slate-800">
+          <DialogContent className="max-w-2xl bg-white border-slate-200">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-slate-900">
                 {language === 'es' ? 'Nuevo Registro de Millas' : 'New Mileage Record'} - {selectedEmployee?.full_name || `${selectedEmployee?.first_name} ${selectedEmployee?.last_name}`}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmitMileage} className="space-y-4 py-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-300">{t('date')}</Label>
+                  <Label className="text-slate-700 font-medium">{t('date')}</Label>
                   <Input
                     type="date"
                     value={mileageFormData.date}
                     onChange={(e) => setMileageFormData({...mileageFormData, date: e.target.value})}
                     required
-                    className="bg-slate-800 border-slate-700 text-white"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">{language === 'es' ? 'Millas' : 'Miles'} *</Label>
+                  <Label className="text-slate-700 font-medium">{language === 'es' ? 'Millas' : 'Miles'} *</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -441,58 +438,56 @@ export default function MileageApproval() {
                     value={mileageFormData.miles}
                     onChange={(e) => setMileageFormData({...mileageFormData, miles: e.target.value})}
                     placeholder="0.0"
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-slate-300">{language === 'es' ? 'Horas' : 'Hours'}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    value={mileageFormData.hours}
-                    onChange={(e) => setMileageFormData({...mileageFormData, hours: e.target.value})}
-                    placeholder="0.0"
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-slate-300">{language === 'es' ? 'Ubicación de Inicio' : 'Start Location'}</Label>
-                  <Input
-                    value={mileageFormData.start_location}
-                    onChange={(e) => setMileageFormData({...mileageFormData, start_location: e.target.value})}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-slate-300">{language === 'es' ? 'Ubicación de Destino' : 'End Location'}</Label>
-                  <Input
-                    value={mileageFormData.end_location}
-                    onChange={(e) => setMileageFormData({...mileageFormData, end_location: e.target.value})}
-                    className="bg-slate-800 border-slate-700 text-white"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
 
               <div>
-                <Label className="text-slate-300">{t('job')} *</Label>
+                <Label className="text-slate-700 font-medium">{language === 'es' ? 'Horas' : 'Hours'}</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={mileageFormData.hours}
+                  onChange={(e) => setMileageFormData({...mileageFormData, hours: e.target.value})}
+                  placeholder="0.0"
+                  className="bg-white border-slate-300 text-slate-900"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700 font-medium">{language === 'es' ? 'Ubicación de Inicio' : 'Start Location'}</Label>
+                  <Input
+                    value={mileageFormData.start_location}
+                    onChange={(e) => setMileageFormData({...mileageFormData, start_location: e.target.value})}
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700 font-medium">{language === 'es' ? 'Ubicación de Destino' : 'End Location'}</Label>
+                  <Input
+                    value={mileageFormData.end_location}
+                    onChange={(e) => setMileageFormData({...mileageFormData, end_location: e.target.value})}
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700 font-medium">{t('job')} *</Label>
                 <Select
                   value={mileageFormData.job_id}
                   onValueChange={(value) => setMileageFormData({...mileageFormData, job_id: value})}
                   required
                 >
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                     <SelectValue placeholder={language === 'es' ? 'Seleccionar trabajo' : 'Select job'} />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectContent className="bg-white border-slate-200">
                     {activeJobs.map(job => (
-                      <SelectItem key={job.id} value={job.id} className="text-white hover:bg-slate-700">
+                      <SelectItem key={job.id} value={job.id} className="text-slate-900 hover:bg-slate-100">
                         {job.name}
                       </SelectItem>
                     ))}
@@ -501,23 +496,23 @@ export default function MileageApproval() {
               </div>
 
               <div>
-                <Label className="text-slate-300">{t('notes')}</Label>
+                <Label className="text-slate-700 font-medium">{t('notes')}</Label>
                 <Textarea
                   value={mileageFormData.notes}
                   onChange={(e) => setMileageFormData({...mileageFormData, notes: e.target.value})}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-white border-slate-300 text-slate-900"
                 />
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="pt-4 border-t border-slate-200">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => {
                     setShowMileageForm(false);
-                    setShowCreateDialog(false); // Reset all relevant state
+                    setShowCreateDialog(false);
                     setSelectedEmployee(null);
-                    setMileageFormData({ // Reset form data
+                    setMileageFormData({
                       date: format(new Date(), 'yyyy-MM-dd'),
                       miles: '',
                       hours: '',
@@ -527,7 +522,7 @@ export default function MileageApproval() {
                       notes: ''
                     });
                   }}
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
                 >
                   {t('cancel')}
                 </Button>
@@ -536,41 +531,41 @@ export default function MileageApproval() {
                   disabled={createMileageMutation.isPending || !mileageFormData.job_id || (!parseFloat(mileageFormData.miles) && !parseFloat(mileageFormData.hours))}
                   className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
                 >
-                  {createMileageMutation.isPending ? t('saving') : t('save')}
+                  {createMileageMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : t('save')}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
 
-      {/* Reject Dialog - existing code */}
+      {/* Reject Dialog */}
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>
-        <DialogContent className="bg-slate-900 border-slate-800">
+        <DialogContent className="bg-white border-slate-200">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle className="text-slate-900">
               {language === 'es' ? 'Rechazar Millas' : 'Reject Mileage'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {rejectDialog.log && (
-              <div className="p-4 bg-slate-800/50 rounded-lg">
-                <p className="text-white mb-2">
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-slate-900 font-medium mb-2">
                   <strong>{rejectDialog.log.employee_name}</strong> - {rejectDialog.log.miles} {language === 'es' ? 'millas' : 'miles'}
                 </p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-600">
                   ${rejectDialog.log.total_amount?.toFixed(2)} - {format(new Date(rejectDialog.log.date), 'MMM dd, yyyy')}
                 </p>
               </div>
             )}
             <div className="space-y-2">
-              <Label className="text-slate-300">
+              <Label className="text-slate-700 font-medium">
                 {language === 'es' ? 'Motivo del rechazo' : 'Reason for rejection'}
               </Label>
               <Textarea
                 value={rejectDialog.notes}
                 onChange={(e) => setRejectDialog({ ...rejectDialog, notes: e.target.value })}
                 placeholder={language === 'es' ? 'Explica por qué se rechaza...' : 'Explain why this is rejected...'}
-                className="h-24 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                className="h-24 bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -578,14 +573,14 @@ export default function MileageApproval() {
             <Button
               variant="outline"
               onClick={() => setRejectDialog({ open: false, log: null, notes: "" })}
-              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700"
+              className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
             >
               {t('cancel')}
             </Button>
             <Button
               onClick={handleReject}
               disabled={!rejectDialog.notes.trim() || rejectMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-500 hover:bg-red-600 text-white"
             >
               {language === 'es' ? 'Rechazar' : 'Reject'}
             </Button>
