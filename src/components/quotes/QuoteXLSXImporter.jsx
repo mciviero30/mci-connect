@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,18 +8,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Upload, 
-  FileSpreadsheet, 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
+import {
+  Upload,
+  FileSpreadsheet,
+  CheckCircle,
+  XCircle,
+  Loader2,
   Download,
   Trash2,
   FileDown
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function QuoteXLSXImporter({ onComplete }) {
   const { language } = useLanguage();
@@ -27,6 +29,11 @@ export default function QuoteXLSXImporter({ onComplete }) {
   const [processing, setProcessing] = useState(false);
   const [extractedQuotes, setExtractedQuotes] = useState([]);
   const [error, setError] = useState(null);
+
+  // NEW: Filter states
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -58,7 +65,8 @@ export default function QuoteXLSXImporter({ onComplete }) {
       'item_3_unit',
       'item_3_unit_price',
       'tax_rate',
-      'notes'
+      'notes',
+      'status' // Added status to the template
     ];
 
     const example = [
@@ -83,7 +91,8 @@ export default function QuoteXLSXImporter({ onComplete }) {
       'days',
       '100',
       '7',
-      'Net 30'
+      'Net 30',
+      'draft' // Example status
     ];
 
     const csvContent = [
@@ -109,6 +118,10 @@ export default function QuoteXLSXImporter({ onComplete }) {
       setFile(selectedFile);
       setExtractedQuotes([]);
       setError(null);
+      // Reset filters when a new file is selected
+      setStatusFilter('all');
+      setMinAmount('');
+      setMaxAmount('');
     }
   };
 
@@ -155,12 +168,15 @@ export default function QuoteXLSXImporter({ onComplete }) {
                         unit: { type: "string" },
                         unit_price: { type: "number" },
                         total: { type: "number" }
-                      }
+                      },
+                      required: ["description", "quantity", "unit_price"] // Ensure basic item data
                     }
                   },
                   tax_rate: { type: "number" },
-                  notes: { type: "string" }
-                }
+                  notes: { type: "string" },
+                  status: { type: "string", enum: ["draft", "sent", "approved", "rejected", "expired"], default: "draft" }
+                },
+                required: ["customer_name", "quote_date"] // Ensure basic quote data
               }
             }
           }
@@ -169,7 +185,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
 
       if (result.status === 'success' && result.output?.quotes) {
         console.log('✅ Extracted quotes:', result.output.quotes);
-        
+
         // Calculate totals for each quote
         const quotesWithTotals = result.output.quotes.map(quote => {
           const items = quote.items || [];
@@ -177,10 +193,10 @@ export default function QuoteXLSXImporter({ onComplete }) {
             const itemTotal = (item.quantity || 0) * (item.unit_price || 0);
             return sum + itemTotal;
           }, 0);
-          
+
           const tax_amount = subtotal * ((quote.tax_rate || 0) / 100);
           const total = subtotal + tax_amount;
-          
+
           return {
             ...quote,
             items: items.map(item => ({
@@ -189,10 +205,11 @@ export default function QuoteXLSXImporter({ onComplete }) {
             })),
             subtotal,
             tax_amount,
-            total
+            total,
+            status: quote.status || 'draft' // Ensure status defaults if not provided
           };
         });
-        
+
         setExtractedQuotes(quotesWithTotals);
       } else {
         throw new Error(result.details || 'Failed to extract data from file');
@@ -205,18 +222,31 @@ export default function QuoteXLSXImporter({ onComplete }) {
     }
   };
 
+  // NEW: Apply filters to extracted quotes
+  const filteredQuotes = extractedQuotes.filter(quote => {
+    // Status filter
+    if (statusFilter !== 'all' && quote.status !== statusFilter) return false;
+
+    // Amount filters
+    const quoteTotal = quote.total || 0;
+    if (minAmount && quoteTotal < parseFloat(minAmount)) return false;
+    if (maxAmount && quoteTotal > parseFloat(maxAmount)) return false;
+
+    return true;
+  });
+
   const importMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (quotesToImport) => { // Accept quotesToImport as an argument
       const results = {
         success: 0,
         failed: 0,
         errors: []
       };
 
-      for (const quote of extractedQuotes) {
+      for (const quote of quotesToImport) { // Iterate over quotesToImport
         try {
           // Find or create customer
-          let customer = customers.find(c => 
+          let customer = customers.find(c =>
             c.email?.toLowerCase() === quote.customer_email?.toLowerCase() ||
             c.company?.toLowerCase() === quote.customer_name?.toLowerCase()
           );
@@ -253,7 +283,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
             tax_amount: quote.tax_amount || 0,
             total: quote.total || 0,
             notes: quote.notes || '',
-            status: 'draft'
+            status: quote.status || 'draft' // Use status from extracted data or default
           });
 
           results.success++;
@@ -272,15 +302,21 @@ export default function QuoteXLSXImporter({ onComplete }) {
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      
+
       alert(`✅ ${language === 'es' ? 'Importación completada' : 'Import completed'}!\n\n${language === 'es' ? 'Exitosos' : 'Success'}: ${results.success}\n${language === 'es' ? 'Fallidos' : 'Failed'}: ${results.failed}`);
-      
+
       if (onComplete) onComplete();
+      setExtractedQuotes([]); // Clear extracted quotes after successful import
+      setFile(null); // Clear the file after import
+      // Reset filters after import
+      setStatusFilter('all');
+      setMinAmount('');
+      setMaxAmount('');
     }
   });
 
-  const removeQuote = (index) => {
-    setExtractedQuotes(prev => prev.filter((_, i) => i !== index));
+  const removeQuote = (quoteToRemove) => {
+    setExtractedQuotes(prev => prev.filter(quote => quote !== quoteToRemove));
   };
 
   return (
@@ -363,7 +399,100 @@ export default function QuoteXLSXImporter({ onComplete }) {
         </Alert>
       )}
 
-      {/* Extracted Quotes */}
+      {/* NEW: Filters Section */}
+      {extractedQuotes.length > 0 && (
+        <Card className="bg-white shadow-xl border-slate-200">
+          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+            <CardTitle className="text-slate-900 text-lg">
+              {language === 'es' ? '🔍 Filtros Avanzados' : '🔍 Advanced Filters'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  {language === 'es' ? 'Estado' : 'Status'}
+                </Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-slate-200">
+                    <SelectItem value="all" className="text-slate-900">
+                      {language === 'es' ? 'Todos' : 'All'}
+                    </SelectItem>
+                    <SelectItem value="draft" className="text-slate-900">
+                      {language === 'es' ? 'Borrador' : 'Draft'}
+                    </SelectItem>
+                    <SelectItem value="sent" className="text-slate-900">
+                      {language === 'es' ? 'Enviado' : 'Sent'}
+                    </SelectItem>
+                    <SelectItem value="approved" className="text-slate-900">
+                      {language === 'es' ? 'Aprobado' : 'Approved'}
+                    </SelectItem>
+                    <SelectItem value="rejected" className="text-slate-900">
+                      {language === 'es' ? 'Rechazado' : 'Rejected'}
+                    </SelectItem>
+                    <SelectItem value="expired" className="text-slate-900">
+                      {language === 'es' ? 'Expirado' : 'Expired'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={minAmount}
+                  onChange={(e) => setMinAmount(e.target.value)}
+                  placeholder="$0.00"
+                  className="bg-white border-slate-300 text-slate-900"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={maxAmount}
+                  onChange={(e) => setMaxAmount(e.target.value)}
+                  placeholder="$999,999.99"
+                  className="bg-white border-slate-300 text-slate-900"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm text-slate-600">
+                {language === 'es'
+                  ? `Mostrando ${filteredQuotes.length} de ${extractedQuotes.length} estimados`
+                  : `Showing ${filteredQuotes.length} of ${extractedQuotes.length} quotes`}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setStatusFilter('all');
+                  setMinAmount('');
+                  setMaxAmount('');
+                }}
+                className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Extracted Quotes - UPDATED to use filteredQuotes */}
       {extractedQuotes.length > 0 && (
         <Card className="bg-white shadow-xl border-slate-200">
           <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
@@ -373,7 +502,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
                 {language === 'es' ? 'Datos Extraídos' : 'Extracted Data'}
               </span>
               <Badge className="bg-green-100 text-green-700 border-green-300">
-                {extractedQuotes.length} {language === 'es' ? 'estimados' : 'quotes'}
+                {filteredQuotes.length} {language === 'es' ? 'estimados' : 'quotes'}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -391,8 +520,8 @@ export default function QuoteXLSXImporter({ onComplete }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {extractedQuotes.map((quote, index) => (
-                    <TableRow key={index} className="hover:bg-slate-50 border-slate-200">
+                  {filteredQuotes.map((quote, index) => (
+                    <TableRow key={`filtered-quote-${index}`} className="hover:bg-slate-50 border-slate-200">
                       <TableCell className="text-slate-700">{quote.quote_number || '-'}</TableCell>
                       <TableCell className="text-slate-900">{quote.customer_name || '-'}</TableCell>
                       <TableCell className="text-slate-700">{quote.job_name || '-'}</TableCell>
@@ -404,7 +533,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeQuote(index)}
+                          onClick={() => removeQuote(quote)} // Pass the quote object directly
                           className="text-slate-600 hover:text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -418,8 +547,11 @@ export default function QuoteXLSXImporter({ onComplete }) {
 
             <div className="p-6 border-t border-slate-200 bg-slate-50">
               <Button
-                onClick={() => importMutation.mutate()}
-                disabled={importMutation.isPending}
+                onClick={() => {
+                  // Import only filtered quotes
+                  importMutation.mutate(filteredQuotes);
+                }}
+                disabled={importMutation.isPending || filteredQuotes.length === 0}
                 className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
                 size="lg"
               >
@@ -431,7 +563,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
                 ) : (
                   <>
                     <Download className="w-5 h-5 mr-2" />
-                    {language === 'es' ? `Importar ${extractedQuotes.length} Estimados` : `Import ${extractedQuotes.length} Quotes`}
+                    {language === 'es' ? `Importar ${filteredQuotes.length} Estimados` : `Import ${filteredQuotes.length} Quotes`}
                   </>
                 )}
               </Button>
@@ -451,7 +583,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
           <CardContent className="p-6">
             <ol className="list-decimal list-inside space-y-3 text-slate-700">
               <li>
-                {language === 'es' 
+                {language === 'es'
                   ? 'Haz clic en "Descargar Plantilla" para obtener un archivo de ejemplo'
                   : 'Click "Download Template" to get an example file'}
               </li>

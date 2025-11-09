@@ -1,9 +1,10 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileCheck, Plus, Eye, Trash2, DollarSign, FileSpreadsheet } from "lucide-react";
+import { FileCheck, Plus, Eye, Trash2, DollarSign, FileSpreadsheet, Download, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -38,6 +39,34 @@ export default function Facturas() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success(t('deletedSuccessfully'));
+    }
+  });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (invoice) => {
+      const newInvoice = {
+        ...invoice,
+        invoice_number: `${invoice.invoice_number}-COPY-${Date.now()}`,
+        status: 'draft',
+        invoice_date: new Date().toISOString().split('T')[0],
+        due_date: '',
+        amount_paid: 0,
+        balance: invoice.total,
+      };
+      delete newInvoice.id;
+      delete newInvoice.created_date;
+      delete newInvoice.updated_date;
+      delete newInvoice.created_by;
+      delete newInvoice.payment_date;
+      
+      return base44.entities.Invoice.create(newInvoice);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast.success(language === 'es' ? '✅ Factura duplicada' : '✅ Invoice duplicated');
+    },
+    onError: (error) => {
+      toast.error(`❌ Error: ${error.message}`);
     }
   });
 
@@ -122,6 +151,75 @@ export default function Facturas() {
     invoice.job_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const exportToExcel = () => {
+    if (filteredInvoices.length === 0) {
+      toast.warning(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
+      return;
+    }
+
+    const headers = [
+      'Número',
+      'Cliente',
+      'Email',
+      'Teléfono',
+      'Proyecto',
+      'Dirección',
+      'Fecha',
+      'Vencimiento',
+      'Subtotal',
+      'Impuesto %',
+      'Impuesto',
+      'Total',
+      'Pagado',
+      'Saldo',
+      'Estado',
+      'Notas'
+    ];
+
+    const rows = filteredInvoices.map(invoice => [
+      invoice.invoice_number || '',
+      invoice.customer_name || '',
+      invoice.customer_email || '',
+      invoice.customer_phone || '',
+      invoice.job_name || '',
+      invoice.job_address || '',
+      invoice.invoice_date || '',
+      invoice.due_date || '',
+      invoice.subtotal || 0,
+      invoice.tax_rate || 0,
+      invoice.tax_amount || 0,
+      invoice.total || 0,
+      invoice.amount_paid || 0,
+      invoice.balance || 0,
+      invoice.status || '',
+      (invoice.notes || '').replace(/\n/g, ' ')
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => {
+        const cellStr = String(cell);
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n') || cellStr.includes('\r')) {
+          return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+      }).join(','))
+    ].join('\n');
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `facturas-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
+  };
+
   const drafts = filteredInvoices.filter(i => i.status === 'draft');
   const paid = filteredInvoices.filter(i => i.status === 'paid');
   const overdue = filteredInvoices.filter(i => i.status === 'overdue');
@@ -154,6 +252,16 @@ export default function Facturas() {
           actions={
             isAdmin && (
               <div className="flex gap-2">
+                <Button 
+                  onClick={exportToExcel}
+                  variant="outline"
+                  size="lg" 
+                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
+                  disabled={filteredInvoices.length === 0}
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Exportar Excel' : 'Export Excel'}
+                </Button>
                 <Button 
                   onClick={() => setShowImporter(true)}
                   variant="outline"
@@ -321,6 +429,21 @@ export default function Facturas() {
                       </div>
 
                       <div className="flex gap-2">
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (window.confirm(language === 'es' ? '¿Duplicar esta factura?' : 'Duplicate this invoice?')) {
+                                duplicateMutation.mutate(invoice);
+                              }
+                            }}
+                            className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
+                            title={language === 'es' ? 'Duplicar' : 'Duplicate'}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        )}
                         {isAdmin && invoice.status !== 'paid' && invoice.total > (invoice.amount_paid || 0) && (
                           <Button
                             variant="outline"

@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Eye, Trash2, FileSpreadsheet } from "lucide-react";
+import { FileText, Plus, Eye, Trash2, FileSpreadsheet, Download, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -36,6 +36,96 @@ export default function Estimados() {
       toast.success(t('quoteDeleted'));
     }
   });
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (quote) => {
+      const newQuote = {
+        ...quote,
+        quote_number: `${quote.quote_number}-COPY-${Date.now()}`,
+        status: 'draft',
+        quote_date: new Date().toISOString().split('T')[0],
+        valid_until: '',
+      };
+      delete newQuote.id;
+      delete newQuote.created_date;
+      delete newQuote.updated_date;
+      delete newQuote.created_by;
+      
+      return base44.entities.Quote.create(newQuote);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      toast.success(language === 'es' ? '✅ Estimado duplicado' : '✅ Quote duplicated');
+    },
+    onError: (error) => {
+      toast.error(`❌ Error: ${error.message}`);
+    }
+  });
+
+  const exportToExcel = () => {
+    if (filteredQuotes.length === 0) {
+      alert(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
+      return;
+    }
+
+    const headers = [
+      'Número',
+      'Cliente',
+      'Email',
+      'Teléfono',
+      'Proyecto',
+      'Dirección',
+      'Fecha',
+      'Válido Hasta',
+      'Subtotal',
+      'Impuesto %',
+      'Impuesto',
+      'Total',
+      'Estado',
+      'Notas'
+    ];
+
+    const rows = filteredQuotes.map(quote => [
+      quote.quote_number || '',
+      quote.customer_name || '',
+      quote.customer_email || '',
+      quote.customer_phone || '',
+      quote.job_name || '',
+      quote.job_address || '',
+      quote.quote_date || '',
+      quote.valid_until || '',
+      quote.subtotal || 0,
+      quote.tax_rate || 0,
+      quote.tax_amount || 0,
+      quote.total || 0,
+      quote.status || '',
+      (quote.notes || '').replace(/\n/g, ' ')
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => {
+        const cellStr = String(cell);
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+          return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+      }).join(','))
+    ].join('\n');
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `estimados-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
+  };
 
   const getDaysInStatus = (quote) => {
     const statusDate = quote.updated_date || quote.created_date;
@@ -85,6 +175,16 @@ export default function Estimados() {
           actions={
             isAdmin && (
               <div className="flex gap-2">
+                <Button 
+                  onClick={exportToExcel}
+                  variant="outline"
+                  size="lg" 
+                  className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                  disabled={filteredQuotes.length === 0}
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Exportar Excel' : 'Export Excel'}
+                </Button>
                 <Button 
                   onClick={() => setShowImporter(true)}
                   variant="outline"
@@ -230,6 +330,21 @@ export default function Estimados() {
                       </div>
 
                       <div className="flex gap-2">
+                        {isAdmin && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (window.confirm(language === 'es' ? '¿Duplicar este estimado?' : 'Duplicate this quote?')) {
+                                duplicateMutation.mutate(quote);
+                              }
+                            }}
+                            className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
+                            title={language === 'es' ? 'Duplicar' : 'Duplicate'}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        )}
                         <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)}>
                           <Button variant="outline" size="icon" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
                             <Eye className="w-4 h-4" />

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,18 +8,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Upload, 
-  FileSpreadsheet, 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
+import {
+  Upload,
+  FileSpreadsheet,
+  CheckCircle,
+  XCircle,
+  Loader2,
   Download,
   Trash2,
   FileDown
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function InvoiceXLSXImporter({ onComplete }) {
   const { language } = useLanguage();
@@ -27,6 +29,11 @@ export default function InvoiceXLSXImporter({ onComplete }) {
   const [processing, setProcessing] = useState(false);
   const [extractedInvoices, setExtractedInvoices] = useState([]);
   const [error, setError] = useState(null);
+
+  // NEW: Filter states
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [minAmount, setMinAmount] = useState('');
+  const [maxAmount, setMaxAmount] = useState('');
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -110,6 +117,10 @@ export default function InvoiceXLSXImporter({ onComplete }) {
       setFile(selectedFile);
       setExtractedInvoices([]);
       setError(null);
+      // Reset filters when a new file is selected
+      setStatusFilter('all');
+      setMinAmount('');
+      setMaxAmount('');
     }
   };
 
@@ -153,7 +164,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
                         quantity: { type: "number" },
                         unit: { type: "string" },
                         unit_price: { type: "number" },
-                        total: { type: "number" }
+                        total: { type: "number" } // total added for consistency with calculations
                       }
                     }
                   },
@@ -169,17 +180,17 @@ export default function InvoiceXLSXImporter({ onComplete }) {
 
       if (result.status === 'success' && result.output?.invoices) {
         console.log('✅ Extracted invoices:', result.output.invoices);
-        
+
         const invoicesWithTotals = result.output.invoices.map(invoice => {
           const items = invoice.items || [];
           const subtotal = items.reduce((sum, item) => {
             const itemTotal = (item.quantity || 0) * (item.unit_price || 0);
             return sum + itemTotal;
           }, 0);
-          
+
           const tax_amount = subtotal * ((invoice.tax_rate || 0) / 100);
           const total = subtotal + tax_amount;
-          
+
           return {
             ...invoice,
             items: items.map(item => ({
@@ -192,7 +203,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
             balance: total
           };
         });
-        
+
         setExtractedInvoices(invoicesWithTotals);
       } else {
         throw new Error(result.details || 'Failed to extract data from file');
@@ -205,17 +216,31 @@ export default function InvoiceXLSXImporter({ onComplete }) {
     }
   };
 
+  // NEW: Apply filters
+  const filteredInvoices = extractedInvoices.filter(invoice => {
+    // Status filter
+    if (statusFilter !== 'all' && invoice.status !== statusFilter) return false;
+
+    // Min Amount filter
+    if (minAmount !== '' && invoice.total < parseFloat(minAmount)) return false;
+
+    // Max Amount filter
+    if (maxAmount !== '' && invoice.total > parseFloat(maxAmount)) return false;
+
+    return true;
+  });
+
   const importMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (invoicesToImport) => { // Accept invoices as an argument
       const results = {
         success: 0,
         failed: 0,
         errors: []
       };
 
-      for (const invoice of extractedInvoices) {
+      for (const invoice of invoicesToImport) { // Iterate over the provided invoices
         try {
-          let customer = customers.find(c => 
+          let customer = customers.find(c =>
             c.email?.toLowerCase() === invoice.customer_email?.toLowerCase() ||
             c.company?.toLowerCase() === invoice.customer_name?.toLowerCase()
           );
@@ -272,16 +297,29 @@ export default function InvoiceXLSXImporter({ onComplete }) {
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      
+
       alert(`✅ ${language === 'es' ? 'Importación completada' : 'Import completed'}!\n\n${language === 'es' ? 'Exitosos' : 'Success'}: ${results.success}\n${language === 'es' ? 'Fallidos' : 'Failed'}: ${results.failed}`);
-      
+
       if (onComplete) onComplete();
+      setExtractedInvoices([]); // Clear extracted invoices after import
+      setFile(null); // Clear file as well
+      // Reset filters
+      setStatusFilter('all');
+      setMinAmount('');
+      setMaxAmount('');
     }
   });
 
-  const removeInvoice = (index) => {
-    setExtractedInvoices(prev => prev.filter((_, i) => i !== index));
+  const removeInvoice = (indexToRemove) => {
+    // If filtering is active, we need to find the original index of the invoice in extractedInvoices
+    const actualInvoice = filteredInvoices[indexToRemove];
+    const originalIndex = extractedInvoices.indexOf(actualInvoice);
+
+    if (originalIndex > -1) {
+      setExtractedInvoices(prev => prev.filter((_, i) => i !== originalIndex));
+    }
   };
+
 
   return (
     <div className="space-y-6">
@@ -361,6 +399,100 @@ export default function InvoiceXLSXImporter({ onComplete }) {
         </Alert>
       )}
 
+      {/* NEW: Filters */}
+      {extractedInvoices.length > 0 && (
+        <Card className="bg-white shadow-xl border-slate-200">
+          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+            <CardTitle className="text-slate-900 text-lg">
+              {language === 'es' ? '🔍 Filtros Avanzados' : '🔍 Advanced Filters'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="grid md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  {language === 'es' ? 'Estado' : 'Status'}
+                </Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                    <SelectValue placeholder={language === 'es' ? 'Selecciona estado' : 'Select status'}/>
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-slate-200">
+                    <SelectItem value="all" className="text-slate-900">
+                      {language === 'es' ? 'Todos' : 'All'}
+                    </SelectItem>
+                    <SelectItem value="draft" className="text-slate-900">
+                      {language === 'es' ? 'Borrador' : 'Draft'}
+                    </SelectItem>
+                    <SelectItem value="sent" className="text-slate-900">
+                      {language === 'es' ? 'Enviado' : 'Sent'}
+                    </SelectItem>
+                    <SelectItem value="paid" className="text-slate-900">
+                      {language === 'es' ? 'Pagado' : 'Paid'}
+                    </SelectItem>
+                    <SelectItem value="partial" className="text-slate-900">
+                      {language === 'es' ? 'Parcial' : 'Partial'}
+                    </SelectItem>
+                    <SelectItem value="overdue" className="text-slate-900">
+                      {language === 'es' ? 'Vencido' : 'Overdue'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={minAmount}
+                  onChange={(e) => setMinAmount(e.target.value)}
+                  placeholder="$0.00"
+                  className="bg-white border-slate-300 text-slate-900"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700 font-medium mb-2 block">
+                  {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={maxAmount}
+                  onChange={(e) => setMaxAmount(e.target.value)}
+                  placeholder="$999,999.99"
+                  className="bg-white border-slate-300 text-slate-900"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm text-slate-600">
+                {language === 'es'
+                  ? `Mostrando ${filteredInvoices.length} de ${extractedInvoices.length} facturas`
+                  : `Showing ${filteredInvoices.length} of ${extractedInvoices.length} invoices`}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setStatusFilter('all');
+                  setMinAmount('');
+                  setMaxAmount('');
+                }}
+                className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
+                {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Extracted Invoices - UPDATED */}
       {extractedInvoices.length > 0 && (
         <Card className="bg-white shadow-xl border-slate-200">
           <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -370,7 +502,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
                 {language === 'es' ? 'Datos Extraídos' : 'Extracted Data'}
               </span>
               <Badge className="bg-blue-100 text-blue-700 border-blue-300">
-                {extractedInvoices.length} {language === 'es' ? 'facturas' : 'invoices'}
+                {filteredInvoices.length} {language === 'es' ? 'facturas' : 'invoices'}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -389,7 +521,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {extractedInvoices.map((invoice, index) => (
+                  {filteredInvoices.map((invoice, index) => (
                     <TableRow key={index} className="hover:bg-slate-50 border-slate-200">
                       <TableCell className="text-slate-700">{invoice.invoice_number || '-'}</TableCell>
                       <TableCell className="text-slate-900">{invoice.customer_name || '-'}</TableCell>
@@ -421,8 +553,11 @@ export default function InvoiceXLSXImporter({ onComplete }) {
 
             <div className="p-6 border-t border-slate-200 bg-slate-50">
               <Button
-                onClick={() => importMutation.mutate()}
-                disabled={importMutation.isPending}
+                onClick={() => {
+                  // Only import the currently filtered invoices
+                  importMutation.mutate(filteredInvoices);
+                }}
+                disabled={importMutation.isPending || filteredInvoices.length === 0}
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
                 size="lg"
               >
@@ -434,7 +569,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
                 ) : (
                   <>
                     <Download className="w-5 h-5 mr-2" />
-                    {language === 'es' ? `Importar ${extractedInvoices.length} Facturas` : `Import ${extractedInvoices.length} Invoices`}
+                    {language === 'es' ? `Importar ${filteredInvoices.length} Facturas` : `Import ${filteredInvoices.length} Invoices`}
                   </>
                 )}
               </Button>
@@ -453,7 +588,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
           <CardContent className="p-6">
             <ol className="list-decimal list-inside space-y-3 text-slate-700">
               <li>
-                {language === 'es' 
+                {language === 'es'
                   ? 'Descarga la plantilla haciendo clic en "Descargar Plantilla"'
                   : 'Download the template by clicking "Download Template"'}
               </li>
