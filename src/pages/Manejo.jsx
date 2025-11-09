@@ -50,15 +50,15 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
     };
 
     return (
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
+        <Card className="bg-white shadow-xl border-slate-200">
             <form onSubmit={handleSubmit}>
-                <CardHeader className="border-b border-slate-200">
+                <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-[#3B9FF3]/10 to-blue-500/10">
                     <CardTitle className="text-slate-900">{language === 'es' ? 'Nuevo Registro de Millas' : 'New Mileage Record'}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-6">
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <Label className="text-slate-700">{t('date')}</Label>
+                            <Label className="text-slate-700 font-medium">{t('date')}</Label>
                             <Input 
                                 type="date" 
                                 value={formData.date} 
@@ -68,7 +68,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
                             />
                         </div>
                         <div>
-                            <Label className="text-slate-700">{language === 'es' ? 'Millas Recorridas' : 'Miles Driven'}</Label>
+                            <Label className="text-slate-700 font-medium">{language === 'es' ? 'Millas Recorridas' : 'Miles Driven'}</Label>
                             <Input 
                                 type="number" 
                                 step="0.1"
@@ -86,7 +86,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <span className="text-sm font-medium text-[#3B9FF3]">{t('Total Mileage')}:</span>
+                                    <span className="text-sm font-medium text-[#3B9FF3]">{language === 'es' ? 'Total Millaje' : 'Total Mileage'}:</span>
                                     <p className="text-xs text-slate-600">${formData.rate_per_mile} × {formData.miles || 0} {language === 'es' ? 'millas' : 'miles'}</p>
                                 </div>
                                 <span className="text-2xl font-bold text-[#3B9FF3]">
@@ -98,7 +98,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
 
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <Label className="flex items-center gap-2 text-slate-700">
+                            <Label className="flex items-center gap-2 text-slate-700 font-medium">
                                 <MapPin className="w-4 h-4" />
                                 {language === 'es' ? 'Ubicación de Inicio' : 'Start Location'}
                             </Label>
@@ -110,7 +110,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
                             />
                         </div>
                         <div>
-                            <Label className="flex items-center gap-2 text-slate-700">
+                            <Label className="flex items-center gap-2 text-slate-700 font-medium">
                                 <MapPin className="w-4 h-4" />
                                 {language === 'es' ? 'Ubicación de Destino' : 'End Location'}
                             </Label>
@@ -124,7 +124,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
                     </div>
 
                     <div>
-                        <Label className="text-slate-700">{language === 'es' ? 'Asociar a Trabajo' : 'Associate with Job'} *</Label>
+                        <Label className="text-slate-700 font-medium">{language === 'es' ? 'Asociar a Trabajo' : 'Associate with Job'} *</Label>
                         <Select
                             value={formData.job_id}
                             onValueChange={(value) => setFormData({ ...formData, job_id: value })}
@@ -144,7 +144,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
                     </div>
 
                     <div>
-                        <Label className="text-slate-700">{t('notes')}</Label>
+                        <Label className="text-slate-700 font-medium">{t('notes')}</Label>
                         <Textarea 
                             value={formData.notes} 
                             onChange={e => setFormData({...formData, notes: e.target.value})} 
@@ -153,7 +153,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
                         />
                     </div>
                 </CardContent>
-                <CardFooter className="flex justify-end gap-3 border-t border-slate-200 pt-6">
+                <CardFooter className="flex justify-end gap-3 border-t border-slate-200 pt-6 bg-slate-50">
                     <Button type="button" variant="outline" onClick={onCancel} className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
                         <X className="w-4 h-4 mr-2"/>
                         {t('cancel')}
@@ -201,7 +201,7 @@ export default function Manejo() {
         onSuccess: () => {
             queryClient.invalidateQueries(['myMileageLogs']);
             setShowForm(false);
-            alert('✅ Driving log created! Pending approval.');
+            alert('✅ ' + (language === 'es' ? 'Registro de manejo creado! Pendiente de aprobación.' : 'Driving log created! Pending approval.'));
         }
     });
 
@@ -238,7 +238,7 @@ export default function Manejo() {
                     }
                 />
 
-                <Card className="mb-6 bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
+                <Card className="mb-6 bg-white shadow-xl border-slate-200">
                     <CardContent className="p-6">
                         <div className="flex items-start gap-4">
                             <div className="p-3 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-2xl shadow-lg">
@@ -250,7 +250,7 @@ export default function Manejo() {
                                 </h3>
                                 <ul className="space-y-2 text-sm text-slate-600">
                                     <li className="flex items-center gap-2">
-                                        <span className="font-semibold">{language === 'es' ? 'Tarifa por milla:' : 'Rate per mile:'}</span>
+                                        <span className="font-semibold text-slate-700">{language === 'es' ? 'Tarifa por milla:' : 'Rate per mile:'}</span>
                                         <span className="font-bold text-[#3B9FF3]">$0.60</span>
                                     </li>
                                 </ul>
@@ -270,8 +270,8 @@ export default function Manejo() {
                     </div>
                 )}
 
-                <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
-                    <CardHeader className="border-b border-slate-200">
+                <Card className="bg-white shadow-xl border-slate-200">
+                    <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
                         <CardTitle className="flex items-center gap-2 text-slate-900">
                             <Car className="w-5 h-5 text-[#3B9FF3]"/>
                             {language === 'es' ? 'Mis Registros de Millas' : 'My Mileage Records'}
@@ -282,15 +282,15 @@ export default function Manejo() {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="bg-slate-50 border-slate-200">
-                                        <TableHead className="text-slate-700">{t('date')}</TableHead>
-                                        <TableHead className="text-slate-700">{language === 'es' ? 'Desde' : 'From'}</TableHead>
-                                        <TableHead className="text-slate-700">{language === 'es' ? 'Hasta' : 'To'}</TableHead>
-                                        <TableHead className="text-slate-700">{t('job')}</TableHead>
-                                        <TableHead className="text-right text-slate-700">{language === 'es' ? 'Millas' : 'Miles'}</TableHead>
-                                        <TableHead className="text-right text-slate-700">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
-                                        <TableHead className="text-slate-700">{t('status')}</TableHead>
-                                        <TableHead className="text-slate-700">{t('notes')}</TableHead>
-                                        <TableHead className="text-right text-slate-700">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+                                        <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
+                                        <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Desde' : 'From'}</TableHead>
+                                        <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Hasta' : 'To'}</TableHead>
+                                        <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
+                                        <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Millas' : 'Miles'}</TableHead>
+                                        <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
+                                        <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
+                                        <TableHead className="text-slate-700 font-semibold">{t('notes')}</TableHead>
+                                        <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -309,12 +309,12 @@ export default function Manejo() {
                                             const config = statusConfig[log.status] || statusConfig.pending;
                                             return (
                                                 <TableRow key={log.id} className="hover:bg-slate-50 border-slate-200">
-                                                    <TableCell className="text-slate-900">{format(new Date(log.date), 'MMM dd, yyyy')}</TableCell>
+                                                    <TableCell className="text-slate-900 font-medium">{format(new Date(log.date), 'MMM dd, yyyy')}</TableCell>
                                                     <TableCell className="text-slate-700">{log.start_location || '-'}</TableCell>
                                                     <TableCell className="text-slate-700">{log.end_location || '-'}</TableCell>
                                                     <TableCell>
                                                         {log.job_name ? (
-                                                            <span className="text-sm text-slate-900">{log.job_name}</span>
+                                                            <span className="text-sm text-slate-900 font-medium">{log.job_name}</span>
                                                         ) : (
                                                             <span className="text-sm text-slate-500">-</span>
                                                         )}

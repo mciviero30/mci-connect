@@ -21,6 +21,7 @@ export default function Horarios() {
   const pendingEntries = timeEntries.filter(e => e.status === 'pending');
   const approvedEntries = timeEntries.filter(e => e.status === 'approved');
 
+  // FIXED: Added missing closing parenthesis
   const totalPendingHours = pendingEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
   const totalApprovedHours = approvedEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
 
