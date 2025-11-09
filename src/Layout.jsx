@@ -38,7 +38,8 @@ import {
   Wallet,
   Globe,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Upload // Added Upload icon
 } from "lucide-react";
 import {
   Sidebar,
@@ -246,6 +247,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
         { title: 'Customers', url: createPageUrl("Clientes"), icon: Users, indent: true },
         { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText, indent: true },
+        { title: 'Quote Importer', url: createPageUrl("QuoteImporter"), icon: Upload, indent: true, badge: '📦' },
         { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck, indent: true },
         { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt, indent: true },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet, indent: true },
