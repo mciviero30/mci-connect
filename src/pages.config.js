@@ -47,6 +47,7 @@ import CashFlowReport from './pages/CashFlowReport';
 import Configuracion from './pages/Configuracion';
 import AIExpensesAudit from './pages/AIExpensesAudit';
 import CompanyInfo from './pages/CompanyInfo';
+import QuoteImporter from './pages/QuoteImporter';
 import Layout from './Layout.jsx';
 
 
@@ -100,6 +101,7 @@ export const PAGES = {
     "Configuracion": Configuracion,
     "AIExpensesAudit": AIExpensesAudit,
     "CompanyInfo": CompanyInfo,
+    "QuoteImporter": QuoteImporter,
 }
 
 export const pagesConfig = {
