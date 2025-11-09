@@ -17,7 +17,8 @@ import {
   Download,
   Eye,
   Trash2,
-  Sparkles
+  Sparkles,
+  FolderOpen
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import PageHeader from '../components/shared/PageHeader';
@@ -46,13 +47,23 @@ export default function QuoteImporter() {
 
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
+    console.log('📁 Files selected:', selectedFiles.length);
     setFiles(selectedFiles);
     setExtractedQuotes([]);
     setErrors([]);
     setCurrentFile(0);
   };
 
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const processFiles = async () => {
+    if (files.length === 0) {
+      alert(language === 'es' ? '⚠️ No hay archivos seleccionados' : '⚠️ No files selected');
+      return;
+    }
+
     setProcessing(true);
     setExtractedQuotes([]);
     setErrors([]);
@@ -64,9 +75,12 @@ export default function QuoteImporter() {
       setCurrentFile(i + 1);
       const file = files[i];
 
+      console.log(`📄 Processing file ${i + 1}/${files.length}: ${file.name}`);
+
       try {
         // Upload file first
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        console.log(`✅ Uploaded: ${file.name}`);
 
         // Extract data with AI
         const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
@@ -106,6 +120,7 @@ export default function QuoteImporter() {
         });
 
         if (result.status === 'success' && result.output) {
+          console.log(`✅ Extracted: ${file.name}`, result.output);
           quotes.push({
             ...result.output,
             fileName: file.name,
@@ -113,13 +128,14 @@ export default function QuoteImporter() {
             originalFile: file_url
           });
         } else {
+          console.error(`❌ Failed to extract: ${file.name}`, result);
           fileErrors.push({
             fileName: file.name,
             error: result.details || 'Failed to extract data'
           });
         }
       } catch (error) {
-        console.error(`Error processing ${file.name}:`, error);
+        console.error(`❌ Error processing ${file.name}:`, error);
         fileErrors.push({
           fileName: file.name,
           error: error.message
@@ -127,6 +143,7 @@ export default function QuoteImporter() {
       }
     }
 
+    console.log(`✅ Processing complete. Success: ${quotes.length}, Errors: ${fileErrors.length}`);
     setExtractedQuotes(quotes);
     setErrors(fileErrors);
     setProcessing(false);
@@ -246,36 +263,104 @@ export default function QuoteImporter() {
                   multiple
                   onChange={handleFileSelect}
                   disabled={processing}
-                  className="bg-white border-slate-300 text-slate-900"
+                  className="bg-white border-slate-300 text-slate-900 cursor-pointer"
                 />
                 <p className="text-xs text-slate-500 mt-2">
                   {language === 'es' 
-                    ? 'Puedes seleccionar múltiples archivos a la vez (Ctrl+Click o Cmd+Click)'
-                    : 'You can select multiple files at once (Ctrl+Click or Cmd+Click)'}
+                    ? '💡 Puedes seleccionar TODOS los archivos a la vez (Ctrl+A o Cmd+A en la ventana de selección)'
+                    : '💡 You can select ALL files at once (Ctrl+A or Cmd+A in the file picker)'}
                 </p>
               </div>
 
               {files.length > 0 && (
                 <Alert className="bg-blue-50 border-blue-200">
-                  <AlertDescription className="text-blue-900">
-                    <strong>{files.length}</strong> {language === 'es' ? 'archivos seleccionados' : 'files selected'}
+                  <FolderOpen className="w-4 h-4 text-blue-600" />
+                  <AlertTitle className="text-blue-900 font-bold">
+                    ✅ {files.length} {language === 'es' ? 'archivos cargados' : 'files loaded'}
+                  </AlertTitle>
+                  <AlertDescription className="text-blue-900 text-sm">
+                    {language === 'es' 
+                      ? 'Revisa la lista abajo y luego haz clic en "Procesar con IA"'
+                      : 'Review the list below then click "Process with AI"'}
                   </AlertDescription>
                 </Alert>
               )}
+            </div>
+          </CardContent>
+        </Card>
 
-              {files.length > 0 && !processing && extractedQuotes.length === 0 && (
+        {/* Files List BEFORE Processing */}
+        {files.length > 0 && !processing && extractedQuotes.length === 0 && (
+          <Card className="bg-white shadow-xl border-slate-200 mb-6">
+            <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+              <CardTitle className="flex items-center justify-between text-slate-900">
+                <span className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-500" />
+                  {language === 'es' ? 'Archivos Seleccionados' : 'Selected Files'}
+                </span>
+                <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+                  {files.length} {language === 'es' ? 'archivos' : 'files'}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-96 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 border-slate-200">
+                      <TableHead className="text-slate-700 font-semibold">#</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre del Archivo' : 'File Name'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Tamaño' : 'Size'}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {files.map((file, index) => (
+                      <TableRow key={index} className="hover:bg-slate-50 border-slate-200">
+                        <TableCell className="text-slate-700 font-mono">{index + 1}</TableCell>
+                        <TableCell className="text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-blue-500" />
+                            <span className="truncate">{file.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-slate-600 text-sm">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(index)}
+                            className="text-slate-600 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="p-6 border-t border-slate-200 bg-slate-50">
                 <Button
                   onClick={processFiles}
                   className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
                   size="lg"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Procesar con IA' : 'Process with AI'}
+                  {language === 'es' ? `Procesar ${files.length} Archivos con IA` : `Process ${files.length} Files with AI`}
                 </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <p className="text-xs text-slate-500 text-center mt-2">
+                  {language === 'es' 
+                    ? '⏱️ Esto puede tomar varios minutos dependiendo del número de archivos'
+                    : '⏱️ This may take several minutes depending on the number of files'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Processing Progress */}
         {processing && (
@@ -291,15 +376,25 @@ export default function QuoteImporter() {
                 <div>
                   <div className="flex justify-between text-sm text-slate-700 mb-2">
                     <span>{language === 'es' ? 'Progreso' : 'Progress'}</span>
-                    <span>{currentFile} / {files.length}</span>
+                    <span className="font-bold">{currentFile} / {files.length}</span>
                   </div>
                   <Progress value={progress} className="h-3" />
+                  <p className="text-xs text-slate-500 mt-1">
+                    {progress.toFixed(0)}% {language === 'es' ? 'completado' : 'complete'}
+                  </p>
                 </div>
-                <p className="text-sm text-slate-600">
-                  {language === 'es' 
-                    ? 'La IA está extrayendo datos de los PDFs. Esto puede tomar varios minutos...'
-                    : 'AI is extracting data from PDFs. This may take several minutes...'}
-                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-900">
+                    🤖 {language === 'es' 
+                      ? 'La IA está extrayendo datos de los PDFs. Esto puede tomar varios minutos...'
+                      : 'AI is extracting data from PDFs. This may take several minutes...'}
+                  </p>
+                  <p className="text-xs text-blue-700 mt-2">
+                    {language === 'es' 
+                      ? 'No cierres esta ventana hasta que termine el proceso'
+                      : 'Do not close this window until the process is complete'}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -388,7 +483,7 @@ export default function QuoteImporter() {
                   ) : (
                     <>
                       <Download className="w-5 h-5 mr-2" />
-                      {language === 'es' ? 'Importar Todos a la Base de Datos' : 'Import All to Database'}
+                      {language === 'es' ? `Importar ${extractedQuotes.length} Estimados a la Base de Datos` : `Import ${extractedQuotes.length} Quotes to Database`}
                     </>
                   )}
                 </Button>
@@ -432,8 +527,18 @@ export default function QuoteImporter() {
               <ol className="list-decimal list-inside space-y-3 text-slate-700">
                 <li>
                   {language === 'es' 
-                    ? 'Selecciona todos los PDFs de estimados (puedes seleccionar múltiples a la vez)'
-                    : 'Select all quote PDFs (you can select multiple at once)'}
+                    ? 'Haz clic en "Selecciona archivos PDF" arriba'
+                    : 'Click "Select PDF files" above'}
+                </li>
+                <li>
+                  {language === 'es'
+                    ? '🔑 IMPORTANTE: En la ventana que se abre, presiona Ctrl+A (Windows) o Cmd+A (Mac) para seleccionar TODOS los archivos'
+                    : '🔑 IMPORTANT: In the file picker window, press Ctrl+A (Windows) or Cmd+A (Mac) to select ALL files'}
+                </li>
+                <li>
+                  {language === 'es'
+                    ? 'Verás una tabla con TODOS los archivos seleccionados - revisa que estén todos'
+                    : 'You will see a table with ALL selected files - verify they are all there'}
                 </li>
                 <li>
                   {language === 'es'
@@ -452,7 +557,18 @@ export default function QuoteImporter() {
                 </li>
               </ol>
 
-              <Alert className="mt-6 bg-blue-50 border-blue-200">
+              <Alert className="mt-6 bg-amber-50 border-amber-200">
+                <AlertTitle className="text-amber-900 font-bold">
+                  ⚠️ {language === 'es' ? 'Importante' : 'Important'}
+                </AlertTitle>
+                <AlertDescription className="text-amber-900">
+                  {language === 'es'
+                    ? 'Si subes muchos archivos (400-600), el proceso puede tomar 30-60 minutos. No cierres la ventana durante el proceso.'
+                    : 'If you upload many files (400-600), the process may take 30-60 minutes. Do not close the window during the process.'}
+                </AlertDescription>
+              </Alert>
+
+              <Alert className="mt-4 bg-blue-50 border-blue-200">
                 <AlertTitle className="text-blue-900 font-bold">
                   💡 {language === 'es' ? 'Consejo' : 'Tip'}
                 </AlertTitle>
