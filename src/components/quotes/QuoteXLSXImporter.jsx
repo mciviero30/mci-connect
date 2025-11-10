@@ -16,7 +16,8 @@ import {
   Loader2,
   Download,
   Trash2,
-  FileDown
+  FileDown,
+  AlertTriangle // Added AlertTriangle import
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -30,10 +31,11 @@ export default function QuoteXLSXImporter({ onComplete }) {
   const [extractedQuotes, setExtractedQuotes] = useState([]);
   const [error, setError] = useState(null);
 
-  // NEW: Filter states
+  // Filter states
   const [statusFilter, setStatusFilter] = useState('all');
   const [minAmount, setMinAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState('');
+  const [notesKeyword, setNotesKeyword] = useState(''); // NEW: Notes keyword filter state
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -112,9 +114,61 @@ export default function QuoteXLSXImporter({ onComplete }) {
     URL.revokeObjectURL(url);
   };
 
+  // NEW: File validation logic
+  const validateFile = (selectedFile) => {
+    // Check file extension
+    const fileName = selectedFile.name.toLowerCase();
+    const validExtensions = ['.xlsx', '.xls', '.csv'];
+    const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!hasValidExtension) {
+      return {
+        valid: false,
+        error: language === 'es' 
+          ? '⚠️ Solo se permiten archivos Excel (.xlsx, .xls) o CSV (.csv)'
+          : '⚠️ Only Excel (.xlsx, .xls) or CSV (.csv) files are allowed'
+      };
+    }
+
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (selectedFile.size > maxSize) {
+      return {
+        valid: false,
+        error: language === 'es'
+          ? '⚠️ El archivo es muy grande. Máximo 10MB'
+          : '⚠️ File is too large. Maximum 10MB'
+      };
+    }
+
+    // Check for problematic characters in filename
+    // Allows letters, numbers, underscore, hyphen, and dot.
+    // Excludes the extension for the check, as dots are needed there.
+    const problematicChars = /[^a-zA-Z0-9._-]/;
+    if (problematicChars.test(fileName.replace(/\.(xlsx|xls|csv)$/, ''))) {
+      return {
+        valid: false,
+        error: language === 'es'
+          ? '⚠️ El nombre del archivo contiene caracteres especiales. Por favor renómbralo usando solo letras, números, guiones y puntos (ejemplo: estimados.xlsx)'
+          : '⚠️ Filename contains special characters. Please rename it using only letters, numbers, hyphens and dots (example: quotes.xlsx)'
+      };
+    }
+
+    return { valid: true };
+  };
+
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+      // Validate file
+      const validation = validateFile(selectedFile);
+      if (!validation.valid) {
+        setError(validation.error);
+        setFile(null);
+        e.target.value = ''; // Reset input to allow re-selection of the same (or corrected) file
+        return;
+      }
+
       setFile(selectedFile);
       setExtractedQuotes([]);
       setError(null);
@@ -122,6 +176,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
       setStatusFilter('all');
       setMinAmount('');
       setMaxAmount('');
+      setNotesKeyword(''); // NEW: Reset notesKeyword
     }
   };
 
@@ -135,8 +190,20 @@ export default function QuoteXLSXImporter({ onComplete }) {
     setError(null);
 
     try {
+      // Create a new File object with sanitized name before uploading
+      // This helps prevent issues with special characters in the filename when interacting with backend systems.
+      const sanitizedName = file.name
+        .replace(/[^a-zA-Z0-9._-]/g, '_') // Replace problematic chars with underscore
+        .replace(/_{2,}/g, '_'); // Replace multiple underscores with a single one
+      
+      const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+
+      console.log('📤 Uploading file with sanitized name:', sanitizedName);
+      
       // Upload file
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: sanitizedFile });
+
+      console.log('✅ File uploaded:', file_url);
 
       // Extract data with AI
       const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
@@ -215,14 +282,32 @@ export default function QuoteXLSXImporter({ onComplete }) {
         throw new Error(result.details || 'Failed to extract data from file');
       }
     } catch (err) {
-      console.error('Error processing file:', err);
-      setError(err.message);
+      console.error('❌ Error processing file:', err);
+      
+      // Provide more user-friendly error messages based on common issues
+      let errorMessage = err.message;
+      
+      if (errorMessage.includes('Unsupported file type')) {
+        errorMessage = language === 'es'
+          ? '⚠️ Error al procesar el archivo. Por favor, asegúrate de que el archivo sea .xlsx o .csv válido y que no esté dañado. Prueba renombrar el archivo a algo simple (ej: estimados.xlsx) e intenta de nuevo.'
+          : '⚠️ Error processing file. Please ensure the file is a valid .xlsx or .csv and not corrupted. Try renaming the file to something simple (e.g. quotes.xlsx) and try again.';
+      } else if (errorMessage.includes('Failed to extract')) {
+        errorMessage = language === 'es'
+          ? '⚠️ No se pudieron extraer datos del archivo. Verifica que el archivo tenga datos y que use el formato de la plantilla. Intenta no usar caracteres especiales en los nombres de las columnas.'
+          : '⚠️ Could not extract data from file. Verify the file has data and uses the template format. Try to avoid special characters in column names.';
+      } else if (errorMessage.includes('File already exists') || errorMessage.includes('filename')) {
+        errorMessage = language === 'es'
+          ? '⚠️ Problema con el nombre del archivo. Por favor, renombra el archivo a algo simple (ej: estimados.xlsx) usando solo letras, números y guiones.'
+          : '⚠️ Issue with filename. Please rename the file to something simple (e.g. quotes.xlsx) using only letters, numbers, and hyphens.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setProcessing(false);
     }
   };
 
-  // NEW: Apply filters to extracted quotes
+  // Apply filters to extracted quotes
   const filteredQuotes = extractedQuotes.filter(quote => {
     // Status filter
     if (statusFilter !== 'all' && quote.status !== statusFilter) return false;
@@ -231,6 +316,9 @@ export default function QuoteXLSXImporter({ onComplete }) {
     const quoteTotal = quote.total || 0;
     if (minAmount && quoteTotal < parseFloat(minAmount)) return false;
     if (maxAmount && quoteTotal > parseFloat(maxAmount)) return false;
+
+    // NEW: Notes keyword filter
+    if (notesKeyword && quote.notes && !quote.notes.toLowerCase().includes(notesKeyword.toLowerCase())) return false;
 
     return true;
   });
@@ -312,6 +400,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
       setStatusFilter('all');
       setMinAmount('');
       setMaxAmount('');
+      setNotesKeyword(''); // NEW: Reset notesKeyword after import
     }
   });
 
@@ -342,6 +431,11 @@ export default function QuoteXLSXImporter({ onComplete }) {
                 disabled={processing}
                 className="bg-white border-slate-300 text-slate-900 cursor-pointer"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                {language === 'es' 
+                  ? '💡 Usa nombres de archivo simples (solo letras, números, guiones). Ejemplo: estimados.xlsx'
+                  : '💡 Use simple filenames (only letters, numbers, hyphens). Example: quotes.xlsx'}
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -386,20 +480,20 @@ export default function QuoteXLSXImporter({ onComplete }) {
         </CardContent>
       </Card>
 
-      {/* Error Display */}
+      {/* Error Display - UPDATED icon and title */}
       {error && (
         <Alert className="bg-red-50 border-red-200">
-          <XCircle className="w-4 h-4 text-red-600" />
+          <AlertTriangle className="w-4 h-4 text-red-600" /> {/* Changed icon to AlertTriangle */}
           <AlertTitle className="text-red-900 font-bold">
-            {language === 'es' ? 'Error' : 'Error'}
+            {language === 'es' ? 'Error al procesar archivo' : 'File Processing Error'} {/* More specific title */}
           </AlertTitle>
-          <AlertDescription className="text-red-900">
+          <AlertDescription className="text-red-900 whitespace-pre-line"> {/* Added whitespace-pre-line */}
             {error}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* NEW: Filters Section */}
+      {/* Filters Section */}
       {extractedQuotes.length > 0 && (
         <Card className="bg-white shadow-xl border-slate-200">
           <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
@@ -469,6 +563,19 @@ export default function QuoteXLSXImporter({ onComplete }) {
               </div>
             </div>
 
+            {/* NEW: Notes Keyword Filter */}
+            <div className="mt-4">
+              <Label className="text-slate-700 font-medium mb-2 block">
+                {language === 'es' ? 'Buscar en Notas' : 'Search in Notes'}
+              </Label>
+              <Input
+                value={notesKeyword}
+                onChange={(e) => setNotesKeyword(e.target.value)}
+                placeholder={language === 'es' ? 'Palabra clave...' : 'Keyword...'}
+                className="bg-white border-slate-300 text-slate-900"
+              />
+            </div>
+
             <div className="mt-4 flex items-center justify-between">
               <p className="text-sm text-slate-600">
                 {language === 'es'
@@ -482,6 +589,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
                   setStatusFilter('all');
                   setMinAmount('');
                   setMaxAmount('');
+                  setNotesKeyword(''); // NEW: Clear notesKeyword
                 }}
                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
               >
@@ -594,13 +702,13 @@ export default function QuoteXLSXImporter({ onComplete }) {
               </li>
               <li>
                 {language === 'es'
-                  ? 'Puedes agregar hasta 3 items por estimado (labor, materiales, etc.)'
-                  : 'You can add up to 3 items per quote (labor, materials, etc.)'}
+                  ? 'IMPORTANTE: Guarda el archivo con un nombre simple (ej: estimados.xlsx) - solo usa letras, números y guiones.' // NEW instruction
+                  : 'IMPORTANT: Save the file with a simple name (e.g. quotes.xlsx) - only use letters, numbers and hyphens.'}
               </li>
               <li>
                 {language === 'es'
-                  ? 'Guarda el archivo como .xlsx o .csv'
-                  : 'Save the file as .xlsx or .csv'}
+                  ? 'Puedes agregar hasta 3 items por estimado (labor, materiales, etc.)'
+                  : 'You can add up to 3 items per quote (labor, materials, etc.)'}
               </li>
               <li>
                 {language === 'es'
@@ -619,14 +727,16 @@ export default function QuoteXLSXImporter({ onComplete }) {
               </li>
             </ol>
 
-            <Alert className="mt-6 bg-blue-50 border-blue-200">
-              <AlertTitle className="text-blue-900 font-bold">
-                💡 {language === 'es' ? 'Consejo' : 'Tip'}
+            {/* UPDATED Alert message and style */}
+            <Alert className="mt-6 bg-amber-50 border-amber-200">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <AlertTitle className="text-amber-900 font-bold">
+                ⚠️ {language === 'es' ? 'Importante' : 'Important'}
               </AlertTitle>
-              <AlertDescription className="text-blue-900">
+              <AlertDescription className="text-amber-900">
                 {language === 'es'
-                  ? 'La plantilla incluye un ejemplo completo. Puedes duplicar la fila y modificarla para agregar más estimados.'
-                  : 'The template includes a complete example. You can duplicate the row and modify it to add more quotes.'}
+                  ? 'Si tienes problemas al subir o procesar el archivo, asegúrate de que el nombre del archivo sea simple y solo contenga letras, números, guiones y puntos (ejemplo: estimados.xlsx). Evita caracteres especiales.'
+                  : 'If you have trouble uploading or processing the file, make sure the filename is simple and only contains letters, numbers, hyphens, and dots (example: quotes.xlsx). Avoid special characters.'}
               </AlertDescription>
             </Alert>
           </CardContent>

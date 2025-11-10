@@ -16,7 +16,8 @@ import {
   Loader2,
   Download,
   Trash2,
-  FileDown
+  FileDown,
+  AlertTriangle
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -34,6 +35,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [minAmount, setMinAmount] = useState('');
   const [maxAmount, setMaxAmount] = useState('');
+  const [notesKeyword, setNotesKeyword] = useState('');
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -111,9 +113,56 @@ export default function InvoiceXLSXImporter({ onComplete }) {
     URL.revokeObjectURL(url);
   };
 
+  const validateFile = (selectedFile) => {
+    const fileName = selectedFile.name.toLowerCase();
+    const validExtensions = ['.xlsx', '.xls', '.csv'];
+    const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!hasValidExtension) {
+      return {
+        valid: false,
+        error: language === 'es' 
+          ? '⚠️ Solo se permiten archivos Excel (.xlsx, .xls) o CSV (.csv)'
+          : '⚠️ Only Excel (.xlsx, .xls) or CSV (.csv) files are allowed'
+      };
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10 MB
+    if (selectedFile.size > maxSize) {
+      return {
+        valid: false,
+        error: language === 'es'
+          ? '⚠️ El archivo es muy grande. Máximo 10MB'
+          : '⚠️ File is too large. Maximum 10MB'
+      };
+    }
+
+    // Check for problematic characters in the filename, excluding the extension
+    const baseFileName = fileName.replace(/\.(xlsx|xls|csv)$/, '');
+    const problematicChars = /[^a-z0-9._-]/; // allow letters, numbers, periods, underscores, hyphens
+    if (problematicChars.test(baseFileName)) {
+      return {
+        valid: false,
+        error: language === 'es'
+          ? '⚠️ El nombre del archivo contiene caracteres especiales no permitidos. Por favor renómbralo usando solo letras, números, guiones y puntos (ejemplo: facturas.xlsx)'
+          : '⚠️ Filename contains unsupported special characters. Please rename it using only letters, numbers, hyphens and dots (example: invoices.xlsx)'
+      };
+    }
+
+    return { valid: true };
+  };
+
   const handleFileSelect = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
+      const validation = validateFile(selectedFile);
+      if (!validation.valid) {
+        setError(validation.error);
+        setFile(null);
+        e.target.value = ''; // Clear the file input
+        return;
+      }
+
       setFile(selectedFile);
       setExtractedInvoices([]);
       setError(null);
@@ -121,6 +170,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
       setStatusFilter('all');
       setMinAmount('');
       setMaxAmount('');
+      setNotesKeyword(''); // NEW: Reset notes keyword filter
     }
   };
 
@@ -134,7 +184,18 @@ export default function InvoiceXLSXImporter({ onComplete }) {
     setError(null);
 
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      // Sanitize the filename for upload
+      const sanitizedName = file.name
+        .replace(/[^a-zA-Z0-9._-]/g, '_') // Replace problematic chars with underscore
+        .replace(/_{2,}/g, '_'); // Replace multiple underscores with a single one
+      
+      const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+
+      console.log('📤 Uploading file:', sanitizedName);
+      
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: sanitizedFile });
+
+      console.log('✅ File uploaded:', file_url);
 
       const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
@@ -209,8 +270,30 @@ export default function InvoiceXLSXImporter({ onComplete }) {
         throw new Error(result.details || 'Failed to extract data from file');
       }
     } catch (err) {
-      console.error('Error processing file:', err);
-      setError(err.message);
+      console.error('❌ Error processing file:', err);
+      
+      let errorMessage = err.message;
+      
+      if (errorMessage.includes('Unsupported file type')) {
+        errorMessage = language === 'es'
+          ? '⚠️ Error al procesar el archivo. Por favor, asegúrate de que sea un archivo .xlsx o .csv válido y que no esté dañado. Intenta guardar el archivo desde Excel o Google Sheets nuevamente.'
+          : '⚠️ Error processing file. Please ensure it is a valid .xlsx or .csv file and not corrupted. Try saving the file from Excel or Google Sheets again.';
+      } else if (errorMessage.includes('Failed to extract') || errorMessage.includes('Unable to parse')) {
+        errorMessage = language === 'es'
+          ? '⚠️ No se pudieron extraer datos del archivo. Verifica que el archivo tenga datos y que las columnas coincidan con el formato de la plantilla. Asegúrate de que las fechas estén en formato YYYY-MM-DD y que los números no tengan símbolos de moneda.'
+          : '⚠️ Could not extract data from the file. Verify that the file has data and that columns match the template format. Ensure dates are in YYYY-MM-DD format and numbers do not have currency symbols.';
+      } else if (errorMessage.includes('File already exists')) {
+         errorMessage = language === 'es'
+          ? '⚠️ Ya existe un archivo con ese nombre en el servidor. Por favor, renombra tu archivo y vuelve a intentarlo.'
+          : '⚠️ A file with that name already exists on the server. Please rename your file and try again.';
+      } else {
+        // Generic error message for unknown errors
+        errorMessage = language === 'es'
+          ? `Ocurrió un error inesperado al procesar el archivo: ${err.message}.`
+          : `An unexpected error occurred while processing the file: ${err.message}.`;
+      }
+      
+      setError(errorMessage);
     } finally {
       setProcessing(false);
     }
@@ -226,6 +309,9 @@ export default function InvoiceXLSXImporter({ onComplete }) {
 
     // Max Amount filter
     if (maxAmount !== '' && invoice.total > parseFloat(maxAmount)) return false;
+
+    // Notes Keyword filter (NEW)
+    if (notesKeyword && invoice.notes && !invoice.notes.toLowerCase().includes(notesKeyword.toLowerCase())) return false;
 
     return true;
   });
@@ -307,6 +393,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
       setStatusFilter('all');
       setMinAmount('');
       setMaxAmount('');
+      setNotesKeyword(''); // NEW: Reset notes keyword filter
     }
   });
 
@@ -343,6 +430,11 @@ export default function InvoiceXLSXImporter({ onComplete }) {
                 disabled={processing}
                 className="bg-white border-slate-300 text-slate-900 cursor-pointer"
               />
+              <p className="text-xs text-slate-500 mt-1">
+                {language === 'es' 
+                  ? '💡 Usa nombres de archivo simples (solo letras, números, guiones y puntos). Ejemplo: facturas.xlsx'
+                  : '💡 Use simple filenames (only letters, numbers, hyphens and dots). Example: invoices.xlsx'}
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -389,11 +481,11 @@ export default function InvoiceXLSXImporter({ onComplete }) {
 
       {error && (
         <Alert className="bg-red-50 border-red-200">
-          <XCircle className="w-4 h-4 text-red-600" />
+          <AlertTriangle className="w-4 h-4 text-red-600" /> {/* Changed icon to AlertTriangle */}
           <AlertTitle className="text-red-900 font-bold">
-            {language === 'es' ? 'Error' : 'Error'}
+            {language === 'es' ? 'Error al procesar archivo' : 'File Processing Error'}
           </AlertTitle>
-          <AlertDescription className="text-red-900">
+          <AlertDescription className="text-red-900 whitespace-pre-line">
             {error}
           </AlertDescription>
         </Alert>
@@ -401,181 +493,194 @@ export default function InvoiceXLSXImporter({ onComplete }) {
 
       {/* NEW: Filters */}
       {extractedInvoices.length > 0 && (
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
-            <CardTitle className="text-slate-900 text-lg">
-              {language === 'es' ? '🔍 Filtros Avanzados' : '🔍 Advanced Filters'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div>
-                <Label className="text-slate-700 font-medium mb-2 block">
-                  {language === 'es' ? 'Estado' : 'Status'}
-                </Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                    <SelectValue placeholder={language === 'es' ? 'Selecciona estado' : 'Select status'}/>
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
-                    <SelectItem value="all" className="text-slate-900">
-                      {language === 'es' ? 'Todos' : 'All'}
-                    </SelectItem>
-                    <SelectItem value="draft" className="text-slate-900">
-                      {language === 'es' ? 'Borrador' : 'Draft'}
-                    </SelectItem>
-                    <SelectItem value="sent" className="text-slate-900">
-                      {language === 'es' ? 'Enviado' : 'Sent'}
-                    </SelectItem>
-                    <SelectItem value="paid" className="text-slate-900">
-                      {language === 'es' ? 'Pagado' : 'Paid'}
-                    </SelectItem>
-                    <SelectItem value="partial" className="text-slate-900">
-                      {language === 'es' ? 'Parcial' : 'Partial'}
-                    </SelectItem>
-                    <SelectItem value="overdue" className="text-slate-900">
-                      {language === 'es' ? 'Vencido' : 'Overdue'}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+        <>
+          <Card className="bg-white shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
+              <CardTitle className="text-slate-900 text-lg">
+                {language === 'es' ? '🔍 Filtros Avanzados' : '🔍 Advanced Filters'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-slate-700 font-medium mb-2 block">
+                    {language === 'es' ? 'Estado' : 'Status'}
+                  </Label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                      <SelectValue placeholder={language === 'es' ? 'Selecciona estado' : 'Select status'}/>
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200">
+                      <SelectItem value="all" className="text-slate-900">
+                        {language === 'es' ? 'Todos' : 'All'}
+                      </SelectItem>
+                      <SelectItem value="draft" className="text-slate-900">
+                        {language === 'es' ? 'Borrador' : 'Draft'}
+                      </SelectItem>
+                      <SelectItem value="sent" className="text-slate-900">
+                        {language === 'es' ? 'Enviado' : 'Sent'}
+                      </SelectItem>
+                      <SelectItem value="paid" className="text-slate-900">
+                        {language === 'es' ? 'Pagado' : 'Paid'}
+                      </SelectItem>
+                      <SelectItem value="partial" className="text-slate-900">
+                        {language === 'es' ? 'Parcial' : 'Partial'}
+                      </SelectItem>
+                      <SelectItem value="overdue" className="text-slate-900">
+                        {language === 'es' ? 'Vencido' : 'Overdue'}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-700 font-medium mb-2 block">
+                    {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={minAmount}
+                    onChange={(e) => setMinAmount(e.target.value)}
+                    placeholder="$0.00"
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-700 font-medium mb-2 block">
+                    {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={maxAmount}
+                    onChange={(e) => setMaxAmount(e.target.value)}
+                    placeholder="$999,999.99"
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
               </div>
 
-              <div>
+              <div className="mt-4">
                 <Label className="text-slate-700 font-medium mb-2 block">
-                  {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
+                  {language === 'es' ? 'Buscar en Notas' : 'Search in Notes'}
                 </Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  value={minAmount}
-                  onChange={(e) => setMinAmount(e.target.value)}
-                  placeholder="$0.00"
+                  value={notesKeyword}
+                  onChange={(e) => setNotesKeyword(e.target.value)}
+                  placeholder={language === 'es' ? 'Palabra clave...' : 'Keyword...'}
                   className="bg-white border-slate-300 text-slate-900"
                 />
               </div>
 
-              <div>
-                <Label className="text-slate-700 font-medium mb-2 block">
-                  {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
-                </Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={maxAmount}
-                  onChange={(e) => setMaxAmount(e.target.value)}
-                  placeholder="$999,999.99"
-                  className="bg-white border-slate-300 text-slate-900"
-                />
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-sm text-slate-600">
+                  {language === 'es'
+                    ? `Mostrando ${filteredInvoices.length} de ${extractedInvoices.length} facturas`
+                    : `Showing ${filteredInvoices.length} of ${extractedInvoices.length} invoices`}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setMinAmount('');
+                    setMaxAmount('');
+                    setNotesKeyword(''); // NEW: Reset notes keyword filter
+                  }}
+                  className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                >
+                  {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
+                </Button>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm text-slate-600">
-                {language === 'es'
-                  ? `Mostrando ${filteredInvoices.length} de ${extractedInvoices.length} facturas`
-                  : `Showing ${filteredInvoices.length} of ${extractedInvoices.length} invoices`}
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setStatusFilter('all');
-                  setMinAmount('');
-                  setMaxAmount('');
-                }}
-                className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
-              >
-                {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Extracted Invoices - UPDATED */}
-      {extractedInvoices.length > 0 && (
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardTitle className="flex items-center justify-between text-slate-900">
-              <span className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-blue-500" />
-                {language === 'es' ? 'Datos Extraídos' : 'Extracted Data'}
-              </span>
-              <Badge className="bg-blue-100 text-blue-700 border-blue-300">
-                {filteredInvoices.length} {language === 'es' ? 'facturas' : 'invoices'}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50 border-slate-200">
-                    <TableHead className="text-slate-700 font-semibold">#</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Cliente' : 'Customer'}</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Proyecto' : 'Project'}</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Estado' : 'Status'}</TableHead>
-                    <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Total' : 'Total'}</TableHead>
-                    <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredInvoices.map((invoice, index) => (
-                    <TableRow key={index} className="hover:bg-slate-50 border-slate-200">
-                      <TableCell className="text-slate-700">{invoice.invoice_number || '-'}</TableCell>
-                      <TableCell className="text-slate-900">{invoice.customer_name || '-'}</TableCell>
-                      <TableCell className="text-slate-700">{invoice.job_name || '-'}</TableCell>
-                      <TableCell className="text-slate-700">{invoice.invoice_date || '-'}</TableCell>
-                      <TableCell>
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-300">
-                          {invoice.status || 'sent'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-[#3B9FF3]">
-                        ${invoice.total?.toFixed(2) || '0.00'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeInvoice(index)}
-                          className="text-slate-600 hover:text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
+          {/* Extracted Invoices - UPDATED */}
+          <Card className="bg-white shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardTitle className="flex items-center justify-between text-slate-900">
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-blue-500" />
+                  {language === 'es' ? 'Datos Extraídos' : 'Extracted Data'}
+                </span>
+                <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+                  {filteredInvoices.length} {language === 'es' ? 'facturas' : 'invoices'}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 border-slate-200">
+                      <TableHead className="text-slate-700 font-semibold">#</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Cliente' : 'Customer'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Proyecto' : 'Project'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
+                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Estado' : 'Status'}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Total' : 'Total'}</TableHead>
+                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInvoices.map((invoice, index) => (
+                      <TableRow key={index} className="hover:bg-slate-50 border-slate-200">
+                        <TableCell className="text-slate-700">{invoice.invoice_number || '-'}</TableCell>
+                        <TableCell className="text-slate-900">{invoice.customer_name || '-'}</TableCell>
+                        <TableCell className="text-slate-700">{invoice.job_name || '-'}</TableCell>
+                        <TableCell className="text-slate-700">{invoice.invoice_date || '-'}</TableCell>
+                        <TableCell>
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+                            {invoice.status || 'sent'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-[#3B9FF3]">
+                          ${invoice.total?.toFixed(2) || '0.00'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeInvoice(index)}
+                            className="text-slate-600 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
 
-            <div className="p-6 border-t border-slate-200 bg-slate-50">
-              <Button
-                onClick={() => {
-                  // Only import the currently filtered invoices
-                  importMutation.mutate(filteredInvoices);
-                }}
-                disabled={importMutation.isPending || filteredInvoices.length === 0}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
-                size="lg"
-              >
-                {importMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {language === 'es' ? 'Importando...' : 'Importing...'}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-5 h-5 mr-2" />
-                    {language === 'es' ? `Importar ${filteredInvoices.length} Facturas` : `Import ${filteredInvoices.length} Invoices`}
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="p-6 border-t border-slate-200 bg-slate-50">
+                <Button
+                  onClick={() => {
+                    // Only import the currently filtered invoices
+                    importMutation.mutate(filteredInvoices);
+                  }}
+                  disabled={importMutation.isPending || filteredInvoices.length === 0}
+                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
+                  size="lg"
+                >
+                  {importMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      {language === 'es' ? 'Importando...' : 'Importing...'}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5 mr-2" />
+                      {language === 'es' ? `Importar ${filteredInvoices.length} Facturas` : `Import ${filteredInvoices.length} Invoices`}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {!file && extractedInvoices.length === 0 && (
@@ -599,13 +704,8 @@ export default function InvoiceXLSXImporter({ onComplete }) {
               </li>
               <li>
                 {language === 'es'
-                  ? 'Puedes agregar múltiples facturas en el mismo archivo (una por fila)'
-                  : 'You can add multiple invoices in the same file (one per row)'}
-              </li>
-              <li>
-                {language === 'es'
-                  ? 'Guarda el archivo como .xlsx o .csv'
-                  : 'Save the file as .xlsx or .csv'}
+                  ? 'Guarda el archivo como .xlsx o .csv. Puedes agregar múltiples facturas en el mismo archivo (una por fila).'
+                  : 'Save the file as .xlsx or .csv. You can add multiple invoices in the same file (one per row).'}
               </li>
               <li>
                 {language === 'es'
@@ -619,14 +719,15 @@ export default function InvoiceXLSXImporter({ onComplete }) {
               </li>
             </ol>
 
-            <Alert className="mt-6 bg-blue-50 border-blue-200">
-              <AlertTitle className="text-blue-900 font-bold">
-                💡 {language === 'es' ? 'Nota' : 'Note'}
+            <Alert className="mt-6 bg-amber-50 border-amber-200">
+              <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <AlertTitle className="text-amber-900 font-bold">
+                ⚠️ {language === 'es' ? 'Importante' : 'Important'}
               </AlertTitle>
-              <AlertDescription className="text-blue-900">
+              <AlertDescription className="text-amber-900">
                 {language === 'es'
-                  ? 'Los estados válidos para facturas son: draft, sent, paid, partial, overdue'
-                  : 'Valid invoice statuses are: draft, sent, paid, partial, overdue'}
+                  ? 'Si tienes problemas al subir o procesar el archivo, asegúrate de que el nombre del archivo sea simple y solo contenga letras, números, guiones y puntos (ejemplo: facturas.xlsx). Evita caracteres especiales, emojis o nombres muy largos.'
+                  : 'If you have trouble uploading or processing the file, make sure the filename is simple and only contains letters, numbers, hyphens, and dots (e.g., invoices.xlsx). Avoid special characters, emojis, or very long names.'}
               </AlertDescription>
             </Alert>
           </CardContent>
