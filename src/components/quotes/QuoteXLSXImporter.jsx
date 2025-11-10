@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +19,8 @@ import {
   FileDown,
   AlertTriangle,
   FileText,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -33,6 +35,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
   const [processing, setProcessing] = useState(false);
   const [extractedQuotes, setExtractedQuotes] = useState([]);
   const [error, setError] = useState(null);
+  const [processingStep, setProcessingStep] = useState('');
 
   const [statusFilter, setStatusFilter] = useState('all');
   const [minAmount, setMinAmount] = useState('');
@@ -170,6 +173,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
       setMinAmount('');
       setMaxAmount('');
       setNotesKeyword('');
+      setProcessingStep('');
     }
   };
 
@@ -181,6 +185,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
 
     setProcessing(true);
     setError(null);
+    setProcessingStep(language === 'es' ? '📤 Subiendo archivo...' : '📤 Uploading file...');
 
     try {
       const sanitizedName = file.name
@@ -194,8 +199,14 @@ export default function QuoteXLSXImporter({ onComplete }) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file: sanitizedFile });
 
       console.log('✅ File uploaded:', file_url);
+      setProcessingStep(language === 'es' ? '🤖 Extrayendo datos con IA... (esto puede tomar 30-60 segundos)' : '🤖 Extracting data with AI... (this may take 30-60 seconds)');
 
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      // Set a longer timeout for AI processing
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), 120000) // 2 minutes
+      );
+
+      const extractionPromise = base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
         json_schema: {
           type: "object",
@@ -239,8 +250,11 @@ export default function QuoteXLSXImporter({ onComplete }) {
         }
       });
 
+      const result = await Promise.race([extractionPromise, timeoutPromise]);
+
       if (result.status === 'success' && result.output?.quotes) {
         console.log('✅ Extracted quotes:', result.output.quotes);
+        setProcessingStep(language === 'es' ? '✅ Procesando datos...' : '✅ Processing data...');
 
         const quotesWithTotals = result.output.quotes.map(quote => {
           const items = quote.items || [];
@@ -266,17 +280,27 @@ export default function QuoteXLSXImporter({ onComplete }) {
         });
 
         setExtractedQuotes(quotesWithTotals);
+        setProcessingStep('');
       } else {
         throw new Error(result.details || 'Failed to extract data from file');
       }
     } catch (err) {
       console.error('❌ Error processing file:', err);
       
-      let errorMessage = language === 'es'
-        ? '⚠️ No se pudo procesar el archivo. Esto puede pasar si:\n\n1️⃣ El archivo está corrupto o dañado\n2️⃣ El formato no es compatible\n3️⃣ El archivo está vacío\n\n💡 SOLUCIONES:\n\n✅ Descarga la plantilla y copia tus datos allí\n✅ Guarda el archivo como .CSV desde Excel (Archivo → Guardar Como → CSV)\n✅ Abre el archivo en Excel, verifica que tenga datos, y guárdalo de nuevo\n✅ Si tienes PDFs de estimados, usa el "Quote Importer" (importador de PDFs) en su lugar'
-        : '⚠️ Could not process the file. This may happen if:\n\n1️⃣ The file is corrupted or damaged\n2️⃣ The format is not compatible\n3️⃣ The file is empty\n\n💡 SOLUTIONS:\n\n✅ Download the template and copy your data there\n✅ Save the file as .CSV from Excel (File → Save As → CSV)\n✅ Open the file in Excel, verify it has data, and save it again\n✅ If you have PDF quotes, use the "Quote Importer" (PDF importer) instead';
+      let errorMessage;
+      
+      if (err.message === 'TIMEOUT') {
+        errorMessage = language === 'es'
+          ? '⏰ El procesamiento tomó demasiado tiempo.\n\n💡 SOLUCIONES:\n\n1️⃣ Tu archivo es muy grande o complejo. Intenta dividirlo en archivos más pequeños (10-20 filas por archivo)\n\n2️⃣ Usa el importador de PDFs en lugar de Excel - es más rápido\n\n3️⃣ Simplifica tu archivo: elimina columnas innecesarias, fórmulas, formato especial\n\n4️⃣ Vuelve a intentar en 1 minuto - a veces el servidor está ocupado'
+          : '⏰ Processing took too long.\n\n💡 SOLUTIONS:\n\n1️⃣ Your file is very large or complex. Try splitting it into smaller files (10-20 rows per file)\n\n2️⃣ Use the PDF importer instead of Excel - it\'s faster\n\n3️⃣ Simplify your file: remove unnecessary columns, formulas, special formatting\n\n4️⃣ Try again in 1 minute - sometimes the server is busy';
+      } else {
+        errorMessage = language === 'es'
+          ? '⚠️ No se pudo procesar el archivo.\n\n💡 SOLUCIONES:\n\n✅ Descarga la plantilla y copia tus datos allí\n✅ Guarda el archivo como .CSV desde Excel (Archivo → Guardar Como → CSV)\n✅ Abre el archivo en Excel, verifica que tenga datos, y guárdalo de nuevo\n✅ Si tienes PDFs de estimados, usa el "Importador de PDFs" en su lugar\n✅ Verifica que las fechas estén en formato YYYY-MM-DD (ej: 2024-01-15)'
+          : '⚠️ Could not process the file.\n\n💡 SOLUTIONS:\n\n✅ Download the template and copy your data there\n✅ Save the file as .CSV from Excel (File → Save As → CSV)\n✅ Open the file in Excel, verify it has data, and save it again\n✅ If you have PDF quotes, use the "PDF Importer" instead\n✅ Verify dates are in YYYY-MM-DD format (e.g. 2024-01-15)';
+      }
       
       setError(errorMessage);
+      setProcessingStep('');
     } finally {
       setProcessing(false);
     }
@@ -400,8 +424,8 @@ export default function QuoteXLSXImporter({ onComplete }) {
               />
               <p className="text-xs text-slate-500 mt-1">
                 {language === 'es' 
-                  ? '💡 Usa nombres de archivo simples (solo letras, números, guiones). Ejemplo: estimados.xlsx'
-                  : '💡 Use simple filenames (only letters, numbers, hyphens). Example: quotes.xlsx'}
+                  ? '💡 Usa nombres de archivo simples (solo letras, números, guiones). Ejemplo: estimados.csv'
+                  : '💡 Use simple filenames (only letters, numbers, hyphens). Example: quotes.csv'}
               </p>
             </div>
 
@@ -410,6 +434,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
                 onClick={downloadTemplate}
                 variant="outline"
                 className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                disabled={processing}
               >
                 <FileDown className="w-4 h-4 mr-2" />
                 {language === 'es' ? 'Descargar Plantilla' : 'Download Template'}
@@ -439,6 +464,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
                 <Button
                   variant="outline"
                   className="bg-white border-purple-300 text-purple-700 hover:bg-purple-50"
+                  disabled={processing}
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Importar PDFs' : 'Import PDFs'}
@@ -450,6 +476,15 @@ export default function QuoteXLSXImporter({ onComplete }) {
               <Alert className="bg-blue-50 border-blue-200">
                 <AlertDescription className="text-blue-900">
                   📄 <strong>{file.name}</strong> - {(file.size / 1024).toFixed(2)} KB
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {processingStep && (
+              <Alert className="bg-indigo-50 border-indigo-200">
+                <Clock className="w-4 h-4 text-indigo-600 animate-pulse" />
+                <AlertDescription className="text-indigo-900 font-medium">
+                  {processingStep}
                 </AlertDescription>
               </Alert>
             )}
@@ -650,7 +685,7 @@ export default function QuoteXLSXImporter({ onComplete }) {
         </>
       )}
 
-      {!file && extractedQuotes.length === 0 && (
+      {!file && extractedQuotes.length === 0 && !processing && (
         <Card className="bg-white shadow-xl border-slate-200">
           <CardHeader className="border-b border-slate-200">
             <CardTitle className="text-slate-900">
@@ -671,23 +706,18 @@ export default function QuoteXLSXImporter({ onComplete }) {
               </li>
               <li>
                 {language === 'es'
-                  ? 'IMPORTANTE: Guarda el archivo con un nombre simple (ej: estimados.xlsx) - solo usa letras, números y guiones'
-                  : 'IMPORTANT: Save the file with a simple name (e.g. quotes.xlsx) - only use letters, numbers and hyphens'}
+                  ? 'IMPORTANTE: Guarda el archivo con un nombre simple (ej: estimados.csv)'
+                  : 'IMPORTANT: Save the file with a simple name (e.g. quotes.csv)'}
               </li>
               <li>
                 {language === 'es'
-                  ? 'Guarda el archivo como CSV (Archivo → Guardar Como → CSV) si tienes problemas con Excel'
-                  : 'Save the file as CSV (File → Save As → CSV) if you have issues with Excel'}
+                  ? 'Sube el archivo CSV - es más rápido y confiable que XLSX'
+                  : 'Upload the CSV file - it\'s faster and more reliable than XLSX'}
               </li>
               <li>
                 {language === 'es'
-                  ? 'Sube el archivo usando el botón "Selecciona archivo"'
-                  : 'Upload the file using the "Select file" button'}
-              </li>
-              <li>
-                {language === 'es'
-                  ? 'Haz clic en "Procesar Archivo" para extraer los datos'
-                  : 'Click "Process File" to extract the data'}
+                  ? 'Haz clic en "Procesar Archivo" y espera 30-60 segundos'
+                  : 'Click "Process File" and wait 30-60 seconds'}
               </li>
             </ol>
 
@@ -706,12 +736,12 @@ export default function QuoteXLSXImporter({ onComplete }) {
             <Alert className="mt-4 bg-amber-50 border-amber-200">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
               <AlertTitle className="text-amber-900 font-bold">
-                ⚠️ {language === 'es' ? 'Problemas comunes' : 'Common issues'}
+                ⚠️ {language === 'es' ? 'Si el proceso toma mucho tiempo' : 'If processing takes too long'}
               </AlertTitle>
               <AlertDescription className="text-amber-900">
                 {language === 'es'
-                  ? 'Si tienes problemas:\n• Abre el archivo en Excel y guárdalo de nuevo\n• Intenta guardar como CSV en lugar de XLSX\n• Descarga la plantilla y copia tus datos allí\n• Verifica que el archivo no esté vacío'
-                  : 'If you have issues:\n• Open the file in Excel and save it again\n• Try saving as CSV instead of XLSX\n• Download the template and copy your data there\n• Verify the file is not empty'}
+                  ? 'Si se queda procesando más de 2 minutos:\n• Divide tu archivo en partes más pequeñas (10-20 filas)\n• Usa el importador de PDFs en su lugar\n• Simplifica el archivo: elimina columnas innecesarias\n• Intenta de nuevo en 1 minuto'
+                  : 'If it keeps processing for more than 2 minutes:\n• Split your file into smaller parts (10-20 rows)\n• Use the PDF importer instead\n• Simplify the file: remove unnecessary columns\n• Try again in 1 minute'}
               </AlertDescription>
             </Alert>
           </CardContent>
