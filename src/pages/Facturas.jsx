@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InvoiceXLSXImporter from "../components/invoices/InvoiceXLSXImporter";
+import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
@@ -314,7 +317,7 @@ export default function Facturas() {
                   disabled={filteredInvoices.length === 0}
                 >
                   <Download className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Exportar Excel' : 'Export Excel'}
+                  {language === 'es' ? 'Exportar' : 'Export'}
                 </Button>
                 <Button 
                   onClick={() => setShowImporter(true)}
@@ -323,7 +326,7 @@ export default function Facturas() {
                   className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
                   <FileSpreadsheet className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Importar Excel' : 'Import Excel'}
+                  {language === 'es' ? 'Importar' : 'Import'}
                 </Button>
                 <Link to={createPageUrl("CrearFactura")}>
                   <Button size="lg" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg">
@@ -792,15 +795,32 @@ export default function Facturas() {
           </div>
         )}
 
-        {/* Import Dialog */}
+        {/* Import Dialog with Tabs */}
         <Dialog open={showImporter} onOpenChange={setShowImporter}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900">
-                {language === 'es' ? 'Importar Facturas desde Excel' : 'Import Invoices from Excel'}
+                {language === 'es' ? 'Importar Facturas' : 'Import Invoices'}
               </DialogTitle>
             </DialogHeader>
-            <InvoiceXLSXImporter onComplete={() => setShowImporter(false)} />
+            <Tabs defaultValue="excel" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="excel" className="text-base">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Excel/CSV
+                </TabsTrigger>
+                <TabsTrigger value="pdf" className="text-base">
+                  <FileCheck className="w-4 h-4 mr-2" />
+                  PDFs (AI)
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="excel">
+                <InvoiceXLSXImporter onComplete={() => setShowImporter(false)} />
+              </TabsContent>
+              <TabsContent value="pdf">
+                <InvoicePDFImporter onComplete={() => setShowImporter(false)} />
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>
