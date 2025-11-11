@@ -40,11 +40,6 @@ export default function QuoteDocument({ quote }) {
                 <div className="col-span-2">
                     <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-2">Bill To</p>
                     <p className="font-bold text-xl text-slate-900 mb-1">{quote.customer_name}</p>
-                    {quote.job_address && (
-                        <p className="text-sm text-gray-600 mt-2 leading-relaxed">
-                            {quote.job_address}
-                        </p>
-                    )}
                 </div>
                 <div className="text-right space-y-4">
                     {quote.quote_date && (
@@ -66,12 +61,17 @@ export default function QuoteDocument({ quote }) {
                 </div>
             </div>
 
-            {/* Subject & Install Date */}
+            {/* Job Name & Install Date */}
             <div className="mb-10 pb-6 border-b border-gray-200">
                 <div className="grid grid-cols-3 gap-8">
                     <div className="col-span-2">
-                        <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-2">Subject</p>
-                        <p className="text-lg font-semibold text-slate-900">{quote.job_name}</p>
+                        <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-2">Job Name</p>
+                        <p className="text-lg font-semibold text-slate-900 mb-2">{quote.job_name}</p>
+                        {quote.job_address && (
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                                {quote.job_address}
+                            </p>
+                        )}
                     </div>
                     {quote.install_date && (
                         <div className="text-right">
