@@ -7,7 +7,7 @@ export default function QuoteDocument({ quote }) {
     return (
         <div className="bg-white p-8 md:p-12 print:p-0 font-sans">
             {/* Header with logo and QUOTE title */}
-            <div className="flex justify-between items-start mb-12 pb-8 border-b-2 border-gradient-to-r from-purple-600 to-indigo-600" style={{borderImage: 'linear-gradient(to right, rgb(147, 51, 234), rgb(79, 70, 229)) 1'}}>
+            <div className="flex justify-between items-start mb-12 pb-8 border-b-2 border-gradient-to-r from-slate-600 to-slate-800" style={{borderImage: 'linear-gradient(to right, rgb(71, 85, 105), rgb(30, 41, 59)) 1'}}>
                 <div className="w-2/3">
                     <div className="flex items-center gap-4 mb-4">
                         <img
@@ -28,8 +28,8 @@ export default function QuoteDocument({ quote }) {
                 </div>
 
                 <div className="text-right">
-                    <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3 tracking-tight">QUOTE</h1>
-                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-xl inline-block shadow-lg">
+                    <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent mb-3 tracking-tight">QUOTE</h1>
+                    <div className="bg-gradient-to-r from-slate-700 to-slate-900 text-white px-6 py-2 rounded-xl inline-block shadow-lg">
                         <p className="text-lg font-bold tracking-wide">{quote.quote_number}</p>
                     </div>
                 </div>
@@ -38,19 +38,19 @@ export default function QuoteDocument({ quote }) {
             {/* Bill To & Dates Grid - Modern Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 {/* Bill To Card */}
-                <div className="md:col-span-2 bg-gradient-to-br from-slate-50 to-purple-50 rounded-2xl p-6 border border-purple-100 shadow-sm">
-                    <p className="text-xs text-purple-600 uppercase font-bold tracking-wider mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-purple-600 rounded-full"></span>
+                <div className="md:col-span-2 bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <p className="text-xs text-slate-700 uppercase font-bold tracking-wider mb-3 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-slate-700 rounded-full"></span>
                         Bill To
                     </p>
                     <p className="font-bold text-2xl text-slate-900 mb-1">{quote.customer_name}</p>
                 </div>
 
                 {/* Dates Card */}
-                <div className="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-2xl p-6 border border-indigo-100 shadow-sm space-y-4">
+                <div className="bg-gradient-to-br from-blue-50 to-slate-50 rounded-2xl p-6 border border-blue-100 shadow-sm space-y-4">
                     {quote.quote_date && (
                         <div>
-                            <p className="text-xs text-indigo-600 uppercase font-bold tracking-wider mb-1">Quote Date</p>
+                            <p className="text-xs text-blue-700 uppercase font-bold tracking-wider mb-1">Quote Date</p>
                             <p className="text-base font-semibold text-slate-900">
                                 {format(new Date(quote.quote_date), 'MMM dd, yyyy')}
                             </p>
@@ -58,7 +58,7 @@ export default function QuoteDocument({ quote }) {
                     )}
                     {quote.valid_until && (
                         <div>
-                            <p className="text-xs text-indigo-600 uppercase font-bold tracking-wider mb-1">Valid Until</p>
+                            <p className="text-xs text-blue-700 uppercase font-bold tracking-wider mb-1">Valid Until</p>
                             <p className="text-base font-semibold text-slate-900">
                                 {format(new Date(quote.valid_until), 'MMM dd, yyyy')}
                             </p>
@@ -97,7 +97,7 @@ export default function QuoteDocument({ quote }) {
             <div className="mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-200">
                 <table className="w-full">
                     <thead>
-                        <tr className="bg-gradient-to-r from-slate-800 to-slate-700">
+                        <tr className="bg-gradient-to-r from-slate-800 to-slate-900">
                             <th className="text-left p-4 text-white font-bold text-sm w-12">#</th>
                             <th className="text-left p-4 text-white font-bold text-sm">Item & Description</th>
                             <th className="text-right p-4 text-white font-bold text-sm w-24">Qty</th>
@@ -156,7 +156,7 @@ export default function QuoteDocument({ quote }) {
                         )}
 
                         {/* Total */}
-                        <div className="flex justify-between items-center py-5 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl shadow-lg mt-4">
+                        <div className="flex justify-between items-center py-5 px-6 bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-2xl shadow-lg mt-4">
                             <span className="text-lg font-bold tracking-wide">TOTAL</span>
                             <span className="text-3xl font-bold">
                                 ${quote.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
