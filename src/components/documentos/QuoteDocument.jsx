@@ -47,18 +47,22 @@ export default function QuoteDocument({ quote }) {
                     )}
                 </div>
                 <div className="text-right space-y-4">
-                    <div>
-                        <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-1">Quote Date</p>
-                        <p className="text-base font-semibold text-slate-900">
-                            {format(new Date(quote.quote_date), 'MMM dd, yyyy')}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-1">Valid Until</p>
-                        <p className="text-base font-semibold text-slate-900">
-                            {format(new Date(quote.valid_until), 'MMM dd, yyyy')}
-                        </p>
-                    </div>
+                    {quote.quote_date && (
+                        <div>
+                            <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-1">Quote Date</p>
+                            <p className="text-base font-semibold text-slate-900">
+                                {format(new Date(quote.quote_date), 'MMM dd, yyyy')}
+                            </p>
+                        </div>
+                    )}
+                    {quote.valid_until && (
+                        <div>
+                            <p className="text-xs text-slate-600 uppercase font-bold tracking-wider mb-1">Valid Until</p>
+                            <p className="text-base font-semibold text-slate-900">
+                                {format(new Date(quote.valid_until), 'MMM dd, yyyy')}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 
