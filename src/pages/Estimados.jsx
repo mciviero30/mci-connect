@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QuoteXLSXImporter from "../components/quotes/QuoteXLSXImporter";
+import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -239,7 +242,7 @@ export default function Estimados() {
                   disabled={filteredQuotes.length === 0}
                 >
                   <Download className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Exportar Excel' : 'Export Excel'}
+                  {language === 'es' ? 'Exportar' : 'Export'}
                 </Button>
                 <Button 
                   onClick={() => setShowImporter(true)}
@@ -248,7 +251,7 @@ export default function Estimados() {
                   className="bg-white border-green-300 text-green-700 hover:bg-green-50"
                 >
                   <FileSpreadsheet className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Importar Excel' : 'Import Excel'}
+                  {language === 'es' ? 'Importar' : 'Import'}
                 </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
                   <Button size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] hover:to-blue-700 text-white shadow-lg">
@@ -619,15 +622,32 @@ export default function Estimados() {
           )}
         </div>
 
-        {/* Import Dialog */}
+        {/* Import Dialog with Tabs */}
         <Dialog open={showImporter} onOpenChange={setShowImporter}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900">
-                {language === 'es' ? 'Importar Estimados desde Excel' : 'Import Quotes from Excel'}
+                {language === 'es' ? 'Importar Estimados' : 'Import Quotes'}
               </DialogTitle>
             </DialogHeader>
-            <QuoteXLSXImporter onComplete={() => setShowImporter(false)} />
+            <Tabs defaultValue="excel" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="excel" className="text-base">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Excel/CSV
+                </TabsTrigger>
+                <TabsTrigger value="pdf" className="text-base">
+                  <FileText className="w-4 h-4 mr-2" />
+                  PDFs (AI)
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="excel">
+                <QuoteXLSXImporter onComplete={() => setShowImporter(false)} />
+              </TabsContent>
+              <TabsContent value="pdf">
+                <QuotePDFImporter onComplete={() => setShowImporter(false)} />
+              </TabsContent>
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>
