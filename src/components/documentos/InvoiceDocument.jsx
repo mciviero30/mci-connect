@@ -15,7 +15,9 @@ export default function InvoiceDocument({ invoice }) {
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                            <span className="text-2xl">📄</span>
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                         </div>
                         <div>
                             <p className="text-white/80 text-xs font-semibold uppercase tracking-wider">Invoice</p>
@@ -101,7 +103,9 @@ export default function InvoiceDocument({ invoice }) {
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-slate-200">
                     <div className="flex items-start gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <span className="text-xl">🏢</span>
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
                         </div>
                         <div className="flex-1">
                             <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1">Job Name</p>
@@ -118,7 +122,9 @@ export default function InvoiceDocument({ invoice }) {
             <div className="bg-white rounded-2xl shadow-lg mb-8 overflow-hidden border border-slate-200">
                 <div className="bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4">
                     <p className="text-white font-bold text-lg flex items-center gap-2">
-                        <span>📋</span>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
                         Items & Services
                     </p>
                 </div>
@@ -236,7 +242,9 @@ export default function InvoiceDocument({ invoice }) {
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-slate-200">
                     <div className="flex items-start gap-3">
                         <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <span className="text-xl">📝</span>
+                            <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
                         </div>
                         <div className="flex-1">
                             <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">Payment Terms</h3>
@@ -248,7 +256,7 @@ export default function InvoiceDocument({ invoice }) {
 
             {/* Footer */}
             <div className="text-center bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
-                <p className="text-lg text-slate-700 font-semibold mb-1">Thank you for your business! 🙏</p>
+                <p className="text-lg text-slate-700 font-semibold mb-1">Thank you for your business!</p>
                 <p className="text-sm text-gray-500">For questions, please contact us at the address above.</p>
             </div>
         </div>
