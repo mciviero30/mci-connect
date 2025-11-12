@@ -1,12 +1,11 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Eye, Trash2, FileSpreadsheet, Download, Copy, Filter, X } from "lucide-react";
+import { FileText, Plus, Eye, Trash2, Copy, FileCheck, Download, Filter, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
 import { format } from "date-fns";
@@ -24,6 +23,7 @@ export default function Estimados() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [showImporter, setShowImporter] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -54,7 +54,7 @@ export default function Estimados() {
     mutationFn: (id) => base44.entities.Quote.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(t('quoteDeleted'));
+      toast.success(t('deletedSuccessfully'));
     }
   });
 
@@ -71,6 +71,7 @@ export default function Estimados() {
       delete newQuote.created_date;
       delete newQuote.updated_date;
       delete newQuote.created_by;
+      delete newQuote.invoice_id;
       
       return base44.entities.Quote.create(newQuote);
     },
@@ -79,6 +80,108 @@ export default function Estimados() {
       toast.success(language === 'es' ? '✅ Estimado duplicado' : '✅ Quote duplicated');
     },
     onError: (error) => {
+      toast.error(`❌ Error: ${error.message}`);
+    }
+  });
+
+  const convertToInvoiceMutation = useMutation({
+    mutationFn: async (quote) => {
+      console.log('Converting quote to invoice...', quote);
+      
+      let jobId = quote.job_id;
+      let wasJobCreated = false;
+      
+      // If no job exists, create one automatically
+      if (!jobId) {
+        console.log('No job_id found, creating new job...');
+        
+        const jobData = {
+          name: quote.job_name,
+          address: quote.job_address,
+          customer_id: quote.customer_id,
+          customer_name: quote.customer_name,
+          contract_amount: quote.total,
+          status: 'active',
+          team_id: quote.team_id,
+          team_name: quote.team_name,
+          description: `Auto-created from quote ${quote.quote_number}`
+        };
+        
+        const newJob = await base44.entities.Job.create(jobData);
+        jobId = newJob.id;
+        wasJobCreated = true;
+        
+        // Update quote with job_id
+        await base44.entities.Quote.update(quote.id, {
+          job_id: jobId
+        });
+      }
+
+      // Create invoice
+      const invoices = await base44.entities.Invoice.list();
+      const existingNumbers = invoices
+        .map(inv => inv.invoice_number)
+        .filter(n => n?.startsWith('INV-'))
+        .map(n => parseInt(n.replace('INV-', '')))
+        .filter(n => !isNaN(n));
+
+      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+      const invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
+
+      const invoiceData = {
+        invoice_number,
+        quote_id: quote.id,
+        customer_id: quote.customer_id,
+        customer_name: quote.customer_name,
+        customer_email: quote.customer_email,
+        customer_phone: quote.customer_phone,
+        job_name: quote.job_name,
+        job_id: jobId,
+        job_address: quote.job_address,
+        team_id: quote.team_id,
+        team_name: quote.team_name,
+        invoice_date: format(new Date(), 'yyyy-MM-dd'),
+        due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+        items: quote.items,
+        subtotal: quote.subtotal,
+        tax_rate: quote.tax_rate,
+        tax_amount: quote.tax_amount,
+        total: quote.total,
+        amount_paid: 0,
+        balance: quote.total,
+        notes: quote.notes,
+        terms: quote.terms,
+        status: 'draft'
+      };
+
+      const newInvoice = await base44.entities.Invoice.create(invoiceData);
+
+      // Update quote status
+      await base44.entities.Quote.update(quote.id, {
+        status: 'converted_to_invoice',
+        invoice_id: newInvoice.id
+      });
+
+      return { newInvoice, wasJobCreated };
+    },
+    onSuccess: ({ newInvoice, wasJobCreated }) => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      
+      const message = language === 'es' 
+        ? `✅ Factura creada${wasJobCreated ? '\n✅ Trabajo creado automáticamente' : ''}`
+        : `✅ Invoice created${wasJobCreated ? '\n✅ Job created automatically' : ''}`;
+      
+      toast.success(message);
+      
+      // Navigate to the new invoice
+      setTimeout(() => {
+        navigate(createPageUrl(`VerFactura?id=${newInvoice.id}`));
+      }, 1000);
+    },
+    onError: (error) => {
+      console.error('Error converting quote:', error);
       toast.error(`❌ Error: ${error.message}`);
     }
   });
@@ -148,12 +251,6 @@ export default function Estimados() {
     toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
   };
 
-  const getDaysInStatus = (quote) => {
-    const statusDate = quote.updated_date || quote.created_date;
-    const daysDiff = Math.floor((new Date() - new Date(statusDate)) / (1000 * 60 * 60 * 24));
-    return daysDiff;
-  };
-
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
@@ -169,7 +266,7 @@ export default function Estimados() {
 
   const filteredQuotes = quotes.filter(quote => {
     // Basic search
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       quote.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quote.quote_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quote.job_name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -212,20 +309,13 @@ export default function Estimados() {
   };
 
   const getStatusLabel = (status) => {
-    const labels = {
-      draft: language === 'es' ? 'Borrador' : 'Draft',
-      sent: language === 'es' ? 'Enviado' : 'Sent',
-      approved: language === 'es' ? 'Aprobado' : 'Approved',
-      rejected: language === 'es' ? 'Rechazado' : 'Rejected',
-      converted_to_invoice: language === 'es' ? 'Convertido' : 'Converted'
-    };
-    return labels[status] || status;
-  };
+    return t(status) || status;
+  }
 
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('quotes')}
@@ -238,7 +328,7 @@ export default function Estimados() {
                   onClick={exportToExcel}
                   variant="outline"
                   size="lg" 
-                  className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
                   disabled={filteredQuotes.length === 0}
                 >
                   <Download className="w-5 h-5 mr-2" />
@@ -248,13 +338,13 @@ export default function Estimados() {
                   onClick={() => setShowImporter(true)}
                   variant="outline"
                   size="lg" 
-                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
+                  className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
-                  <FileSpreadsheet className="w-5 h-5 mr-2" />
+                  <FileText className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'Importar' : 'Import'}
                 </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
-                  <Button size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] hover:to-blue-700 text-white shadow-lg">
+                  <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg">
                     <Plus className="w-5 h-5 mr-2" />
                     {t('newQuote')}
                   </Button>
@@ -301,25 +391,18 @@ export default function Estimados() {
                   <p className="text-3xl font-bold text-slate-900 mt-1">{converted.length}</p>
                 </div>
                 <div className="p-3 bg-purple-100 rounded-2xl">
-                  <FileText className="w-6 h-6 text-purple-600" />
+                  <FileCheck className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-lg border-0 hover:shadow-xl transition-all">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-50">{t('totalValue')}</p>
-                  <p className="text-3xl font-bold text-white mt-1">
-                    ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                </div>
-                <div className="p-3 bg-white/20 rounded-2xl">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-              </div>
+              <p className="text-sm font-medium text-cyan-50">{t('totalValue')}</p>
+              <p className="text-3xl font-bold text-white mt-1">
+                ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -500,100 +583,114 @@ export default function Estimados() {
         </Card>
 
         <div className="space-y-4">
-          {filteredQuotes.map(quote => {
-            const daysInStatus = getDaysInStatus(quote);
-            
-            return (
-              <Card key={quote.id} className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all group">
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-xl text-slate-900">{quote.customer_name}</h3>
-                        <Badge className={statusColors[quote.status] || statusColors.draft}>
-                          {getStatusLabel(quote.status)}
+          {filteredQuotes.map(quote => (
+            <Card key={quote.id} className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all group">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="font-bold text-xl text-slate-900">{quote.customer_name}</h3>
+                      <Badge className={statusColors[quote.status] || statusColors.draft}>
+                        {getStatusLabel(quote.status)}
+                      </Badge>
+                      {quote.status === 'converted_to_invoice' && quote.invoice_id && (
+                        <Badge className="bg-green-50 text-green-700 border-green-200">
+                          <FileCheck className="w-3 h-3 mr-1" />
+                          {language === 'es' ? 'Ver Factura' : 'View Invoice'}
                         </Badge>
-                        <Badge variant="outline" className="text-xs text-slate-600 border-slate-300">
-                          {daysInStatus === 0 
-                            ? (language === 'es' ? 'Hoy' : 'Today')
-                            : daysInStatus === 1
-                              ? (language === 'es' ? 'Hace 1 día' : '1 day ago')
-                              : (language === 'es' ? `Hace ${daysInStatus} días` : `${daysInStatus} days ago`)
-                          }
-                        </Badge>
-                      </div>
-                      <p className="text-slate-600 font-medium mb-1">{quote.job_name}</p>
-                      <div className="flex items-center gap-4 text-sm text-slate-500">
-                        <span>{quote.quote_number}</span>
-                        <span>•</span>
-                        <span>{format(new Date(quote.quote_date), 'MMM dd, yyyy')}</span>
-                        {quote.valid_until && (
-                          <>
-                            <span>•</span>
-                            <span>{t('validUntil')}: {format(new Date(quote.valid_until), 'MMM dd, yyyy')}</span>
-                          </>
-                        )}
-                        {quote.team_name && (
-                          <>
-                            <span>•</span>
-                            <span className="text-[#3B9FF3]">Team: {quote.team_name}</span>
-                          </>
-                        )}
-                      </div>
+                      )}
                     </div>
-
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-[#3B9FF3]">
-                          ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
-                        {quote.estimated_hours && (
-                          <p className="text-sm text-slate-500">{quote.estimated_hours}h {language === 'es' ? 'estimadas' : 'estimated'}</p>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2">
-                        {isAdmin && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              if (window.confirm(language === 'es' ? '¿Duplicar este estimado?' : 'Duplicate this quote?')) {
-                                duplicateMutation.mutate(quote);
-                              }
-                            }}
-                            className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
-                            title={language === 'es' ? 'Duplicar' : 'Duplicate'}
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)}>
-                          <Button variant="outline" size="icon" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                        {isAdmin && (
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {
-                              if (window.confirm(t('confirmDeleteQuote'))) {
-                                deleteMutation.mutate(quote.id);
-                              }
-                            }}
-                            className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
+                    <p className="text-slate-600 font-medium mb-1">{quote.job_name}</p>
+                    <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
+                      <span>{quote.quote_number}</span>
+                      <span>•</span>
+                      <span>{format(new Date(quote.quote_date), 'MMM dd, yyyy')}</span>
+                      {quote.team_name && (
+                        <>
+                          <span>•</span>
+                          <span className="text-cyan-600">Team: {quote.team_name}</span>
+                        </>
+                      )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-cyan-600">
+                        ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            if (window.confirm(language === 'es' ? '¿Duplicar este estimado?' : 'Duplicate this quote?')) {
+                              duplicateMutation.mutate(quote);
+                            }
+                          }}
+                          className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
+                          title={language === 'es' ? 'Duplicar' : 'Duplicate'}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {isAdmin && quote.status !== 'converted_to_invoice' && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            if (window.confirm(language === 'es' 
+                              ? '¿Convertir este estimado a factura?' 
+                              : 'Convert this quote to invoice?')) {
+                              convertToInvoiceMutation.mutate(quote);
+                            }
+                          }}
+                          disabled={convertToInvoiceMutation.isPending}
+                          className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                          title={language === 'es' ? 'Convertir a Factura' : 'Convert to Invoice'}
+                        >
+                          <FileCheck className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {quote.status === 'converted_to_invoice' && quote.invoice_id && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => navigate(createPageUrl(`VerFactura?id=${quote.invoice_id}`))}
+                          className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+                          title={language === 'es' ? 'Ver Factura' : 'View Invoice'}
+                        >
+                          <FileCheck className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)}>
+                        <Button variant="outline" size="icon" className="bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-700">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            if (window.confirm(language === 'es' ? '¿Estás seguro de que quieres eliminar este estimado? Esta acción no se puede deshacer.' : 'Are you sure you want to delete this quote? This action cannot be undone.')) {
+                              deleteMutation.mutate(quote.id);
+                            }
+                          }}
+                          className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
 
           {filteredQuotes.length === 0 && !isLoading && (
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
@@ -611,7 +708,7 @@ export default function Estimados() {
                 )}
                 {!hasActiveFilters && isAdmin && (
                   <Link to={createPageUrl("CrearEstimado")}>
-                    <Button className="mt-4 bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white">
+                    <Button className="mt-4 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
                       <Plus className="w-4 h-4 mr-2" />
                       {t('newQuote')}
                     </Button>
@@ -633,11 +730,11 @@ export default function Estimados() {
             <Tabs defaultValue="excel" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="excel" className="text-base">
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  <FileText className="w-4 h-4 mr-2" />
                   Excel/CSV
                 </TabsTrigger>
                 <TabsTrigger value="pdf" className="text-base">
-                  <FileText className="w-4 h-4 mr-2" />
+                  <FileCheck className="w-4 h-4 mr-2" />
                   PDFs (AI)
                 </TabsTrigger>
               </TabsList>
