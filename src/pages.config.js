@@ -49,6 +49,7 @@ import AIExpensesAudit from './pages/AIExpensesAudit';
 import CompanyInfo from './pages/CompanyInfo';
 import AIInvoiceGenerator from './pages/AIInvoiceGenerator';
 import NotificationSettings from './pages/NotificationSettings';
+import Recognitions from './pages/Recognitions';
 import Layout from './Layout.jsx';
 
 
@@ -104,6 +105,7 @@ export const PAGES = {
     "CompanyInfo": CompanyInfo,
     "AIInvoiceGenerator": AIInvoiceGenerator,
     "NotificationSettings": NotificationSettings,
+    "Recognitions": Recognitions,
 }
 
 export const pagesConfig = {

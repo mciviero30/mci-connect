@@ -14,7 +14,9 @@ import {
   Award,
   Cake,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles,
+  Trophy
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,6 +29,8 @@ const AVAILABLE_WIDGETS = {
     { id: 'pending-timesheets', title: 'Pending Timesheets', icon: AlertTriangle, category: 'time', size: 'medium' },
     { id: 'birthdays-today', title: 'Birthdays Today', icon: Cake, category: 'people', size: 'medium' },
     { id: 'recent-recognitions', title: 'Recent Recognitions', icon: Award, category: 'people', size: 'medium' },
+    { id: 'top-recognitions', title: 'Top Recognitions', icon: Trophy, category: 'people', size: 'medium' },
+    { id: 'recognition-feed', title: 'Recognition Feed', icon: Sparkles, category: 'people', size: 'large' },
     { id: 'upcoming-birthdays', title: 'Upcoming Birthdays', icon: Calendar, category: 'people', size: 'medium' },
   ],
   employee: [
@@ -36,6 +40,8 @@ const AVAILABLE_WIDGETS = {
     { id: 'my-expenses', title: 'My Expenses', icon: Receipt, category: 'finance', size: 'small' },
     { id: 'my-assignments', title: 'My Assignments', icon: Briefcase, category: 'jobs', size: 'large' },
     { id: 'hours-chart', title: 'Hours Progress', icon: BarChart3, category: 'time', size: 'medium' },
+    { id: 'recognition-feed', title: 'Recognition Feed', icon: Sparkles, category: 'recognition', size: 'large' },
+    { id: 'top-recognitions', title: 'Top Recognitions', icon: Trophy, category: 'recognition', size: 'medium' },
   ]
 };
 
@@ -45,6 +51,7 @@ const CATEGORIES = [
   { id: 'finance', label: 'Finance' },
   { id: 'people', label: 'People' },
   { id: 'jobs', label: 'Jobs' },
+  { id: 'recognition', label: 'Recognition' },
 ];
 
 export default function WidgetLibrary({ open, onOpenChange, onAddWidget, currentWidgets, userRole }) {
@@ -75,9 +82,9 @@ export default function WidgetLibrary({ open, onOpenChange, onAddWidget, current
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden bg-white border-slate-200">
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-slate-900">Widget Library</DialogTitle>
+          <DialogTitle className="text-2xl text-white">Widget Library</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -85,7 +92,7 @@ export default function WidgetLibrary({ open, onOpenChange, onAddWidget, current
             placeholder="Search widgets..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-slate-50 border-slate-200"
+            className="bg-slate-800 border-slate-600 text-white"
           />
 
           <div className="flex gap-2 flex-wrap">
@@ -95,7 +102,7 @@ export default function WidgetLibrary({ open, onOpenChange, onAddWidget, current
                 variant={selectedCategory === cat.id ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={selectedCategory === cat.id ? "bg-[#3B9FF3]" : ""}
+                className={selectedCategory === cat.id ? "bg-[#3B9FF3] text-white" : "border-slate-600 text-slate-300 hover:bg-slate-800"}
               >
                 {cat.label}
               </Button>
@@ -106,15 +113,15 @@ export default function WidgetLibrary({ open, onOpenChange, onAddWidget, current
             {filteredWidgets.map(widget => (
               <div
                 key={widget.id}
-                className="p-4 border-2 border-slate-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer bg-white group"
+                className="p-4 border-2 border-slate-700 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer bg-slate-800/50 group"
                 onClick={() => handleAdd(widget)}
               >
                 <div className="flex flex-col items-center text-center gap-2">
                   <div className="p-3 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-xl shadow-md group-hover:scale-110 transition-transform">
                     <widget.icon className="w-6 h-6 text-white" />
                   </div>
-                  <p className="font-semibold text-slate-900 text-sm">{widget.title}</p>
-                  <Badge variant="outline" className="text-xs">
+                  <p className="font-semibold text-white text-sm">{widget.title}</p>
+                  <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
                     {widget.size}
                   </Badge>
                 </div>
@@ -124,7 +131,7 @@ export default function WidgetLibrary({ open, onOpenChange, onAddWidget, current
 
           {filteredWidgets.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-slate-500">No widgets found</p>
+              <p className="text-slate-400">No widgets found</p>
             </div>
           )}
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -21,7 +22,8 @@ import {
   Plus,
   Settings as SettingsIcon,
   Save,
-  X as XIcon
+  X as XIcon,
+  Trophy // Added Trophy icon
 } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
@@ -43,6 +45,9 @@ import StatsWidget from "../components/dashboard/widgets/StatsWidget";
 import ChartWidget from "../components/dashboard/widgets/ChartWidget";
 import ListWidget from "../components/dashboard/widgets/ListWidget";
 import WidgetLibrary from "../components/dashboard/WidgetLibrary";
+import RecognitionFeed from "../components/recognition/RecognitionFeed"; // New import
+import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget"; // New import
+import GiveKudosDialog from "../components/recognition/GiveKudosDialog"; // New import
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -67,6 +72,7 @@ export default function Dashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
   const [widgets, setWidgets] = useState([]);
+  const [showKudosDialog, setShowKudosDialog] = useState(false); // New state
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -472,6 +478,20 @@ export default function Dashboard() {
           />
         );
 
+      case 'recognition-feed':
+        return <RecognitionFeed limit={5} showTitle={false} />;
+      
+      case 'top-recognitions':
+        return (
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Trophy className="w-5 h-5 text-[#3B9FF3]" />
+              <h3 className="font-bold text-white">Top Performers</h3>
+            </div>
+            <TopRecognitionsWidget limit={5} />
+          </div>
+        );
+
       default:
         return <p className="text-slate-500 text-sm">Widget not implemented</p>;
     }
@@ -567,6 +587,13 @@ export default function Dashboard() {
             ) : (
               <>
                 <Button
+                  onClick={() => setShowKudosDialog(true)} // New button for Give Kudos
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                >
+                  <Award className="w-4 h-4 mr-2" />
+                  Give Kudos
+                </Button>
+                <Button
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
                   className="border-blue-500/50 text-blue-300 hover:bg-blue-500/10 hover:text-white"
@@ -656,6 +683,7 @@ export default function Dashboard() {
           currentWidgets={widgets}
           userRole={isAdmin ? 'admin' : 'employee'}
         />
+        <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} /> {/* New Dialog */}
       </div>
     </div>
   );
