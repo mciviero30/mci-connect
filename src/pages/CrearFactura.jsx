@@ -372,11 +372,18 @@ export default function CrearFactura() {
                       <SelectValue placeholder={t('selectExistingCustomer')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {customers.filter(c => c.status === 'active').map(customer => (
-                        <SelectItem key={customer.id} value={customer.id}>
-                          {customer.first_name} {customer.last_name} {customer.company && `- ${customer.company}`}
-                        </SelectItem>
-                      ))}
+                      {customers.filter(c => c.status === 'active').map(customer => {
+                        const personName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+                        const displayText = personName 
+                          ? `${customer.company || 'No Company'} - ${personName} (${customer.title || 'No Title'})`
+                          : `${customer.company || 'No Company'}`;
+                        
+                        return (
+                          <SelectItem key={customer.id} value={customer.id}>
+                            {displayText}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
