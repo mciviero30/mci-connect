@@ -266,3 +266,33 @@ export async function notifyMilestoneCompleted({
     metadata: { milestoneName, projectName }
   });
 }
+
+export async function notifyTimesheetStatus({ 
+  recipientEmail, 
+  recipientName, 
+  status,
+  date,
+  hours
+}) {
+  const statusMessages = {
+    approved: 'Your timesheet has been approved',
+    rejected: 'Your timesheet has been rejected'
+  };
+
+  const statusColors = {
+    approved: 'medium',
+    rejected: 'high'
+  };
+
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_status_changed',
+    title: `Timesheet ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+    message: `${statusMessages[status]} for ${date} (${hours} hours)`,
+    priority: statusColors[status] || 'medium',
+    actionUrl: '/MyHours',
+    relatedEntityType: 'timesheet',
+    metadata: { status, date, hours }
+  });
+}
