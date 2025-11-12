@@ -291,8 +291,39 @@ export async function notifyTimesheetStatus({
     title: `Timesheet ${status.charAt(0).toUpperCase() + status.slice(1)}`,
     message: `${statusMessages[status]} for ${date} (${hours} hours)`,
     priority: statusColors[status] || 'medium',
-    actionUrl: '/MyHours',
+    actionUrl: '/MisHoras',
     relatedEntityType: 'timesheet',
     metadata: { status, date, hours }
+  });
+}
+
+export async function notifyExpenseStatus({ 
+  recipientEmail, 
+  recipientName, 
+  status,
+  amount,
+  category,
+  date
+}) {
+  const statusMessages = {
+    approved: 'Your expense has been approved',
+    rejected: 'Your expense has been rejected'
+  };
+
+  const statusColors = {
+    approved: 'medium',
+    rejected: 'high'
+  };
+
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_status_changed',
+    title: `Expense ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+    message: `${statusMessages[status]} - $${amount} for ${category} on ${date}`,
+    priority: statusColors[status] || 'medium',
+    actionUrl: '/MisGastos',
+    relatedEntityType: 'expense',
+    metadata: { status, amount, category, date }
   });
 }
