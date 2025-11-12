@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,16 +16,18 @@ import {
   MoreHorizontal,
   XCircle,
   Download,
-  ArrowLeft // Added ArrowLeft icon for back button
+  ArrowLeft,
+  FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,6 +47,7 @@ export default function VerFactura() {
 
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [pdfInstructionsDialog, setPdfInstructionsDialog] = useState(false);
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
@@ -172,88 +174,23 @@ export default function VerFactura() {
     window.print();
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = () => {
     if (!invoice) return;
+    setPdfInstructionsDialog(true);
+  };
+
+  const handleProceedToPDF = () => {
+    setPdfInstructionsDialog(false);
+    const originalTitle = document.title;
+    document.title = `${invoice.invoice_number} - ${invoice.customer_name}`;
     
-    try {
-      // Create a clean HTML for PDF generation
-      const printContent = document.querySelector('.max-w-4xl').cloneNode(true);
-      
-      // Remove any no-print elements
-      printContent.querySelectorAll('.no-print').forEach(el => el.remove());
-      
-      // Create a temporary container
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      tempDiv.appendChild(printContent);
-      document.body.appendChild(tempDiv);
-      
-      // Generate PDF using browser's print to PDF
-      const originalTitle = document.title;
-      document.title = `${invoice.invoice_number} - ${invoice.customer_name}`;
-      
-      // Trigger print dialog with PDF option
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>${invoice.invoice_number} - ${invoice.customer_name}</title>
-              <style>
-                body {
-                  font-family: system-ui, -apple-system, sans-serif;
-                  padding: 20px;
-                  max-width: 800px;
-                  margin: 0 auto;
-                }
-                @media print {
-                  @page {
-                    size: auto;
-                    margin: 0.5in;
-                  }
-                  /* Ensure visibility for print */
-                  body * {
-                      visibility: visible;
-                  }
-                  /* Remove any specific no-print elements that might remain */
-                  .no-print, .no-print * {
-                      display: none !important;
-                      visibility: hidden !important;
-                  }
-                }
-              </style>
-            </head>
-            <body>
-              ${printContent.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        
-        // Wait a bit for content to load
-        setTimeout(() => {
-          printWindow.focus();
-          printWindow.print();
-          
-          // Clean up after print
-          setTimeout(() => {
-            printWindow.close();
-            if (document.body.contains(tempDiv)) {
-              document.body.removeChild(tempDiv);
-            }
-            document.title = originalTitle;
-          }, 500);
-        }, 250);
-      } else {
-        throw new Error("Could not open print window. Please ensure pop-ups are not blocked.");
-      }
-      
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast.error(language === 'es' ? 'Error al generar PDF' : 'Error generating PDF');
-    }
+    // Small delay to ensure dialog is closed
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 500);
+    }, 100);
   };
 
   const handleShare = async () => {
@@ -422,15 +359,15 @@ export default function VerFactura() {
       </div>
 
       {/* Invoice Document */}
-       <div className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
-          <InvoiceDocument invoice={invoice} />
+      <div className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
+        <InvoiceDocument invoice={invoice} />
       </div>
 
       {/* Payment Dialog */}
       <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-slate-200">
           <DialogHeader>
-            <DialogTitle>{t('recordPayment')}</DialogTitle>
+            <DialogTitle className="text-slate-900">{t('recordPayment')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
@@ -440,7 +377,7 @@ export default function VerFactura() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label>{t('paymentAmount')}</Label>
+              <Label className="text-slate-700">{t('paymentAmount')}</Label>
               <Input
                 type="number"
                 value={paymentAmount}
@@ -449,11 +386,12 @@ export default function VerFactura() {
                 step="0.01"
                 min="0"
                 max={invoice.balance || invoice.total}
+                className="bg-slate-50 border-slate-200"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentDialog(false)}>
+            <Button variant="outline" onClick={() => setPaymentDialog(false)} className="border-slate-300">
               {t('cancel')}
             </Button>
             <Button
@@ -463,6 +401,67 @@ export default function VerFactura() {
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               {recordPaymentMutation.isPending ? t('processing') : t('confirmPayment')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Instructions Dialog */}
+      <Dialog open={pdfInstructionsDialog} onOpenChange={setPdfInstructionsDialog}>
+        <DialogContent className="bg-white border-slate-200 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              {language === 'es' ? 'Descargar como PDF' : 'Download as PDF'}
+            </DialogTitle>
+            <DialogDescription className="text-slate-600">
+              {language === 'es' 
+                ? 'Instrucciones para guardar la factura como PDF' 
+                : 'Instructions to save the invoice as PDF'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Alert className="bg-blue-50 border-blue-200">
+            <FileText className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-900 text-sm">
+              {language === 'es' ? (
+                <>
+                  <p className="font-semibold mb-2">Pasos:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs">
+                    <li>Se abrirá el diálogo de impresión</li>
+                    <li>En "Destino" o "Printer", selecciona <strong>"Guardar como PDF"</strong> o <strong>"Save as PDF"</strong></li>
+                    <li>Haz clic en "Guardar" o "Save"</li>
+                    <li>Elige la ubicación donde quieres guardar el archivo</li>
+                  </ol>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold mb-2">Steps:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-xs">
+                    <li>The print dialog will open</li>
+                    <li>In "Destination" or "Printer", select <strong>"Save as PDF"</strong></li>
+                    <li>Click "Save"</li>
+                    <li>Choose where you want to save the file</li>
+                  </ol>
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+
+          <DialogFooter className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setPdfInstructionsDialog(false)}
+              className="border-slate-300"
+            >
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button 
+              onClick={handleProceedToPDF}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Continuar' : 'Continue'}
             </Button>
           </DialogFooter>
         </DialogContent>
