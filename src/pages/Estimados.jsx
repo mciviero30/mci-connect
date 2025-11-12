@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,11 +14,7 @@ import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import QuoteXLSXImporter from "../components/quotes/QuoteXLSXImporter";
-import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -25,7 +22,6 @@ export default function Estimados() {
   const toast = useToast();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [showImporter, setShowImporter] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
   // Advanced filter states
@@ -334,15 +330,6 @@ export default function Estimados() {
                   <Download className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'Exportar' : 'Export'}
                 </Button>
-                <Button 
-                  onClick={() => setShowImporter(true)}
-                  variant="outline"
-                  size="lg" 
-                  className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  <FileText className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Importar' : 'Import'}
-                </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
                   <Button size="lg" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg">
                     <Plus className="w-5 h-5 mr-2" />
@@ -407,7 +394,6 @@ export default function Estimados() {
           </Card>
         </div>
 
-        {/* Search and Filters */}
         <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
           <CardContent className="p-4">
             <div className="flex gap-2 mb-4">
@@ -718,35 +704,6 @@ export default function Estimados() {
             </Card>
           )}
         </div>
-
-        {/* Import Dialog with Tabs */}
-        <Dialog open={showImporter} onOpenChange={setShowImporter}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900">
-                {language === 'es' ? 'Importar Estimados' : 'Import Quotes'}
-              </DialogTitle>
-            </DialogHeader>
-            <Tabs defaultValue="excel" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="excel" className="text-base">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Excel/CSV
-                </TabsTrigger>
-                <TabsTrigger value="pdf" className="text-base">
-                  <FileCheck className="w-4 h-4 mr-2" />
-                  PDFs (AI)
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="excel">
-                <QuoteXLSXImporter onComplete={() => setShowImporter(false)} />
-              </TabsContent>
-              <TabsContent value="pdf">
-                <QuotePDFImporter onComplete={() => setShowImporter(false)} />
-              </TabsContent>
-            </Tabs>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
