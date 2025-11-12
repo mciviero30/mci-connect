@@ -21,42 +21,38 @@ export default function InvoiceDocument({ invoice }) {
 
             {/* Modern Header Card */}
             <div className="bg-white rounded-lg shadow-sm mb-8 border border-slate-200 print:border print:border-slate-300">
-                {/* Top Bar with Status */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 flex justify-between items-center print:bg-blue-600 rounded-t-lg">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p className="text-white text-opacity-80 text-xs font-semibold uppercase tracking-wider">Invoice</p>
-                            <p className="text-white text-xl font-bold">{invoice.invoice_number}</p>
-                        </div>
+                {/* Top Bar with Logo and Invoice Number */}
+                <div className="bg-black px-8 py-6 flex justify-between items-center print:bg-black rounded-t-lg">
+                    {/* LEFT: Company Logo */}
+                    <div className="flex items-center gap-4">
+                        <img
+                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/051e3017c_Gemini_Generated_Image_suzuhgsuzuhgsuzu.png"
+                            alt="MCI Logo"
+                            className="h-16 object-contain print:h-14"
+                        />
                     </div>
-                    {isPaid && (
-                        <div className="bg-emerald-500 px-5 py-2 rounded-full flex items-center gap-2 shadow-lg print:shadow-none">
-                            <span className="text-white text-sm font-bold">✓ PAID</span>
-                        </div>
-                    )}
+
+                    {/* RIGHT: Invoice Label and Number */}
+                    <div className="text-right">
+                        <p className="text-white text-opacity-80 text-xs font-semibold uppercase tracking-wider mb-1">Invoice</p>
+                        <p className="text-white text-3xl font-bold">{invoice.invoice_number}</p>
+                        {isPaid && (
+                            <div className="mt-2 inline-flex bg-emerald-500 px-4 py-1 rounded-full">
+                                <span className="text-white text-xs font-bold">✓ PAID</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Company Info & Customer Info - Side by Side */}
                 <div className="grid md:grid-cols-2 gap-8 p-8 print:gap-6 print:p-6">
                     {/* Company Info */}
                     <div className="space-y-4">
-                        <div className="flex items-start gap-4">
-                            <img
-                                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                                alt="MCI Logo"
-                                className="w-20 h-20 rounded-2xl shadow-lg print:shadow-none print:w-16 print:h-16"
-                            />
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900 leading-tight print:text-lg">MODERN COMPONENTS</h2>
-                                <h2 className="text-xl font-bold text-slate-900 leading-tight print:text-lg">INSTALLATION</h2>
-                            </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight print:text-lg">MODERN COMPONENTS</h2>
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight print:text-lg">INSTALLATION</h2>
                         </div>
-                        <div className="text-sm text-gray-700 space-y-1 pl-1 print:text-gray-900">
+                        <div className="text-sm text-gray-700 space-y-1 print:text-gray-900">
                             <p className="font-semibold text-slate-800 print:text-slate-900">2414 Meadow Isle Ln</p>
                             <p>Lawrenceville, Georgia 30043</p>
                             <p>United States of America</p>
@@ -204,7 +200,7 @@ export default function InvoiceDocument({ invoice }) {
                     )}
 
                     {/* Total */}
-                    <div className="bg-blue-600 rounded-2xl p-6 shadow-lg print:shadow-none print:bg-blue-700 print:p-5">
+                    <div className="bg-black rounded-2xl p-6 shadow-lg print:shadow-none print:bg-black print:p-5">
                         <div className="flex justify-between items-center">
                             <span className="text-white text-lg font-bold">TOTAL</span>
                             <span className="text-white text-4xl font-bold print:text-3xl">
