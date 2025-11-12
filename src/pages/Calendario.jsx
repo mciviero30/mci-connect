@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Briefcase, CalendarClock, X, Filter } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Briefcase, CalendarClock, X, Filter, TrendingUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, addDays, isSameDay } from "date-fns";
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, startOfMonth, endOfMonth, addMonths, subMonths, addDays, isSameDay, eachDayOfInterval } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PageHeader from "../components/shared/PageHeader";
@@ -158,6 +158,47 @@ export default function Calendario() {
     return true;
   });
 
+  // Calculate workload for current period
+  const calculateWorkload = () => {
+    let start, end;
+    if (view === 'day') {
+      start = new Date(currentDate);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(currentDate);
+      end.setHours(23, 59, 59, 999);
+    } else if (view === 'week') {
+      start = startOfWeek(currentDate, { weekStartsOn: 1 });
+      end = endOfWeek(currentDate, { weekStartsOn: 1 });
+    } else {
+      start = startOfMonth(currentDate);
+      end = endOfMonth(currentDate);
+    }
+
+    const periodAssignments = filteredAssignments.filter(a => {
+      if (!a.date) return false;
+      const assignmentDate = new Date(a.date);
+      return assignmentDate >= start && assignmentDate <= end;
+    });
+
+    const totalEvents = periodAssignments.length;
+    const jobMilestones = periodAssignments.filter(a => a.event_type === 'job_milestone').length;
+    const appointments = periodAssignments.filter(a => a.event_type === 'appointment').length;
+    const timeOffs = periodAssignments.filter(a => a.event_type === 'time_off').length;
+
+    // Calculate estimated hours based on time ranges
+    const totalEstimatedHours = periodAssignments.reduce((sum, a) => {
+      if (!a.start_time || !a.end_time) return sum;
+      const [startH, startM] = a.start_time.split(':').map(Number);
+      const [endH, endM] = a.end_time.split(':').map(Number);
+      const hours = (endH * 60 + endM - startH * 60 - startM) / 60;
+      return sum + (hours > 0 ? hours : 0);
+    }, 0);
+
+    return { totalEvents, jobMilestones, appointments, timeOffs, totalEstimatedHours };
+  };
+
+  const workload = calculateWorkload();
+
   const isAdmin = user?.role === 'admin';
   const uniqueEmployees = [...new Set(assignments.map(a => a.employee_email).filter(Boolean))];
   const uniqueJobs = [...new Set(assignments.map(a => a.job_id).filter(Boolean))];
@@ -172,6 +213,65 @@ export default function Calendario() {
             : 'Project Milestones, Appointments, and Meetings'}
           icon={CalendarIcon}
         />
+
+        {/* Workload Summary Cards */}
+        <div className="grid md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-lg border-0">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-50">
+                    {language === 'es' ? 'Total Eventos' : 'Total Events'}
+                  </p>
+                  <p className="text-3xl font-bold text-white mt-1">{workload.totalEvents}</p>
+                </div>
+                <CalendarIcon className="w-8 h-8 text-white/60" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Hitos de Trabajo' : 'Job Milestones'}
+                  </p>
+                  <p className="text-3xl font-bold text-slate-900 mt-1">{workload.jobMilestones}</p>
+                </div>
+                <Briefcase className="w-8 h-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Citas' : 'Appointments'}
+                  </p>
+                  <p className="text-3xl font-bold text-slate-900 mt-1">{workload.appointments}</p>
+                </div>
+                <CalendarClock className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-600">
+                    {language === 'es' ? 'Horas Estimadas' : 'Estimated Hours'}
+                  </p>
+                  <p className="text-3xl font-bold text-slate-900 mt-1">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                </div>
+                <Clock className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
           <CardContent className="p-6">
@@ -294,9 +394,15 @@ export default function Calendario() {
 
           <Tabs value={view} onValueChange={setView}>
             <TabsList className="bg-slate-100 border-slate-200">
-              <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">{t('day')}</TabsTrigger>
-              <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">{t('week')}</TabsTrigger>
-              <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">{t('month')}</TabsTrigger>
+              <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                {language === 'es' ? 'Día' : 'Day'}
+              </TabsTrigger>
+              <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                {language === 'es' ? 'Semana' : 'Week'}
+              </TabsTrigger>
+              <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                {language === 'es' ? 'Mes' : 'Month'}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +17,8 @@ import {
   ClipboardList,
   ArrowLeft,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  CalendarPlus
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
@@ -29,6 +31,7 @@ export default function JobDetails() {
   const jobId = searchParams.get('id');
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showCalendarDialog, setShowCalendarDialog] = useState(false);
 
   const { data: job, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
@@ -63,6 +66,13 @@ export default function JobDetails() {
   const { data: jobFiles = [] } = useQuery({
     queryKey: ['jobFiles', jobId],
     queryFn: () => base44.entities.JobFile.filter({ job_id: jobId }),
+    enabled: !!jobId,
+    initialData: []
+  });
+
+  const { data: jobAssignments = [] } = useQuery({
+    queryKey: ['jobAssignments', jobId],
+    queryFn: () => base44.entities.JobAssignment.filter({ job_id: jobId }, '-date'),
     enabled: !!jobId,
     initialData: []
   });
@@ -112,6 +122,14 @@ export default function JobDetails() {
             title={job.name}
             description={job.description || `${t('customer')}: ${job.customer_name || 'N/A'}`}
             icon={ClipboardList}
+            actions={
+              <Link to={createPageUrl(`Calendario?job=${jobId}`)}>
+                <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
+                  <CalendarPlus className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Ver en Calendario' : 'View in Calendar'}
+                </Button>
+              </Link>
+            }
           />
         </div>
 
@@ -242,6 +260,57 @@ export default function JobDetails() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Job Events/Assignments Card */}
+            {jobAssignments.length > 0 && (
+              <Card className="bg-white shadow-lg mt-6">
+                <CardHeader className="border-b">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-slate-900">
+                      <CalendarPlus className="w-5 h-5 text-[#3B9FF3]" />
+                      {language === 'es' ? 'Eventos de Calendario' : 'Calendar Events'}
+                    </CardTitle>
+                    <Link to={createPageUrl(`Calendario?job=${jobId}`)}>
+                      <Button variant="outline" size="sm" className="bg-white border-[#3B9FF3] text-[#3B9FF3] hover:bg-blue-50">
+                        {language === 'es' ? 'Ver Todos' : 'View All'}
+                      </Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    {jobAssignments.slice(0, 5).map(assignment => (
+                      <div key={assignment.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {assignment.event_title || assignment.job_name}
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            {format(new Date(assignment.date), 'MMM dd, yyyy')}
+                            {assignment.start_time && ` • ${assignment.start_time}`}
+                          </p>
+                          {assignment.employee_name && (
+                            <p className="text-xs text-slate-500">{assignment.employee_name}</p>
+                          )}
+                        </div>
+                        <Badge className="bg-purple-500 text-white">
+                          {assignment.event_type === 'job_milestone' 
+                            ? (language === 'es' ? 'Hito' : 'Milestone')
+                            : (language === 'es' ? 'Cita' : 'Appointment')}
+                        </Badge>
+                      </div>
+                    ))}
+                    {jobAssignments.length > 5 && (
+                      <p className="text-sm text-slate-500 text-center">
+                        {language === 'es' 
+                          ? `+${jobAssignments.length - 5} eventos más` 
+                          : `+${jobAssignments.length - 5} more events`}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Hours Tab */}
