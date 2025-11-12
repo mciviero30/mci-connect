@@ -172,13 +172,88 @@ export default function VerFactura() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    // Note: The `if (!invoice) return;` check is safe to remove here
-    // because the component's rendering logic ensures `invoice` exists before this handler is callable.
-    const originalTitle = document.title;
-    document.title = `${invoice.invoice_number} - ${invoice.customer_name}`;
-    window.print();
-    document.title = originalTitle;
+  const handleDownloadPDF = async () => {
+    if (!invoice) return;
+    
+    try {
+      // Create a clean HTML for PDF generation
+      const printContent = document.querySelector('.max-w-4xl').cloneNode(true);
+      
+      // Remove any no-print elements
+      printContent.querySelectorAll('.no-print').forEach(el => el.remove());
+      
+      // Create a temporary container
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.appendChild(printContent);
+      document.body.appendChild(tempDiv);
+      
+      // Generate PDF using browser's print to PDF
+      const originalTitle = document.title;
+      document.title = `${invoice.invoice_number} - ${invoice.customer_name}`;
+      
+      // Trigger print dialog with PDF option
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${invoice.invoice_number} - ${invoice.customer_name}</title>
+              <style>
+                body {
+                  font-family: system-ui, -apple-system, sans-serif;
+                  padding: 20px;
+                  max-width: 800px;
+                  margin: 0 auto;
+                }
+                @media print {
+                  @page {
+                    size: auto;
+                    margin: 0.5in;
+                  }
+                  /* Ensure visibility for print */
+                  body * {
+                      visibility: visible;
+                  }
+                  /* Remove any specific no-print elements that might remain */
+                  .no-print, .no-print * {
+                      display: none !important;
+                      visibility: hidden !important;
+                  }
+                }
+              </style>
+            </head>
+            <body>
+              ${printContent.innerHTML}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        
+        // Wait a bit for content to load
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+          
+          // Clean up after print
+          setTimeout(() => {
+            printWindow.close();
+            if (document.body.contains(tempDiv)) {
+              document.body.removeChild(tempDiv);
+            }
+            document.title = originalTitle;
+          }, 500);
+        }, 250);
+      } else {
+        throw new Error("Could not open print window. Please ensure pop-ups are not blocked.");
+      }
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error(language === 'es' ? 'Error al generar PDF' : 'Error generating PDF');
+    }
   };
 
   const handleShare = async () => {
