@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -274,7 +273,7 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  const totalWorkedHours = allTimeEntries.reduce((sum, e => sum + (e.hours_worked || 0), 0);
+  const totalWorkedHours = allTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
 
   const todaysBirthdays = allEmployees.filter(emp => {
     if (!emp.dob) return false;
