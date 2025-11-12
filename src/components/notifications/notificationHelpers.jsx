@@ -327,3 +327,52 @@ export async function notifyExpenseStatus({
     metadata: { status, amount, category, date }
   });
 }
+
+export async function notifyJobAssignment({ 
+  recipientEmail, 
+  recipientName, 
+  jobName,
+  date,
+  startTime,
+  jobId
+}) {
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_assigned',
+    title: 'New Job Assignment',
+    message: `You have been assigned to "${jobName}" on ${date}${startTime ? ` at ${startTime}` : ''}`,
+    priority: 'high',
+    actionUrl: `/JobDetails?id=${jobId}`,
+    relatedEntityType: 'job',
+    relatedEntityId: jobId,
+    metadata: { jobName, date, startTime }
+  });
+}
+
+export async function notifyScheduleChange({ 
+  recipientEmail, 
+  recipientName, 
+  jobName,
+  oldDate,
+  newDate,
+  oldTime,
+  newTime,
+  jobId
+}) {
+  const timeChange = oldTime !== newTime ? ` Time changed from ${oldTime} to ${newTime}.` : '';
+  const dateChange = oldDate !== newDate ? ` Date changed from ${oldDate} to ${newDate}.` : '';
+  
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_status_changed',
+    title: 'Schedule Updated',
+    message: `Your assignment for "${jobName}" has been updated.${dateChange}${timeChange}`,
+    priority: 'high',
+    actionUrl: `/Calendario`,
+    relatedEntityType: 'job',
+    relatedEntityId: jobId,
+    metadata: { jobName, oldDate, newDate, oldTime, newTime }
+  });
+}
