@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -54,7 +53,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
@@ -93,7 +92,6 @@ const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
-  const queryClient = useQueryClient();
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
@@ -102,43 +100,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     staleTime: Infinity,
     cacheTime: Infinity,
   });
-
-  // Estado para el nombre de la app
-  const [appName, setAppName] = useState(user?.preferred_app_name || 'connect');
-
-  useEffect(() => {
-    if (user?.preferred_app_name) {
-      setAppName(user.preferred_app_name);
-    }
-  }, [user]);
-
-  // Mutation para cambiar el nombre de la app
-  const changeAppNameMutation = useMutation({
-    mutationFn: (newAppName) => base44.auth.updateMe({ preferred_app_name: newAppName }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-    }
-  });
-
-  const handleAppNameChange = (newAppName) => {
-    setAppName(newAppName);
-    if (user) {
-      changeAppNameMutation.mutate(newAppName);
-    }
-  };
-
-  const appConfig = {
-    connect: {
-      name: 'MCI Connect',
-      subtitle: language === 'es' ? 'Sistema de Gestión' : 'Management System'
-    },
-    field: {
-      name: 'MCI Field',
-      subtitle: language === 'es' ? 'Sistema de Campo' : 'Field System'
-    }
-  };
-
-  const currentApp = appConfig[appName] || appConfig.connect;
 
   useEffect(() => {
     if (!user) return;
@@ -351,7 +312,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           <div className="w-20 h-20 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
             <Building2 className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">{currentApp.name}</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">MCI Connect</h1>
           <p className="text-slate-300 mb-4">{t('error')}</p>
           <Button onClick={() => window.location.reload()} className="bg-[#3B9FF3] hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20">
             {t('reload')}
@@ -486,14 +447,14 @@ const LayoutContent = ({ children, currentPageName }) => {
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                    alt={currentApp.name}
+                    alt="MCI Connect"
                     className="w-8 h-8 rounded-lg"
                   />
                 </div>
                 <div className="flex-1">
-                  <h2 className="font-bold text-white text-lg tracking-tight">{currentApp.name}</h2>
+                  <h2 className="font-bold text-white text-lg tracking-tight">MCI Connect</h2>
                   <p className="text-xs text-blue-300 font-medium">
-                    {currentApp.subtitle}
+                    {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
                   </p>
                 </div>
               </div>
@@ -555,39 +516,18 @@ const LayoutContent = ({ children, currentPageName }) => {
             </SidebarContent>
 
             <SidebarFooter className="border-t border-white/10 p-4 flex-shrink-0 backdrop-blur-sm">
-              <div className="mb-3 px-2 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Select value={language} onValueChange={changeLanguage}>
-                    <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white flex-1 backdrop-blur-sm hover:bg-white/20">
-                      <Languages className="w-4 h-4 mr-2" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      <SelectItem value="en" className="text-white hover:bg-slate-700">🇺🇸 English</SelectItem>
-                      <SelectItem value="es" className="text-white hover:bg-slate-700">🇪🇸 Español</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ThemeToggle />
-                </div>
-
-                <Select value={appName} onValueChange={handleAppNameChange}>
-                  <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white backdrop-blur-sm hover:bg-white/20">
-                    <Building2 className="w-4 h-4 mr-2" />
+              <div className="mb-3 px-2 flex items-center gap-2">
+                <Select value={language} onValueChange={changeLanguage}>
+                  <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white flex-1 backdrop-blur-sm hover:bg-white/20">
+                    <Languages className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="connect" className="text-white hover:bg-slate-700">
-                      <div className="flex items-center gap-2">
-                        <span>🔗 MCI Connect</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="field" className="text-white hover:bg-slate-700">
-                      <div className="flex items-center gap-2">
-                        <span>🏗️ MCI Field</span>
-                      </div>
-                    </SelectItem>
+                    <SelectItem value="en" className="text-white hover:bg-slate-700">🇺🇸 English</SelectItem>
+                    <SelectItem value="es" className="text-white hover:bg-slate-700">🇪🇸 Español</SelectItem>
                   </SelectContent>
                 </Select>
+                <ThemeToggle />
               </div>
 
               <div className="flex items-center justify-between bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
@@ -639,12 +579,12 @@ const LayoutContent = ({ children, currentPageName }) => {
                 <div className="flex items-center gap-2">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                    alt={currentApp.name}
+                    alt="MCI Connect"
                     className="w-6 h-6"
                   />
                   <div>
-                    <h1 className="text-lg font-bold text-white leading-none">{currentApp.name}</h1>
-                    {isAdmin && <p className="text-[10px] text-blue-300 leading-none">{currentApp.subtitle}</p>}
+                    <h1 className="text-lg font-bold text-white leading-none">MCI Connect</h1>
+                    {isAdmin && <p className="text-[10px] text-blue-300 leading-none">Management System</p>}
                   </div>
                 </div>
               </div>
