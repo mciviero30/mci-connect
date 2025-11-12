@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -107,15 +106,15 @@ Lawrenceville, Georgia 30043, U.S.A`
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: async () => {
-      console.log('Starting conversion to invoice...');
-      console.log('Quote data:', quote);
+      console.log('🔄 Converting quote to invoice from VerEstimado...', quote);
       
       let jobId = quote.job_id;
       let wasJobCreated = false;
+      let mciFieldSyncSuccess = false;
       
-      // If no job exists, create one automatically
+      // Step 1: Create Job in MCI Connect if it doesn't exist
       if (!jobId) {
-        console.log('No job_id found, creating new job...');
+        console.log('📁 No job_id found, creating new job in MCI Connect...');
         
         const jobData = {
           name: quote.job_name,
@@ -131,10 +130,40 @@ Lawrenceville, Georgia 30043, U.S.A`
         
         console.log('Creating job with data:', jobData);
         const newJob = await base44.entities.Job.create(jobData);
-        console.log('Job created successfully:', newJob);
+        console.log('✅ Job created successfully in MCI Connect:', newJob);
         
         jobId = newJob.id;
         wasJobCreated = true;
+        
+        // Step 2: Sync with MCI Field
+        try {
+          console.log('🔗 Syncing job with MCI Field...');
+          
+          const mciFieldResponse = await fetch('https://mci-field.com/api/jobs/sync', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer MCISync_2024_SecureToken_abc123xyz789`
+            },
+            body: JSON.stringify({
+              job_name: quote.job_name,
+              job_address: quote.job_address,
+              source: 'mci_connect',
+              mci_connect_job_id: jobId
+            })
+          });
+
+          if (mciFieldResponse.ok) {
+            const mciFieldData = await mciFieldResponse.json();
+            console.log('✅ Job synced with MCI Field:', mciFieldData);
+            mciFieldSyncSuccess = true;
+          } else {
+            console.warn('⚠️ MCI Field sync failed but continuing with invoice creation');
+          }
+        } catch (syncError) {
+          console.error('⚠️ Error syncing with MCI Field:', syncError);
+          // Continue with invoice creation even if sync fails
+        }
         
         // Update quote with job_id
         console.log('Updating quote with job_id:', jobId);
@@ -146,8 +175,8 @@ Lawrenceville, Georgia 30043, U.S.A`
         console.log('Using existing job_id:', jobId);
       }
 
-      // Create invoice
-      console.log('Creating invoice...');
+      // Step 3: Create invoice
+      console.log('📄 Creating invoice...');
       const invoices = await base44.entities.Invoice.list();
       const existingNumbers = invoices
         .map(inv => inv.invoice_number)
@@ -186,7 +215,7 @@ Lawrenceville, Georgia 30043, U.S.A`
 
       console.log('Creating invoice with data:', invoiceData);
       const newInvoice = await base44.entities.Invoice.create(invoiceData);
-      console.log('Invoice created successfully:', newInvoice);
+      console.log('✅ Invoice created successfully:', newInvoice);
 
       // Update quote status
       await base44.entities.Quote.update(quote.id, {
@@ -194,30 +223,42 @@ Lawrenceville, Georgia 30043, U.S.A`
         invoice_id: newInvoice.id
       });
 
-      return { newInvoice, jobId, wasJobCreated };
+      return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess };
     },
-    onSuccess: ({ newInvoice, jobId, wasJobCreated }) => {
-      console.log('Conversion successful, invalidating queries...');
+    onSuccess: ({ newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess }) => {
+      console.log('✅ Conversion successful, invalidating queries...');
       
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      queryClient.invalidateQueries({ queryKey: ['quote', quoteId] }); // Invalidate the current quote query
+      queryClient.invalidateQueries({ queryKey: ['quote', quoteId] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       
-      const message = language === 'es' 
-        ? `✅ Factura creada exitosamente${wasJobCreated ? '\n✅ Trabajo creado automáticamente' : ''}`
-        : `✅ Invoice created successfully${wasJobCreated ? '\n✅ Job created automatically' : ''}`;
+      let message = language === 'es' 
+        ? `✅ Factura creada exitosamente`
+        : `✅ Invoice created successfully`;
+      
+      if (wasJobCreated) {
+        message += language === 'es' 
+          ? `\n📁 Trabajo creado en MCI Connect`
+          : `\n📁 Job created in MCI Connect`;
+      }
+      
+      if (mciFieldSyncSuccess) {
+        message += language === 'es'
+          ? `\n🔗 Trabajo sincronizado con MCI Field`
+          : `\n🔗 Job synced with MCI Field`;
+      }
       
       toast.success(message);
       
       // Navigate to the new invoice
       setTimeout(() => {
         navigate(createPageUrl(`VerFactura?id=${newInvoice.id}`));
-      }, 500);
+      }, 1500);
     },
     onError: (error) => {
-      console.error('Error in convertToInvoiceMutation:', error);
+      console.error('❌ Error in convertToInvoiceMutation:', error);
       toast.error(`Error: ${error.message}`);
     }
   });
