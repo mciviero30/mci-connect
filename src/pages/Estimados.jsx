@@ -82,14 +82,15 @@ export default function Estimados() {
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: async (quote) => {
-      console.log('Converting quote to invoice...', quote);
+      console.log('🔄 Converting quote to invoice...', quote);
       
       let jobId = quote.job_id;
       let wasJobCreated = false;
+      let mciFieldSyncSuccess = false;
       
-      // If no job exists, create one automatically
+      // Step 1: Create Job in MCI Connect if it doesn't exist
       if (!jobId) {
-        console.log('No job_id found, creating new job...');
+        console.log('📁 No job_id found, creating new job in MCI Connect...');
         
         const jobData = {
           name: quote.job_name,
@@ -107,13 +108,46 @@ export default function Estimados() {
         jobId = newJob.id;
         wasJobCreated = true;
         
+        console.log('✅ Job created in MCI Connect:', newJob);
+        
+        // Step 2: Sync with MCI Field
+        try {
+          console.log('🔗 Syncing job with MCI Field...');
+          
+          const mciFieldResponse = await fetch('https://mci-field.com/api/jobs/sync', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.SHARED_API_TOKEN || 'MCISync_2024_SecureToken_abc123xyz789'}`
+            },
+            body: JSON.stringify({
+              job_name: quote.job_name,
+              job_address: quote.job_address,
+              source: 'mci_connect',
+              mci_connect_job_id: jobId
+            })
+          });
+
+          if (mciFieldResponse.ok) {
+            const mciFieldData = await mciFieldResponse.json();
+            console.log('✅ Job synced with MCI Field:', mciFieldData);
+            mciFieldSyncSuccess = true;
+          } else {
+            console.warn('⚠️ MCI Field sync failed but continuing with invoice creation');
+          }
+        } catch (syncError) {
+          console.error('⚠️ Error syncing with MCI Field:', syncError);
+          // Continue with invoice creation even if sync fails
+        }
+        
         // Update quote with job_id
         await base44.entities.Quote.update(quote.id, {
           job_id: jobId
         });
       }
 
-      // Create invoice
+      // Step 3: Create Invoice
+      console.log('📄 Creating invoice...');
       const invoices = await base44.entities.Invoice.list();
       const existingNumbers = invoices
         .map(inv => inv.invoice_number)
@@ -151,6 +185,7 @@ export default function Estimados() {
       };
 
       const newInvoice = await base44.entities.Invoice.create(invoiceData);
+      console.log('✅ Invoice created:', newInvoice);
 
       // Update quote status
       await base44.entities.Quote.update(quote.id, {
@@ -158,26 +193,38 @@ export default function Estimados() {
         invoice_id: newInvoice.id
       });
 
-      return { newInvoice, wasJobCreated };
+      return { newInvoice, wasJobCreated, mciFieldSyncSuccess };
     },
-    onSuccess: ({ newInvoice, wasJobCreated }) => {
+    onSuccess: ({ newInvoice, wasJobCreated, mciFieldSyncSuccess }) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       
-      const message = language === 'es' 
-        ? `✅ Factura creada${wasJobCreated ? '\n✅ Trabajo creado automáticamente' : ''}`
-        : `✅ Invoice created${wasJobCreated ? '\n✅ Job created automatically' : ''}`;
+      let message = language === 'es' 
+        ? `✅ Factura creada exitosamente`
+        : `✅ Invoice created successfully`;
+      
+      if (wasJobCreated) {
+        message += language === 'es' 
+          ? `\n📁 Trabajo creado en MCI Connect`
+          : `\n📁 Job created in MCI Connect`;
+      }
+      
+      if (mciFieldSyncSuccess) {
+        message += language === 'es'
+          ? `\n🔗 Trabajo sincronizado con MCI Field`
+          : `\n🔗 Job synced with MCI Field`;
+      }
       
       toast.success(message);
       
       // Navigate to the new invoice
       setTimeout(() => {
         navigate(createPageUrl(`VerFactura?id=${newInvoice.id}`));
-      }, 1000);
+      }, 1500);
     },
     onError: (error) => {
-      console.error('Error converting quote:', error);
+      console.error('❌ Error converting quote:', error);
       toast.error(`❌ Error: ${error.message}`);
     }
   });
@@ -629,8 +676,8 @@ export default function Estimados() {
                           size="icon"
                           onClick={() => {
                             if (window.confirm(language === 'es' 
-                              ? '¿Convertir este estimado a factura?' 
-                              : 'Convert this quote to invoice?')) {
+                              ? '¿Convertir este estimado a factura? Esto creará automáticamente un trabajo en MCI Connect y MCI Field.' 
+                              : 'Convert this quote to invoice? This will automatically create a job in MCI Connect and MCI Field.')) {
                               convertToInvoiceMutation.mutate(quote);
                             }
                           }}
