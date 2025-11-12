@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,14 +11,14 @@ import { format, isSameDay, isSameMonth } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import { notifyAnnouncement } from "../components/notifications/notificationHelpers"; // New import
+import { notifyAnnouncement } from "../components/notifications/notificationHelpers";
 
 export default function NewsFeed() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [isCreating, setCreating] = useState(false);
-  const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '', priority: 'normal' }); // Added image_url
+  const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '', priority: 'normal' });
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
@@ -31,7 +30,6 @@ export default function NewsFeed() {
     initialData: [],
   });
 
-  // Renamed to allEmployees as per outline, used for notifications and birthdays
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
@@ -40,13 +38,13 @@ export default function NewsFeed() {
 
   // Get birthday celebrations
   const today = new Date();
-  const birthdaysToday = allEmployees.filter(emp => { // Use allEmployees
+  const birthdaysToday = allEmployees.filter(emp => {
     if (!emp.dob) return false;
     const birthday = new Date(emp.dob);
     return isSameDay(new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate()), today);
   });
 
-  const birthdaysThisMonth = allEmployees.filter(emp => { // Use allEmployees
+  const birthdaysThisMonth = allEmployees.filter(emp => {
     if (!emp.dob) return false;
     const birthday = new Date(emp.dob);
     return isSameMonth(birthday, today) && !birthdaysToday.some(b => b.id === emp.id);
@@ -57,21 +55,34 @@ export default function NewsFeed() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (postData) => { // Made async
-      const newPostResult = await base44.entities.Post.create({ // Renamed to avoid conflict with local state
+    mutationFn: async (postData) => {
+      const newPostResult = await base44.entities.Post.create({
         ...postData,
         author_email: user.email,
         author_name: user.full_name,
       });
       
-      // Send notifications to all employees
-      if (postData.priority === 'important' || postData.priority === 'urgent') {
+      // Send notifications to all employees if priority is important or urgent
+      if ((postData.priority === 'important' || postData.priority === 'urgent') && allEmployees.length > 0) {
         try {
-          await notifyAnnouncement(postData, allEmployees); // Call notifyAnnouncement with postData and allEmployees
+          // Send notification to each employee
+          const notificationPromises = allEmployees.map(employee => 
+            notifyAnnouncement({
+              recipientEmail: employee.email,
+              recipientName: employee.full_name,
+              announcementTitle: postData.title,
+              authorName: user.full_name,
+              priority: postData.priority,
+              announcementId: newPostResult.id
+            }).catch(err => {
+              console.error(`Failed to send notification to ${employee.email}:`, err);
+              return null; // Continue even if one fails
+            })
+          );
+          
+          await Promise.all(notificationPromises);
         } catch (error) {
           console.error('Failed to send notifications:', error);
-          // Optionally, toast an error here for notification failure
-          // toast.error(t('notificationSendError'));
         }
       }
       
@@ -79,9 +90,9 @@ export default function NewsFeed() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      setCreating(false); // Keep existing state setter
-      setNewPost({ title: '', content: '', image_url: '', priority: 'normal' }); // Reset with image_url
-      toast.success(t('announcementPosted')); // Specific translation key
+      setCreating(false);
+      setNewPost({ title: '', content: '', image_url: '', priority: 'normal' });
+      toast.success(t('success'));
     }
   });
 
@@ -160,7 +171,7 @@ export default function NewsFeed() {
                         )}
                         <div>
                           <p className="font-semibold text-slate-900">{emp.full_name}</p>
-                          <p className="text-sm text-pink-600">🎂 {t('happyBirthday')}</p>
+                          <p className="text-sm text-pink-600">🎂 Happy Birthday!</p>
                         </div>
                       </div>
                     ))}
@@ -251,7 +262,7 @@ export default function NewsFeed() {
                 <div className="flex gap-3 justify-end">
                   <Button variant="outline" onClick={() => {
                     setCreating(false);
-                    setNewPost({ title: '', content: '', image_url: '', priority: 'normal' }); // Reset with image_url
+                    setNewPost({ title: '', content: '', image_url: '', priority: 'normal' });
                   }} className="bg-white border-slate-300 text-slate-700">
                     {t('cancel')}
                   </Button>
