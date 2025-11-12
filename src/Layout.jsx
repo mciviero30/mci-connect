@@ -63,8 +63,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
 import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
-import NotificationService from "@/components/notifications/NotificationService";
-import NotificationEngine from "@/components/notifications/NotificationEngine";
+// TEMPORALMENTE DESACTIVADO - NotificationService y NotificationEngine
+// import NotificationService from "@/components/notifications/NotificationService";
+// import NotificationEngine from "@/components/notifications/NotificationEngine";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
 
 const ThemeToggle = () => {
@@ -364,251 +365,252 @@ const LayoutContent = ({ children, currentPageName }) => {
   return (
     <SidebarProvider>
       <MobileOptimizations />
-      <NotificationService user={user}>
+      {/* TEMPORALMENTE DESACTIVADO - Sistema de Notificaciones */}
+      {/* <NotificationService user={user}>
         <NotificationEngine user={user} />
+      </NotificationService> */}
         
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-          <style>{`
-            :root {
-              --sidebar-gradient-from: 15 23 42;
-              --sidebar-gradient-via: 30 41 59;
-              --sidebar-gradient-to: 51 65 85;
-            }
-            
-            /* Modern dark theme for entire app */
-            body {
-              background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
-            }
-            
-            [data-sidebar="sidebar"] {
-              background: linear-gradient(180deg, 
-                rgb(15, 23, 42) 0%, 
-                rgb(30, 41, 59) 50%, 
-                rgb(51, 65, 85) 100%) !important;
-              border-right: 1px solid rgba(71, 85, 105, 0.3) !important;
-              box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1) !important;
-            }
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <style>{`
+          :root {
+            --sidebar-gradient-from: 15 23 42;
+            --sidebar-gradient-via: 30 41 59;
+            --sidebar-gradient-to: 51 65 85;
+          }
+          
+          /* Modern dark theme for entire app */
+          body {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+          }
+          
+          [data-sidebar="sidebar"] {
+            background: linear-gradient(180deg, 
+              rgb(15, 23, 42) 0%, 
+              rgb(30, 41, 59) 50%, 
+              rgb(51, 65, 85) 100%) !important;
+            border-right: 1px solid rgba(71, 85, 105, 0.3) !important;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1) !important;
+          }
 
-            .sidebar-scroll-content {
-              overflow-y: auto !important;
-              overflow-x: hidden !important;
-              flex: 1 !important;
-              scroll-behavior: smooth !important;
-              -webkit-overflow-scrolling: touch !important;
-            }
+          .sidebar-scroll-content {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            flex: 1 !important;
+            scroll-behavior: smooth !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
 
-            .sidebar-scroll-content::-webkit-scrollbar {
-              width: 6px;
-            }
-            
-            .sidebar-scroll-content::-webkit-scrollbar-track {
-              background: rgba(255, 255, 255, 0.05);
-              border-radius: 3px;
-            }
-            
-            .sidebar-scroll-content::-webkit-scrollbar-thumb {
-              background: rgba(59, 159, 243, 0.4);
-              border-radius: 3px;
-            }
-            
-            .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
-              background: rgba(59, 159, 243, 0.6);
-            }
+          .sidebar-scroll-content::-webkit-scrollbar {
+            width: 6px;
+          }
+          
+          .sidebar-scroll-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+          }
+          
+          .sidebar-scroll-content::-webkit-scrollbar-thumb {
+            background: rgba(59, 159, 243, 0.4);
+            border-radius: 3px;
+          }
+          
+          .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 159, 243, 0.6);
+          }
 
-            /* Custom scrollbar for main content */
-            *::-webkit-scrollbar {
-              width: 8px;
-              height: 8px;
-            }
-            
-            *::-webkit-scrollbar-track {
-              background: rgba(255, 255, 255, 0.05);
-            }
-            
-            *::-webkit-scrollbar-thumb {
-              background: rgba(59, 159, 243, 0.3);
-              border-radius: 4px;
-            }
-            
-            *::-webkit-scrollbar-thumb:hover {
-              background: rgba(59, 159, 243, 0.5);
-            }
+          /* Custom scrollbar for main content */
+          *::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+          
+          *::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+          }
+          
+          *::-webkit-scrollbar-thumb {
+            background: rgba(59, 159, 243, 0.3);
+            border-radius: 4px;
+          }
+          
+          *::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 159, 243, 0.5);
+          }
 
-            @media (max-width: 1024px) {
-              * {
-                -webkit-tap-highlight-color: transparent;
-              }
+          @media (max-width: 1024px) {
+            * {
+              -webkit-tap-highlight-color: transparent;
             }
-          `}</style>
+          }
+        `}</style>
 
-          <Sidebar className="border-none">
-            <SidebarHeader className="p-4 border-b border-white/10 flex-shrink-0 backdrop-blur-sm">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+        <Sidebar className="border-none">
+          <SidebarHeader className="p-4 border-b border-white/10 flex-shrink-0 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                  alt="MCI Connect"
+                  className="w-8 h-8 rounded-lg"
+                />
+              </div>
+              <div className="flex-1">
+                <h2 className="font-bold text-white text-lg tracking-tight">MCI Connect</h2>
+                <p className="text-xs text-blue-300 font-medium">
+                  {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
+                </p>
+              </div>
+            </div>
+          </SidebarHeader>
+
+          <SidebarContent 
+            ref={sidebarContentRef} 
+            className="p-3 sidebar-scroll-content"
+            data-scrollable="true"
+          >
+            {navigation.map((section, idx) => (
+              <SidebarGroup key={idx} className="mb-6">
+                <SidebarGroupLabel className="text-[10px] font-bold text-blue-300/80 uppercase tracking-wider px-3 py-2 mb-1">
+                  {section.section}
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {section.items.map((item) => {
+                      const isActive = location.pathname === item.url;
+                      const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
+
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton
+                            asChild
+                            className={`transition-all duration-300 rounded-xl mb-1 border-none ${
+                              item.indent ? 'ml-6' : ''
+                            } ${
+                              isActive
+                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                                : 'hover:bg-white/10 text-slate-300 hover:text-white backdrop-blur-sm'
+                            }`}
+                          >
+                            <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
+                              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-blue-300'}`} />
+                              <span className={`font-medium flex-1 ${item.indent ? 'text-xs' : 'text-sm'}`}>
+                                {item.title}
+                              </span>
+                              {showBadge && (
+                                <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
+                                  {pendingExpenses}
+                                </Badge>
+                              )}
+                              {item.badge && (
+                                <span className="text-xs">{item.badge}</span>
+                              )}
+                              {isActive && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
+                              )}
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            ))}
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-white/10 p-4 flex-shrink-0 backdrop-blur-sm">
+            <div className="mb-3 px-2 flex items-center gap-2">
+              <Select value={language} onValueChange={changeLanguage}>
+                <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white flex-1 backdrop-blur-sm hover:bg-white/20">
+                  <Languages className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="en" className="text-white hover:bg-slate-700">🇺🇸 English</SelectItem>
+                  <SelectItem value="es" className="text-white hover:bg-slate-700">🇪🇸 Español</SelectItem>
+                </SelectContent>
+              </Select>
+              <ThemeToggle />
+            </div>
+
+            <div className="flex items-center justify-between bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {profileImage ? (
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                    alt="MCI Connect"
-                    className="w-8 h-8 rounded-lg"
+                    src={profileImage}
+                    alt={user.full_name}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50 shadow-lg"
                   />
-                </div>
-                <div className="flex-1">
-                  <h2 className="font-bold text-white text-lg tracking-tight">MCI Connect</h2>
-                  <p className="text-xs text-blue-300 font-medium">
-                    {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
+                ) : (
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-blue-400/30">
+                    <span className="text-white font-bold text-sm">
+                      {user?.full_name?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-white text-sm truncate">
+                    {user?.full_name || 'User'}
+                  </p>
+                  <p className="text-xs text-blue-300 truncate">
+                    {user?.role === 'admin' ? t('admin') : t('user')}
                   </p>
                 </div>
               </div>
-            </SidebarHeader>
-
-            <SidebarContent 
-              ref={sidebarContentRef} 
-              className="p-3 sidebar-scroll-content"
-              data-scrollable="true"
-            >
-              {navigation.map((section, idx) => (
-                <SidebarGroup key={idx} className="mb-6">
-                  <SidebarGroupLabel className="text-[10px] font-bold text-blue-300/80 uppercase tracking-wider px-3 py-2 mb-1">
-                    {section.section}
-                  </SidebarGroupLabel>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {section.items.map((item) => {
-                        const isActive = location.pathname === item.url;
-                        const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
-
-                        return (
-                          <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton
-                              asChild
-                              className={`transition-all duration-300 rounded-xl mb-1 border-none ${
-                                item.indent ? 'ml-6' : ''
-                              } ${
-                                isActive
-                                  ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/30'
-                                  : 'hover:bg-white/10 text-slate-300 hover:text-white backdrop-blur-sm'
-                              }`}
-                            >
-                              <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
-                                <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-blue-300'}`} />
-                                <span className={`font-medium flex-1 ${item.indent ? 'text-xs' : 'text-sm'}`}>
-                                  {item.title}
-                                </span>
-                                {showBadge && (
-                                  <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
-                                    {pendingExpenses}
-                                  </Badge>
-                                )}
-                                {item.badge && (
-                                  <span className="text-xs">{item.badge}</span>
-                                )}
-                                {isActive && (
-                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
-                                )}
-                              </Link>
-                            </SidebarMenuButton>
-                          </SidebarMenuItem>
-                        );
-                      })}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              ))}
-            </SidebarContent>
-
-            <SidebarFooter className="border-t border-white/10 p-4 flex-shrink-0 backdrop-blur-sm">
-              <div className="mb-3 px-2 flex items-center gap-2">
-                <Select value={language} onValueChange={changeLanguage}>
-                  <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white flex-1 backdrop-blur-sm hover:bg-white/20">
-                    <Languages className="w-4 h-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="en" className="text-white hover:bg-slate-700">🇺🇸 English</SelectItem>
-                    <SelectItem value="es" className="text-white hover:bg-slate-700">🇪🇸 Español</SelectItem>
-                  </SelectContent>
-                </Select>
-                <ThemeToggle />
-              </div>
-
-              <div className="flex items-center justify-between bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  {profileImage ? (
-                    <img
-                      src={profileImage}
-                      alt={user.full_name}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50 shadow-lg"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-blue-400/30">
-                      <span className="text-white font-bold text-sm">
-                        {user?.full_name?.[0]?.toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white text-sm truncate">
-                      {user?.full_name || 'User'}
-                    </p>
-                    <p className="text-xs text-blue-300 truncate">
-                      {user?.role === 'admin' ? t('admin') : t('user')}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Link to={createPageUrl("Configuracion")} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={t('settings')}>
-                    <Settings className="w-4 h-4 text-blue-300 hover:text-white" />
-                  </Link>
-                  <button
-                    onClick={() => base44.auth.logout()}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                    title={t('logout')}
-                  >
-                    <LogOut className="w-4 h-4 text-blue-300 hover:text-white" />
-                  </button>
-                </div>
-              </div>
-            </SidebarFooter>
-          </Sidebar>
-
-          <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <header className="backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50 px-6 py-4 md:hidden shadow-lg flex-shrink-0">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-white/10 p-2 rounded-lg transition-colors">
-                  <Menu className="w-5 h-5 text-white" />
-                </SidebarTrigger>
-                <div className="flex items-center gap-2">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                    alt="MCI Connect"
-                    className="w-6 h-6"
-                  />
-                  <div>
-                    <h1 className="text-lg font-bold text-white leading-none">MCI Connect</h1>
-                    {isAdmin && <p className="text-[10px] text-blue-300 leading-none">Management System</p>}
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" data-scrollable="true">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentPageName}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full w-full"
+              <div className="flex items-center gap-1">
+                <Link to={createPageUrl("Configuracion")} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={t('settings')}>
+                  <Settings className="w-4 h-4 text-blue-300 hover:text-white" />
+                </Link>
+                <button
+                  onClick={() => base44.auth.logout()}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  title={t('logout')}
                 >
-                  {children}
-                </motion.div>
-              </AnimatePresence>
+                  <LogOut className="w-4 h-4 text-blue-300 hover:text-white" />
+                </button>
+              </div>
             </div>
-            
-            <AIAssistant currentPage={currentPageName} />
-          </main>
-        </div>
-      </NotificationService>
+          </SidebarFooter>
+        </Sidebar>
+
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <header className="backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50 px-6 py-4 md:hidden shadow-lg flex-shrink-0">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="hover:bg-white/10 p-2 rounded-lg transition-colors">
+                <Menu className="w-5 h-5 text-white" />
+              </SidebarTrigger>
+              <div className="flex items-center gap-2">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                  alt="MCI Connect"
+                  className="w-6 h-6"
+                />
+                <div>
+                  <h1 className="text-lg font-bold text-white leading-none">MCI Connect</h1>
+                  {isAdmin && <p className="text-[10px] text-blue-300 leading-none">Management System</p>}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" data-scrollable="true">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPageName}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="h-full w-full"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          
+          <AIAssistant currentPage={currentPageName} />
+        </main>
+      </div>
     </SidebarProvider>
   );
 };
