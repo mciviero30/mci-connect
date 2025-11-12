@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, FileCheck, Loader2, AlertCircle, TrendingUp, DollarSign, Clock, Receipt, CheckCircle2, RefreshCw } from "lucide-react";
+import { Sparkles, FileCheck, Loader2, AlertCircle, TrendingUp, DollarSign, Clock, Receipt, CheckCircle2, RefreshCw, Info } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
@@ -25,6 +25,10 @@ export default function AIInvoiceGenerator() {
   const navigate = useNavigate();
 
   const [selectedJob, setSelectedJob] = useState("");
+  const [manualJobName, setManualJobName] = useState("");
+  const [manualCustomerName, setManualCustomerName] = useState("");
+  const [manualJobDescription, setManualJobDescription] = useState("");
+  const [useManualEntry, setUseManualEntry] = useState(false);
   const [dateRange, setDateRange] = useState({
     start: "",
     end: ""
@@ -96,8 +100,19 @@ export default function AIInvoiceGenerator() {
 
   // Generate invoice with AI
   const handleGenerateInvoice = async () => {
-    if (!selectedJob) {
+    // Validation
+    if (!useManualEntry && !selectedJob) {
       toast.error(language === 'es' ? 'Selecciona un trabajo' : 'Select a job');
+      return;
+    }
+
+    if (useManualEntry && !manualJobName.trim()) {
+      toast.error(language === 'es' ? 'Escribe el nombre del trabajo' : 'Enter job name');
+      return;
+    }
+
+    if (useManualEntry && !manualCustomerName.trim()) {
+      toast.error(language === 'es' ? 'Escribe el nombre del cliente' : 'Enter customer name');
       return;
     }
 
@@ -111,31 +126,67 @@ export default function AIInvoiceGenerator() {
     setAnalysisData(null);
 
     try {
-      const job = jobs.find(j => j.id === selectedJob);
-      if (!job) throw new Error('Job not found');
-
-      const customer = customers.find(c => c.email === job.customer_email || c.first_name + ' ' + c.last_name === job.customer_name);
+      let job, customer;
+      
+      if (useManualEntry) {
+        // Use manual entry data
+        job = {
+          name: manualJobName.trim(),
+          description: manualJobDescription.trim(),
+          customer_name: manualCustomerName.trim()
+        };
+        
+        // Try to find matching customer
+        customer = customers.find(c => 
+          c.first_name?.toLowerCase().includes(manualCustomerName.toLowerCase()) ||
+          c.last_name?.toLowerCase().includes(manualCustomerName.toLowerCase()) ||
+          (c.first_name + ' ' + c.last_name).toLowerCase() === manualCustomerName.toLowerCase()
+        );
+      } else {
+        // Use selected job
+        job = jobs.find(j => j.id === selectedJob);
+        if (!job) throw new Error('Job not found');
+        
+        customer = customers.find(c => c.email === job.customer_email || c.first_name + ' ' + c.last_name === job.customer_name);
+      }
 
       // Filter data by job and date range
       const startDate = new Date(dateRange.start);
       const endDate = new Date(dateRange.end);
 
       const jobTimeEntries = timeEntries.filter(e => {
-        if (e.job_id !== selectedJob) return false;
-        const entryDate = new Date(e.date);
-        return entryDate >= startDate && entryDate <= endDate;
+        if (useManualEntry) {
+          // For manual entry, include all time entries in date range
+          const entryDate = new Date(e.date);
+          return entryDate >= startDate && entryDate <= endDate;
+        } else {
+          if (e.job_id !== selectedJob) return false;
+          const entryDate = new Date(e.date);
+          return entryDate >= startDate && entryDate <= endDate;
+        }
       });
 
       const jobExpenses = expenses.filter(e => {
-        if (e.job_id !== selectedJob) return false;
-        const expenseDate = new Date(e.date);
-        return expenseDate >= startDate && expenseDate <= endDate;
+        if (useManualEntry) {
+          // For manual entry, include all expenses in date range
+          const expenseDate = new Date(e.date);
+          return expenseDate >= startDate && expenseDate <= endDate;
+        } else {
+          if (e.job_id !== selectedJob) return false;
+          const expenseDate = new Date(e.date);
+          return expenseDate >= startDate && expenseDate <= endDate;
+        }
       });
 
       const jobAssignments = assignments.filter(a => {
-        if (a.job_id !== selectedJob) return false;
-        const assignmentDate = new Date(a.date);
-        return assignmentDate >= startDate && assignmentDate <= endDate;
+        if (useManualEntry) {
+          const assignmentDate = new Date(a.date);
+          return assignmentDate >= startDate && assignmentDate <= endDate;
+        } else {
+          if (a.job_id !== selectedJob) return false;
+          const assignmentDate = new Date(a.date);
+          return assignmentDate >= startDate && assignmentDate <= endDate;
+        }
       });
 
       // Calculate totals
@@ -152,6 +203,7 @@ PROJECT DETAILS:
 - Project Description: ${job.description || 'N/A'}
 - Date Range: ${format(startDate, 'MMM dd, yyyy')} - ${format(endDate, 'MMM dd, yyyy')}
 ${additionalNotes ? `- Additional Notes: ${additionalNotes}` : ''}
+${useManualEntry ? '- Note: This is a manually entered job (not in the system yet)' : ''}
 
 LABOR DATA:
 - Total Hours Worked: ${totalHours.toFixed(2)} hours
@@ -239,10 +291,10 @@ Return a JSON array of invoice line items. Each item must include:
         invoice_number: invoiceNumber,
         customer_id: customer?.id || null,
         customer_name: job.customer_name,
-        customer_email: customer?.email || job.customer_email,
-        customer_phone: customer?.phone || job.customer_phone,
+        customer_email: customer?.email || null,
+        customer_phone: customer?.phone || null,
         job_name: job.name,
-        job_id: job.id,
+        job_id: useManualEntry ? null : job.id,
         job_address: job.address || '',
         team_id: job.team_id || null,
         team_name: job.team_name || null,
@@ -262,7 +314,7 @@ Return a JSON array of invoice line items. Each item must include:
         total: total,
         amount_paid: 0,
         balance: total,
-        notes: additionalNotes || `Generated from ${totalHours.toFixed(1)}h of labor and ${jobExpenses.length} expenses`,
+        notes: additionalNotes || `Generated from ${totalHours.toFixed(1)}h of labor and ${jobExpenses.length} expenses${useManualEntry ? ' (Manual Entry)' : ''}`,
         status: 'draft'
       };
 
@@ -323,33 +375,105 @@ Return a JSON array of invoice line items. Each item must include:
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
-                {/* Job Selection */}
-                <div>
-                  <Label className="text-slate-700 font-semibold mb-2 block">
-                    {language === 'es' ? 'Seleccionar Trabajo' : 'Select Job'}
+                {/* Toggle Manual Entry */}
+                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <Label className="text-purple-900 font-semibold text-sm">
+                    {language === 'es' ? 'Entrada Manual' : 'Manual Entry'}
                   </Label>
-                  <Select value={selectedJob} onValueChange={setSelectedJob}>
-                    <SelectTrigger className="bg-slate-50 border-slate-200">
-                      <SelectValue placeholder={language === 'es' ? 'Elige un trabajo...' : 'Choose a job...'} />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200">
-                      {jobsWithData.length === 0 ? (
-                        <div className="p-4 text-sm text-slate-500 text-center">
-                          {language === 'es' ? 'No hay trabajos con datos aprobados' : 'No jobs with approved data'}
-                        </div>
-                      ) : (
-                        jobsWithData.map(job => (
-                          <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                            {job.name}
-                            <Badge className="ml-2 text-xs" variant="outline">
-                              {job.customer_name}
-                            </Badge>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <button
+                    onClick={() => setUseManualEntry(!useManualEntry)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      useManualEntry ? 'bg-purple-600' : 'bg-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        useManualEntry ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
                 </div>
+
+                {useManualEntry ? (
+                  <>
+                    {/* Manual Entry Fields */}
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-900 text-xs">
+                        {language === 'es' 
+                          ? 'Modo manual: AI generará la factura basándose en todas las horas y gastos aprobados en el rango de fechas.' 
+                          : 'Manual mode: AI will generate invoice based on all approved hours and expenses in the date range.'}
+                      </AlertDescription>
+                    </Alert>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold mb-2 block">
+                        {language === 'es' ? 'Nombre del Trabajo *' : 'Job Name *'}
+                      </Label>
+                      <Input
+                        value={manualJobName}
+                        onChange={(e) => setManualJobName(e.target.value)}
+                        placeholder={language === 'es' ? 'Ej: Instalación de Ventanas' : 'Ex: Window Installation'}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold mb-2 block">
+                        {language === 'es' ? 'Nombre del Cliente *' : 'Customer Name *'}
+                      </Label>
+                      <Input
+                        value={manualCustomerName}
+                        onChange={(e) => setManualCustomerName(e.target.value)}
+                        placeholder={language === 'es' ? 'Ej: John Smith' : 'Ex: John Smith'}
+                        className="bg-slate-50 border-slate-200"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-700 font-semibold mb-2 block">
+                        {language === 'es' ? 'Descripción del Trabajo' : 'Job Description'}
+                        <span className="text-slate-400 font-normal ml-1">({language === 'es' ? 'opcional' : 'optional'})</span>
+                      </Label>
+                      <Textarea
+                        value={manualJobDescription}
+                        onChange={(e) => setManualJobDescription(e.target.value)}
+                        placeholder={language === 'es' ? 'Describe el trabajo...' : 'Describe the job...'}
+                        className="bg-slate-50 border-slate-200 h-20"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Job Selection */}
+                    <div>
+                      <Label className="text-slate-700 font-semibold mb-2 block">
+                        {language === 'es' ? 'Seleccionar Trabajo' : 'Select Job'}
+                      </Label>
+                      <Select value={selectedJob} onValueChange={setSelectedJob}>
+                        <SelectTrigger className="bg-slate-50 border-slate-200">
+                          <SelectValue placeholder={language === 'es' ? 'Elige un trabajo...' : 'Choose a job...'} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-slate-200">
+                          {jobsWithData.length === 0 ? (
+                            <div className="p-4 text-sm text-slate-500 text-center">
+                              {language === 'es' ? 'No hay trabajos con datos aprobados' : 'No jobs with approved data'}
+                            </div>
+                          ) : (
+                            jobsWithData.map(job => (
+                              <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                                {job.name}
+                                <Badge className="ml-2 text-xs" variant="outline">
+                                  {job.customer_name}
+                                </Badge>
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
 
                 {/* Date Range */}
                 <div className="grid grid-cols-2 gap-3">
@@ -409,7 +533,13 @@ Return a JSON array of invoice line items. Each item must include:
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerateInvoice}
-                  disabled={!selectedJob || !dateRange.start || !dateRange.end || isGenerating}
+                  disabled={
+                    (!useManualEntry && !selectedJob) ||
+                    (useManualEntry && (!manualJobName.trim() || !manualCustomerName.trim())) ||
+                    !dateRange.start ||
+                    !dateRange.end ||
+                    isGenerating
+                  }
                   className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-lg"
                 >
                   {isGenerating ? (
@@ -428,7 +558,7 @@ Return a JSON array of invoice line items. Each item must include:
             </Card>
 
             {/* Selected Job Info */}
-            {selectedJobData && (
+            {!useManualEntry && selectedJobData && (
               <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg border-blue-200">
                 <CardHeader className="border-b border-blue-200">
                   <CardTitle className="text-blue-900 text-sm">
@@ -455,6 +585,33 @@ Return a JSON array of invoice line items. Each item must include:
                 </CardContent>
               </Card>
             )}
+
+            {useManualEntry && manualJobName && manualCustomerName && (
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 shadow-lg border-purple-200">
+                <CardHeader className="border-b border-purple-200">
+                  <CardTitle className="text-purple-900 text-sm flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    {language === 'es' ? 'Vista Previa' : 'Preview'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-2 text-sm">
+                  <div>
+                    <span className="text-purple-700 font-semibold">{language === 'es' ? 'Trabajo:' : 'Job:'}</span>
+                    <p className="text-purple-900 font-bold">{manualJobName}</p>
+                  </div>
+                  <div>
+                    <span className="text-purple-700 font-semibold">{language === 'es' ? 'Cliente:' : 'Customer:'}</span>
+                    <p className="text-purple-900">{manualCustomerName}</p>
+                  </div>
+                  {manualJobDescription && (
+                    <div>
+                      <span className="text-purple-700 font-semibold">{language === 'es' ? 'Descripción:' : 'Description:'}</span>
+                      <p className="text-purple-900 text-xs">{manualJobDescription}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Results Panel */}
@@ -468,8 +625,12 @@ Return a JSON array of invoice line items. Each item must include:
                   </h3>
                   <p className="text-slate-500">
                     {language === 'es'
-                      ? 'Selecciona un trabajo y rango de fechas, luego haz clic en "Generar Factura"'
-                      : 'Select a job and date range, then click "Generate Invoice"'}
+                      ? useManualEntry 
+                        ? 'Completa los campos y rango de fechas, luego haz clic en "Generar Factura"'
+                        : 'Selecciona un trabajo y rango de fechas, luego haz clic en "Generar Factura"'
+                      : useManualEntry
+                        ? 'Fill in the fields and date range, then click "Generate Invoice"'
+                        : 'Select a job and date range, then click "Generate Invoice"'}
                   </p>
                 </CardContent>
               </Card>
@@ -521,8 +682,12 @@ Return a JSON array of invoice line items. Each item must include:
                         <div>
                           <h4 className="font-semibold text-slate-900 mb-1">{language === 'es' ? 'Facturar a:' : 'Bill To:'}</h4>
                           <p className="text-lg font-bold text-slate-900">{generatedInvoice.customer_name}</p>
-                          <p className="text-sm text-slate-600">{generatedInvoice.customer_email}</p>
-                          <p className="text-sm text-slate-600">{generatedInvoice.customer_phone}</p>
+                          {generatedInvoice.customer_email && (
+                            <p className="text-sm text-slate-600">{generatedInvoice.customer_email}</p>
+                          )}
+                          {generatedInvoice.customer_phone && (
+                            <p className="text-sm text-slate-600">{generatedInvoice.customer_phone}</p>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-slate-600">{language === 'es' ? 'Fecha:' : 'Date:'}</p>
@@ -536,6 +701,11 @@ Return a JSON array of invoice line items. Each item must include:
                       <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <h4 className="font-semibold text-blue-900 mb-1">{language === 'es' ? 'Proyecto:' : 'Project:'}</h4>
                         <p className="text-blue-900">{generatedInvoice.job_name}</p>
+                        {useManualEntry && (
+                          <Badge className="mt-2 bg-purple-100 text-purple-700 border-purple-300">
+                            {language === 'es' ? '✨ Entrada Manual' : '✨ Manual Entry'}
+                          </Badge>
+                        )}
                       </div>
 
                       {/* Line Items */}
