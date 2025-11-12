@@ -469,26 +469,44 @@ export default function VerFactura() {
 
       <style>{`
         @media print {
-          /* Hide everything by default */
-          body > *:not(#root) {
-            display: none !important;
+          /* Hide EVERYTHING first */
+          * {
+            visibility: hidden !important;
           }
           
-          /* Hide all children of root except our invoice */
-          #root > *:not(div) {
-            display: none !important;
+          /* Hide the entire HTML structure */
+          html, body {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            background: white !important;
           }
           
-          /* Hide the action bar */
-          .no-print {
+          /* Hide sidebars, navigation, dialogs */
+          [data-sidebar],
+          aside,
+          nav,
+          header:not(#invoice-printable header),
+          .no-print,
+          [role="dialog"],
+          [role="complementary"],
+          button:not(#invoice-printable button) {
             display: none !important;
+            visibility: hidden !important;
           }
           
-          /* Show only the invoice container */
-          #invoice-printable {
-            display: block !important;
+          /* Show ONLY the invoice container and its children */
+          #invoice-printable,
+          #invoice-printable * {
             visibility: visible !important;
-            position: static !important;
+          }
+          
+          #invoice-printable {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
@@ -498,20 +516,10 @@ export default function VerFactura() {
             background: white !important;
           }
           
-          /* Make all children of invoice printable visible */
-          #invoice-printable * {
-            visibility: visible !important;
-          }
-          
           /* Page settings */
           @page {
             size: auto;
             margin: 0.5in;
-          }
-          
-          /* Remove backgrounds from body */
-          body {
-            background: white !important;
           }
         }
       `}</style>
