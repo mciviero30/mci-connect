@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -168,16 +167,10 @@ export default function CrearFactura() {
       setFormData(prevFormData => ({
         ...prevFormData,
         customer_id: customerId,
-        customer_name: customer.name,
+        customer_name: `${customer.first_name} ${customer.last_name}`.trim(),
         customer_email: customer.email || "",
         customer_phone: customer.phone || "",
-        // The outline specifies job_address from customer, which might be a typo, but implementing as requested.
-        // If customer has an address field for their own address, this would be `customer_address`.
-        // For job_address, it usually comes from the selected job.
-        // Assuming 'address' on customer is customer's primary address, not job's.
-        // If this is meant to overwrite the job_address, it might be an issue.
-        // For now, adhering strictly to the outline for `job_address`.
-        job_address: customer.address || prevFormData.job_address // Keep existing job_address if customer has none
+        job_address: customer.address || prevFormData.job_address
       }));
     }
   };
@@ -381,7 +374,7 @@ export default function CrearFactura() {
                     <SelectContent>
                       {customers.filter(c => c.status === 'active').map(customer => (
                         <SelectItem key={customer.id} value={customer.id}>
-                          {customer.name} {customer.company && `- ${customer.company}`}
+                          {customer.first_name} {customer.last_name} {customer.company && `- ${customer.company}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
