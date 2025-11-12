@@ -164,10 +164,11 @@ export default function CrearFactura() {
   const handleCustomerSelect = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      const customerName = customer.name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
       setFormData(prevFormData => ({
         ...prevFormData,
         customer_id: customerId,
-        customer_name: `${customer.first_name} ${customer.last_name}`.trim(),
+        customer_name: customerName,
         customer_email: customer.email || "",
         customer_phone: customer.phone || "",
         job_address: customer.address || prevFormData.job_address
@@ -373,10 +374,10 @@ export default function CrearFactura() {
                     </SelectTrigger>
                     <SelectContent>
                       {customers.filter(c => c.status === 'active').map(customer => {
-                        const personName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
-                        const displayText = personName 
-                          ? `${customer.company || 'No Company'} - ${personName} (${customer.title || 'No Title'})`
-                          : `${customer.company || 'No Company'}`;
+                        const personName = customer.name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+                        const displayText = customer.company 
+                          ? `${customer.company} - ${personName}`
+                          : personName;
                         
                         return (
                           <SelectItem key={customer.id} value={customer.id}>
