@@ -80,9 +80,9 @@ const ThemeToggle = () => {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-slate-200">
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-slate-700" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-slate-700" />
+    <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-white/10">
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-white/90" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-white/90" />
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
@@ -296,10 +296,10 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700 font-medium">{t('loading')}...</p>
+          <p className="text-white font-medium">{t('loading')}...</p>
         </div>
       </div>
     );
@@ -307,13 +307,13 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (error && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-white border border-slate-200">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-slate-800/50 backdrop-blur-xl border border-slate-700">
           <div className="w-20 h-20 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
             <Building2 className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">MCI Connect</h1>
-          <p className="text-slate-600 mb-4">{t('error')}</p>
+          <h1 className="text-2xl font-bold text-white mb-2">MCI Connect</h1>
+          <p className="text-slate-300 mb-4">{t('error')}</p>
           <Button onClick={() => window.location.reload()} className="bg-[#3B9FF3] hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20">
             {t('reload')}
           </Button>
@@ -324,14 +324,14 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (user && user.employment_status === 'deleted') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-white border border-red-200">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-slate-800/50 backdrop-blur-xl border border-red-500/30">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/20">
             <UserX className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
-          <p className="text-red-600 mb-4">Your account has been deactivated.</p>
-          <p className="text-slate-500 text-sm mb-6">
+          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+          <p className="text-red-400 mb-4">Your account has been deactivated.</p>
+          <p className="text-slate-400 text-sm mb-6">
             Please contact your administrator if you believe this is an error.
           </p>
           <Button onClick={() => base44.auth.logout()} className="bg-red-500 hover:bg-red-600 text-white">
@@ -367,86 +367,29 @@ const LayoutContent = ({ children, currentPageName }) => {
       <NotificationService user={user}>
         <NotificationEngine user={user} />
         
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-white">
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
           <style>{`
             :root {
-              --background: 248 250 252;
-              --foreground: 15 23 42;
-              --card: 255 255 255;
-              --card-foreground: 15 23 42;
-              --popover: 255 255 255;
-              --popover-foreground: 15 23 42;
-              --primary: 59 159 243;
-              --primary-foreground: 255 255 255;
-              --secondary: 30 144 255;
-              --secondary-foreground: 255 255 255;
-              --muted: 241 245 249;
-              --muted-foreground: 100 116 139;
-              --accent: 59 159 243;
-              --accent-foreground: 255 255 255;
-              --destructive: 239 68 68;
-              --destructive-foreground: 255 255 255;
-              --success: 34 197 94;
-              --success-foreground: 255 255 255;
-              --warning: 251 191 36;
-              --warning-foreground: 15 23 42;
-              --border: 226 232 240;
-              --input: 241 245 249;
-              --ring: 59 159 243;
-              --radius: 1rem;
-              --sidebar-background: 255 255 255;
-              --sidebar-foreground: 15 23 42;
-              --sidebar-border: 226 232 240;
+              --sidebar-gradient-from: 15 23 42;
+              --sidebar-gradient-via: 30 41 59;
+              --sidebar-gradient-to: 51 65 85;
             }
             
-            .bg-background { background-color: rgb(var(--background)); }
-            .text-foreground { color: rgb(var(--foreground)); }
-            .bg-card { background-color: rgb(var(--card)); }
-            .text-card-foreground { color: rgb(var(--card-foreground)); }
-            .bg-primary { background-color: rgb(var(--primary)); }
-            .text-primary-foreground { color: rgb(var(--primary-foreground)); }
-            .border-border { border-color: rgb(var(--border)); }
-            .text-muted-foreground { color: rgb(var(--muted-foreground)); }
-            .bg-muted { background-color: rgb(var(--muted)); }
-            
-            .text-slate-600 { color: rgb(71, 85, 105) !important; }
-            .text-slate-700 { color: rgb(51, 65, 85) !important; }
-            .text-slate-900 { color: rgb(15, 23, 42) !important; }
-            
-            .text-pink-600, .text-pink-700, .text-pink-800,
-            .text-rose-600, .text-rose-700, .text-rose-800 {
-              color: rgb(51, 65, 85) !important;
-            }
-            .bg-pink-50, .bg-pink-100, .bg-rose-50, .bg-rose-100 {
-              background-color: rgb(241, 245, 249) !important;
-            }
-            
-            [data-sidebar] {
-              background-color: rgb(255, 255, 255) !important;
-              color: rgb(15, 23, 42) !important;
-              border: none !important;
-            }
-
             [data-sidebar="sidebar"] {
-              background: rgb(255, 255, 255) !important;
-              border-right: 1px solid rgb(226, 232, 240) !important;
-              border-left: none !important;
-              border-top: none !important;
-              border-bottom: none !important;
-              display: flex !important;
-              flex-direction: column !important;
-              height: 100vh !important;
-              position: sticky !important;
-              top: 0 !important;
+              background: linear-gradient(180deg, 
+                rgb(15, 23, 42) 0%, 
+                rgb(30, 41, 59) 50%, 
+                rgb(51, 65, 85) 100%) !important;
+              border-right: 1px solid rgba(71, 85, 105, 0.3) !important;
+              box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1) !important;
             }
 
             .sidebar-scroll-content {
               overflow-y: auto !important;
               overflow-x: hidden !important;
               flex: 1 !important;
-              scroll-behavior: auto !important;
+              scroll-behavior: smooth !important;
               -webkit-overflow-scrolling: touch !important;
-              overscroll-behavior: contain !important;
             }
 
             .sidebar-scroll-content::-webkit-scrollbar {
@@ -454,54 +397,39 @@ const LayoutContent = ({ children, currentPageName }) => {
             }
             
             .sidebar-scroll-content::-webkit-scrollbar-track {
-              background: transparent;
+              background: rgba(255, 255, 255, 0.05);
+              border-radius: 3px;
             }
             
             .sidebar-scroll-content::-webkit-scrollbar-thumb {
-              background: rgba(59, 159, 243, 0.3);
+              background: rgba(59, 159, 243, 0.4);
               border-radius: 3px;
             }
             
             .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
-              background: rgba(59, 159, 243, 0.5);
-            }
-            
-            .glass-card {
-              background: rgba(255, 255, 255, 0.9) !important;
-              backdrop-filter: blur(20px) !important;
-              border-color: rgba(226, 232, 240, 0.8) !important;
+              background: rgba(59, 159, 243, 0.6);
             }
 
             @media (max-width: 1024px) {
               * {
                 -webkit-tap-highlight-color: transparent;
-                -webkit-overflow-scrolling: touch;
-              }
-              
-              body {
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-              }
-              
-              .overflow-y-auto,
-              [class*="overflow-"] {
-                -webkit-overflow-scrolling: touch !important;
-                overscroll-behavior: contain !important;
               }
             }
           `}</style>
 
-          <Sidebar className="border-none bg-white" style={{background: 'rgb(255, 255, 255)', borderRight: '1px solid rgb(226, 232, 240)'}}>
-            <SidebarHeader className="p-4 border-b flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
+          <Sidebar className="border-none">
+            <SidebarHeader className="p-4 border-b border-white/10 flex-shrink-0 backdrop-blur-sm">
               <div className="flex items-center gap-3">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                  alt="MCI Connect"
-                  className="w-11 h-11 rounded-lg flex-shrink-0"
-                />
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                    alt="MCI Connect"
+                    className="w-8 h-8 rounded-lg"
+                  />
+                </div>
                 <div className="flex-1">
-                  <h2 className="font-bold text-slate-900 text-lg">MCI Connect</h2>
-                  <p className="text-xs text-[#3B9FF3]">
+                  <h2 className="font-bold text-white text-lg tracking-tight">MCI Connect</h2>
+                  <p className="text-xs text-blue-300 font-medium">
                     {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
                   </p>
                 </div>
@@ -510,12 +438,12 @@ const LayoutContent = ({ children, currentPageName }) => {
 
             <SidebarContent 
               ref={sidebarContentRef} 
-              className="p-3 sidebar-scroll-content bg-white"
+              className="p-3 sidebar-scroll-content"
               data-scrollable="true"
             >
               {navigation.map((section, idx) => (
-                <SidebarGroup key={idx}>
-                  <SidebarGroupLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-3 py-2 mb-1">
+                <SidebarGroup key={idx} className="mb-6">
+                  <SidebarGroupLabel className="text-[10px] font-bold text-blue-300/80 uppercase tracking-wider px-3 py-2 mb-1">
                     {section.section}
                   </SidebarGroupLabel>
                   <SidebarGroupContent>
@@ -528,26 +456,29 @@ const LayoutContent = ({ children, currentPageName }) => {
                           <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                               asChild
-                              className={`transition-all duration-200 rounded-xl mb-0.5 border-none ${
+                              className={`transition-all duration-300 rounded-xl mb-1 border-none ${
                                 item.indent ? 'ml-6' : ''
                               } ${
                                 isActive
-                                  ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                  : item.indent
-                                  ? 'hover:bg-slate-50 text-slate-600 hover:text-slate-900'
-                                  : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
+                                  ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/30'
+                                  : 'hover:bg-white/10 text-slate-300 hover:text-white backdrop-blur-sm'
                               }`}
                             >
-                              <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative">
-                                <item.icon className="w-4 h-4 flex-shrink-0" />
-                                <span className={`font-medium flex-1 ${item.indent ? 'text-xs' : 'text-sm'}`}>{item.title}</span>
+                              <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
+                                <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-blue-300'}`} />
+                                <span className={`font-medium flex-1 ${item.indent ? 'text-xs' : 'text-sm'}`}>
+                                  {item.title}
+                                </span>
                                 {showBadge && (
-                                  <Badge className="bg-[#3B9FF3] text-white text-xs px-1.5 py-0.5 shadow-lg shadow-blue-500/20">
+                                  <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
                                     {pendingExpenses}
                                   </Badge>
                                 )}
                                 {item.badge && (
                                   <span className="text-xs">{item.badge}</span>
+                                )}
+                                {isActive && (
+                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
                                 )}
                               </Link>
                             </SidebarMenuButton>
@@ -560,55 +491,55 @@ const LayoutContent = ({ children, currentPageName }) => {
               ))}
             </SidebarContent>
 
-            <SidebarFooter className="border-t p-4 flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
+            <SidebarFooter className="border-t border-white/10 p-4 flex-shrink-0 backdrop-blur-sm">
               <div className="mb-3 px-2 flex items-center gap-2">
                 <Select value={language} onValueChange={changeLanguage}>
-                  <SelectTrigger className="h-9 bg-slate-100 border-slate-300 text-slate-900 flex-1">
+                  <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white flex-1 backdrop-blur-sm hover:bg-white/20">
                     <Languages className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
-                    <SelectItem value="en" className="text-slate-900 hover:bg-slate-100">🇺🇸 English</SelectItem>
-                    <SelectItem value="es" className="text-slate-900 hover:bg-slate-100">🇪🇸 Español</SelectItem>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="en" className="text-white hover:bg-slate-700">🇺🇸 English</SelectItem>
+                    <SelectItem value="es" className="text-white hover:bg-slate-700">🇪🇸 Español</SelectItem>
                   </SelectContent>
                 </Select>
                 <ThemeToggle />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   {profileImage ? (
                     <img
                       src={profileImage}
                       alt={user.full_name}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-200"
+                      className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50 shadow-lg"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20">
-                      <span className="text-white font-semibold text-sm">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-blue-400/30">
+                      <span className="text-white font-bold text-sm">
                         {user?.full_name?.[0]?.toUpperCase() || 'U'}
                       </span>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-slate-900 text-sm truncate">
+                    <p className="font-semibold text-white text-sm truncate">
                       {user?.full_name || 'User'}
                     </p>
-                    <p className="text-xs text-slate-500 truncate">
+                    <p className="text-xs text-blue-300 truncate">
                       {user?.role === 'admin' ? t('admin') : t('user')}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center">
-                  <Link to={createPageUrl("Configuracion")} className="p-2 hover:bg-slate-100 rounded-lg transition-colors" title={t('settings')}>
-                    <Settings className="w-4 h-4 text-slate-600 hover:text-[#3B9FF3]" />
+                <div className="flex items-center gap-1">
+                  <Link to={createPageUrl("Configuracion")} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={t('settings')}>
+                    <Settings className="w-4 h-4 text-blue-300 hover:text-white" />
                   </Link>
                   <button
                     onClick={() => base44.auth.logout()}
-                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                     title={t('logout')}
                   >
-                    <LogOut className="w-4 h-4 text-slate-600 hover:text-[#3B9FF3]" />
+                    <LogOut className="w-4 h-4 text-blue-300 hover:text-white" />
                   </button>
                 </div>
               </div>
@@ -635,7 +566,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-white" data-scrollable="true">
+            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 via-white to-blue-50" data-scrollable="true">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentPageName}
