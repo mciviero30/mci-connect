@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -273,7 +274,7 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  const totalWorkedHours = allTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
+  const totalWorkedHours = allTimeEntries.reduce((sum, e => sum + (e.hours_worked || 0), 0);
 
   const todaysBirthdays = allEmployees.filter(emp => {
     if (!emp.dob) return false;
@@ -491,17 +492,17 @@ export default function Dashboard() {
 
   if (userLoading || prefsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#3B9FF3] mx-auto mb-4" />
-          <p className="text-slate-700 font-medium">Loading dashboard...</p>
+          <p className="text-white font-medium">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -514,10 +515,10 @@ export default function Dashboard() {
                 <img
                   src={profileImage}
                   alt={user?.full_name}
-                  className="w-20 h-20 rounded-full object-cover ring-4 ring-blue-200 hover:ring-blue-400 transition-all"
+                  className="w-20 h-20 rounded-full object-cover ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#3B9FF3] to-blue-500 flex items-center justify-center ring-4 ring-blue-200 hover:ring-blue-400 transition-all shadow-lg">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#3B9FF3] to-blue-500 flex items-center justify-center ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl">
                   <span className="text-white font-bold text-3xl">
                     {user?.full_name?.[0]?.toUpperCase() || 'U'}
                   </span>
@@ -529,11 +530,11 @@ export default function Dashboard() {
             </button>
 
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-[#3B9FF3] to-blue-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
                 {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
               </h1>
               <div className="flex items-center gap-2">
-                <p className="text-slate-600 text-lg">
+                <p className="text-slate-300 text-lg">
                   {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
                 </p>
                 <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md">
@@ -549,14 +550,14 @@ export default function Dashboard() {
                 <Button
                   onClick={handleCancelEdit}
                   variant="outline"
-                  className="border-slate-300"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
                 >
                   <XIcon className="w-4 h-4 mr-2" />
                   Cancel
                 </Button>
                 <Button
                   onClick={handleSaveLayout}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
                   disabled={savePreferencesMutation.isPending}
                 >
                   <Save className="w-4 h-4 mr-2" />
@@ -568,14 +569,14 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                  className="border-blue-500/50 text-blue-300 hover:bg-blue-500/10 hover:text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Widget
                 </Button>
                 <Button
                   onClick={() => setIsEditMode(true)}
-                  className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white"
+                  className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white shadow-lg shadow-blue-500/30"
                 >
                   <SettingsIcon className="w-4 h-4 mr-2" />
                   Customize
@@ -634,7 +635,7 @@ export default function Dashboard() {
           <div className="text-center mt-8">
             <Button
               onClick={() => setShowTimeOffDialog(true)}
-              className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-lg"
+              className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30"
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               {t('requestTimeOff')}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -63,13 +64,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
 import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
-// TEMPORALMENTE DESACTIVADO - NotificationService y NotificationEngine
-// import NotificationService from "@/components/notifications/NotificationService";
-// import NotificationEngine from "@/components/notifications/NotificationEngine";
+import NotificationService from "@/components/notifications/NotificationService";
+import NotificationEngine from "@/components/notifications/NotificationEngine";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -365,10 +365,9 @@ const LayoutContent = ({ children, currentPageName }) => {
   return (
     <SidebarProvider>
       <MobileOptimizations />
-      {/* TEMPORALMENTE DESACTIVADO - Sistema de Notificaciones */}
-      {/* <NotificationService user={user}>
+      <NotificationService user={user}>
         <NotificationEngine user={user} />
-      </NotificationService> */}
+      </NotificationService>
         
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <style>{`
@@ -380,7 +379,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           
           /* Modern dark theme for entire app */
           body {
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%) !important;
           }
           
           [data-sidebar="sidebar"] {
@@ -618,9 +617,7 @@ export default function Layout({ children, currentPageName }) {
     <ToastProvider>
       <ErrorBoundary>
         <LanguageProvider>
-          <OfflineProvider>
-            <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
-          </OfflineProvider>
+          <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
         </LanguageProvider>
       </ErrorBoundary>
     </ToastProvider>
