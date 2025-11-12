@@ -196,6 +196,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
       ]
     },
     {
@@ -272,6 +273,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
       ]
     },
     {
