@@ -12,13 +12,14 @@ import { format, isSameDay, isSameMonth } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { notifyAnnouncement } from "../components/notifications/notificationHelpers"; // New import
 
 export default function NewsFeed() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [isCreating, setCreating] = useState(false);
-  const [newPost, setNewPost] = useState({ title: '', content: '', priority: 'normal' });
+  const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '', priority: 'normal' }); // Added image_url
   const [uploadingImage, setUploadingImage] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
@@ -30,21 +31,22 @@ export default function NewsFeed() {
     initialData: [],
   });
 
-  const { data: employees } = useQuery({
+  // Renamed to allEmployees as per outline, used for notifications and birthdays
+  const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
-    initialData: [],
+    initialData: []
   });
 
   // Get birthday celebrations
   const today = new Date();
-  const birthdaysToday = employees.filter(emp => {
+  const birthdaysToday = allEmployees.filter(emp => { // Use allEmployees
     if (!emp.dob) return false;
     const birthday = new Date(emp.dob);
     return isSameDay(new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate()), today);
   });
 
-  const birthdaysThisMonth = employees.filter(emp => {
+  const birthdaysThisMonth = allEmployees.filter(emp => { // Use allEmployees
     if (!emp.dob) return false;
     const birthday = new Date(emp.dob);
     return isSameMonth(birthday, today) && !birthdaysToday.some(b => b.id === emp.id);
@@ -55,16 +57,31 @@ export default function NewsFeed() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Post.create({
-      ...data,
-      author_email: user.email,
-      author_name: user.full_name,
-    }),
+    mutationFn: async (postData) => { // Made async
+      const newPostResult = await base44.entities.Post.create({ // Renamed to avoid conflict with local state
+        ...postData,
+        author_email: user.email,
+        author_name: user.full_name,
+      });
+      
+      // Send notifications to all employees
+      if (postData.priority === 'important' || postData.priority === 'urgent') {
+        try {
+          await notifyAnnouncement(postData, allEmployees); // Call notifyAnnouncement with postData and allEmployees
+        } catch (error) {
+          console.error('Failed to send notifications:', error);
+          // Optionally, toast an error here for notification failure
+          // toast.error(t('notificationSendError'));
+        }
+      }
+      
+      return newPostResult;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
-      setCreating(false);
-      setNewPost({ title: '', content: '', priority: 'normal' });
-      toast.success(t('success'));
+      setCreating(false); // Keep existing state setter
+      setNewPost({ title: '', content: '', image_url: '', priority: 'normal' }); // Reset with image_url
+      toast.success(t('announcementPosted')); // Specific translation key
     }
   });
 
@@ -122,14 +139,14 @@ export default function NewsFeed() {
             <div className="p-6">
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-4">
                 <Cake className="w-6 h-6 text-pink-500" />
-                🎉 Celebrations
+                🎉 {t('celebrations')}
               </h3>
 
               {birthdaysToday.length > 0 && (
                 <div className="mb-4">
                   <h4 className="font-semibold text-pink-700 mb-2 flex items-center gap-2">
                     <PartyPopper className="w-5 h-5" />
-                    Birthday Today!
+                    {t('birthdayToday')}
                   </h4>
                   <div className="space-y-2">
                     {birthdaysToday.map(emp => (
@@ -143,7 +160,7 @@ export default function NewsFeed() {
                         )}
                         <div>
                           <p className="font-semibold text-slate-900">{emp.full_name}</p>
-                          <p className="text-sm text-pink-600">🎂 Happy Birthday!</p>
+                          <p className="text-sm text-pink-600">🎂 {t('happyBirthday')}</p>
                         </div>
                       </div>
                     ))}
@@ -153,7 +170,7 @@ export default function NewsFeed() {
 
               {birthdaysThisMonth.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-purple-700 mb-2">Upcoming Birthdays This Month</h4>
+                  <h4 className="font-semibold text-purple-700 mb-2">{t('upcomingBirthdays')}</h4>
                   <div className="grid gap-2">
                     {birthdaysThisMonth.map(emp => {
                       const birthday = new Date(emp.dob);
@@ -234,7 +251,7 @@ export default function NewsFeed() {
                 <div className="flex gap-3 justify-end">
                   <Button variant="outline" onClick={() => {
                     setCreating(false);
-                    setNewPost({ title: '', content: '', priority: 'normal' });
+                    setNewPost({ title: '', content: '', image_url: '', priority: 'normal' }); // Reset with image_url
                   }} className="bg-white border-slate-300 text-slate-700">
                     {t('cancel')}
                   </Button>
@@ -243,7 +260,7 @@ export default function NewsFeed() {
                     disabled={!newPost.title || !newPost.content || createMutation.isPending}
                     className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
                   >
-                    {t('save')}
+                    {createMutation.isPending ? t('saving') : t('save')}
                   </Button>
                 </div>
               </div>

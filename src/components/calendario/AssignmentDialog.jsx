@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Card } from '@/components/ui/card';
+import { notifyJobAssignment, notifyScheduleChange } from '../notifications/notificationHelpers';
 
 export default function AssignmentDialog({ open, onOpenChange, assignment, employees, jobs, onSubmit, onDelete, isProcessing, selectedDate, selectedEventType }) {
   const [selectedEmployees, setSelectedEmployees] = useState([]);
@@ -102,6 +103,16 @@ export default function AssignmentDialog({ open, onOpenChange, assignment, emplo
       };
       
       await onSubmit({ id: assignment.id, data: assignmentData });
+
+      // Send notifications for an updated event
+      try {
+        if (employee) {
+          await notifyScheduleChange(assignmentData, employee, 'updated');
+        }
+      } catch (error) {
+        console.error('Failed to send notification for updated assignment:', error);
+      }
+
       return;
     }
 
@@ -149,10 +160,25 @@ export default function AssignmentDialog({ open, onOpenChange, assignment, emplo
       currentDate = addDays(currentDate, 1);
     }
 
-    // Create all assignments/events
+    // Create all assignments/events and send notifications
     try {
       for (const assignmentData of assignmentsToCreate) {
         await onSubmit(assignmentData);
+        
+        // Send notifications for new assignments
+        try {
+          const employee = employees.find(emp => emp.email === assignmentData.employee_email);
+          const job = jobs.find(j => j.id === assignmentData.job_id);
+          
+          if (employee && assignmentData.event_type === 'job_milestone') {
+            await notifyJobAssignment(assignmentData, job, employee);
+          }
+          // Note: notifyScheduleChange is typically for *changes* to existing schedules,
+          // not initial creation, unless business logic dictates otherwise.
+          // The prompt only explicitly asks for notifyJobAssignment for new job_milestones.
+        } catch (error) {
+          console.error('Failed to send notification for new assignment:', error);
+        }
       }
       
       // Close dialog after all created

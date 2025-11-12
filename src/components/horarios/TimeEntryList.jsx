@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -10,8 +11,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { format } from 'date-fns';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { getDisplayName } from '@/components/utils/nameHelpers';
+import { notifyTimesheetStatus } from '../notifications/notificationHelpers';
 
-export default function TimeEntryList({ timeEntries, isAdmin, loading }) {
+export default function TimeEntryList({ timeEntries, onApprove, onReject, isAdmin = false, loading }) {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
@@ -23,31 +25,32 @@ export default function TimeEntryList({ timeEntries, isAdmin, loading }) {
     initialData: [],
   });
 
-  const approveMutation = useMutation({
-    mutationFn: (id) => base44.entities.TimeEntry.update(id, { status: 'approved' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
-    },
-  });
+  // approveMutation and rejectMutation hooks are removed as their logic is handled by onApprove/onReject props
+  // and the notification is added within handleApprove/handleReject
 
-  const rejectMutation = useMutation({
-    mutationFn: (id) => base44.entities.TimeEntry.update(id, { status: 'rejected' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
-    },
-  });
-
-  const handleApprove = (id) => {
+  const handleApprove = async (entry) => {
     if (window.confirm(language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?')) {
-      approveMutation.mutate(id);
+      await onApprove(entry);
+      
+      // Send notification to employee
+      try {
+        await notifyTimesheetStatus(entry, 'approved', null);
+      } catch (error) {
+        console.error('Failed to send notification:', error);
+      }
     }
   };
 
-  const handleReject = (id) => {
+  const handleReject = async (entry) => {
     if (window.confirm(language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?')) {
-      rejectMutation.mutate(id);
+      await onReject(entry);
+      
+      // Send notification to employee
+      try {
+        await notifyTimesheetStatus(entry, 'rejected', null);
+      } catch (error) {
+        console.error('Failed to send notification:', error);
+      }
     }
   };
 
@@ -71,6 +74,12 @@ export default function TimeEntryList({ timeEntries, isAdmin, loading }) {
     try {
       for (const entry of pendingEntries) {
         await base44.entities.TimeEntry.update(entry.id, { status: 'approved' });
+        // Also send notification for each approved entry
+        try {
+          await notifyTimesheetStatus(entry, 'approved', null);
+        } catch (error) {
+          console.error(`Failed to send notification for entry ${entry.id}:`, error);
+        }
       }
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
@@ -420,8 +429,8 @@ export default function TimeEntryList({ timeEntries, isAdmin, loading }) {
                               <>
                                 <Button
                                   size="sm"
-                                  onClick={() => handleApprove(entry.id)}
-                                  disabled={approveMutation.isPending}
+                                  onClick={() => handleApprove(entry)} // Pass full entry
+                                  // Removed disabled={approveMutation.isPending}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                   <Check className="w-4 h-4 mr-1" />
@@ -430,8 +439,8 @@ export default function TimeEntryList({ timeEntries, isAdmin, loading }) {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleReject(entry.id)}
-                                  disabled={rejectMutation.isPending}
+                                  onClick={() => handleReject(entry)} // Pass full entry
+                                  // Removed disabled={rejectMutation.isPending}
                                   className="border-red-300 text-red-600 hover:bg-red-50"
                                 >
                                   <X className="w-4 h-4 mr-1" />

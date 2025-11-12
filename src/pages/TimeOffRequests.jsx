@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,13 +12,17 @@ import { format, differenceInDays, eachDayOfInterval, isSameDay } from "date-fns
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { notifyTimeOffStatus } from "../components/notifications/notificationHelpers";
+import { toast } from "sonner"; // Assuming sonner for toast notifications
+import { Toaster } from "@/components/ui/sonner"; // Assuming Toaster component for sonner
 
 export default function TimeOffRequests() {
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false); // Renamed from showNotesDialog
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [notes, setNotes] = useState('');
+  const [rejectionReason, setRejectionReason] = useState(''); // Renamed from notes
+  const [language, setLanguage] = useState('en'); // Added for toast messages
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const isAdmin = user?.role === 'admin';
@@ -34,25 +39,64 @@ export default function TimeOffRequests() {
     initialData: []
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status, notes }) => 
-      base44.entities.TimeOffRequest.update(id, { status, notes }),
+  const approveMutation = useMutation({
+    mutationFn: async (requestId) => {
+      const request = requests.find(r => r.id === requestId);
+      const updatedRequest = await base44.entities.TimeOffRequest.update(requestId, { 
+        status: 'approved',
+        notes: 'Approved by admin'
+      });
+      
+      // Send notification
+      try {
+        await notifyTimeOffStatus(request, 'approved', user);
+      } catch (error) {
+        console.error('Failed to send notification:', error);
+      }
+      
+      return updatedRequest;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['timeOffRequests'] });
-      setShowNotesDialog(false);
-      setShowDetailsDialog(false);
+      setShowDetailsDialog(false); // Close details dialog if open after approval
+      setSelectedRequest(null); // Clear selected request
+      toast.success(language === 'es' ? '✅ Solicitud aprobada' : '✅ Request approved');
+    }
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async ({ requestId, reason }) => {
+      const request = requests.find(r => r.id === requestId);
+      const updatedRequest = await base44.entities.TimeOffRequest.update(requestId, { 
+        status: 'rejected',
+        notes: reason
+      });
+      
+      // Send notification
+      try {
+        await notifyTimeOffStatus(request, 'rejected', user);
+      } catch (error) {
+        console.error('Failed to send notification:', error);
+      }
+      
+      return updatedRequest;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeOffRequests'] });
+      setRejectDialogOpen(false);
+      setShowDetailsDialog(false); // Close details dialog if open after rejection
       setSelectedRequest(null);
-      setNotes('');
-      alert('✅ Request updated!');
+      setRejectionReason("");
+      toast.success(language === 'es' ? '❌ Solicitud rechazada' : '❌ Request rejected');
     }
   });
 
   const handleAction = (request, status) => {
     setSelectedRequest(request);
     if (status === 'rejected') {
-      setShowNotesDialog(true);
+      setRejectDialogOpen(true);
     } else {
-      updateStatusMutation.mutate({ id: request.id, status, notes: '' });
+      approveMutation.mutate(request.id);
     }
   };
 
@@ -447,7 +491,7 @@ export default function TimeOffRequests() {
                   <Button 
                     onClick={() => {
                       setShowDetailsDialog(false);
-                      handleAction(selectedRequest, 'approved');
+                      approveMutation.mutate(selectedRequest.id);
                     }}
                     className="bg-green-500 hover:bg-green-600 text-white"
                   >
@@ -457,7 +501,7 @@ export default function TimeOffRequests() {
                   <Button 
                     onClick={() => {
                       setShowDetailsDialog(false);
-                      handleAction(selectedRequest, 'rejected');
+                      setRejectDialogOpen(true); // Open reject dialog
                     }}
                     variant="outline"
                     className="border-red-300 text-red-600 hover:bg-red-50"
@@ -472,7 +516,7 @@ export default function TimeOffRequests() {
         </Dialog>
 
         {/* Reject Dialog */}
-        <Dialog open={showNotesDialog} onOpenChange={setShowNotesDialog}>
+        <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
           <DialogContent className="bg-white border-slate-200 text-slate-900">
             <DialogHeader>
               <DialogTitle>Reject Request - {selectedRequest?.employee_name}</DialogTitle>
@@ -481,8 +525,8 @@ export default function TimeOffRequests() {
               <div>
                 <Label>Reason for Rejection</Label>
                 <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Explain why this request is being rejected..."
                   className="bg-white border-slate-300 text-slate-900 mt-2"
                   rows={4}
@@ -490,19 +534,18 @@ export default function TimeOffRequests() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowNotesDialog(false)} className="bg-white border-slate-300 text-slate-700">
+              <Button variant="outline" onClick={() => setRejectDialogOpen(false)} className="bg-white border-slate-300 text-slate-700">
                 Cancel
               </Button>
               <Button 
                 onClick={() => {
-                  if (!notes) {
-                    alert('Please provide a reason for rejection');
+                  if (!rejectionReason) {
+                    toast.error(language === 'es' ? 'Por favor, proporciona una razón para el rechazo' : 'Please provide a reason for rejection');
                     return;
                   }
-                  updateStatusMutation.mutate({ 
-                    id: selectedRequest.id, 
-                    status: 'rejected', 
-                    notes 
+                  rejectMutation.mutate({ 
+                    requestId: selectedRequest.id, 
+                    reason: rejectionReason 
                   });
                 }}
                 className="bg-red-500 hover:bg-red-600 text-white"
@@ -513,6 +556,7 @@ export default function TimeOffRequests() {
           </DialogContent>
         </Dialog>
       </div>
+      <Toaster /> {/* Toaster component for displaying toast notifications */}
     </div>
   );
 }

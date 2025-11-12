@@ -10,15 +10,38 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { notifyExpenseStatus } from '../notifications/notificationHelpers'; // NEW IMPORT
 
-export default function ExpenseList({ expenses, isAdmin, loading, showActions = true, onApprove, onReject }) {
+export default function ExpenseList({ expenses, onApprove, onReject, showEmployeeName = false, isAdmin = false, loading, showActions = true }) { // MODIFIED PROPS
   const { t } = useLanguage();
   const [rejectDialog, setRejectDialog] = useState({ open: false, expense: null });
   const [rejectNotes, setRejectNotes] = useState('');
 
-  const handleReject = () => {
+  // NEW: Wrapper function for onApprove that also sends notifications
+  const handleApprove = async (expense) => {
+    await onApprove(expense);
+    try {
+      await notifyExpenseStatus(expense, 'approved', null); // 'null' for rejection reason as it's an approval
+    } catch (error) {
+      console.error('Failed to send notification for approved expense:', error);
+    }
+  };
+
+  // NEW: Wrapper function for onReject that also sends notifications
+  const handleReject = async (expense, reason) => {
+    await onReject(expense, reason);
+    try {
+      await notifyExpenseStatus(expense, 'rejected', reason);
+    } catch (error) {
+      console.error('Failed to send notification for rejected expense:', error);
+    }
+  };
+
+  // This function is triggered by the reject dialog's confirm button
+  // It now calls the new 'handleReject' wrapper function.
+  const _handleRejectDialogConfirm = () => { // Renamed from original 'handleReject' to avoid conflict
     if (rejectDialog.expense && onReject) {
-      onReject(rejectDialog.expense, rejectNotes);
+      handleReject(rejectDialog.expense, rejectNotes); // Calls the new wrapper handleReject
       setRejectDialog({ open: false, expense: null });
       setRejectNotes('');
     }
@@ -99,7 +122,7 @@ export default function ExpenseList({ expenses, isAdmin, loading, showActions = 
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50 border-slate-200">
-                {isAdmin && <TableHead className="text-slate-700 font-semibold">{t('employee')}</TableHead>}
+                {showEmployeeName && <TableHead className="text-slate-700 font-semibold">{t('employee')}</TableHead>} {/* MODIFIED: uses showEmployeeName */}
                 <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead>
@@ -114,11 +137,11 @@ export default function ExpenseList({ expenses, isAdmin, loading, showActions = 
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 10 : 9} className="text-center h-24 text-slate-500">{t('loading')}...</TableCell>
+                  <TableCell colSpan={showEmployeeName ? 10 : 9} className="text-center h-24 text-slate-500">{t('loading')}...</TableCell> {/* MODIFIED: uses showEmployeeName */}
                 </TableRow>
               ) : expenses?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 10 : 9} className="text-center h-24 text-slate-500">
+                  <TableCell colSpan={showEmployeeName ? 10 : 9} className="text-center h-24 text-slate-500"> {/* MODIFIED: uses showEmployeeName */}
                     {t('no_expenses_found')}
                   </TableCell>
                 </TableRow>
@@ -132,7 +155,7 @@ export default function ExpenseList({ expenses, isAdmin, loading, showActions = 
                       key={expense.id} 
                       className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
                     >
-                      {isAdmin && (
+                      {showEmployeeName && ( // MODIFIED: uses showEmployeeName
                         <TableCell className="text-slate-900">
                           {expense.employee_name}
                           {needsReview && (
@@ -198,7 +221,7 @@ export default function ExpenseList({ expenses, isAdmin, loading, showActions = 
                             <div className="flex justify-end gap-2">
                               <Button
                                 size="sm"
-                                onClick={() => onApprove(expense)}
+                                onClick={() => handleApprove(expense)} // MODIFIED: calls new handleApprove
                                 className="bg-green-600 hover:bg-green-700 text-white"
                               >
                                 <CheckCircle className="w-4 h-4 mr-1" />
@@ -248,7 +271,7 @@ export default function ExpenseList({ expenses, isAdmin, loading, showActions = 
               {t('cancel')}
             </Button>
             <Button 
-              onClick={handleReject}
+              onClick={_handleRejectDialogConfirm} // MODIFIED: calls the dialog confirm handler
               className="bg-red-600 hover:bg-red-700 text-white"
               disabled={!rejectNotes}
             >
