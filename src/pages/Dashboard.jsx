@@ -273,7 +273,8 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  const totalWorkedHours = allTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
+  // FIXED: Correct arrow function syntax with parentheses around parameter
+  const totalWorkedHours = allTimeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
 
   const todaysBirthdays = allEmployees.filter(emp => {
     if (!emp.dob) return false;
