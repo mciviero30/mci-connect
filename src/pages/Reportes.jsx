@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +14,8 @@ import DateRangeFilter from "../components/reportes/DateRangeFilter";
 import EmployeeProductivityReport from "../components/reportes/EmployeeProductivityReport";
 import ClientProfitabilityReport from "../components/reportes/ClientProfitabilityReport";
 import ResourceAllocationReport from "../components/reportes/ResourceAllocationReport";
+import WorkloadHeatmap from "../components/reportes/WorkloadHeatmap";
+import TeamWorkloadChart from "../components/reportes/TeamWorkloadChart";
 
 const COLORS = ['#3B9FF3', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'];
 
@@ -193,7 +196,7 @@ export default function Reportes() {
     
     const jobTimeEntries = filteredTimeEntries.filter(e => e.job_id === job.id);
     const hours = jobTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    const laborCost = hours * 25;
+    const laborCost = hours * 25; // Assuming a flat labor cost
     
     const jobExpenses = filteredExpenses.filter(e => e.job_id === job.id);
     const expenseCost = jobExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -343,6 +346,13 @@ export default function Reportes() {
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Carga de Trabajo' : 'Workload'}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="clients" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#3B9FF3] data-[state=active]:to-blue-600 data-[state=active]:text-white"
+            >
+              <UsersIcon className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Clientes' : 'Clients'}
             </TabsTrigger>
           </TabsList>
 
@@ -721,8 +731,17 @@ export default function Reportes() {
             )}
           </TabsContent>
 
-          {/* WORKLOAD TAB */}
+          {/* WORKLOAD TAB - ENHANCED */}
           <TabsContent value="workload" className="space-y-6">
+            {/* Workload Heatmap */}
+            <WorkloadHeatmap
+              assignments={assignments}
+              timeEntries={filteredTimeEntries}
+              dateRange={dateRange}
+              language={language}
+            />
+
+            {/* Hours by Day */}
             <Card className="bg-white shadow-lg border-slate-200">
               <CardHeader className="border-b border-slate-200">
                 <CardTitle className="text-slate-900 flex items-center gap-2">
@@ -750,6 +769,15 @@ export default function Reportes() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+
+            {/* Team Workload */}
+            <TeamWorkloadChart
+              teams={teams}
+              employees={employees}
+              timeEntries={filteredTimeEntries}
+              assignments={assignments}
+              language={language}
+            />
 
             <ResourceAllocationReport
               teams={teams}
