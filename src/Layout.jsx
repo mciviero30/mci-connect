@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -37,9 +36,6 @@ import {
   Sparkles,
   Wallet,
   Globe,
-  ChevronDown,
-  ExternalLink,
-  Upload // Added Upload icon
 } from "lucide-react";
 import {
   Sidebar,
@@ -68,15 +64,8 @@ import MobileOptimizations from "@/components/shared/MobileOptimizations";
 import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
-import NotificationEngine from "@/components/notifications/NotificationEngine"; // NEW IMPORT
+import NotificationEngine from "@/components/notifications/NotificationEngine";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -99,8 +88,6 @@ const ThemeToggle = () => {
   );
 };
 
-// REMOVED: AppSelector Component - No longer needed
-
 const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
@@ -114,7 +101,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     cacheTime: Infinity,
   });
 
-  // CRITICAL: Auto-activate user on first login - FIXED: Added proper dependencies and guard
   useEffect(() => {
     if (!user) return;
     if (user.employment_status !== 'pending_registration') return;
@@ -123,12 +109,10 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         console.log('🔄 Auto-activating user on first login:', user.email);
         
-        // Update User entity to 'active'
         await base44.auth.updateMe({ 
           employment_status: 'active' 
         });
         
-        // Update PendingEmployee entity if exists
         try {
           const pendingEmployees = await base44.entities.PendingEmployee.filter({ 
             email: user.email 
@@ -147,7 +131,6 @@ const LayoutContent = ({ children, currentPageName }) => {
         
         console.log('✅ User auto-activated successfully');
         
-        // Refresh user data after a short delay
         setTimeout(() => {
           window.location.reload();
         }, 500);
@@ -159,31 +142,29 @@ const LayoutContent = ({ children, currentPageName }) => {
     autoActivateUser();
   }, [user?.id, user?.employment_status]);
 
-  // Only load pending expenses count when needed
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
     queryFn: async () => {
       if (!user) return 0;
       if (user.role === 'admin') {
-        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100); // Limit
+        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
         return expenses.length;
       } else {
         const expenses = await base44.entities.Expense.filter({
           employee_email: user.email,
           status: 'pending'
-        }, '', 20); // Limit
+        }, '', 20);
         return expenses.length;
       }
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 60000, // Cache for 1 minute
-    refetchInterval: false, // Don't auto-refetch
-    refetchOnMount: false, // Don't refetch on mount
-    refetchOnWindowFocus: false, // Don't refetch on focus
+    staleTime: 60000,
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  // Restore scroll position when the component mounts or location changes
   useEffect(() => {
     const sidebar = sidebarContentRef.current;
     if (sidebar) {
@@ -192,9 +173,8 @@ const LayoutContent = ({ children, currentPageName }) => {
         sidebar.scrollTop = parseInt(savedPosition, 10);
       }
     }
-  }, [location.pathname]); // Dependency on location.pathname ensures it attempts to restore on navigation
+  }, [location.pathname]);
 
-  // Save scroll position when the sidebar content is scrolled
   useEffect(() => {
     const sidebar = sidebarContentRef.current;
     if (!sidebar) return;
@@ -204,68 +184,65 @@ const LayoutContent = ({ children, currentPageName }) => {
     };
 
     sidebar.addEventListener('scroll', handleScroll);
-    return () => sidebar.removeEventListener('scroll', handleScroll); // Clean up event listener
-  }, []); // Empty dependency array ensures this effect runs once on mount and cleans up on unmount
-
+    return () => sidebar.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const adminNavigation = [
     {
-      section: 'MAIN',
+      section: 'GENERAL',
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
       ]
     },
     {
-      section: 'OPERATIONS',
+      section: 'JOBS & PROJECTS',
       items: [
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
-        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package, indent: true },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3, indent: true },
-        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package, indent: true },
       ]
     },
     {
-      section: 'TIME & ATTENDANCE',
+      section: 'FINANCE',
       items: [
-        { title: 'Time Tracking', url: createPageUrl("Horarios"), icon: Clock },
-        { title: 'Time Off Requests', url: createPageUrl("TimeOffRequests"), icon: CalendarClock, indent: true },
-        { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car, indent: true },
+        { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
+        { title: 'Customers', url: createPageUrl("Clientes"), icon: Users, indent: true },
+        { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText, indent: true },
+        { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck, indent: true },
+        { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt, indent: true },
+        { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package, indent: true },
       ]
     },
     {
-      section: 'PEOPLE & HR',
+      section: 'PEOPLE',
       items: [
         { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
         { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin, indent: true },
-        { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote, indent: true },
         { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award, indent: true },
         { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award, indent: true },
       ]
     },
     {
-      section: 'FINANCE & ACCOUNTING',
+      section: 'TIME & PAYROLL',
       items: [
-        { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
-        { title: 'Customers', url: createPageUrl("Clientes"), icon: Users, indent: true },
-        { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText, indent: true },
-        // { title: 'Quote Importer', url: createPageUrl("QuoteImporter"), icon: Upload, indent: true, badge: '📦' }, // REMOVED
-        { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck, indent: true },
-        { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt, indent: true },
-        { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet, indent: true },
-        { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package, indent: true },
+        { title: 'Time Tracking', url: createPageUrl("Horarios"), icon: Clock },
+        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock, indent: true },
+        { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car, indent: true },
+        { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote },
       ]
     },
     {
-      section: 'ANALYTICS & REPORTING',
+      section: 'REPORTS & AI',
       items: [
         { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
-      ]
-    },
-    {
-      section: 'COMMUNICATION',
-      items: [
-        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
-        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet, indent: true },
+        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, indent: true, badge: '✨' },
+        { title: 'AI Invoice Gen', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles, badge: '✨' },
+        { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles, badge: '✨' },
+        { title: 'AI Expenses', url: createPageUrl('AIExpensesAudit'), icon: Sparkles, badge: '✨' },
       ]
     },
     {
@@ -277,43 +254,34 @@ const LayoutContent = ({ children, currentPageName }) => {
       ]
     },
     {
-      section: '🤖 TOOLS & AI',
+      section: 'ADMIN',
       items: [
-        { title: 'AI Invoice Generator', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles, badge: '✨' },
-        { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles, badge: '✨' },
-        { title: 'AI Expenses Audit', url: createPageUrl('AIExpensesAudit'), icon: Sparkles, badge: '✨' },
-        { title: 'Budget Forecasting', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, badge: '✨' },
         { title: 'Clean Data', url: createPageUrl("AdminCleanup"), icon: Trash2 },
-        { title: 'Testing Checklist', url: createPageUrl("TestingChecklist"), icon: ClipboardList },
+        { title: 'Testing', url: createPageUrl("TestingChecklist"), icon: ClipboardList },
       ]
     }
   ];
 
   const employeeNavigation = [
     {
-      section: 'MAIN',
+      section: 'GENERAL',
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
         { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
       ]
     },
     {
-      section: 'TIME & EXPENSES',
+      section: 'MY TIME & PAY',
       items: [
         { title: 'My Hours', url: createPageUrl("MisHoras"), icon: Clock },
-        { title: 'Driving Hours', url: createPageUrl("HorasManejo"), icon: Clock },
+        { title: 'Driving', url: createPageUrl("HorasManejo"), icon: Clock },
         { title: 'Mileage', url: createPageUrl("Manejo"), icon: Car },
         { title: 'My Expenses', url: createPageUrl("MisGastos"), icon: Receipt },
         { title: 'Per Diem', url: createPageUrl("PerDiem"), icon: Banknote },
         { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
-      ]
-    },
-    {
-      section: 'COMMUNICATION',
-      items: [
-        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
-        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
       ]
     },
     {
@@ -354,7 +322,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     );
   }
 
-  // BLOCK DELETED EMPLOYEES FROM ACCESSING THE APP
   if (user && user.employment_status === 'deleted') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
@@ -378,16 +345,13 @@ const LayoutContent = ({ children, currentPageName }) => {
   const navigation = user?.role === 'admin' ? adminNavigation : employeeNavigation;
   const isAdmin = user?.role === 'admin';
 
-  // Get the profile image based on user preference
   const getProfileImage = () => {
     if (!user) return null;
     
-    // If user prefers avatar and has one, use it
     if (user.preferred_profile_image === 'avatar' && user.avatar_image_url) {
       return user.avatar_image_url;
     }
     
-    // Otherwise use photo if available
     if (user.profile_photo_url) {
       return user.profile_photo_url;
     }
@@ -401,7 +365,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     <SidebarProvider>
       <MobileOptimizations />
       <NotificationService user={user}>
-        {/* NEW: Notification Engine */}
         <NotificationEngine user={user} />
         
         <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-white">
@@ -436,7 +399,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               --sidebar-border: 226 232 240;
             }
             
-            /* Prompt #75: High contrast text colors (removed pink/low contrast) */
             .bg-background { background-color: rgb(var(--background)); }
             .text-foreground { color: rgb(var(--foreground)); }
             .bg-card { background-color: rgb(var(--card)); }
@@ -447,18 +409,16 @@ const LayoutContent = ({ children, currentPageName }) => {
             .text-muted-foreground { color: rgb(var(--muted-foreground)); }
             .bg-muted { background-color: rgb(var(--muted)); }
             
-            /* Ensure all text has sufficient contrast */
             .text-slate-600 { color: rgb(71, 85, 105) !important; }
             .text-slate-700 { color: rgb(51, 65, 85) !important; }
             .text-slate-900 { color: rgb(15, 23, 42) !important; }
             
-            /* Remove all pink/rose colors globally (Prompt #75) */
             .text-pink-600, .text-pink-700, .text-pink-800,
             .text-rose-600, .text-rose-700, .text-rose-800 {
-              color: rgb(51, 65, 85) !important; /* slate-700 */
+              color: rgb(51, 65, 85) !important;
             }
             .bg-pink-50, .bg-pink-100, .bg-rose-50, .bg-rose-100 {
-              background-color: rgb(241, 245, 249) !important; /* slate-100 */
+              background-color: rgb(241, 245, 249) !important;
             }
             
             [data-sidebar] {
@@ -480,7 +440,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               top: 0 !important;
             }
 
-            /* Sidebar content scrollable independently - OPTIMIZED FOR iOS */
             .sidebar-scroll-content {
               overflow-y: auto !important;
               overflow-x: hidden !important;
@@ -490,7 +449,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               overscroll-behavior: contain !important;
             }
 
-            /* Hide scrollbar but keep functionality */
             .sidebar-scroll-content::-webkit-scrollbar {
               width: 6px;
             }
@@ -504,7 +462,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               border-radius: 3px;
             }
             
-.sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
+            .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
               background: rgba(59, 159, 243, 0.5);
             }
             
@@ -514,7 +472,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               border-color: rgba(226, 232, 240, 0.8) !important;
             }
 
-            /* Mobile and iPad optimizations */
             @media (max-width: 1024px) {
               * {
                 -webkit-tap-highlight-color: transparent;
@@ -526,7 +483,6 @@ const LayoutContent = ({ children, currentPageName }) => {
                 -moz-osx-font-smoothing: grayscale;
               }
               
-              /* Ensure scrollable areas work on iOS */
               .overflow-y-auto,
               [class*="overflow-"] {
                 -webkit-overflow-scrolling: touch !important;
@@ -536,7 +492,6 @@ const LayoutContent = ({ children, currentPageName }) => {
           `}</style>
 
           <Sidebar className="border-none bg-white" style={{background: 'rgb(255, 255, 255)', borderRight: '1px solid rgb(226, 232, 240)'}}>
-            {/* UPDATED: Simple Header without AppSelector */}
             <SidebarHeader className="p-4 border-b flex-shrink-0 bg-white" style={{borderColor: 'rgb(226, 232, 240)'}}>
               <div className="flex items-center gap-3">
                 <img
@@ -560,7 +515,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             >
               {navigation.map((section, idx) => (
                 <SidebarGroup key={idx}>
-                  <SidebarGroupLabel className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 py-2 mb-1">
+                  <SidebarGroupLabel className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-3 py-2 mb-1">
                     {section.section}
                   </SidebarGroupLabel>
                   <SidebarGroupContent>
@@ -573,8 +528,8 @@ const LayoutContent = ({ children, currentPageName }) => {
                           <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                               asChild
-                              className={`transition-all duration-200 rounded-2xl mb-1 border-none ${
-                                item.indent ? 'ml-8' : ''
+                              className={`transition-all duration-200 rounded-xl mb-0.5 border-none ${
+                                item.indent ? 'ml-6' : ''
                               } ${
                                 isActive
                                   ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/20'
@@ -583,18 +538,16 @@ const LayoutContent = ({ children, currentPageName }) => {
                                   : 'hover:bg-slate-100 text-slate-700 hover:text-slate-900'
                               }`}
                             >
-                              <Link to={item.url} className="flex items-center gap-3 px-4 py-3 relative">
-                                <item.icon className="w-5 h-5" />
-                                <span className={`font-medium flex-1 ${item.indent ? 'text-sm' : ''}`}>{item.title}</span>
+                              <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative">
+                                <item.icon className="w-4 h-4 flex-shrink-0" />
+                                <span className={`font-medium flex-1 ${item.indent ? 'text-xs' : 'text-sm'}`}>{item.title}</span>
                                 {showBadge && (
-                                  <Badge className="bg-[#3B9FF3] text-white text-xs px-2 shadow-lg shadow-blue-500/20">
+                                  <Badge className="bg-[#3B9FF3] text-white text-xs px-1.5 py-0.5 shadow-lg shadow-blue-500/20">
                                     {pendingExpenses}
                                   </Badge>
                                 )}
                                 {item.badge && (
-                                  <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs px-2 py-1 rounded-full shadow-lg shadow-purple-500/30 font-semibold tracking-wide">
-                                    {item.badge}
-                                  </Badge>
+                                  <span className="text-xs">{item.badge}</span>
                                 )}
                               </Link>
                             </SidebarMenuButton>
@@ -697,7 +650,6 @@ const LayoutContent = ({ children, currentPageName }) => {
               </AnimatePresence>
             </div>
             
-            {/* AI Assistant - Available on all pages */}
             <AIAssistant currentPage={currentPageName} />
           </main>
         </div>
