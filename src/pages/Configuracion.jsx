@@ -20,32 +20,27 @@ import {
   DollarSign,
   HardDrive,
   Loader2,
-  AlertTriangle,
-  Receipt,
-  Clock,
-  Briefcase,
-  Calendar as CalendarIcon,
-  CalendarClock,
-  Key, // New import
-  Eye, // New import
-  EyeOff, // New import
-  Plus, // New import
-  Trash2 // New import
+  AlertTriangle, // New import
+  Receipt,       // New import
+  Clock,         // New import
+  Briefcase,     // New import
+  Calendar as CalendarIcon, // Alias to avoid conflict with Calendar from date-fns
+  CalendarClock  // New import
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import { useToast } from "@/components/ui/toast"; // Updated import
+import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // New imports
 
 export default function Configuracion() {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
-  const toast = useToast();
+  const { toast } = useToast();
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -86,6 +81,7 @@ export default function Configuracion() {
     notifications_email_subject_prefix: 'MCI Connect Alert'
   });
 
+  // NEW: Notification preferences state
   const [notificationPrefs, setNotificationPrefs] = useState({
     enabled: true,
     expense_approved: true,
@@ -103,11 +99,6 @@ export default function Configuracion() {
     urgent_only: false
   });
 
-  // NEW: Secrets state
-  const [secrets, setSecrets] = useState([]);
-  const [newSecret, setNewSecret] = useState({ key: '', value: '', description: '' });
-  const [revealedSecrets, setRevealedSecrets] = useState({});
-
   useEffect(() => {
     if (user) {
       setProfileForm({
@@ -117,13 +108,9 @@ export default function Configuracion() {
         profile_photo_url: user.profile_photo_url || ''
       });
 
+      // Load notification preferences
       if (user.notification_preferences) {
         setNotificationPrefs(prev => ({ ...prev, ...user.notification_preferences }));
-      }
-
-      // Load secrets from user data
-      if (user.app_secrets) {
-        setSecrets(user.app_secrets);
       }
     }
   }, [user]);
@@ -154,10 +141,17 @@ export default function Configuracion() {
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      toast.success(language === 'es' ? 'Perfil actualizado exitosamente.' : 'Profile updated successfully!');
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Perfil actualizado exitosamente.' : 'Profile updated successfully!',
+      });
     },
     onError: (error) => {
-      toast.error(language === 'es' ? `Error al actualizar perfil: ${error.message}` : `Error updating profile: ${error.message}`);
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al actualizar perfil: ${error.message}` : `Error updating profile: ${error.message}`,
+        variant: "destructive",
+      });
     }
   });
 
@@ -171,48 +165,57 @@ export default function Configuracion() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companySettings'] });
-      toast.success(language === 'es' ? 'Configuración guardada exitosamente.' : 'Settings saved successfully!');
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Configuración guardada exitosamente.' : 'Settings saved successfully!',
+      });
     },
     onError: (error) => {
-      toast.error(language === 'es' ? `Error al guardar configuración: ${error.message}` : `Error saving settings: ${error.message}`);
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al guardar configuración: ${error.message}` : `Error saving settings: ${error.message}`,
+        variant: "destructive",
+      });
     }
   });
 
+  // NEW: Notification preferences mutation
   const updateNotificationPrefsMutation = useMutation({
     mutationFn: async (prefs) => {
       return await base44.auth.updateMe({ notification_preferences: prefs });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      toast.success(language === 'es' ? 'Preferencias de notificaciones guardadas.' : 'Notification preferences saved!');
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Preferencias de notificaciones guardadas.' : 'Notification preferences saved!',
+      });
     },
     onError: (error) => {
-      toast.error(language === 'es' ? `Error al guardar preferencias: ${error.message}` : `Error saving preferences: ${error.message}`);
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al guardar preferencias: ${error.message}` : `Error saving preferences: ${error.message}`,
+        variant: "destructive",
+      });
     }
   });
 
-  // NEW: Save secrets mutation
-  const saveSecretsMutation = useMutation({
-    mutationFn: async (secretsData) => {
-      return await base44.auth.updateMe({ app_secrets: secretsData });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      toast.success(language === 'es' ? 'Secrets guardados exitosamente.' : 'Secrets saved successfully!');
-    },
-    onError: (error) => {
-      toast.error(language === 'es' ? `Error al guardar secrets: ${error.message}` : `Error saving secrets: ${error.message}`);
-    }
-  });
-
+  // NEW: Request notification permission
   const requestNotificationPermission = async () => {
     if ('Notification' in window) {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        toast.success(language === 'es' ? 'Notificaciones habilitadas exitosamente.' : 'Notifications enabled successfully!');
+        toast({
+          title: "✅ Success!",
+          description: language === 'es' ? 'Notificaciones habilitadas exitosamente.' : 'Notifications enabled successfully!',
+        });
         setNotificationPrefs(prev => ({ ...prev, enabled: true }));
       } else {
-        toast.error(language === 'es' ? 'Permisos de notificación denegados.' : 'Notification permission denied.');
+        toast({
+          title: "⚠️ Warning",
+          description: language === 'es' ? 'Permisos de notificación denegados.' : 'Notification permission denied.',
+          variant: "destructive",
+        });
         setNotificationPrefs(prev => ({ ...prev, enabled: false }));
       }
     }
@@ -228,9 +231,16 @@ export default function Configuracion() {
       setProfileForm({ ...profileForm, profile_photo_url: file_url });
       await base44.auth.updateMe({ profile_photo_url: file_url });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      toast.success(language === 'es' ? 'Foto de perfil actualizada.' : 'Profile photo updated!');
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Foto de perfil actualizada.' : 'Profile photo updated!',
+      });
     } catch (error) {
-      toast.error(language === 'es' ? `Error al subir foto: ${error.message}` : `Error uploading photo: ${error.message}`);
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al subir foto: ${error.message}` : `Error uploading photo: ${error.message}`,
+        variant: "destructive",
+      });
     }
     setUploading(false);
   };
@@ -244,7 +254,11 @@ export default function Configuracion() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setSettings({ ...settings, company_logo_url: file_url });
     } catch (error) {
-      toast.error(language === 'es' ? `Error al subir logo: ${error.message}` : `Error uploading logo: ${error.message}`);
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al subir logo: ${error.message}` : `Error uploading logo: ${error.message}`,
+        variant: "destructive",
+      });
     }
     setUploading(false);
   };
@@ -257,38 +271,12 @@ export default function Configuracion() {
     updateNotificationPrefsMutation.mutate(notificationPrefs);
   };
 
-  // NEW: Secret handlers
-  const handleAddSecret = () => {
-    if (!newSecret.key.trim() || !newSecret.value.trim()) {
-      toast.error(language === 'es' ? 'La clave y el valor son requeridos' : 'Key and value are required');
-      return;
-    }
-
-    const updatedSecrets = [...secrets, { ...newSecret, id: Date.now() }]; // Use Date.now() for a simple unique ID
-    setSecrets(updatedSecrets);
-    saveSecretsMutation.mutate(updatedSecrets);
-    setNewSecret({ key: '', value: '', description: '' });
-  };
-
-  const handleDeleteSecret = (secretId) => {
-    const updatedSecrets = secrets.filter(s => s.id !== secretId);
-    setSecrets(updatedSecrets);
-    saveSecretsMutation.mutate(updatedSecrets);
-  };
-
-  const toggleRevealSecret = (secretId) => {
-    setRevealedSecrets(prev => ({
-      ...prev,
-      [secretId]: !prev[secretId]
-    }));
-  };
-
   const isAdmin = user?.role === 'admin';
   const browserSupportsNotifications = 'Notification' in window;
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Configuración' : 'Settings'}
@@ -297,37 +285,34 @@ export default function Configuracion() {
         />
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="bg-slate-800/90 border border-slate-700 p-1 rounded-xl shadow-lg">
+          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
             {isAdmin && (
               <>
-                <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
+                <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
                   <Building2 className="w-4 h-4" />
                   {language === 'es' ? 'Empresa' : 'Company'}
                 </TabsTrigger>
-                <TabsTrigger value="defaults" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
+                <TabsTrigger value="defaults" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
                   <DollarSign className="w-4 h-4" />
                   {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
                 </TabsTrigger>
-                <TabsTrigger value="secrets" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
-                  <Key className="w-4 h-4" />
-                  {language === 'es' ? 'Secrets' : 'Secrets'}
-                </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
+                <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
                   <Bell className="w-4 h-4" />
                   {language === 'es' ? 'Notificaciones (Admin)' : 'Notifications (Admin)'}
                 </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
+            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Users className="w-4 h-4" />
               {language === 'es' ? 'Mi Perfil' : 'My Profile'}
             </TabsTrigger>
-            <TabsTrigger value="my-notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
+            {/* NEW: My Notifications Tab Trigger */}
+            <TabsTrigger value="my-notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Bell className="w-4 h-4" />
               {language === 'es' ? 'Mis Notificaciones' : 'My Notifications'}
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white text-slate-300">
+              <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
                 <HardDrive className="w-4 h-4" />
                 {language === 'es' ? 'Sistema' : 'System'}
               </TabsTrigger>
@@ -336,9 +321,9 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="company">
-              <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-                <CardHeader className="border-b border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-white">
+              <Card className="bg-white shadow-xl border-slate-200">
+                <CardHeader className="border-b border-slate-200">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
                     <Building2 className="w-5 h-5 text-[#3B9FF3]" />
                     {language === 'es' ? 'Información de la Empresa' : 'Company Information'}
                   </CardTitle>
@@ -349,7 +334,7 @@ export default function Configuracion() {
                       <img
                         src={settings.company_logo_url}
                         alt="Company Logo"
-                        className="w-24 h-24 rounded-lg object-cover border-2 border-slate-600"
+                        className="w-24 h-24 rounded-lg object-cover border-2 border-slate-300"
                       />
                     ) : (
                       <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-lg flex items-center justify-center">
@@ -369,7 +354,7 @@ export default function Configuracion() {
                         onClick={() => document.getElementById('company-logo-upload').click()}
                         disabled={uploading}
                         variant="outline"
-                        className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                        className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Subir Logo' : 'Upload Logo')}
@@ -379,56 +364,56 @@ export default function Configuracion() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Nombre de la Empresa' : 'Company Name'}</Label>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre de la Empresa' : 'Company Name'}</Label>
                       <Input
                         value={settings.company_name}
                         onChange={(e) => setSettings({...settings, company_name: e.target.value})}
-                        className="bg-slate-900 border-slate-600 text-white"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Dirección Línea 1' : 'Address Line 1'}</Label>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Dirección Línea 1' : 'Address Line 1'}</Label>
                       <Input
                         value={settings.address_line_1}
                         onChange={(e) => setSettings({...settings, address_line_1: e.target.value})}
-                        className="bg-slate-900 border-slate-600 text-white"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Ciudad' : 'City'}</Label>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Ciudad' : 'City'}</Label>
                       <Input
                         value={settings.city}
                         onChange={(e) => setSettings({...settings, city: e.target.value})}
-                        className="bg-slate-900 border-slate-600 text-white"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Estado' : 'State'}</Label>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Estado' : 'State'}</Label>
                       <Input
                         value={settings.state}
                         onChange={(e) => setSettings({...settings, state: e.target.value})}
-                        className="bg-slate-900 border-slate-600 text-white"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
                       <Input
                         value={settings.phone}
                         onChange={(e) => setSettings({...settings, phone: e.target.value})}
-                        className="bg-slate-900 border-slate-600 text-white"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
+                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
                       <Input
                         value={settings.email}
                         onChange={(e) => setSettings({...settings, email: e.target.value})}
-                        className="bg-slate-900 border-slate-600 text-white"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
                   </div>
@@ -453,9 +438,9 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="defaults">
-              <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-                <CardHeader className="border-b border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-white">
+              <Card className="bg-white shadow-xl border-slate-200">
+                <CardHeader className="border-b border-slate-200">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
                     <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
                     {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
                   </CardTitle>
@@ -464,42 +449,42 @@ export default function Configuracion() {
                   <div className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-slate-300 font-semibold">
+                        <Label className="text-slate-700 font-semibold">
                           {language === 'es' ? 'Tarifa Por Hora Predeterminada' : 'Default Hourly Rate'}
                         </Label>
                         <div className="relative mt-2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                           <Input
                             type="number"
                             min="0"
                             step="0.50"
                             value={settings.default_hourly_rate}
                             onChange={(e) => setSettings({...settings, default_hourly_rate: parseFloat(e.target.value)})}
-                            className="pl-7 bg-slate-900 border-slate-600 text-white"
+                            className="pl-7 bg-slate-50 border-slate-200"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <Label className="text-slate-300 font-semibold">
+                        <Label className="text-slate-700 font-semibold">
                           {language === 'es' ? 'Monto Per Diem Predeterminado' : 'Default Per Diem Amount'}
                         </Label>
                         <div className="relative mt-2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                           <Input
                             type="number"
                             min="0"
                             step="5"
                             value={settings.default_per_diem_amount}
                             onChange={(e) => setSettings({...settings, default_per_diem_amount: parseFloat(e.target.value)})}
-                            className="pl-7 bg-slate-900 border-slate-600 text-white"
+                            className="pl-7 bg-slate-50 border-slate-200"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-semibold">
+                      <Label className="text-slate-700 font-semibold">
                         {language === 'es' ? 'Tasa de Acumulación de Vacaciones' : 'Vacation Accrual Rate'}
                       </Label>
                       <div className="flex items-center gap-2 mt-2">
@@ -509,9 +494,9 @@ export default function Configuracion() {
                           step="0.1"
                           value={settings.default_vacation_accrual_rate}
                           onChange={(e) => setSettings({...settings, default_vacation_accrual_rate: parseFloat(e.target.value)})}
-                          className="w-32 bg-slate-900 border-slate-600 text-white"
+                          className="w-32 bg-slate-50 border-slate-200"
                         />
-                        <span className="text-slate-300">
+                        <span className="text-slate-700">
                           {language === 'es' ? 'días por mes' : 'days per month'}
                         </span>
                       </div>
@@ -536,178 +521,18 @@ export default function Configuracion() {
             </TabsContent>
           )}
 
-          {/* NEW: Secrets Tab */}
-          {isAdmin && (
-            <TabsContent value="secrets">
-              <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-                <CardHeader className="border-b border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Key className="w-5 h-5 text-[#3B9FF3]" />
-                    {language === 'es' ? 'Secrets & API Keys' : 'Secrets & API Keys'}
-                  </CardTitle>
-                  <CardDescription className="text-slate-400">
-                    {language === 'es'
-                      ? 'Almacena de forma segura claves API y configuraciones sensibles'
-                      : 'Securely store API keys and sensitive configurations'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <Alert className="bg-blue-900/30 border-blue-700/50 mb-6">
-                    <Shield className="h-4 w-4 text-blue-400" />
-                    <AlertTitle className="text-blue-300 font-semibold">
-                      {language === 'es' ? 'Almacenamiento Seguro' : 'Secure Storage'}
-                    </AlertTitle>
-                    <AlertDescription className="text-blue-200">
-                      {language === 'es'
-                        ? 'Los secrets se almacenan de forma segura y solo son accesibles para administradores.'
-                        : 'Secrets are stored securely and are only accessible to administrators.'}
-                    </AlertDescription>
-                  </Alert>
-
-                  {/* Add New Secret */}
-                  <div className="mb-6 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                    <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                      <Plus className="w-4 h-4 text-[#3B9FF3]" />
-                      {language === 'es' ? 'Agregar Nuevo Secret' : 'Add New Secret'}
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-slate-300 font-semibold">
-                          {language === 'es' ? 'Clave' : 'Key'}
-                        </Label>
-                        <Input
-                          placeholder="API_KEY_NAME"
-                          value={newSecret.key}
-                          onChange={(e) => setNewSecret({ ...newSecret, key: e.target.value.toUpperCase().replace(/\s/g, '_') })}
-                          className="bg-slate-900 border-slate-600 text-white mt-2"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-300 font-semibold">
-                          {language === 'es' ? 'Valor' : 'Value'}
-                        </Label>
-                        <Input
-                          type="password"
-                          placeholder="sk_test_..."
-                          value={newSecret.value}
-                          onChange={(e) => setNewSecret({ ...newSecret, value: e.target.value })}
-                          className="bg-slate-900 border-slate-600 text-white mt-2"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-300 font-semibold">
-                          {language === 'es' ? 'Descripción' : 'Description'}
-                        </Label>
-                        <Input
-                          placeholder={language === 'es' ? 'Para qué se usa...' : 'What it\'s used for...'}
-                          value={newSecret.description}
-                          onChange={(e) => setNewSecret({ ...newSecret, description: e.target.value })}
-                          className="bg-slate-900 border-slate-600 text-white mt-2"
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleAddSecret}
-                      className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white mt-4"
-                      disabled={saveSecretsMutation.isPending}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {language === 'es' ? 'Agregar Secret' : 'Add Secret'}
-                    </Button>
-                  </div>
-
-                  {/* Secrets List */}
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-white mb-3">
-                      {language === 'es' ? 'Secrets Guardados' : 'Saved Secrets'}
-                    </h3>
-                    {secrets.length === 0 ? (
-                      <div className="text-center py-8 bg-slate-800/30 rounded-lg border border-dashed border-slate-700">
-                        <Key className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                        <p className="text-slate-400">
-                          {language === 'es' ? 'No hay secrets configurados' : 'No secrets configured'}
-                        </p>
-                      </div>
-                    ) : (
-                      secrets.map((secret) => (
-                        <Card key={secret.id} className="bg-slate-800/50 border-slate-700">
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Badge className="bg-[#3B9FF3] text-white font-mono">
-                                    {secret.key}
-                                  </Badge>
-                                  {secret.description && (
-                                    <span className="text-sm text-slate-400">
-                                      {secret.description}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <code className="text-sm text-slate-300 bg-slate-900 px-3 py-1 rounded font-mono break-all">
-                                    {revealedSecrets[secret.id] ? secret.value : '••••••••••••••••'}
-                                  </code>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => toggleRevealSecret(secret.id)}
-                                    className="text-slate-400 hover:text-white"
-                                  >
-                                    {revealedSecrets[secret.id] ? (
-                                      <EyeOff className="w-4 h-4" />
-                                    ) : (
-                                      <Eye className="w-4 h-4" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteSecret(secret.id)}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Common Secrets Examples */}
-                  <div className="mt-6 p-4 bg-slate-800/30 rounded-lg border border-slate-700">
-                    <h4 className="font-semibold text-slate-300 mb-3 text-sm">
-                      {language === 'es' ? 'Ejemplos comunes:' : 'Common examples:'}
-                    </h4>
-                    <div className="grid md:grid-cols-2 gap-2 text-xs text-slate-400">
-                      <div>• STRIPE_API_KEY</div>
-                      <div>• SENDGRID_API_KEY</div>
-                      <div>• TWILIO_ACCOUNT_SID</div>
-                      <div>• GOOGLE_MAPS_API_KEY</div>
-                      <div>• AWS_ACCESS_KEY_ID</div>
-                      <div>• OPENAI_API_KEY</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-
           {isAdmin && (
             <TabsContent value="notifications">
-              <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-                <CardHeader className="border-b border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-white">
+              <Card className="bg-white shadow-xl border-slate-200">
+                <CardHeader className="border-b border-slate-200">
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
                     <Bell className="w-5 h-5 text-[#3B9FF3]" />
                     {language === 'es' ? 'Configuración de Notificaciones (Admin)' : 'Admin Notification Settings'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-6">
-                    <div className="flex items-start gap-4 p-4 bg-blue-900/30 rounded-lg border border-blue-700/50">
+                    <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <input
                         type="checkbox"
                         id="email_fallback"
@@ -716,10 +541,10 @@ export default function Configuracion() {
                         className="w-5 h-5 mt-1 accent-[#3B9FF3]"
                       />
                       <div className="flex-1">
-                        <Label htmlFor="email_fallback" className="text-white font-semibold cursor-pointer">
+                        <Label htmlFor="email_fallback" className="text-slate-900 font-semibold cursor-pointer">
                           {language === 'es' ? 'Habilitar Email Fallback' : 'Enable Email Fallback'}
                         </Label>
-                        <p className="text-sm text-slate-400 mt-1">
+                        <p className="text-sm text-slate-600 mt-1">
                           {language === 'es'
                             ? 'Enviar alertas urgentes por email si las notificaciones push fallan'
                             : 'Send urgent alerts via email if push notifications fail'}
@@ -728,13 +553,13 @@ export default function Configuracion() {
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 font-semibold">
+                      <Label className="text-slate-700 font-semibold">
                         {language === 'es' ? 'Prefijo del Asunto de Email' : 'Email Subject Prefix'}
                       </Label>
                       <Input
                         value={settings.notifications_email_subject_prefix}
                         onChange={(e) => setSettings({...settings, notifications_email_subject_prefix: e.target.value})}
-                        className="mt-2 bg-slate-900 border-slate-600 text-white"
+                        className="mt-2 bg-slate-50 border-slate-200"
                       />
                     </div>
 
@@ -758,9 +583,9 @@ export default function Configuracion() {
           )}
 
           <TabsContent value="profile">
-            <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-              <CardHeader className="border-b border-slate-700">
-                <CardTitle className="flex items-center gap-2 text-white">
+            <Card className="bg-white shadow-xl border-slate-200">
+              <CardHeader className="border-b border-slate-200">
+                <CardTitle className="flex items-center gap-2 text-slate-900">
                   <User className="w-5 h-5 text-[#3B9FF3]" />
                   {language === 'es' ? 'Mi Perfil' : 'My Profile'}
                 </CardTitle>
@@ -771,7 +596,7 @@ export default function Configuracion() {
                     <img
                       src={profileForm.profile_photo_url}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover border-2 border-slate-600"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-slate-300"
                     />
                   ) : (
                     <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold text-3xl">
@@ -791,7 +616,7 @@ export default function Configuracion() {
                       onClick={() => document.getElementById('profile-photo-upload').click()}
                       disabled={uploading}
                       variant="outline"
-                      className="bg-slate-700 border-slate-600 text-slate-200 hover:bg-slate-600"
+                      className="bg-white border-slate-300 text-slate-700"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Cambiar Foto' : 'Change Photo')}
@@ -801,29 +626,29 @@ export default function Configuracion() {
 
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Nombre Completo' : 'Full Name'}</Label>
+                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre Completo' : 'Full Name'}</Label>
                     <Input
                       value={profileForm.full_name}
                       onChange={(e) => setProfileForm({...profileForm, full_name: e.target.value})}
-                      className="bg-slate-900 border-slate-600 text-white"
+                      className="bg-slate-50 border-slate-200"
                     />
                   </div>
 
                   <div>
-                    <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
+                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
                     <Input
                       value={user?.email || ''}
                       disabled
-                      className="bg-slate-800 border-slate-600 text-slate-400"
+                      className="bg-slate-100 border-slate-200 text-slate-500"
                     />
                   </div>
 
                   <div>
-                    <Label className="text-slate-300 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
                     <Input
                       value={profileForm.phone}
                       onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
-                      className="bg-slate-900 border-slate-600 text-white"
+                      className="bg-slate-50 border-slate-200"
                     />
                   </div>
 
@@ -842,13 +667,13 @@ export default function Configuracion() {
 
           {/* NEW: My Notifications Tab */}
           <TabsContent value="my-notifications">
-            <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-              <CardHeader className="border-b border-slate-700">
-                <CardTitle className="flex items-center gap-2 text-white">
+            <Card className="bg-white shadow-xl border-slate-200">
+              <CardHeader className="border-b border-slate-200">
+                <CardTitle className="flex items-center gap-2 text-slate-900">
                   <Bell className="w-5 h-5 text-[#3B9FF3]" />
                   {language === 'es' ? 'Mis Preferencias de Notificaciones' : 'My Notification Preferences'}
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription>
                   {language === 'es'
                     ? 'Personaliza qué notificaciones deseas recibir'
                     : 'Customize which notifications you want to receive'}
@@ -858,12 +683,12 @@ export default function Configuracion() {
                 <div className="space-y-6">
                   {/* Permission Alert */}
                   {!browserSupportsNotifications && (
-                    <Alert className="bg-amber-900/30 border-amber-700/50">
-                      <AlertTriangle className="h-4 w-4 text-amber-400" />
-                      <AlertTitle className="text-amber-300 font-semibold">
+                    <Alert className="bg-amber-50 border-amber-300">
+                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      <AlertTitle className="text-amber-900 font-semibold">
                         {language === 'es' ? 'Navegador no compatible' : 'Browser Not Supported'}
                       </AlertTitle>
-                      <AlertDescription className="text-amber-200">
+                      <AlertDescription className="text-amber-700">
                         {language === 'es'
                           ? 'Tu navegador no soporta notificaciones push. Considera usar Chrome, Firefox o Safari.'
                           : 'Your browser does not support push notifications. Consider using Chrome, Firefox, or Safari.'}
@@ -872,12 +697,12 @@ export default function Configuracion() {
                   )}
 
                   {browserSupportsNotifications && notificationPermission === 'default' && (
-                    <Alert className="bg-blue-900/30 border-blue-700/50">
-                      <Bell className="h-4 w-4 text-blue-400" />
-                      <AlertTitle className="text-blue-300 font-semibold">
+                    <Alert className="bg-blue-50 border-blue-300">
+                      <Bell className="h-4 w-4 text-blue-600" />
+                      <AlertTitle className="text-blue-900 font-semibold">
                         {language === 'es' ? 'Habilita las Notificaciones' : 'Enable Notifications'}
                       </AlertTitle>
-                      <AlertDescription className="text-blue-200 flex items-center justify-between">
+                      <AlertDescription className="text-blue-700 flex items-center justify-between">
                         <span>
                           {language === 'es'
                             ? 'Necesitas dar permisos para recibir notificaciones push.'
@@ -895,12 +720,12 @@ export default function Configuracion() {
                   )}
 
                   {browserSupportsNotifications && notificationPermission === 'denied' && (
-                    <Alert className="bg-red-900/30 border-red-700/50">
-                      <AlertTriangle className="h-4 w-4 text-red-400" />
-                      <AlertTitle className="text-red-300 font-semibold">
+                    <Alert className="bg-red-50 border-red-300">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <AlertTitle className="text-red-900 font-semibold">
                         {language === 'es' ? 'Notificaciones Bloqueadas' : 'Notifications Blocked'}
                       </AlertTitle>
-                      <AlertDescription className="text-red-200">
+                      <AlertDescription className="text-red-700">
                         {language === 'es'
                           ? 'Has bloqueado las notificaciones. Ve a la configuración de tu navegador para habilitarlas.'
                           : 'You have blocked notifications. Go to your browser settings to enable them.'}
@@ -909,12 +734,12 @@ export default function Configuracion() {
                   )}
 
                   {/* Master Toggle */}
-                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-lg border border-blue-700/50">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                     <div>
-                      <Label className="text-lg font-semibold text-white">
+                      <Label className="text-lg font-semibold text-slate-900">
                         {language === 'es' ? 'Habilitar Notificaciones Push' : 'Enable Push Notifications'}
                       </Label>
-                      <p className="text-sm text-slate-400 mt-1">
+                      <p className="text-sm text-slate-600 mt-1">
                         {language === 'es'
                           ? 'Recibir alertas en tiempo real sobre eventos importantes'
                           : 'Receive real-time alerts about important events'}
@@ -936,14 +761,14 @@ export default function Configuracion() {
 
                   {/* Notification Categories */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
                       {language === 'es' ? 'Tipos de Notificaciones' : 'Notification Types'}
                     </h3>
 
                     {/* Expenses */}
-                    <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <h4 className="font-semibold text-white flex items-center gap-2">
-                        <Receipt className="w-4 h-4 text-purple-400" />
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Receipt className="w-4 h-4 text-purple-600" />
                         {language === 'es' ? 'Gastos' : 'Expenses'}
                       </h4>
                       <NotificationToggle
@@ -961,9 +786,9 @@ export default function Configuracion() {
                     </div>
 
                     {/* Timesheets */}
-                    <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <h4 className="font-semibold text-white flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-blue-400" />
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-blue-600" />
                         {language === 'es' ? 'Horas de Trabajo' : 'Timesheets'}
                       </h4>
                       <NotificationToggle
@@ -981,9 +806,9 @@ export default function Configuracion() {
                     </div>
 
                     {/* Jobs */}
-                    <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <h4 className="font-semibold text-white flex items-center gap-2">
-                        <Briefcase className="w-4 h-4 text-green-400" />
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-green-600" />
                         {language === 'es' ? 'Trabajos' : 'Jobs'}
                       </h4>
                       <NotificationToggle
@@ -1001,9 +826,9 @@ export default function Configuracion() {
                     </div>
 
                     {/* Schedule */}
-                    <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <h4 className="font-semibold text-white flex items-center gap-2">
-                        <CalendarIcon className="w-4 h-4 text-amber-400" />
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4 text-amber-600" />
                         {language === 'es' ? 'Horario' : 'Schedule'}
                       </h4>
                       <NotificationToggle
@@ -1015,9 +840,9 @@ export default function Configuracion() {
                     </div>
 
                     {/* Time Off */}
-                    <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <h4 className="font-semibold text-white flex items-center gap-2">
-                        <CalendarClock className="w-4 h-4 text-indigo-400" />
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <CalendarClock className="w-4 h-4 text-indigo-600" />
                         {language === 'es' ? 'Tiempo Libre' : 'Time Off'}
                       </h4>
                       <NotificationToggle
@@ -1035,9 +860,9 @@ export default function Configuracion() {
                     </div>
 
                     {/* System */}
-                    <div className="space-y-3 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                      <h4 className="font-semibold text-white flex items-center gap-2">
-                        <Settings className="w-4 h-4 text-slate-400" />
+                    <div className="space-y-3 p-4 bg-slate-50 rounded-lg">
+                      <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-slate-600" />
                         {language === 'es' ? 'Sistema' : 'System'}
                       </h4>
                       <NotificationToggle
@@ -1061,12 +886,12 @@ export default function Configuracion() {
                     </div>
 
                     {/* Urgent Only Mode */}
-                    <div className="flex items-center justify-between p-4 bg-red-900/30 rounded-lg border border-red-700/50">
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                       <div>
-                        <Label className="font-semibold text-red-300">
+                        <Label className="font-semibold text-red-900">
                           {language === 'es' ? 'Solo Notificaciones Urgentes' : 'Urgent Notifications Only'}
                         </Label>
-                        <p className="text-sm text-red-200 mt-1">
+                        <p className="text-sm text-red-700 mt-1">
                           {language === 'es'
                             ? 'Recibir solo alertas críticas (anula las opciones anteriores)'
                             : 'Only receive critical alerts (overrides options above)'}
@@ -1115,7 +940,7 @@ export default function Configuracion() {
 function NotificationToggle({ label, checked, onChange, disabled }) {
   return (
     <div className="flex items-center justify-between py-2">
-      <Label className="text-slate-300 cursor-pointer" htmlFor={label}>
+      <Label className="text-slate-700 cursor-pointer" htmlFor={label}>
         {label}
       </Label>
       <Switch
@@ -1131,7 +956,7 @@ function NotificationToggle({ label, checked, onChange, disabled }) {
 
 function SystemMaintenanceTools() {
   const { language } = useLanguage();
-  const toast = useToast();
+  const { toast } = useToast();
   const [fileAudit, setFileAudit] = useState(null);
   const [scanning, setScanning] = useState(false);
 
@@ -1169,7 +994,11 @@ function SystemMaintenanceTools() {
         }
       });
     } catch (error) {
-      toast.error(language === 'es' ? 'Error al escanear archivos' : 'Error scanning files');
+      toast({
+        title: "Error",
+        description: language === 'es' ? 'Error al escanear archivos' : 'Error scanning files',
+        variant: "destructive",
+      });
     } finally {
       setScanning(false);
     }
@@ -1177,9 +1006,9 @@ function SystemMaintenanceTools() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-        <CardHeader className="border-b border-slate-700">
-          <CardTitle className="flex items-center gap-2 text-white">
+      <Card className="bg-white shadow-xl border-slate-200">
+        <CardHeader className="border-b border-slate-200">
+          <CardTitle className="flex items-center gap-2 text-slate-900">
             <HardDrive className="w-5 h-5 text-[#3B9FF3]" />
             {language === 'es' ? 'Auditoría de Archivos' : 'File Audit'}
           </CardTitle>
@@ -1197,13 +1026,13 @@ function SystemMaintenanceTools() {
           {fileAudit && (
             <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-700/50">
-                  <p className="text-sm text-blue-300 font-semibold">{language === 'es' ? 'Total de Archivos' : 'Total Files'}</p>
-                  <p className="text-3xl font-bold text-white">{fileAudit.totalFiles}</p>
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-900 font-semibold">{language === 'es' ? 'Total de Archivos' : 'Total Files'}</p>
+                  <p className="text-3xl font-bold text-blue-900">{fileAudit.totalFiles}</p>
                 </div>
-                <div className="p-4 bg-purple-900/30 rounded-lg border border-purple-700/50">
-                  <p className="text-sm text-purple-300 font-semibold">{language === 'es' ? 'Espacio Estimado' : 'Estimated Space'}</p>
-                  <p className="text-3xl font-bold text-white">{fileAudit.estimatedSizeMB} MB</p>
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <p className="text-sm text-purple-900 font-semibold">{language === 'es' ? 'Espacio Estimado' : 'Estimated Space'}</p>
+                  <p className="text-3xl font-bold text-purple-900">{fileAudit.estimatedSizeMB} MB</p>
                 </div>
               </div>
             </div>
@@ -1211,31 +1040,31 @@ function SystemMaintenanceTools() {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 shadow-xl">
-        <CardHeader className="border-b border-slate-700">
-          <CardTitle className="flex items-center gap-2 text-white">
+      <Card className="bg-white shadow-xl border-slate-200">
+        <CardHeader className="border-b border-slate-200">
+          <CardTitle className="flex items-center gap-2 text-slate-900">
             <Shield className="w-5 h-5 text-[#3B9FF3]" />
             {language === 'es' ? 'Intentos de Login Fallidos' : 'Failed Login Attempts'}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           {loginAttempts.length === 0 ? (
-            <div className="text-center py-8 text-slate-400">
+            <div className="text-center py-8 text-slate-500">
               {language === 'es' ? 'No hay intentos fallidos' : 'No failed attempts'}
             </div>
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-700">
-                  <TableHead className="text-slate-300">{language === 'es' ? 'Email' : 'Email'}</TableHead>
-                  <TableHead className="text-slate-300">{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
+                <TableRow>
+                  <TableHead>{language === 'es' ? 'Email' : 'Email'}</TableHead>
+                  <TableHead>{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loginAttempts.map((attempt, idx) => (
-                  <TableRow key={idx} className="border-slate-700">
-                    <TableCell className="text-white">{attempt.email_attempted}</TableCell>
-                    <TableCell className="text-slate-400">{format(new Date(attempt.attempt_date), 'MMM dd, yyyy HH:mm')}</TableCell>
+                  <TableRow key={idx}>
+                    <TableCell>{attempt.email_attempted}</TableCell>
+                    <TableCell>{format(new Date(attempt.attempt_date), 'MMM dd, yyyy HH:mm')}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
