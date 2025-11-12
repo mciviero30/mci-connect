@@ -81,7 +81,7 @@ const ThemeToggle = () => {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-white/10">
+    <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-white/10 p-2 rounded-lg transition-colors">
       <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-white/90" />
       <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-white/90" />
       <span className="sr-only">Toggle theme</span>
@@ -202,36 +202,36 @@ const LayoutContent = ({ children, currentPageName }) => {
       section: 'JOBS & PROJECTS',
       items: [
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
-        { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3, indent: true },
-        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package, indent: true },
+        { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
       ]
     },
     {
       section: 'FINANCE',
       items: [
         { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
-        { title: 'Customers', url: createPageUrl("Clientes"), icon: Users, indent: true },
-        { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText, indent: true },
-        { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck, indent: true },
-        { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt, indent: true },
-        { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package, indent: true },
+        { title: 'Customers', url: createPageUrl("Clientes"), icon: Users },
+        { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText },
+        { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck },
+        { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt },
+        { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
       ]
     },
     {
       section: 'PEOPLE',
       items: [
         { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
-        { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin, indent: true },
-        { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award, indent: true },
-        { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award, indent: true },
+        { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
+        { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+        { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
       ]
     },
     {
       section: 'TIME & PAYROLL',
       items: [
         { title: 'Time Tracking', url: createPageUrl("Horarios"), icon: Clock },
-        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock, indent: true },
-        { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car, indent: true },
+        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
+        { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car },
         { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote },
       ]
     },
@@ -239,8 +239,8 @@ const LayoutContent = ({ children, currentPageName }) => {
       section: 'REPORTS & AI',
       items: [
         { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
-        { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet, indent: true },
-        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, indent: true, badge: '✨' },
+        { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
+        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, badge: '✨' },
         { title: 'AI Invoice Gen', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles, badge: '✨' },
         { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles, badge: '✨' },
         { title: 'AI Expenses', url: createPageUrl('AIExpensesAudit'), icon: Sparkles, badge: '✨' },
@@ -469,7 +469,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             data-scrollable="true"
           >
             {navigation.map((section, idx) => (
-              <SidebarGroup key={idx} className="mb-6">
+              <SidebarGroup key={idx} className="mb-4">
                 <SidebarGroupLabel className="text-[10px] font-bold text-blue-300/80 uppercase tracking-wider px-3 py-2 mb-1">
                   {section.section}
                 </SidebarGroupLabel>
@@ -483,17 +483,15 @@ const LayoutContent = ({ children, currentPageName }) => {
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton
                             asChild
-                            className={`transition-all duration-300 rounded-xl mb-1 border-none ${
-                              item.indent ? 'ml-6' : ''
-                            } ${
+                            className={`transition-all duration-300 rounded-xl mb-0.5 border-none ${
                               isActive
                                 ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/30'
                                 : 'hover:bg-white/10 text-slate-300 hover:text-white backdrop-blur-sm'
                             }`}
                           >
-                            <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
+                            <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative group">
                               <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-blue-300'}`} />
-                              <span className={`font-medium flex-1 ${item.indent ? 'text-xs' : 'text-sm'}`}>
+                              <span className="font-medium text-sm">
                                 {item.title}
                               </span>
                               {showBadge && (
