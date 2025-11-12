@@ -376,3 +376,28 @@ export async function notifyScheduleChange({
     metadata: { jobName, oldDate, newDate, oldTime, newTime }
   });
 }
+
+export async function notifyAnnouncement({ 
+  recipientEmail, 
+  recipientName, 
+  announcementTitle,
+  authorName,
+  priority,
+  announcementId
+}) {
+  const priorityLevel = priority === 'urgent' ? 'urgent' : 
+                       priority === 'important' ? 'high' : 'medium';
+
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'system_alert',
+    title: `📢 New Announcement: ${announcementTitle}`,
+    message: `${authorName} posted a new ${priority} announcement`,
+    priority: priorityLevel,
+    actionUrl: '/NewsFeed',
+    relatedEntityType: 'announcement',
+    relatedEntityId: announcementId,
+    metadata: { announcementTitle, authorName, priority }
+  });
+}
