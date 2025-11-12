@@ -5,260 +5,208 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Bell, Mail, Smartphone, Clock, Save } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import PageHeader from '../components/shared/PageHeader';
-import { Bell, Mail, Smartphone, Clock, Save, RefreshCw } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
+import PushNotificationManager from '../components/notifications/PushNotificationManager';
+
+const NOTIFICATION_TYPES = [
+  { id: 'project_invitation', label: 'Project Invitations', icon: '📋' },
+  { id: 'task_assigned', label: 'Task Assignments', icon: '✅' },
+  { id: 'task_status', label: 'Status Changes', icon: '🔄' },
+  { id: 'task_deadline', label: 'Deadlines & Due Dates', icon: '⏰' },
+  { id: 'access_request', label: 'Access Requests', icon: '🔐' },
+  { id: 'mentions', label: 'Mentions', icon: '💬' },
+  { id: 'file_uploads', label: 'File Uploads', icon: '📎' },
+  { id: 'milestone', label: 'Milestones', icon: '🎯' },
+  { id: 'system_alerts', label: 'System Alerts', icon: '🚨' }
+];
 
 export default function NotificationSettings() {
-  const queryClient = useQueryClient();
   const toast = useToast();
+  const queryClient = useQueryClient();
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Obtener usuario actual
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
   });
 
-  // Obtener configuración de notificaciones
   const { data: settings, isLoading } = useQuery({
     queryKey: ['notificationSettings', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
-      
-      const existing = await base44.entities.NotificationSettings.filter({
+      const results = await base44.entities.NotificationSettings.filter({
         user_email: user.email
       });
-
-      if (existing.length > 0) {
-        return existing[0];
+      
+      if (results.length > 0) {
+        return results[0];
       }
-
-      // Crear configuración por defecto
-      const defaultSettings = {
+      
+      // Create default settings if none exist
+      return base44.entities.NotificationSettings.create({
         user_email: user.email,
         project_invitation_in_app: true,
         project_invitation_email: true,
+        project_invitation_push: true,
         task_assigned_in_app: true,
         task_assigned_email: true,
+        task_assigned_push: true,
         task_status_in_app: true,
         task_status_email: false,
+        task_status_push: true,
         task_deadline_in_app: true,
         task_deadline_email: true,
+        task_deadline_push: true,
         access_request_in_app: true,
         access_request_email: true,
+        access_request_push: true,
         mentions_in_app: true,
         mentions_email: true,
+        mentions_push: true,
         file_uploads_in_app: true,
         file_uploads_email: false,
+        file_uploads_push: false,
         milestone_in_app: true,
         milestone_email: true,
+        milestone_push: true,
         system_alerts_in_app: true,
         system_alerts_email: true,
+        system_alerts_push: true,
         digest_frequency: 'realtime',
-        quiet_hours_enabled: false,
-        quiet_hours_start: '22:00',
-        quiet_hours_end: '08:00'
-      };
-
-      const created = await base44.entities.NotificationSettings.create(defaultSettings);
-      return created;
+        quiet_hours_enabled: false
+      });
     },
     enabled: !!user?.email
   });
 
-  const [formData, setFormData] = useState(settings || {});
+  const [localSettings, setLocalSettings] = useState(null);
 
   React.useEffect(() => {
     if (settings) {
-      setFormData(settings);
+      setLocalSettings(settings);
     }
   }, [settings]);
 
-  // Guardar configuración
-  const saveMutation = useMutation({
-    mutationFn: async (data) => {
-      if (settings?.id) {
-        return base44.entities.NotificationSettings.update(settings.id, data);
-      } else {
-        return base44.entities.NotificationSettings.create({
-          ...data,
-          user_email: user.email
-        });
-      }
-    },
+  const updateMutation = useMutation({
+    mutationFn: (updatedSettings) => 
+      base44.entities.NotificationSettings.update(settings.id, updatedSettings),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notificationSettings'] });
-      toast.success('Notification settings saved successfully');
+      toast.success('✅ Settings saved successfully');
       setHasChanges(false);
     },
     onError: () => {
-      toast.error('Error saving settings');
+      toast.error('❌ Failed to save settings');
     }
   });
 
   const handleToggle = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setLocalSettings({ ...localSettings, [field]: value });
     setHasChanges(true);
   };
 
   const handleSave = () => {
-    saveMutation.mutate(formData);
+    updateMutation.mutate(localSettings);
   };
 
-  const handleReset = () => {
-    setFormData(settings);
-    setHasChanges(false);
-  };
-
-  if (isLoading) {
+  if (isLoading || !localSettings) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white">Loading settings...</p>
+      <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <div className="w-12 h-12 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-slate-600">Loading settings...</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  const notificationTypes = [
-    {
-      id: 'project_invitation',
-      title: 'Project Invitations',
-      description: 'When someone invites you to join a project',
-      icon: Bell
-    },
-    {
-      id: 'task_assigned',
-      title: 'Task Assignments',
-      description: 'When a task is assigned to you',
-      icon: Bell
-    },
-    {
-      id: 'task_status',
-      title: 'Task Status Changes',
-      description: 'When a task status is updated',
-      icon: Bell
-    },
-    {
-      id: 'task_deadline',
-      title: 'Task Deadlines',
-      description: 'Reminders for upcoming or overdue tasks',
-      icon: Clock
-    },
-    {
-      id: 'access_request',
-      title: 'Access Requests',
-      description: 'When someone requests access to a project',
-      icon: Bell
-    },
-    {
-      id: 'mentions',
-      title: 'Mentions',
-      description: 'When someone mentions you in a comment',
-      icon: Bell
-    },
-    {
-      id: 'file_uploads',
-      title: 'File Uploads',
-      description: 'When files are uploaded to your projects',
-      icon: Bell
-    },
-    {
-      id: 'milestone',
-      title: 'Milestones',
-      description: 'When project milestones are completed',
-      icon: Bell
-    },
-    {
-      id: 'system_alerts',
-      title: 'System Alerts',
-      description: 'Important system notifications and updates',
-      icon: Bell
-    }
-  ];
-
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="max-w-5xl mx-auto">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-4xl mx-auto">
         <PageHeader
           title="Notification Settings"
-          description="Manage how and when you receive notifications"
+          description="Manage how you receive notifications"
           icon={Bell}
           actions={
-            <div className="flex gap-2">
-              {hasChanges && (
-                <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Reset
-                </Button>
-              )}
+            hasChanges && (
               <Button
                 onClick={handleSave}
-                disabled={!hasChanges || saveMutation.isPending}
-                className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white"
+                disabled={updateMutation.isPending}
+                className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white shadow-lg"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-            </div>
+            )
           }
         />
 
         <div className="space-y-6">
-          {/* Notification Types */}
-          <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+          {/* Push Notifications */}
+          <PushNotificationManager user={user} />
+
+          {/* Notification Channels */}
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Bell className="w-5 h-5 text-[#3B9FF3]" />
-                Notification Types
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Choose which events you want to be notified about
+              <CardTitle className="text-slate-900">Notification Preferences</CardTitle>
+              <CardDescription>
+                Choose how you want to be notified for each type of event
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4">
-                <div className="flex items-center gap-4 pb-3 border-b border-slate-700">
-                  <div className="w-48 text-sm font-semibold text-slate-300">Event Type</div>
-                  <div className="flex items-center gap-6">
-                    <div className="w-20 text-center">
-                      <Smartphone className="w-4 h-4 text-[#3B9FF3] mx-auto mb-1" />
-                      <span className="text-xs text-slate-400">In-App</span>
-                    </div>
-                    <div className="w-20 text-center">
-                      <Mail className="w-4 h-4 text-[#3B9FF3] mx-auto mb-1" />
-                      <span className="text-xs text-slate-400">Email</span>
-                    </div>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Headers */}
+                <div className="grid grid-cols-4 gap-4 pb-3 border-b border-slate-200">
+                  <div className="col-span-1">
+                    <p className="text-sm font-semibold text-slate-700">Event Type</p>
+                  </div>
+                  <div className="text-center">
+                    <Bell className="w-4 h-4 mx-auto text-[#3B9FF3] mb-1" />
+                    <p className="text-xs font-medium text-slate-600">In-App</p>
+                  </div>
+                  <div className="text-center">
+                    <Mail className="w-4 h-4 mx-auto text-[#3B9FF3] mb-1" />
+                    <p className="text-xs font-medium text-slate-600">Email</p>
+                  </div>
+                  <div className="text-center">
+                    <Smartphone className="w-4 h-4 mx-auto text-[#3B9FF3] mb-1" />
+                    <p className="text-xs font-medium text-slate-600">Push</p>
                   </div>
                 </div>
 
-                {notificationTypes.map((type) => (
-                  <div key={type.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-700/30 transition-colors">
-                    <div className="w-48">
-                      <p className="font-medium text-white text-sm">{type.title}</p>
-                      <p className="text-xs text-slate-400">{type.description}</p>
+                {/* Notification Types */}
+                {NOTIFICATION_TYPES.map((type) => (
+                  <div key={type.id} className="grid grid-cols-4 gap-4 items-center py-2 hover:bg-slate-50 rounded-lg transition-colors">
+                    <div className="col-span-1 flex items-center gap-2">
+                      <span className="text-xl">{type.icon}</span>
+                      <Label className="text-sm text-slate-900 font-medium cursor-pointer">
+                        {type.label}
+                      </Label>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="w-20 flex justify-center">
-                        <Switch
-                          checked={formData[`${type.id}_in_app`]}
-                          onCheckedChange={(checked) => handleToggle(`${type.id}_in_app`, checked)}
-                        />
-                      </div>
-                      <div className="w-20 flex justify-center">
-                        <Switch
-                          checked={formData[`${type.id}_email`]}
-                          onCheckedChange={(checked) => handleToggle(`${type.id}_email`, checked)}
-                        />
-                      </div>
+                    <div className="flex justify-center">
+                      <Switch
+                        checked={localSettings[`${type.id}_in_app`]}
+                        onCheckedChange={(checked) => handleToggle(`${type.id}_in_app`, checked)}
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <Switch
+                        checked={localSettings[`${type.id}_email`]}
+                        onCheckedChange={(checked) => handleToggle(`${type.id}_email`, checked)}
+                      />
+                    </div>
+                    <div className="flex justify-center">
+                      <Switch
+                        checked={localSettings[`${type.id}_push`]}
+                        onCheckedChange={(checked) => handleToggle(`${type.id}_push`, checked)}
+                        disabled={!localSettings.push_enabled}
+                      />
                     </div>
                   </div>
                 ))}
@@ -266,79 +214,74 @@ export default function NotificationSettings() {
             </CardContent>
           </Card>
 
-          {/* Delivery Preferences */}
-          <Card className="bg-slate-800/50 backdrop-blur-sm border-slate-700">
+          {/* Additional Settings */}
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-[#3B9FF3]" />
-                Delivery Preferences
+                Quiet Hours
               </CardTitle>
-              <CardDescription className="text-slate-400">
-                Control when and how often you receive notifications
+              <CardDescription>
+                Pause notifications during specific hours
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Digest Frequency */}
-              <div className="space-y-2">
-                <Label className="text-white">Notification Frequency</Label>
-                <Select
-                  value={formData.digest_frequency}
-                  onValueChange={(value) => handleToggle('digest_frequency', value)}
-                >
-                  <SelectTrigger className="bg-slate-900/50 border-slate-600 text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="realtime" className="text-white">Real-time (instant notifications)</SelectItem>
-                    <SelectItem value="daily" className="text-white">Daily digest</SelectItem>
-                    <SelectItem value="weekly" className="text-white">Weekly digest</SelectItem>
-                    <SelectItem value="never" className="text-white">Never (disable all)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-slate-400">
-                  {formData.digest_frequency === 'realtime' && 'Receive notifications immediately as they happen'}
-                  {formData.digest_frequency === 'daily' && 'Receive a daily summary of all notifications'}
-                  {formData.digest_frequency === 'weekly' && 'Receive a weekly summary of all notifications'}
-                  {formData.digest_frequency === 'never' && 'You will not receive any notifications'}
-                </p>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-slate-900 font-medium">Enable Quiet Hours</Label>
+                <Switch
+                  checked={localSettings.quiet_hours_enabled}
+                  onCheckedChange={(checked) => handleToggle('quiet_hours_enabled', checked)}
+                />
               </div>
 
-              {/* Quiet Hours */}
-              <div className="space-y-4 pt-4 border-t border-slate-700">
-                <div className="flex items-center justify-between">
+              {localSettings.quiet_hours_enabled && (
+                <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
                   <div>
-                    <Label className="text-white">Quiet Hours</Label>
-                    <p className="text-sm text-slate-400">Pause notifications during specific hours</p>
+                    <Label className="text-slate-700 mb-2 block">Start Time</Label>
+                    <Input
+                      type="time"
+                      value={localSettings.quiet_hours_start || '22:00'}
+                      onChange={(e) => handleToggle('quiet_hours_start', e.target.value)}
+                      className="bg-white border-slate-300"
+                    />
                   </div>
-                  <Switch
-                    checked={formData.quiet_hours_enabled}
-                    onCheckedChange={(checked) => handleToggle('quiet_hours_enabled', checked)}
-                  />
+                  <div>
+                    <Label className="text-slate-700 mb-2 block">End Time</Label>
+                    <Input
+                      type="time"
+                      value={localSettings.quiet_hours_end || '08:00'}
+                      onChange={(e) => handleToggle('quiet_hours_end', e.target.value)}
+                      className="bg-white border-slate-300"
+                    />
+                  </div>
                 </div>
+              )}
+            </CardContent>
+          </Card>
 
-                {formData.quiet_hours_enabled && (
-                  <div className="grid grid-cols-2 gap-4 pl-4">
-                    <div className="space-y-2">
-                      <Label className="text-slate-300">Start Time</Label>
-                      <Input
-                        type="time"
-                        value={formData.quiet_hours_start}
-                        onChange={(e) => handleToggle('quiet_hours_start', e.target.value)}
-                        className="bg-slate-900/50 border-slate-600 text-white"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-slate-300">End Time</Label>
-                      <Input
-                        type="time"
-                        value={formData.quiet_hours_end}
-                        onChange={(e) => handleToggle('quiet_hours_end', e.target.value)}
-                        className="bg-slate-900/50 border-slate-600 text-white"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+          {/* Digest Frequency */}
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-slate-900">Digest Frequency</CardTitle>
+              <CardDescription>
+                How often to receive notification summaries
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Select
+                value={localSettings.digest_frequency}
+                onValueChange={(value) => handleToggle('digest_frequency', value)}
+              >
+                <SelectTrigger className="bg-white border-slate-300">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-slate-200">
+                  <SelectItem value="realtime">Real-time (instant)</SelectItem>
+                  <SelectItem value="daily">Daily digest</SelectItem>
+                  <SelectItem value="weekly">Weekly digest</SelectItem>
+                  <SelectItem value="never">Never</SelectItem>
+                </SelectContent>
+              </Select>
             </CardContent>
           </Card>
         </div>

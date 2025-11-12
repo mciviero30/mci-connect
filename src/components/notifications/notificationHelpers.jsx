@@ -1,3 +1,4 @@
+
 import { base44 } from '@/api/base44Client';
 
 /**
@@ -25,9 +26,10 @@ export async function createNotification({
     // Verificar si el usuario quiere recibir notificaciones in-app
     const inAppEnabled = settings[`${typeBase}_in_app`] !== false;
     const emailEnabled = settings[`${typeBase}_email`] === true;
+    const pushEnabled = settings[`${typeBase}_push`] === true && settings.push_enabled;
 
-    if (!inAppEnabled && !emailEnabled) {
-      console.log(`User ${recipientEmail} has disabled notifications for ${type}`);
+    if (!inAppEnabled && !emailEnabled && !pushEnabled) {
+      console.log(`User ${recipientEmail} has disabled all notifications for ${type}`);
       return null;
     }
 
@@ -58,6 +60,11 @@ export async function createNotification({
       });
     }
 
+    // Enviar push si está habilitado
+    if (pushEnabled && notification) {
+      await sendPushNotification(notification);
+    }
+
     return notification;
   } catch (error) {
     console.error('Error creating notification:', error);
@@ -69,39 +76,56 @@ export async function createNotification({
  * Obtener configuración de notificaciones del usuario
  */
 async function getUserNotificationSettings(userEmail) {
+  const defaultSettings = {
+    project_invitation_in_app: true,
+    project_invitation_email: true,
+    project_invitation_push: true, // New default
+    task_assigned_in_app: true,
+    task_assigned_email: true,
+    task_assigned_push: true, // New default
+    task_status_in_app: true,
+    task_status_email: false,
+    task_status_push: true, // New default
+    task_deadline_in_app: true,
+    task_deadline_email: true,
+    task_deadline_push: true, // New default
+    access_request_in_app: true,
+    access_request_email: true,
+    access_request_push: true, // New default
+    mentions_in_app: true,
+    mentions_email: true,
+    mentions_push: true, // New default
+    file_uploads_in_app: true,
+    file_uploads_email: false,
+    file_uploads_push: true, // New default
+    milestone_in_app: true,
+    milestone_email: true,
+    milestone_push: true, // New default
+    system_alerts_in_app: true,
+    system_alerts_email: true,
+    system_alerts_push: true, // New default
+    push_enabled: true, // Global push enable/disable
+    quiet_hours_enabled: false,
+    quiet_hours_start: '22:00', // 10 PM
+    quiet_hours_end: '07:00' // 7 AM
+  };
+
   try {
     const settings = await base44.entities.NotificationSettings.filter({ 
       user_email: userEmail 
     });
     
     if (settings.length > 0) {
-      return settings[0];
+      // Merge stored settings with defaults to ensure all keys exist
+      return { ...defaultSettings, ...settings[0] };
     }
     
     // Configuración por defecto si no existe
-    return {
-      project_invitation_in_app: true,
-      project_invitation_email: true,
-      task_assigned_in_app: true,
-      task_assigned_email: true,
-      task_status_in_app: true,
-      task_status_email: false,
-      task_deadline_in_app: true,
-      task_deadline_email: true,
-      access_request_in_app: true,
-      access_request_email: true,
-      mentions_in_app: true,
-      mentions_email: true,
-      file_uploads_in_app: true,
-      file_uploads_email: false,
-      milestone_in_app: true,
-      milestone_email: true,
-      system_alerts_in_app: true,
-      system_alerts_email: true
-    };
+    return defaultSettings;
   } catch (error) {
     console.error('Error fetching notification settings:', error);
-    return {};
+    // Return default settings even on error
+    return defaultSettings;
   }
 }
 
@@ -153,6 +177,101 @@ export async function sendEmailNotification(notification) {
     });
   } catch (error) {
     console.error('Error sending email notification:', error);
+  }
+}
+
+/**
+ * Enviar notificación push
+ */
+export async function sendPushNotification(notification) {
+  try {
+    // Get user's push subscriptions
+    const subscriptions = await base44.entities.PushSubscription.filter({
+      user_email: notification.recipient_email,
+      active: true
+    }).catch(() => []);
+
+    if (subscriptions.length === 0) {
+      console.log(`No active push subscriptions for ${notification.recipient_email}`);
+      return; // No active push subscriptions
+    }
+
+    // Check if push is enabled for this notification type
+    const settings = await getUserNotificationSettings(notification.recipient_email);
+    const typeBase = getNotificationTypeBase(notification.type);
+    const pushEnabled = settings[`${typeBase}_push`] !== false && settings.push_enabled;
+
+    if (!pushEnabled) {
+      console.log(`Push disabled for ${notification.recipient_email} for type ${notification.type}`);
+      return; // Push disabled for this type
+    }
+
+    // Check quiet hours
+    if (settings.quiet_hours_enabled && isQuietHours(settings)) {
+      console.log(`In quiet hours for ${notification.recipient_email}, skipping push notification.`);
+      return; // In quiet hours
+    }
+
+    // Send push to all active subscriptions
+    // Note: In a real implementation, you would send this to your backend
+    // which would use web-push library to send the actual push notification
+    console.log('Push notification would be sent:', {
+      subscriptions: subscriptions.length,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type
+    });
+
+    // For browser testing - send local notification if permission granted
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      const priorityEmojis = {
+        low: 'ℹ️',
+        medium: '📢',
+        high: '⚠️',
+        urgent: '🚨'
+      };
+
+      const emoji = priorityEmojis[notification.priority] || '📢';
+      
+      new Notification(`${emoji} ${notification.title}`, {
+        body: notification.message,
+        icon: '/logo192.png',
+        badge: '/logo192.png',
+        vibrate: [200, 100, 200],
+        data: {
+          url: notification.action_url
+        },
+        requireInteraction: notification.priority === 'urgent'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+  }
+}
+
+/**
+ * Check if current time is in quiet hours
+ */
+function isQuietHours(settings) {
+  if (!settings.quiet_hours_start || !settings.quiet_hours_end) {
+    return false;
+  }
+
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+
+  const [startHour, startMin] = settings.quiet_hours_start.split(':').map(Number);
+  const [endHour, endMin] = settings.quiet_hours_end.split(':').map(Number);
+
+  const startTime = startHour * 60 + startMin;
+  const endTime = endHour * 60 + endMin;
+
+  if (startTime <= endTime) {
+    return currentTime >= startTime && currentTime <= endTime;
+  } else {
+    // Quiet hours span midnight
+    return currentTime >= startTime || currentTime <= endTime;
   }
 }
 
