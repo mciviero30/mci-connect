@@ -328,6 +328,40 @@ export async function notifyExpenseStatus({
   });
 }
 
+export async function notifyTimeOffStatus({ 
+  recipientEmail, 
+  recipientName, 
+  status,
+  startDate,
+  endDate,
+  timeOffType,
+  notes
+}) {
+  const statusMessages = {
+    approved: 'Your time off request has been approved',
+    rejected: 'Your time off request has been rejected'
+  };
+
+  const statusColors = {
+    approved: 'medium',
+    rejected: 'high'
+  };
+
+  const message = `${statusMessages[status]} for ${startDate}${endDate !== startDate ? ` to ${endDate}` : ''}${notes ? `\nNotes: ${notes}` : ''}`;
+
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_status_changed',
+    title: `Time Off ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+    message,
+    priority: statusColors[status] || 'medium',
+    actionUrl: '/TimeOffRequests',
+    relatedEntityType: 'time_off',
+    metadata: { status, startDate, endDate, timeOffType, notes }
+  });
+}
+
 export async function notifyJobAssignment({ 
   recipientEmail, 
   recipientName, 
