@@ -279,6 +279,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: '🤖 TOOLS & AI',
       items: [
+        { title: 'AI Invoice Generator', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles, badge: '✨' },
         { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles, badge: '✨' },
         { title: 'AI Expenses Audit', url: createPageUrl('AIExpensesAudit'), icon: Sparkles, badge: '✨' },
         { title: 'Budget Forecasting', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, badge: '✨' },
