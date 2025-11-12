@@ -1,175 +1,133 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import NotificationCenter from './NotificationCenter';
+import { createNotification, sendEmailNotification } from './notificationHelpers';
 
-// Request notification permission on component mount
-const requestNotificationPermission = async () => {
-  if ('Notification' in window && Notification.permission === 'default') {
-    try {
-      const permission = await Notification.requestPermission();
-      console.log('Notification permission:', permission);
-      return permission === 'granted';
-    } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      return false;
-    }
-  }
-  return Notification.permission === 'granted';
-};
-
-// Send browser push notification
-const sendBrowserNotification = (title, message, options = {}) => {
-  if ('Notification' in window && Notification.permission === 'granted') {
-    const notification = new Notification(title, {
-      body: message,
-      icon: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png',
-      badge: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png',
-      vibrate: [200, 100, 200],
-      requireInteraction: options.priority === 'urgent',
-      ...options
-    });
-
-    notification.onclick = () => {
-      window.focus();
-      if (options.action_url) {
-        window.location.href = options.action_url;
-      }
-      notification.close();
-    };
-
-    return notification;
-  }
-  return null;
-};
-
-// Notification service hook
-export const useNotificationService = (user) => {
+// Hook para gestionar el servicio de notificaciones
+export function useNotificationService() {
   const queryClient = useQueryClient();
-  const [permissionGranted, setPermissionGranted] = useState(false);
 
-  // Request permission on mount
-  useEffect(() => {
-    if (user) {
-      requestNotificationPermission().then(setPermissionGranted);
-    }
-  }, [user]);
-
-  // Create notification mutation
+  // Crear notificación
   const createNotificationMutation = useMutation({
     mutationFn: async (notificationData) => {
-      return await base44.entities.Notification.create(notificationData);
+      const notification = await base44.entities.Notification.create(notificationData);
+      
+      // Si debe enviarse por email, enviar
+      if (notificationData.sendEmail) {
+        await sendEmailNotification(notification);
+        await base44.entities.Notification.update(notification.id, {
+          sent_via_email: true,
+          email_sent_date: new Date().toISOString()
+        });
+      }
+      
+      return notification;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
-  // Send notification function
-  const sendNotification = async ({
-    recipientEmail,
-    recipientName,
-    type,
-    priority = 'medium',
-    title,
-    message,
-    actionUrl,
-    relatedEntityType,
-    relatedEntityId,
-    sendEmail = false
-  }) => {
-    // Create notification in database
-    const notificationData = {
-      recipient_email: recipientEmail,
-      recipient_name: recipientName,
-      type,
-      priority,
-      title,
-      message,
-      action_url: actionUrl,
-      related_entity_type: relatedEntityType,
-      related_entity_id: relatedEntityId,
-      sent_via_push: permissionGranted,
-      sent_via_email: sendEmail
-    };
-
-    await createNotificationMutation.mutateAsync(notificationData);
-
-    // Send browser push notification if recipient is current user
-    if (user && recipientEmail === user.email && permissionGranted) {
-      sendBrowserNotification(title, message, {
-        priority,
-        action_url: actionUrl,
-        tag: `${type}-${relatedEntityId || Date.now()}`
-      });
-    }
-
-    // Send email notification if requested
-    if (sendEmail && priority === 'urgent') {
-      try {
-        await base44.integrations.Core.SendEmail({
-          to: recipientEmail,
-          subject: `🚨 ${title}`,
-          body: `${message}\n\nOpen MCI Connect to take action: ${window.location.origin}${actionUrl || ''}`,
-          from_name: 'MCI Connect Alerts'
-        });
-      } catch (error) {
-        console.error('Failed to send email notification:', error);
-      }
-    }
+  return {
+    createNotification: createNotificationMutation.mutate,
+    isCreating: createNotificationMutation.isPending
   };
+}
 
-  return { sendNotification, permissionGranted };
-};
-
-// Notification Service Component
-export default function NotificationService({ children, user }) {
+// Componente principal del servicio
+export default function NotificationService({ user, children }) {
   const [showCenter, setShowCenter] = useState(false);
-  
-  const { data: notifications = [], isLoading } = useQuery({
+  const queryClient = useQueryClient();
+
+  // Obtener notificaciones del usuario
+  const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.email],
     queryFn: async () => {
-      if (!user) return [];
-      return await base44.entities.Notification.filter({ 
-        recipient_email: user.email 
-      }, '-created_date', 100);
+      if (!user?.email) return [];
+      const results = await base44.entities.Notification.filter(
+        { recipient_email: user.email },
+        '-created_date',
+        50
+      );
+      return results;
     },
-    enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    initialData: []
+    enabled: !!user?.email,
+    refetchInterval: 30000, // Refetch cada 30 segundos
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  // Marcar notificación como leída
+  const markAsReadMutation = useMutation({
+    mutationFn: (notificationId) => 
+      base44.entities.Notification.update(notificationId, {
+        is_read: true,
+        read_date: new Date().toISOString()
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  // Marcar todas como leídas
+  const markAllAsReadMutation = useMutation({
+    mutationFn: async () => {
+      const unread = notifications.filter(n => !n.is_read);
+      await Promise.all(
+        unread.map(n => 
+          base44.entities.Notification.update(n.id, {
+            is_read: true,
+            read_date: new Date().toISOString()
+          })
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
+
+  // Eliminar notificación
+  const deleteNotificationMutation = useMutation({
+    mutationFn: (notificationId) => 
+      base44.entities.Notification.delete(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+  });
 
   return (
     <>
       {children}
       
-      {/* Floating notification button */}
+      {/* Botón flotante de notificaciones */}
       <div className="fixed bottom-6 right-6 z-50">
         <Button
           onClick={() => setShowCenter(!showCenter)}
-          className="h-14 w-14 rounded-full bg-gradient-to-r from-[#3B9FF3] to-blue-500 shadow-lg hover:shadow-xl transition-all"
-          size="icon"
+          size="lg"
+          className="relative bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2d8fe0] hover:to-blue-700 text-white shadow-2xl shadow-blue-500/30 rounded-full w-14 h-14 p-0"
         >
-          <Bell className="w-6 h-6 text-white" />
+          <Bell className="w-6 h-6" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-6 w-6 flex items-center justify-center p-0 bg-red-500 text-white text-xs">
+            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
           )}
         </Button>
       </div>
 
-      {/* Notification Center */}
+      {/* Centro de notificaciones */}
       {showCenter && (
         <NotificationCenter
           notifications={notifications}
           onClose={() => setShowCenter(false)}
-          user={user}
+          onMarkAsRead={markAsReadMutation.mutate}
+          onMarkAllAsRead={markAllAsReadMutation.mutate}
+          onDelete={deleteNotificationMutation.mutate}
         />
       )}
     </>

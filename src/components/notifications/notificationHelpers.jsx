@@ -1,221 +1,268 @@
 import { base44 } from '@/api/base44Client';
 
 /**
- * Helper functions to send notifications for various events
+ * Helper para crear notificaciones con configuración del usuario
  */
-
-// Send notification when expense is approved/rejected
-export const notifyExpenseStatus = async (expense, status, user) => {
-  const isApproved = status === 'approved';
-  
-  await base44.entities.Notification.create({
-    recipient_email: expense.employee_email,
-    recipient_name: expense.employee_name,
-    type: 'info',
-    priority: 'medium',
-    title: isApproved ? '✅ Expense Approved' : '❌ Expense Rejected',
-    message: `Your expense of $${expense.amount.toFixed(2)} for ${expense.category} has been ${status}.`,
-    action_url: '/MisGastos',
-    related_entity_type: 'expense',
-    related_entity_id: expense.id
-  });
-};
-
-// Send notification when timesheet is approved/rejected
-export const notifyTimesheetStatus = async (timeEntry, status, user) => {
-  const isApproved = status === 'approved';
-  
-  await base44.entities.Notification.create({
-    recipient_email: timeEntry.employee_email,
-    recipient_name: timeEntry.employee_name,
-    type: 'info',
-    priority: 'medium',
-    title: isApproved ? '✅ Hours Approved' : '❌ Hours Rejected',
-    message: `Your ${timeEntry.hours_worked}h on ${new Date(timeEntry.date).toLocaleDateString()} has been ${status}.`,
-    action_url: '/MisHoras',
-    related_entity_type: 'timeentry',
-    related_entity_id: timeEntry.id
-  });
-};
-
-// Send notification when time off is approved/rejected
-export const notifyTimeOffStatus = async (timeOffRequest, status, user) => {
-  const isApproved = status === 'approved';
-  
-  await base44.entities.Notification.create({
-    recipient_email: timeOffRequest.employee_email,
-    recipient_name: timeOffRequest.employee_name,
-    type: 'info',
-    priority: 'high',
-    title: isApproved ? '✅ Time Off Approved' : '❌ Time Off Rejected',
-    message: `Your time off request from ${new Date(timeOffRequest.start_date).toLocaleDateString()} to ${new Date(timeOffRequest.end_date).toLocaleDateString()} has been ${status}.`,
-    action_url: '/TimeOffRequests',
-    related_entity_type: 'time_off',
-    related_entity_id: timeOffRequest.id
-  });
-};
-
-// Send notification when new job is assigned
-export const notifyJobAssignment = async (assignment, job, employee) => {
-  await base44.entities.Notification.create({
-    recipient_email: employee.email,
-    recipient_name: employee.full_name,
-    type: 'assignment_new',
-    priority: 'high',
-    title: '📋 New Job Assigned',
-    message: `You have been assigned to ${job?.name || assignment.job_name} on ${new Date(assignment.date).toLocaleDateString()}`,
-    action_url: `/JobDetails?id=${assignment.job_id}`,
-    related_entity_type: 'assignment',
-    related_entity_id: assignment.id
-  });
-};
-
-// Send notification when schedule changes
-export const notifyScheduleChange = async (assignment, employee, changeType = 'updated') => {
-  const titles = {
-    updated: '📅 Schedule Updated',
-    cancelled: '❌ Schedule Cancelled',
-    rescheduled: '🔄 Schedule Rescheduled'
-  };
-  
-  await base44.entities.Notification.create({
-    recipient_email: employee.email,
-    recipient_name: employee.full_name,
-    type: 'schedule_update',
-    priority: 'high',
-    title: titles[changeType] || titles.updated,
-    message: `Your schedule for ${assignment.job_name || assignment.event_title} on ${new Date(assignment.date).toLocaleDateString()} has been ${changeType}.`,
-    action_url: '/Calendario',
-    related_entity_type: 'assignment',
-    related_entity_id: assignment.id
-  });
-};
-
-// Send notification for new announcement
-export const notifyAnnouncement = async (post, allEmployees) => {
-  const priority = post.priority === 'urgent' ? 'urgent' : 
-                   post.priority === 'important' ? 'high' : 'medium';
-  
-  // Send to all employees
-  const notifications = allEmployees.map(emp => ({
-    recipient_email: emp.email,
-    recipient_name: emp.full_name,
-    type: 'system_alert',
-    priority,
-    title: `📢 ${post.title}`,
-    message: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-    action_url: '/NewsFeed',
-    related_entity_type: 'post',
-    related_entity_id: post.id
-  }));
-  
-  // Bulk create notifications
-  for (const notif of notifications) {
-    await base44.entities.Notification.create(notif);
-  }
-};
-
-// Send notification for inventory restock needed
-export const notifyInventoryLow = async (item, adminUsers) => {
-  for (const admin of adminUsers) {
-    await base44.entities.Notification.create({
-      recipient_email: admin.email,
-      recipient_name: admin.full_name,
-      type: 'system_alert',
-      priority: item.quantity === 0 ? 'urgent' : 'high',
-      title: `📦 ${item.quantity === 0 ? 'Out of Stock' : 'Low Stock'}: ${item.name}`,
-      message: `Only ${item.quantity} ${item.unit || 'units'} remaining. Reorder needed.`,
-      action_url: '/Inventario',
-      related_entity_type: 'inventory',
-      related_entity_id: item.id
-    });
-  }
-};
-
-// Send notification for certification expiring
-export const notifyCertificationExpiring = async (certification, employee, adminUsers) => {
-  const daysUntilExpiry = Math.ceil(
-    (new Date(certification.expiration_date) - new Date()) / (1000 * 60 * 60 * 24)
-  );
-  
-  // Notify employee
-  await base44.entities.Notification.create({
-    recipient_email: employee.email,
-    recipient_name: employee.full_name,
-    type: 'system_alert',
-    priority: daysUntilExpiry <= 7 ? 'urgent' : 'high',
-    title: `⚠️ Certification Expiring Soon`,
-    message: `Your ${certification.certification_name} expires in ${daysUntilExpiry} days. Please renew it.`,
-    action_url: '/MyProfile',
-    related_entity_type: 'certification',
-    related_entity_id: certification.id
-  });
-  
-  // Notify admins
-  for (const admin of adminUsers) {
-    await base44.entities.Notification.create({
-      recipient_email: admin.email,
-      recipient_name: admin.full_name,
-      type: 'system_alert',
-      priority: daysUntilExpiry <= 7 ? 'urgent' : 'medium',
-      title: `⚠️ Employee Certification Expiring`,
-      message: `${employee.full_name}'s ${certification.certification_name} expires in ${daysUntilExpiry} days.`,
-      action_url: '/Empleados',
-      related_entity_type: 'certification',
-      related_entity_id: certification.id
-    });
-  }
-};
-
-// Send notification when payroll is ready
-export const notifyPayrollReady = async (weeklyPayroll, employee) => {
-  await base44.entities.Notification.create({
-    recipient_email: employee.email,
-    recipient_name: employee.full_name,
-    type: 'info',
-    priority: 'medium',
-    title: '💰 Payroll Ready',
-    message: `Your payroll for ${new Date(weeklyPayroll.week_start).toLocaleDateString()} - ${new Date(weeklyPayroll.week_end).toLocaleDateString()} is ready. Total: $${weeklyPayroll.total_pay.toFixed(2)}`,
-    action_url: '/MyPayroll',
-    related_entity_type: 'payroll',
-    related_entity_id: weeklyPayroll.id
-  });
-};
-
-// Generic function to send custom notification
-export const sendCustomNotification = async ({
+export async function createNotification({
   recipientEmail,
   recipientName,
-  type = 'info',
-  priority = 'medium',
+  type,
   title,
   message,
-  actionUrl,
-  relatedEntityType,
-  relatedEntityId
-}) => {
-  await base44.entities.Notification.create({
-    recipient_email: recipientEmail,
-    recipient_name: recipientName,
-    type,
-    priority,
-    title,
-    message,
-    action_url: actionUrl,
-    related_entity_type: relatedEntityType,
-    related_entity_id: relatedEntityId
-  });
-};
+  priority = 'medium',
+  actionUrl = null,
+  relatedEntityType = null,
+  relatedEntityId = null,
+  metadata = {}
+}) {
+  try {
+    // Obtener configuración de notificaciones del usuario
+    const settings = await getUserNotificationSettings(recipientEmail);
+    
+    // Determinar el tipo base para la configuración
+    const typeBase = getNotificationTypeBase(type);
+    
+    // Verificar si el usuario quiere recibir notificaciones in-app
+    const inAppEnabled = settings[`${typeBase}_in_app`] !== false;
+    const emailEnabled = settings[`${typeBase}_email`] === true;
 
-export default {
-  notifyExpenseStatus,
-  notifyTimesheetStatus,
-  notifyTimeOffStatus,
-  notifyJobAssignment,
-  notifyScheduleChange,
-  notifyAnnouncement,
-  notifyInventoryLow,
-  notifyCertificationExpiring,
-  notifyPayrollReady,
-  sendCustomNotification
-};
+    if (!inAppEnabled && !emailEnabled) {
+      console.log(`User ${recipientEmail} has disabled notifications for ${type}`);
+      return null;
+    }
+
+    // Crear notificación in-app si está habilitada
+    let notification = null;
+    if (inAppEnabled) {
+      notification = await base44.entities.Notification.create({
+        recipient_email: recipientEmail,
+        recipient_name: recipientName,
+        type,
+        title,
+        message,
+        priority,
+        action_url: actionUrl,
+        related_entity_type: relatedEntityType,
+        related_entity_id: relatedEntityId,
+        metadata,
+        is_read: false
+      });
+    }
+
+    // Enviar email si está habilitado
+    if (emailEnabled && notification) {
+      await sendEmailNotification(notification);
+      await base44.entities.Notification.update(notification.id, {
+        sent_via_email: true,
+        email_sent_date: new Date().toISOString()
+      });
+    }
+
+    return notification;
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    return null;
+  }
+}
+
+/**
+ * Obtener configuración de notificaciones del usuario
+ */
+async function getUserNotificationSettings(userEmail) {
+  try {
+    const settings = await base44.entities.NotificationSettings.filter({ 
+      user_email: userEmail 
+    });
+    
+    if (settings.length > 0) {
+      return settings[0];
+    }
+    
+    // Configuración por defecto si no existe
+    return {
+      project_invitation_in_app: true,
+      project_invitation_email: true,
+      task_assigned_in_app: true,
+      task_assigned_email: true,
+      task_status_in_app: true,
+      task_status_email: false,
+      task_deadline_in_app: true,
+      task_deadline_email: true,
+      access_request_in_app: true,
+      access_request_email: true,
+      mentions_in_app: true,
+      mentions_email: true,
+      file_uploads_in_app: true,
+      file_uploads_email: false,
+      milestone_in_app: true,
+      milestone_email: true,
+      system_alerts_in_app: true,
+      system_alerts_email: true
+    };
+  } catch (error) {
+    console.error('Error fetching notification settings:', error);
+    return {};
+  }
+}
+
+/**
+ * Mapear tipo de notificación a configuración base
+ */
+function getNotificationTypeBase(type) {
+  const typeMap = {
+    'project_invitation': 'project_invitation',
+    'project_member_added': 'project_invitation',
+    'task_assigned': 'task_assigned',
+    'task_status_changed': 'task_status',
+    'task_due_soon': 'task_deadline',
+    'task_overdue': 'task_deadline',
+    'access_request_pending': 'access_request',
+    'access_request_approved': 'access_request',
+    'access_request_rejected': 'access_request',
+    'comment_mention': 'mentions',
+    'file_uploaded': 'file_uploads',
+    'milestone_completed': 'milestone',
+    'system_alert': 'system_alerts'
+  };
+  
+  return typeMap[type] || 'system_alerts';
+}
+
+/**
+ * Enviar notificación por email
+ */
+export async function sendEmailNotification(notification) {
+  try {
+    const priorityEmojis = {
+      low: 'ℹ️',
+      medium: '📢',
+      high: '⚠️',
+      urgent: '🚨'
+    };
+
+    const emoji = priorityEmojis[notification.priority] || '📢';
+    
+    await base44.integrations.Core.SendEmail({
+      to: notification.recipient_email,
+      subject: `${emoji} ${notification.title} - MCI Field`,
+      body: `Hello ${notification.recipient_name},\n\n${notification.message}\n\n${
+        notification.action_url 
+          ? `Take action: ${window.location.origin}${notification.action_url}\n\n` 
+          : ''
+      }---\nThis is an automated notification from MCI Field.\nYou can manage your notification preferences in Settings.`
+    });
+  } catch (error) {
+    console.error('Error sending email notification:', error);
+  }
+}
+
+/**
+ * Helpers específicos para cada tipo de evento
+ */
+
+export async function notifyProjectInvitation({ 
+  recipientEmail, 
+  recipientName, 
+  projectName, 
+  inviterName,
+  projectId 
+}) {
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'project_invitation',
+    title: 'New Project Invitation',
+    message: `${inviterName} invited you to join the project "${projectName}"`,
+    priority: 'high',
+    actionUrl: `/Projects/${projectId}`,
+    relatedEntityType: 'project',
+    relatedEntityId: projectId,
+    metadata: { projectName, inviterName }
+  });
+}
+
+export async function notifyTaskAssigned({ 
+  recipientEmail, 
+  recipientName, 
+  taskName, 
+  assignerName,
+  taskId,
+  projectId 
+}) {
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_assigned',
+    title: 'New Task Assigned',
+    message: `${assignerName} assigned you the task "${taskName}"`,
+    priority: 'medium',
+    actionUrl: `/Projects/${projectId}?task=${taskId}`,
+    relatedEntityType: 'task',
+    relatedEntityId: taskId,
+    metadata: { taskName, assignerName, projectId }
+  });
+}
+
+export async function notifyTaskDueSoon({ 
+  recipientEmail, 
+  recipientName, 
+  taskName, 
+  dueDate,
+  taskId,
+  projectId 
+}) {
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'task_due_soon',
+    title: 'Task Due Soon',
+    message: `Task "${taskName}" is due on ${dueDate}`,
+    priority: 'high',
+    actionUrl: `/Projects/${projectId}?task=${taskId}`,
+    relatedEntityType: 'task',
+    relatedEntityId: taskId,
+    metadata: { taskName, dueDate, projectId }
+  });
+}
+
+export async function notifyAccessRequestPending({ 
+  recipientEmail, 
+  recipientName, 
+  requesterName,
+  projectName,
+  projectId 
+}) {
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'access_request_pending',
+    title: 'New Access Request',
+    message: `${requesterName} requested access to "${projectName}"`,
+    priority: 'medium',
+    actionUrl: `/Projects/${projectId}/access-requests`,
+    relatedEntityType: 'project',
+    relatedEntityId: projectId,
+    metadata: { requesterName, projectName }
+  });
+}
+
+export async function notifyMilestoneCompleted({ 
+  recipientEmail, 
+  recipientName, 
+  milestoneName,
+  projectName,
+  projectId 
+}) {
+  return createNotification({
+    recipientEmail,
+    recipientName,
+    type: 'milestone_completed',
+    title: 'Milestone Completed! 🎉',
+    message: `Milestone "${milestoneName}" in project "${projectName}" has been completed`,
+    priority: 'medium',
+    actionUrl: `/Projects/${projectId}`,
+    relatedEntityType: 'project',
+    relatedEntityId: projectId,
+    metadata: { milestoneName, projectName }
+  });
+}
