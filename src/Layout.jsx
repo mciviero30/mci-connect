@@ -68,6 +68,7 @@ import MobileOptimizations from "@/components/shared/MobileOptimizations";
 import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
+import NotificationEngine from "@/components/notifications/NotificationEngine"; // NEW IMPORT
 import { OfflineProvider } from "@/components/offline/OfflineManager";
 import {
   DropdownMenu,
@@ -399,6 +400,9 @@ const LayoutContent = ({ children, currentPageName }) => {
     <SidebarProvider>
       <MobileOptimizations />
       <NotificationService user={user}>
+        {/* NEW: Notification Engine */}
+        <NotificationEngine user={user} />
+        
         <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 to-white">
           <style>{`
             :root {
