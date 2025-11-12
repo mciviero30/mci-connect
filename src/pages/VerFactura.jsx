@@ -359,7 +359,7 @@ export default function VerFactura() {
       </div>
 
       {/* Invoice Document */}
-      <div className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
+      <div id="invoice-printable" className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
         <InvoiceDocument invoice={invoice} />
       </div>
 
@@ -467,39 +467,51 @@ export default function VerFactura() {
         </DialogContent>
       </Dialog>
 
-      <style jsx>{`
+      <style>{`
         @media print {
-          body * {
-            visibility: hidden;
+          /* Hide everything by default */
+          body > *:not(#root) {
+            display: none !important;
           }
           
-          #root, #root * {
-            visibility: hidden;
+          /* Hide all children of root except our invoice */
+          #root > *:not(div) {
+            display: none !important;
           }
           
-          .max-w-4xl, .max-w-4xl * {
-            visibility: visible;
+          /* Hide the action bar */
+          .no-print {
+            display: none !important;
           }
           
-          .max-w-4xl {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
+          /* Show only the invoice container */
+          #invoice-printable {
+            display: block !important;
+            visibility: visible !important;
+            position: static !important;
+            width: 100% !important;
+            max-width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             box-shadow: none !important;
             border-radius: 0 !important;
+            background: white !important;
           }
           
-          .no-print, .no-print * {
-            display: none !important;
-            visibility: hidden !important;
+          /* Make all children of invoice printable visible */
+          #invoice-printable * {
+            visibility: visible !important;
           }
           
+          /* Page settings */
           @page {
             size: auto;
             margin: 0.5in;
+          }
+          
+          /* Remove backgrounds from body */
+          body {
+            background: white !important;
           }
         }
       `}</style>
