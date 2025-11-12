@@ -367,12 +367,17 @@ const LayoutContent = ({ children, currentPageName }) => {
       <NotificationService user={user}>
         <NotificationEngine user={user} />
         
-        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
           <style>{`
             :root {
               --sidebar-gradient-from: 15 23 42;
               --sidebar-gradient-via: 30 41 59;
               --sidebar-gradient-to: 51 65 85;
+            }
+            
+            /* Modern dark theme for entire app */
+            body {
+              background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
             }
             
             [data-sidebar="sidebar"] {
@@ -408,6 +413,25 @@ const LayoutContent = ({ children, currentPageName }) => {
             
             .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
               background: rgba(59, 159, 243, 0.6);
+            }
+
+            /* Custom scrollbar for main content */
+            *::-webkit-scrollbar {
+              width: 8px;
+              height: 8px;
+            }
+            
+            *::-webkit-scrollbar-track {
+              background: rgba(255, 255, 255, 0.05);
+            }
+            
+            *::-webkit-scrollbar-thumb {
+              background: rgba(59, 159, 243, 0.3);
+              border-radius: 4px;
+            }
+            
+            *::-webkit-scrollbar-thumb:hover {
+              background: rgba(59, 159, 243, 0.5);
             }
 
             @media (max-width: 1024px) {
@@ -547,10 +571,10 @@ const LayoutContent = ({ children, currentPageName }) => {
           </Sidebar>
 
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <header className="backdrop-blur-xl bg-white/80 border-b border-slate-200 px-6 py-4 md:hidden shadow-sm flex-shrink-0">
+            <header className="backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50 px-6 py-4 md:hidden shadow-lg flex-shrink-0">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-slate-100 p-2 rounded-lg transition-colors">
-                  <Menu className="w-5 h-5 text-slate-700" />
+                <SidebarTrigger className="hover:bg-white/10 p-2 rounded-lg transition-colors">
+                  <Menu className="w-5 h-5 text-white" />
                 </SidebarTrigger>
                 <div className="flex items-center gap-2">
                   <img
@@ -559,14 +583,14 @@ const LayoutContent = ({ children, currentPageName }) => {
                     className="w-6 h-6"
                   />
                   <div>
-                    <h1 className="text-lg font-bold text-slate-900 leading-none">MCI Connect</h1>
-                    {isAdmin && <p className="text-[10px] text-[#3B9FF3] leading-none">Management System</p>}
+                    <h1 className="text-lg font-bold text-white leading-none">MCI Connect</h1>
+                    {isAdmin && <p className="text-[10px] text-blue-300 leading-none">Management System</p>}
                   </div>
                 </div>
               </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 via-white to-blue-50" data-scrollable="true">
+            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" data-scrollable="true">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentPageName}
