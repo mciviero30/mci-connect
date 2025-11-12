@@ -28,13 +28,13 @@ export default function InvoiceDocument({ invoice }) {
                         <img
                             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/051e3017c_Gemini_Generated_Image_suzuhgsuzuhgsuzu.png"
                             alt="MCI Logo"
-                            className="h-16 object-contain print:h-14"
+                            className="h-24 object-contain print:h-20"
                         />
                     </div>
 
                     {/* RIGHT: Invoice Label and Number */}
                     <div className="text-right">
-                        <p className="text-white text-opacity-80 text-xs font-semibold uppercase tracking-wider mb-1">Invoice</p>
+                        <p className="text-white text-xs font-bold uppercase tracking-wider mb-1">Invoice</p>
                         <p className="text-white text-3xl font-bold">{invoice.invoice_number}</p>
                         {isPaid && (
                             <div className="mt-2 inline-flex bg-emerald-500 px-4 py-1 rounded-full">
@@ -49,8 +49,8 @@ export default function InvoiceDocument({ invoice }) {
                     {/* Company Info */}
                     <div className="space-y-4">
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900 leading-tight print:text-lg">MODERN COMPONENTS</h2>
-                            <h2 className="text-xl font-bold text-slate-900 leading-tight print:text-lg">INSTALLATION</h2>
+                            <h2 className="text-base font-bold text-slate-900 leading-tight print:text-sm">MODERN COMPONENTS</h2>
+                            <h2 className="text-base font-bold text-slate-900 leading-tight print:text-sm">INSTALLATION</h2>
                         </div>
                         <div className="text-sm text-gray-700 space-y-1 print:text-gray-900">
                             <p className="font-semibold text-slate-800 print:text-slate-900">2414 Meadow Isle Ln</p>
