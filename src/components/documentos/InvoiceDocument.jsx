@@ -27,11 +27,11 @@ export default function InvoiceDocument({ invoice }) {
                         <img
                             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/051e3017c_Gemini_Generated_Image_suzuhgsuzuhgsuzu.png"
                             alt="MCI Logo"
-                            className="h-16 object-contain print:h-14"
+                            className="h-20 object-contain print:h-18"
                         />
                         <div className="border-l-2 border-slate-300 pl-3">
-                            <h2 className="text-lg font-bold text-slate-900 leading-tight">ModernComponents</h2>
-                            <h2 className="text-lg font-bold text-slate-900 leading-tight">Installation</h2>
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight">ModernComponents</h2>
+                            <h2 className="text-xl font-bold text-slate-900 leading-tight">Installation</h2>
                         </div>
                     </div>
 
@@ -99,58 +99,46 @@ export default function InvoiceDocument({ invoice }) {
                 </div>
             )}
 
-            {/* Items Table - Modern Card */}
-            <div className="bg-white rounded-2xl shadow-sm mb-8 overflow-hidden border border-slate-200 print:shadow-none print:border print:border-slate-300 print:mb-6">
-                <div className="bg-slate-800 px-6 py-4 print:bg-slate-700">
-                    <p className="text-white font-bold text-lg flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        Items & Services
-                    </p>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="bg-slate-100 border-b-2 border-slate-300 print:bg-slate-200">
-                                <th className="text-left p-4 text-slate-800 font-bold text-xs uppercase tracking-wider w-12 print:p-3 print:text-slate-900">#</th>
-                                <th className="text-left p-4 text-slate-800 font-bold text-xs uppercase tracking-wider print:p-3 print:text-slate-900">Description</th>
-                                <th className="text-right p-4 text-slate-800 font-bold text-xs uppercase tracking-wider w-24 print:p-3 print:text-slate-900">Qty</th>
-                                <th className="text-right p-4 text-slate-800 font-bold text-xs uppercase tracking-wider w-28 print:p-3 print:text-slate-900">Rate</th>
-                                <th className="text-right p-4 text-slate-800 font-bold text-xs uppercase tracking-wider w-32 print:p-3 print:text-slate-900">Amount</th>
+            {/* Items Table - Clean Style */}
+            <div className="mb-8 overflow-hidden border-t border-b border-slate-300">
+                <table className="w-full">
+                    <thead>
+                        <tr className="bg-slate-50 border-b border-slate-300">
+                            <th className="text-left p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-12">#</th>
+                            <th className="text-left p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider">Description</th>
+                            <th className="text-right p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-24">Qty</th>
+                            <th className="text-right p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-28">Rate</th>
+                            <th className="text-right p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-32">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white">
+                        {invoice.items.map((item, index) => (
+                            <tr key={index} className="border-b border-slate-200">
+                                <td className="p-3 align-top">
+                                    <span className="text-slate-600 font-semibold">{index + 1}</span>
+                                </td>
+                                <td className="p-3 align-top">
+                                    <p className="font-semibold text-slate-900">{item.item_name || item.description}</p>
+                                    {item.description && item.item_name && (
+                                        <p className="text-xs text-slate-600 mt-1 leading-relaxed whitespace-pre-wrap">{item.description}</p>
+                                    )}
+                                </td>
+                                <td className="p-3 align-top text-right">
+                                    <p className="text-sm font-semibold text-slate-900">
+                                        {item.quantity.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2})}
+                                    </p>
+                                    {item.unit && <p className="text-xs text-slate-500 mt-1">{item.unit}</p>}
+                                </td>
+                                <td className="p-3 align-top text-right text-sm text-slate-800 font-semibold">
+                                    ${item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </td>
+                                <td className="p-3 align-top text-right text-base font-bold text-slate-900">
+                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {invoice.items.map((item, index) => (
-                                <tr key={index} className="border-b border-slate-200 print:border-slate-300">
-                                    <td className="p-4 align-top print:p-3">
-                                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center print:bg-blue-200">
-                                            <span className="text-blue-800 font-bold text-sm print:text-blue-900">{index + 1}</span>
-                                        </div>
-                                    </td>
-                                    <td className="p-4 align-top print:p-3">
-                                        <p className="font-semibold text-slate-900 mb-1">{item.item_name || item.description}</p>
-                                        {item.description && item.item_name && (
-                                            <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap print:text-gray-900">{item.description}</p>
-                                        )}
-                                    </td>
-                                    <td className="p-4 align-top text-right print:p-3">
-                                        <p className="text-sm font-bold text-slate-900">
-                                            {item.quantity.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                                        </p>
-                                        {item.unit && <p className="text-xs text-gray-600 mt-1 print:text-gray-900">{item.unit}</p>}
-                                    </td>
-                                    <td className="p-4 align-top text-right text-sm text-gray-800 font-semibold print:p-3 print:text-gray-900">
-                                        ${item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </td>
-                                    <td className="p-4 align-top text-right text-base font-bold text-blue-800 print:p-3 print:text-blue-900">
-                                        ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
             {/* Totals Section - Clean Style */}
