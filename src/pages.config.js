@@ -50,6 +50,9 @@ import CompanyInfo from './pages/CompanyInfo';
 import AIInvoiceGenerator from './pages/AIInvoiceGenerator';
 import NotificationSettings from './pages/NotificationSettings';
 import Recognitions from './pages/Recognitions';
+import FinancialDashboard from './pages/FinancialDashboard';
+import AnalyticsDashboard from './pages/AnalyticsDashboard';
+import JobsAdvanced from './pages/JobsAdvanced';
 import Layout from './Layout.jsx';
 
 
@@ -106,6 +109,9 @@ export const PAGES = {
     "AIInvoiceGenerator": AIInvoiceGenerator,
     "NotificationSettings": NotificationSettings,
     "Recognitions": Recognitions,
+    "FinancialDashboard": FinancialDashboard,
+    "AnalyticsDashboard": AnalyticsDashboard,
+    "JobsAdvanced": JobsAdvanced,
 }
 
 export const pagesConfig = {
