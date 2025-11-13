@@ -23,9 +23,13 @@ import {
   Settings as SettingsIcon,
   Save,
   X as XIcon,
-  Trophy // Added Trophy icon
+  Trophy,
+  Brain, // Added Brain icon
+  Sparkles, // Added Sparkles icon
+  Shield, // Added Shield icon
+  Zap // Added Zap icon
 } from "lucide-react";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay, addDays, differenceInDays } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -45,16 +49,18 @@ import StatsWidget from "../components/dashboard/widgets/StatsWidget";
 import ChartWidget from "../components/dashboard/widgets/ChartWidget";
 import ListWidget from "../components/dashboard/widgets/ListWidget";
 import WidgetLibrary from "../components/dashboard/WidgetLibrary";
-import RecognitionFeed from "../components/recognition/RecognitionFeed"; // New import
-import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget"; // New import
-import GiveKudosDialog from "../components/recognition/GiveKudosDialog"; // New import
+import RecognitionFeed from "../components/recognition/RecognitionFeed";
+import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget";
+import GiveKudosDialog from "../components/recognition/GiveKudosDialog";
 
-// Default layouts
+// Default layouts with NEW widgets
 const DEFAULT_ADMIN_LAYOUT = [
   { id: 'active-employees-1', type: 'active-employees', title: 'Active Employees', icon: Users, size: 'small', position: 0, visible: true },
   { id: 'active-jobs-1', type: 'active-jobs', title: 'Active Jobs', icon: Briefcase, size: 'small', position: 1, visible: true },
   { id: 'pending-expenses-1', type: 'pending-expenses', title: 'Pending Expenses', icon: Receipt, size: 'small', position: 2, visible: true },
   { id: 'total-hours-1', type: 'total-hours', title: 'Total Hours', icon: Clock, size: 'small', position: 3, visible: true },
+  { id: 'ai-insights-1', type: 'ai-insights', title: 'AI Insights', icon: Brain, size: 'medium', position: 4, visible: true },
+  { id: 'budget-alerts-1', type: 'budget-alerts', title: 'Budget Alerts', icon: AlertTriangle, size: 'medium', position: 5, visible: true },
 ];
 
 const DEFAULT_EMPLOYEE_LAYOUT = [
@@ -62,6 +68,8 @@ const DEFAULT_EMPLOYEE_LAYOUT = [
   { id: 'driving-hours-1', type: 'driving-hours', title: 'Driving Hours', icon: MapPin, size: 'small', position: 1, visible: true },
   { id: 'weekly-pay-1', type: 'weekly-pay', title: 'Weekly Pay', icon: DollarSign, size: 'small', position: 2, visible: true },
   { id: 'my-expenses-1', type: 'my-expenses', title: 'My Expenses', icon: Receipt, size: 'small', position: 3, visible: true },
+  { id: 'my-score-1', type: 'my-score', title: 'My Score', icon: Award, size: 'small', position: 4, visible: true },
+  { id: 'my-projects-1', type: 'my-projects', title: 'My Projects', icon: Briefcase, size: 'medium', position: 5, visible: true },
 ];
 
 export default function Dashboard() {
@@ -72,7 +80,7 @@ export default function Dashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
   const [widgets, setWidgets] = useState([]);
-  const [showKudosDialog, setShowKudosDialog] = useState(false); // New state
+  const [showKudosDialog, setShowKudosDialog] = useState(false);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -95,7 +103,20 @@ export default function Dashboard() {
   // Initialize widgets from preferences or defaults
   useEffect(() => {
     if (dashboardPrefs?.layout) {
-      setWidgets(dashboardPrefs.layout);
+      // Ensure all default widgets are present if they don't exist in saved layout
+      const defaultLayout = isAdmin ? DEFAULT_ADMIN_LAYOUT : DEFAULT_EMPLOYEE_LAYOUT;
+      const mergedLayout = defaultLayout.map(defaultWidget => {
+        const existingWidget = dashboardPrefs.layout.find(lw => lw.id === defaultWidget.id);
+        return existingWidget || { ...defaultWidget, position: -1 }; // Mark new widgets for later positioning
+      });
+      const existingWidgetsOnly = dashboardPrefs.layout.filter(lw => !defaultLayout.some(dw => dw.id === lw.id));
+      
+      const finalLayout = [...mergedLayout, ...existingWidgetsOnly]
+        .filter(w => w.visible !== false) // Filter out explicitly hidden widgets
+        .map((w, index) => ({ ...w, position: w.position !== -1 ? w.position : index })) // Assign position to new widgets
+        .sort((a,b) => a.position - b.position);
+
+      setWidgets(finalLayout);
     } else if (user) {
       setWidgets(isAdmin ? DEFAULT_ADMIN_LAYOUT : DEFAULT_EMPLOYEE_LAYOUT);
     }
@@ -230,6 +251,19 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  const { data: certifications = [] } = useQuery({
+    queryKey: ['certifications', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return base44.entities.Certification.filter({
+        employee_email: user.email,
+      }, '-expiration_date');
+    },
+    enabled: !!user?.email && !isAdmin,
+    staleTime: 300000,
+    initialData: [],
+  });
+
   // CALCULATIONS
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 });
@@ -279,7 +313,6 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  // FIXED: Correct arrow function syntax with parentheses around parameter
   const totalWorkedHours = allTimeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
 
   const todaysBirthdays = allEmployees.filter(emp => {
@@ -291,6 +324,70 @@ export default function Dashboard() {
   const recentAchievements = recognitions.slice(0, 3);
   const weekProgress = (currentWeekHours / 40) * 100;
   const pendingTimesheetsCount = pendingTimeEntries.length;
+
+  // NEW: My Scorecard calculation for employees
+  const myScorecard = React.useMemo(() => {
+    if (isAdmin || !user) return null;
+
+    const myRecognitions = recognitions.filter(r => r.employee_email === user.email);
+    const myCertifications = certifications.filter(c => c.employee_email === user.email);
+
+    const totalHours = timeEntries.reduce((sum, t) => sum + (t.hours_worked || 0), 0);
+    const approvedHours = timeEntries.filter(t => t.status === 'approved').reduce((sum, t) => sum + (t.hours_worked || 0), 0);
+    const totalPoints = myRecognitions.reduce((sum, r) => sum + (r.points || 0), 0);
+    const activeCerts = myCertifications.filter(c => c.status === 'active').length;
+    const attendanceRate = totalHours > 0 ? ((approvedHours / totalHours) * 100) : 100;
+
+    const overallScore = (attendanceRate * 0.3) + (Math.min(totalPoints / 10, 100) * 0.4) + (activeCerts * 10 * 0.3);
+
+    return { overallScore, totalPoints, activeCerts, attendanceRate };
+  }, [user, timeEntries, recognitions, certifications, isAdmin]);
+
+  // NEW: My projects for employees
+  const myProjects = React.useMemo(() => {
+    if (isAdmin || !user) return [];
+
+    const myTimeEntries = timeEntries.filter(t => t.employee_email === user.email);
+    const myJobIds = [...new Set(myTimeEntries.map(t => t.job_id))];
+
+    return jobs
+      .filter(j => myJobIds.includes(j.id) && j.status !== 'archived')
+      .slice(0, 3)
+      .map(job => {
+        const jobTimeEntries = timeEntries.filter(t => t.job_id === job.id);
+        const totalJobHours = jobTimeEntries.reduce((sum, t) => sum + (t.hours_worked || 0), 0);
+        const estimatedHours = job.estimated_hours || 100;
+        const completionPercentage = estimatedHours > 0 ? (totalJobHours / estimatedHours * 100) : 0;
+
+        return { ...job, completionPercentage };
+      });
+  }, [user, jobs, timeEntries, isAdmin]);
+
+  // NEW: Budget alerts for admin
+  const budgetAlerts = React.useMemo(() => {
+    if (!isAdmin) return [];
+
+    return jobs.filter(j => j.status === 'active').map(job => {
+      const jobExpenses = allExpenses.filter(e => e.job_id === job.id);
+      const jobTimeEntries = allTimeEntries.filter(t => t.job_id === job.id);
+      
+      const actualExpenses = jobExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const laborCost = jobTimeEntries.reduce((sum, t) => {
+        const emp = allEmployees.find(e => e.email === t.employee_email);
+        const rate = emp?.hourly_rate || 25;
+        return sum + ((t.hours_worked || 0) * rate);
+      }, 0);
+      
+      const totalActual = actualExpenses + laborCost;
+      const budget = job.contract_amount || 0;
+      const variance = budget - totalActual;
+      
+      return { job, variance, budget, totalActual };
+    })
+    .filter(j => j.variance < 0)
+    .sort((a, b) => a.variance - b.variance)
+    .slice(0, 3);
+  }, [jobs, allExpenses, allTimeEntries, allEmployees, isAdmin]);
 
   // WIDGET HANDLERS
   const handleDragEnd = (result) => {
@@ -317,7 +414,8 @@ export default function Dashboard() {
   };
 
   const handleAddWidget = (widget) => {
-    setWidgets([...widgets, widget]);
+    const newWidgetWithPosition = { ...widget, position: widgets.length };
+    setWidgets([...widgets, newWidgetWithPosition]);
     setShowWidgetLibrary(false);
   };
 
@@ -328,7 +426,19 @@ export default function Dashboard() {
 
   const handleCancelEdit = () => {
     if (dashboardPrefs?.layout) {
-      setWidgets(dashboardPrefs.layout);
+      const defaultLayout = isAdmin ? DEFAULT_ADMIN_LAYOUT : DEFAULT_EMPLOYEE_LAYOUT;
+      const mergedLayout = defaultLayout.map(defaultWidget => {
+        const existingWidget = dashboardPrefs.layout.find(lw => lw.id === defaultWidget.id);
+        return existingWidget || { ...defaultWidget, position: -1 }; // Mark new widgets for later positioning
+      });
+      const existingWidgetsOnly = dashboardPrefs.layout.filter(lw => !defaultLayout.some(dw => dw.id === lw.id));
+      
+      const finalLayout = [...mergedLayout, ...existingWidgetsOnly]
+        .filter(w => w.visible !== false)
+        .map((w, index) => ({ ...w, position: w.position !== -1 ? w.position : index }))
+        .sort((a,b) => a.position - b.position);
+
+      setWidgets(finalLayout);
     } else {
       setWidgets(isAdmin ? DEFAULT_ADMIN_LAYOUT : DEFAULT_EMPLOYEE_LAYOUT);
     }
@@ -365,7 +475,7 @@ export default function Dashboard() {
             <StatsWidget value={`${drivingHoursThisWeek.toFixed(1)}h`} label={t('drivingHours')} icon={MapPin} badge="Esta Semana" color="green" />
             <div className="flex items-center gap-2 text-xs text-slate-500 mt-2">
               <DollarSign className="w-3 h-3" />
-              <span>${drivingPayThisWeek.toFixed(2)} ganados</span>
+              <span>${drivingPayThisWeek.toFixed(2)} {language === 'es' ? 'ganados' : 'earned'}</span>
             </div>
           </div>
         );
@@ -375,15 +485,100 @@ export default function Dashboard() {
           <div>
             <StatsWidget value={`$${(currentWeekPay + drivingPayThisWeek).toFixed(2)}`} label={t('weeklyPay')} icon={DollarSign} badge="Esta Semana" color="amber" />
             <div className="flex items-center gap-2 text-xs text-slate-500 mt-2">
-              <span>Trabajo: ${currentWeekPay.toFixed(2)}</span>
+              <span>{language === 'es' ? 'Trabajo' : 'Work'}: ${currentWeekPay.toFixed(2)}</span>
               <span>•</span>
-              <span>Manejo: ${drivingPayThisWeek.toFixed(2)}</span>
+              <span>{language === 'es' ? 'Manejo' : 'Driving'}: ${drivingPayThisWeek.toFixed(2)}</span>
             </div>
           </div>
         );
       
       case 'my-expenses':
         return <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="purple" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />;
+      
+      case 'my-score':
+        if (!myScorecard) return null;
+        return (
+          <Link to={createPageUrl('MiScorecard')}>
+            <div className="cursor-pointer hover:scale-105 transition-transform">
+              <StatsWidget value={myScorecard.overallScore.toFixed(0)} label={language === 'es' ? 'Mi Score' : 'My Score'} icon={Award} color="purple" badge="✨" />
+              <div className="flex items-center gap-2 text-xs text-slate-500 mt-2">
+                <span>{myScorecard.totalPoints} {language === 'es' ? 'puntos' : 'points'}</span>
+                <span>•</span>
+                <span>{myScorecard.activeCerts} {language === 'es' ? 'certificaciones' : 'certs'}</span>
+              </div>
+            </div>
+          </Link>
+        );
+
+      case 'my-projects':
+        return (
+          <div className="space-y-2">
+            <Link to={createPageUrl('MisProyectos')}>
+              <div className="flex items-center justify-between mb-3 cursor-pointer hover:text-blue-400 transition-colors">
+                <h4 className="font-semibold text-slate-700 flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  {language === 'es' ? 'Mis Proyectos' : 'My Projects'}
+                </h4>
+                <Badge className="bg-blue-500 text-white">✨</Badge>
+              </div>
+            </Link>
+            {myProjects.length === 0 ? (
+              <p className="text-sm text-slate-600">{language === 'es' ? 'No hay proyectos activos' : 'No active projects'}</p>
+            ) : (
+              myProjects.map(proj => (
+                <div key={proj.id} className="p-2 bg-slate-50 rounded border border-slate-200">
+                  <p className="text-sm font-medium text-slate-900">{proj.name}</p>
+                  <Progress value={Math.min(proj.completionPercentage, 100)} className="h-1 mt-1" />
+                  <p className="text-xs text-slate-600 mt-1">{Math.min(proj.completionPercentage, 100).toFixed(0)}% {language === 'es' ? 'completo' : 'complete'}</p>
+                </div>
+              ))
+            )}
+          </div>
+        );
+
+      case 'ai-insights':
+        return (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Brain className="w-5 h-5 text-cyan-600" />
+              <h4 className="font-semibold text-slate-900">AI Insights</h4>
+            </div>
+            <Link to={createPageUrl('AIAutomationDashboard')}>
+              <div className="p-3 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-200 hover:border-cyan-400 transition-all cursor-pointer">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-cyan-600" />
+                  <p className="text-sm font-semibold text-slate-900">{language === 'es' ? 'Ver Dashboard Completo' : 'View Full Dashboard'}</p>
+                </div>
+                <p className="text-xs text-slate-600">{language === 'es' ? 'Predicciones, anomalías y automatización' : 'Predictions, anomalies, and automation'}</p>
+              </div>
+            </Link>
+          </div>
+        );
+
+      case 'budget-alerts':
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <h4 className="font-semibold text-slate-900">{language === 'es' ? 'Alertas de Budget' : 'Budget Alerts'}</h4>
+            </div>
+            {budgetAlerts.length === 0 ? (
+              <p className="text-sm text-slate-600">{language === 'es' ? 'Todo en orden ✓' : 'All good ✓'}</p>
+            ) : (
+              budgetAlerts.map(alert => (
+                <div key={alert.job.id} className="p-2 bg-red-50 rounded border border-red-200">
+                  <p className="text-sm font-medium text-red-900">{alert.job.name}</p>
+                  <p className="text-xs text-red-700 font-semibold">{alert.variance >= 0 ? '+' : ''}${Math.abs(alert.variance).toFixed(0)} {language === 'es' ? 'sobre budget' : 'over budget'}</p>
+                </div>
+              ))
+            )}
+            <Link to={createPageUrl('FinancialDashboard')}>
+              <Button size="sm" variant="outline" className="w-full mt-2">
+                {language === 'es' ? 'Ver Detalles' : 'View Details'}
+              </Button>
+            </Link>
+          </div>
+        );
       
       case 'pending-timesheets':
         return (
@@ -587,7 +782,7 @@ export default function Dashboard() {
             ) : (
               <>
                 <Button
-                  onClick={() => setShowKudosDialog(true)} // New button for Give Kudos
+                  onClick={() => setShowKudosDialog(true)}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
                 >
                   <Award className="w-4 h-4 mr-2" />
@@ -683,7 +878,7 @@ export default function Dashboard() {
           currentWidgets={widgets}
           userRole={isAdmin ? 'admin' : 'employee'}
         />
-        <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} /> {/* New Dialog */}
+        <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} />
       </div>
     </div>
   );
