@@ -55,6 +55,9 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import JobsAdvanced from './pages/JobsAdvanced';
 import HRAdvancedDashboard from './pages/HRAdvancedDashboard';
 import AIAutomationDashboard from './pages/AIAutomationDashboard';
+import MiScorecard from './pages/MiScorecard';
+import MisProyectos from './pages/MisProyectos';
+import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import Layout from './Layout.jsx';
 
 
@@ -116,6 +119,9 @@ export const PAGES = {
     "JobsAdvanced": JobsAdvanced,
     "HRAdvancedDashboard": HRAdvancedDashboard,
     "AIAutomationDashboard": AIAutomationDashboard,
+    "MiScorecard": MiScorecard,
+    "MisProyectos": MisProyectos,
+    "AIAssistantPersonal": AIAssistantPersonal,
 }
 
 export const pagesConfig = {

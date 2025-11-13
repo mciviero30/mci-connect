@@ -37,6 +37,10 @@ import {
   Sparkles,
   Wallet,
   Globe,
+  Target,
+  Brain,
+  Zap,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar,
@@ -237,6 +241,16 @@ const LayoutContent = ({ children, currentPageName }) => {
       ]
     },
     {
+      section: 'DASHBOARDS & INSIGHTS',
+      items: [
+        { title: 'Financial Dashboard', url: createPageUrl('FinancialDashboard'), icon: DollarSign, badge: '🚀' },
+        { title: 'Analytics Dashboard', url: createPageUrl('AnalyticsDashboard'), icon: BarChart3, badge: '🚀' },
+        { title: 'Jobs Advanced', url: createPageUrl('JobsAdvanced'), icon: Target, badge: '🚀' },
+        { title: 'HR Advanced', url: createPageUrl('HRAdvancedDashboard'), icon: Shield, badge: '🚀' },
+        { title: 'AI Automation', url: createPageUrl('AIAutomationDashboard'), icon: Brain, badge: '🚀' },
+      ]
+    },
+    {
       section: 'REPORTS & AI',
       items: [
         { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
@@ -285,6 +299,14 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'My Expenses', url: createPageUrl("MisGastos"), icon: Receipt },
         { title: 'Per Diem', url: createPageUrl("PerDiem"), icon: Banknote },
         { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
+      ]
+    },
+    {
+      section: 'MY PERFORMANCE',
+      items: [
+        { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target, badge: '🚀' },
+        { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase, badge: '🚀' },
+        { title: 'AI Assistant', url: createPageUrl("AIAssistantPersonal"), icon: Brain, badge: '🚀' },
       ]
     },
     {
@@ -541,7 +563,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                     className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50 shadow-lg"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-blue-400/30">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-400/30">
                     <span className="text-white font-bold text-sm">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
