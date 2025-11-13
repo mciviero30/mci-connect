@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -326,53 +327,53 @@ export default function HRAdvancedDashboard() {
           icon={Users}
         />
 
-        {/* KEY METRICS */}
+        {/* KEY METRICS - FIXED TEXT COLORS */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-blue-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Empleados Activos' : 'Active Employees'}
                 </p>
-                <Users className="w-5 h-5 text-blue-100" />
+                <Users className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{selfServiceStats.totalEmployees}</p>
+              <p className="text-3xl font-bold text-white">{selfServiceStats.totalEmployees}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-amber-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Alertas Certificaciones' : 'Cert Alerts'}
                 </p>
-                <AlertCircle className="w-5 h-5 text-amber-100" />
+                <AlertCircle className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{certificationAlerts.length}</p>
+              <p className="text-3xl font-bold text-white">{certificationAlerts.length}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-green-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Reviews Pendientes' : 'Reviews Due'}
                 </p>
-                <CheckCircle className="w-5 h-5 text-green-100" />
+                <CheckCircle className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{upcomingReviews.length}</p>
+              <p className="text-3xl font-bold text-white">{upcomingReviews.length}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-purple-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Onboarding Activo' : 'Active Onboarding'}
                 </p>
-                <Target className="w-5 h-5 text-purple-100" />
+                <Target className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{onboardingProgress.length}</p>
+              <p className="text-3xl font-bold text-white">{onboardingProgress.length}</p>
             </CardContent>
           </Card>
         </div>
@@ -380,7 +381,7 @@ export default function HRAdvancedDashboard() {
         {/* EMPLOYEE SCORECARD */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Award className="w-5 h-5 text-blue-600" />
               {language === 'es' ? 'Top 10 Employee Scorecard' : 'Top 10 Employee Scorecard'}
             </CardTitle>
@@ -438,7 +439,7 @@ export default function HRAdvancedDashboard() {
         {/* SKILLS MATRIX */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Shield className="w-5 h-5 text-green-600" />
               {language === 'es' ? 'Matriz de Habilidades' : 'Skills Matrix'}
             </CardTitle>
@@ -481,17 +482,17 @@ export default function HRAdvancedDashboard() {
                   <div key={alert.id} className={`rounded-lg p-3 border ${priorityColors[alert.priority]}`}>
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-semibold">{alert.employee_name}</p>
-                        <p className="text-sm">{alert.certification_name}</p>
+                        <p className="font-semibold text-slate-900">{alert.employee_name}</p>
+                        <p className="text-sm text-slate-700">{alert.certification_name}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">
+                        <p className="font-bold text-slate-900">
                           {alert.daysUntilExpiry < 0 
                             ? (language === 'es' ? 'VENCIDO' : 'EXPIRED')
                             : `${alert.daysUntilExpiry} ${language === 'es' ? 'días' : 'days'}`
                           }
                         </p>
-                        <p className="text-xs">
+                        <p className="text-xs text-slate-600">
                           {format(new Date(alert.expiration_date), 'MMM dd, yyyy', { locale: language === 'es' ? es : undefined })}
                         </p>
                       </div>
@@ -507,7 +508,7 @@ export default function HRAdvancedDashboard() {
         {upcomingReviews.length > 0 && (
           <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <CheckCircle className="w-5 h-5 text-green-600" />
                 {language === 'es' ? 'Reviews Pendientes' : 'Performance Reviews Due'}
               </CardTitle>
@@ -529,7 +530,7 @@ export default function HRAdvancedDashboard() {
                           : `${review.daysUntilReview} ${language === 'es' ? 'días' : 'days'}`
                         }
                       </p>
-                      <Button size="sm" className="mt-1">
+                      <Button size="sm" className="mt-1 bg-blue-600 hover:bg-blue-700">
                         {language === 'es' ? 'Iniciar Review' : 'Start Review'}
                       </Button>
                     </div>
@@ -579,7 +580,7 @@ export default function HRAdvancedDashboard() {
         {/* TIME OFF CALENDAR */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Calendar className="w-5 h-5 text-purple-600" />
               {language === 'es' ? 'Calendario de Ausencias (Próximos 30 días)' : 'Time Off Calendar (Next 30 days)'}
             </CardTitle>
@@ -601,7 +602,7 @@ export default function HRAdvancedDashboard() {
         {onboardingProgress.length > 0 && (
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
                 <Target className="w-5 h-5 text-blue-600" />
                 {language === 'es' ? 'Progreso de Onboarding' : 'Onboarding Progress'}
               </CardTitle>

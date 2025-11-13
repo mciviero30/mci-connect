@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -275,24 +276,24 @@ export default function FinancialDashboard() {
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-green-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Margen Promedio' : 'Avg Profit Margin'}
                 </p>
-                <TrendingUp className="w-5 h-5 text-green-100" />
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{avgProfitMargin.toFixed(1)}%</p>
+              <p className="text-3xl font-bold text-white">{avgProfitMargin.toFixed(1)}%</p>
             </CardContent>
           </Card>
 
           <Card className={`shadow-lg border-0 ${totalBudgetVariance >= 0 ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-red-500 to-red-600'} text-white`}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-white/90 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Varianza Total' : 'Total Variance'}
                 </p>
-                {totalBudgetVariance >= 0 ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+                {totalBudgetVariance >= 0 ? <ArrowUpRight className="w-5 h-5 text-white" /> : <ArrowDownRight className="w-5 h-5 text-white" />}
               </div>
-              <p className="text-3xl font-bold">
+              <p className="text-3xl font-bold text-white">
                 ${Math.abs(totalBudgetVariance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
@@ -301,13 +302,13 @@ export default function FinancialDashboard() {
           <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-amber-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Facturas Vencidas' : 'Overdue Invoices'}
                 </p>
-                <AlertTriangle className="w-5 h-5 text-amber-100" />
+                <AlertTriangle className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{overdueInvoices.length}</p>
-              <p className="text-amber-100 text-xs mt-1">
+              <p className="text-3xl font-bold text-white">{overdueInvoices.length}</p>
+              <p className="text-white text-xs mt-1">
                 ${overdueInvoices.reduce((sum, inv) => sum + (inv.balance || inv.total || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
@@ -316,12 +317,12 @@ export default function FinancialDashboard() {
           <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-purple-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Penalidades' : 'Late Penalties'}
                 </p>
-                <DollarSign className="w-5 h-5 text-purple-100" />
+                <DollarSign className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">
+              <p className="text-3xl font-bold text-white">
                 ${latePaymentPenalties.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
@@ -331,7 +332,7 @@ export default function FinancialDashboard() {
         {/* CASH FLOW FORECAST */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Calendar className="w-5 h-5 text-blue-600" />
               {language === 'es' ? 'Pronóstico de Flujo de Caja (12 meses)' : 'Cash Flow Forecast (12 months)'}
             </CardTitle>
@@ -375,7 +376,7 @@ export default function FinancialDashboard() {
         {/* PROFIT MARGIN TREND */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <TrendingUp className="w-5 h-5 text-green-600" />
               {language === 'es' ? 'Tendencia de Margen de Ganancia' : 'Profit Margin Trend'}
             </CardTitle>
@@ -424,7 +425,7 @@ export default function FinancialDashboard() {
         {/* BUDGET VS ACTUAL */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-slate-900">
               {language === 'es' ? 'Budget vs Real por Proyecto' : 'Budget vs Actual by Project'}
             </CardTitle>
           </CardHeader>
@@ -464,7 +465,7 @@ export default function FinancialDashboard() {
         {/* P&L STATEMENT */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-slate-900">
               {language === 'es' ? 'Estado de Pérdidas y Ganancias (Este Mes)' : 'Profit & Loss Statement (This Month)'}
             </CardTitle>
           </CardHeader>
@@ -495,7 +496,7 @@ export default function FinancialDashboard() {
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-slate-700">{language === 'es' ? 'Total Gastos' : 'Total Expenses'}</span>
                   <span className="font-bold text-red-600 text-lg">
-                    ${plStatement.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    -${plStatement.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
@@ -550,7 +551,7 @@ export default function FinancialDashboard() {
         {/* EXPENSE FORECAST */}
         <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-slate-900">
               {language === 'es' ? 'Pronóstico de Gastos (Próximo Mes)' : 'Expense Forecast (Next Month)'}
             </CardTitle>
           </CardHeader>

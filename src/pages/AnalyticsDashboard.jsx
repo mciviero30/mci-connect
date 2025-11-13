@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -303,14 +304,14 @@ export default function AnalyticsDashboard() {
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-blue-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Tasa de Conversión' : 'Conversion Rate'}
                 </p>
-                <Target className="w-5 h-5 text-blue-100" />
+                <Target className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{quoteConversionRate.conversionRate.toFixed(1)}%</p>
-              <p className="text-blue-100 text-xs mt-1">
-                {convertedQuotes.length}/{totalQuotes.length} {language === 'es' ? 'quotes' : 'quotes'}
+              <p className="text-3xl font-bold text-white">{quoteConversionRate.conversionRate.toFixed(1)}%</p>
+              <p className="text-white text-xs mt-1">
+                {quoteConversionRate.convertedQuotes}/{quoteConversionRate.totalQuotes} {language === 'es' ? 'quotes' : 'quotes'}
               </p>
             </CardContent>
           </Card>
@@ -318,13 +319,13 @@ export default function AnalyticsDashboard() {
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-green-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Tasa de Finalización' : 'Completion Rate'}
                 </p>
-                <Briefcase className="w-5 h-5 text-green-100" />
+                <Briefcase className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{jobCompletionRate.completionRate.toFixed(1)}%</p>
-              <p className="text-green-100 text-xs mt-1">
+              <p className="text-3xl font-bold text-white">{jobCompletionRate.completionRate.toFixed(1)}%</p>
+              <p className="text-white text-xs mt-1">
                 {jobCompletionRate.completed}/{jobCompletionRate.total} {language === 'es' ? 'trabajos' : 'jobs'}
               </p>
             </CardContent>
@@ -333,15 +334,15 @@ export default function AnalyticsDashboard() {
           <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-purple-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Costo Overtime' : 'Overtime Cost'}
                 </p>
-                <Clock className="w-5 h-5 text-purple-100" />
+                <Clock className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">
+              <p className="text-3xl font-bold text-white">
                 ${overtimeCostAnalysis.reduce((sum, e) => sum + e.cost, 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
-              <p className="text-purple-100 text-xs mt-1">
+              <p className="text-white text-xs mt-1">
                 {overtimeCostAnalysis.reduce((sum, e) => sum + e.hours, 0).toFixed(0)} {language === 'es' ? 'horas' : 'hours'}
               </p>
             </CardContent>
@@ -350,12 +351,12 @@ export default function AnalyticsDashboard() {
           <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-amber-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Empleados Activos' : 'Active Employees'}
                 </p>
-                <Users className="w-5 h-5 text-amber-100" />
+                <Users className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{employeeProductivity.length}</p>
+              <p className="text-3xl font-bold text-white">{employeeProductivity.length}</p>
             </CardContent>
           </Card>
         </div>
@@ -363,7 +364,7 @@ export default function AnalyticsDashboard() {
         {/* TOP JOBS BY PROFIT */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Award className="w-5 h-5 text-blue-600" />
               {language === 'es' ? 'Top 5 Proyectos por Rentabilidad' : 'Top 5 Jobs by Profitability'}
             </CardTitle>
@@ -389,7 +390,7 @@ export default function AnalyticsDashboard() {
         {/* EMPLOYEE PRODUCTIVITY */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Users className="w-5 h-5 text-green-600" />
               {language === 'es' ? 'Top 5 Empleados por Revenue Generado' : 'Top 5 Employees by Revenue Generated'}
             </CardTitle>
@@ -436,7 +437,7 @@ export default function AnalyticsDashboard() {
         {/* CUSTOMER PROFITABILITY */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <DollarSign className="w-5 h-5 text-purple-600" />
               {language === 'es' ? 'Top 5 Clientes por Rentabilidad' : 'Top 5 Customers by Profitability'}
             </CardTitle>
@@ -462,7 +463,7 @@ export default function AnalyticsDashboard() {
         {/* REVENUE BY SERVICE TYPE */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-slate-900">
               {language === 'es' ? 'Revenue por Tipo de Servicio' : 'Revenue by Service Type'}
             </CardTitle>
           </CardHeader>
@@ -494,7 +495,7 @@ export default function AnalyticsDashboard() {
         {/* COST PER HOUR ANALYSIS */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-slate-900">
               {language === 'es' ? 'Costo Real por Hora (Top 10 Empleados)' : 'True Cost per Hour (Top 10 Employees)'}
             </CardTitle>
           </CardHeader>
@@ -528,8 +529,8 @@ export default function AnalyticsDashboard() {
         {overtimeCostAnalysis.length > 0 && (
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-900">
-                <Clock className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-slate-900">
+                <Clock className="w-5 h-5 text-amber-600" />
                 {language === 'es' ? 'Análisis de Costos de Overtime' : 'Overtime Cost Analysis'}
               </CardTitle>
             </CardHeader>

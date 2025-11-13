@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -209,13 +210,13 @@ export default function JobsAdvanced() {
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-blue-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Total Hitos' : 'Total Milestones'}
                 </p>
-                <Calendar className="w-5 h-5 text-blue-100" />
+                <Calendar className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{jobMilestones.length}</p>
-              <p className="text-blue-100 text-xs mt-1">
+              <p className="text-3xl font-bold text-white">{jobMilestones.length}</p>
+              <p className="text-white text-xs mt-1">
                 {jobMilestones.filter(m => m.completed).length} {language === 'es' ? 'completados' : 'completed'}
               </p>
             </CardContent>
@@ -224,13 +225,13 @@ export default function JobsAdvanced() {
           <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-amber-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Change Orders' : 'Change Orders'}
                 </p>
-                <FileText className="w-5 h-5 text-amber-100" />
+                <FileText className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{changeOrders.length}</p>
-              <p className="text-amber-100 text-xs mt-1">
+              <p className="text-3xl font-bold text-white">{changeOrders.length}</p>
+              <p className="text-white text-xs mt-1">
                 ${changeOrders.filter(co => co.status === 'approved').reduce((sum, co) => sum + (co.amount || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
               </p>
             </CardContent>
@@ -239,13 +240,13 @@ export default function JobsAdvanced() {
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-green-100 text-sm font-medium">
+                <p className="text-white text-sm font-medium">
                   {language === 'es' ? 'Materiales' : 'Materials'}
                 </p>
-                <Package className="w-5 h-5 text-green-100" />
+                <Package className="w-5 h-5 text-white" />
               </div>
-              <p className="text-3xl font-bold">{materials.length}</p>
-              <p className="text-green-100 text-xs mt-1">
+              <p className="text-3xl font-bold text-white">{materials.length}</p>
+              <p className="text-white text-xs mt-1">
                 ${materials.reduce((sum, m) => sum + (m.cost || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
               </p>
             </CardContent>
@@ -255,7 +256,7 @@ export default function JobsAdvanced() {
         {/* REAL-TIME JOB COSTING */}
         <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <DollarSign className="w-5 h-5 text-green-600" />
               {language === 'es' ? 'Costos en Tiempo Real' : 'Real-Time Job Costing'}
             </CardTitle>
@@ -317,7 +318,7 @@ export default function JobsAdvanced() {
                         setSelectedJob(job);
                         setMilestoneDialog(true);
                       }}
-                      className="flex-1"
+                      className="flex-1 text-slate-700"
                     >
                       <Calendar className="w-3 h-3 mr-1" />
                       {language === 'es' ? 'Hito' : 'Milestone'}
@@ -329,7 +330,7 @@ export default function JobsAdvanced() {
                         setSelectedJob(job);
                         setChangeOrderDialog(true);
                       }}
-                      className="flex-1"
+                      className="flex-1 text-slate-700"
                     >
                       <FileText className="w-3 h-3 mr-1" />
                       Change Order
@@ -341,7 +342,7 @@ export default function JobsAdvanced() {
                         setSelectedJob(job);
                         setMaterialDialog(true);
                       }}
-                      className="flex-1"
+                      className="flex-1 text-slate-700"
                     >
                       <Package className="w-3 h-3 mr-1" />
                       {language === 'es' ? 'Material' : 'Material'}
@@ -356,7 +357,7 @@ export default function JobsAdvanced() {
         {/* JOB TIMELINES */}
         <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
               <Calendar className="w-5 h-5 text-blue-600" />
               {language === 'es' ? 'Timeline de Proyectos' : 'Job Timelines'}
             </CardTitle>
@@ -405,7 +406,7 @@ export default function JobsAdvanced() {
                           />
                           <span className="text-sm flex-1">{milestone.name}</span>
                           {milestone.due_date && (
-                            <span className="text-xs">
+                            <span className="text-xs text-slate-600">
                               {format(new Date(milestone.due_date), 'MMM dd', { locale: language === 'es' ? es : undefined })}
                             </span>
                           )}
@@ -423,7 +424,7 @@ export default function JobsAdvanced() {
         <Dialog open={milestoneDialog} onOpenChange={setMilestoneDialog}>
           <DialogContent className="bg-white">
             <DialogHeader>
-              <DialogTitle>{language === 'es' ? 'Agregar Hito' : 'Add Milestone'}</DialogTitle>
+              <DialogTitle className="text-slate-900">{language === 'es' ? 'Agregar Hito' : 'Add Milestone'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -438,16 +439,16 @@ export default function JobsAdvanced() {
             }}>
               <div className="space-y-4 py-4">
                 <div>
-                  <Label>{language === 'es' ? 'Nombre' : 'Name'}</Label>
-                  <Input name="name" required />
+                  <Label className="text-slate-700">{language === 'es' ? 'Nombre' : 'Name'}</Label>
+                  <Input name="name" required className="text-slate-900" />
                 </div>
                 <div>
-                  <Label>{language === 'es' ? 'Descripción' : 'Description'}</Label>
-                  <Textarea name="description" />
+                  <Label className="text-slate-700">{language === 'es' ? 'Descripción' : 'Description'}</Label>
+                  <Textarea name="description" className="text-slate-900" />
                 </div>
                 <div>
-                  <Label>{language === 'es' ? 'Fecha límite' : 'Due Date'}</Label>
-                  <Input name="due_date" type="date" />
+                  <Label className="text-slate-700">{language === 'es' ? 'Fecha límite' : 'Due Date'}</Label>
+                  <Input name="due_date" type="date" className="text-slate-900" />
                 </div>
               </div>
               <DialogFooter>
@@ -464,7 +465,7 @@ export default function JobsAdvanced() {
         <Dialog open={changeOrderDialog} onOpenChange={setChangeOrderDialog}>
           <DialogContent className="bg-white">
             <DialogHeader>
-              <DialogTitle>{language === 'es' ? 'Agregar Change Order' : 'Add Change Order'}</DialogTitle>
+              <DialogTitle className="text-slate-900">{language === 'es' ? 'Agregar Change Order' : 'Add Change Order'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -479,16 +480,16 @@ export default function JobsAdvanced() {
             }}>
               <div className="space-y-4 py-4">
                 <div>
-                  <Label>{language === 'es' ? 'Descripción' : 'Description'}</Label>
-                  <Input name="description" required />
+                  <Label className="text-slate-700">{language === 'es' ? 'Descripción' : 'Description'}</Label>
+                  <Input name="description" required className="text-slate-900" />
                 </div>
                 <div>
-                  <Label>{language === 'es' ? 'Monto' : 'Amount'}</Label>
-                  <Input name="amount" type="number" step="0.01" required />
+                  <Label className="text-slate-700">{language === 'es' ? 'Monto' : 'Amount'}</Label>
+                  <Input name="amount" type="number" step="0.01" required className="text-slate-900" />
                 </div>
                 <div>
-                  <Label>{language === 'es' ? 'Razón' : 'Reason'}</Label>
-                  <Textarea name="reason" />
+                  <Label className="text-slate-700">{language === 'es' ? 'Razón' : 'Reason'}</Label>
+                  <Textarea name="reason" className="text-slate-900" />
                 </div>
               </div>
               <DialogFooter>
@@ -505,7 +506,7 @@ export default function JobsAdvanced() {
         <Dialog open={materialDialog} onOpenChange={setMaterialDialog}>
           <DialogContent className="bg-white">
             <DialogHeader>
-              <DialogTitle>{language === 'es' ? 'Agregar Material' : 'Add Material'}</DialogTitle>
+              <DialogTitle className="text-slate-900">{language === 'es' ? 'Agregar Material' : 'Add Material'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -521,22 +522,22 @@ export default function JobsAdvanced() {
             }}>
               <div className="space-y-4 py-4">
                 <div>
-                  <Label>{language === 'es' ? 'Nombre' : 'Name'}</Label>
-                  <Input name="name" required />
+                  <Label className="text-slate-700">{language === 'es' ? 'Nombre' : 'Name'}</Label>
+                  <Input name="name" required className="text-slate-900" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>{language === 'es' ? 'Cantidad' : 'Quantity'}</Label>
-                    <Input name="quantity" type="number" step="0.01" required />
+                    <Label className="text-slate-700">{language === 'es' ? 'Cantidad' : 'Quantity'}</Label>
+                    <Input name="quantity" type="number" step="0.01" required className="text-slate-900" />
                   </div>
                   <div>
-                    <Label>{language === 'es' ? 'Unidad' : 'Unit'}</Label>
-                    <Input name="unit" placeholder="ft, sqft, etc" required />
+                    <Label className="text-slate-700">{language === 'es' ? 'Unidad' : 'Unit'}</Label>
+                    <Input name="unit" placeholder="ft, sqft, etc" required className="text-slate-900" />
                   </div>
                 </div>
                 <div>
-                  <Label>{language === 'es' ? 'Costo' : 'Cost'}</Label>
-                  <Input name="cost" type="number" step="0.01" required />
+                  <Label className="text-slate-700">{language === 'es' ? 'Costo' : 'Cost'}</Label>
+                  <Input name="cost" type="number" step="0.01" required className="text-slate-900" />
                 </div>
               </div>
               <DialogFooter>
