@@ -53,6 +53,8 @@ import Recognitions from './pages/Recognitions';
 import FinancialDashboard from './pages/FinancialDashboard';
 import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import JobsAdvanced from './pages/JobsAdvanced';
+import HRAdvancedDashboard from './pages/HRAdvancedDashboard';
+import AIAutomationDashboard from './pages/AIAutomationDashboard';
 import Layout from './Layout.jsx';
 
 
@@ -112,6 +114,8 @@ export const PAGES = {
     "FinancialDashboard": FinancialDashboard,
     "AnalyticsDashboard": AnalyticsDashboard,
     "JobsAdvanced": JobsAdvanced,
+    "HRAdvancedDashboard": HRAdvancedDashboard,
+    "AIAutomationDashboard": AIAutomationDashboard,
 }
 
 export const pagesConfig = {
