@@ -19,17 +19,13 @@ export default function QuoteDocument({ quote }) {
             {/* Header Section - Clean Style */}
             <div className="mb-8 pb-6 border-b-2 border-slate-200">
                 <div className="flex justify-between items-start mb-8">
-                    {/* LEFT: Logo + Company Name */}
-                    <div className="flex items-center gap-3">
+                    {/* LEFT: Logo Only */}
+                    <div className="flex items-center">
                         <img
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/051e3017c_Gemini_Generated_Image_suzuhgsuzuhgsuzu.png"
-                            alt="MCI Logo"
-                            className="h-20 object-contain print:h-18"
+                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                            alt="Modern Components Installation"
+                            className="h-16 object-contain print:h-14"
                         />
-                        <div className="border-l-2 border-slate-300 pl-3">
-                            <h2 className="text-xl font-bold text-slate-900 leading-tight">ModernComponents</h2>
-                            <h2 className="text-xl font-bold text-slate-900 leading-tight">Installation</h2>
-                        </div>
                     </div>
 
                     {/* RIGHT: QUOTE Title and Number */}
