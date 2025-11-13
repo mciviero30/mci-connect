@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -37,6 +36,9 @@ import {
   Sparkles,
   Wallet,
   Globe,
+  Zap,
+  Brain,
+  Target,
 } from "lucide-react";
 import {
   Sidebar,
@@ -204,6 +206,7 @@ const LayoutContent = ({ children, currentPageName }) => {
       items: [
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+        { title: 'Jobs Advanced', url: createPageUrl("JobsAdvanced"), icon: Zap, badge: '✨' },
         { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
       ]
     },
@@ -211,6 +214,7 @@ const LayoutContent = ({ children, currentPageName }) => {
       section: 'FINANCE',
       items: [
         { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
+        { title: 'Financial Dashboard', url: createPageUrl("FinancialDashboard"), icon: Wallet, badge: '✨' },
         { title: 'Customers', url: createPageUrl("Clientes"), icon: Users },
         { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText },
         { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck },
@@ -224,6 +228,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
         { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
         { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+        { title: 'HR Advanced', url: createPageUrl("HRAdvancedDashboard"), icon: Target, badge: '✨' },
         { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
       ]
     },
@@ -240,8 +245,10 @@ const LayoutContent = ({ children, currentPageName }) => {
       section: 'REPORTS & AI',
       items: [
         { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
+        { title: 'Analytics', url: createPageUrl("AnalyticsDashboard"), icon: TrendingUp, badge: '✨' },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
         { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, badge: '✨' },
+        { title: 'AI Automation', url: createPageUrl("AIAutomationDashboard"), icon: Brain, badge: '✨' },
         { title: 'AI Invoice Gen', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles, badge: '✨' },
         { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles, badge: '✨' },
         { title: 'AI Expenses', url: createPageUrl('AIExpensesAudit'), icon: Sparkles, badge: '✨' },
@@ -270,6 +277,7 @@ const LayoutContent = ({ children, currentPageName }) => {
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
+        { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Award, badge: '✨' },
         { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
@@ -285,6 +293,12 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'My Expenses', url: createPageUrl("MisGastos"), icon: Receipt },
         { title: 'Per Diem', url: createPageUrl("PerDiem"), icon: Banknote },
         { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
+      ]
+    },
+    {
+      section: 'MY PROJECTS',
+      items: [
+        { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase, badge: '✨' },
       ]
     },
     {
