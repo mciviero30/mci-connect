@@ -393,11 +393,11 @@ export default function Estimados() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">{t('drafts')}</p>
+                  <p className="text-sm font-semibold text-slate-700">{t('drafts')}</p>
                   <p className="text-3xl font-bold text-slate-900 mt-1">{drafts.length}</p>
                 </div>
-                <div className="p-3 bg-slate-100 rounded-2xl">
-                  <FileText className="w-6 h-6 text-slate-600" />
+                <div className="p-3 bg-slate-200 rounded-2xl">
+                  <FileText className="w-6 h-6 text-slate-700" />
                 </div>
               </div>
             </CardContent>
@@ -407,11 +407,11 @@ export default function Estimados() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">{t('sent')}</p>
+                  <p className="text-sm font-semibold text-slate-700">{t('sent')}</p>
                   <p className="text-3xl font-bold text-slate-900 mt-1">{sent.length}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-2xl">
-                  <FileText className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-blue-200 rounded-2xl">
+                  <FileText className="w-6 h-6 text-blue-700" />
                 </div>
               </div>
             </CardContent>
@@ -421,11 +421,11 @@ export default function Estimados() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">{t('converted')}</p>
+                  <p className="text-sm font-semibold text-slate-700">{t('converted')}</p>
                   <p className="text-3xl font-bold text-slate-900 mt-1">{converted.length}</p>
                 </div>
-                <div className="p-3 bg-purple-100 rounded-2xl">
-                  <FileCheck className="w-6 h-6 text-purple-600" />
+                <div className="p-3 bg-purple-200 rounded-2xl">
+                  <FileCheck className="w-6 h-6 text-purple-700" />
                 </div>
               </div>
             </CardContent>
@@ -433,7 +433,7 @@ export default function Estimados() {
 
           <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-lg border-0 hover:shadow-xl transition-all">
             <CardContent className="p-6">
-              <p className="text-sm font-medium text-cyan-50">{t('totalValue')}</p>
+              <p className="text-sm font-semibold text-white">{t('totalValue')}</p>
               <p className="text-3xl font-bold text-white mt-1">
                 ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
