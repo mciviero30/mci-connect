@@ -1,20 +1,17 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PageHeader from "../components/shared/PageHeader";
-import { Users, RefreshCw, CheckCircle } from "lucide-react";
+import { Users, Trash2, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 
 export default function ResetStatus() {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
@@ -27,43 +24,30 @@ export default function ResetStatus() {
     initialData: []
   });
 
-  const activeEmployees = employees.filter(emp => {
-    const status = emp.employment_status;
-    return status !== 'deleted' && status !== 'archived';
-  });
+  // Filtrar todos excepto Marzio Civiero
+  const employeesToDelete = employees.filter(emp => 
+    emp.full_name?.toLowerCase() !== 'marzio civiero' &&
+    emp.employment_status !== 'deleted'
+  );
 
-  const toggleEmployee = (empId) => {
-    setSelectedEmployees(prev => 
-      prev.includes(empId) 
-        ? prev.filter(id => id !== empId)
-        : [...prev, empId]
-    );
-  };
+  const marzio = employees.find(emp => emp.full_name?.toLowerCase() === 'marzio civiero');
 
-  const selectAll = () => {
-    setSelectedEmployees(activeEmployees.map(e => e.id));
-  };
-
-  const deselectAll = () => {
-    setSelectedEmployees([]);
-  };
-
-  const handleReset = async () => {
-    if (selectedEmployees.length === 0) {
-      toast.error(language === 'es' ? '⚠️ Selecciona al menos un empleado' : '⚠️ Select at least one employee');
+  const handleDeleteAll = async () => {
+    if (employeesToDelete.length === 0) {
+      toast.error(language === 'es' ? '⚠️ No hay empleados para eliminar' : '⚠️ No employees to delete');
       return;
     }
 
-    const selectedNames = activeEmployees
-      .filter(e => selectedEmployees.includes(e.id))
-      .map(e => e.full_name)
-      .join('\n- ');
+    const confirmMsg = language === 'es'
+      ? `🚨 ADVERTENCIA 🚨\n\n¿Estás SEGURO que quieres ELIMINAR ${employeesToDelete.length} empleados?\n\nEsta acción cambiará su status a "deleted" y perderán acceso al sistema.\n\nSe mantendrá SOLO:\n- ${marzio?.full_name || 'Marzio Civiero'}\n\nEMPLEADOS A ELIMINAR:\n${employeesToDelete.slice(0, 10).map(e => `- ${e.full_name}`).join('\n')}${employeesToDelete.length > 10 ? `\n... y ${employeesToDelete.length - 10} más` : ''}\n\n⚠️ Esta acción NO se puede deshacer fácilmente ⚠️`
+      : `🚨 WARNING 🚨\n\n Are you SURE you want to DELETE ${employeesToDelete.length} employees?\n\nThis will set their status to "deleted" and they will lose system access.\n\nWILL KEEP ONLY:\n- ${marzio?.full_name || 'Marzio Civiero'}\n\nEMPLOYEES TO DELETE:\n${employeesToDelete.slice(0, 10).map(e => `- ${e.full_name}`).join('\n')}${employeesToDelete.length > 10 ? `\n... and ${employeesToDelete.length - 10} more` : ''}\n\n⚠️ This action CANNOT be easily undone ⚠️`;
 
-    if (!window.confirm(
-      language === 'es'
-        ? `¿Cambiar ${selectedEmployees.length} empleados a pending_registration?\n\nEmpleados seleccionados:\n- ${selectedNames}`
-        : `Change ${selectedEmployees.length} employees to pending_registration?\n\nSelected employees:\n- ${selectedNames}`
-    )) {
+    if (!window.confirm(confirmMsg)) {
+      return;
+    }
+
+    // Segunda confirmación
+    if (!window.confirm(language === 'es' ? '¿REALMENTE SEGURO? Esta es tu última oportunidad para cancelar.' : 'REALLY SURE? This is your last chance to cancel.')) {
       return;
     }
 
@@ -73,13 +57,10 @@ export default function ResetStatus() {
       failed: []
     };
 
-    for (const empId of selectedEmployees) {
-      const emp = employees.find(e => e.id === empId);
-      if (!emp) continue;
-
+    for (const emp of employeesToDelete) {
       try {
-        await base44.entities.User.update(empId, {
-          employment_status: 'pending_registration'
+        await base44.entities.User.update(emp.id, {
+          employment_status: 'deleted'
         });
         results.success.push(emp.full_name);
       } catch (error) {
@@ -89,13 +70,12 @@ export default function ResetStatus() {
 
     setProcessing(false);
     setResults(results);
-    setSelectedEmployees([]);
     queryClient.invalidateQueries({ queryKey: ['employees'] });
     
     toast.success(
       language === 'es' 
-        ? `✅ ${results.success.length} empleados cambiados a pending`
-        : `✅ ${results.success.length} employees changed to pending`
+        ? `✅ ${results.success.length} empleados eliminados`
+        : `✅ ${results.success.length} employees deleted`
     );
   };
 
@@ -104,7 +84,7 @@ export default function ResetStatus() {
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-12">
-            <RefreshCw className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
+            <Users className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
             <p className="text-white">{language === 'es' ? 'Cargando empleados...' : 'Loading employees...'}</p>
           </div>
         </div>
@@ -116,172 +96,127 @@ export default function ResetStatus() {
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="max-w-6xl mx-auto">
         <PageHeader
-          title={language === 'es' ? "Cambiar Estado de Empleados" : "Change Employee Status"}
-          description={language === 'es' ? "Selecciona empleados para cambiar a pending" : "Select employees to change to pending"}
-          icon={Users}
+          title={language === 'es' ? "🚨 Eliminar Todos los Empleados" : "🚨 Delete All Employees"}
+          description={language === 'es' ? "Zona de peligro - Elimina todos excepto tu cuenta" : "Danger zone - Delete all except your account"}
+          icon={AlertTriangle}
         />
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          <Card className="bg-blue-500/10 border-blue-500/30">
-            <CardContent className="p-6 text-center">
-              <p className="text-blue-400 text-sm mb-1">
-                {language === 'es' ? 'Total Disponibles' : 'Total Available'}
-              </p>
-              <p className="text-4xl font-bold text-white">{activeEmployees.length}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-amber-500/10 border-amber-500/30">
-            <CardContent className="p-6 text-center">
-              <p className="text-amber-400 text-sm mb-1">
-                {language === 'es' ? 'Seleccionados' : 'Selected'}
-              </p>
-              <p className="text-4xl font-bold text-white">{selectedEmployees.length}</p>
-            </CardContent>
-          </Card>
-
+        <div className="grid lg:grid-cols-2 gap-6 mb-6">
           <Card className="bg-green-500/10 border-green-500/30">
-            <CardContent className="p-6 text-center">
-              <p className="text-green-400 text-sm mb-1">
-                {language === 'es' ? 'Sin Cambios' : 'No Changes'}
-              </p>
-              <p className="text-4xl font-bold text-white">
-                {activeEmployees.length - selectedEmployees.length}
-              </p>
+            <CardContent className="p-6">
+              <h3 className="text-green-400 font-semibold mb-2">
+                {language === 'es' ? '✅ SE MANTENDRÁ' : '✅ WILL KEEP'}
+              </h3>
+              {marzio ? (
+                <div className="flex items-center gap-3 p-3 bg-green-500/10 rounded-lg">
+                  {marzio.profile_photo_url ? (
+                    <img
+                      src={marzio.profile_photo_url}
+                      alt={marzio.full_name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {marzio.full_name?.[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-white">{marzio.full_name}</p>
+                    <p className="text-sm text-green-300">{marzio.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-green-300">Marzio Civiero (tu cuenta)</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-red-500/10 border-red-500/30">
+            <CardContent className="p-6">
+              <h3 className="text-red-400 font-semibold mb-2">
+                {language === 'es' ? '🗑️ SE ELIMINARÁN' : '🗑️ WILL DELETE'}
+              </h3>
+              <div className="text-center">
+                <p className="text-5xl font-bold text-white mb-1">{employeesToDelete.length}</p>
+                <p className="text-red-300 text-sm">
+                  {language === 'es' ? 'empleados' : 'employees'}
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="bg-white/90 shadow-lg border-slate-200 mb-6">
+        <Card className="bg-red-900/20 border-red-500/50 mb-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <Users className="w-5 h-5 text-blue-600" />
-                {language === 'es' ? 'Todos los Empleados' : 'All Employees'} ({activeEmployees.length})
-              </CardTitle>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={selectAll} 
-                  variant="outline" 
-                  size="sm"
-                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                >
-                  {language === 'es' ? 'Seleccionar Todos' : 'Select All'}
-                </Button>
-                <Button 
-                  onClick={deselectAll} 
-                  variant="outline" 
-                  size="sm"
-                  className="text-slate-600 border-slate-300 hover:bg-slate-50"
-                >
-                  {language === 'es' ? 'Deseleccionar Todos' : 'Deselect All'}
-                </Button>
-              </div>
-            </div>
+            <CardTitle className="text-red-400 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5" />
+              {language === 'es' ? 'Empleados que serán eliminados' : 'Employees to be deleted'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {activeEmployees.length === 0 ? (
+            {employeesToDelete.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-slate-500 mb-2">
-                  {language === 'es' ? 'No hay empleados disponibles' : 'No employees available'}
-                </p>
-                <p className="text-sm text-slate-400">
-                  Total empleados en sistema: {employees.length}
+                <p className="text-slate-400">
+                  {language === 'es' ? 'No hay empleados para eliminar' : 'No employees to delete'}
                 </p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                {activeEmployees.map(emp => {
-                  const isSelected = selectedEmployees.includes(emp.id);
-                  
-                  return (
-                    <div
-                      key={emp.id}
-                      className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
-                        isSelected
-                          ? 'bg-amber-50 border-amber-300'
-                          : 'bg-white border-slate-200 hover:border-slate-300'
-                      }`}
-                      onClick={() => {
-                        console.log('Click en empleado:', emp.full_name);
-                        toggleEmployee(emp.id);
-                      }}
-                    >
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={() => toggleEmployee(emp.id)}
-                          className="data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
-                        />
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {employeesToDelete.map(emp => (
+                  <div key={emp.id} className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    {emp.profile_photo_url ? (
+                      <img
+                        src={emp.profile_photo_url}
+                        alt={emp.full_name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold">
+                        {emp.full_name?.[0]?.toUpperCase() || 'U'}
                       </div>
-                      
-                      {emp.profile_photo_url ? (
-                        <img
-                          src={emp.profile_photo_url}
-                          alt={emp.full_name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-slate-300"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                          {emp.full_name?.[0]?.toUpperCase() || 'U'}
-                        </div>
-                      )}
-
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-slate-900">{emp.full_name}</p>
-                          {emp.employment_status && (
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs ${
-                                emp.employment_status === 'active' 
-                                  ? 'bg-green-50 text-green-700 border-green-300'
-                                  : emp.employment_status === 'pending_registration'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-300'
-                                  : 'bg-slate-50 text-slate-700 border-slate-300'
-                              }`}
-                            >
-                              {emp.employment_status}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-slate-600">{emp.email}</p>
-                        {emp.position && (
-                          <p className="text-xs text-slate-500">{emp.position}</p>
-                        )}
-                      </div>
-
-                      {isSelected && (
-                        <div className="text-amber-600 font-semibold text-sm">
-                          {language === 'es' ? '→ Cambiar a Pending' : '→ Change to Pending'}
-                        </div>
-                      )}
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium text-white">{emp.full_name}</p>
+                      <p className="text-sm text-slate-400">{emp.email}</p>
                     </div>
-                  );
-                })}
+                    <Trash2 className="w-4 h-4 text-red-400" />
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 shadow-lg border-slate-200 mb-6">
+        <Card className="bg-red-900/30 border-red-500/50">
           <CardContent className="p-6">
+            <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
+              <p className="text-red-300 text-sm mb-2 font-semibold">
+                ⚠️ {language === 'es' ? 'ADVERTENCIA IMPORTANTE' : 'IMPORTANT WARNING'}
+              </p>
+              <ul className="text-red-200 text-xs space-y-1 list-disc list-inside">
+                <li>{language === 'es' ? 'Los empleados NO podrán acceder al sistema' : 'Employees will NOT be able to access the system'}</li>
+                <li>{language === 'es' ? 'Su status cambiará a "deleted"' : 'Their status will change to "deleted"'}</li>
+                <li>{language === 'es' ? 'Necesitarás reactivarlos manualmente desde el Dashboard' : 'You will need to manually reactivate them from Dashboard'}</li>
+                <li>{language === 'es' ? 'Solo se mantendrá: Marzio Civiero' : 'Only will keep: Marzio Civiero'}</li>
+              </ul>
+            </div>
+
             <Button
-              onClick={handleReset}
-              disabled={processing || selectedEmployees.length === 0}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleDeleteAll}
+              disabled={processing || employeesToDelete.length === 0}
+              className="w-full bg-red-600 hover:bg-red-700 text-white text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {processing ? (
                 <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  {language === 'es' ? 'Procesando...' : 'Processing...'}
+                  <Trash2 className="w-5 h-5 mr-2 animate-pulse" />
+                  {language === 'es' ? 'Eliminando...' : 'Deleting...'}
                 </>
               ) : (
                 <>
-                  <RefreshCw className="w-5 h-5 mr-2" />
+                  <Trash2 className="w-5 h-5 mr-2" />
                   {language === 'es' 
-                    ? `Cambiar ${selectedEmployees.length} empleados a Pending`
-                    : `Change ${selectedEmployees.length} employees to Pending`
+                    ? `🗑️ ELIMINAR ${employeesToDelete.length} EMPLEADOS (EXCEPTO MARZIO)`
+                    : `🗑️ DELETE ${employeesToDelete.length} EMPLOYEES (EXCEPT MARZIO)`
                   }
                 </>
               )}
@@ -290,25 +225,26 @@ export default function ResetStatus() {
         </Card>
 
         {results && (
-          <Card className="bg-white/90 shadow-lg border-slate-200">
+          <Card className="bg-white/90 shadow-lg border-slate-200 mt-6">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                {language === 'es' ? 'Resultados' : 'Results'}
+              <CardTitle className="text-slate-900">
+                {language === 'es' ? '📊 Resultados' : '📊 Results'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="font-semibold text-green-900 mb-2">
-                    ✅ {language === 'es' ? 'Exitosos:' : 'Success:'} {results.success.length}
-                  </p>
-                  <div className="space-y-1 max-h-40 overflow-y-auto">
-                    {results.success.map((name, idx) => (
-                      <div key={idx} className="text-sm text-green-800">• {name}</div>
-                    ))}
+                {results.success.length > 0 && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="font-semibold text-green-900 mb-2">
+                      ✅ {language === 'es' ? 'Eliminados exitosamente:' : 'Successfully deleted:'} {results.success.length}
+                    </p>
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {results.success.map((name, idx) => (
+                        <div key={idx} className="text-sm text-green-800">• {name}</div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {results.failed.length > 0 && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
