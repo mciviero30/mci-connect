@@ -371,7 +371,6 @@ export default function Empleados() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
   const [showInactive, setShowInactive] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState(0);
 
   // Fetch data
   const { data: employees = [], isLoading } = useQuery({
@@ -451,13 +450,20 @@ export default function Empleados() {
   });
 
   // ============================================
-  // AUTO-SYNC MUTATIONS
+  // CENTRALIZED MANUAL SYNC - ONLY way to sync
+  // Executes sequentially: 1) Create new users, 2) Update existing users
   // ============================================
-  const autoCreateUsersMutation = useMutation({
+  const manualSyncMutation = useMutation({
     mutationFn: async () => {
+      const results = {
+        created: 0,
+        updated: 0,
+        errors: []
+      };
+
+      // STEP 1: Create new users from pending employees
       const employeesWithEmail = pendingEmployees.filter(e => e.email);
       const existingEmails = new Set(employees.map(e => e.email));
-      const created = [];
 
       for (const pending of employeesWithEmail) {
         if (existingEmails.has(pending.email)) continue;
@@ -479,31 +485,20 @@ export default function Empleados() {
             team_name: pending.team_name || '',
             employment_status: 'pending_registration'
           });
-          created.push(pending.email);
+          results.created++;
         } catch (error) {
           if (!error.message.includes('already exists')) {
-            console.warn(`Auto-create failed for ${pending.email}:`, error.message);
+            results.errors.push(`Create ${pending.email}: ${error.message}`);
           }
         }
       }
-      return created;
-    },
-    onSuccess: (created) => {
-      if (created.length > 0) {
-        queryClient.invalidateQueries({ queryKey: ['employees'] });
-      }
-    }
-  });
 
-  // MANUAL SYNC
-  const syncMutation = useMutation({
-    mutationFn: async () => {
-      const employeesWithEmail = pendingEmployees.filter(e => 
+      // STEP 2: Update existing users with pending employee data
+      const invitedOrActive = pendingEmployees.filter(e => 
         e.email && (e.status === 'invited' || e.status === 'active')
       );
-      const updates = [];
 
-      for (const pending of employeesWithEmail) {
+      for (const pending of invitedOrActive) {
         const existingUser = employees.find(e => e.email === pending.email);
         
         if (existingUser) {
@@ -518,8 +513,8 @@ export default function Empleados() {
             const fullName = `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 
               pending.full_name || existingUser.full_name || 'Employee';
 
-            updates.push(
-              base44.entities.User.update(existingUser.id, {
+            try {
+              await base44.entities.User.update(existingUser.id, {
                 full_name: fullName,
                 first_name: pending.first_name || existingUser.first_name || '',
                 last_name: pending.last_name || existingUser.last_name || '',
@@ -527,37 +522,50 @@ export default function Empleados() {
                 position: pending.position || existingUser.position || '',
                 team_id: pending.team_id || existingUser.team_id || '',
                 team_name: pending.team_name || existingUser.team_name || ''
-              })
-            );
+              });
+              results.updated++;
+            } catch (error) {
+              results.errors.push(`Update ${pending.email}: ${error.message}`);
+            }
           }
           
+          // Update pending employee status
           if (pending.status !== 'active') {
-            updates.push(
-              base44.entities.PendingEmployee.update(pending.id, { status: 'active' })
-            );
+            try {
+              await base44.entities.PendingEmployee.update(pending.id, { status: 'active' });
+            } catch (error) {
+              results.errors.push(`Update pending ${pending.email}: ${error.message}`);
+            }
           }
         }
       }
-      
-      if (updates.length > 0) {
-        await Promise.all(updates);
-        return updates.length;
-      }
-      return 0;
+
+      return results;
     },
-    onSuccess: (count) => {
-      if (count > 0) {
-        queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-        queryClient.invalidateQueries({ queryKey: ['employees'] });
-        toast.success(language === 'es' ? `${count} empleados sincronizados` : `${count} employees synced`);
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      
+      const totalChanges = results.created + results.updated;
+      
+      if (totalChanges > 0) {
+        toast.success(language === 'es' 
+          ? `Sincronización completa: ${results.created} creados, ${results.updated} actualizados`
+          : `Sync complete: ${results.created} created, ${results.updated} updated`
+        );
       } else {
-        toast.info(language === 'es' ? 'Todo sincronizado' : 'All synced');
+        toast.info(language === 'es' ? 'Todo sincronizado - sin cambios' : 'All synced - no changes');
       }
-      setLastSyncTime(Date.now());
+
+      if (results.errors.length > 0) {
+        console.warn('Sync errors:', results.errors);
+      }
     },
     onError: (error) => {
-      toast.error(language === 'es' ? 'Error al sincronizar' : 'Sync error');
-      setLastSyncTime(Date.now());
+      toast.error(language === 'es' 
+        ? 'Error de sincronización: ' + error.message
+        : 'Sync error: ' + error.message
+      );
     }
   });
 
@@ -676,26 +684,6 @@ export default function Empleados() {
     }
   });
 
-  // Auto-sync effects
-  React.useEffect(() => {
-    if (!isLoading && !isPendingLoading && pendingEmployees.length > 0) {
-      const timeoutId = setTimeout(() => {
-        autoCreateUsersMutation.mutate();
-      }, 2000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [pendingEmployees.length, isLoading, isPendingLoading]);
-
-  React.useEffect(() => {
-    const timeSinceLastSync = Date.now() - lastSyncTime;
-    if (timeSinceLastSync > 120000 && employees.length > 0 && pendingEmployees.length > 0) {
-      const timeoutId = setTimeout(() => {
-        syncMutation.mutate();
-      }, 5000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [employees.length, pendingEmployees.length, lastSyncTime]);
-
   // SEARCH FILTER - Enhanced to search all fields
   const filterEmployees = (empList, isPendingList = false) => {
     if (!searchTerm) return empList;
@@ -771,13 +759,13 @@ export default function Empleados() {
             
             <div className="flex gap-2 flex-wrap">
               <Button
-                onClick={() => syncMutation.mutate()}
+                onClick={() => manualSyncMutation.mutate()}
                 variant="outline"
-                disabled={syncMutation.isPending}
+                disabled={manualSyncMutation.isPending}
                 className="border-slate-300 hover:bg-slate-50"
               >
-                <RefreshCw className={`w-4 h-4 mr-2 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
-                {syncMutation.isPending ? t('syncing') : t('manualSync')}
+                <RefreshCw className={`w-4 h-4 mr-2 ${manualSyncMutation.isPending ? 'animate-spin' : ''}`} />
+                {manualSyncMutation.isPending ? t('syncing') : t('manualSync')}
               </Button>
               
               <Button 
@@ -795,7 +783,7 @@ export default function Empleados() {
           </div>
 
           {/* CRITICAL ALERTS ONLY */}
-          {syncMutation.isError && (
+          {manualSyncMutation.isError && (
             <Alert className="mt-4 bg-red-50 border-red-300">
               <AlertCircle className="w-4 h-4" />
               <AlertDescription className="text-red-800">
