@@ -124,6 +124,3 @@ export const useToast = () => {
   }
   return context;
 };
-
-// Re-export from toast.jsx for backward compatibility
-export { useToast, ToastProvider } from './toast';
