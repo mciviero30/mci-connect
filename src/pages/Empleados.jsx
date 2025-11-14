@@ -1,8 +1,7 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,173 +11,136 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar,
-  UserPlus,
-  Trash2,
-  Check,
-  Clock,
-  Archive,
-  UserX,
-  RotateCcw,
-  ChevronRight,
   Edit,
   Building2,
-  Loader2,
   MoreVertical,
   Eye,
-  Sparkles,
-  CheckCircle2 // New icon for "All invitations accepted"
+  Trash2,
+  RotateCcw,
+  Archive,
+  UserPlus,
+  ChevronRight,
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw
 } from "lucide-react";
-// Removed PageHeader import as per outline
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EmployeeForm from "../components/empleados/EmployeeForm";
 import ActiveEmployeeForm from "../components/empleados/ActiveEmployeeForm";
-import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { format, differenceInDays } from "date-fns"; // Add differenceInDays
+import { format, differenceInDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Toaster } from "@/components/ui/toaster";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/toast";
 
-import OnboardingTracker from "../components/empleados/OnboardingTracker";
-import PendingInvitationCard from "../components/empleados/PendingInvitationCard";
-
-const PendingEmployeeCard = ({ employee, onInvite, onDelete, onArchive, onRestore, onEdit, onResendInvite }) => {
+// COMPACT EMPLOYEE CARD COMPONENT
+const EmployeeCard = ({ employee, onEdit, onViewProfile, isInactive = false }) => {
   const { t } = useLanguage();
   
-  const getFullName = () => {
-    if (employee.full_name) return employee.full_name;
-    if (employee.first_name && employee.last_name) return `${employee.first_name} ${employee.last_name}`;
-    if (employee.first_name) return employee.first_name;
-    if (employee.last_name) return employee.last_name;
-    return t('noName');
-  };
-
-  const statusColors = {
-    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    invited: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    active: "bg-green-500/20 text-green-400 border-green-500/30",
-    archived: "bg-slate-500/20 text-slate-400 border-slate-500/30"
-  };
-
-  const statusIcons = {
-    pending: <Clock className="w-3 h-3" />,
-    invited: <Mail className="w-3 h-3" />,
-    active: <Check className="w-3 h-3" />,
-    archived: <Archive className="w-3 h-3" />
-  };
+  const displayName = employee.full_name || 
+    `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+    employee.email?.split('@')[0] || 
+    t('unknownEmployee');
 
   return (
-    <Card className="glass-card shadow-xl border-slate-700 hover:border-cyan-500/30 transition-all">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="font-bold text-white text-lg">{getFullName()}</h3>
-            <p className="text-cyan-400 text-sm">{employee.position || t('noPosition')}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <Badge className={statusColors[employee.status]}>
-                <span className="flex items-center gap-1">
-                  {statusIcons[employee.status]}
-                  {employee.status}
-                </span>
-              </Badge>
-              {employee.team_name && (
-                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
-                  <Building2 className="w-3 h-3 mr-1" />
-                  {employee.team_name}
+    <Card className={`group hover:shadow-lg transition-all duration-200 ${
+      isInactive ? 'opacity-60 bg-slate-50' : 'bg-white'
+    }`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          {/* Avatar */}
+          {employee.profile_photo_url ? (
+            <img
+              src={employee.profile_photo_url}
+              alt={displayName}
+              className={`w-12 h-12 rounded-full object-cover border-2 border-blue-500/30 ${
+                isInactive ? 'grayscale' : ''
+              }`}
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+              {displayName[0]?.toUpperCase()}
+            </div>
+          )}
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className={`font-semibold text-sm truncate ${
+                isInactive ? 'text-slate-500' : 'text-slate-900'
+              }`}>
+                {displayName}
+              </h3>
+              {isInactive && (
+                <Badge className="bg-amber-100 text-amber-700 text-xs px-1.5 py-0">
+                  Inactive
                 </Badge>
               )}
             </div>
+            
+            {employee.position && (
+              <p className={`text-xs truncate ${
+                isInactive ? 'text-slate-400' : 'text-slate-600'
+              }`}>
+                {employee.position}
+              </p>
+            )}
+            
+            {employee.team_name && (
+              <div className="flex items-center gap-1 mt-1">
+                <Building2 className={`w-3 h-3 ${
+                  isInactive ? 'text-slate-400' : 'text-purple-600'
+                }`} />
+                <span className={`text-xs ${
+                  isInactive ? 'text-slate-400' : 'text-purple-600'
+                }`}>
+                  {employee.team_name}
+                </span>
+              </div>
+            )}
           </div>
 
+          {/* Actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700">
-                {t('actions')}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreVertical className="w-4 h-4 text-slate-500" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-slate-900 border-slate-800">
-              <DropdownMenuItem onClick={() => onEdit(employee)} className="text-white hover:bg-slate-800">
-                <Edit className="w-4 h-4 mr-2" />
-                {t('editEmployee')}
+            <DropdownMenuContent align="end" className="bg-white border-slate-200">
+              <DropdownMenuItem onClick={onViewProfile} className="cursor-pointer">
+                <Eye className="w-4 h-4 mr-2" />
+                {t('viewProfile')}
               </DropdownMenuItem>
-              {employee.status === 'pending' && employee.email && (
-                <DropdownMenuItem onClick={() => onInvite(employee)} className="text-white hover:bg-slate-800">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  {t('sendInvitation')}
-                </DropdownMenuItem>
-              )}
-              {employee.status === 'invited' && employee.email && (
-                <DropdownMenuItem onClick={() => onResendInvite(employee)} className="text-white hover:bg-slate-800">
-                  <Mail className="w-4 h-4 mr-2" />
-                  {t('resendInvitation')}
-                </DropdownMenuItem>
-              )}
-              {employee.status !== 'archived' && (
-                <DropdownMenuItem onClick={() => onArchive(employee.id)} className="text-white hover:bg-slate-800">
-                  <Archive className="w-4 h-4 mr-2" />
-                  {t('archive')}
-                </DropdownMenuItem>
-              )}
-              {employee.status === 'archived' && (
-                <DropdownMenuItem onClick={() => onRestore(employee.id)} className="text-white hover:bg-slate-800">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  {t('restoreToPending')}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onDelete(employee.id)} className="text-red-400 hover:bg-red-500/10">
-                <Trash2 className="w-4 h-4 mr-2" />
-                {t('deletePermanently')}
+              <DropdownMenuItem onClick={onEdit} className="cursor-pointer">
+                <Edit className="w-4 h-4 mr-2" />
+                {t('edit')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        <div className="space-y-2 text-sm">
+        {/* Quick contact info - subtle */}
+        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-3 text-xs text-slate-500">
           {employee.email && (
-            <div className="flex items-center gap-2 text-slate-300">
-              <Mail className="w-4 h-4 text-slate-500" />
+            <div className="flex items-center gap-1 truncate">
+              <Mail className="w-3 h-3 flex-shrink-0" />
               <span className="truncate">{employee.email}</span>
-            </div>
-          )}
-          {!employee.email && employee.status === 'pending' && (
-            <Alert className="bg-red-500/10 border-red-500/30">
-              <AlertDescription className="text-red-400 text-xs">
-                ⚠️ {t('noEmailCannotInvite')}
-              </AlertDescription>
-            </Alert>
-          )}
-          {employee.phone && (
-            <div className="flex items-center gap-2 text-slate-300">
-              <Phone className="w-4 h-4 text-slate-500" />
-              <span>{employee.phone}</span>
-            </div>
-          )}
-          {employee.address && (
-            <div className="flex items-center gap-2 text-slate-300">
-              <MapPin className="w-4 h-4 text-slate-500" />
-              <span className="text-xs truncate">{employee.address}</span>
-            </div>
-          )}
-          {employee.dob && (
-            <div className="flex items-center gap-2 text-slate-300">
-              <Calendar className="w-4 h-4 text-slate-500" />
-              <span>{t('born')}: {format(new Date(employee.dob), 'MMM dd, yyyy')}</span>
-            </div>
-          )}
-          {employee.invited_date && (
-            <div className="text-xs text-slate-500 mt-2">
-              {t('invited')}: {format(new Date(employee.invited_date), 'MMM dd, yyyy HH:mm')}
             </div>
           )}
         </div>
@@ -187,28 +149,156 @@ const PendingEmployeeCard = ({ employee, onInvite, onDelete, onArchive, onRestor
   );
 };
 
+// PENDING EMPLOYEE CARD
+const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, onRestore, onDelete }) => {
+  const { t, language } = useLanguage();
+  
+  const displayName = employee.full_name || 
+    `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+    t('noName');
+
+  const statusConfig = {
+    pending: { label: t('pending'), color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+    invited: { label: t('invited'), color: 'bg-blue-100 text-blue-800', icon: Mail },
+    active: { label: t('active'), color: 'bg-green-100 text-green-800', icon: CheckCircle2 },
+    archived: { label: t('archived'), color: 'bg-slate-100 text-slate-800', icon: Archive }
+  };
+
+  const config = statusConfig[employee.status] || statusConfig.pending;
+  const Icon = config.icon;
+
+  const daysSinceInvite = employee.invited_date 
+    ? differenceInDays(new Date(), new Date(employee.invited_date))
+    : 0;
+
+  return (
+    <Card className="group hover:shadow-lg transition-all">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-slate-500 to-slate-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            {displayName[0]?.toUpperCase()}
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-slate-900 truncate">{displayName}</h3>
+            {employee.position && (
+              <p className="text-xs text-slate-600 truncate">{employee.position}</p>
+            )}
+            
+            <div className="flex items-center gap-2 mt-2">
+              <Badge className={`${config.color} text-xs flex items-center gap-1`}>
+                <Icon className="w-3 h-3" />
+                {config.label}
+              </Badge>
+              
+              {employee.team_name && (
+                <Badge variant="outline" className="text-xs">
+                  {employee.team_name}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <MoreVertical className="w-4 h-4 text-slate-500" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white border-slate-200">
+              <DropdownMenuItem onClick={() => onEdit(employee)} className="cursor-pointer">
+                <Edit className="w-4 h-4 mr-2" />
+                {t('edit')}
+              </DropdownMenuItem>
+              
+              {employee.status === 'pending' && employee.email && (
+                <DropdownMenuItem onClick={() => onInvite(employee)} className="cursor-pointer">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  {t('sendInvitation')}
+                </DropdownMenuItem>
+              )}
+              
+              {employee.status === 'invited' && employee.email && (
+                <DropdownMenuItem onClick={() => onResend(employee)} className="cursor-pointer">
+                  <Mail className="w-4 h-4 mr-2" />
+                  {t('resendInvitation')}
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuSeparator />
+              
+              {employee.status !== 'archived' ? (
+                <DropdownMenuItem onClick={() => onArchive(employee.id)} className="cursor-pointer">
+                  <Archive className="w-4 h-4 mr-2" />
+                  {t('archive')}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => onRestore(employee.id)} className="cursor-pointer">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  {t('restoreToPending')}
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem 
+                onClick={() => onDelete(employee.id)} 
+                className="cursor-pointer text-red-600 focus:text-red-700"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {t('deletePermanently')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Contact Info */}
+        {employee.email && (
+          <div className="flex items-center gap-2 text-xs text-slate-600 mt-2">
+            <Mail className="w-3 h-3" />
+            <span className="truncate">{employee.email}</span>
+          </div>
+        )}
+        
+        {!employee.email && (
+          <Alert className="mt-2 bg-red-50 border-red-200">
+            <AlertDescription className="text-red-700 text-xs">
+              ⚠️ {t('noEmailCannotInvite')}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Invitation info */}
+        {employee.status === 'invited' && daysSinceInvite > 0 && (
+          <div className="mt-2 pt-2 border-t border-slate-100">
+            <p className="text-xs text-slate-500">
+              {language === 'es' ? 'Invitado hace' : 'Invited'} {daysSinceInvite} {language === 'es' ? 'días' : 'days ago'}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 export default function Empleados() {
   const { t, language } = useLanguage();
-  const [showDialog, setShowDialog] = useState(false); // Renamed from showForm as per outline implies
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  
+  const [showDialog, setShowDialog] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [isPendingEdit, setIsPendingEdit] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const [lastSyncTime, ReactSetLastSyncTime] = React.useState(0); 
-
-  const [showAIInsights, setShowAIInsights] = useState(false);
-  const [selectedEmployeeForAI, setSelectedEmployeeForAI] = useState(null);
-  
-  // NEW: Prompt #57 - Toggle for showing inactive employees
   const [showInactive, setShowInactive] = useState(false);
-  
-  const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
-    staleTime: Infinity
-  });
-  
+  const [lastSyncTime, setLastSyncTime] = useState(0);
+
+  // Fetch data
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
@@ -237,54 +327,7 @@ export default function Empleados() {
     retry: 1
   });
 
-  const { data: teams } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list('team_name'),
-    initialData: [],
-  });
-
-  const { data: allTimeEntries = [] } = useQuery({
-    queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date', 500),
-    enabled: showAIInsights,
-    initialData: []
-  });
-
-  const { data: allJobs = [] } = useQuery({
-    queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list('-created_date', 200),
-    enabled: showAIInsights,
-    initialData: []
-  });
-
-  const { data: allExpenses = [] } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 200),
-    enabled: showAIInsights,
-    initialData: []
-  });
-
-  const { data: allRecognitions = [] } = useQuery({
-    queryKey: ['recognitions'],
-    queryFn: () => base44.entities.Recognition.list('-date'),
-    enabled: showAIInsights,
-    initialData: []
-  });
-
-  const { data: allCertifications = [] } = useQuery({
-    queryKey: ['certifications'],
-    queryFn: () => base44.entities.Certification.list('-created_date'),
-    enabled: showAIInsights,
-    initialData: []
-  });
-
-  const { data: allDrivingLogs = [] } = useQuery({
-    queryKey: ['drivingLogs'],
-    queryFn: () => base44.entities.DrivingLog.list('-date', 200),
-    enabled: showAIInsights,
-    initialData: []
-  });
-
+  // AUTO-SYNC MUTATIONS
   const autoCreateUsersMutation = useMutation({
     mutationFn: async () => {
       const employeesWithEmail = pendingEmployees.filter(e => e.email);
@@ -294,18 +337,8 @@ export default function Empleados() {
       for (const pending of employeesWithEmail) {
         if (existingEmails.has(pending.email)) continue;
 
-        let fullName = '';
-        if (pending.first_name && pending.last_name) {
-          fullName = `${pending.first_name} ${pending.last_name}`;
-        } else if (pending.first_name) {
-          fullName = pending.first_name;
-        } else if (pending.last_name) {
-          fullName = pending.last_name;
-        } else if (pending.full_name) {
-          fullName = pending.full_name;
-        } else {
-          fullName = 'Employee';
-        }
+        const fullName = `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 
+          pending.full_name || 'Employee';
 
         try {
           await base44.entities.User.create({
@@ -317,38 +350,32 @@ export default function Empleados() {
             phone: pending.phone || '',
             position: pending.position || '',
             department: pending.department || '',
-            address: pending.address || '',
-            dob: pending.dob || '',
-            ssn_tax_id: pending.ssn_tax_id || '',
-            tshirt_size: pending.tshirt_size || '',
             team_id: pending.team_id || '',
             team_name: pending.team_name || '',
-            direct_manager_name: pending.direct_manager_name || '',
-            employment_status: 'pending_registration' 
+            employment_status: 'pending_registration'
           });
           created.push(pending.email);
         } catch (error) {
-          if (!error.message.includes('already exists') && !error.message.includes('duplicate')) {
-            console.warn(`Auto-create user for ${pending.email} failed:`, error.message);
+          if (!error.message.includes('already exists')) {
+            console.warn(`Auto-create failed for ${pending.email}:`, error.message);
           }
         }
       }
-
       return created;
     },
     onSuccess: (created) => {
       if (created.length > 0) {
         queryClient.invalidateQueries({ queryKey: ['employees'] });
       }
-    },
-    onError: (error) => {
-      console.log('Auto-create users error (silent):', error.message);
     }
   });
 
-  const syncUserDataMutation = useMutation({
+  // MANUAL SYNC
+  const syncMutation = useMutation({
     mutationFn: async () => {
-      const employeesWithEmail = pendingEmployees.filter(e => e.email && (e.status === 'invited' || e.status === 'active'));
+      const employeesWithEmail = pendingEmployees.filter(e => 
+        e.email && (e.status === 'invited' || e.status === 'active')
+      );
       const updates = [];
 
       for (const pending of employeesWithEmail) {
@@ -360,28 +387,11 @@ export default function Empleados() {
             (pending.last_name && existingUser.last_name !== pending.last_name) ||
             (pending.phone && existingUser.phone !== pending.phone) ||
             (pending.position && existingUser.position !== pending.position) ||
-            (pending.department && existingUser.department !== pending.department) ||
-            (pending.address && existingUser.address !== pending.address) ||
-            (pending.dob && existingUser.dob !== pending.dob) ||
-            (pending.ssn_tax_id && existingUser.ssn_tax_id !== pending.ssn_tax_id) ||
-            (pending.tshirt_size && existingUser.tshirt_size !== pending.tshirt_size) ||
-            (pending.team_id && existingUser.team_id !== pending.team_id) ||
-            (pending.team_name && existingUser.team_name !== pending.team_name) ||
-            (pending.direct_manager_name && existingUser.direct_manager_name !== pending.direct_manager_name);
+            (pending.team_id && existingUser.team_id !== pending.team_id);
 
           if (needsUpdate) {
-            let fullName = '';
-            if (pending.first_name && pending.last_name) {
-              fullName = `${pending.first_name} ${pending.last_name}`;
-            } else if (pending.first_name) {
-              fullName = pending.first_name;
-            } else if (pending.last_name) {
-              fullName = pending.last_name;
-            } else if (pending.full_name) {
-              fullName = pending.full_name;
-            } else {
-              fullName = existingUser.full_name || 'Employee';
-            }
+            const fullName = `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 
+              pending.full_name || existingUser.full_name || 'Employee';
 
             updates.push(
               base44.entities.User.update(existingUser.id, {
@@ -390,14 +400,8 @@ export default function Empleados() {
                 last_name: pending.last_name || existingUser.last_name || '',
                 phone: pending.phone || existingUser.phone || '',
                 position: pending.position || existingUser.position || '',
-                department: pending.department || existingUser.department || '',
-                address: pending.address || existingUser.address || '',
-                dob: pending.dob || existingUser.dob || '',
-                ssn_tax_id: pending.ssn_tax_id || existingUser.ssn_tax_id || '',
-                tshirt_size: pending.tshirt_size || existingUser.tshirt_size || '',
                 team_id: pending.team_id || existingUser.team_id || '',
-                team_name: pending.team_name || existingUser.team_name || '',
-                direct_manager_name: pending.direct_manager_name || existingUser.direct_manager_name || '',
+                team_name: pending.team_name || existingUser.team_name || ''
               })
             );
           }
@@ -420,153 +424,74 @@ export default function Empleados() {
       if (count > 0) {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
         queryClient.invalidateQueries({ queryKey: ['employees'] });
+        toast.success(language === 'es' ? `${count} empleados sincronizados` : `${count} employees synced`);
+      } else {
+        toast.info(language === 'es' ? 'Todo sincronizado' : 'All synced');
       }
-      ReactSetLastSyncTime(Date.now()); 
+      setLastSyncTime(Date.now());
     },
     onError: (error) => {
-      console.log('Sync user data error (silent):', error.message);
-      ReactSetLastSyncTime(Date.now()); 
+      toast.error(language === 'es' ? 'Error al sincronizar' : 'Sync error');
+      setLastSyncTime(Date.now());
     }
   });
 
-  React.useEffect(() => {
-    if (!isLoading && !isPendingLoading && pendingEmployees.length > 0) {
-      const timeoutId = setTimeout(() => {
-        if (!autoCreateUsersMutation.isPending && !autoCreateUsersMutation.isSuccess && !autoCreateUsersMutation.isError) {
-           autoCreateUsersMutation.mutate();
-        }
-      }, 2000);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [pendingEmployees.length, isLoading, isPendingLoading, autoCreateUsersMutation]);
-
-  React.useEffect(() => {
-    const now = Date.now();
-    const timeSinceLastSync = now - lastSyncTime;
-    const minSyncInterval = 120000;
-
-    if (!isLoading && !isPendingLoading && employees.length > 0 && pendingEmployees.length > 0) {
-      if (timeSinceLastSync > minSyncInterval) {
-        const timeoutId = setTimeout(() => {
-          syncUserDataMutation.mutate();
-        }, 5000);
-
-        return () => clearTimeout(timeoutId);
-      }
-    }
-  }, [employees.length, pendingEmployees.length, isLoading, isPendingLoading, lastSyncTime, syncUserDataMutation]);
-
-  const deletePendingMutation = useMutation({
-    mutationFn: (id) => base44.entities.PendingEmployee.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast({ title: t('success'), description: t('employeeDeletedSuccessfully') });
-    },
-    onError: (error) => {
-      toast({ title: t('error'), description: t('failedToDeleteEmployee') + `: ${error.message}`, variant: 'destructive' });
-    },
-  });
-
-  const archivePendingMutation = useMutation({
-    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'archived' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast({ title: t('success'), description: t('employeeArchived') });
-    },
-    onError: (error) => {
-      toast({ title: t('error'), description: t('failedToArchiveEmployee') + `: ${error.message}`, variant: 'destructive' });
-    },
-  });
-
-  const restorePendingMutation = useMutation({
-    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'pending' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast({ title: t('success'), description: t('employeeRestoredToPending') });
-    },
-    onError: (error) => {
-      toast({ title: t('error'), description: t('failedToRestoreEmployee') + `: ${error.message}`, variant: 'destructive' });
-    },
-  });
-
+  // PENDING EMPLOYEE MUTATIONS
   const inviteMutation = useMutation({
     mutationFn: async (employee) => {
       if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
       const appUrl = window.location.origin;
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.full_name || 'Employee';
+      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+        employee.full_name || 'Employee';
 
-      // Create user in User entity if doesn't exist
+      // Create user if doesn't exist
       const existingUser = employees.find(e => e.email === employee.email);
       if (!existingUser) {
         try {
           await base44.entities.User.create({
             email: employee.email,
             full_name: fullName,
-            first_name: employee.first_name,
-            last_name: employee.last_name,
+            first_name: employee.first_name || '',
+            last_name: employee.last_name || '',
             role: 'user',
-            phone: employee.phone,
-            position: employee.position,
-            department: employee.department,
-            address: employee.address,
-            dob: employee.dob,
-            ssn_tax_id: employee.ssn_tax_id,
-            tshirt_size: employee.tshirt_size,
-            team_id: employee.team_id,
-            team_name: employee.team_name,
-            direct_manager_name: employee.direct_manager_name,
-            employment_status: 'pending_registration' 
+            phone: employee.phone || '',
+            position: employee.position || '',
+            team_id: employee.team_id || '',
+            team_name: employee.team_name || '',
+            employment_status: 'pending_registration'
           });
         } catch (error) {
-          if (!error.message.includes('already exists') && !error.message.includes('duplicate')) {
-            throw error;
-          }
+          if (!error.message.includes('already exists')) throw error;
         }
       }
 
-      // Send automated welcome email
-      try {
-        const emailBody = language === 'es' 
-          ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma de gestión empresarial.\n\nPara acceder:\n1. Abre este link: ${appUrl}\n2. La primera vez, crea tu cuenta con tu email: ${employee.email}\n3. Crea tu contraseña\n4. ¡Listo! Ya puedes usar la app\n\nSi ya tienes cuenta, simplemente inicia sesión con tu email y contraseña.\n\n⚠️ IMPORTANTE: Usa el email ${employee.email} para registrarte.\n\nSi tienes alguna pregunta, no dudes en contactarnos.\n\n¡Bienvenido al equipo!\nMCI Team`
-          : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou have been invited to join our business management platform.\n\nTo access:\n1. Open this link: ${appUrl}\n2. First time: Create your account with your email: ${employee.email}\n3. Create your password\n4. Done! You can now use the app\n\nIf you already have an account, just log in with your email and password.\n\n⚠️ IMPORTANT: Use the email ${employee.email} to register.\n\nIf you have any questions, don't hesitate to contact us.\n\nWelcome to the team!\nMCI Team`;
+      // Send welcome email
+      const emailBody = language === 'es' 
+        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
+        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
 
-        await base44.integrations.Core.SendEmail({
-          to: employee.email,
-          subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-          body: emailBody,
-          from_name: 'MCI Connect'
-        });
-      } catch (error) {
-        console.error('Failed to send welcome email:', error);
-      }
+      await base44.integrations.Core.SendEmail({
+        to: employee.email,
+        subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+        body: emailBody,
+        from_name: 'MCI Connect'
+      });
 
-      // Update PendingEmployee status
-      const now = new Date().toISOString();
+      // Update status
       await base44.entities.PendingEmployee.update(employee.id, {
         status: 'invited',
-        invited_date: now,
-        last_invitation_sent: now,
+        invited_date: new Date().toISOString(),
         invitation_count: (employee.invitation_count || 0) + 1
       });
-
-      return { employee, appUrl, fullName };
     },
-    onSuccess: ({ employee, appUrl, fullName }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      
-      toast({
-        title: language === 'es' ? '✅ Invitación Enviada' : '✅ Invitation Sent',
-        description: language === 'es' 
-          ? `Email enviado a ${employee.email}. El empleado recibirá instrucciones completas.`
-          : `Email sent to ${employee.email}. Employee will receive complete instructions.`,
-        duration: 5000,
-      });
+      toast.success(language === 'es' ? 'Invitación enviada' : 'Invitation sent');
     },
     onError: (error) => {
-      toast({ title: t('error'), description: t('failedToInviteEmployee') + `: ${error.message}`, variant: 'destructive' });
+      toast.error(t('error') + ': ' + error.message);
     }
   });
 
@@ -575,826 +500,524 @@ export default function Empleados() {
       if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
       const appUrl = window.location.origin;
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.full_name || 'Employee';
+      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+        employee.full_name || 'Employee';
 
-      // Send reminder email
-      try {
-        const emailBody = language === 'es'
-          ? `Hola ${employee.first_name || fullName},\n\nEste es un recordatorio sobre tu invitación a MCI Connect.\n\nAbre este link para acceder:\n${appUrl}\n\nLuego:\n- Si ya tienes cuenta: Inicia sesión con ${employee.email}\n- Si es tu primera vez: Crea tu cuenta usando ${employee.email}\n\n¿Necesitas ayuda? Contáctanos.\n\nSaludos,\nMCI Team`
-          : `Hi ${employee.first_name || fullName},\n\nThis is a reminder about your MCI Connect invitation.\n\nOpen this link to access:\n${appUrl}\n\nThen:\n- If you have an account: Log in with ${employee.email}
-- If it's your first time: Create your account using ${employee.email}\n\nNeed help? Contact us.\n\nBest regards,\nMCI Team`;
+      const emailBody = language === 'es'
+        ? `Hola ${employee.first_name || fullName},\n\nRecordatorio: Tienes acceso pendiente a MCI Connect.\n\nAccede: ${appUrl}\nEmail: ${employee.email}\n\nSaludos,\nMCI Team`
+        : `Hi ${employee.first_name || fullName},\n\nReminder: You have pending access to MCI Connect.\n\nAccess: ${appUrl}\nEmail: ${employee.email}\n\nBest regards,\nMCI Team`;
 
-        await base44.integrations.Core.SendEmail({
-          to: employee.email,
-          subject: language === 'es' ? 'Recordatorio: Acceso a MCI Connect' : 'Reminder: MCI Connect Access',
-          body: emailBody,
-          from_name: 'MCI Connect'
-        });
-      } catch (error) {
-        console.error('Failed to send reminder email:', error);
-      }
-
-      // Update invitation count
-      const now = new Date().toISOString();
-      await base44.entities.PendingEmployee.update(employee.id, {
-        last_invitation_sent: now,
-        invitation_count: (employee.invitation_count || 0) + 1
+      await base44.integrations.Core.SendEmail({
+        to: employee.email,
+        subject: language === 'es' ? 'Recordatorio: MCI Connect' : 'Reminder: MCI Connect',
+        body: emailBody,
+        from_name: 'MCI Connect'
       });
 
-      return { employee, appUrl, fullName };
+      await base44.entities.PendingEmployee.update(employee.id, {
+        invitation_count: (employee.invitation_count || 0) + 1
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      
-      toast({
-        title: language === 'es' ? '✅ Recordatorio Enviado' : '✅ Reminder Sent',
-        description: language === 'es'
-          ? 'Email de recordatorio enviado exitosamente'
-          : 'Reminder email sent successfully',
-        duration: 5000,
-      });
+      toast.success(language === 'es' ? 'Recordatorio enviado' : 'Reminder sent');
     },
     onError: (error) => {
-      toast({ title: t('error'), description: t('failedToResendInvitation') + `: ${error.message}`, variant: 'destructive' });
+      toast.error(t('error') + ': ' + error.message);
     }
   });
 
-  const restoreDeletedEmployeeMutation = useMutation({
+  const archivePendingMutation = useMutation({
+    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'archived' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      toast.success(t('employeeArchived'));
+    }
+  });
+
+  const restorePendingMutation = useMutation({
+    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'pending' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      toast.success(t('employeeRestoredToPending'));
+    }
+  });
+
+  const deletePendingMutation = useMutation({
+    mutationFn: (id) => base44.entities.PendingEmployee.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      toast.success(t('employeeDeletedSuccessfully'));
+    }
+  });
+
+  // RESTORE DELETED USER - ROBUST IMPLEMENTATION
+  const restoreDeletedMutation = useMutation({
     mutationFn: async (employeeId) => {
-      return { employeeId };
+      const employee = employees.find(e => e.id === employeeId);
+      if (!employee) throw new Error('Employee not found');
+
+      // Restore to active status
+      await base44.entities.User.update(employeeId, {
+        employment_status: 'active'
+      });
+
+      return employee;
     },
-    onSuccess: (data) => {
-      const employee = employees.find(e => e.id === data.employeeId);
+    onSuccess: (employee) => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success(language === 'es' 
+        ? `${employee.full_name} restaurado exitosamente`
+        : `${employee.full_name} restored successfully`
+      );
+    },
+    onError: (error) => {
+      toast.error(language === 'es' ? 'Error al restaurar' : 'Restore error');
       
-      alert(`⚠️ ${t('restoreAccessFor')} ${employee.full_name}:\n\n1. ${t('openDashboardInBrowser')}\n2. ${t('goToDataUser')}\n3. ${t('searchFor')} ${employee.email}\n4. ${t('clickEdit')}\n5. ${t('changeEmploymentStatusFromDeletedToActive')}\n6. ${t('saveChanges')}\n\n✅ ${t('employeeCanAccessAppAgain')}`);
+      // Fallback: Show manual instructions
+      alert(language === 'es' 
+        ? `⚠️ Error automático. Restaura manualmente:\n\n1. Abre Dashboard en navegador\n2. Ve a: Data → User\n3. Busca el email del empleado\n4. Edita y cambia 'employment_status' de 'deleted' a 'active'\n5. Guarda`
+        : `⚠️ Automatic restore failed. Manual steps:\n\n1. Open Dashboard in browser\n2. Go to: Data → User\n3. Search for employee email\n4. Edit and change 'employment_status' from 'deleted' to 'active'\n5. Save`
+      );
       
       window.open('https://app.base44.com/dashboard/data/User', '_blank');
     }
   });
 
-  const handleEditPending = (employee) => {
-    setEditingEmployee(employee);
-    setIsPendingEdit(true);
-    setShowDialog(true); // Renamed from setShowForm
-  };
-
-  const handleEditActive = (employee) => {
-    setEditingEmployee(employee);
-    setIsPendingEdit(false);
-    setShowDialog(true); // Renamed from setShowForm
-  };
-
-  const handleCloseForm = () => {
-    setShowDialog(false); // Renamed from setShowForm
-    setEditingEmployee(null);
-    setIsPendingEdit(false);
-  };
-
-  const handleResendInvite = (employee) => {
-    resendInviteMutation.mutate(employee);
-  };
-
-  const handleRestoreDeleted = (employee) => {
-    if (window.confirm(t('confirmRestoreEmployeeAccess', { fullName: employee.full_name }))) {
-      restoreDeletedEmployeeMutation.mutate(employee.id);
+  // Auto-sync effects
+  React.useEffect(() => {
+    if (!isLoading && !isPendingLoading && pendingEmployees.length > 0) {
+      const timeoutId = setTimeout(() => {
+        autoCreateUsersMutation.mutate();
+      }, 2000);
+      return () => clearTimeout(timeoutId);
     }
-  };
+  }, [pendingEmployees.length, isLoading, isPendingLoading]);
 
-  const handleViewAIInsights = (employee) => {
-    setSelectedEmployeeForAI(employee);
-    setShowAIInsights(true);
-  };
-
-  // Helper function to get display name
-  const getDisplayName = (employee) => {
-    if (employee.first_name || employee.last_name) {
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
-      if (fullName) return fullName;
+  React.useEffect(() => {
+    const timeSinceLastSync = Date.now() - lastSyncTime;
+    if (timeSinceLastSync > 120000 && employees.length > 0 && pendingEmployees.length > 0) {
+      const timeoutId = setTimeout(() => {
+        syncMutation.mutate();
+      }, 5000);
+      return () => clearTimeout(timeoutId);
     }
+  }, [employees.length, pendingEmployees.length, lastSyncTime]);
+
+  // SEARCH FILTER - Enhanced to search all fields
+  const filterEmployees = (empList, isPendingList = false) => {
+    if (!searchTerm) return empList;
     
-    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
-      return employee.full_name;
-    }
-    
-    if (employee.email) {
-      const emailName = employee.email.split('@')[0];
-      return emailName
-        .split('.')
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(' ');
-    }
-    
-    return t('unknownEmployee');
-  };
-
-  const needsNameConfiguration = (employee) => {
-    return !employee.first_name || !employee.last_name;
-  };
-
-  // Sync to Directory mutation (renamed from syncToDirectoryMutation in outline for consistency)
-  const syncMutation = useMutation({ // Renamed from syncToDirectoryMutation as per outline
-    mutationFn: async () => {
-      const employeesToSync = employees.filter(e => {
-        const status = e.employment_status;
-        return (status !== 'deleted' && status !== 'archived' && status !== 'pending_registration') && e.email;
-      });
-
-      const existingDirectory = await base44.entities.EmployeeDirectory.list();
-      const existingDirectoryMap = new Map(existingDirectory.map(d => [d.employee_email, d]));
-
-      for (const emp of employeesToSync) {
-        const existing = existingDirectoryMap.get(emp.email);
-
-        const directoryData = {
-          employee_email: emp.email,
-          full_name: emp.full_name || '',
-          position: emp.position || '',
-          department: emp.department || '',
-          phone: emp.phone || '',
-          profile_photo_url: emp.profile_photo_url || '',
-          status: 'active'
-        };
-
-        if (existing) {
-          let needsUpdate = false;
-          for (const key in directoryData) {
-            if (directoryData[key] !== existing[key]) {
-              needsUpdate = true;
-              break;
-            }
-          }
-          if (existing.status !== 'active') needsUpdate = true; // Also update if status changed to active
-
-          if (needsUpdate) {
-            await base44.entities.EmployeeDirectory.update(existing.id, directoryData);
-          }
-        } else {
-          await base44.entities.EmployeeDirectory.create(directoryData);
-        }
-      }
-
-      const activeEmails = new Set(employeesToSync.map(e => e.email));
-      const toDeactivate = existingDirectory.filter(d =>
-        !activeEmails.has(d.employee_email) && d.status === 'active'
+    const term = searchTerm.toLowerCase();
+    return empList.filter(emp => {
+      const name = isPendingList 
+        ? (emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim())
+        : emp.full_name;
+      
+      return (
+        name?.toLowerCase().includes(term) ||
+        emp.position?.toLowerCase().includes(term) ||
+        emp.email?.toLowerCase().includes(term) ||
+        emp.department?.toLowerCase().includes(term) ||
+        emp.team_name?.toLowerCase().includes(term)
       );
-
-      for (const d of toDeactivate) {
-        await base44.entities.EmployeeDirectory.update(d.id, { status: 'inactive' });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
-      toast({ title: t('success'), description: t('directorySyncedSuccessfully') });
-    },
-    onError: (error) => {
-      console.error('Directory sync error:', error);
-      toast({ title: t('error'), description: t('failedToSyncDirectory') + `: ${error.message}`, variant: 'destructive' });
-    }
-  });
-
-  const handleManualSync = () => { // New function as per outline
-    syncMutation.mutate();
+    });
   };
 
-  // --- FILTERING LOGIC based on outline and existing structure ---
-  // Apply search term to all relevant employee lists first
-  const searchFilteredEmployees = employees.filter(emp =>
-    getDisplayName(emp).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  // FILTERED LISTS - 3 MAIN TABS
+  const activeEmployees = filterEmployees(
+    employees.filter(e => {
+      const isDeleted = e.employment_status === 'deleted';
+      const isArchived = e.employment_status === 'archived';
+      
+      if (isDeleted || isArchived) return false;
+      
+      if (showInactive) {
+        return true; // Show all non-deleted/archived
+      }
+      
+      return e.employment_status === 'active' || 
+             e.employment_status === 'pending_registration' || 
+             !e.employment_status;
+    })
   );
 
-  const searchFilteredPendingEmployees = pendingEmployees.filter(emp => {
-    const fullName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
-    return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const pendingList = filterEmployees(
+    pendingEmployees.filter(e => e.status === 'pending' || e.status === 'invited'),
+    true
+  );
 
-  // Then apply tab-specific and showInactive filters
-  const displayedActiveEmployees = searchFilteredEmployees.filter(emp => {
-    const isNotDeletedOrArchived = emp.employment_status !== 'deleted' && emp.employment_status !== 'archived';
-    
-    if (showInactive) {
-      // If showInactive is true, display 'active', 'inactive', 'pending_registration', etc. but exclude deleted/archived.
-      return isNotDeletedOrArchived;
-    } else {
-      // If showInactive is false, only display 'active' or default (undefined/null) status.
-      // This also includes 'pending_registration' which is a form of active (not deleted/archived) but awaiting completion
-      return isNotDeletedOrArchived && (emp.employment_status === 'active' || emp.employment_status === 'pending_registration' || !emp.employment_status);
-    }
-  });
+  const archivedList = filterEmployees(
+    [
+      ...pendingEmployees.filter(e => e.status === 'archived'),
+      ...employees.filter(e => e.employment_status === 'archived' || e.employment_status === 'deleted')
+    ],
+    true
+  );
 
-  const displayedPendingTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'pending');
-  const displayedInvitedTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'invited');
-  const displayedRegisteredTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'active');
-  const displayedArchivedTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'archived');
-  const displayedDeletedTabEmployees = searchFilteredEmployees.filter(emp => emp.employment_status === 'deleted');
-
-  const pendingInvitations = searchFilteredPendingEmployees.filter(e => e.status === 'invited' && !e.registered_date);
-
-
-  // Re-calculate counts based on the new filtered arrays for tabs
-  const pendingCount = displayedPendingTabEmployees.length;
-  const invitedCount = displayedInvitedTabEmployees.length;
-  const activePendingCount = displayedRegisteredTabEmployees.length;
-  const archivedCount = displayedArchivedTabEmployees.length;
-  const deletedCount = displayedDeletedTabEmployees.length;
-  // ------------------------------------------------------------------
+  // Sub-categories for Pending tab
+  const pendingOnly = pendingList.filter(e => e.status === 'pending');
+  const invitedOnly = pendingList.filter(e => e.status === 'invited');
+  const deletedOnly = archivedList.filter(e => e.employment_status === 'deleted');
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8"> {/* This div replaces PageHeader based on outline */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        {/* HEADER */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{t('employeeManagement')}</h1>
-              <p className="text-slate-600 mt-1">{t('manageYourTeamMembers')}</p>
-            </div>
-            <div className="flex gap-2 flex-wrap items-center">
-              {/* NEW: Prompt #57 - Toggle for inactive employees */}
-              {activeTab === 'active' && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200">
-                  <input
-                    type="checkbox"
-                    id="show-inactive"
-                    checked={showInactive}
-                    onChange={(e) => setShowInactive(e.target.checked)}
-                    className="w-4 h-4 accent-[#3B9FF3]"
-                  />
-                  <label htmlFor="show-inactive" className="text-sm text-slate-700 cursor-pointer">
-                    Show Inactive Employees
-                  </label>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 flex items-center gap-3">
+                <div className="p-3 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl shadow-lg shadow-blue-500/30">
+                  <Users className="w-7 h-7 text-white" />
                 </div>
-              )}
-              
+                {t('employeeManagement')}
+              </h1>
+              <p className="text-slate-600 mt-2 ml-[60px]">{t('manageYourTeamMembers')}</p>
+            </div>
+            
+            <div className="flex gap-2 flex-wrap">
               <Button
-                onClick={handleManualSync} // Changed to handleManualSync as per outline
+                onClick={() => syncMutation.mutate()}
                 variant="outline"
-                disabled={syncMutation.isPending} // Changed from syncToDirectoryMutation
-                className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                disabled={syncMutation.isPending}
+                className="border-slate-300 hover:bg-slate-50"
               >
-                <Users className="w-4 h-4 mr-2" />
-                {syncMutation.isPending ? t('syncing') + '...' : t('manualSync')} {/* Changed from syncToDirectoryMutation */}
+                <RefreshCw className={`w-4 h-4 mr-2 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+                {syncMutation.isPending ? t('syncing') : t('manualSync')}
               </Button>
-              <Button onClick={() => { setEditingEmployee(null); setIsPendingEdit(true); setShowDialog(true); }} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/20">
+              
+              <Button 
+                onClick={() => { 
+                  setEditingEmployee(null); 
+                  setIsPendingEdit(true); 
+                  setShowDialog(true); 
+                }}
+                className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] to-blue-700 text-white shadow-lg"
+              >
                 <Plus className="w-5 h-5 mr-2" />
                 {t('addEmployee')}
               </Button>
             </div>
           </div>
 
-          {/* Alert for pending invitations */}
-          {pendingInvitations.length > 0 && (
-            <Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
-              <AlertDescription className="text-blue-400 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                <span>
-                  <strong>{pendingInvitations.length}</strong> {language === 'es' ? 'invitaciones pendientes de aceptación' : 'pending invitations awaiting acceptance'}
-                </span>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {pendingCount > 0 && (
-            <Alert className="mb-6 bg-yellow-500/10 border-yellow-500/30">
-              <AlertDescription className="text-yellow-400">
-                ⚠️ {t('youHaveXPendingEmployees', { count: pendingCount })}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {deletedCount > 0 && (
-            <Alert className="mb-6 bg-red-500/10 border-red-500/30">
-              <AlertDescription className="text-red-400">
-                ⚠️ {t('youHaveXDeletedEmployees', { count: deletedCount })}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {activePendingCount > 0 && (
-            <Alert className="mb-6 bg-green-500/10 border-green-500/30">
-              <AlertDescription className="text-green-400">
-                ✅ {t('xEmployeesHaveRegistered', { count: activePendingCount })}
+          {/* CRITICAL ALERTS ONLY */}
+          {syncMutation.isError && (
+            <Alert className="mt-4 bg-red-50 border-red-300">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription className="text-red-800">
+                {language === 'es' ? 'Error de sincronización. Intenta de nuevo.' : 'Sync error. Try again.'}
               </AlertDescription>
             </Alert>
           )}
         </div>
 
-        {/* Search input wrapped in Card as per outline */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200 mb-6">
-          <CardContent className="p-4"> {/* Changed padding to p-4 as per outline */}
+        {/* SEARCH BAR */}
+        <Card className="mb-6 shadow-lg">
+          <CardContent className="p-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"/>
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
                 placeholder={t('searchEmployees')}
-                value={searchTerm} // Using searchTerm from original code
+                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 h-10 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500" // Updated classes
+                className="pl-12 h-12 bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
               />
             </div>
           </CardContent>
         </Card>
 
+        {/* 3 MAIN TABS */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-slate-800/50 border border-slate-700">
-            <TabsTrigger value="active" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('active')} ({displayedActiveEmployees.length})
+          <TabsList className="bg-white shadow-md border border-slate-200 p-1">
+            <TabsTrigger 
+              value="active" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#3B9FF3] data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              {t('active')} ({activeEmployees.length})
             </TabsTrigger>
-            <TabsTrigger value="pending" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('pending')} ({pendingCount})
-              {pendingCount > 0 && (
-                <Badge className="ml-2 bg-yellow-500 text-black text-xs">{pendingCount}</Badge>
+            
+            <TabsTrigger 
+              value="pending" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#3B9FF3] data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              {t('pending')} ({pendingList.length})
+              {pendingList.length > 0 && (
+                <Badge className="ml-2 bg-amber-500 text-white text-xs">{pendingList.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="pending_invitations" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              Pending Invitations ({pendingInvitations.length})
-              {pendingInvitations.length > 0 && (
-                <Badge className="ml-2 bg-blue-500 text-white text-xs">{pendingInvitations.length}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="invited" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('invited')} ({invitedCount})
-            </TabsTrigger>
-            <TabsTrigger value="registered" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('registered')} ({activePendingCount})
-            </TabsTrigger>
-            <TabsTrigger value="archived" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('archived')} ({archivedCount})
-            </TabsTrigger>
-            <TabsTrigger value="deleted" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              <span className="flex items-center gap-2">
-                {t('deleted')} ({deletedCount})
-                {deletedCount > 0 && (
-                  <Badge className="bg-red-500 text-white text-xs">{deletedCount}</Badge>
-                )}
-              </span>
+            
+            <TabsTrigger 
+              value="archived" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#3B9FF3] data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg"
+            >
+              <Archive className="w-4 h-4 mr-2" />
+              {t('archived')} ({archivedList.length})
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedActiveEmployees.map((employee) => { // Using new displayedActiveEmployees
-                const displayName = getDisplayName(employee);
-                const needsConfig = needsNameConfiguration(employee);
-                
-                // NEW: Prompt #57 - Style inactive employees differently
-                const isInactive = employee.employment_status === 'inactive';
-                const cardClassName = isInactive 
-                  ? 'opacity-60 bg-slate-100 border-slate-300' 
-                  : 'bg-white/90 backdrop-blur-sm border-slate-200';
-                const textClassName = isInactive ? 'text-slate-500' : 'text-slate-900';
-
-                return (
-                  <Card key={employee.id} className={`${cardClassName} shadow-lg hover:shadow-xl transition-all duration-300 group`}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4 mb-4">
-                        {employee.profile_photo_url ? (
-                          <img
-                            src={employee.profile_photo_url}
-                            alt={displayName}
-                            className={`w-16 h-16 rounded-full object-cover border-2 border-cyan-500/30 ${isInactive ? 'grayscale' : ''}`}
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-500/20">
-                            {displayName[0]?.toUpperCase()}
-                          </div>
-                        )}
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className={`font-bold ${textClassName} truncate`}>{displayName}</h3>
-                            {needsConfig && (
-                              <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
-                                ⚠️
-                              </Badge>
-                            )}
-                            {isInactive && (
-                              <Badge className="bg-amber-500/20 text-amber-700 border-amber-300 text-xs">
-                                Inactive
-                              </Badge>
-                            )}
-                          </div>
-                          <p className={`text-sm ${isInactive ? 'text-slate-500' : 'text-cyan-700'} truncate`}>{employee.position || t('noPosition')}</p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {employee.department && (
-                              <Badge variant="outline" className={`text-xs ${isInactive ? 'border-slate-300 text-slate-500' : 'border-slate-300 text-slate-700'}`}>
-                                {employee.department}
-                              </Badge>
-                            )}
-                            {employee.team_name && (
-                              <Badge className={`text-xs ${isInactive ? 'bg-purple-500/10 text-purple-500 border-purple-200' : 'bg-purple-500/20 text-purple-700 border-purple-300'}`}>
-                                <Building2 className="w-3 h-3 mr-1" />
-                                {employee.team_name}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className={`hover:bg-slate-100 ${isInactive ? 'text-slate-400 hover:text-slate-500' : 'text-slate-500 hover:text-slate-700'}`}>
-                              <MoreVertical className="w-5 h-5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-white border-slate-200">
-                            <DropdownMenuItem asChild>
-                              <Link to={createPageUrl(`EmployeeProfile?id=${employee.id}`)} className="flex items-center cursor-pointer text-slate-700 hover:bg-slate-100">
-                                <ChevronRight className="w-4 h-4 mr-2" />
-                                {t('viewProfile')}
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditActive(employee)} className="text-slate-700 hover:bg-slate-100">
-                              <Edit className="w-4 h-4 mr-2" />
-                              {t('editEmployee')}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {needsConfig && (
-                        <Alert className="mb-3 bg-yellow-500/10 border-yellow-500/30">
-                          <AlertDescription className="text-yellow-700 text-xs">
-                            ⚠️ {t('nameNeedsConfigurationInstruction')}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-
-                      {isInactive && (
-                        <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                          <p className="text-xs text-amber-700 font-medium">⚠️ {t('inactiveEmployee')}</p>
-                        </div>
-                      )}
-
-                      <div className="space-y-1 text-sm">
-                        <div className={`flex items-center gap-2 ${isInactive ? 'text-slate-500' : 'text-slate-700'}`}>
-                          <Mail className="w-3 h-3" />
-                          <span className="truncate">{employee.email}</span>
-                        </div>
-                        {employee.phone && (
-                          <div className={`flex items-center gap-2 ${isInactive ? 'text-slate-500' : 'text-slate-700'}`}>
-                            <Phone className="w-3 h-3" />
-                            <span>{employee.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2 mt-4">
-                        <Link to={createPageUrl(`EmployeeProfile?id=${employee.id}`)}>
-                          <Button variant="outline" size="sm" className="bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700">
-                            <Eye className="w-4 h-4 mr-2" />
-                            {t('viewProfile')}
-                          </Button>
-                        </Link>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewAIInsights(employee)}
-                          className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
-                        >
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          AI Insights
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+          {/* ACTIVE TAB */}
+          <TabsContent value="active" className="space-y-4">
+            {/* Show Inactive Toggle */}
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="checkbox"
+                id="show-inactive"
+                checked={showInactive}
+                onChange={(e) => setShowInactive(e.target.checked)}
+                className="w-4 h-4 accent-[#3B9FF3] cursor-pointer"
+              />
+              <label htmlFor="show-inactive" className="text-sm text-slate-700 cursor-pointer">
+                {language === 'es' ? 'Mostrar empleados inactivos' : 'Show inactive employees'}
+              </label>
             </div>
-            {displayedActiveEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Users className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noActiveEmployeesFound')}</p>
-              </div>
-            )}
-          </TabsContent>
 
-          <TabsContent value="pending_invitations">
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-400" />
-                  Pending Invitations Dashboard
-                </h3>
-                <p className="text-slate-300 text-sm mb-4">
-                  Track all employees who have been invited but haven't registered yet. Follow up with employees who haven't responded.
-                </p>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-xs mb-1">Total Pending</p>
-                    <p className="text-2xl font-bold text-white">{pendingInvitations.length}</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-xs mb-1">Over 7 Days</p>
-                    <p className="text-2xl font-bold text-red-400">
-                      {pendingInvitations.filter(e => {
-                        const days = differenceInDays(new Date(), new Date(e.invited_date));
-                        return days > 7;
-                      }).length}
-                    </p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-xs mb-1">Recent (&lt; 3 Days)</p>
-                    <p className="text-2xl font-bold text-green-400">
-                      {pendingInvitations.filter(e => {
-                        const days = differenceInDays(new Date(), new Date(e.invited_date));
-                        return days <= 3;
-                      }).length}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {pendingInvitations
-                  .sort((a, b) => new Date(a.invited_date) - new Date(b.invited_date)) // Oldest first
-                  .map((employee) => (
-                    <PendingInvitationCard
-                      key={employee.id}
-                      employee={employee}
-                      onResend={handleResendInvite}
-                      isResending={resendInviteMutation.isPending}
-                    />
-                  ))}
-              </div>
-
-              {pendingInvitations.length === 0 && (
-                <div className="text-center py-12">
-                  <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                  <p className="text-slate-500">All invitations have been accepted! 🎉</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="pending">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedPendingTabEmployees.map((employee) => ( // Using new displayedPendingTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onInvite={(emp) => inviteMutation.mutate(emp)}
-                    onResendInvite={handleResendInvite}
-                    onEdit={handleEditPending}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onArchive={(id) => {
-                      if (window.confirm(t('confirmArchiveEmployee'))) {
-                        archivePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedPendingTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Clock className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noPendingEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="invited">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedInvitedTabEmployees.map((employee) => ( // Using new displayedInvitedTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onInvite={(emp) => inviteMutation.mutate(emp)}
-                    onResendInvite={handleResendInvite}
-                    onEdit={handleEditPending}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onArchive={(id) => {
-                      if (window.confirm(t('confirmArchiveEmployee'))) {
-                        archivePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedInvitedTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Mail className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noInvitedEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="registered">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedRegisteredTabEmployees.map((employee) => ( // Using new displayedRegisteredTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={{ ...employee, status: 'active' }}
-                    onEdit={handleEditPending}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onArchive={(id) => {
-                      if (window.confirm(t('confirmArchiveEmployee'))) {
-                        archivePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedRegisteredTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Check className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noRegisteredEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="archived">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedArchivedTabEmployees.map((employee) => ( // Using new displayedArchivedTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onEdit={handleEditPending}
-                    onResendInvite={handleResendInvite}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanentlyUndone'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onRestore={(id) => {
-                      if (window.confirm(t('confirmRestoreEmployeeToPending'))) {
-                        restorePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedArchivedTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Archive className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noArchivedEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="deleted">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedDeletedTabEmployees.map((employee) => ( // Using new displayedDeletedTabEmployees
-                <Card key={employee.id} className="glass-card shadow-xl border-red-500/30">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      {employee.profile_photo_url ? (
-                        <img
-                          src={employee.profile_photo_url}
-                          alt={employee.full_name}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-red-500/30 grayscale"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                          {employee.full_name?.[0]?.toUpperCase()}
-                        </div>
-                      )}
-
-                      <div className="flex-1">
-                        <h3 className="font-bold text-slate-400 line-through">{employee.full_name}</h3>
-                        <p className="text-sm text-slate-500">{employee.position || t('noPosition')}</p>
-                        <Badge className="mt-2 bg-red-500/20 text-red-400 border-red-500/30">
-                          <UserX className="w-3 h-3 mr-1" />
-                          {t('deletedAndBlocked')}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1 text-sm text-slate-500">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-3 h-3" />
-                        <span className="truncate">{employee.email}</span>
-                      </div>
-                      {employee.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-3 h-3" />
-                          <span>{employee.phone}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                      <p className="text-xs text-red-400 mb-3">
-                        ⚠️ {t('allDataDeletedEmployeeBlocked')}
-                      </p>
-                      <Button
-                        onClick={() => handleRestoreDeleted(employee)}
-                        size="sm"
-                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                      >
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        {t('restoreAccess')}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeEmployees.map(employee => (
+                <EmployeeCard
+                  key={employee.id}
+                  employee={employee}
+                  onEdit={() => {
+                    setEditingEmployee(employee);
+                    setIsPendingEdit(false);
+                    setShowDialog(true);
+                  }}
+                  onViewProfile={() => {
+                    window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`);
+                  }}
+                  isInactive={employee.employment_status === 'inactive'}
+                />
               ))}
             </div>
-            {displayedDeletedTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <UserX className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noDeletedEmployees')}</p>
+
+            {activeEmployees.length === 0 && (
+              <div className="text-center py-16">
+                <Users className="w-20 h-20 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 text-lg">{t('noActiveEmployeesFound')}</p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* PENDING TAB */}
+          <TabsContent value="pending" className="space-y-6">
+            {/* Sub-tabs for pending */}
+            {pendingOnly.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                  {language === 'es' ? 'Pendientes de Invitar' : 'Not Yet Invited'} ({pendingOnly.length})
+                </h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {pendingOnly.map(employee => (
+                    <PendingEmployeeCard
+                      key={employee.id}
+                      employee={employee}
+                      onInvite={(emp) => inviteMutation.mutate(emp)}
+                      onResend={resendInviteMutation.mutate}
+                      onEdit={(emp) => {
+                        setEditingEmployee(emp);
+                        setIsPendingEdit(true);
+                        setShowDialog(true);
+                      }}
+                      onArchive={(id) => {
+                        if (window.confirm(t('confirmArchiveEmployee'))) {
+                          archivePendingMutation.mutate(id);
+                        }
+                      }}
+                      onRestore={restorePendingMutation.mutate}
+                      onDelete={(id) => {
+                        if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
+                          deletePendingMutation.mutate(id);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {invitedOnly.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-blue-600" />
+                  {language === 'es' ? 'Invitados (Esperando Registro)' : 'Invited (Awaiting Registration)'} ({invitedOnly.length})
+                </h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {invitedOnly.map(employee => (
+                    <PendingEmployeeCard
+                      key={employee.id}
+                      employee={employee}
+                      onInvite={(emp) => inviteMutation.mutate(emp)}
+                      onResend={resendInviteMutation.mutate}
+                      onEdit={(emp) => {
+                        setEditingEmployee(emp);
+                        setIsPendingEdit(true);
+                        setShowDialog(true);
+                      }}
+                      onArchive={(id) => {
+                        if (window.confirm(t('confirmArchiveEmployee'))) {
+                          archivePendingMutation.mutate(id);
+                        }
+                      }}
+                      onRestore={restorePendingMutation.mutate}
+                      onDelete={(id) => {
+                        if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
+                          deletePendingMutation.mutate(id);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {pendingList.length === 0 && (
+              <div className="text-center py-16">
+                <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-4" />
+                <p className="text-slate-500 text-lg">
+                  {language === 'es' ? '¡Todos los empleados han sido invitados!' : 'All employees have been invited!'}
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ARCHIVED TAB */}
+          <TabsContent value="archived" className="space-y-6">
+            {/* Deleted users section */}
+            {deletedOnly.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <Trash2 className="w-5 h-5 text-red-600" />
+                  {language === 'es' ? 'Eliminados' : 'Deleted'} ({deletedOnly.length})
+                </h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {deletedOnly.map(employee => (
+                    <Card key={employee.id} className="border-red-200 bg-red-50/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white font-bold text-lg grayscale">
+                            {employee.full_name?.[0]?.toUpperCase()}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm text-slate-600 truncate line-through">
+                              {employee.full_name}
+                            </h3>
+                            <p className="text-xs text-slate-500">{employee.position}</p>
+                            <Badge className="mt-1 bg-red-100 text-red-700 text-xs">
+                              {t('deleted')}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <Button
+                          onClick={() => {
+                            if (window.confirm(language === 'es' 
+                              ? `¿Restaurar acceso para ${employee.full_name}?`
+                              : `Restore access for ${employee.full_name}?`
+                            )) {
+                              restoreDeletedMutation.mutate(employee.id);
+                            }
+                          }}
+                          size="sm"
+                          className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          {t('restoreAccess')}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Archived from pending */}
+            {archivedList.filter(e => !e.employment_status || e.employment_status !== 'deleted').length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <Archive className="w-5 h-5 text-slate-600" />
+                  {language === 'es' ? 'Archivados' : 'Archived'} ({archivedList.filter(e => !e.employment_status || e.employment_status !== 'deleted').length})
+                </h3>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {archivedList.filter(e => !e.employment_status || e.employment_status !== 'deleted').map(employee => (
+                    <PendingEmployeeCard
+                      key={employee.id}
+                      employee={employee}
+                      onEdit={(emp) => {
+                        setEditingEmployee(emp);
+                        setIsPendingEdit(true);
+                        setShowDialog(true);
+                      }}
+                      onRestore={(id) => {
+                        if (window.confirm(t('confirmRestoreEmployeeToPending'))) {
+                          restorePendingMutation.mutate(id);
+                        }
+                      }}
+                      onDelete={(id) => {
+                        if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
+                          deletePendingMutation.mutate(id);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {archivedList.length === 0 && (
+              <div className="text-center py-16">
+                <Archive className="w-20 h-20 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 text-lg">{t('noArchivedEmployees')}</p>
               </div>
             )}
           </TabsContent>
         </Tabs>
 
-        {/* Dialog for editing PENDING employee with Onboarding Tracker */}
-        {showDialog && editingEmployee && isPendingEdit && ( // Renamed from showForm
-          <Dialog open={showDialog} onOpenChange={handleCloseForm}> {/* Renamed from showForm */}
-            <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-5xl max-h-[90vh] overflow-y-auto">
+        {/* DIALOGS */}
+        {showDialog && (
+          <Dialog open={showDialog} onOpenChange={(open) => {
+            if (!open) {
+              setShowDialog(false);
+              setEditingEmployee(null);
+              setIsPendingEdit(false);
+            }
+          }}>
+            <DialogContent className="bg-white border-slate-200 max-w-2xl">
               <DialogHeader>
-                <DialogTitle className="text-2xl">
-                  {t('employee')} - {editingEmployee.first_name} {editingEmployee.last_name}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <div className="grid lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <EmployeeForm
-                    employee={editingEmployee}
-                    onClose={handleCloseForm}
-                    isPending={true}
-                  />
-                </div>
-                
-                <div>
-                  <OnboardingTracker employee={editingEmployee} />
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-
-        {/* Original Dialog for adding new PENDING employee OR editing ACTIVE employee */}
-        {showDialog && (!editingEmployee || !isPendingEdit) && ( // Renamed from showForm
-          <Dialog open={showDialog} onOpenChange={handleCloseForm}> {/* Renamed from showForm */}
-            <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-3xl">
-              <DialogHeader>
-                <DialogTitle className="text-2xl">
-                  {t('employee')}
+                <DialogTitle className="text-slate-900">
+                  {editingEmployee 
+                    ? `${t('edit')} ${t('employee')}`
+                    : `${t('add')} ${t('employee')}`
+                  }
                 </DialogTitle>
               </DialogHeader>
               {isPendingEdit ? (
                 <EmployeeForm
                   employee={editingEmployee}
-                  onClose={handleCloseForm}
+                  onClose={() => {
+                    setShowDialog(false);
+                    setEditingEmployee(null);
+                    setIsPendingEdit(false);
+                  }}
                   isPending={true}
                 />
               ) : (
                 <ActiveEmployeeForm
                   employee={editingEmployee}
-                  onClose={handleCloseForm}
+                  onClose={() => {
+                    setShowDialog(false);
+                    setEditingEmployee(null);
+                    setIsPendingEdit(false);
+                  }}
                 />
               )}
             </DialogContent>
           </Dialog>
         )}
-
-        <Dialog open={showAIInsights} onOpenChange={setShowAIInsights}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900 flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-purple-500" />
-                AI Performance Insights - {selectedEmployeeForAI && getDisplayName(selectedEmployeeForAI)}
-              </DialogTitle>
-            </DialogHeader>
-            
-            {selectedEmployeeForAI && (
-              <div className="py-4">
-                <AIPerformanceAnalyzer
-                  employee={selectedEmployeeForAI}
-                  timeEntries={allTimeEntries.filter(e => e.employee_email === selectedEmployeeForAI.email)}
-                  jobs={allJobs}
-                  expenses={allExpenses.filter(e => e.employee_email === selectedEmployeeForAI.email)}
-                  drivingLogs={allDrivingLogs.filter(l => l.employee_email === selectedEmployeeForAI.email)}
-                  certifications={allCertifications.filter(c => c.employee_email === selectedEmployeeForAI.email)}
-                  recognitions={allRecognitions.filter(r => r.employee_email === selectedEmployeeForAI.email)}
-                  allEmployees={employees} // Use the general employees list
-                  showFullAnalysis={true}
-                />
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
-      <Toaster />
     </div>
   );
 }
