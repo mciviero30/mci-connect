@@ -59,6 +59,7 @@ import MiScorecard from './pages/MiScorecard';
 import MisProyectos from './pages/MisProyectos';
 import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import AdminEmployeeReset from './pages/AdminEmployeeReset';
+import ResetStatus from './pages/ResetStatus';
 import Layout from './Layout.jsx';
 
 
@@ -124,6 +125,7 @@ export const PAGES = {
     "MisProyectos": MisProyectos,
     "AIAssistantPersonal": AIAssistantPersonal,
     "AdminEmployeeReset": AdminEmployeeReset,
+    "ResetStatus": ResetStatus,
 }
 
 export const pagesConfig = {
