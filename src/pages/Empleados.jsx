@@ -23,7 +23,8 @@ import {
   Clock,
   AlertCircle,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  UserX
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,7 +46,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/components/ui/toast";
 
 // COMPACT EMPLOYEE CARD COMPONENT
-const EmployeeCard = ({ employee, onEdit, onViewProfile, isInactive = false }) => {
+const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, isInactive = false }) => {
   const { t } = useLanguage();
   
   const displayName = employee.full_name || 
@@ -130,6 +131,16 @@ const EmployeeCard = ({ employee, onEdit, onViewProfile, isInactive = false }) =
               <DropdownMenuItem onClick={onEdit} className="cursor-pointer">
                 <Edit className="w-4 h-4 mr-2" />
                 {t('edit')}
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem 
+                onClick={onDelete} 
+                className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {t('delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -247,7 +258,7 @@ const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, 
               
               <DropdownMenuItem 
                 onClick={() => onDelete(employee.id)} 
-                className="cursor-pointer text-red-600 focus:text-red-700"
+                className="cursor-pointer text-red-600 focus:text-red-700 focus:bg-red-50"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 {t('deletePermanently')}
@@ -280,6 +291,70 @@ const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, 
             </p>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// DELETED EMPLOYEE CARD
+const DeletedEmployeeCard = ({ employee, onRestore }) => {
+  const { t, language } = useLanguage();
+  
+  const displayName = employee.full_name || 
+    `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+    employee.email?.split('@')[0] || 
+    t('unknownEmployee');
+
+  return (
+    <Card className="border-red-200 bg-red-50/50">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3 mb-3">
+          {employee.profile_photo_url ? (
+            <img
+              src={employee.profile_photo_url}
+              alt={displayName}
+              className="w-12 h-12 rounded-full object-cover border-2 border-red-300 grayscale opacity-50"
+            />
+          ) : (
+            <div className="w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white font-bold text-lg opacity-50">
+              {displayName[0]?.toUpperCase()}
+            </div>
+          )}
+          
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-slate-600 truncate line-through">
+              {displayName}
+            </h3>
+            <p className="text-xs text-slate-500">{employee.position || t('noPosition')}</p>
+            <Badge className="mt-1 bg-red-100 text-red-700 text-xs flex items-center gap-1 w-fit">
+              <UserX className="w-3 h-3" />
+              {t('deleted')}
+            </Badge>
+          </div>
+        </div>
+
+        {employee.email && (
+          <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
+            <Mail className="w-3 h-3" />
+            <span className="truncate">{employee.email}</span>
+          </div>
+        )}
+
+        <Alert className="mb-3 bg-red-100 border-red-300">
+          <AlertDescription className="text-red-800 text-xs">
+            <UserX className="w-3 h-3 inline mr-1" />
+            {language === 'es' ? 'Acceso bloqueado' : 'Access blocked'}
+          </AlertDescription>
+        </Alert>
+
+        <Button
+          onClick={onRestore}
+          size="sm"
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
+        >
+          <RotateCcw className="w-4 h-4 mr-2" />
+          {t('restoreAccess')}
+        </Button>
       </CardContent>
     </Card>
   );
@@ -327,7 +402,57 @@ export default function Empleados() {
     retry: 1
   });
 
+  // ============================================
+  // MUTATION 1: SOFT DELETE - Mark active employee as deleted (blocks access)
+  // ============================================
+  const deleteActiveMutation = useMutation({
+    mutationFn: async (employeeId) => {
+      await base44.entities.User.update(employeeId, {
+        employment_status: 'deleted'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success(language === 'es' 
+        ? 'Empleado marcado como borrado. Acceso bloqueado.' 
+        : 'Employee marked as deleted. Access blocked.'
+      );
+    },
+    onError: (error) => {
+      toast.error(language === 'es' 
+        ? 'Error al borrar empleado: ' + error.message
+        : 'Failed to delete employee: ' + error.message
+      );
+    }
+  });
+
+  // ============================================
+  // MUTATION 2: RESTORE DELETED - Restore employee from deleted to active (unblocks access)
+  // ============================================
+  const restoreDeletedMutation = useMutation({
+    mutationFn: async (employeeId) => {
+      await base44.entities.User.update(employeeId, {
+        employment_status: 'active'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success(language === 'es' 
+        ? 'Empleado restaurado exitosamente. Acceso reactivado.' 
+        : 'Employee restored successfully. Access reactivated.'
+      );
+    },
+    onError: (error) => {
+      toast.error(language === 'es' 
+        ? 'Error al restaurar empleado: ' + error.message
+        : 'Failed to restore employee: ' + error.message
+      );
+    }
+  });
+
+  // ============================================
   // AUTO-SYNC MUTATIONS
+  // ============================================
   const autoCreateUsersMutation = useMutation({
     mutationFn: async () => {
       const employeesWithEmail = pendingEmployees.filter(e => e.email);
@@ -551,39 +676,6 @@ export default function Empleados() {
     }
   });
 
-  // RESTORE DELETED USER - ROBUST IMPLEMENTATION
-  const restoreDeletedMutation = useMutation({
-    mutationFn: async (employeeId) => {
-      const employee = employees.find(e => e.id === employeeId);
-      if (!employee) throw new Error('Employee not found');
-
-      // Restore to active status
-      await base44.entities.User.update(employeeId, {
-        employment_status: 'active'
-      });
-
-      return employee;
-    },
-    onSuccess: (employee) => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' 
-        ? `${employee.full_name} restaurado exitosamente`
-        : `${employee.full_name} restored successfully`
-      );
-    },
-    onError: (error) => {
-      toast.error(language === 'es' ? 'Error al restaurar' : 'Restore error');
-      
-      // Fallback: Show manual instructions
-      alert(language === 'es' 
-        ? `⚠️ Error automático. Restaura manualmente:\n\n1. Abre Dashboard en navegador\n2. Ve a: Data → User\n3. Busca el email del empleado\n4. Edita y cambia 'employment_status' de 'deleted' a 'active'\n5. Guarda`
-        : `⚠️ Automatic restore failed. Manual steps:\n\n1. Open Dashboard in browser\n2. Go to: Data → User\n3. Search for employee email\n4. Edit and change 'employment_status' from 'deleted' to 'active'\n5. Save`
-      );
-      
-      window.open('https://app.base44.com/dashboard/data/User', '_blank');
-    }
-  });
-
   // Auto-sync effects
   React.useEffect(() => {
     if (!isLoading && !isPendingLoading && pendingEmployees.length > 0) {
@@ -655,10 +747,11 @@ export default function Empleados() {
     true
   );
 
-  // Sub-categories for Pending tab
+  // Sub-categories for tabs
   const pendingOnly = pendingList.filter(e => e.status === 'pending');
   const invitedOnly = pendingList.filter(e => e.status === 'invited');
-  const deletedOnly = archivedList.filter(e => e.employment_status === 'deleted');
+  const deletedUsers = employees.filter(e => e.employment_status === 'deleted');
+  const archivedPending = pendingEmployees.filter(e => e.status === 'archived');
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -693,7 +786,7 @@ export default function Empleados() {
                   setIsPendingEdit(true); 
                   setShowDialog(true); 
                 }}
-                className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] to-blue-700 text-white shadow-lg"
+                className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2A8FE3] hover:to-blue-700 text-white shadow-lg"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 {t('addEmployee')}
@@ -755,6 +848,9 @@ export default function Empleados() {
             >
               <Archive className="w-4 h-4 mr-2" />
               {t('archived')} ({archivedList.length})
+              {deletedUsers.length > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white text-xs">{deletedUsers.length}</Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -787,6 +883,14 @@ export default function Empleados() {
                   onViewProfile={() => {
                     window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`);
                   }}
+                  onDelete={() => {
+                    if (window.confirm(language === 'es'
+                      ? `¿Estás seguro de borrar a ${employee.full_name}? Esto bloqueará su acceso a la aplicación.`
+                      : `Are you sure you want to delete ${employee.full_name}? This will block their access to the app.`
+                    )) {
+                      deleteActiveMutation.mutate(employee.id);
+                    }
+                  }}
                   isInactive={employee.employment_status === 'inactive'}
                 />
               ))}
@@ -802,7 +906,7 @@ export default function Empleados() {
 
           {/* PENDING TAB */}
           <TabsContent value="pending" className="space-y-6">
-            {/* Sub-tabs for pending */}
+            {/* Not yet invited */}
             {pendingOnly.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
@@ -838,6 +942,7 @@ export default function Empleados() {
               </div>
             )}
 
+            {/* Invited (awaiting registration) */}
             {invitedOnly.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
@@ -883,66 +988,43 @@ export default function Empleados() {
             )}
           </TabsContent>
 
-          {/* ARCHIVED TAB */}
+          {/* ARCHIVED TAB - Includes both archived pending AND deleted users */}
           <TabsContent value="archived" className="space-y-6">
             {/* Deleted users section */}
-            {deletedOnly.length > 0 && (
+            {deletedUsers.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
                   <Trash2 className="w-5 h-5 text-red-600" />
-                  {language === 'es' ? 'Eliminados' : 'Deleted'} ({deletedOnly.length})
+                  {language === 'es' ? 'Eliminados (Acceso Bloqueado)' : 'Deleted (Access Blocked)'} ({deletedUsers.length})
                 </h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {deletedOnly.map(employee => (
-                    <Card key={employee.id} className="border-red-200 bg-red-50/30">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white font-bold text-lg grayscale">
-                            {employee.full_name?.[0]?.toUpperCase()}
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm text-slate-600 truncate line-through">
-                              {employee.full_name}
-                            </h3>
-                            <p className="text-xs text-slate-500">{employee.position}</p>
-                            <Badge className="mt-1 bg-red-100 text-red-700 text-xs">
-                              {t('deleted')}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={() => {
-                            if (window.confirm(language === 'es' 
-                              ? `¿Restaurar acceso para ${employee.full_name}?`
-                              : `Restore access for ${employee.full_name}?`
-                            )) {
-                              restoreDeletedMutation.mutate(employee.id);
-                            }
-                          }}
-                          size="sm"
-                          className="w-full bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          {t('restoreAccess')}
-                        </Button>
-                      </CardContent>
-                    </Card>
+                  {deletedUsers.map(employee => (
+                    <DeletedEmployeeCard
+                      key={employee.id}
+                      employee={employee}
+                      onRestore={() => {
+                        if (window.confirm(language === 'es' 
+                          ? `¿Restaurar acceso para ${employee.full_name}? Esto cambiará su estado a Activo.`
+                          : `Restore access for ${employee.full_name}? This will change their status to Active.`
+                        )) {
+                          restoreDeletedMutation.mutate(employee.id);
+                        }
+                      }}
+                    />
                   ))}
                 </div>
               </div>
             )}
 
             {/* Archived from pending */}
-            {archivedList.filter(e => !e.employment_status || e.employment_status !== 'deleted').length > 0 && (
+            {archivedPending.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
                   <Archive className="w-5 h-5 text-slate-600" />
-                  {language === 'es' ? 'Archivados' : 'Archived'} ({archivedList.filter(e => !e.employment_status || e.employment_status !== 'deleted').length})
+                  {language === 'es' ? 'Archivados (Pendientes)' : 'Archived (Pending)'} ({archivedPending.length})
                 </h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {archivedList.filter(e => !e.employment_status || e.employment_status !== 'deleted').map(employee => (
+                  {archivedPending.map(employee => (
                     <PendingEmployeeCard
                       key={employee.id}
                       employee={employee}
