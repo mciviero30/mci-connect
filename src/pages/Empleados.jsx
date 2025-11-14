@@ -27,16 +27,16 @@ import {
   MoreVertical,
   Eye,
   Sparkles,
-  CheckCircle2 // New icon for "All invitations accepted"
+  FileText, // For W-9/Agreement review
+  RefreshCcw // For resend onboarding link
 } from "lucide-react";
-// Removed PageHeader import as per outline
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import EmployeeForm from "../components/empleados/EmployeeForm";
-import ActiveEmployeeForm from "../components/empleados/ActiveEmployeeForm";
-import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer";
+import SubcontractorOnboardingForm from "../components/subcontractors/SubcontractorOnboardingForm"; // Renamed from EmployeeForm
+import ActiveSubcontractorForm from "../components/subcontractors/ActiveSubcontractorForm"; // Renamed from ActiveEmployeeForm
+import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer"; // Still uses 'empleados' for now
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { format, differenceInDays } from "date-fns"; // Add differenceInDays
+import { format, differenceInDays } from "date-fns";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -50,33 +50,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 
-import OnboardingTracker from "../components/empleados/OnboardingTracker";
-import PendingInvitationCard from "../components/empleados/PendingInvitationCard";
+import OnboardingTracker from "../components/empleados/OnboardingTracker"; // Still uses 'empleados' for now
 
-const PendingEmployeeCard = ({ employee, onInvite, onDelete, onArchive, onRestore, onEdit, onResendInvite }) => {
+// Renamed and refactored from PendingEmployeeCard
+const OnboardingReviewCard = ({ subcontractor, onSendOnboardingLink, onDelete, onArchive, onRestore, onEdit, canActivate, onActivate }) => {
   const { t } = useLanguage();
-  
+
   const getFullName = () => {
-    if (employee.full_name) return employee.full_name;
-    if (employee.first_name && employee.last_name) return `${employee.first_name} ${employee.last_name}`;
-    if (employee.first_name) return employee.first_name;
-    if (employee.last_name) return employee.last_name;
+    if (subcontractor.full_name) return subcontractor.full_name;
+    if (subcontractor.first_name && subcontractor.last_name) return `${subcontractor.first_name} ${subcontractor.last_name}`;
+    if (subcontractor.first_name) return subcontractor.first_name;
+    if (subcontractor.last_name) return subcontractor.last_name;
     return t('noName');
   };
 
   const statusColors = {
-    pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-    invited: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    active: "bg-green-500/20 text-green-400 border-green-500/30",
-    archived: "bg-slate-500/20 text-slate-400 border-slate-500/30"
+    PENDIENTE_ONBOARDING: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    ACTIVO: "bg-green-500/20 text-green-400 border-green-500/30", // For pending_employee that completed onboarding
+    ARCHIVADO: "bg-slate-500/20 text-slate-400 border-slate-500/30",
   };
 
   const statusIcons = {
-    pending: <Clock className="w-3 h-3" />,
-    invited: <Mail className="w-3 h-3" />,
-    active: <Check className="w-3 h-3" />,
-    archived: <Archive className="w-3 h-3" />
+    PENDIENTE_ONBOARDING: <Clock className="w-3 h-3" />,
+    ACTIVO: <Check className="w-3 h-3" />,
+    ARCHIVADO: <Archive className="w-3 h-3" />,
   };
+
+  const hasW9AndAgreement = subcontractor.w9_completed && subcontractor.agreement_signed;
 
   return (
     <Card className="glass-card shadow-xl border-slate-700 hover:border-cyan-500/30 transition-all">
@@ -84,18 +84,18 @@ const PendingEmployeeCard = ({ employee, onInvite, onDelete, onArchive, onRestor
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <h3 className="font-bold text-white text-lg">{getFullName()}</h3>
-            <p className="text-cyan-400 text-sm">{employee.position || t('noPosition')}</p>
+            <p className="text-cyan-400 text-sm">{subcontractor.position || t('noPosition')}</p>
             <div className="flex flex-wrap gap-2 mt-2">
-              <Badge className={statusColors[employee.status]}>
+              <Badge className={statusColors[subcontractor.status] || "bg-gray-500/20 text-gray-400 border-gray-500/30"}>
                 <span className="flex items-center gap-1">
-                  {statusIcons[employee.status]}
-                  {employee.status}
+                  {statusIcons[subcontractor.status] || <Clock className="w-3 h-3" />}
+                  {t(subcontractor.status)}
                 </span>
               </Badge>
-              {employee.team_name && (
+              {subcontractor.team_name && (
                 <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
                   <Building2 className="w-3 h-3 mr-1" />
-                  {employee.team_name}
+                  {subcontractor.team_name}
                 </Badge>
               )}
             </div>
@@ -108,35 +108,29 @@ const PendingEmployeeCard = ({ employee, onInvite, onDelete, onArchive, onRestor
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-slate-900 border-slate-800">
-              <DropdownMenuItem onClick={() => onEdit(employee)} className="text-white hover:bg-slate-800">
+              <DropdownMenuItem onClick={() => onEdit(subcontractor)} className="text-white hover:bg-slate-800">
                 <Edit className="w-4 h-4 mr-2" />
-                {t('editEmployee')}
+                {t('editSubcontractor')}
               </DropdownMenuItem>
-              {employee.status === 'pending' && employee.email && (
-                <DropdownMenuItem onClick={() => onInvite(employee)} className="text-white hover:bg-slate-800">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  {t('sendInvitation')}
-                </DropdownMenuItem>
-              )}
-              {employee.status === 'invited' && employee.email && (
-                <DropdownMenuItem onClick={() => onResendInvite(employee)} className="text-white hover:bg-slate-800">
+              {(subcontractor.status === 'PENDIENTE_ONBOARDING' || subcontractor.status === 'invited') && subcontractor.email && (
+                <DropdownMenuItem onClick={() => onSendOnboardingLink(subcontractor)} className="text-white hover:bg-slate-800">
                   <Mail className="w-4 h-4 mr-2" />
-                  {t('resendInvitation')}
+                  {subcontractor.onboarding_link ? t('resendOnboardingLink') : t('sendOnboardingLink')}
                 </DropdownMenuItem>
               )}
-              {employee.status !== 'archived' && (
-                <DropdownMenuItem onClick={() => onArchive(employee.id)} className="text-white hover:bg-slate-800">
+              {subcontractor.status !== 'ARCHIVADO' && (
+                <DropdownMenuItem onClick={() => onArchive(subcontractor.id)} className="text-white hover:bg-slate-800">
                   <Archive className="w-4 h-4 mr-2" />
                   {t('archive')}
                 </DropdownMenuItem>
               )}
-              {employee.status === 'archived' && (
-                <DropdownMenuItem onClick={() => onRestore(employee.id)} className="text-white hover:bg-slate-800">
+              {subcontractor.status === 'ARCHIVADO' && (
+                <DropdownMenuItem onClick={() => onRestore(subcontractor.id)} className="text-white hover:bg-slate-800">
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  {t('restoreToPending')}
+                  {t('restoreToOnboarding')}
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => onDelete(employee.id)} className="text-red-400 hover:bg-red-500/10">
+              <DropdownMenuItem onClick={() => onDelete(subcontractor.id)} className="text-red-400 hover:bg-red-500/10">
                 <Trash2 className="w-4 h-4 mr-2" />
                 {t('deletePermanently')}
               </DropdownMenuItem>
@@ -145,77 +139,99 @@ const PendingEmployeeCard = ({ employee, onInvite, onDelete, onArchive, onRestor
         </div>
 
         <div className="space-y-2 text-sm">
-          {employee.email && (
+          {subcontractor.email && (
             <div className="flex items-center gap-2 text-slate-300">
               <Mail className="w-4 h-4 text-slate-500" />
-              <span className="truncate">{employee.email}</span>
+              <span className="truncate">{subcontractor.email}</span>
             </div>
           )}
-          {!employee.email && employee.status === 'pending' && (
+          {!subcontractor.email && (subcontractor.status === 'PENDIENTE_ONBOARDING' || subcontractor.status === 'invited') && (
             <Alert className="bg-red-500/10 border-red-500/30">
               <AlertDescription className="text-red-400 text-xs">
-                ⚠️ {t('noEmailCannotInvite')}
+                ⚠️ {t('noEmailCannotSendLink')}
               </AlertDescription>
             </Alert>
           )}
-          {employee.phone && (
+          {subcontractor.phone && (
             <div className="flex items-center gap-2 text-slate-300">
               <Phone className="w-4 h-4 text-slate-500" />
-              <span>{employee.phone}</span>
+              <span>{subcontractor.phone}</span>
             </div>
           )}
-          {employee.address && (
+          {subcontractor.onboarding_link && (
             <div className="flex items-center gap-2 text-slate-300">
-              <MapPin className="w-4 h-4 text-slate-500" />
-              <span className="text-xs truncate">{employee.address}</span>
+              <ChevronRight className="w-4 h-4 text-slate-500" />
+              <a href={subcontractor.onboarding_link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline truncate">
+                {t('onboardingLink')}
+              </a>
             </div>
           )}
-          {employee.dob && (
-            <div className="flex items-center gap-2 text-slate-300">
-              <Calendar className="w-4 h-4 text-slate-500" />
-              <span>{t('born')}: {format(new Date(employee.dob), 'MMM dd, yyyy')}</span>
-            </div>
-          )}
-          {employee.invited_date && (
+          <div className="flex items-center gap-2 text-slate-300">
+            <FileText className={`w-4 h-4 ${subcontractor.w9_completed ? 'text-green-500' : 'text-orange-500'}`} />
+            <span>W-9: {subcontractor.w9_completed ? t('completed') : t('pending')}</span>
+          </div>
+          <div className="flex items-center gap-2 text-slate-300">
+            <FileText className={`w-4 h-4 ${subcontractor.agreement_signed ? 'text-green-500' : 'text-orange-500'}`} />
+            <span>{t('agreement')}: {subcontractor.agreement_signed ? t('signed') : t('pending')}</span>
+          </div>
+          {subcontractor.last_invitation_sent && (
             <div className="text-xs text-slate-500 mt-2">
-              {t('invited')}: {format(new Date(employee.invited_date), 'MMM dd, yyyy HH:mm')}
+              {t('lastLinkSent')}: {format(new Date(subcontractor.last_invitation_sent), 'MMM dd, yyyy HH:mm')}
             </div>
           )}
         </div>
+        {canActivate && (
+          <Button
+            onClick={() => onActivate(subcontractor)}
+            className="mt-4 w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
+          >
+            <Check className="w-4 h-4 mr-2" />
+            {t('activateSubcontractor')}
+          </Button>
+        )}
+        {!hasW9AndAgreement && (subcontractor.status === 'PENDIENTE_ONBOARDING' || subcontractor.status === 'invited') && (
+            <Alert className="mt-4 bg-yellow-500/10 border-yellow-500/30">
+              <AlertDescription className="text-yellow-400 text-xs flex items-center gap-2">
+                <Clock className="w-3 h-3" />
+                {t('awaitingW9Agreement')}
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
     </Card>
   );
 };
 
-export default function Empleados() {
+
+export default function Subcontractors() { // Renamed from Empleados
   const { t, language } = useLanguage();
-  const [showDialog, setShowDialog] = useState(false); // Renamed from showForm as per outline implies
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [isPendingEdit, setIsPendingEdit] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingSubcontractor, setEditingSubcontractor] = useState(null); // Renamed from editingEmployee
+  const [isPendingEdit, setIsPendingEdit] = useState(false); // For PendingEmployee entity
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState('active'); // Default to 'active'
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [lastSyncTime, ReactSetLastSyncTime] = React.useState(0); 
+  const [lastSyncTime, setLastSyncTime] = React.useState(0);
 
   const [showAIInsights, setShowAIInsights] = useState(false);
-  const [selectedEmployeeForAI, setSelectedEmployeeForAI] = useState(null);
-  
-  // NEW: Prompt #57 - Toggle for showing inactive employees
-  const [showInactive, setShowInactive] = useState(false);
-  
-  const { data: user } = useQuery({ 
+  const [selectedSubcontractorForAI, setSelectedSubcontractorForAI] = useState(null); // Renamed from selectedEmployeeForAI
+
+  const [showInactive, setShowInactive] = useState(false); // Toggle for showing inactive subcontractors
+
+  const { data: user } = useQuery({
     queryKey: ['currentUser'],
     staleTime: Infinity
   });
-  
-  const { data: employees = [], isLoading } = useQuery({
-    queryKey: ['employees'],
+
+  // Fetch `User` entities - these are the fully registered, active/archived/terminated subcontractors
+  const { data: subcontractors = [], isLoading } = useQuery({
+    queryKey: ['subcontractors'], // Renamed from employees
     queryFn: async () => {
       try {
         return await base44.entities.User.list('full_name');
       } catch (error) {
-        console.error('Error loading employees:', error);
+        console.error('Error loading subcontractors:', error);
         return [];
       }
     },
@@ -223,13 +239,14 @@ export default function Empleados() {
     retry: 1
   });
 
-  const { data: pendingEmployees = [], isLoading: isPendingLoading } = useQuery({
-    queryKey: ['pendingEmployees'],
+  // Fetch `PendingEmployee` entities - these are for onboarding and W-9 review
+  const { data: onboardingSubcontractors = [], isLoading: isOnboardingLoading } = useQuery({ // Renamed from pendingEmployees
+    queryKey: ['onboardingSubcontractors'], // Renamed from pendingEmployees
     queryFn: async () => {
       try {
         return await base44.entities.PendingEmployee.list('-created_date');
       } catch (error) {
-        console.error('Error loading pending employees:', error);
+        console.error('Error loading onboarding subcontractors:', error);
         return [];
       }
     },
@@ -285,27 +302,21 @@ export default function Empleados() {
     initialData: []
   });
 
+  // This mutation is re-purposed or removed based on the new flow.
+  // Given the outline, user creation is driven by the onboarding link.
+  // This mutation would only apply if there's a need to manually create `User` records with `PENDIENTE_ONBOARDING` status.
+  // For now, I will modify it to create/update `User` with `employment_status: 'PENDIENTE_ONBOARDING'` if they don't exist
+  // based on `onboardingSubcontractors` that have `email` but no corresponding `User` record.
   const autoCreateUsersMutation = useMutation({
     mutationFn: async () => {
-      const employeesWithEmail = pendingEmployees.filter(e => e.email);
-      const existingEmails = new Set(employees.map(e => e.email));
+      const subcontractorsWithEmail = onboardingSubcontractors.filter(e => e.email);
+      const existingUserEmails = new Set(subcontractors.map(e => e.email));
       const created = [];
 
-      for (const pending of employeesWithEmail) {
-        if (existingEmails.has(pending.email)) continue;
+      for (const pending of subcontractorsWithEmail) {
+        if (existingUserEmails.has(pending.email)) continue; // User already exists
 
-        let fullName = '';
-        if (pending.first_name && pending.last_name) {
-          fullName = `${pending.first_name} ${pending.last_name}`;
-        } else if (pending.first_name) {
-          fullName = pending.first_name;
-        } else if (pending.last_name) {
-          fullName = pending.last_name;
-        } else if (pending.full_name) {
-          fullName = pending.full_name;
-        } else {
-          fullName = 'Employee';
-        }
+        let fullName = pending.full_name || `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 'Subcontractor';
 
         try {
           await base44.entities.User.create({
@@ -313,7 +324,7 @@ export default function Empleados() {
             full_name: fullName,
             first_name: pending.first_name || '',
             last_name: pending.last_name || '',
-            role: 'user',
+            role: 'user', // Default role
             phone: pending.phone || '',
             position: pending.position || '',
             department: pending.department || '',
@@ -324,7 +335,7 @@ export default function Empleados() {
             team_id: pending.team_id || '',
             team_name: pending.team_name || '',
             direct_manager_name: pending.direct_manager_name || '',
-            employment_status: 'pending_registration' 
+            employment_status: 'PENDIENTE_ONBOARDING' // Initial status for auto-created users
           });
           created.push(pending.email);
         } catch (error) {
@@ -333,12 +344,11 @@ export default function Empleados() {
           }
         }
       }
-
       return created;
     },
     onSuccess: (created) => {
       if (created.length > 0) {
-        queryClient.invalidateQueries({ queryKey: ['employees'] });
+        queryClient.invalidateQueries({ queryKey: ['subcontractors'] });
       }
     },
     onError: (error) => {
@@ -346,70 +356,72 @@ export default function Empleados() {
     }
   });
 
+
+  // This mutation is now crucial for promoting `PENDIENTE_ONBOARDING` to `ACTIVO` in the `User` entity
   const syncUserDataMutation = useMutation({
     mutationFn: async () => {
-      const employeesWithEmail = pendingEmployees.filter(e => e.email && (e.status === 'invited' || e.status === 'active'));
       const updates = [];
+      // Identify `PendingEmployee` records that have completed W-9/Agreement and are not yet 'ACTIVO' in User
+      const completedOnboarding = onboardingSubcontractors.filter(p =>
+        (p.status === 'PENDIENTE_ONBOARDING' || p.status === 'invited' || p.status === 'active') &&
+        p.email &&
+        p.w9_completed &&
+        p.agreement_signed
+      );
 
-      for (const pending of employeesWithEmail) {
-        const existingUser = employees.find(e => e.email === pending.email);
-        
+      for (const pending of completedOnboarding) {
+        const existingUser = subcontractors.find(u => u.email === pending.email);
+
+        const newUserData = {
+          full_name: pending.full_name || `${pending.first_name || ''} ${pending.last_name || ''}`.trim(),
+          first_name: pending.first_name || '',
+          last_name: pending.last_name || '',
+          phone: pending.phone || '',
+          position: pending.position || '',
+          department: pending.department || '',
+          address: pending.address || '',
+          dob: pending.dob || '',
+          ssn_tax_id: pending.ssn_tax_id || '',
+          tshirt_size: pending.tshirt_size || '',
+          team_id: pending.team_id || '',
+          team_name: pending.team_name || '',
+          direct_manager_name: pending.direct_manager_name || '',
+          employment_status: 'ACTIVO' // Set to ACTIVO after onboarding completion
+        };
+
         if (existingUser) {
-          const needsUpdate = 
-            (pending.first_name && existingUser.first_name !== pending.first_name) || 
-            (pending.last_name && existingUser.last_name !== pending.last_name) ||
-            (pending.phone && existingUser.phone !== pending.phone) ||
-            (pending.position && existingUser.position !== pending.position) ||
-            (pending.department && existingUser.department !== pending.department) ||
-            (pending.address && existingUser.address !== pending.address) ||
-            (pending.dob && existingUser.dob !== pending.dob) ||
-            (pending.ssn_tax_id && existingUser.ssn_tax_id !== pending.ssn_tax_id) ||
-            (pending.tshirt_size && existingUser.tshirt_size !== pending.tshirt_size) ||
-            (pending.team_id && existingUser.team_id !== pending.team_id) ||
-            (pending.team_name && existingUser.team_name !== pending.team_name) ||
-            (pending.direct_manager_name && existingUser.direct_manager_name !== pending.direct_manager_name);
+          // Check if any data fields are different or if status needs promotion
+          let needsUpdate = false;
+          for (const key in newUserData) {
+            if (newUserData[key] !== existingUser[key]) {
+              needsUpdate = true;
+              break;
+            }
+          }
+          if (existingUser.employment_status !== 'ACTIVO') {
+            needsUpdate = true; // Always update to ACTIVO if completed onboarding
+          }
 
           if (needsUpdate) {
-            let fullName = '';
-            if (pending.first_name && pending.last_name) {
-              fullName = `${pending.first_name} ${pending.last_name}`;
-            } else if (pending.first_name) {
-              fullName = pending.first_name;
-            } else if (pending.last_name) {
-              fullName = pending.last_name;
-            } else if (pending.full_name) {
-              fullName = pending.full_name;
-            } else {
-              fullName = existingUser.full_name || 'Employee';
-            }
+            updates.push(
+              base44.entities.User.update(existingUser.id, newUserData)
+            );
+          }
+        } else {
+          // If a user doesn't exist but PendingEmployee completed onboarding, create it
+          updates.push(
+            base44.entities.User.create({ ...newUserData, email: pending.email, role: 'user' })
+          );
+        }
 
-            updates.push(
-              base44.entities.User.update(existingUser.id, {
-                full_name: fullName,
-                first_name: pending.first_name || existingUser.first_name || '',
-                last_name: pending.last_name || existingUser.last_name || '',
-                phone: pending.phone || existingUser.phone || '',
-                position: pending.position || existingUser.position || '',
-                department: pending.department || existingUser.department || '',
-                address: pending.address || existingUser.address || '',
-                dob: pending.dob || existingUser.dob || '',
-                ssn_tax_id: pending.ssn_tax_id || existingUser.ssn_tax_id || '',
-                tshirt_size: pending.tshirt_size || existingUser.tshirt_size || '',
-                team_id: pending.team_id || existingUser.team_id || '',
-                team_name: pending.team_name || existingUser.team_name || '',
-                direct_manager_name: pending.direct_manager_name || existingUser.direct_manager_name || '',
-              })
-            );
-          }
-          
-          if (pending.status !== 'active') {
-            updates.push(
-              base44.entities.PendingEmployee.update(pending.id, { status: 'active' })
-            );
-          }
+        // Also update the PendingEmployee's status if it's not already 'ACTIVO'
+        if (pending.status !== 'ACTIVO') {
+          updates.push(
+            base44.entities.PendingEmployee.update(pending.id, { status: 'ACTIVO' })
+          );
         }
       }
-      
+
       if (updates.length > 0) {
         await Promise.all(updates);
         return updates.length;
@@ -418,300 +430,301 @@ export default function Empleados() {
     },
     onSuccess: (count) => {
       if (count > 0) {
-        queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-        queryClient.invalidateQueries({ queryKey: ['employees'] });
+        queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] });
+        queryClient.invalidateQueries({ queryKey: ['subcontractors'] });
+        toast({ title: t('success'), description: t('subcontractorDataSynced'), duration: 3000 });
       }
-      ReactSetLastSyncTime(Date.now()); 
+      setLastSyncTime(Date.now());
     },
     onError: (error) => {
       console.log('Sync user data error (silent):', error.message);
-      ReactSetLastSyncTime(Date.now()); 
+      toast({ title: t('error'), description: t('failedToSyncSubcontractorData') + `: ${error.message}`, variant: 'destructive' });
+      setLastSyncTime(Date.now());
     }
   });
 
+  // Auto-create users if PendingEmployee exists but no User entity exists (initial population)
   React.useEffect(() => {
-    if (!isLoading && !isPendingLoading && pendingEmployees.length > 0) {
+    if (!isLoading && !isOnboardingLoading && onboardingSubcontractors.length > 0) {
       const timeoutId = setTimeout(() => {
         if (!autoCreateUsersMutation.isPending && !autoCreateUsersMutation.isSuccess && !autoCreateUsersMutation.isError) {
            autoCreateUsersMutation.mutate();
         }
-      }, 2000);
+      }, 2000); // Debounce to allow initial data load
 
       return () => clearTimeout(timeoutId);
     }
-  }, [pendingEmployees.length, isLoading, isPendingLoading, autoCreateUsersMutation]);
+  }, [onboardingSubcontractors.length, isLoading, isOnboardingLoading, autoCreateUsersMutation]);
 
+  // Auto-sync data and promote to ACTIVO if W-9/Agreement are completed
   React.useEffect(() => {
     const now = Date.now();
     const timeSinceLastSync = now - lastSyncTime;
-    const minSyncInterval = 120000;
+    const minSyncInterval = 120000; // 2 minutes
 
-    if (!isLoading && !isPendingLoading && employees.length > 0 && pendingEmployees.length > 0) {
+    // Only run if there are potential candidates for promotion
+    const hasCandidates = onboardingSubcontractors.some(p =>
+      (p.status === 'PENDIENTE_ONBOARDING' || p.status === 'invited' || p.status === 'active') &&
+      p.email &&
+      p.w9_completed &&
+      p.agreement_signed
+    );
+
+    if (!isLoading && !isOnboardingLoading && hasCandidates) {
       if (timeSinceLastSync > minSyncInterval) {
         const timeoutId = setTimeout(() => {
-          syncUserDataMutation.mutate();
-        }, 5000);
+          if (!syncUserDataMutation.isPending) { // Prevent multiple simultaneous syncs
+            syncUserDataMutation.mutate();
+          }
+        }, 5000); // Debounce before syncing
 
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [employees.length, pendingEmployees.length, isLoading, isPendingLoading, lastSyncTime, syncUserDataMutation]);
+  }, [subcontractors.length, onboardingSubcontractors.length, isLoading, isOnboardingLoading, lastSyncTime, syncUserDataMutation]);
 
-  const deletePendingMutation = useMutation({
+
+  const deleteOnboardingSubcontractorMutation = useMutation({ // Renamed from deletePendingMutation
     mutationFn: (id) => base44.entities.PendingEmployee.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast({ title: t('success'), description: t('employeeDeletedSuccessfully') });
+      queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] });
+      toast({ title: t('success'), description: t('subcontractorDeletedSuccessfully') });
     },
     onError: (error) => {
-      toast({ title: t('error'), description: t('failedToDeleteEmployee') + `: ${error.message}`, variant: 'destructive' });
+      toast({ title: t('error'), description: t('failedToDeleteSubcontractor') + `: ${error.message}`, variant: 'destructive' });
     },
   });
 
-  const archivePendingMutation = useMutation({
-    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'archived' }),
+  const archiveOnboardingSubcontractorMutation = useMutation({ // Renamed from archivePendingMutation
+    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'ARCHIVADO' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast({ title: t('success'), description: t('employeeArchived') });
+      queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] });
+      toast({ title: t('success'), description: t('subcontractorArchived') });
     },
     onError: (error) => {
-      toast({ title: t('error'), description: t('failedToArchiveEmployee') + `: ${error.message}`, variant: 'destructive' });
+      toast({ title: t('error'), description: t('failedToArchiveSubcontractor') + `: ${error.message}`, variant: 'destructive' });
     },
   });
 
-  const restorePendingMutation = useMutation({
-    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'pending' }),
+  const restoreOnboardingSubcontractorMutation = useMutation({ // Renamed from restorePendingMutation
+    mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'PENDIENTE_ONBOARDING' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast({ title: t('success'), description: t('employeeRestoredToPending') });
+      queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] });
+      toast({ title: t('success'), description: t('subcontractorRestoredToOnboarding') });
     },
     onError: (error) => {
-      toast({ title: t('error'), description: t('failedToRestoreEmployee') + `: ${error.message}`, variant: 'destructive' });
+      toast({ title: t('error'), description: t('failedToRestoreSubcontractor') + `: ${error.message}`, variant: 'destructive' });
     },
   });
 
-  const inviteMutation = useMutation({
-    mutationFn: async (employee) => {
-      if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
+  // Handles sending the unique onboarding link
+  const sendOnboardingLinkMutation = useMutation({
+    mutationFn: async (subcontractorData) => {
+      if (!subcontractorData.email) throw new Error(t('cannotSendLinkWithoutEmail'));
 
       const appUrl = window.location.origin;
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.full_name || 'Employee';
+      const fullName = `${subcontractorData.first_name || ''} ${subcontractorData.last_name || ''}`.trim() || subcontractorData.full_name || 'Subcontractor';
 
-      // Create user in User entity if doesn't exist
-      const existingUser = employees.find(e => e.email === employee.email);
-      if (!existingUser) {
-        try {
-          await base44.entities.User.create({
-            email: employee.email,
-            full_name: fullName,
-            first_name: employee.first_name,
-            last_name: employee.last_name,
-            role: 'user',
-            phone: employee.phone,
-            position: employee.position,
-            department: employee.department,
-            address: employee.address,
-            dob: employee.dob,
-            ssn_tax_id: employee.ssn_tax_id,
-            tshirt_size: employee.tshirt_size,
-            team_id: employee.team_id,
-            team_name: employee.team_name,
-            direct_manager_name: employee.direct_manager_name,
-            employment_status: 'pending_registration' 
-          });
-        } catch (error) {
-          if (!error.message.includes('already exists') && !error.message.includes('duplicate')) {
-            throw error;
-          }
-        }
+      // Ensure an onboarding link exists or generate a new one
+      let onboardingLink = subcontractorData.onboarding_link;
+      if (!onboardingLink) {
+        // This is a placeholder. In a real scenario, base44 would generate a unique token
+        // and a corresponding URL that leads to an onboarding page.
+        // For now, we simulate a generic link + ID.
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        onboardingLink = `${appUrl}/onboarding?token=${subcontractorData.id}-${token}`; // Example dynamic link
+        // Update the PendingEmployee record with this new link
+        await base44.entities.PendingEmployee.update(subcontractorData.id, { onboarding_link: onboardingLink });
+        queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] }); // Refresh to show new link
       }
 
-      // Send automated welcome email
-      try {
-        const emailBody = language === 'es' 
-          ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma de gestión empresarial.\n\nPara acceder:\n1. Abre este link: ${appUrl}\n2. La primera vez, crea tu cuenta con tu email: ${employee.email}\n3. Crea tu contraseña\n4. ¡Listo! Ya puedes usar la app\n\nSi ya tienes cuenta, simplemente inicia sesión con tu email y contraseña.\n\n⚠️ IMPORTANTE: Usa el email ${employee.email} para registrarte.\n\nSi tienes alguna pregunta, no dudes en contactarnos.\n\n¡Bienvenido al equipo!\nMCI Team`
-          : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou have been invited to join our business management platform.\n\nTo access:\n1. Open this link: ${appUrl}\n2. First time: Create your account with your email: ${employee.email}\n3. Create your password\n4. Done! You can now use the app\n\nIf you already have an account, just log in with your email and password.\n\n⚠️ IMPORTANT: Use the email ${employee.email} to register.\n\nIf you have any questions, don't hesitate to contact us.\n\nWelcome to the team!\nMCI Team`;
-
-        await base44.integrations.Core.SendEmail({
-          to: employee.email,
-          subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-          body: emailBody,
-          from_name: 'MCI Connect'
-        });
-      } catch (error) {
-        console.error('Failed to send welcome email:', error);
-      }
-
-      // Update PendingEmployee status
-      const now = new Date().toISOString();
-      await base44.entities.PendingEmployee.update(employee.id, {
-        status: 'invited',
-        invited_date: now,
-        last_invitation_sent: now,
-        invitation_count: (employee.invitation_count || 0) + 1
-      });
-
-      return { employee, appUrl, fullName };
-    },
-    onSuccess: ({ employee, appUrl, fullName }) => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      
-      toast({
-        title: language === 'es' ? '✅ Invitación Enviada' : '✅ Invitation Sent',
-        description: language === 'es' 
-          ? `Email enviado a ${employee.email}. El empleado recibirá instrucciones completas.`
-          : `Email sent to ${employee.email}. Employee will receive complete instructions.`,
-        duration: 5000,
-      });
-    },
-    onError: (error) => {
-      toast({ title: t('error'), description: t('failedToInviteEmployee') + `: ${error.message}`, variant: 'destructive' });
-    }
-  });
-
-  const resendInviteMutation = useMutation({
-    mutationFn: async (employee) => {
-      if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
-
-      const appUrl = window.location.origin;
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.full_name || 'Employee';
-
-      // Send reminder email
+      // Send automated welcome email with the onboarding link
       try {
         const emailBody = language === 'es'
-          ? `Hola ${employee.first_name || fullName},\n\nEste es un recordatorio sobre tu invitación a MCI Connect.\n\nAbre este link para acceder:\n${appUrl}\n\nLuego:\n- Si ya tienes cuenta: Inicia sesión con ${employee.email}\n- Si es tu primera vez: Crea tu cuenta usando ${employee.email}\n\n¿Necesitas ayuda? Contáctanos.\n\nSaludos,\nMCI Team`
-          : `Hi ${employee.first_name || fullName},\n\nThis is a reminder about your MCI Connect invitation.\n\nOpen this link to access:\n${appUrl}\n\nThen:\n- If you have an account: Log in with ${employee.email}
-- If it's your first time: Create your account using ${employee.email}\n\nNeed help? Contact us.\n\nBest regards,\nMCI Team`;
+          ? `Hola ${subcontractorData.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma de gestión.\n\nPara iniciar tu proceso de onboarding y completar tu perfil (incluyendo W-9 y Acuerdo de Subcontratista), por favor usa el siguiente enlace:\n${onboardingLink}\n\n⚠️ IMPORTANTE: Usa el email ${subcontractorData.email} para registrarte.\n\nSi tienes alguna pregunta, no dudes en contactarnos.\n\n¡Bienvenido al equipo!\nMCI Team`
+          : `Hello ${subcontractorData.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou have been invited to join our management platform.\n\nTo start your onboarding process and complete your profile (including W-9 and Subcontractor Agreement), please use the following link:\n${onboardingLink}\n\n⚠️ IMPORTANT: Use the email ${subcontractorData.email} to register.\n\nIf you have any questions, don't hesitate to contact us.\n\nWelcome to the team!\nMCI Team`;
 
         await base44.integrations.Core.SendEmail({
-          to: employee.email,
-          subject: language === 'es' ? 'Recordatorio: Acceso a MCI Connect' : 'Reminder: MCI Connect Access',
+          to: subcontractorData.email,
+          subject: language === 'es' ? '¡Bienvenido a MCI Connect - Enlace de Onboarding!' : 'Welcome to MCI Connect - Onboarding Link!',
           body: emailBody,
           from_name: 'MCI Connect'
         });
       } catch (error) {
-        console.error('Failed to send reminder email:', error);
+        console.error('Failed to send onboarding email:', error);
       }
 
-      // Update invitation count
+      // Update PendingEmployee status and invitation counts
       const now = new Date().toISOString();
-      await base44.entities.PendingEmployee.update(employee.id, {
+      await base44.entities.PendingEmployee.update(subcontractorData.id, {
+        status: 'PENDIENTE_ONBOARDING', // Explicitly set if it was 'pending' or 'invited' before
         last_invitation_sent: now,
-        invitation_count: (employee.invitation_count || 0) + 1
+        invitation_count: (subcontractorData.invitation_count || 0) + 1
       });
 
-      return { employee, appUrl, fullName };
+      return { subcontractorData, appUrl, fullName };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      
+    onSuccess: ({ subcontractorData }) => {
+      queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] });
+
       toast({
-        title: language === 'es' ? '✅ Recordatorio Enviado' : '✅ Reminder Sent',
-        description: language === 'es'
-          ? 'Email de recordatorio enviado exitosamente'
-          : 'Reminder email sent successfully',
+        title: t('success'),
+        description: t('onboardingLinkSent') + ` ${subcontractorData.email}`,
         duration: 5000,
       });
     },
     onError: (error) => {
-      toast({ title: t('error'), description: t('failedToResendInvitation') + `: ${error.message}`, variant: 'destructive' });
+      toast({ title: t('error'), description: t('failedToSendOnboardingLink') + `: ${error.message}`, variant: 'destructive' });
     }
   });
 
-  const restoreDeletedEmployeeMutation = useMutation({
-    mutationFn: async (employeeId) => {
-      return { employeeId };
+
+  // Mutation to promote `PendingEmployee` to `ACTIVO` in the `User` entity
+  const activateSubcontractorMutation = useMutation({
+    mutationFn: async (subcontractorToActivate) => {
+      if (!subcontractorToActivate.w9_completed || !subcontractorToActivate.agreement_signed) {
+        throw new Error(t('w9AgreementRequiredForActivation'));
+      }
+
+      // 1. Update PendingEmployee status to ACTIVO
+      await base44.entities.PendingEmployee.update(subcontractorToActivate.id, { status: 'ACTIVO' });
+
+      // 2. Find or create User entity and set status to ACTIVO
+      const existingUser = subcontractors.find(u => u.email === subcontractorToActivate.email);
+
+      const userData = {
+        email: subcontractorToActivate.email,
+        full_name: subcontractorToActivate.full_name || `${subcontractorToActivate.first_name || ''} ${subcontractorToActivate.last_name || ''}`.trim(),
+        first_name: subcontractorToActivate.first_name || '',
+        last_name: subcontractorToActivate.last_name || '',
+        role: 'user', // Default role
+        phone: subcontractorToActivate.phone || '',
+        position: subcontractorToActivate.position || '',
+        department: subcontractorToActivate.department || '',
+        address: subcontractorToActivate.address || '',
+        dob: subcontractorToActivate.dob || '',
+        ssn_tax_id: subcontractorToActivate.ssn_tax_id || '',
+        tshirt_size: subcontractorToActivate.tshirt_size || '',
+        team_id: subcontractorToActivate.team_id || '',
+        team_name: subcontractorToActivate.team_name || '',
+        direct_manager_name: subcontractorToActivate.direct_manager_name || '',
+        employment_status: 'ACTIVO'
+      };
+
+      if (existingUser) {
+        await base44.entities.User.update(existingUser.id, userData);
+      } else {
+        await base44.entities.User.create(userData);
+      }
+      return subcontractorToActivate;
+    },
+    onSuccess: (subcontractorToActivate) => {
+      queryClient.invalidateQueries({ queryKey: ['onboardingSubcontractors'] });
+      queryClient.invalidateQueries({ queryKey: ['subcontractors'] });
+      toast({
+        title: t('success'),
+        description: t('subcontractorActivated') + ` ${subcontractorToActivate.full_name || subcontractorToActivate.email}`,
+        duration: 5000,
+      });
+    },
+    onError: (error) => {
+      toast({ title: t('error'), description: t('failedToActivateSubcontractor') + `: ${error.message}`, variant: 'destructive' });
+    }
+  });
+
+
+  const restoreTerminatedSubcontractorMutation = useMutation({ // Renamed from restoreDeletedEmployeeMutation
+    mutationFn: async (subcontractorId) => {
+      return { subcontractorId };
     },
     onSuccess: (data) => {
-      const employee = employees.find(e => e.id === data.employeeId);
-      
-      alert(`⚠️ ${t('restoreAccessFor')} ${employee.full_name}:\n\n1. ${t('openDashboardInBrowser')}\n2. ${t('goToDataUser')}\n3. ${t('searchFor')} ${employee.email}\n4. ${t('clickEdit')}\n5. ${t('changeEmploymentStatusFromDeletedToActive')}\n6. ${t('saveChanges')}\n\n✅ ${t('employeeCanAccessAppAgain')}`);
-      
+      const subcontractor = subcontractors.find(e => e.id === data.subcontractorId);
+      if (!subcontractor) return;
+
+      alert(`⚠️ ${t('restoreAccessFor')} ${subcontractor.full_name}:\n\n1. ${t('openDashboardInBrowser')}\n2. ${t('goToDataUser')}\n3. ${t('searchFor')} ${subcontractor.email}\n4. ${t('clickEdit')}\n5. ${t('changeEmploymentStatusFromTerminatedToActive')}\n6. ${t('saveChanges')}\n\n✅ ${t('subcontractorCanAccessAppAgain')}`);
+
       window.open('https://app.base44.com/dashboard/data/User', '_blank');
     }
   });
 
-  const handleEditPending = (employee) => {
-    setEditingEmployee(employee);
-    setIsPendingEdit(true);
-    setShowDialog(true); // Renamed from setShowForm
+  const handleEditOnboarding = (subcontractor) => { // Renamed from handleEditPending
+    setEditingSubcontractor(subcontractor);
+    setIsPendingEdit(true); // Signifies editing a PendingEmployee record
+    setShowDialog(true);
   };
 
-  const handleEditActive = (employee) => {
-    setEditingEmployee(employee);
-    setIsPendingEdit(false);
-    setShowDialog(true); // Renamed from setShowForm
+  const handleEditActive = (subcontractor) => { // Renamed from handleEditActive
+    setEditingSubcontractor(subcontractor);
+    setIsPendingEdit(false); // Signifies editing a User record
+    setShowDialog(true);
   };
 
   const handleCloseForm = () => {
-    setShowDialog(false); // Renamed from setShowForm
-    setEditingEmployee(null);
+    setShowDialog(false);
+    setEditingSubcontractor(null);
     setIsPendingEdit(false);
   };
 
-  const handleResendInvite = (employee) => {
-    resendInviteMutation.mutate(employee);
+  const handleResendOnboardingLink = (subcontractor) => { // Renamed from handleResendInvite
+    sendOnboardingLinkMutation.mutate(subcontractor);
   };
 
-  const handleRestoreDeleted = (employee) => {
-    if (window.confirm(t('confirmRestoreEmployeeAccess', { fullName: employee.full_name }))) {
-      restoreDeletedEmployeeMutation.mutate(employee.id);
+  const handleRestoreTerminated = (subcontractor) => { // Renamed from handleRestoreDeleted
+    if (window.confirm(t('confirmRestoreSubcontractorAccess', { fullName: subcontractor.full_name }))) {
+      restoreTerminatedSubcontractorMutation.mutate(subcontractor.id);
     }
   };
 
-  const handleViewAIInsights = (employee) => {
-    setSelectedEmployeeForAI(employee);
+  const handleViewAIInsights = (subcontractor) => { // Renamed from handleViewAIInsights
+    setSelectedSubcontractorForAI(subcontractor);
     setShowAIInsights(true);
   };
 
-  // Helper function to get display name
-  const getDisplayName = (employee) => {
-    if (employee.first_name || employee.last_name) {
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+  const getDisplayName = (subcontractor) => { // Renamed from getDisplayName
+    if (subcontractor.first_name || subcontractor.last_name) {
+      const fullName = `${subcontractor.first_name || ''} ${subcontractor.last_name || ''}`.trim();
       if (fullName) return fullName;
     }
-    
-    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
-      return employee.full_name;
+
+    if (subcontractor.full_name && !subcontractor.full_name.includes('@') && !subcontractor.full_name.includes('.')) {
+      return subcontractor.full_name;
     }
-    
-    if (employee.email) {
-      const emailName = employee.email.split('@')[0];
+
+    if (subcontractor.email) {
+      const emailName = subcontractor.email.split('@')[0];
       return emailName
         .split('.')
         .map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join(' ');
     }
-    
-    return t('unknownEmployee');
+
+    return t('unknownSubcontractor');
   };
 
-  const needsNameConfiguration = (employee) => {
-    return !employee.first_name || !employee.last_name;
+  const needsNameConfiguration = (subcontractor) => { // Renamed from needsNameConfiguration
+    return !subcontractor.first_name || !subcontractor.last_name;
   };
 
-  // Sync to Directory mutation (renamed from syncToDirectoryMutation in outline for consistency)
-  const syncMutation = useMutation({ // Renamed from syncToDirectoryMutation as per outline
+  const syncMutation = useMutation({
     mutationFn: async () => {
-      const employeesToSync = employees.filter(e => {
+      const activeSubcontractors = subcontractors.filter(e => {
         const status = e.employment_status;
-        return (status !== 'deleted' && status !== 'archived' && status !== 'pending_registration') && e.email;
+        return (status === 'ACTIVO') && e.email; // Only sync truly active ones
       });
 
       const existingDirectory = await base44.entities.EmployeeDirectory.list();
       const existingDirectoryMap = new Map(existingDirectory.map(d => [d.employee_email, d]));
 
-      for (const emp of employeesToSync) {
-        const existing = existingDirectoryMap.get(emp.email);
+      for (const sub of activeSubcontractors) { // Renamed from emp
+        const existing = existingDirectoryMap.get(sub.email);
 
         const directoryData = {
-          employee_email: emp.email,
-          full_name: emp.full_name || '',
-          position: emp.position || '',
-          department: emp.department || '',
-          phone: emp.phone || '',
-          profile_photo_url: emp.profile_photo_url || '',
+          employee_email: sub.email,
+          full_name: sub.full_name || '',
+          position: sub.position || '',
+          department: sub.department || '',
+          phone: sub.phone || '',
+          profile_photo_url: sub.profile_photo_url || '',
           status: 'active'
         };
 
@@ -723,7 +736,7 @@ export default function Empleados() {
               break;
             }
           }
-          if (existing.status !== 'active') needsUpdate = true; // Also update if status changed to active
+          if (existing.status !== 'active') needsUpdate = true;
 
           if (needsUpdate) {
             await base44.entities.EmployeeDirectory.update(existing.id, directoryData);
@@ -733,9 +746,10 @@ export default function Empleados() {
         }
       }
 
-      const activeEmails = new Set(employeesToSync.map(e => e.email));
+      // Deactivate those in directory but not in current active subcontractors
+      const currentActiveEmails = new Set(activeSubcontractors.map(e => e.email));
       const toDeactivate = existingDirectory.filter(d =>
-        !activeEmails.has(d.employee_email) && d.status === 'active'
+        !currentActiveEmails.has(d.employee_email) && d.status === 'active'
       );
 
       for (const d of toDeactivate) {
@@ -752,70 +766,71 @@ export default function Empleados() {
     }
   });
 
-  const handleManualSync = () => { // New function as per outline
+  const handleManualSync = () => {
     syncMutation.mutate();
   };
 
-  // --- FILTERING LOGIC based on outline and existing structure ---
-  // Apply search term to all relevant employee lists first
-  const searchFilteredEmployees = employees.filter(emp =>
-    getDisplayName(emp).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  // --- FILTERING LOGIC ---
+  // Search filter applies to both User and PendingEmployee entities
+  const searchFilteredUsers = subcontractors.filter(sub =>
+    getDisplayName(sub).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const searchFilteredPendingEmployees = pendingEmployees.filter(emp => {
-    const fullName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
+  const searchFilteredOnboardingSubcontractors = onboardingSubcontractors.filter(sub => {
+    const fullName = sub.full_name || `${sub.first_name || ''} ${sub.last_name || ''}`.trim();
     return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      sub.position?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sub.team_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sub.email?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // Then apply tab-specific and showInactive filters
-  const displayedActiveEmployees = searchFilteredEmployees.filter(emp => {
-    const isNotDeletedOrArchived = emp.employment_status !== 'deleted' && emp.employment_status !== 'archived';
-    
+
+  // Tab-specific filters
+  // ACTIVO tab: `User` entities with employment_status 'ACTIVO'
+  const displayedActiveSubcontractors = searchFilteredUsers.filter(sub => {
+    const isActivelyWorking = sub.employment_status === 'ACTIVO';
     if (showInactive) {
-      // If showInactive is true, display 'active', 'inactive', 'pending_registration', etc. but exclude deleted/archived.
-      return isNotDeletedOrArchived;
+      // If showInactive is true, display 'ACTIVO', 'inactive' (from directory sync, not a User status directly)
+      // For User entity, 'inactive' status usually means `employment_status` is not 'ACTIVO', 'ARCHIVADO', 'TERMINADO' explicitly
+      // Or based on directory status if that's where 'inactive' is stored.
+      // For now, if showInactive, we show all not TERMINADO or ARCHIVADO.
+      return sub.employment_status !== 'TERMINADO' && sub.employment_status !== 'ARCHIVADO';
     } else {
-      // If showInactive is false, only display 'active' or default (undefined/null) status.
-      // This also includes 'pending_registration' which is a form of active (not deleted/archived) but awaiting completion
-      return isNotDeletedOrArchived && (emp.employment_status === 'active' || emp.employment_status === 'pending_registration' || !emp.employment_status);
+      return isActivelyWorking;
     }
   });
 
-  const displayedPendingTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'pending');
-  const displayedInvitedTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'invited');
-  const displayedRegisteredTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'active');
-  const displayedArchivedTabEmployees = searchFilteredPendingEmployees.filter(e => e.status === 'archived');
-  const displayedDeletedTabEmployees = searchFilteredEmployees.filter(emp => emp.employment_status === 'deleted');
+  // ARCHIVED tab: `User` entities with employment_status 'ARCHIVADO'
+  const displayedArchivedSubcontractors = searchFilteredUsers.filter(sub => sub.employment_status === 'ARCHIVADO');
 
-  const pendingInvitations = searchFilteredPendingEmployees.filter(e => e.status === 'invited' && !e.registered_date);
+  // REQUIERE REVISIÓN (W-9) tab: `PendingEmployee` entities with status 'PENDIENTE_ONBOARDING'
+  const displayedOnboardingReviewSubcontractors = searchFilteredOnboardingSubcontractors.filter(sub => sub.status === 'PENDIENTE_ONBOARDING');
 
+  // TERMINADO tab: `User` entities with employment_status 'TERMINADO'
+  const displayedTerminatedSubcontractors = searchFilteredUsers.filter(sub => sub.employment_status === 'TERMINADO');
 
-  // Re-calculate counts based on the new filtered arrays for tabs
-  const pendingCount = displayedPendingTabEmployees.length;
-  const invitedCount = displayedInvitedTabEmployees.length;
-  const activePendingCount = displayedRegisteredTabEmployees.length;
-  const archivedCount = displayedArchivedTabEmployees.length;
-  const deletedCount = displayedDeletedTabEmployees.length;
+  // Re-calculate counts for tabs
+  const activeCount = displayedActiveSubcontractors.length;
+  const archivedCount = displayedArchivedSubcontractors.length;
+  const onboardingReviewCount = displayedOnboardingReviewSubcontractors.length;
+  const terminatedCount = displayedTerminatedSubcontractors.length;
   // ------------------------------------------------------------------
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8"> {/* This div replaces PageHeader based on outline */}
+        <div className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{t('employeeManagement')}</h1>
-              <p className="text-slate-600 mt-1">{t('manageYourTeamMembers')}</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{t('subcontractorManagement')}</h1> {/* Updated text */}
+              <p className="text-slate-600 mt-1">{t('manageYourSubcontractors')}</p> {/* Updated text */}
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              {/* NEW: Prompt #57 - Toggle for inactive employees */}
+              {/* Toggle for showing inactive subcontractors only relevant for 'active' tab */}
               {activeTab === 'active' && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200">
                   <input
@@ -826,74 +841,53 @@ export default function Empleados() {
                     className="w-4 h-4 accent-[#3B9FF3]"
                   />
                   <label htmlFor="show-inactive" className="text-sm text-slate-700 cursor-pointer">
-                    Show Inactive Employees
+                    {t('showInactiveSubcontractors')} {/* Updated text */}
                   </label>
                 </div>
               )}
-              
+
               <Button
-                onClick={handleManualSync} // Changed to handleManualSync as per outline
+                onClick={handleManualSync}
                 variant="outline"
-                disabled={syncMutation.isPending} // Changed from syncToDirectoryMutation
+                disabled={syncMutation.isPending}
                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
               >
                 <Users className="w-4 h-4 mr-2" />
-                {syncMutation.isPending ? t('syncing') + '...' : t('manualSync')} {/* Changed from syncToDirectoryMutation */}
+                {syncMutation.isPending ? t('syncing') + '...' : t('manualSync')}
               </Button>
-              <Button onClick={() => { setEditingEmployee(null); setIsPendingEdit(true); setShowDialog(true); }} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/20">
+              <Button onClick={() => { setEditingSubcontractor(null); setIsPendingEdit(true); setShowDialog(true); }} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/20">
                 <Plus className="w-5 h-5 mr-2" />
-                {t('addEmployee')}
+                {t('addSubcontractor')} {/* Updated text */}
               </Button>
             </div>
           </div>
 
-          {/* Alert for pending invitations */}
-          {pendingInvitations.length > 0 && (
-            <Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
-              <AlertDescription className="text-blue-400 flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                <span>
-                  <strong>{pendingInvitations.length}</strong> {language === 'es' ? 'invitaciones pendientes de aceptación' : 'pending invitations awaiting acceptance'}
-                </span>
+          {onboardingReviewCount > 0 && (
+            <Alert className="mb-6 bg-orange-500/10 border-orange-500/30">
+              <AlertDescription className="text-orange-400">
+                ⚠️ {t('youHaveXSubcontractorsPendingOnboarding', { count: onboardingReviewCount })} {/* Updated text */}
               </AlertDescription>
             </Alert>
           )}
 
-          {pendingCount > 0 && (
-            <Alert className="mb-6 bg-yellow-500/10 border-yellow-500/30">
-              <AlertDescription className="text-yellow-400">
-                ⚠️ {t('youHaveXPendingEmployees', { count: pendingCount })}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {deletedCount > 0 && (
+          {terminatedCount > 0 && (
             <Alert className="mb-6 bg-red-500/10 border-red-500/30">
               <AlertDescription className="text-red-400">
-                ⚠️ {t('youHaveXDeletedEmployees', { count: deletedCount })}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {activePendingCount > 0 && (
-            <Alert className="mb-6 bg-green-500/10 border-green-500/30">
-              <AlertDescription className="text-green-400">
-                ✅ {t('xEmployeesHaveRegistered', { count: activePendingCount })}
+                ⚠️ {t('youHaveXTerminatedSubcontractors', { count: terminatedCount })} {/* Updated text */}
               </AlertDescription>
             </Alert>
           )}
         </div>
 
-        {/* Search input wrapped in Card as per outline */}
         <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200 mb-6">
-          <CardContent className="p-4"> {/* Changed padding to p-4 as per outline */}
+          <CardContent className="p-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"/>
               <Input
-                placeholder={t('searchEmployees')}
-                value={searchTerm} // Using searchTerm from original code
+                placeholder={t('searchSubcontractors')} {/* Updated text */}
+                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 h-10 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500" // Updated classes
+                className="pl-12 h-10 bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
               />
             </div>
           </CardContent>
@@ -902,34 +896,22 @@ export default function Empleados() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-slate-800/50 border border-slate-700">
             <TabsTrigger value="active" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('active')} ({displayedActiveEmployees.length})
+              {t('active')} ({activeCount})
             </TabsTrigger>
-            <TabsTrigger value="pending" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('pending')} ({pendingCount})
-              {pendingCount > 0 && (
-                <Badge className="ml-2 bg-yellow-500 text-black text-xs">{pendingCount}</Badge>
+            <TabsTrigger value="onboarding_review" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+              {t('onboardingReview')} ({onboardingReviewCount})
+              {onboardingReviewCount > 0 && (
+                <Badge className="ml-2 bg-orange-500 text-white text-xs">{onboardingReviewCount}</Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="pending_invitations" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              Pending Invitations ({pendingInvitations.length})
-              {pendingInvitations.length > 0 && (
-                <Badge className="ml-2 bg-blue-500 text-white text-xs">{pendingInvitations.length}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="invited" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('invited')} ({invitedCount})
-            </TabsTrigger>
-            <TabsTrigger value="registered" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
-              {t('registered')} ({activePendingCount})
             </TabsTrigger>
             <TabsTrigger value="archived" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
               {t('archived')} ({archivedCount})
             </TabsTrigger>
-            <TabsTrigger value="deleted" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
+            <TabsTrigger value="terminated" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white">
               <span className="flex items-center gap-2">
-                {t('deleted')} ({deletedCount})
-                {deletedCount > 0 && (
-                  <Badge className="bg-red-500 text-white text-xs">{deletedCount}</Badge>
+                {t('terminated')} ({terminatedCount})
+                {terminatedCount > 0 && (
+                  <Badge className="bg-red-500 text-white text-xs">{terminatedCount}</Badge>
                 )}
               </span>
             </TabsTrigger>
@@ -937,24 +919,23 @@ export default function Empleados() {
 
           <TabsContent value="active">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedActiveEmployees.map((employee) => { // Using new displayedActiveEmployees
-                const displayName = getDisplayName(employee);
-                const needsConfig = needsNameConfiguration(employee);
-                
-                // NEW: Prompt #57 - Style inactive employees differently
-                const isInactive = employee.employment_status === 'inactive';
-                const cardClassName = isInactive 
-                  ? 'opacity-60 bg-slate-100 border-slate-300' 
+              {displayedActiveSubcontractors.map((subcontractor) => {
+                const displayName = getDisplayName(subcontractor);
+                const needsConfig = needsNameConfiguration(subcontractor);
+                const isInactive = subcontractor.employment_status !== 'ACTIVO'; // Check if not 'ACTIVO'
+
+                const cardClassName = isInactive
+                  ? 'opacity-60 bg-slate-100 border-slate-300'
                   : 'bg-white/90 backdrop-blur-sm border-slate-200';
                 const textClassName = isInactive ? 'text-slate-500' : 'text-slate-900';
 
                 return (
-                  <Card key={employee.id} className={`${cardClassName} shadow-lg hover:shadow-xl transition-all duration-300 group`}>
+                  <Card key={subcontractor.id} className={`${cardClassName} shadow-lg hover:shadow-xl transition-all duration-300 group`}>
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4 mb-4">
-                        {employee.profile_photo_url ? (
+                        {subcontractor.profile_photo_url ? (
                           <img
-                            src={employee.profile_photo_url}
+                            src={subcontractor.profile_photo_url}
                             alt={displayName}
                             className={`w-16 h-16 rounded-full object-cover border-2 border-cyan-500/30 ${isInactive ? 'grayscale' : ''}`}
                           />
@@ -974,21 +955,21 @@ export default function Empleados() {
                             )}
                             {isInactive && (
                               <Badge className="bg-amber-500/20 text-amber-700 border-amber-300 text-xs">
-                                Inactive
+                                {t('inactive')}
                               </Badge>
                             )}
                           </div>
-                          <p className={`text-sm ${isInactive ? 'text-slate-500' : 'text-cyan-700'} truncate`}>{employee.position || t('noPosition')}</p>
+                          <p className={`text-sm ${isInactive ? 'text-slate-500' : 'text-cyan-700'} truncate`}>{subcontractor.position || t('noPosition')}</p>
                           <div className="flex flex-wrap gap-2 mt-2">
-                            {employee.department && (
+                            {subcontractor.department && (
                               <Badge variant="outline" className={`text-xs ${isInactive ? 'border-slate-300 text-slate-500' : 'border-slate-300 text-slate-700'}`}>
-                                {employee.department}
+                                {subcontractor.department}
                               </Badge>
                             )}
-                            {employee.team_name && (
+                            {subcontractor.team_name && (
                               <Badge className={`text-xs ${isInactive ? 'bg-purple-500/10 text-purple-500 border-purple-200' : 'bg-purple-500/20 text-purple-700 border-purple-300'}`}>
                                 <Building2 className="w-3 h-3 mr-1" />
-                                {employee.team_name}
+                                {subcontractor.team_name}
                               </Badge>
                             )}
                           </div>
@@ -1002,14 +983,14 @@ export default function Empleados() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="bg-white border-slate-200">
                             <DropdownMenuItem asChild>
-                              <Link to={createPageUrl(`EmployeeProfile?id=${employee.id}`)} className="flex items-center cursor-pointer text-slate-700 hover:bg-slate-100">
+                              <Link to={createPageUrl(`SubcontractorProfile?id=${subcontractor.id}`)} className="flex items-center cursor-pointer text-slate-700 hover:bg-slate-100">
                                 <ChevronRight className="w-4 h-4 mr-2" />
                                 {t('viewProfile')}
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditActive(employee)} className="text-slate-700 hover:bg-slate-100">
+                            <DropdownMenuItem onClick={() => handleEditActive(subcontractor)} className="text-slate-700 hover:bg-slate-100">
                               <Edit className="w-4 h-4 mr-2" />
-                              {t('editEmployee')}
+                              {t('editSubcontractor')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1025,35 +1006,35 @@ export default function Empleados() {
 
                       {isInactive && (
                         <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                          <p className="text-xs text-amber-700 font-medium">⚠️ {t('inactiveEmployee')}</p>
+                          <p className="text-xs text-amber-700 font-medium">⚠️ {t('inactiveSubcontractor')}</p>
                         </div>
                       )}
 
                       <div className="space-y-1 text-sm">
                         <div className={`flex items-center gap-2 ${isInactive ? 'text-slate-500' : 'text-slate-700'}`}>
                           <Mail className="w-3 h-3" />
-                          <span className="truncate">{employee.email}</span>
+                          <span className="truncate">{subcontractor.email}</span>
                         </div>
-                        {employee.phone && (
+                        {subcontractor.phone && (
                           <div className={`flex items-center gap-2 ${isInactive ? 'text-slate-500' : 'text-slate-700'}`}>
                             <Phone className="w-3 h-3" />
-                            <span>{employee.phone}</span>
+                            <span>{subcontractor.phone}</span>
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-2 mt-4">
-                        <Link to={createPageUrl(`EmployeeProfile?id=${employee.id}`)}>
+                        <Link to={createPageUrl(`SubcontractorProfile?id=${subcontractor.id}`)}>
                           <Button variant="outline" size="sm" className="bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700">
                             <Eye className="w-4 h-4 mr-2" />
                             {t('viewProfile')}
                           </Button>
                         </Link>
-                        
+
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleViewAIInsights(employee)}
+                          onClick={() => handleViewAIInsights(subcontractor)}
                           className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700"
                         >
                           <Sparkles className="w-4 h-4 mr-2" />
@@ -1065,213 +1046,154 @@ export default function Empleados() {
                 );
               })}
             </div>
-            {displayedActiveEmployees.length === 0 && (
+            {displayedActiveSubcontractors.length === 0 && (
               <div className="text-center py-12">
                 <Users className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noActiveEmployeesFound')}</p>
+                <p className="text-slate-500">{t('noActiveSubcontractorsFound')}</p>
               </div>
             )}
           </TabsContent>
 
-          <TabsContent value="pending_invitations">
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-blue-400" />
-                  Pending Invitations Dashboard
-                </h3>
-                <p className="text-slate-300 text-sm mb-4">
-                  Track all employees who have been invited but haven't registered yet. Follow up with employees who haven't responded.
-                </p>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-xs mb-1">Total Pending</p>
-                    <p className="text-2xl font-bold text-white">{pendingInvitations.length}</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-xs mb-1">Over 7 Days</p>
-                    <p className="text-2xl font-bold text-red-400">
-                      {pendingInvitations.filter(e => {
-                        const days = differenceInDays(new Date(), new Date(e.invited_date));
-                        return days > 7;
-                      }).length}
-                    </p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4">
-                    <p className="text-slate-400 text-xs mb-1">Recent (&lt; 3 Days)</p>
-                    <p className="text-2xl font-bold text-green-400">
-                      {pendingInvitations.filter(e => {
-                        const days = differenceInDays(new Date(), new Date(e.invited_date));
-                        return days <= 3;
-                      }).length}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {pendingInvitations
-                  .sort((a, b) => new Date(a.invited_date) - new Date(b.invited_date)) // Oldest first
-                  .map((employee) => (
-                    <PendingInvitationCard
-                      key={employee.id}
-                      employee={employee}
-                      onResend={handleResendInvite}
-                      isResending={resendInviteMutation.isPending}
-                    />
-                  ))}
-              </div>
-
-              {pendingInvitations.length === 0 && (
-                <div className="text-center py-12">
-                  <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                  <p className="text-slate-500">All invitations have been accepted! 🎉</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="pending">
+          <TabsContent value="onboarding_review">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedPendingTabEmployees.map((employee) => ( // Using new displayedPendingTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onInvite={(emp) => inviteMutation.mutate(emp)}
-                    onResendInvite={handleResendInvite}
-                    onEdit={handleEditPending}
+              {displayedOnboardingReviewSubcontractors.map((subcontractor) => (
+                  <OnboardingReviewCard // Using the new card component
+                    key={subcontractor.id}
+                    subcontractor={subcontractor}
+                    onSendOnboardingLink={handleResendOnboardingLink}
+                    onEdit={handleEditOnboarding}
                     onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
-                        deletePendingMutation.mutate(id);
+                      if (window.confirm(t('confirmDeleteSubcontractorPermanently'))) {
+                        deleteOnboardingSubcontractorMutation.mutate(id);
                       }
                     }}
                     onArchive={(id) => {
-                      if (window.confirm(t('confirmArchiveEmployee'))) {
-                        archivePendingMutation.mutate(id);
+                      if (window.confirm(t('confirmArchiveSubcontractor'))) {
+                        archiveOnboardingSubcontractorMutation.mutate(id);
                       }
                     }}
+                    canActivate={subcontractor.w9_completed && subcontractor.agreement_signed}
+                    onActivate={(sub) => activateSubcontractorMutation.mutate(sub)}
                   />
                 ))}
             </div>
-            {displayedPendingTabEmployees.length === 0 && (
+            {displayedOnboardingReviewSubcontractors.length === 0 && (
               <div className="text-center py-12">
-                <Clock className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noPendingEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="invited">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedInvitedTabEmployees.map((employee) => ( // Using new displayedInvitedTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onInvite={(emp) => inviteMutation.mutate(emp)}
-                    onResendInvite={handleResendInvite}
-                    onEdit={handleEditPending}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onArchive={(id) => {
-                      if (window.confirm(t('confirmArchiveEmployee'))) {
-                        archivePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedInvitedTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Mail className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noInvitedEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="registered">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedRegisteredTabEmployees.map((employee) => ( // Using new displayedRegisteredTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={{ ...employee, status: 'active' }}
-                    onEdit={handleEditPending}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onArchive={(id) => {
-                      if (window.confirm(t('confirmArchiveEmployee'))) {
-                        archivePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedRegisteredTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Check className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noRegisteredEmployees')}</p>
+                <FileText className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500">{t('noSubcontractorsRequireOnboardingReview')}</p>
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="archived">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedArchivedTabEmployees.map((employee) => ( // Using new displayedArchivedTabEmployees
-                  <PendingEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onEdit={handleEditPending}
-                    onResendInvite={handleResendInvite}
-                    onDelete={(id) => {
-                      if (window.confirm(t('confirmDeleteEmployeePermanentlyUndone'))) {
-                        deletePendingMutation.mutate(id);
-                      }
-                    }}
-                    onRestore={(id) => {
-                      if (window.confirm(t('confirmRestoreEmployeeToPending'))) {
-                        restorePendingMutation.mutate(id);
-                      }
-                    }}
-                  />
-                ))}
-            </div>
-            {displayedArchivedTabEmployees.length === 0 && (
-              <div className="text-center py-12">
-                <Archive className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noArchivedEmployees')}</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="deleted">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedDeletedTabEmployees.map((employee) => ( // Using new displayedDeletedTabEmployees
-                <Card key={employee.id} className="glass-card shadow-xl border-red-500/30">
+              {displayedArchivedSubcontractors.map((subcontractor) => ( // Using User entities
+                <Card key={subcontractor.id} className="glass-card shadow-xl border-slate-700 opacity-70">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4 mb-4">
-                      {employee.profile_photo_url ? (
+                      {subcontractor.profile_photo_url ? (
                         <img
-                          src={employee.profile_photo_url}
-                          alt={employee.full_name}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-red-500/30 grayscale"
+                          src={subcontractor.profile_photo_url}
+                          alt={getDisplayName(subcontractor)}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-slate-500/30 grayscale"
                         />
                       ) : (
                         <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                          {employee.full_name?.[0]?.toUpperCase()}
+                          {getDisplayName(subcontractor)[0]?.toUpperCase()}
                         </div>
                       )}
 
                       <div className="flex-1">
-                        <h3 className="font-bold text-slate-400 line-through">{employee.full_name}</h3>
-                        <p className="text-sm text-slate-500">{employee.position || t('noPosition')}</p>
+                        <h3 className="font-bold text-slate-400">{getDisplayName(subcontractor)}</h3>
+                        <p className="text-sm text-slate-500">{subcontractor.position || t('noPosition')}</p>
+                        <Badge className="mt-2 bg-slate-500/20 text-slate-400 border-slate-500/30">
+                          <Archive className="w-3 h-3 mr-1" />
+                          {t('archived')}
+                        </Badge>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-700">
+                            <MoreVertical className="w-5 h-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="bg-slate-900 border-slate-800">
+                          <DropdownMenuItem onClick={() => handleEditActive(subcontractor)} className="text-white hover:bg-slate-800">
+                            <Edit className="w-4 h-4 mr-2" />
+                            {t('editSubcontractor')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            if (window.confirm(t('confirmRestoreSubcontractorToActive'))) {
+                                base44.entities.User.update(subcontractor.id, { employment_status: 'ACTIVO' })
+                                  .then(() => queryClient.invalidateQueries({ queryKey: ['subcontractors'] }))
+                                  .then(() => toast({ title: t('success'), description: t('subcontractorRestoredToActive') }));
+                              }
+                            }} className="text-white hover:bg-slate-800">
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            {t('restoreToActive')}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => {
+                            if (window.confirm(t('confirmTerminateSubcontractor'))) {
+                                base44.entities.User.update(subcontractor.id, { employment_status: 'TERMINADO' })
+                                  .then(() => queryClient.invalidateQueries({ queryKey: ['subcontractors'] }))
+                                  .then(() => toast({ title: t('success'), description: t('subcontractorTerminated') }));
+                            }
+                          }} className="text-red-400 hover:bg-red-500/10">
+                            <UserX className="w-4 h-4 mr-2" />
+                            {t('terminateSubcontractor')}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <div className="space-y-1 text-sm text-slate-500">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-3 h-3" />
+                        <span className="truncate">{subcontractor.email}</span>
+                      </div>
+                      {subcontractor.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-3 h-3" />
+                          <span>{subcontractor.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            {displayedArchivedSubcontractors.length === 0 && (
+              <div className="text-center py-12">
+                <Archive className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500">{t('noArchivedSubcontractors')}</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="terminated">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedTerminatedSubcontractors.map((subcontractor) => (
+                <Card key={subcontractor.id} className="glass-card shadow-xl border-red-500/30">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      {subcontractor.profile_photo_url ? (
+                        <img
+                          src={subcontractor.profile_photo_url}
+                          alt={subcontractor.full_name}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-red-500/30 grayscale"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                          {subcontractor.full_name?.[0]?.toUpperCase()}
+                        </div>
+                      )}
+
+                      <div className="flex-1">
+                        <h3 className="font-bold text-slate-400 line-through">{subcontractor.full_name}</h3>
+                        <p className="text-sm text-slate-500">{subcontractor.position || t('noPosition')}</p>
                         <Badge className="mt-2 bg-red-500/20 text-red-400 border-red-500/30">
                           <UserX className="w-3 h-3 mr-1" />
-                          {t('deletedAndBlocked')}
+                          {t('terminatedAndBlocked')} {/* Updated text */}
                         </Badge>
                       </div>
                     </div>
@@ -1279,22 +1201,22 @@ export default function Empleados() {
                     <div className="space-y-1 text-sm text-slate-500">
                       <div className="flex items-center gap-2">
                         <Mail className="w-3 h-3" />
-                        <span className="truncate">{employee.email}</span>
+                        <span className="truncate">{subcontractor.email}</span>
                       </div>
-                      {employee.phone && (
+                      {subcontractor.phone && (
                         <div className="flex items-center gap-2">
                           <Phone className="w-3 h-3" />
-                          <span>{employee.phone}</span>
+                          <span>{subcontractor.phone}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
                       <p className="text-xs text-red-400 mb-3">
-                        ⚠️ {t('allDataDeletedEmployeeBlocked')}
+                        ⚠️ {t('allDataTerminatedSubcontractorBlocked')} {/* Updated text */}
                       </p>
                       <Button
-                        onClick={() => handleRestoreDeleted(employee)}
+                        onClick={() => handleRestoreTerminated(subcontractor)}
                         size="sm"
                         className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
                       >
@@ -1306,60 +1228,58 @@ export default function Empleados() {
                 </Card>
               ))}
             </div>
-            {displayedDeletedTabEmployees.length === 0 && (
+            {displayedTerminatedSubcontractors.length === 0 && (
               <div className="text-center py-12">
                 <UserX className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noDeletedEmployees')}</p>
+                <p className="text-slate-500">{t('noTerminatedSubcontractors')}</p>
               </div>
             )}
           </TabsContent>
         </Tabs>
 
-        {/* Dialog for editing PENDING employee with Onboarding Tracker */}
-        {showDialog && editingEmployee && isPendingEdit && ( // Renamed from showForm
-          <Dialog open={showDialog} onOpenChange={handleCloseForm}> {/* Renamed from showForm */}
+        {/* Dialog for adding/editing ONBOARDING subcontractor */}
+        {showDialog && editingSubcontractor && isPendingEdit && (
+          <Dialog open={showDialog} onOpenChange={handleCloseForm}>
             <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-5xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-2xl">
-                  {t('employee')} - {editingEmployee.first_name} {editingEmployee.last_name}
+                  {t('subcontractor')} - {editingSubcontractor.first_name} {editingSubcontractor.last_name}
                 </DialogTitle>
               </DialogHeader>
-              
+
               <div className="grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                  <EmployeeForm
-                    employee={editingEmployee}
+                  <SubcontractorOnboardingForm // Renamed form
+                    subcontractor={editingSubcontractor}
                     onClose={handleCloseForm}
-                    isPending={true}
                   />
                 </div>
-                
+
                 <div>
-                  <OnboardingTracker employee={editingEmployee} />
+                  <OnboardingTracker employee={editingSubcontractor} /> {/* Keep 'employee' prop for now */}
                 </div>
               </div>
             </DialogContent>
           </Dialog>
         )}
 
-        {/* Original Dialog for adding new PENDING employee OR editing ACTIVE employee */}
-        {showDialog && (!editingEmployee || !isPendingEdit) && ( // Renamed from showForm
-          <Dialog open={showDialog} onOpenChange={handleCloseForm}> {/* Renamed from showForm */}
+        {/* Dialog for adding new ONBOARDING subcontractor (no editingSubcontractor) OR editing ACTIVE subcontractor */}
+        {showDialog && (!editingSubcontractor || !isPendingEdit) && (
+          <Dialog open={showDialog} onOpenChange={handleCloseForm}>
             <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-3xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl">
-                  {t('employee')}
+                  {editingSubcontractor ? t('editSubcontractor') : t('addNewSubcontractor')}
                 </DialogTitle>
               </DialogHeader>
               {isPendingEdit ? (
-                <EmployeeForm
-                  employee={editingEmployee}
+                <SubcontractorOnboardingForm // Renamed form
+                  subcontractor={editingSubcontractor}
                   onClose={handleCloseForm}
-                  isPending={true}
                 />
               ) : (
-                <ActiveEmployeeForm
-                  employee={editingEmployee}
+                <ActiveSubcontractorForm // Renamed form
+                  subcontractor={editingSubcontractor}
                   onClose={handleCloseForm}
                 />
               )}
@@ -1372,21 +1292,21 @@ export default function Empleados() {
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900 flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-purple-500" />
-                AI Performance Insights - {selectedEmployeeForAI && getDisplayName(selectedEmployeeForAI)}
+                AI Performance Insights - {selectedSubcontractorForAI && getDisplayName(selectedSubcontractorForAI)}
               </DialogTitle>
             </DialogHeader>
-            
-            {selectedEmployeeForAI && (
+
+            {selectedSubcontractorForAI && (
               <div className="py-4">
                 <AIPerformanceAnalyzer
-                  employee={selectedEmployeeForAI}
-                  timeEntries={allTimeEntries.filter(e => e.employee_email === selectedEmployeeForAI.email)}
+                  employee={selectedSubcontractorForAI} // Keep 'employee' prop for now
+                  timeEntries={allTimeEntries.filter(e => e.employee_email === selectedSubcontractorForAI.email)}
                   jobs={allJobs}
-                  expenses={allExpenses.filter(e => e.employee_email === selectedEmployeeForAI.email)}
-                  drivingLogs={allDrivingLogs.filter(l => l.employee_email === selectedEmployeeForAI.email)}
-                  certifications={allCertifications.filter(c => c.employee_email === selectedEmployeeForAI.email)}
-                  recognitions={allRecognitions.filter(r => r.employee_email === selectedEmployeeForAI.email)}
-                  allEmployees={employees} // Use the general employees list
+                  expenses={allExpenses.filter(e => e.employee_email === selectedSubcontractorForAI.email)}
+                  drivingLogs={allDrivingLogs.filter(l => l.employee_email === selectedSubcontractorForAI.email)}
+                  certifications={allCertifications.filter(c => c.employee_email === selectedSubcontractorForAI.email)}
+                  recognitions={allRecognitions.filter(r => r.employee_email === selectedSubcontractorForAI.email)}
+                  allEmployees={subcontractors} // Use the general subcontractors list
                   showFullAnalysis={true}
                 />
               </div>
