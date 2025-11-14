@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { format, addDays, isSameDay, isValid } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
-export default function WeekView({ currentDate, assignments, onDateClick, onAssignmentClick, isAdmin }) {
+export default function WeekView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
   
   const weekStart = new Date(validDate);
@@ -19,24 +20,23 @@ export default function WeekView({ currentDate, assignments, onDateClick, onAssi
     return date;
   });
 
-  const getJobColor = (assignment) => {
-    // Time-off events are always orange/red
-    if (assignment.event_type === 'time_off') return 'orange';
-    
-    // Appointments without job are blue
-    if (assignment.event_type === 'appointment' && !assignment.job_id) return 'blue';
-    
-    // Job milestones and appointments with job use job color
-    if (!assignment.job_id) return 'slate'; // Default if no job_id and not a special event type
+  const getShiftColor = (shift) => {
+    if (shift.shift_type === 'time_off') return 'orange';
+    if (shift.shift_type === 'appointment' && !shift.job_id) return 'blue';
+    if (!shift.job_id) return 'slate';
     const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'cyan', 'red', 'indigo'];
-    const hash = assignment.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = shift.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
 
-  const getEventLabel = (assignment) => {
-    if (assignment.event_title) return assignment.event_title;
-    if (assignment.job_name) return assignment.job_name;
+  const getEventLabel = (shift) => {
+    if (shift.shift_title) return shift.shift_title;
+    if (shift.job_name) return shift.job_name;
     return 'Event';
+  };
+
+  const isMyShift = (shift) => {
+    return currentUser && shift.employee_email === currentUser.email;
   };
 
   return (
@@ -62,10 +62,11 @@ export default function WeekView({ currentDate, assignments, onDateClick, onAssi
             {days.map((day, i) => {
               if (!isValid(day)) return null;
 
-              const dayAssignments = assignments.filter(a => {
-                if (!a.date) return false;
-                const assignmentDate = new Date(a.date);
-                return isValid(assignmentDate) && isSameDay(assignmentDate, day);
+              // GUARDRAIL: Ensure shifts is an array
+              const dayShifts = (shifts || []).filter(s => {
+                if (!s.date) return false;
+                const shiftDate = new Date(s.date);
+                return isValid(shiftDate) && isSameDay(shiftDate, day);
               });
 
               const isToday = isSameDay(day, new Date());
@@ -74,22 +75,69 @@ export default function WeekView({ currentDate, assignments, onDateClick, onAssi
                 <div
                   key={i}
                   className={`border-l border-slate-200 first:border-l-0 p-2 hover:bg-blue-50 transition-colors group relative min-h-[200px] ${isToday ? 'bg-blue-50/50' : 'bg-white'}`}
+                  onDoubleClick={() => isAdmin && onDateClick(day)}
                 >
                   <div className="space-y-2">
-                    {dayAssignments.map(assignment => {
-                      const color = getJobColor(assignment);
+                    {dayShifts.map(shift => {
+                      const color = getShiftColor(shift);
+                      const myShift = isMyShift(shift);
+                      const isPending = shift.status === 'scheduled' && myShift;
+                      
                       return (
-                        <div
-                          key={assignment.id}
-                          className={`p-2 rounded-lg text-xs ${isAdmin ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-md`}
-                          onClick={() => isAdmin && onAssignmentClick(assignment)}
-                        >
-                          <p className="font-semibold truncate">{getEventLabel(assignment)}</p>
-                          {assignment.employee_name && (
-                            <p className="text-[10px] opacity-90 truncate">{assignment.employee_name}</p>
-                          )}
-                          {assignment.start_time && (
-                            <p className="text-[10px] opacity-90">{assignment.start_time} - {assignment.end_time}</p>
+                        <div key={shift.id}>
+                          <div
+                            className={`p-2 rounded-lg text-xs ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-md relative`}
+                            onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
+                          >
+                            <p className="font-semibold truncate">{getEventLabel(shift)}</p>
+                            {shift.employee_name && (
+                              <p className="text-[10px] opacity-90 truncate">{shift.employee_name}</p>
+                            )}
+                            {shift.start_time && (
+                              <p className="text-[10px] opacity-90">{shift.start_time} - {shift.end_time}</p>
+                            )}
+                            
+                            {/* Status Badge */}
+                            {shift.status === 'confirmed' && (
+                              <Badge className="absolute top-1 right-1 bg-green-600 text-white text-[8px] px-1 py-0">
+                                <CheckCircle className="w-2 h-2" />
+                              </Badge>
+                            )}
+                            {shift.status === 'rejected' && (
+                              <Badge className="absolute top-1 right-1 bg-red-600 text-white text-[8px] px-1 py-0">
+                                <XCircle className="w-2 h-2" />
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {/* Employee Action Buttons */}
+                          {isPending && (
+                            <div className="flex gap-1 mt-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 h-6 text-[10px] bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onConfirmShift(shift.id);
+                                }}
+                              >
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Confirm
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 h-6 text-[10px] bg-red-50 border-red-300 text-red-700 hover:bg-red-100"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onRejectShift(shift.id);
+                                }}
+                              >
+                                <XCircle className="w-3 h-3 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
                           )}
                         </div>
                       );
