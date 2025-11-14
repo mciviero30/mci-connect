@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -322,7 +321,7 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white font-medium">{t('loading')}...</p>
@@ -333,13 +332,13 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (error && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-slate-800/50 backdrop-blur-xl border border-slate-700">
+      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
+        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-[#282828] backdrop-blur-xl border border-[#303030]">
           <div className="w-20 h-20 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
             <Building2 className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">MCI Connect</h1>
-          <p className="text-slate-300 mb-4">{t('error')}</p>
+          <p className="text-[#A0A0A0] mb-4">{t('error')}</p>
           <Button onClick={() => window.location.reload()} className="bg-[#3B9FF3] hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20">
             {t('reload')}
           </Button>
@@ -350,14 +349,14 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (user && user.employment_status === 'deleted') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-slate-800/50 backdrop-blur-xl border border-red-500/30">
+      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
+        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-[#282828] backdrop-blur-xl border border-red-500/30">
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/20">
             <UserX className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
           <p className="text-red-400 mb-4">Your account has been deactivated.</p>
-          <p className="text-slate-400 text-sm mb-6">
+          <p className="text-[#A0A0A0] text-sm mb-6">
             Please contact your administrator if you believe this is an error.
           </p>
           <Button onClick={() => base44.auth.logout()} className="bg-red-500 hover:bg-red-600 text-white">
@@ -397,26 +396,28 @@ const LayoutContent = ({ children, currentPageName }) => {
       {/* GLOBAL CERTIFICATION MONITORING */}
       {user && <CertificationMonitor userEmail={user.email} />}
         
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen flex w-full bg-[#181818]">
         <style>{`
+          /* DARK MODE MINIMALIST DESIGN - HIGH CONTRAST */
           :root {
-            --sidebar-gradient-from: 15 23 42;
-            --sidebar-gradient-via: 30 41 59;
-            --sidebar-gradient-to: 51 65 85;
+            --bg-primary: #181818;
+            --bg-secondary: #282828;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0A0;
+            --border-subtle: #303030;
+            --border-hover: #404040;
           }
           
-          /* Modern dark theme for entire app */
+          /* Main app background */
           body {
-            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%) !important;
+            background: #181818 !important;
           }
           
+          /* Sidebar styling */
           [data-sidebar="sidebar"] {
-            background: linear-gradient(180deg, 
-              rgb(15, 23, 42) 0%, 
-              rgb(30, 41, 59) 50%, 
-              rgb(51, 65, 85) 100%) !important;
-            border-right: 1px solid rgba(71, 85, 105, 0.3) !important;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1) !important;
+            background: linear-gradient(180deg, #1a1a1a 0%, #202020 50%, #1a1a1a 100%) !important;
+            border-right: 1px solid var(--border-subtle) !important;
+            box-shadow: none !important;
           }
 
           .sidebar-scroll-content {
@@ -432,7 +433,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
           
           .sidebar-scroll-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 3px;
           }
           
@@ -452,7 +453,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
           
           *::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
           }
           
           *::-webkit-scrollbar-thumb {
@@ -464,6 +465,82 @@ const LayoutContent = ({ children, currentPageName }) => {
             background: rgba(59, 159, 243, 0.5);
           }
 
+          /* Dialog/Modal styling - dark mode */
+          [role="dialog"] {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+          }
+
+          /* Card styling for dark backgrounds */
+          .dark-mode-card {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-subtle) !important;
+            box-shadow: none !important;
+          }
+
+          .dark-mode-card:hover {
+            border-color: var(--border-hover) !important;
+          }
+
+          /* Table styling */
+          table {
+            border-color: var(--border-subtle) !important;
+          }
+
+          table th {
+            background: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-subtle) !important;
+          }
+
+          table td {
+            border-color: var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+          }
+
+          table tr:hover {
+            background: rgba(255, 255, 255, 0.02) !important;
+          }
+
+          /* Remove excessive shadows in dark mode */
+          .shadow-lg, .shadow-xl, .shadow-2xl {
+            box-shadow: none !important;
+          }
+
+          /* Input fields on dark backgrounds */
+          input[type="text"],
+          input[type="email"],
+          input[type="number"],
+          input[type="date"],
+          input[type="password"],
+          textarea,
+          select {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: var(--text-primary) !important;
+          }
+
+          input::placeholder,
+          textarea::placeholder {
+            color: var(--text-secondary) !important;
+          }
+
+          /* Tabs styling */
+          [role="tablist"] {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border-subtle) !important;
+          }
+
+          [role="tab"] {
+            color: var(--text-secondary) !important;
+          }
+
+          [role="tab"][data-state="active"] {
+            background: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+          }
+
           @media (max-width: 1024px) {
             * {
               -webkit-tap-highlight-color: transparent;
@@ -472,9 +549,9 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-none">
-          <SidebarHeader className="p-4 border-b border-white/10 flex-shrink-0 backdrop-blur-sm">
+          <SidebarHeader className="p-4 border-b border-[#303030] flex-shrink-0 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
                   alt="MCI Connect"
@@ -512,8 +589,8 @@ const LayoutContent = ({ children, currentPageName }) => {
                             asChild
                             className={`transition-all duration-300 rounded-xl mb-0.5 border-none ${
                               isActive
-                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg shadow-blue-500/30'
-                                : 'hover:bg-white/10 text-slate-300 hover:text-white backdrop-blur-sm'
+                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white'
+                                : 'hover:bg-white/10 text-[#A0A0A0] hover:text-white backdrop-blur-sm'
                             }`}
                           >
                             <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative group">
@@ -543,31 +620,31 @@ const LayoutContent = ({ children, currentPageName }) => {
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-white/10 p-4 flex-shrink-0 backdrop-blur-sm">
+          <SidebarFooter className="border-t border-[#303030] p-4 flex-shrink-0 backdrop-blur-sm">
             <div className="mb-3 px-2 flex items-center gap-2">
               <Select value={language} onValueChange={changeLanguage}>
-                <SelectTrigger className="h-9 bg-white/10 border-white/20 text-white flex-1 backdrop-blur-sm hover:bg-white/20">
+                <SelectTrigger className="h-9 bg-[#282828] border-[#303030] text-white flex-1 backdrop-blur-sm hover:bg-[#303030]">
                   <Languages className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="en" className="text-white hover:bg-slate-700">🇺🇸 English</SelectItem>
-                  <SelectItem value="es" className="text-white hover:bg-slate-700">🇪🇸 Español</SelectItem>
+                <SelectContent className="bg-[#282828] border-[#303030]">
+                  <SelectItem value="en" className="text-white hover:bg-[#303030]">🇺🇸 English</SelectItem>
+                  <SelectItem value="es" className="text-white hover:bg-[#303030]">🇪🇸 Español</SelectItem>
                 </SelectContent>
               </Select>
               <ThemeToggle />
             </div>
 
-            <div className="flex items-center justify-between bg-white/5 rounded-xl p-3 backdrop-blur-sm border border-white/10">
+            <div className="flex items-center justify-between bg-[#282828] rounded-xl p-3 backdrop-blur-sm border border-[#303030]">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
                     src={profileImage}
                     alt={user.full_name}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50 shadow-lg"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-400/30">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center border-2 border-400/30">
                     <span className="text-white font-bold text-sm">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
@@ -599,7 +676,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50 px-6 py-4 md:hidden shadow-lg flex-shrink-0">
+          <header className="backdrop-blur-xl bg-[#1a1a1a] border-b border-[#303030] px-6 py-4 md:hidden flex-shrink-0">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-white/10 p-2 rounded-lg transition-colors">
                 <Menu className="w-5 h-5 text-white" />
@@ -618,7 +695,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" data-scrollable="true">
+          <div className="flex-1 overflow-y-auto bg-[#181818]" data-scrollable="true">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
