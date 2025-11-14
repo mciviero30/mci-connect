@@ -4,91 +4,97 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PageHeader from "../components/shared/PageHeader";
-import { Users, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
+import { Users, RefreshCw, CheckCircle, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ResetStatus() {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('full_name'),
     initialData: []
   });
 
-  const keepActiveNames = ['Marzio Civiero', 'Yeraldin Ramirez'];
+  const activeEmployees = employees.filter(emp => emp.employment_status === 'active');
 
-  const employeesToReset = employees.filter(emp => 
-    emp.employment_status === 'active' && 
-    !keepActiveNames.includes(emp.full_name)
-  );
+  const toggleEmployee = (empId) => {
+    setSelectedEmployees(prev => 
+      prev.includes(empId) 
+        ? prev.filter(id => id !== empId)
+        : [...prev, empId]
+    );
+  };
 
-  const resetEmployeesMutation = useMutation({
-    mutationFn: async () => {
-      const results = {
-        success: [],
-        failed: [],
-        kept: []
-      };
+  const selectAll = () => {
+    setSelectedEmployees(activeEmployees.map(e => e.id));
+  };
 
-      // Keep these active
-      for (const name of keepActiveNames) {
-        const emp = employees.find(e => e.full_name === name);
-        if (emp) {
-          results.kept.push(emp.full_name);
-        }
-      }
+  const deselectAll = () => {
+    setSelectedEmployees([]);
+  };
 
-      // Reset others
-      for (const emp of employeesToReset) {
-        try {
-          await base44.entities.User.update(emp.id, {
-            employment_status: 'pending_registration'
-          });
-          results.success.push(emp.full_name);
-        } catch (error) {
-          results.failed.push({ name: emp.full_name, error: error.message });
-        }
-      }
-
-      return results;
-    },
-    onSuccess: (results) => {
-      setProcessing(false);
-      setResults(results);
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(
-        language === 'es' 
-          ? `✅ ${results.success.length} empleados cambiados a pending`
-          : `✅ ${results.success.length} employees changed to pending`
-      );
-    },
-    onError: (error) => {
-      setProcessing(false);
-      toast.error('❌ Error: ' + error.message);
+  const handleReset = async () => {
+    if (selectedEmployees.length === 0) {
+      toast.error(language === 'es' ? '⚠️ Selecciona al menos un empleado' : '⚠️ Select at least one employee');
+      return;
     }
-  });
 
-  const handleReset = () => {
-    if (window.confirm(
+    const selectedNames = activeEmployees
+      .filter(e => selectedEmployees.includes(e.id))
+      .map(e => e.full_name)
+      .join('\n- ');
+
+    if (!window.confirm(
       language === 'es'
-        ? `¿Cambiar ${employeesToReset.length} empleados a pending_registration?\n\nSe mantendrán activos:\n- Marzio Civiero\n- Yeraldin Ramirez`
-        : `Change ${employeesToReset.length} employees to pending_registration?\n\nWill stay active:\n- Marzio Civiero\n- Yeraldin Ramirez`
+        ? `¿Cambiar ${selectedEmployees.length} empleados a pending_registration?\n\nEmpleados seleccionados:\n- ${selectedNames}`
+        : `Change ${selectedEmployees.length} employees to pending_registration?\n\nSelected employees:\n- ${selectedNames}`
     )) {
-      setProcessing(true);
-      resetEmployeesMutation.mutate();
+      return;
     }
+
+    setProcessing(true);
+    const results = {
+      success: [],
+      failed: []
+    };
+
+    for (const empId of selectedEmployees) {
+      const emp = employees.find(e => e.id === empId);
+      if (!emp) continue;
+
+      try {
+        await base44.entities.User.update(empId, {
+          employment_status: 'pending_registration'
+        });
+        results.success.push(emp.full_name);
+      } catch (error) {
+        results.failed.push({ name: emp.full_name, error: error.message });
+      }
+    }
+
+    setProcessing(false);
+    setResults(results);
+    queryClient.invalidateQueries({ queryKey: ['employees'] });
+    
+    toast.success(
+      language === 'es' 
+        ? `✅ ${results.success.length} empleados cambiados a pending`
+        : `✅ ${results.success.length} employees changed to pending`
+    );
   };
 
   if (isLoading) {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center py-12">
             <RefreshCw className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
             <p className="text-white">{language === 'es' ? 'Cargando empleados...' : 'Loading employees...'}</p>
@@ -100,76 +106,148 @@ export default function ResetStatus() {
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <PageHeader
-          title={language === 'es' ? "Reset de Estado" : "Reset Status"}
-          description={language === 'es' ? "Cambiar empleados a pending excepto Marzio y Yeraldin" : "Change employees to pending except Marzio and Yeraldin"}
+          title={language === 'es' ? "Cambiar Estado de Empleados" : "Change Employee Status"}
+          description={language === 'es' ? "Selecciona empleados para cambiar a pending" : "Select employees to change to pending"}
           icon={Users}
         />
 
+        <div className="grid lg:grid-cols-3 gap-6 mb-6">
+          <Card className="bg-blue-500/10 border-blue-500/30">
+            <CardContent className="p-6 text-center">
+              <p className="text-blue-400 text-sm mb-1">
+                {language === 'es' ? 'Total Activos' : 'Total Active'}
+              </p>
+              <p className="text-4xl font-bold text-white">{activeEmployees.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-amber-500/10 border-amber-500/30">
+            <CardContent className="p-6 text-center">
+              <p className="text-amber-400 text-sm mb-1">
+                {language === 'es' ? 'Seleccionados' : 'Selected'}
+              </p>
+              <p className="text-4xl font-bold text-white">{selectedEmployees.length}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-green-500/10 border-green-500/30">
+            <CardContent className="p-6 text-center">
+              <p className="text-green-400 text-sm mb-1">
+                {language === 'es' ? 'Permanecerán Activos' : 'Will Stay Active'}
+              </p>
+              <p className="text-4xl font-bold text-white">
+                {activeEmployees.length - selectedEmployees.length}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         <Card className="bg-white/90 shadow-lg border-slate-200 mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
-              {language === 'es' ? 'Vista Previa' : 'Preview'}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
+                <Users className="w-5 h-5 text-blue-600" />
+                {language === 'es' ? 'Empleados Activos' : 'Active Employees'}
+              </CardTitle>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={selectAll} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                >
+                  {language === 'es' ? 'Seleccionar Todos' : 'Select All'}
+                </Button>
+                <Button 
+                  onClick={deselectAll} 
+                  variant="outline" 
+                  size="sm"
+                  className="text-slate-600 border-slate-300 hover:bg-slate-50"
+                >
+                  {language === 'es' ? 'Deseleccionar Todos' : 'Deselect All'}
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="font-semibold text-green-900 mb-2">
-                  ✅ {language === 'es' ? 'Permanecerán ACTIVOS:' : 'Will stay ACTIVE:'}
-                </p>
-                {keepActiveNames.map(name => {
-                  const emp = employees.find(e => e.full_name === name);
-                  return (
-                    <div key={name} className="text-sm text-green-800">
-                      • {name} {emp ? `(${emp.email})` : '(no encontrado)'}
-                    </div>
-                  );
-                })}
+            {activeEmployees.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                {language === 'es' ? 'No hay empleados activos' : 'No active employees'}
               </div>
-
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="font-semibold text-amber-900 mb-2">
-                  ⚠️ {language === 'es' ? `Se cambiarán a PENDING (${employeesToReset.length}):` : `Will change to PENDING (${employeesToReset.length}):`}
-                </p>
-                <div className="max-h-60 overflow-y-auto space-y-1">
-                  {employeesToReset.length === 0 ? (
-                    <p className="text-sm text-amber-600">
-                      {language === 'es' ? 'No hay empleados para cambiar' : 'No employees to change'}
-                    </p>
-                  ) : (
-                    employeesToReset.map(emp => (
-                      <div key={emp.id} className="text-sm text-amber-800">
-                        • {emp.full_name} ({emp.email})
+            ) : (
+              <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                {activeEmployees.map(emp => (
+                  <div
+                    key={emp.id}
+                    className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
+                      selectedEmployees.includes(emp.id)
+                        ? 'bg-amber-50 border-amber-300'
+                        : 'bg-white border-slate-200 hover:border-slate-300'
+                    }`}
+                    onClick={() => toggleEmployee(emp.id)}
+                  >
+                    <Checkbox
+                      checked={selectedEmployees.includes(emp.id)}
+                      onCheckedChange={() => toggleEmployee(emp.id)}
+                      className="data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                    />
+                    
+                    {emp.profile_photo_url ? (
+                      <img
+                        src={emp.profile_photo_url}
+                        alt={emp.full_name}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-slate-300"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {emp.full_name?.[0]?.toUpperCase() || 'U'}
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
+                    )}
 
-              <Button
-                onClick={handleReset}
-                disabled={processing || employeesToReset.length === 0}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {processing ? (
-                  <>
-                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                    {language === 'es' ? 'Procesando...' : 'Processing...'}
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-5 h-5 mr-2" />
-                    {language === 'es' 
-                      ? `Cambiar ${employeesToReset.length} empleados a Pending`
-                      : `Change ${employeesToReset.length} employees to Pending`
-                    }
-                  </>
-                )}
-              </Button>
-            </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-900">{emp.full_name}</p>
+                      <p className="text-sm text-slate-600">{emp.email}</p>
+                      {emp.position && (
+                        <p className="text-xs text-slate-500">{emp.position}</p>
+                      )}
+                    </div>
+
+                    {selectedEmployees.includes(emp.id) && (
+                      <div className="text-amber-600 font-semibold text-sm">
+                        {language === 'es' ? '→ Cambiar a Pending' : '→ Change to Pending'}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/90 shadow-lg border-slate-200 mb-6">
+          <CardContent className="p-6">
+            <Button
+              onClick={handleReset}
+              disabled={processing || selectedEmployees.length === 0}
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {processing ? (
+                <>
+                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                  {language === 'es' ? 'Procesando...' : 'Processing...'}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-5 h-5 mr-2" />
+                  {language === 'es' 
+                    ? `Cambiar ${selectedEmployees.length} empleados a Pending`
+                    : `Change ${selectedEmployees.length} employees to Pending`
+                  }
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
 
@@ -193,19 +271,6 @@ export default function ResetStatus() {
                     ))}
                   </div>
                 </div>
-
-                {results.kept.length > 0 && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="font-semibold text-blue-900 mb-2">
-                      🔒 {language === 'es' ? 'Mantenidos Activos:' : 'Kept Active:'} {results.kept.length}
-                    </p>
-                    <div className="space-y-1">
-                      {results.kept.map((name, idx) => (
-                        <div key={idx} className="text-sm text-blue-800">• {name}</div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 {results.failed.length > 0 && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
