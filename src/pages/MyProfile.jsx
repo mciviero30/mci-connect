@@ -5,12 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Briefcase, Calendar, MapPin, Camera } from "lucide-react";
-import { format } from "date-fns";
+import { User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, Clock } from "lucide-react";
+import { format, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { getDisplayName } from "@/components/utils/nameHelpers";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PhotoAvatarManager from "../components/avatar/PhotoAvatarManager";
+import CertificationMonitor from "../components/certifications/CertificationMonitor";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -21,6 +24,25 @@ export default function MyProfile() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch user's certifications for alerts
+  const { data: myCertifications = [] } = useQuery({
+    queryKey: ['myCertifications', user?.email],
+    queryFn: () => base44.entities.Certification.filter({ employee_email: user.email }),
+    enabled: !!user?.email,
+    initialData: []
+  });
+
+  // Fetch certification alerts
+  const { data: myAlerts = [] } = useQuery({
+    queryKey: ['myCertificationAlerts', user?.email],
+    queryFn: () => base44.entities.CertificationAlert.filter({ 
+      employee_email: user.email,
+      acknowledged: false 
+    }),
+    enabled: !!user?.email,
+    initialData: []
   });
 
   const [formData, setFormData] = useState({
@@ -35,6 +57,14 @@ export default function MyProfile() {
       setEditing(false);
       alert('✅ Perfil actualizado exitosamente');
     },
+  });
+
+  const acknowledgeAlertMutation = useMutation({
+    mutationFn: (alertId) => 
+      base44.entities.CertificationAlert.update(alertId, { acknowledged: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myCertificationAlerts'] });
+    }
   });
 
   const handleSave = () => {
@@ -52,17 +82,95 @@ export default function MyProfile() {
     );
   }
 
+  // Calculate certification stats
+  const expiringSoon = myCertifications.filter(c => {
+    if (!c.expiration_date || c.status === 'expired') return false;
+    const daysUntilExpiry = differenceInDays(new Date(c.expiration_date), new Date());
+    return daysUntilExpiry >= 0 && daysUntilExpiry <= 30;
+  });
+
+  const expired = myCertifications.filter(c => c.status === 'expired');
+
   const currentImage = user.preferred_profile_image === 'avatar' && user.avatar_image_url
     ? user.avatar_image_url
     : user.profile_photo_url;
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* BACKGROUND CERTIFICATION MONITORING */}
+      <CertificationMonitor userEmail={user.email} />
+
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Mi Perfil</h1>
           <p className="text-slate-600">Gestiona tu información personal</p>
         </div>
+
+        {/* CERTIFICATION ALERTS */}
+        {expiringSoon.length > 0 && (
+          <Alert className="mb-6 bg-amber-50 border-amber-300">
+            <AlertCircle className="w-4 h-4 text-amber-600" />
+            <AlertDescription className="text-amber-900">
+              <strong className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4" />
+                {expiringSoon.length} certification(s) expiring soon
+              </strong>
+              <div className="space-y-1 text-sm">
+                {expiringSoon.map(cert => {
+                  const days = differenceInDays(new Date(cert.expiration_date), new Date());
+                  return (
+                    <div key={cert.id} className="flex items-center justify-between">
+                      <span>• {cert.certification_name}</span>
+                      <Badge className="bg-amber-200 text-amber-900">
+                        {days} days left
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {expired.length > 0 && (
+          <Alert className="mb-6 bg-red-50 border-red-300">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <AlertDescription className="text-red-900">
+              <strong className="mb-2 block">
+                ⚠️ {expired.length} expired certification(s) - Immediate action required
+              </strong>
+              <div className="space-y-1 text-sm">
+                {expired.map(cert => (
+                  <div key={cert.id}>• {cert.certification_name} (expired {format(new Date(cert.expiration_date), 'MMM dd, yyyy')})</div>
+                ))}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {myAlerts.length > 0 && (
+          <Alert className="mb-6 bg-blue-50 border-blue-300">
+            <Mail className="w-4 h-4 text-blue-600" />
+            <AlertDescription className="text-blue-900">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <strong>📧 {myAlerts.length} unread certification alert(s)</strong>
+                  <p className="text-sm mt-1">Check your email for details</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    myAlerts.forEach(alert => acknowledgeAlertMutation.mutate(alert.id));
+                  }}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                >
+                  Dismiss All
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Profile Picture - Clickable */}
         <Card className="mb-6 border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg">

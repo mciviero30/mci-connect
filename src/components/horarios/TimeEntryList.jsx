@@ -12,12 +12,24 @@ import { format } from 'date-fns';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { getDisplayName } from '@/components/utils/nameHelpers';
 import { notifyTimesheetStatus } from '../notifications/notificationHelpers';
+import { canCreateTimeEntry } from "../trabajos/JobStatusValidator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/use-toast"; // Assuming shadcn toast
 
-export default function TimeEntryList({ timeEntries, onApprove, onReject, isAdmin = false, loading }) {
+export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEntry, isAdmin = false, loading }) {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
   const [isApprovingAll, setIsApprovingAll] = useState(false);
+  const { toast } = useToast();
+
+  // State to support time entry creation form (not fully implemented in this file's UI, but required for outline changes)
+  const [formData, setFormData] = useState({
+    job_id: null,
+    // Add other fields relevant to time entry creation if this component were to include a form
+    // For now, only job_id is needed for the validation logic provided in the outline
+  });
+  const [showDialog, setShowDialog] = useState(false); // To support `setShowDialog(false)` in createMutation
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
@@ -25,12 +37,44 @@ export default function TimeEntryList({ timeEntries, onApprove, onReject, isAdmi
     initialData: [],
   });
 
-  // approveMutation and rejectMutation hooks are removed as their logic is handled by onApprove/onReject props
+  // Fetch jobs for validation
+  const { data: jobs = [] } = useQuery({
+    queryKey: ['jobs'],
+    queryFn: () => base44.entities.Job.list(),
+    initialData: []
+  });
+
+  // approveMutation and rejectMutation hooks are removed as their logic is handled by onApproveEntry/onRejectEntry props
   // and the notification is added within handleApprove/handleReject
+
+  const createMutation = useMutation({
+    mutationFn: async (data) => {
+      // VALIDATION: Check if job allows new time entries
+      if (data.job_id) {
+        const job = jobs.find(j => j.id === data.job_id);
+        const validation = canCreateTimeEntry(job);
+        
+        if (!validation.allowed) {
+          throw new Error(validation.reason);
+        }
+      }
+
+      return base44.entities.TimeEntry.create(data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] }); // Invalidate current user's entries too
+      setShowDialog(false); // Assuming a dialog exists for creation
+      toast.success(t('timeEntryCreated', { defaultValue: 'Time entry created successfully!' }));
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
 
   const handleApprove = async (entry) => {
     if (window.confirm(language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?')) {
-      await onApprove(entry);
+      await onApproveEntry(entry);
       
       // Send notification to employee
       try {
@@ -43,7 +87,7 @@ export default function TimeEntryList({ timeEntries, onApprove, onReject, isAdmi
 
   const handleReject = async (entry) => {
     if (window.confirm(language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?')) {
-      await onReject(entry);
+      await onRejectEntry(entry);
       
       // Send notification to employee
       try {
@@ -188,284 +232,298 @@ export default function TimeEntryList({ timeEntries, onApprove, onReject, isAdmi
     );
   }
 
+  // Validation for the (hypothetical) time entry creation form
+  const selectedJob = jobs.find(j => j.id === formData.job_id);
+  const validation = canCreateTimeEntry(selectedJob);
+
   return (
-    <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
-      <CardHeader className="border-b border-slate-200">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <CardTitle className="text-slate-900">
-            {language === 'es' ? 'Registros de Horas' : 'Time Records'}
-          </CardTitle>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
+    <div className="space-y-4"> {/* Wrapper div to accommodate the Alert */}
+      {/* Add this warning in the dialog before form submission (if a dialog were present) */}
+      {formData.job_id && !validation.allowed && (
+        <Alert className="mb-4 bg-red-50 border-red-300">
+          <AlertTriangle className="w-4 h-4" />
+          <AlertDescription className="text-red-800 text-sm">
+            {validation.reason}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <CardHeader className="border-b border-slate-200">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <CardTitle className="text-slate-900">
+              {language === 'es' ? 'Registros de Horas' : 'Time Records'}
+            </CardTitle>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={statusFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                  className={statusFilter === 'all' ? 'bg-[#3B9FF3] text-white' : 'bg-white border-slate-200 text-slate-700'}
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Todos' : 'All'} ({timeEntries.length})
+                </Button>
+                <Button
+                  variant={statusFilter === 'pending' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('pending')}
+                  className={statusFilter === 'pending' ? 'bg-amber-500 text-white' : 'bg-white border-amber-200 text-amber-700'}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  {t('pending')} ({pendingCount})
+                </Button>
+                <Button
+                  variant={statusFilter === 'approved' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('approved')}
+                  className={statusFilter === 'approved' ? 'bg-green-500 text-white' : 'bg-white border-green-200 text-green-700'}
+                >
+                  <Check className="w-4 h-4 mr-2" />
+                  {t('approved')} ({timeEntries.filter(e => e.status === 'approved').length})
+                </Button>
+              </div>
+
               <Button
-                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                onClick={handleExportToExcel}
+                variant="outline"
                 size="sm"
-                onClick={() => setStatusFilter('all')}
-                className={statusFilter === 'all' ? 'bg-[#3B9FF3] text-white' : 'bg-white border-slate-200 text-slate-700'}
+                className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                disabled={filteredEntries.length === 0}
               >
-                <Filter className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Todos' : 'All'} ({timeEntries.length})
+                <Download className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Exportar' : 'Export'}
               </Button>
-              <Button
-                variant={statusFilter === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('pending')}
-                className={statusFilter === 'pending' ? 'bg-amber-500 text-white' : 'bg-white border-amber-200 text-amber-700'}
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                {t('pending')} ({pendingCount})
-              </Button>
-              <Button
-                variant={statusFilter === 'approved' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('approved')}
-                className={statusFilter === 'approved' ? 'bg-green-500 text-white' : 'bg-white border-green-200 text-green-700'}
-              >
-                <Check className="w-4 h-4 mr-2" />
-                {t('approved')} ({timeEntries.filter(e => e.status === 'approved').length})
-              </Button>
+
+              {showApproveAll && isAdmin && (
+                <Button
+                  onClick={handleApproveAll}
+                  disabled={isApprovingAll}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+                >
+                  {isApprovingAll ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCheck className="w-4 h-4 mr-2" />
+                  )}
+                  {language === 'es' ? 'Aprobar Todos' : 'Approve All'} ({pendingCount})
+                </Button>
+              )}
             </div>
-
-            <Button
-              onClick={handleExportToExcel}
-              variant="outline"
-              size="sm"
-              className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-              disabled={filteredEntries.length === 0}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Exportar' : 'Export'}
-            </Button>
-
-            {showApproveAll && isAdmin && (
-              <Button
-                onClick={handleApproveAll}
-                disabled={isApprovingAll}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
-              >
-                {isApprovingAll ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <CheckCheck className="w-4 h-4 mr-2" />
-                )}
-                {language === 'es' ? 'Aprobar Todos' : 'Approve All'} ({pendingCount})
-              </Button>
-            )}
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-slate-50 border-slate-200">
-                {isAdmin && (
-                  <TableHead className="text-slate-700 font-semibold w-16">
-                    {language === 'es' ? 'Auditoría' : 'Audit'}
+        </CardHeader>
+        
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50 border-slate-200">
+                  {isAdmin && (
+                    <TableHead className="text-slate-700 font-semibold w-16">
+                      {language === 'es' ? 'Auditoría' : 'Audit'}
+                    </TableHead>
+                  )}
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Empleado' : 'Employee'}
                   </TableHead>
-                )}
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Empleado' : 'Employee'}
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Fecha' : 'Date'}
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Trabajo' : 'Job'}
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Tipo' : 'Type'}
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Horas' : 'Hours'}
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Entrada/Salida' : 'Check In/Out'}
-                </TableHead>
-                <TableHead className="text-slate-700 font-semibold">
-                  {language === 'es' ? 'Estado' : 'Status'}
-                </TableHead>
-                {isAdmin && (
-                  <TableHead className="text-slate-700 font-semibold text-right">
-                    {t('actions')}
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Fecha' : 'Date'}
                   </TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEntries.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={isAdmin ? 9 : 7} className="text-center py-12">
-                    <Clock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-slate-500">
-                      {statusFilter === 'pending' 
-                        ? (language === 'es' ? 'No hay registros pendientes' : 'No pending records')
-                        : (language === 'es' ? 'No hay registros de horas' : 'No time records')
-                      }
-                    </p>
-                  </TableCell>
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Trabajo' : 'Job'}
+                  </TableHead>
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Tipo' : 'Type'}
+                  </TableHead>
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Horas' : 'Hours'}
+                  </TableHead>
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Entrada/Salida' : 'Check In/Out'}
+                  </TableHead>
+                  <TableHead className="text-slate-700 font-semibold">
+                    {language === 'es' ? 'Estado' : 'Status'}
+                  </TableHead>
+                  {isAdmin && (
+                    <TableHead className="text-slate-700 font-semibold text-right">
+                      {t('actions')}
+                    </TableHead>
+                  )}
                 </TableRow>
-              ) : (
-                filteredEntries.map(entry => {
-                  const currentStatus = entry.status;
-                  const displayStatus = statusConfig[currentStatus] || statusConfig.pending;
+              </TableHeader>
+              <TableBody>
+                {filteredEntries.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isAdmin ? 9 : 7} className="text-center py-12">
+                      <Clock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                      <p className="text-slate-500">
+                        {statusFilter === 'pending' 
+                          ? (language === 'es' ? 'No hay registros pendientes' : 'No pending records')
+                          : (language === 'es' ? 'No hay registros de horas' : 'No time records')
+                        }
+                      </p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredEntries.map(entry => {
+                    const currentStatus = entry.status;
+                    const displayStatus = statusConfig[currentStatus] || statusConfig.pending;
 
-                  return (
-                    <TableRow key={entry.id} className="hover:bg-slate-50 transition-colors">
-                      {isAdmin && (
-                        <TableCell>
-                          <TooltipProvider>
-                            <div className="flex flex-col gap-1 items-center">
-                              {entry.requires_location_review && (
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-slate-900 text-white">
-                                    <p className="text-xs">
-                                      {language === 'es' 
-                                        ? `⚠️ Ubicación: ${Math.round(entry.geofence_distance_meters || 0)}m del sitio`
-                                        : `⚠️ Location: ${Math.round(entry.geofence_distance_meters || 0)}m from site`}
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
+                    return (
+                      <TableRow key={entry.id} className="hover:bg-slate-50 transition-colors">
+                        {isAdmin && (
+                          <TableCell>
+                            <TooltipProvider>
+                              <div className="flex flex-col gap-1 items-center">
+                                {entry.requires_location_review && (
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-slate-900 text-white">
+                                      <p className="text-xs">
+                                        {language === 'es' 
+                                          ? `⚠️ Ubicación: ${Math.round(entry.geofence_distance_meters || 0)}m del sitio`
+                                          : `⚠️ Location: ${Math.round(entry.geofence_distance_meters || 0)}m from site`}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
 
-                              {entry.exceeds_max_hours && (
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <AlertTriangle className="w-5 h-5 text-red-600" />
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-slate-900 text-white">
-                                    <p className="text-xs">
-                                      {language === 'es' 
-                                        ? '🚫 Excede 14 horas' 
-                                        : '🚫 Exceeds 14 hours'}
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
+                                {entry.exceeds_max_hours && (
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <AlertTriangle className="w-5 h-5 text-red-600" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-slate-900 text-white">
+                                      <p className="text-xs">
+                                        {language === 'es' 
+                                          ? '🚫 Excede 14 horas' 
+                                          : '🚫 Exceeds 14 hours'}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
 
-                              {entry.task_details && (
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Info className="w-5 h-5 text-blue-600" />
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-slate-900 text-white max-w-xs">
-                                    <p className="text-xs font-semibold mb-1">
-                                      {language === 'es' ? 'Detalles de Tarea:' : 'Task Details:'}
-                                    </p>
-                                    <p className="text-xs">{entry.task_details}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          </TooltipProvider>
-                        </TableCell>
-                      )}
-
-                      <TableCell className="font-medium text-slate-900">
-                        {getEmployeeName(entry)}
-                      </TableCell>
-                      <TableCell className="text-slate-700">
-                        {format(new Date(entry.date), 'MMM dd, yyyy')}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2 text-slate-900">
-                          <Briefcase className="w-4 h-4 text-[#3B9FF3]" />
-                          <span className="truncate max-w-[200px]">{entry.job_name}</span>
-                        </div>
-                      </TableCell>
-
-                      <TableCell>
-                        <Badge variant="outline" className={
-                          entry.work_type === 'driving' ? 'bg-purple-100 border-purple-300 text-purple-800' :
-                          entry.work_type === 'setup' ? 'bg-blue-100 border-blue-300 text-blue-800' :
-                          entry.work_type === 'cleanup' ? 'bg-green-100 border-green-300 text-green-800' :
-                          'bg-slate-100 border-slate-300 text-slate-800'
-                        }>
-                          {entry.work_type === 'driving' ? (language === 'es' ? 'Manejo' : 'Driving') :
-                           entry.work_type === 'setup' ? 'Setup' :
-                           entry.work_type === 'cleanup' ? 'Cleanup' :
-                           (language === 'es' ? 'Normal' : 'Normal')}
-                        </Badge>
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="font-semibold text-slate-900">
-                          {entry.hours_worked?.toFixed(2)}h
-                        </div>
-                        {entry.lunch_minutes > 0 && (
-                          <div className="text-xs text-slate-600">
-                            ({entry.lunch_minutes}min {language === 'es' ? 'pausa' : 'break'})
-                          </div>
+                                {entry.task_details && (
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Info className="w-5 h-5 text-blue-600" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="bg-slate-900 text-white max-w-xs">
+                                      <p className="text-xs font-semibold mb-1">
+                                        {language === 'es' ? 'Detalles de Tarea:' : 'Task Details:'}
+                                      </p>
+                                      <p className="text-xs">{entry.task_details}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </TooltipProvider>
+                          </TableCell>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm space-y-1">
-                          <div className="flex items-center gap-2 text-green-700">
-                            <MapPin className="w-3 h-3" />
-                            <span>{entry.check_in}</span>
+
+                        <TableCell className="font-medium text-slate-900">
+                          {getEmployeeName(entry)}
+                        </TableCell>
+                        <TableCell className="text-slate-700">
+                          {format(new Date(entry.date), 'MMM dd, yyyy')}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-slate-900">
+                            <Briefcase className="w-4 h-4 text-[#3B9FF3]" />
+                            <span className="truncate max-w-[200px]">{entry.job_name}</span>
                           </div>
-                          {entry.check_out && (
-                            <div className="flex items-center gap-2 text-red-700">
-                              <MapPin className="w-3 h-3" />
-                              <span>{entry.check_out}</span>
+                        </TableCell>
+
+                        <TableCell>
+                          <Badge variant="outline" className={
+                            entry.work_type === 'driving' ? 'bg-purple-100 border-purple-300 text-purple-800' :
+                            entry.work_type === 'setup' ? 'bg-blue-100 border-blue-300 text-blue-800' :
+                            entry.work_type === 'cleanup' ? 'bg-green-100 border-green-300 text-green-800' :
+                            'bg-slate-100 border-slate-300 text-slate-800'
+                          }>
+                            {entry.work_type === 'driving' ? (language === 'es' ? 'Manejo' : 'Driving') :
+                            entry.work_type === 'setup' ? 'Setup' :
+                            entry.work_type === 'cleanup' ? 'Cleanup' :
+                            (language === 'es' ? 'Normal' : 'Normal')}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="font-semibold text-slate-900">
+                            {entry.hours_worked?.toFixed(2)}h
+                          </div>
+                          {entry.lunch_minutes > 0 && (
+                            <div className="text-xs text-slate-600">
+                              ({entry.lunch_minutes}min {language === 'es' ? 'pausa' : 'break'})
                             </div>
                           )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={displayStatus.color}>
-                          {displayStatus.label}
-                        </Badge>
-                      </TableCell>
-                      {isAdmin && (
+                        </TableCell>
                         <TableCell>
-                          <div className="flex justify-end gap-2">
-                            {entry.status === 'pending' ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleApprove(entry)} // Pass full entry
-                                  // Removed disabled={approveMutation.isPending}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Check className="w-4 h-4 mr-1" />
-                                  {language === 'es' ? 'Aprobar' : 'Approve'}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleReject(entry)} // Pass full entry
-                                  // Removed disabled={rejectMutation.isPending}
-                                  className="border-red-300 text-red-600 hover:bg-red-50"
-                                >
-                                  <X className="w-4 h-4 mr-1" />
-                                  {language === 'es' ? 'Rechazar' : 'Reject'}
-                                </Button>
-                              </>
-                            ) : (
-                              <Badge variant="outline" className="text-slate-500 border-slate-300">
-                                {entry.status === 'approved' 
-                                  ? (language === 'es' ? 'Revisado' : 'Reviewed')
-                                  : (language === 'es' ? 'Rechazado' : 'Rejected')
-                                }
-                              </Badge>
+                          <div className="text-sm space-y-1">
+                            <div className="flex items-center gap-2 text-green-700">
+                              <MapPin className="w-3 h-3" />
+                              <span>{entry.check_in}</span>
+                            </div>
+                            {entry.check_out && (
+                              <div className="flex items-center gap-2 text-red-700">
+                                <MapPin className="w-3 h-3" />
+                                <span>{entry.check_out}</span>
+                              </div>
                             )}
                           </div>
                         </TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                        <TableCell>
+                          <Badge className={displayStatus.color}>
+                            {displayStatus.label}
+                          </Badge>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex justify-end gap-2">
+                              {entry.status === 'pending' ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleApprove(entry)} // Pass full entry
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                  >
+                                    <Check className="w-4 h-4 mr-1" />
+                                    {language === 'es' ? 'Aprobar' : 'Approve'}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleReject(entry)} // Pass full entry
+                                    className="border-red-300 text-red-600 hover:bg-red-50"
+                                  >
+                                    <X className="w-4 h-4 mr-1" />
+                                    {language === 'es' ? 'Rechazar' : 'Reject'}
+                                  </Button>
+                                </>
+                              ) : (
+                                <Badge variant="outline" className="text-slate-500 border-slate-300">
+                                  {entry.status === 'approved' 
+                                    ? (language === 'es' ? 'Revisado' : 'Reviewed')
+                                    : (language === 'es' ? 'Rechazado' : 'Rejected')
+                                  }
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

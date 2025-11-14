@@ -71,6 +71,7 @@ import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
 import NotificationEngine from "@/components/notifications/NotificationEngine";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
+import CertificationMonitor from "@/components/certifications/CertificationMonitor";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
@@ -392,6 +393,9 @@ const LayoutContent = ({ children, currentPageName }) => {
       <NotificationService user={user}>
         <NotificationEngine user={user} />
       </NotificationService>
+      
+      {/* GLOBAL CERTIFICATION MONITORING */}
+      {user && <CertificationMonitor userEmail={user.email} />}
         
       <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <style>{`
