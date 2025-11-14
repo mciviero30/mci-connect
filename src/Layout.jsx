@@ -41,7 +41,6 @@ import {
   Brain,
   Zap,
   Shield,
-  RefreshCw, // Added RefreshCw icon
 } from "lucide-react";
 import {
   Sidebar,
@@ -275,7 +274,6 @@ const LayoutContent = ({ children, currentPageName }) => {
       items: [
         { title: 'Clean Data', url: createPageUrl("AdminCleanup"), icon: Trash2 },
         { title: 'Testing', url: createPageUrl("TestingChecklist"), icon: ClipboardList },
-        { title: 'Reset Status', url: createPageUrl("ResetStatus"), icon: RefreshCw }, // New item added here
       ]
     }
   ];

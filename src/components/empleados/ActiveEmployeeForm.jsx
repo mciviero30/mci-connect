@@ -16,33 +16,6 @@ const formatPhone = (value) => {
   return `(${cleaned.slice(0, 3)})${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
 };
 
-// Placeholder for translation function (replace with actual i18n solution if needed)
-const t = (key) => {
-  const translations = {
-    cannotAssignTeamWithoutW9: "Cannot assign a team without completed W-9 and accepted agreement.",
-    cannotActivateWithoutW9: "Cannot set employment status to 'Active' without completed W-9 and accepted agreement.",
-    fiscalStateMismatch: "Fiscal state of employee does not match the team's location state.",
-    confirmProceed: "Do you want to proceed anyway?",
-    w9ValidationWarning: "Onboarding documents are pending for this employee!",
-    w9Required: "W-9 / Tax ID form is required.",
-    agreementRequired: "Independent Contractor Agreement is required.",
-    onboardingCompleted: "Onboarding documents are complete.",
-    w9Completed: "W-9 / Tax ID Completed",
-    agreementAccepted: "Agreement Accepted",
-    team: "Team",
-    selectTeam: "Select team",
-    w9RequiredForTeam: "W-9 and Agreement required to assign a team.",
-    employmentStatus: "Employment Status",
-    PENDIENTE_ONBOARDING: "Pending Onboarding",
-    ACTIVO: "Active",
-    ARCHIVADO: "Archived",
-    TERMINADO: "Terminated",
-    fiscalState: "Fiscal State",
-    selectFiscalState: "Select fiscal state"
-  };
-  return translations[key] || key;
-};
-
 export default function ActiveEmployeeForm({ employee, onClose }) {
   const queryClient = useQueryClient();
   
@@ -119,17 +92,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
     team_id: employee?.team_id || '',
     team_name: employee?.team_name || '',
     team_role: employee?.team_role || 'technician_skilled',
-    hourly_rate: employee?.hourly_rate || '', // Kept for payroll section
+    hourly_rate: employee?.hourly_rate || '',
     hire_date: employee?.hire_date || '',
     hourly_rate_overtime: employee?.hourly_rate_overtime || '',
     per_diem_amount: employee?.per_diem_amount || 50,
     pay_frequency: employee?.pay_frequency || 'weekly',
-    employment_status: employee?.employment_status || 'ACTIVO',
-    w9_completed: employee?.w9_completed || false,
-    agreement_accepted: employee?.agreement_accepted || false,
-    w9_completed_date: employee?.w9_completed_date || '',
-    agreement_accepted_date: employee?.agreement_accepted_date || '',
-    fiscal_state: employee?.fiscal_state || ''
+    employment_status: employee?.employment_status || 'active',
   });
 
   const [showManualInstructions, setShowManualInstructions] = useState(false);
@@ -151,6 +119,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
     }
   }, [formData.hourly_rate, employee?.hourly_rate_overtime]);
 
+
   useEffect(() => {
     if (formData.team_id && teams.length > 0 && employees.length > 0) {
       const selectedTeam = teams.find(t => t.id === formData.team_id);
@@ -158,7 +127,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         // Count current team members, excluding the current employee if editing
         const teamMembersCount = employees.filter(emp => 
           (emp.team_id === selectedTeam.id) &&
-          (emp.employment_status === 'ACTIVO') && // Only count active employees
+          (emp.employment_status === 'active') && // Only count active employees
           emp.id !== employee?.id // Exclude current employee if editing
         ).length;
 
@@ -178,36 +147,6 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       setTeamCapacityWarning(null);
     }
   }, [formData.team_id, teams, employees, employee?.id]);
-
-  // NEW: Validation before team assignment
-  const canAssignTeam = () => {
-    return formData.w9_completed && formData.agreement_accepted;
-  };
-
-  // NEW: Validation before status change to ACTIVO
-  const canActivate = () => {
-    return formData.w9_completed && formData.agreement_accepted;
-  };
-
-  // NEW: Check fiscal state vs team location
-  const [fiscalStateMismatch, setFiscalStateMismatch] = useState(false);
-  
-  useEffect(() => {
-    if (formData.team_id && formData.fiscal_state && teams.length > 0) {
-      const selectedTeam = teams.find(t => t.id === formData.team_id);
-      if (selectedTeam) {
-        const teamStateCode = selectedTeam.state === 'Georgia' ? 'GA' : 
-                               selectedTeam.state === 'Florida' ? 'FL' :
-                               selectedTeam.state === 'North Carolina' ? 'NC' : '';
-        
-        setFiscalStateMismatch(formData.fiscal_state !== teamStateCode);
-      } else {
-        setFiscalStateMismatch(false);
-      }
-    } else {
-      setFiscalStateMismatch(false);
-    }
-  }, [formData.team_id, formData.fiscal_state, teams]);
 
   // Enhanced update mutation with proper field protection
   const updateMutation = useMutation({
@@ -246,12 +185,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
           pay_frequency: data.pay_frequency,
           hire_date: data.hire_date,
           ssn_tax_id: data.ssn_tax_id,
-          employment_status: data.employment_status,
-          w9_completed: data.w9_completed,
-          agreement_accepted: data.agreement_accepted,
-          w9_completed_date: data.w9_completed_date,
-          agreement_accepted_date: data.agreement_accepted_date,
-          fiscal_state: data.fiscal_state
+          employment_status: data.employment_status
         })
       };
 
@@ -278,7 +212,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         department: data.department || '',
         phone: data.phone || '',
         profile_photo_url: employee.profile_photo_url || '',
-        status: data.employment_status === 'ACTIVO' ? 'active' : 'inactive' // Map new employment status
+        status: 'active'
       };
       
       if (directoryEntry) {
@@ -366,28 +300,11 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
   };
 
   const handleTeamChange = (value) => {
-    // P1/M1 Validation: Cannot assign team without W-9
-    if (!canAssignTeam()) {
-      alert(t('cannotAssignTeamWithoutW9'));
-      return;
-    }
     setFormData({ ...formData, team_id: value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // P1/M1 Validation: Cannot activate without W-9 and Agreement
-    if (formData.employment_status === 'ACTIVO' && !canActivate()) {
-      alert(t('cannotActivateWithoutW9'));
-      return;
-    }
-
-    // P4/M4 Validation: Warn if fiscal state doesn't match team location
-    if (fiscalStateMismatch) {
-      const confirmed = window.confirm(t('fiscalStateMismatch') + '\n\n' + t('confirmProceed'));
-      if (!confirmed) return;
-    }
     
     // Confirm if team is at capacity
     if (teamCapacityWarning) {
@@ -397,7 +314,10 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       if (!confirmed) return;
     }
 
-    updateMutation.mutate(formData);
+    updateMutation.mutate({
+      ...formData,
+      employment_status: employee?.employment_status || 'active'
+    });
   };
 
   // Team role options
@@ -407,15 +327,6 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
     { value: 'technician_assistant', label: 'Technician (Assistant)' },
     { value: 'driver_logistics', label: 'Driver / Logistics' }
   ];
-
-  // Fiscal State Options
-  const fiscalStateOptions = [
-    { value: 'GA', label: 'Georgia' },
-    { value: 'FL', label: 'Florida' },
-    { value: 'NC', label: 'North Carolina' },
-    // Add other states as needed
-  ];
-
 
   if (showDeleteConfirm) {
     return (
@@ -499,7 +410,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
                 if (String(value || '') !== String(original || '')) {
                   return (
                     <div key={key} className="text-amber-400">
-                      • {key}: <span className="text-white">{String(value) || '(empty)'}</span>
+                      • {key}: <span className="text-white">{value || '(empty)'}</span>
                     </div>
                   );
                 }
@@ -530,33 +441,6 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
           💡 <strong>Note:</strong> If direct update fails, you'll receive instructions to update through Dashboard.
         </AlertDescription>
       </Alert>
-
-      {/* W-9 Status Alert */}
-      {(!formData.w9_completed || !formData.agreement_accepted) && (
-        <Alert className="bg-yellow-500/10 border-yellow-500/30">
-          <AlertTriangle className="w-4 h-4 text-yellow-400" />
-          <AlertDescription className="text-yellow-400 text-sm">
-            <p className="font-bold mb-1">⚠️ {t('w9ValidationWarning')}</p>
-            <ul className="text-xs space-y-1 ml-4 list-disc">
-              {!formData.w9_completed && <li>{t('w9Required')}</li>}
-              {!formData.agreement_accepted && <li>{t('agreementRequired')}</li>}
-            </ul>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* W-9 Completion Status */}
-      {formData.w9_completed && formData.agreement_accepted && (
-        <Alert className="bg-green-500/10 border-green-500/30">
-          <AlertDescription className="text-green-400 text-sm">
-            <p className="font-bold mb-1">✅ {t('onboardingCompleted')}</p>
-            <ul className="text-xs space-y-1 ml-4">
-              <li>✓ {t('w9Completed')}: {formData.w9_completed_date && new Date(formData.w9_completed_date).toLocaleDateString()}</li>
-              <li>✓ {t('agreementAccepted')}: {formData.agreement_accepted_date && new Date(formData.agreement_accepted_date).toLocaleDateString()}</li>
-            </ul>
-          </AlertDescription>
-        </Alert>
-      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>
@@ -643,14 +527,10 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">{t('team')} *</Label>
-          <Select 
-            value={formData.team_id} 
-            onValueChange={handleTeamChange}
-            disabled={!canAssignTeam()} // Disabled if W-9/Agreement not completed
-          >
+          <Label className="text-white">Team *</Label>
+          <Select value={formData.team_id} onValueChange={handleTeamChange}>
             <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue placeholder={t('selectTeam')} />
+              <SelectValue placeholder="Select team" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-slate-800">
               {teams.map(team => (
@@ -660,17 +540,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
               ))}
             </SelectContent>
           </Select>
-          {!canAssignTeam() && (
-            <p className="text-xs text-yellow-400 mt-1">⚠️ {t('w9RequiredForTeam')}</p>
-          )}
+          {/* Team capacity warning */}
           {teamCapacityWarning && (
             <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
               <span>⚠️</span>
               <span>Team at capacity ({teamCapacityWarning.current}/{teamCapacityWarning.max})</span>
             </p>
-          )}
-          {fiscalStateMismatch && (
-            <p className="text-xs text-amber-400 mt-1">⚠️ {t('fiscalStateMismatch')}</p>
           )}
         </div>
 
@@ -708,7 +583,18 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
           </Select>
         </div>
 
-        {/* Existing Hire Date */}
+        {/* Existing Hourly Rate and Hire Date */}
+        <div>
+          <Label className="text-white">Hourly Rate</Label>
+          <Input
+            type="number"
+            step="0.01"
+            value={formData.hourly_rate}
+            onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
+            className="bg-slate-800 border-slate-700 text-white"
+          />
+        </div>
+
         <div>
           <Label className="text-white">Hire Date</Label>
           <Input
@@ -782,98 +668,6 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
             </SelectContent>
           </Select>
         </div>
-        
-        <div>
-          <Label className="text-white">{t('employmentStatus')} *</Label>
-          <Select 
-            value={formData.employment_status} 
-            onValueChange={(value) => {
-              if (value === 'ACTIVO' && !canActivate()) {
-                alert(t('cannotActivateWithoutW9'));
-                return;
-              }
-              setFormData({ ...formData, employment_status: value });
-            }}
-          >
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
-              <SelectItem value="PENDIENTE_ONBOARDING">{t('PENDIENTE_ONBOARDING')}</SelectItem>
-              <SelectItem value="ACTIVO" disabled={!canActivate()}>{t('ACTIVO')}</SelectItem>
-              <SelectItem value="ARCHIVADO">{t('ARCHIVADO')}</SelectItem>
-              <SelectItem value="TERMINADO">{t('TERMINADO')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Onboarding Documents */}
-        <div className="md:col-span-2 mt-4 pt-4 border-t border-slate-700">
-          <h3 className="text-lg font-semibold text-cyan-400 mb-3">Onboarding Documents</h3>
-        </div>
-
-        <div>
-          <Label className="text-white">W-9 Completed</Label>
-          <Select value={formData.w9_completed ? 'true' : 'false'} onValueChange={(value) => setFormData({ ...formData, w9_completed: value === 'true', w9_completed_date: value === 'true' ? (formData.w9_completed_date || new Date().toISOString().split('T')[0]) : '' })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-white">W-9 Completion Date</Label>
-          <Input
-            type="date"
-            value={formData.w9_completed_date}
-            onChange={(e) => setFormData({ ...formData, w9_completed_date: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
-            disabled={!formData.w9_completed}
-          />
-        </div>
-
-        <div>
-          <Label className="text-white">Agreement Accepted</Label>
-          <Select value={formData.agreement_accepted ? 'true' : 'false'} onValueChange={(value) => setFormData({ ...formData, agreement_accepted: value === 'true', agreement_accepted_date: value === 'true' ? (formData.agreement_accepted_date || new Date().toISOString().split('T')[0]) : '' })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
-              <SelectItem value="true">Yes</SelectItem>
-              <SelectItem value="false">No</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label className="text-white">Agreement Acceptance Date</Label>
-          <Input
-            type="date"
-            value={formData.agreement_accepted_date}
-            onChange={(e) => setFormData({ ...formData, agreement_accepted_date: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
-            disabled={!formData.agreement_accepted}
-          />
-        </div>
-
-        <div>
-          <Label className="text-white">{t('fiscalState')}</Label>
-          <Select value={formData.fiscal_state} onValueChange={(value) => setFormData({ ...formData, fiscal_state: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-              <SelectValue placeholder={t('selectFiscalState')} />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
-              {fiscalStateOptions.map(state => (
-                <SelectItem key={state.value} value={state.value}>
-                  {state.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
 
         {/* Existing SSN, DOB, T-Shirt fields */}
         <div>

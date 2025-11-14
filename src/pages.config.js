@@ -58,9 +58,6 @@ import AIAutomationDashboard from './pages/AIAutomationDashboard';
 import MiScorecard from './pages/MiScorecard';
 import MisProyectos from './pages/MisProyectos';
 import AIAssistantPersonal from './pages/AIAssistantPersonal';
-import AdminEmployeeReset from './pages/AdminEmployeeReset';
-import ResetStatus from './pages/ResetStatus';
-import W9Onboarding from './pages/W9Onboarding';
 import Layout from './Layout.jsx';
 
 
@@ -125,9 +122,6 @@ export const PAGES = {
     "MiScorecard": MiScorecard,
     "MisProyectos": MisProyectos,
     "AIAssistantPersonal": AIAssistantPersonal,
-    "AdminEmployeeReset": AdminEmployeeReset,
-    "ResetStatus": ResetStatus,
-    "W9Onboarding": W9Onboarding,
 }
 
 export const pagesConfig = {
