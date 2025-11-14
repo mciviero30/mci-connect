@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +16,11 @@ import {
   Trash2,
   X,
   Save,
-  AlertTriangle // Added AlertTriangle icon for stock alerts
+  AlertTriangle,
+  History,
+  Shield,
+  TrendingDown,
+  DollarSign
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import {
@@ -25,7 +28,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import {
@@ -36,21 +40,47 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Added Alert components
+import { useToast } from "@/components/ui/toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { format } from "date-fns";
 
 export default function Items() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [filterCategory, setFilterCategory] = useState('all');
+  const [showAuditDialog, setShowAuditDialog] = useState(false);
+  const [selectedItemForAudit, setSelectedItemForAudit] = useState(null);
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
 
   const { data: items, isLoading } = useQuery({
     queryKey: ['quoteItems'],
     queryFn: () => base44.entities.QuoteItem.list('name'),
+    initialData: []
+  });
+
+  const { data: quotes = [] } = useQuery({
+    queryKey: ['quotes'],
+    queryFn: () => base44.entities.Quote.list(),
+    initialData: []
+  });
+
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: () => base44.entities.Invoice.list(),
+    initialData: []
+  });
+
+  const { data: priceLogs = [] } = useQuery({
+    queryKey: ['quoteItemPriceLogs'],
+    queryFn: () => base44.entities.QuoteItemPriceLog.list('-change_timestamp', 200),
     initialData: []
   });
 
@@ -63,68 +93,190 @@ export default function Items() {
     supplier: '',
     installation_time: '',
     category: 'materials',
-    account_category: 'revenue_materials', // NEW: Prompt #59
-    in_stock_quantity: 0, // NEW: Prompt #61
-    min_stock_quantity: 5, // NEW: Prompt #61
+    account_category: 'revenue_materials',
+    in_stock_quantity: 0,
+    min_stock_quantity: 5,
     status: 'active'
   });
 
+  // ============================================
+  // AUDIT MUTATION - Log all price changes
+  // ============================================
+  const createPriceLogMutation = useMutation({
+    mutationFn: (logData) => base44.entities.QuoteItemPriceLog.create(logData)
+  });
+
+  // ============================================
+  // AUTO-UPDATE STOCK STATUS
+  // ============================================
+  const updateStockStatus = (quantity, minQuantity, category) => {
+    if (category !== 'materials') return 'active';
+    
+    if (quantity === 0) return 'out_of_stock';
+    if (quantity < minQuantity) return 'low_stock';
+    return 'active';
+  };
+
+  // ============================================
+  // CREATE MUTATION WITH VALIDATIONS & AUDIT
+  // ============================================
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.QuoteItem.create(data),
+    mutationFn: async (data) => {
+      // VALIDATION 1: Margin validation - warn if selling at loss
+      if (data.unit_price < data.cost_per_unit) {
+        const proceed = window.confirm(
+          language === 'es'
+            ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${(data.cost_per_unit - data.unit_price).toFixed(2)} por unidad\n\n¿Continuar de todas formas?`
+            : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${(data.cost_per_unit - data.unit_price).toFixed(2)} per unit\n\nContinue anyway?`
+        );
+        
+        if (!proceed) {
+          throw new Error('Item creation cancelled - negative margin');
+        }
+      }
+
+      // AUTO-UPDATE: Stock status
+      data.status = updateStockStatus(data.in_stock_quantity, data.min_stock_quantity, data.category);
+
+      // Create the item
+      const newItem = await base44.entities.QuoteItem.create(data);
+
+      // AUDIT LOG: Record creation with initial prices
+      await createPriceLogMutation.mutateAsync({
+        item_id: newItem.id,
+        item_name: newItem.name,
+        action_type: 'created',
+        changed_by_email: user.email,
+        changed_by_name: user.full_name,
+        previous_unit_price: null,
+        new_unit_price: data.unit_price,
+        previous_cost_per_unit: null,
+        new_cost_per_unit: data.cost_per_unit,
+        change_timestamp: new Date().toISOString(),
+        notes: `Item created with initial pricing`
+      });
+
+      return newItem;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteItems'] });
+      queryClient.invalidateQueries({ queryKey: ['quoteItemPriceLogs'] });
       setShowForm(false);
       resetFormData();
-      toast({
-        title: "✅ Success!",
-        description: language === 'es' ? 'Item creado exitosamente.' : 'Item created successfully.',
-      });
+      toast.success(language === 'es' ? 'Item creado y registrado' : 'Item created and logged');
     },
     onError: (error) => {
-      toast({
-        title: "❌ Error!",
-        description: error.message || (language === 'es' ? 'Error al crear item.' : 'Failed to create item.'),
-        variant: "destructive",
-      });
+      if (!error.message.includes('cancelled')) {
+        toast.error(error.message || (language === 'es' ? 'Error al crear item' : 'Failed to create item'));
+      }
     }
   });
 
+  // ============================================
+  // UPDATE MUTATION WITH VALIDATIONS & AUDIT
+  // ============================================
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.QuoteItem.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      const previousItem = items.find(i => i.id === id);
+
+      // VALIDATION 1: Margin validation
+      if (data.unit_price < data.cost_per_unit) {
+        const proceed = window.confirm(
+          language === 'es'
+            ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${(data.cost_per_unit - data.unit_price).toFixed(2)} por unidad\n\n¿Continuar de todas formas?`
+            : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${(data.cost_per_unit - data.unit_price).toFixed(2)} per unit\n\nContinue anyway?`
+        );
+        
+        if (!proceed) {
+          throw new Error('Update cancelled - negative margin');
+        }
+      }
+
+      // AUTO-UPDATE: Stock status
+      data.status = updateStockStatus(data.in_stock_quantity, data.min_stock_quantity, data.category);
+
+      // Update the item
+      const updatedItem = await base44.entities.QuoteItem.update(id, data);
+
+      // AUDIT LOG: Record price changes if any
+      const priceChanged = previousItem.unit_price !== data.unit_price;
+      const costChanged = previousItem.cost_per_unit !== data.cost_per_unit;
+
+      if (priceChanged || costChanged) {
+        const actionType = priceChanged && costChanged ? 'both_updated' :
+                          priceChanged ? 'price_updated' : 'cost_updated';
+
+        await createPriceLogMutation.mutateAsync({
+          item_id: id,
+          item_name: data.name,
+          action_type: actionType,
+          changed_by_email: user.email,
+          changed_by_name: user.full_name,
+          previous_unit_price: previousItem.unit_price,
+          new_unit_price: data.unit_price,
+          previous_cost_per_unit: previousItem.cost_per_unit,
+          new_cost_per_unit: data.cost_per_unit,
+          change_timestamp: new Date().toISOString(),
+          notes: `Price/cost updated${priceChanged && costChanged ? ' (both)' : ''}`
+        });
+      }
+
+      return updatedItem;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteItems'] });
+      queryClient.invalidateQueries({ queryKey: ['quoteItemPriceLogs'] });
       setShowForm(false);
       setEditingItem(null);
       resetFormData();
-      toast({
-        title: "✅ Success!",
-        description: language === 'es' ? 'Item actualizado exitosamente.' : 'Item updated successfully.',
-      });
+      toast.success(language === 'es' ? 'Item actualizado y registrado' : 'Item updated and logged');
     },
     onError: (error) => {
-      toast({
-        title: "❌ Error!",
-        description: error.message || (language === 'es' ? 'Error al actualizar item.' : 'Failed to update item.'),
-        variant: "destructive",
-      });
+      if (!error.message.includes('cancelled')) {
+        toast.error(error.message || (language === 'es' ? 'Error al actualizar item' : 'Failed to update item'));
+      }
     }
   });
 
+  // ============================================
+  // DELETE MUTATION WITH PROTECTION
+  // ============================================
   const deleteItemMutation = useMutation({
-    mutationFn: (id) => base44.entities.QuoteItem.delete(id),
+    mutationFn: async (item) => {
+      // VALIDATION: Check if item is used in any active quotes
+      const quotesUsingItem = quotes.filter(quote => {
+        if (quote.status === 'converted_to_invoice' || quote.status === 'rejected') return false;
+        return quote.items?.some(qItem => 
+          qItem.description?.toLowerCase().includes(item.name.toLowerCase())
+        );
+      });
+
+      // VALIDATION: Check if item is used in any active invoices
+      const invoicesUsingItem = invoices.filter(invoice => {
+        if (invoice.status === 'cancelled') return false;
+        return invoice.items?.some(iItem => 
+          iItem.description?.toLowerCase().includes(item.name.toLowerCase())
+        );
+      });
+
+      // Block deletion if dependencies exist
+      if (quotesUsingItem.length > 0 || invoicesUsingItem.length > 0) {
+        throw new Error(
+          language === 'es'
+            ? `No se puede eliminar: Este item está en ${quotesUsingItem.length} cotización(es) y ${invoicesUsingItem.length} factura(s) activa(s). Por favor, inactívelo en su lugar.`
+            : `Cannot delete: This item is used in ${quotesUsingItem.length} active quote(s) and ${invoicesUsingItem.length} active invoice(s). Please deactivate it instead.`
+        );
+      }
+
+      // If validation passes, proceed with deletion
+      return base44.entities.QuoteItem.delete(item.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteItems'] });
-      toast({
-        title: "✅ Success!",
-        description: language === 'es' ? 'Item eliminado exitosamente.' : 'Item deleted successfully.',
-      });
+      toast.success(language === 'es' ? 'Item eliminado exitosamente' : 'Item deleted successfully');
     },
     onError: (error) => {
-      toast({
-        title: "❌ Error!",
-        description: error.message || (language === 'es' ? 'Error al eliminar item.' : 'Failed to delete item.'),
-        variant: "destructive",
-      });
+      toast.error(error.message);
     }
   });
 
@@ -138,9 +290,9 @@ export default function Items() {
       supplier: '',
       installation_time: '',
       category: 'materials',
-      account_category: 'revenue_materials', // Reset new field
-      in_stock_quantity: 0, // Reset new field
-      min_stock_quantity: 5, // Reset new field
+      account_category: 'revenue_materials',
+      in_stock_quantity: 0,
+      min_stock_quantity: 5,
       status: 'active'
     });
   };
@@ -152,8 +304,8 @@ export default function Items() {
       unit_price: item.unit_price != null ? item.unit_price.toString() : '',
       cost_per_unit: item.cost_per_unit != null ? item.cost_per_unit.toString() : '',
       installation_time: item.installation_time != null ? item.installation_time.toString() : '',
-      in_stock_quantity: item.in_stock_quantity != null ? item.in_stock_quantity : 0, // Ensure it's a number
-      min_stock_quantity: item.min_stock_quantity != null ? item.min_stock_quantity : 5, // Ensure it's a number
+      in_stock_quantity: item.in_stock_quantity != null ? item.in_stock_quantity : 0,
+      min_stock_quantity: item.min_stock_quantity != null ? item.min_stock_quantity : 5,
       supplier: item.supplier || '',
       description: item.description || '',
       account_category: item.account_category || 'revenue_materials'
@@ -165,11 +317,7 @@ export default function Items() {
     e.preventDefault();
 
     if (!formData.name || !formData.unit_price || !formData.cost_per_unit || !formData.supplier) {
-      toast({
-        title: "⚠️ Validation Error",
-        description: language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.',
-        variant: "destructive",
-      });
+      toast.error(language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.');
       return;
     }
 
@@ -178,8 +326,8 @@ export default function Items() {
       unit_price: parseFloat(formData.unit_price) || 0,
       cost_per_unit: parseFloat(formData.cost_per_unit) || 0,
       installation_time: parseFloat(formData.installation_time) || 0,
-      in_stock_quantity: parseInt(formData.in_stock_quantity) || 0, // Parse as int
-      min_stock_quantity: parseInt(formData.min_stock_quantity) || 5 // Parse as int
+      in_stock_quantity: parseInt(formData.in_stock_quantity) || 0,
+      min_stock_quantity: parseInt(formData.min_stock_quantity) || 5
     };
 
     if (editingItem) {
@@ -187,6 +335,11 @@ export default function Items() {
     } else {
       createMutation.mutate(dataToSubmit);
     }
+  };
+
+  const handleViewAudit = (item) => {
+    setSelectedItemForAudit(item);
+    setShowAuditDialog(true);
   };
 
   const filteredItems = items.filter(item => {
@@ -198,24 +351,48 @@ export default function Items() {
   });
 
   const categoryConfig = {
-    materials: { label: language === 'es' ? 'Materiales' : 'Materials', color: 'bg-blue-500/20 text-blue-400' },
-    labor: { label: language === 'es' ? 'Mano de Obra' : 'Labor', color: 'bg-purple-500/20 text-purple-400' },
-    equipment: { label: language === 'es' ? 'Equipo' : 'Equipment', color: 'bg-orange-500/20 text-orange-400' },
-    services: { label: language === 'es' ? 'Servicios' : 'Services', color: 'bg-cyan-500/20 text-cyan-400' },
-    other: { label: language === 'es' ? 'Otro' : 'Other', color: 'bg-slate-500/20 text-slate-400' }
+    materials: { label: language === 'es' ? 'Materiales' : 'Materials', color: 'bg-blue-100 text-blue-700' },
+    labor: { label: language === 'es' ? 'Mano de Obra' : 'Labor', color: 'bg-purple-100 text-purple-700' },
+    equipment: { label: language === 'es' ? 'Equipo' : 'Equipment', color: 'bg-orange-100 text-orange-700' },
+    services: { label: language === 'es' ? 'Servicios' : 'Services', color: 'bg-cyan-100 text-cyan-700' },
+    other: { label: language === 'es' ? 'Otro' : 'Other', color: 'bg-slate-100 text-slate-700' }
   };
 
-  // NEW: Prompt #61 - Low stock detection
+  // Low stock detection
   const lowStockItems = items.filter(item =>
     item.in_stock_quantity < (item.min_stock_quantity || 5) &&
     item.in_stock_quantity > 0 &&
-    item.category === 'materials' // Only materials should be considered for stock
+    item.category === 'materials'
   );
 
   const outOfStockItems = items.filter(item =>
     item.in_stock_quantity === 0 &&
-    item.category === 'materials' // Only materials should be considered for stock
+    item.category === 'materials'
   );
+
+  // Items with negative margins
+  const negativeMarginItems = items.filter(item => 
+    item.unit_price < item.cost_per_unit
+  );
+
+  const relevantAuditLogs = selectedItemForAudit 
+    ? priceLogs.filter(log => log.item_id === selectedItemForAudit.id)
+    : [];
+
+  // Real-time margin calculation for form
+  const currentMargin = useMemo(() => {
+    const price = parseFloat(formData.unit_price) || 0;
+    const cost = parseFloat(formData.cost_per_unit) || 0;
+    
+    if (price === 0 || cost === 0) return { value: 0, isNegative: false };
+    
+    const marginPercent = ((price - cost) / price * 100);
+    return {
+      value: marginPercent.toFixed(1),
+      isNegative: marginPercent < 0,
+      profit: (price - cost).toFixed(2)
+    };
+  }, [formData.unit_price, formData.cost_per_unit]);
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -239,16 +416,24 @@ export default function Items() {
           }
         />
 
-        {/* NEW: Prompt #61 - Low Stock Alerts */}
-        {(lowStockItems.length > 0 || outOfStockItems.length > 0) && (
+        {/* AUDIT NOTICE */}
+        <Alert className="mb-6 bg-blue-50 border-blue-300">
+          <History className="w-4 h-4" />
+          <AlertDescription className="text-blue-900 text-sm">
+            <strong>Price Audit Active:</strong> All price and cost changes are automatically logged for financial reporting and compliance.
+          </AlertDescription>
+        </Alert>
+
+        {/* CRITICAL ALERTS */}
+        {(lowStockItems.length > 0 || outOfStockItems.length > 0 || negativeMarginItems.length > 0) && (
           <div className="mb-6 space-y-3">
             {outOfStockItems.length > 0 && (
-              <Alert className="bg-red-50 border-red-300 text-red-900">
+              <Alert className="bg-red-50 border-red-300">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
-                <AlertTitle className="font-bold">
+                <AlertTitle className="font-bold text-red-900">
                   {language === 'es' ? '🚫 Items Sin Stock' : '🚫 Out of Stock Items'}
                 </AlertTitle>
-                <AlertDescription>
+                <AlertDescription className="text-red-800">
                   <div className="mt-2 flex flex-wrap gap-2">
                     {outOfStockItems.map(item => (
                       <Badge key={item.id} className="bg-red-600 text-white">
@@ -261,12 +446,12 @@ export default function Items() {
             )}
 
             {lowStockItems.length > 0 && (
-              <Alert className="bg-amber-50 border-amber-300 text-amber-900">
+              <Alert className="bg-amber-50 border-amber-300">
                 <AlertTriangle className="h-5 w-5 text-amber-600" />
-                <AlertTitle className="font-bold">
+                <AlertTitle className="font-bold text-amber-900">
                   {language === 'es' ? '⚠️ Stock Bajo - Reordenar Ahora' : '⚠️ Low Stock - Reorder Now'}
                 </AlertTitle>
-                <AlertDescription>
+                <AlertDescription className="text-amber-800">
                   <div className="mt-2 flex flex-wrap gap-2">
                     {lowStockItems.map(item => (
                       <Badge key={item.id} className="bg-amber-600 text-white">
@@ -277,10 +462,31 @@ export default function Items() {
                 </AlertDescription>
               </Alert>
             )}
+
+            {negativeMarginItems.length > 0 && (
+              <Alert className="bg-orange-50 border-orange-300">
+                <TrendingDown className="h-5 w-5 text-orange-600" />
+                <AlertTitle className="font-bold text-orange-900">
+                  {language === 'es' ? '💸 Margen Negativo Detectado' : '💸 Negative Margin Detected'}
+                </AlertTitle>
+                <AlertDescription className="text-orange-800">
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {negativeMarginItems.map(item => {
+                      const loss = (item.cost_per_unit - item.unit_price).toFixed(2);
+                      return (
+                        <Badge key={item.id} className="bg-orange-600 text-white">
+                          {item.name} (-${loss})
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
         )}
 
-        <div className="grid md:grid-cols-4 gap-6 mb-6">
+        <div className="grid md:grid-cols-5 gap-6 mb-6">
           <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-slate-600">
@@ -340,7 +546,7 @@ export default function Items() {
                   <TableRow className="bg-slate-50 border-slate-200">
                     <TableHead className="text-slate-700">{language === 'es' ? 'Nombre' : 'Name'}</TableHead>
                     <TableHead className="text-slate-700">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
-                    <TableHead className="text-slate-700">{language === 'es' ? 'Stock' : 'Stock'}</TableHead> {/* NEW: Stock column */}
+                    <TableHead className="text-slate-700">{language === 'es' ? 'Stock' : 'Stock'}</TableHead>
                     <TableHead className="text-right text-slate-700">{language === 'es' ? 'Precio Venta' : 'Sale Price'}</TableHead>
                     <TableHead className="text-right text-slate-700">{language === 'es' ? 'Costo Interno' : 'Internal Cost'}</TableHead>
                     <TableHead className="text-right text-slate-700">{language === 'es' ? 'Margen' : 'Profit Margin'}</TableHead>
@@ -368,20 +574,36 @@ export default function Items() {
                         ? ((item.unit_price - item.cost_per_unit) / item.unit_price * 100).toFixed(1)
                         : 0;
 
-                      // NEW: Prompt #61 - Stock status
                       const stockStatus = item.category === 'materials' && item.in_stock_quantity === 0
                         ? 'out_of_stock'
                         : item.category === 'materials' && item.in_stock_quantity < (item.min_stock_quantity || 5) && item.in_stock_quantity > 0
                         ? 'low_stock'
-                        : 'in_stock'; // For non-materials or sufficient stock
+                        : 'in_stock';
+
+                      const hasNegativeMargin = item.unit_price < item.cost_per_unit;
 
                       return (
-                        <TableRow key={item.id} className="hover:bg-slate-50 border-slate-200">
+                        <TableRow key={item.id} className={`hover:bg-slate-50 border-slate-200 ${
+                          hasNegativeMargin ? 'bg-orange-50/50' : ''
+                        }`}>
                           <TableCell>
                             <div>
-                              <p className="font-semibold text-slate-900">{item.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-slate-900">{item.name}</p>
+                                {hasNegativeMargin && (
+                                  <Badge className="bg-orange-100 text-orange-700 text-xs">
+                                    <TrendingDown className="w-3 h-3 mr-1" />
+                                    Loss
+                                  </Badge>
+                                )}
+                              </div>
                               {item.description && (
                                 <p className="text-xs text-slate-500 truncate max-w-xs">{item.description}</p>
+                              )}
+                              {item.supplier && (
+                                <p className="text-xs text-slate-400 mt-1">
+                                  {language === 'es' ? 'Proveedor' : 'Supplier'}: {item.supplier}
+                                </p>
                               )}
                             </div>
                           </TableCell>
@@ -391,7 +613,6 @@ export default function Items() {
                             </Badge>
                           </TableCell>
 
-                          {/* NEW: Prompt #61 - Stock display with alerts */}
                           <TableCell>
                             {item.category === 'materials' ? (
                               <div className="flex items-center gap-1">
@@ -427,15 +648,26 @@ export default function Items() {
                           </TableCell>
                           <TableCell className="text-right">
                             <Badge className={
+                              hasNegativeMargin ? 'bg-orange-100 text-orange-700' :
                               marginPercentage > 30 ? 'bg-green-100 text-green-700' :
                               marginPercentage > 15 ? 'bg-amber-100 text-amber-700' :
                               'bg-red-100 text-red-700'
                             }>
+                              {hasNegativeMargin && '-'}
                               {marginPercentage}%
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleViewAudit(item)}
+                                className="text-blue-600 hover:bg-blue-50"
+                                title="View price history"
+                              >
+                                <History className="w-4 h-4" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -448,8 +680,11 @@ export default function Items() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => {
-                                  if (window.confirm(language === 'es' ? '¿Eliminar este item?' : 'Delete this item?')) {
-                                    deleteItemMutation.mutate(item.id);
+                                  if (window.confirm(language === 'es' 
+                                    ? `¿Eliminar "${item.name}"?\n\nNOTA: Se verificará que no esté en uso en cotizaciones/facturas activas.`
+                                    : `Delete "${item.name}"?\n\nNOTE: Will verify it's not used in active quotes/invoices.`
+                                  )) {
+                                    deleteItemMutation.mutate(item);
                                   }
                                 }}
                                 className="text-red-600 hover:bg-red-50"
@@ -468,6 +703,7 @@ export default function Items() {
           </CardContent>
         </Card>
 
+        {/* ITEM FORM DIALOG */}
         <Dialog open={showForm} onOpenChange={(open) => {
           setShowForm(open);
           if (!open) {
@@ -475,13 +711,19 @@ export default function Items() {
             resetFormData();
           }
         }}>
-          <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto border-slate-200">
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900">
                 {editingItem
                   ? (language === 'es' ? 'Editar Item' : 'Edit Item')
                   : (language === 'es' ? 'Nuevo Item' : 'New Item')}
               </DialogTitle>
+              {editingItem && (
+                <DialogDescription className="flex items-center gap-2 text-amber-600">
+                  <Shield className="w-4 h-4" />
+                  Price changes will be logged for audit purposes
+                </DialogDescription>
+              )}
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -491,7 +733,7 @@ export default function Items() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="bg-white border-slate-300"
+                    className="bg-slate-50 border-slate-200"
                   />
                 </div>
 
@@ -500,17 +742,17 @@ export default function Items() {
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="h-20 bg-white border-slate-300"
+                    className="h-20 bg-slate-50 border-slate-200"
                   />
                 </div>
 
                 <div>
                   <Label className="text-slate-700">{language === 'es' ? 'Categoría' : 'Category'}</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                    <SelectTrigger className="bg-white border-slate-300">
+                    <SelectTrigger className="bg-slate-50 border-slate-200">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-white border-slate-200">
                       <SelectItem value="materials">{language === 'es' ? 'Materiales' : 'Materials'}</SelectItem>
                       <SelectItem value="labor">{language === 'es' ? 'Mano de Obra' : 'Labor'}</SelectItem>
                       <SelectItem value="equipment">{language === 'es' ? 'Equipo' : 'Equipment'}</SelectItem>
@@ -526,20 +768,19 @@ export default function Items() {
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                     placeholder="pcs, ft, sqft, etc."
-                    className="bg-white border-slate-300"
+                    className="bg-slate-50 border-slate-200"
                   />
                 </div>
 
-                {/* NEW: Account Category (Prompt #59) */}
                 <div className="md:col-span-2">
                   <Label className="text-slate-700">
                     {language === 'es' ? 'Categoría Contable' : 'Account Category'}
                   </Label>
                   <Select value={formData.account_category} onValueChange={(value) => setFormData({...formData, account_category: value})}>
-                    <SelectTrigger className="bg-white border-slate-300">
+                    <SelectTrigger className="bg-slate-50 border-slate-200">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white">
+                    <SelectContent className="bg-white border-slate-200">
                       <SelectItem value="revenue_service">{language === 'es' ? 'Ingreso: Servicio' : 'Revenue: Service'}</SelectItem>
                       <SelectItem value="revenue_materials">{language === 'es' ? 'Ingreso: Materiales' : 'Revenue: Materials'}</SelectItem>
                       <SelectItem value="expense_labor_cost">{language === 'es' ? 'Gasto: Costo Laboral' : 'Expense: Labor Cost'}</SelectItem>
@@ -547,16 +788,13 @@ export default function Items() {
                       <SelectItem value="asset_inventory">{language === 'es' ? 'Activo: Inventario' : 'Asset: Inventory'}</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {language === 'es'
-                      ? 'Categoría contable para fines de informes financieros.'
-                      : 'Accounting category for financial reporting purposes.'}
-                  </p>
                 </div>
 
+                {/* PRICING SECTION WITH VALIDATION */}
                 <div>
-                  <Label className="text-slate-700">
-                    {language === 'es' ? 'Costo Interno' : 'Cost per Unit (Internal)'} *
+                  <Label className="text-slate-700 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    {language === 'es' ? 'Costo Interno' : 'Cost per Unit'} *
                   </Label>
                   <Input
                     type="number"
@@ -565,19 +803,18 @@ export default function Items() {
                     value={formData.cost_per_unit}
                     onChange={(e) => setFormData({ ...formData, cost_per_unit: e.target.value })}
                     required
-                    className="bg-white border-slate-300"
+                    className="bg-slate-50 border-slate-200"
                     placeholder="0.00"
                   />
                   <p className="text-xs text-slate-500 mt-1">
-                    {language === 'es'
-                      ? 'Lo que la empresa paga por este item'
-                      : 'What the company pays for this item'}
+                    {language === 'es' ? 'Lo que la empresa paga' : 'What company pays'}
                   </p>
                 </div>
 
                 <div>
-                  <Label className="text-slate-700">
-                    {language === 'es' ? 'Precio de Venta' : 'Unit Price (Sale)'} *
+                  <Label className="text-slate-700 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    {language === 'es' ? 'Precio de Venta' : 'Sale Price'} *
                   </Label>
                   <Input
                     type="number"
@@ -586,18 +823,48 @@ export default function Items() {
                     value={formData.unit_price}
                     onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
                     required
-                    className="bg-white border-slate-300"
+                    className="bg-slate-50 border-slate-200"
                     placeholder="0.00"
                   />
                   <p className="text-xs text-slate-500 mt-1">
-                    {language === 'es'
-                      ? 'Precio que se cobra al cliente'
-                      : 'Price charged to customer'}
+                    {language === 'es' ? 'Precio al cliente' : 'Price to customer'}
                   </p>
                 </div>
 
-                {/* NEW: Supplier field */}
-                <div>
+                {/* MARGIN INDICATOR IN FORM */}
+                {formData.unit_price && formData.cost_per_unit && (
+                  <div className="md:col-span-2">
+                    <Alert className={
+                      currentMargin.isNegative 
+                        ? 'bg-orange-50 border-orange-300' 
+                        : currentMargin.value > 30 
+                        ? 'bg-green-50 border-green-300'
+                        : 'bg-amber-50 border-amber-300'
+                    }>
+                      <AlertDescription className={
+                        currentMargin.isNegative ? 'text-orange-900' :
+                        currentMargin.value > 30 ? 'text-green-900' :
+                        'text-amber-900'
+                      }>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <strong>
+                              {language === 'es' ? 'Margen de Ganancia' : 'Profit Margin'}: {currentMargin.value}%
+                            </strong>
+                            <p className="text-sm mt-1">
+                              {language === 'es' ? 'Ganancia' : 'Profit'}: {currentMargin.isNegative ? '-' : '+'}${Math.abs(parseFloat(currentMargin.profit))}
+                            </p>
+                          </div>
+                          {currentMargin.isNegative && (
+                            <AlertTriangle className="w-6 h-6 text-orange-600" />
+                          )}
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+
+                <div className="md:col-span-2">
                   <Label className="text-slate-700">
                     {language === 'es' ? 'Proveedor' : 'Supplier'} *
                   </Label>
@@ -605,14 +872,9 @@ export default function Items() {
                     value={formData.supplier}
                     onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
                     required
-                    className="bg-white border-slate-300"
+                    className="bg-slate-50 border-slate-200"
                     placeholder="Home Depot, ABC Supply, etc."
                   />
-                  <p className="text-xs text-slate-500 mt-1">
-                    {language === 'es'
-                      ? 'Proveedor principal de este item'
-                      : 'Main supplier for this item'}
-                  </p>
                 </div>
 
                 <div>
@@ -625,12 +887,12 @@ export default function Items() {
                     min="0"
                     value={formData.installation_time}
                     onChange={(e) => setFormData({ ...formData, installation_time: e.target.value })}
-                    className="bg-white border-slate-300"
+                    className="bg-slate-50 border-slate-200"
                     placeholder="0.0"
                   />
                 </div>
 
-                {/* NEW: Prompt #61 - Stock Management Fields */}
+                {/* Stock Management - Only for materials */}
                 {formData.category === 'materials' && (
                   <>
                     <div>
@@ -642,7 +904,7 @@ export default function Items() {
                         min="0"
                         value={formData.in_stock_quantity}
                         onChange={(e) => setFormData({...formData, in_stock_quantity: parseInt(e.target.value) || 0})}
-                        className="bg-white border-slate-300"
+                        className="bg-slate-50 border-slate-200"
                       />
                     </div>
                     <div>
@@ -654,20 +916,19 @@ export default function Items() {
                         min="0"
                         value={formData.min_stock_quantity}
                         onChange={(e) => setFormData({...formData, min_stock_quantity: parseInt(e.target.value) || 5})}
-                        className="bg-white border-slate-300"
+                        className="bg-slate-50 border-slate-200"
                       />
                       <p className="text-xs text-slate-500 mt-1">
                         {language === 'es'
-                          ? 'Se mostrará alerta cuando el stock caiga por debajo de esta cantidad'
-                          : 'Alert will show when stock falls below this quantity'}
+                          ? 'Alerta cuando stock < esta cantidad'
+                          : 'Alert when stock < this quantity'}
                       </p>
                     </div>
                   </>
                 )}
-
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
                 <Button
                   type="button"
                   variant="outline"
@@ -689,6 +950,90 @@ export default function Items() {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* AUDIT TRAIL DIALOG */}
+        <Dialog open={showAuditDialog} onOpenChange={setShowAuditDialog}>
+          <DialogContent className="bg-white border-slate-200 max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900">Price History Audit Trail</DialogTitle>
+              {selectedItemForAudit && (
+                <DialogDescription className="text-slate-600">
+                  {selectedItemForAudit.name}
+                </DialogDescription>
+              )}
+            </DialogHeader>
+
+            <div className="space-y-3">
+              {relevantAuditLogs.length === 0 && (
+                <div className="text-center py-8">
+                  <History className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No price history available</p>
+                </div>
+              )}
+
+              {relevantAuditLogs.map(log => (
+                <div key={log.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge className={
+                      log.action_type === 'created' ? 'bg-green-100 text-green-700' :
+                      log.action_type === 'both_updated' ? 'bg-blue-100 text-blue-700' :
+                      log.action_type === 'price_updated' ? 'bg-purple-100 text-purple-700' :
+                      'bg-amber-100 text-amber-700'
+                    }>
+                      {log.action_type.replace('_', ' ')}
+                    </Badge>
+                    <span className="text-xs text-slate-500">
+                      {format(new Date(log.change_timestamp), 'MMM dd, yyyy HH:mm')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-700 mb-1">
+                    <strong>Changed by:</strong> {log.changed_by_name}
+                  </p>
+                  
+                  {log.action_type !== 'created' && (
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        {(log.action_type === 'price_updated' || log.action_type === 'both_updated') && (
+                          <div>
+                            <p className="text-slate-500 font-semibold mb-1">Sale Price:</p>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-red-700 border-red-300">
+                                ${log.previous_unit_price?.toFixed(2)}
+                              </Badge>
+                              <span>→</span>
+                              <Badge variant="outline" className="text-green-700 border-green-300">
+                                ${log.new_unit_price?.toFixed(2)}
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {(log.action_type === 'cost_updated' || log.action_type === 'both_updated') && (
+                          <div>
+                            <p className="text-slate-500 font-semibold mb-1">Internal Cost:</p>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-red-700 border-red-300">
+                                ${log.previous_cost_per_unit?.toFixed(2)}
+                              </Badge>
+                              <span>→</span>
+                              <Badge variant="outline" className="text-green-700 border-green-300">
+                                ${log.new_cost_per_unit?.toFixed(2)}
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {log.notes && (
+                    <p className="text-xs text-slate-600 mt-2 italic">{log.notes}</p>
+                  )}
+                </div>
+              ))}
+            </div>
           </DialogContent>
         </Dialog>
       </div>
