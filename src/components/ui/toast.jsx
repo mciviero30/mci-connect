@@ -33,9 +33,8 @@ const iconColors = {
   info: 'text-blue-700'
 };
 
-// Export Toast component for toaster.jsx
 export function Toast({ id, message, type, onRemove }) {
-  const Icon = toastIcons[type];
+  const Icon = toastIcons[type] || Info;
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -50,9 +49,9 @@ export function Toast({ id, message, type, onRemove }) {
       initial={{ opacity: 0, x: 100, scale: 0.95 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.95 }}
-      className={`${toastColors[type]} border-2 rounded-lg shadow-xl p-3 flex items-start gap-3 max-w-sm`}
+      className={`${toastColors[type] || toastColors.info} border-2 rounded-lg shadow-xl p-3 flex items-start gap-3 max-w-sm`}
     >
-      <Icon className={`w-5 h-5 ${iconColors[type]} flex-shrink-0 mt-0.5`} />
+      <Icon className={`w-5 h-5 ${iconColors[type] || iconColors.info} flex-shrink-0 mt-0.5`} />
       <p className="flex-1 text-sm font-medium leading-snug">{message}</p>
       <button
         onClick={() => onRemove(id)}
@@ -65,7 +64,6 @@ export function Toast({ id, message, type, onRemove }) {
   );
 }
 
-// Export additional components for compatibility
 export const ToastClose = ({ onClick }) => (
   <button onClick={onClick} className="flex-shrink-0 hover:opacity-70 transition-opacity p-0.5">
     <X className="w-4 h-4" />
