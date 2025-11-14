@@ -24,7 +24,10 @@ import {
   DollarSign,
   Calculator,
   Clock,
-  Info
+  Info,
+  Download,
+  FileSpreadsheet,
+  Settings
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import {
@@ -59,6 +62,8 @@ export default function Items() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [showAuditDialog, setShowAuditDialog] = useState(false);
   const [selectedItemForAudit, setSelectedItemForAudit] = useState(null);
+  const [showLaborRateDialog, setShowLaborRateDialog] = useState(false);
+  const [laborRateInput, setLaborRateInput] = useState('');
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -100,6 +105,31 @@ export default function Items() {
 
   const STANDARD_LABOR_RATE = companySettings?.standard_labor_rate_per_hour || 25.00;
 
+  // Update labor rate mutation
+  const updateLaborRateMutation = useMutation({
+    mutationFn: async (newRate) => {
+      if (!companySettings?.id) {
+        // If company settings don't exist, create them
+        return base44.entities.CompanySettings.create({
+          standard_labor_rate_per_hour: parseFloat(newRate)
+        });
+      }
+      return base44.entities.CompanySettings.update(companySettings.id, {
+        standard_labor_rate_per_hour: parseFloat(newRate)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companySettings'] });
+      setShowLaborRateDialog(false);
+      toast.success(language === 'es'
+        ? 'Tasa laboral actualizada exitosamente'
+        : 'Labor rate updated successfully');
+    },
+    onError: (error) => {
+      toast.error(error.message || (language === 'es' ? 'Error al actualizar tasa laboral' : 'Failed to update labor rate'));
+    }
+  });
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -120,16 +150,83 @@ export default function Items() {
   // LABOR COST AUTO-CALCULATION
   // ============================================
   const isLaborOrService = formData.category === 'labor' || formData.category === 'services';
-  
+
   const calculatedCostPerUnit = useMemo(() => {
     if (!isLaborOrService) return null;
-    
+
     const materialCost = parseFloat(formData.material_cost) || 0;
     const installationTime = parseFloat(formData.installation_time) || 0;
     const laborCost = installationTime * STANDARD_LABOR_RATE;
-    
+
     return (materialCost + laborCost).toFixed(2);
   }, [formData.category, formData.material_cost, formData.installation_time, STANDARD_LABOR_RATE, isLaborOrService]);
+
+  // ============================================
+  // EXPORT PRICE LIST TO CSV
+  // ============================================
+  const exportPriceList = () => {
+    try {
+      // Prepare CSV data
+      const headers = [
+        'Item Name',
+        'Category',
+        'Unit',
+        'Sale Price',
+        'Internal Cost',
+        'Profit Margin %',
+        'Installation Time (hrs)',
+        'Supplier',
+        'Stock Quantity',
+        'Status'
+      ];
+
+      const rows = filteredItems.map(item => {
+        const margin = item.unit_price > 0 && item.cost_per_unit > 0
+          ? (((item.unit_price - item.cost_per_unit) / item.unit_price) * 100).toFixed(1)
+          : '0.0';
+
+        return [
+          `"${item.name || ''}"`,
+          item.category || '',
+          item.unit || '',
+          item.unit_price?.toFixed(2) || '0.00',
+          item.cost_per_unit?.toFixed(2) || '0.00',
+          margin,
+          item.installation_time?.toFixed(1) || '',
+          `"${item.supplier || ''}"`,
+          item.in_stock_quantity || '0',
+          item.status || 'active'
+        ];
+      });
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', `price_list_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+      link.style.visibility = 'hidden';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(language === 'es'
+        ? `Lista de precios exportada: ${filteredItems.length} items`
+        : `Price list exported: ${filteredItems.length} items`);
+    } catch (error) {
+      toast.error(language === 'es'
+        ? 'Error al exportar lista de precios'
+        : 'Failed to export price list');
+    }
+  };
 
   // ============================================
   // AUDIT MUTATION - Log all price changes
@@ -143,7 +240,7 @@ export default function Items() {
   // ============================================
   const updateStockStatus = (quantity, minQuantity, category) => {
     if (category !== 'materials') return 'active';
-    
+
     if (quantity === 0) return 'out_of_stock';
     if (quantity < minQuantity) return 'low_stock';
     return 'active';
@@ -170,7 +267,7 @@ export default function Items() {
             ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${(data.cost_per_unit - data.unit_price).toFixed(2)} por unidad\n\n¿Continuar de todas formas?`
             : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${(data.cost_per_unit - data.unit_price).toFixed(2)} per unit\n\nContinue anyway?`
         );
-        
+
         if (!proceed) {
           throw new Error('Item creation cancelled - negative margin');
         }
@@ -236,7 +333,7 @@ export default function Items() {
             ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${(data.cost_per_unit - data.unit_price).toFixed(2)} por unidad\n\n¿Continuar de todas formas?`
             : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${(data.cost_per_unit - data.unit_price).toFixed(2)} per unit\n\nContinue anyway?`
         );
-        
+
         if (!proceed) {
           throw new Error('Update cancelled - negative margin');
         }
@@ -254,7 +351,7 @@ export default function Items() {
 
       if (priceChanged || costChanged) {
         const actionType = priceChanged && costChanged ? 'both_updated' :
-                          priceChanged ? 'price_updated' : 'cost_updated';
+          priceChanged ? 'price_updated' : 'cost_updated';
 
         await createPriceLogMutation.mutateAsync({
           item_id: id,
@@ -296,7 +393,7 @@ export default function Items() {
       // VALIDATION: Check if item is used in any active quotes
       const quotesUsingItem = quotes.filter(quote => {
         if (quote.status === 'converted_to_invoice' || quote.status === 'rejected') return false;
-        return quote.items?.some(qItem => 
+        return quote.items?.some(qItem =>
           qItem.description?.toLowerCase().includes(item.name.toLowerCase())
         );
       });
@@ -304,7 +401,7 @@ export default function Items() {
       // VALIDATION: Check if item is used in any active invoices
       const invoicesUsingItem = invoices.filter(invoice => {
         if (invoice.status === 'cancelled') return false;
-        return invoice.items?.some(iItem => 
+        return invoice.items?.some(iItem =>
           iItem.description?.toLowerCase().includes(item.name.toLowerCase())
         );
       });
@@ -416,8 +513,8 @@ export default function Items() {
 
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.supplier?.toLowerCase().includes(searchTerm.toLowerCase());
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.supplier?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
@@ -443,11 +540,11 @@ export default function Items() {
   );
 
   // Items with negative margins
-  const negativeMarginItems = items.filter(item => 
+  const negativeMarginItems = items.filter(item =>
     item.unit_price < item.cost_per_unit
   );
 
-  const relevantAuditLogs = selectedItemForAudit 
+  const relevantAuditLogs = selectedItemForAudit
     ? priceLogs.filter(log => log.item_id === selectedItemForAudit.id)
     : [];
 
@@ -455,7 +552,7 @@ export default function Items() {
   const currentMargin = useMemo(() => {
     const price = parseFloat(formData.unit_price) || 0;
     let cost = 0;
-    
+
     if (isLaborOrService) {
       const materialCost = parseFloat(formData.material_cost) || 0;
       const installationTime = parseFloat(formData.installation_time) || 0;
@@ -464,10 +561,10 @@ export default function Items() {
     } else {
       cost = parseFloat(formData.cost_per_unit) || 0;
     }
-    
+
     // Only calculate margin if price and cost are provided and valid
     if (price === 0 || cost === 0) return { value: 0, isNegative: false, profit: 0, totalCost: 0 };
-    
+
     const marginPercent = ((price - cost) / price * 100);
     return {
       value: marginPercent.toFixed(1),
@@ -486,28 +583,52 @@ export default function Items() {
             description={language === 'es' ? 'Gestiona productos y servicios para estimados' : 'Manage products and services for quotes'}
             icon={Package}
             actions={
-              <Button
-                onClick={() => {
-                  setEditingItem(null);
-                  resetFormData();
-                  setShowForm(true);
-                }}
-                className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                {language === 'es' ? 'Nuevo Item' : 'New Item'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={exportPriceList}
+                  variant="outline"
+                  className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                >
+                  <Download className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Exportar Precios' : 'Export Price List'}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setEditingItem(null);
+                    resetFormData();
+                    setShowForm(true);
+                  }}
+                  className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Nuevo Item' : 'New Item'}
+                </Button>
+              </div>
             }
           />
 
-          {/* LABOR RATE INFO */}
+          {/* LABOR RATE INFO WITH EDIT BUTTON */}
           <Alert className="mb-4 bg-indigo-50 border-indigo-300">
             <Calculator className="w-4 h-4" />
-            <AlertDescription className="text-indigo-900 text-sm">
-              <strong>Standard Labor Rate:</strong> ${STANDARD_LABOR_RATE.toFixed(2)}/hour
-              <span className="ml-2 text-indigo-700">
-                (Labor/Service costs auto-calculated: Material Cost + Installation Time × Labor Rate)
-              </span>
+            <AlertDescription className="text-indigo-900 text-sm flex items-center justify-between">
+              <div>
+                <strong>Standard Labor Rate:</strong> ${STANDARD_LABOR_RATE.toFixed(2)}/hour
+                <span className="ml-2 text-indigo-700">
+                  (Labor/Service costs auto-calculated: Material Cost + Installation Time × Labor Rate)
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setLaborRateInput(STANDARD_LABOR_RATE.toString());
+                  setShowLaborRateDialog(true);
+                }}
+                className="ml-4 bg-white border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Editar Tasa' : 'Edit Rate'}
+              </Button>
             </AlertDescription>
           </Alert>
 
@@ -611,7 +732,7 @@ export default function Items() {
           <Card className="bg-white shadow-lg border-slate-200 mb-6">
             <CardContent className="p-4 flex gap-4 items-center">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"/>
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <Input
                   placeholder={language === 'es' ? 'Buscar items...' : 'Search items...'}
                   value={searchTerm}
@@ -672,8 +793,8 @@ export default function Items() {
                         const stockStatus = item.category === 'materials' && item.in_stock_quantity === 0
                           ? 'out_of_stock'
                           : item.category === 'materials' && item.in_stock_quantity < (item.min_stock_quantity || 5) && item.in_stock_quantity > 0
-                          ? 'low_stock'
-                          : 'in_stock';
+                            ? 'low_stock'
+                            : 'in_stock';
 
                         const hasNegativeMargin = item.unit_price < item.cost_per_unit;
 
@@ -713,9 +834,9 @@ export default function Items() {
                                 <div className="flex items-center gap-1">
                                   <span className={`font-semibold ${
                                     stockStatus === 'out_of_stock' ? 'text-red-600' :
-                                    stockStatus === 'low_stock' ? 'text-amber-600' :
-                                    'text-green-600'
-                                  }`}>
+                                      stockStatus === 'low_stock' ? 'text-amber-600' :
+                                        'text-green-600'
+                                    }`}>
                                     {item.in_stock_quantity || 0}
                                   </span>
                                   <span className="text-xs text-slate-500">{item.unit}</span>
@@ -744,9 +865,9 @@ export default function Items() {
                             <TableCell className="text-right">
                               <Badge className={
                                 hasNegativeMargin ? 'bg-orange-100 text-orange-700' :
-                                marginPercentage > 30 ? 'bg-green-100 text-green-700' :
-                                marginPercentage > 15 ? 'bg-amber-100 text-amber-700' :
-                                'bg-red-100 text-red-700'
+                                  marginPercentage > 30 ? 'bg-green-100 text-green-700' :
+                                    marginPercentage > 15 ? 'bg-amber-100 text-amber-700' :
+                                      'bg-red-100 text-red-700'
                               }>
                                 {hasNegativeMargin && '-'}
                                 {marginPercentage}%
@@ -775,7 +896,7 @@ export default function Items() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => {
-                                    if (window.confirm(language === 'es' 
+                                    if (window.confirm(language === 'es'
                                       ? `¿Eliminar "${item.name}"?\n\nNOTA: Se verificará que no esté en uso en cotizaciones/facturas activas.`
                                       : `Delete "${item.name}"?\n\nNOTE: Will verify it's not used in active quotes/invoices.`
                                     )) {
@@ -871,7 +992,7 @@ export default function Items() {
                     <Label className="text-slate-700">
                       {language === 'es' ? 'Categoría Contable' : 'Account Category'}
                     </Label>
-                    <Select value={formData.account_category} onValueChange={(value) => setFormData({...formData, account_category: value})}>
+                    <Select value={formData.account_category} onValueChange={(value) => setFormData({ ...formData, account_category: value })}>
                       <SelectTrigger className="bg-slate-50 border-slate-200">
                         <SelectValue />
                       </SelectTrigger>
@@ -1002,16 +1123,16 @@ export default function Items() {
                   {(formData.unit_price && (formData.cost_per_unit || isLaborOrService)) && (
                     <div className="md:col-span-2">
                       <Alert className={
-                        currentMargin.isNegative 
-                          ? 'bg-orange-50 border-orange-300' 
-                          : currentMargin.value > 30 
-                          ? 'bg-green-50 border-green-300'
-                          : 'bg-amber-50 border-amber-300'
+                        currentMargin.isNegative
+                          ? 'bg-orange-50 border-orange-300'
+                          : currentMargin.value > 30
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-amber-50 border-amber-300'
                       }>
                         <AlertDescription className={
                           currentMargin.isNegative ? 'text-orange-900' :
-                          currentMargin.value > 30 ? 'text-green-900' :
-                          'text-amber-900'
+                            currentMargin.value > 30 ? 'text-green-900' :
+                              'text-amber-900'
                         }>
                           <div className="flex items-center justify-between">
                             <div>
@@ -1055,7 +1176,7 @@ export default function Items() {
                           type="number"
                           min="0"
                           value={formData.in_stock_quantity}
-                          onChange={(e) => setFormData({...formData, in_stock_quantity: parseInt(e.target.value) || 0})}
+                          onChange={(e) => setFormData({ ...formData, in_stock_quantity: parseInt(e.target.value) || 0 })}
                           className="bg-slate-50 border-slate-200"
                         />
                       </div>
@@ -1067,7 +1188,7 @@ export default function Items() {
                           type="number"
                           min="0"
                           value={formData.min_stock_quantity}
-                          onChange={(e) => setFormData({...formData, min_stock_quantity: parseInt(e.target.value) || 5})}
+                          onChange={(e) => setFormData({ ...formData, min_stock_quantity: parseInt(e.target.value) || 5 })}
                           className="bg-slate-50 border-slate-200"
                         />
                       </div>
@@ -1125,9 +1246,9 @@ export default function Items() {
                     <div className="flex items-center justify-between mb-2">
                       <Badge className={
                         log.action_type === 'created' ? 'bg-green-100 text-green-700' :
-                        log.action_type === 'both_updated' ? 'bg-blue-100 text-blue-700' :
-                        log.action_type === 'price_updated' ? 'bg-purple-100 text-purple-700' :
-                        'bg-amber-100 text-amber-700'
+                          log.action_type === 'both_updated' ? 'bg-blue-100 text-blue-700' :
+                            log.action_type === 'price_updated' ? 'bg-purple-100 text-purple-700' :
+                              'bg-amber-100 text-amber-700'
                       }>
                         {log.action_type.replace('_', ' ')}
                       </Badge>
@@ -1138,7 +1259,7 @@ export default function Items() {
                     <p className="text-sm text-slate-700 mb-1">
                       <strong>Changed by:</strong> {log.changed_by_name}
                     </p>
-                    
+
                     {log.action_type !== 'created' && (
                       <div className="mt-3 pt-3 border-t border-slate-200">
                         <div className="grid grid-cols-2 gap-4 text-xs">
@@ -1156,7 +1277,7 @@ export default function Items() {
                               </div>
                             </div>
                           )}
-                          
+
                           {(log.action_type === 'cost_updated' || log.action_type === 'both_updated') && (
                             <div>
                               <p className="text-slate-500 font-semibold mb-1">Internal Cost:</p>
@@ -1181,6 +1302,77 @@ export default function Items() {
                   </div>
                 ))}
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* LABOR RATE EDIT DIALOG */}
+          <Dialog open={showLaborRateDialog} onOpenChange={setShowLaborRateDialog}>
+            <DialogContent className="bg-white border-slate-200">
+              <DialogHeader>
+                <DialogTitle className="text-slate-900 flex items-center gap-2">
+                  <Calculator className="w-5 h-5 text-indigo-600" />
+                  {language === 'es' ? 'Editar Tasa Laboral Estándar' : 'Edit Standard Labor Rate'}
+                </DialogTitle>
+                <DialogDescription className="text-slate-600">
+                  {language === 'es'
+                    ? 'Esta tasa se usa para calcular el costo de items de Labor y Servicios.'
+                    : 'This rate is used to calculate the cost of Labor and Service items.'}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label className="text-slate-700">{language === 'es' ? 'Tasa por Hora ($)' : 'Rate per Hour ($)'}</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={laborRateInput}
+                    onChange={(e) => setLaborRateInput(e.target.value)}
+                    className="bg-slate-50 border-slate-200 text-lg font-semibold"
+                    placeholder="25.00"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    {language === 'es'
+                      ? 'Todos los items de Labor/Service se recalcularán automáticamente con esta nueva tasa.'
+                      : 'All Labor/Service items will auto-recalculate with this new rate.'}
+                  </p>
+                </div>
+
+                <Alert className="bg-amber-50 border-amber-300">
+                  <AlertTriangle className="w-4 h-4" />
+                  <AlertDescription className="text-amber-900 text-sm">
+                    <strong>{language === 'es' ? 'Importante:' : 'Important:'}</strong> {language === 'es'
+                      ? 'Cambiar esta tasa afectará el cálculo de costos de todos los items de Labor/Service.'
+                      : 'Changing this rate will affect cost calculation for all Labor/Service items.'}
+                  </AlertDescription>
+                </Alert>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowLaborRateDialog(false)}
+                  className="bg-slate-50 border-slate-200"
+                >
+                  {language === 'es' ? 'Cancelar' : 'Cancel'}
+                </Button>
+                <Button
+                  onClick={() => {
+                    const rate = parseFloat(laborRateInput);
+                    if (isNaN(rate) || rate < 0) {
+                      toast.error(language === 'es' ? 'Ingrese una tasa válida (número positivo)' : 'Enter a valid rate (positive number)');
+                      return;
+                    }
+                    updateLaborRateMutation.mutate(rate);
+                  }}
+                  disabled={updateLaborRateMutation.isPending}
+                  className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Guardar Tasa' : 'Save Rate'}
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
