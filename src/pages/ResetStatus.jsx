@@ -4,10 +4,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PageHeader from "../components/shared/PageHeader";
-import { Users, RefreshCw, CheckCircle, AlertTriangle } from "lucide-react";
+import { Users, RefreshCw, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 export default function ResetStatus() {
   const { language } = useLanguage();
@@ -19,11 +20,22 @@ export default function ResetStatus() {
 
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
+    queryFn: async () => {
+      const data = await base44.entities.User.list('full_name');
+      console.log('Todos los empleados:', data);
+      return data;
+    },
     initialData: []
   });
 
-  const activeEmployees = employees.filter(emp => emp.employment_status === 'active');
+  // Mostrar todos los empleados que NO estén deleted o archived
+  const activeEmployees = employees.filter(emp => {
+    const status = emp.employment_status;
+    console.log(`${emp.full_name} - status: ${status}`);
+    return status !== 'deleted' && status !== 'archived';
+  });
+
+  console.log('Empleados activos filtrados:', activeEmployees.length);
 
   const toggleEmployee = (empId) => {
     setSelectedEmployees(prev => 
@@ -82,6 +94,7 @@ export default function ResetStatus() {
 
     setProcessing(false);
     setResults(results);
+    setSelectedEmployees([]);
     queryClient.invalidateQueries({ queryKey: ['employees'] });
     
     toast.success(
@@ -117,7 +130,7 @@ export default function ResetStatus() {
           <Card className="bg-blue-500/10 border-blue-500/30">
             <CardContent className="p-6 text-center">
               <p className="text-blue-400 text-sm mb-1">
-                {language === 'es' ? 'Total Activos' : 'Total Active'}
+                {language === 'es' ? 'Total Disponibles' : 'Total Available'}
               </p>
               <p className="text-4xl font-bold text-white">{activeEmployees.length}</p>
             </CardContent>
@@ -135,7 +148,7 @@ export default function ResetStatus() {
           <Card className="bg-green-500/10 border-green-500/30">
             <CardContent className="p-6 text-center">
               <p className="text-green-400 text-sm mb-1">
-                {language === 'es' ? 'Permanecerán Activos' : 'Will Stay Active'}
+                {language === 'es' ? 'Sin Cambios' : 'No Changes'}
               </p>
               <p className="text-4xl font-bold text-white">
                 {activeEmployees.length - selectedEmployees.length}
@@ -149,7 +162,7 @@ export default function ResetStatus() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-slate-900">
                 <Users className="w-5 h-5 text-blue-600" />
-                {language === 'es' ? 'Empleados Activos' : 'Active Employees'}
+                {language === 'es' ? 'Todos los Empleados' : 'All Employees'} ({activeEmployees.length})
               </CardTitle>
               <div className="flex gap-2">
                 <Button 
@@ -173,8 +186,13 @@ export default function ResetStatus() {
           </CardHeader>
           <CardContent>
             {activeEmployees.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                {language === 'es' ? 'No hay empleados activos' : 'No active employees'}
+              <div className="text-center py-8">
+                <p className="text-slate-500 mb-2">
+                  {language === 'es' ? 'No hay empleados disponibles' : 'No employees available'}
+                </p>
+                <p className="text-sm text-slate-400">
+                  Total empleados en sistema: {employees.length}
+                </p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[500px] overflow-y-auto">
@@ -207,7 +225,23 @@ export default function ResetStatus() {
                     )}
 
                     <div className="flex-1">
-                      <p className="font-semibold text-slate-900">{emp.full_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-slate-900">{emp.full_name}</p>
+                        {emp.employment_status && (
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs ${
+                              emp.employment_status === 'active' 
+                                ? 'bg-green-50 text-green-700 border-green-300'
+                                : emp.employment_status === 'pending_registration'
+                                ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                : 'bg-slate-50 text-slate-700 border-slate-300'
+                            }`}
+                          >
+                            {emp.employment_status}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-slate-600">{emp.email}</p>
                       {emp.position && (
                         <p className="text-xs text-slate-500">{emp.position}</p>
