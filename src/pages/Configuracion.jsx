@@ -25,8 +25,7 @@ import {
   Clock,         // New import
   Briefcase,     // New import
   Calendar as CalendarIcon, // Alias to avoid conflict with Calendar from date-fns
-  CalendarClock,  // New import
-  Calculator // Added icon
+  CalendarClock  // New import
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,7 +75,6 @@ export default function Configuracion() {
     email: '',
     website: '',
     default_hourly_rate: 25,
-    standard_labor_rate_per_hour: 25, // NEW: Added standard labor rate
     default_per_diem_amount: 50,
     default_vacation_accrual_rate: 1.5,
     notifications_email_fallback_enabled: true,
@@ -131,9 +129,8 @@ export default function Configuracion() {
         email: companySettings.email || '',
         website: companySettings.website || '',
         default_hourly_rate: companySettings.default_hourly_rate || 25,
-        standard_labor_rate_per_hour: companySettings.standard_labor_rate_per_hour || 25, // NEW: Added to useEffect
         default_per_diem_amount: companySettings.default_per_diem_amount || 50,
-        default_vacation_accrual_rate: companySettings.default_vacrual_rate || 1.5,
+        default_vacation_accrual_rate: companySettings.default_vacation_accrual_rate || 1.5,
         notifications_email_fallback_enabled: companySettings.notifications_email_fallback_enabled !== false,
         notifications_email_subject_prefix: companySettings.notifications_email_subject_prefix || 'MCI Connect Alert'
       });
@@ -455,10 +452,7 @@ export default function Configuracion() {
                         <Label className="text-slate-700 font-semibold">
                           {language === 'es' ? 'Tarifa Por Hora Predeterminada' : 'Default Hourly Rate'}
                         </Label>
-                        <p className="text-xs text-slate-500 mb-2">
-                          {language === 'es' ? 'Para empleados nuevos' : 'For new employees'}
-                        </p>
-                        <div className="relative">
+                        <div className="relative mt-2">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
                           <Input
                             type="number"
@@ -467,27 +461,6 @@ export default function Configuracion() {
                             value={settings.default_hourly_rate}
                             onChange={(e) => setSettings({...settings, default_hourly_rate: parseFloat(e.target.value)})}
                             className="pl-7 bg-slate-50 border-slate-200"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                          <Calculator className="w-4 h-4 text-indigo-600" />
-                          {language === 'es' ? 'Tasa Laboral Estándar' : 'Standard Labor Rate'}
-                        </Label>
-                        <p className="text-xs text-slate-500 mb-2">
-                          {language === 'es' ? 'Para cálculo de costos de Items Labor/Service' : 'For Labor/Service item cost calculation'}
-                        </p>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.50"
-                            value={settings.standard_labor_rate_per_hour}
-                            onChange={(e) => setSettings({...settings, standard_labor_rate_per_hour: parseFloat(e.target.value)})}
-                            className="pl-7 bg-indigo-50 border-indigo-200 font-semibold"
                           />
                         </div>
                       </div>
@@ -508,39 +481,32 @@ export default function Configuracion() {
                           />
                         </div>
                       </div>
-
-                      <div>
-                        <Label className="text-slate-700 font-semibold">
-                          {language === 'es' ? 'Tasa de Acumulación de Vacaciones' : 'Vacation Accrual Rate'}
-                        </Label>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.1"
-                            value={settings.default_vacation_accrual_rate}
-                            onChange={(e) => setSettings({...settings, default_vacation_accrual_rate: parseFloat(e.target.value)})}
-                            className="w-32 bg-slate-50 border-slate-200"
-                          />
-                          <span className="text-slate-700">
-                            {language === 'es' ? 'días por mes' : 'days per month'}
-                          </span>
-                        </div>
-                      </div>
                     </div>
 
-                    <Alert className="bg-indigo-50 border-indigo-300">
-                      <Calculator className="w-4 h-4 text-indigo-600" />
-                      <AlertDescription className="text-indigo-900 text-sm">
-                        <strong>{language === 'es' ? 'Tasa Laboral Estándar' : 'Standard Labor Rate'}:</strong> {language === 'es' ? 'Este valor se usa para calcular automáticamente el costo de items tipo Labor y Service en el Catálogo de Items.' : 'This value is used to automatically calculate the cost of Labor and Service type items in the Items Catalog.'}
-                      </AlertDescription>
-                    </Alert>
+                    <div>
+                      <Label className="text-slate-700 font-semibold">
+                        {language === 'es' ? 'Tasa de Acumulación de Vacaciones' : 'Vacation Accrual Rate'}
+                      </Label>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.1"
+                          value={settings.default_vacation_accrual_rate}
+                          onChange={(e) => setSettings({...settings, default_vacation_accrual_rate: parseFloat(e.target.value)})}
+                          className="w-32 bg-slate-50 border-slate-200"
+                        />
+                        <span className="text-slate-700">
+                          {language === 'es' ? 'días por mes' : 'days per month'}
+                        </span>
+                      </div>
+                    </div>
 
                     <div className="flex justify-end pt-4">
                       <Button
                         onClick={handleSaveSettings}
                         disabled={updateSettingsMutation.isPending}
-                        className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE2] text-white"
+                        className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
                       >
                         <Save className="w-4 h-4 mr-2" />
                         {updateSettingsMutation.isPending
