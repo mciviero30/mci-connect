@@ -7,16 +7,15 @@ import PageHeader from "../components/shared/PageHeader";
 import { Users, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ResetStatus() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
-  const { data: employees = [] } = useQuery({
+  const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
     initialData: []
@@ -31,7 +30,6 @@ export default function ResetStatus() {
 
   const resetEmployeesMutation = useMutation({
     mutationFn: async () => {
-      setProcessing(true);
       const results = {
         success: [],
         failed: [],
@@ -66,13 +64,13 @@ export default function ResetStatus() {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success(
         language === 'es' 
-          ? `${results.success.length} empleados cambiados a pending`
-          : `${results.success.length} employees changed to pending`
+          ? `✅ ${results.success.length} empleados cambiados a pending`
+          : `✅ ${results.success.length} employees changed to pending`
       );
     },
     onError: (error) => {
       setProcessing(false);
-      toast.error('Error: ' + error.message);
+      toast.error('❌ Error: ' + error.message);
     }
   });
 
@@ -82,9 +80,23 @@ export default function ResetStatus() {
         ? `¿Cambiar ${employeesToReset.length} empleados a pending_registration?\n\nSe mantendrán activos:\n- Marzio Civiero\n- Yeraldin Ramirez`
         : `Change ${employeesToReset.length} employees to pending_registration?\n\nWill stay active:\n- Marzio Civiero\n- Yeraldin Ramirez`
     )) {
+      setProcessing(true);
       resetEmployeesMutation.mutate();
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <RefreshCw className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
+            <p className="text-white">{language === 'es' ? 'Cargando empleados...' : 'Loading employees...'}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -123,18 +135,24 @@ export default function ResetStatus() {
                   ⚠️ {language === 'es' ? `Se cambiarán a PENDING (${employeesToReset.length}):` : `Will change to PENDING (${employeesToReset.length}):`}
                 </p>
                 <div className="max-h-60 overflow-y-auto space-y-1">
-                  {employeesToReset.map(emp => (
-                    <div key={emp.id} className="text-sm text-amber-800">
-                      • {emp.full_name} ({emp.email})
-                    </div>
-                  ))}
+                  {employeesToReset.length === 0 ? (
+                    <p className="text-sm text-amber-600">
+                      {language === 'es' ? 'No hay empleados para cambiar' : 'No employees to change'}
+                    </p>
+                  ) : (
+                    employeesToReset.map(emp => (
+                      <div key={emp.id} className="text-sm text-amber-800">
+                        • {emp.full_name} ({emp.email})
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
               <Button
                 onClick={handleReset}
                 disabled={processing || employeesToReset.length === 0}
-                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-lg py-6"
+                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {processing ? (
                   <>
