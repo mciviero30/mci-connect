@@ -22,20 +22,15 @@ export default function ResetStatus() {
     queryKey: ['employees'],
     queryFn: async () => {
       const data = await base44.entities.User.list('full_name');
-      console.log('Todos los empleados:', data);
       return data;
     },
     initialData: []
   });
 
-  // Mostrar todos los empleados que NO estén deleted o archived
   const activeEmployees = employees.filter(emp => {
     const status = emp.employment_status;
-    console.log(`${emp.full_name} - status: ${status}`);
     return status !== 'deleted' && status !== 'archived';
   });
-
-  console.log('Empleados activos filtrados:', activeEmployees.length);
 
   const toggleEmployee = (empId) => {
     setSelectedEmployees(prev => 
@@ -196,65 +191,74 @@ export default function ResetStatus() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                {activeEmployees.map(emp => (
-                  <div
-                    key={emp.id}
-                    className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
-                      selectedEmployees.includes(emp.id)
-                        ? 'bg-amber-50 border-amber-300'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
-                    }`}
-                    onClick={() => toggleEmployee(emp.id)}
-                  >
-                    <Checkbox
-                      checked={selectedEmployees.includes(emp.id)}
-                      onCheckedChange={() => toggleEmployee(emp.id)}
-                      className="data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
-                    />
-                    
-                    {emp.profile_photo_url ? (
-                      <img
-                        src={emp.profile_photo_url}
-                        alt={emp.full_name}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-slate-300"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {emp.full_name?.[0]?.toUpperCase() || 'U'}
+                {activeEmployees.map(emp => {
+                  const isSelected = selectedEmployees.includes(emp.id);
+                  
+                  return (
+                    <div
+                      key={emp.id}
+                      className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-md ${
+                        isSelected
+                          ? 'bg-amber-50 border-amber-300'
+                          : 'bg-white border-slate-200 hover:border-slate-300'
+                      }`}
+                      onClick={() => {
+                        console.log('Click en empleado:', emp.full_name);
+                        toggleEmployee(emp.id);
+                      }}
+                    >
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleEmployee(emp.id)}
+                          className="data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                        />
                       </div>
-                    )}
+                      
+                      {emp.profile_photo_url ? (
+                        <img
+                          src={emp.profile_photo_url}
+                          alt={emp.full_name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-slate-300"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                          {emp.full_name?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                      )}
 
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold text-slate-900">{emp.full_name}</p>
-                        {emp.employment_status && (
-                          <Badge 
-                            variant="outline" 
-                            className={`text-xs ${
-                              emp.employment_status === 'active' 
-                                ? 'bg-green-50 text-green-700 border-green-300'
-                                : emp.employment_status === 'pending_registration'
-                                ? 'bg-amber-50 text-amber-700 border-amber-300'
-                                : 'bg-slate-50 text-slate-700 border-slate-300'
-                            }`}
-                          >
-                            {emp.employment_status}
-                          </Badge>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-slate-900">{emp.full_name}</p>
+                          {emp.employment_status && (
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                emp.employment_status === 'active' 
+                                  ? 'bg-green-50 text-green-700 border-green-300'
+                                  : emp.employment_status === 'pending_registration'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                  : 'bg-slate-50 text-slate-700 border-slate-300'
+                              }`}
+                            >
+                              {emp.employment_status}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-600">{emp.email}</p>
+                        {emp.position && (
+                          <p className="text-xs text-slate-500">{emp.position}</p>
                         )}
                       </div>
-                      <p className="text-sm text-slate-600">{emp.email}</p>
-                      {emp.position && (
-                        <p className="text-xs text-slate-500">{emp.position}</p>
+
+                      {isSelected && (
+                        <div className="text-amber-600 font-semibold text-sm">
+                          {language === 'es' ? '→ Cambiar a Pending' : '→ Change to Pending'}
+                        </div>
                       )}
                     </div>
-
-                    {selectedEmployees.includes(emp.id) && (
-                      <div className="text-amber-600 font-semibold text-sm">
-                        {language === 'es' ? '→ Cambiar a Pending' : '→ Change to Pending'}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
