@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, isValid } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
-export default function MonthView({ currentDate, assignments, onDateClick, onAssignmentClick, isAdmin }) {
+export default function MonthView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
   
   const monthStart = startOfMonth(validDate);
@@ -13,26 +14,24 @@ export default function MonthView({ currentDate, assignments, onDateClick, onAss
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const getJobColor = (assignment) => {
-    // Time-off events are always orange/red
-    if (assignment.event_type === 'time_off') return 'orange';
-    
-    // Appointments without job are blue
-    if (assignment.event_type === 'appointment' && !assignment.job_id) return 'blue';
-    
-    // Job milestones and appointments with job use job color
-    if (!assignment.job_id) return 'slate'; // Default for other types without job_id
+  const getShiftColor = (shift) => {
+    if (shift.shift_type === 'time_off') return 'orange';
+    if (shift.shift_type === 'appointment' && !shift.job_id) return 'blue';
+    if (!shift.job_id) return 'slate';
     const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'cyan', 'red', 'indigo'];
-    const hash = assignment.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = shift.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
 
-  const getEventLabel = (assignment) => {
-    if (assignment.event_title) return assignment.event_title;
-    if (assignment.job_name) return assignment.job_name;
-    // For regular assignments (e.g., job assignments), use employee name
-    if (assignment.employee_name) return assignment.employee_name;
+  const getEventLabel = (shift) => {
+    if (shift.shift_title) return shift.shift_title;
+    if (shift.job_name) return shift.job_name;
+    if (shift.employee_name) return shift.employee_name;
     return 'Event';
+  };
+
+  const isMyShift = (shift) => {
+    return currentUser && shift.employee_email === currentUser.email;
   };
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -52,10 +51,11 @@ export default function MonthView({ currentDate, assignments, onDateClick, onAss
           {days.map((day, i) => {
             if (!isValid(day)) return null;
 
-            const dayAssignments = assignments.filter(a => {
-              if (!a.date) return false;
-              const assignmentDate = new Date(a.date);
-              return isValid(assignmentDate) && isSameDay(assignmentDate, day);
+            // GUARDRAIL: Ensure shifts is an array
+            const dayShifts = (shifts || []).filter(s => {
+              if (!s.date) return false;
+              const shiftDate = new Date(s.date);
+              return isValid(shiftDate) && isSameDay(shiftDate, day);
             });
 
             const isCurrentMonth = isSameMonth(day, validDate);
@@ -67,6 +67,7 @@ export default function MonthView({ currentDate, assignments, onDateClick, onAss
                 className={`min-h-[120px] p-2 rounded-lg border transition-colors group relative ${
                   isCurrentMonth ? 'bg-white border-slate-200 hover:bg-blue-50' : 'bg-slate-100/50 border-slate-200'
                 } ${isToday ? 'ring-2 ring-[#3B9FF3] bg-blue-50' : ''}`}
+                onDoubleClick={() => isAdmin && isCurrentMonth && onDateClick(day)}
               >
                 <div className="flex justify-between items-start mb-1">
                   <div className={`text-sm font-semibold ${isCurrentMonth ? (isToday ? 'text-[#3B9FF3]' : 'text-slate-900') : 'text-slate-400'}`}>
@@ -82,21 +83,59 @@ export default function MonthView({ currentDate, assignments, onDateClick, onAss
                   )}
                 </div>
                 <div className="space-y-1">
-                  {dayAssignments.slice(0, 3).map(assignment => {
-                    const color = getJobColor(assignment);
+                  {dayShifts.slice(0, 3).map(shift => {
+                    const color = getShiftColor(shift);
+                    const myShift = isMyShift(shift);
+                    const isPending = shift.status === 'scheduled' && myShift;
+                    
                     return (
-                      <div
-                        key={assignment.id}
-                        className={`text-[10px] p-1 rounded truncate ${isAdmin ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} bg-${color}-500 text-white shadow-sm`}
-                        onClick={() => isAdmin && onAssignmentClick(assignment)}
-                      >
-                        {assignment.start_time} {getEventLabel(assignment).split(' ')[0]}
+                      <div key={shift.id} className="space-y-1">
+                        <div
+                          className={`text-[10px] p-1 rounded truncate ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} bg-${color}-500 text-white shadow-sm relative`}
+                          onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
+                        >
+                          {shift.start_time} {getEventLabel(shift).split(' ')[0]}
+                          
+                          {shift.status === 'confirmed' && (
+                            <CheckCircle className="inline w-2 h-2 ml-1" />
+                          )}
+                          {shift.status === 'rejected' && (
+                            <XCircle className="inline w-2 h-2 ml-1" />
+                          )}
+                        </div>
+                        
+                        {isPending && (
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 h-5 text-[8px] bg-green-50 border-green-300 text-green-700 hover:bg-green-100 px-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onConfirmShift(shift.id);
+                              }}
+                            >
+                              ✓
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 h-5 text-[8px] bg-red-50 border-red-300 text-red-700 hover:bg-red-100 px-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRejectShift(shift.id);
+                              }}
+                            >
+                              ✗
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
-                  {dayAssignments.length > 3 && (
+                  {dayShifts.length > 3 && (
                     <div className="text-[10px] text-[#3B9FF3] font-semibold pl-1">
-                      +{dayAssignments.length - 3} more
+                      +{dayShifts.length - 3} more
                     </div>
                   )}
                 </div>

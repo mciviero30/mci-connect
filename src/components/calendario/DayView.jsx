@@ -1,43 +1,44 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { format, isSameDay, isValid } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
-export default function DayView({ currentDate, assignments, onDateClick, onAssignmentClick, isAdmin }) {
+export default function DayView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
   
   const hours = Array.from({ length: 16 }, (_, i) => i + 6);
 
-  const getJobColor = (assignment) => {
-    // Time-off events are always orange/red
-    if (assignment.event_type === 'time_off') return 'orange';
-    
-    // Appointments without job are blue
-    if (assignment.event_type === 'appointment' && !assignment.job_id) return 'blue';
-    
-    // Job milestones and appointments with job use job color
-    if (!assignment.job_id) return 'slate';
+  const getShiftColor = (shift) => {
+    if (shift.shift_type === 'time_off') return 'orange';
+    if (shift.shift_type === 'appointment' && !shift.job_id) return 'blue';
+    if (!shift.job_id) return 'slate';
     const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'cyan', 'red', 'indigo'];
-    const hash = assignment.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const hash = shift.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
 
-  const getEventLabel = (assignment) => {
-    if (assignment.event_title) return assignment.event_title;
-    if (assignment.job_name) return assignment.job_name;
+  const getEventLabel = (shift) => {
+    if (shift.shift_title) return shift.shift_title;
+    if (shift.job_name) return shift.job_name;
     return 'Event';
   };
 
-  const dayAssignments = assignments.filter(a => {
-    if (!a.date) return false;
-    const assignmentDate = new Date(a.date);
-    return isValid(assignmentDate) && isSameDay(assignmentDate, validDate);
+  const isMyShift = (shift) => {
+    return currentUser && shift.employee_email === currentUser.email;
+  };
+
+  // GUARDRAIL: Ensure shifts is an array
+  const dayShifts = (shifts || []).filter(s => {
+    if (!s.date) return false;
+    const shiftDate = new Date(s.date);
+    return isValid(shiftDate) && isSameDay(shiftDate, validDate);
   });
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
-      <div className="flex h-[calc(100vh-300px)]">
+      <div className="flex flex-col h-[calc(100vh-300px)]">
         <div className="flex-1 overflow-x-auto">
           <div className="min-w-[800px] relative">
             <div className="flex border-b border-slate-200 bg-slate-50">
@@ -48,12 +49,24 @@ export default function DayView({ currentDate, assignments, onDateClick, onAssig
               ))}
             </div>
 
-            <div className="relative h-32 border-b border-slate-200 group">
+            <div 
+              className="relative h-32 border-b border-slate-200 group"
+              onDoubleClick={(e) => {
+                if (!isAdmin) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const hourFraction = (x / rect.width) * 16;
+                const hour = Math.floor(hourFraction + 6);
+                const minute = Math.round((hourFraction % 1) * 60 / 15) * 15;
+                const timeString = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+                onDateClick(validDate, timeString);
+              }}
+            >
               {hours.map(hour => (
                 <div key={hour} className="absolute h-full border-l border-slate-200 first:border-l-0" style={{ left: `${((hour - 6) / 16) * 100}%` }} />
               ))}
 
-              {isAdmin && dayAssignments.length === 0 && (
+              {isAdmin && dayShifts.length === 0 && (
                 <button
                   onClick={() => onDateClick(validDate)}
                   className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50/50 hover:bg-blue-50"
@@ -64,26 +77,69 @@ export default function DayView({ currentDate, assignments, onDateClick, onAssig
                 </button>
               )}
 
-              {dayAssignments.map(assignment => {
-                const [startHour, startMin] = assignment.start_time?.split(':').map(Number) || [9, 0];
-                const [endHour, endMin] = assignment.end_time?.split(':').map(Number) || [17, 0];
+              {dayShifts.map(shift => {
+                const [startHour, startMin] = shift.start_time?.split(':').map(Number) || [9, 0];
+                const [endHour, endMin] = shift.end_time?.split(':').map(Number) || [17, 0];
                 const startPercent = ((startHour + startMin / 60 - 6) / 16) * 100;
                 const duration = (endHour + endMin / 60) - (startHour + startMin / 60);
                 const widthPercent = (duration / 16) * 100;
-                const color = getJobColor(assignment);
+                const color = getShiftColor(shift);
+                const myShift = isMyShift(shift);
+                const isPending = shift.status === 'scheduled' && myShift;
 
                 return (
-                  <div
-                    key={assignment.id}
-                    className={`absolute top-1 bottom-1 rounded-lg px-2 py-1 ${isAdmin ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-lg overflow-hidden`}
-                    style={{ left: `${startPercent}%`, width: `${widthPercent}%` }}
-                    onClick={() => isAdmin && onAssignmentClick(assignment)}
-                  >
-                    <div className="text-xs font-semibold truncate">{getEventLabel(assignment)}</div>
-                    {assignment.employee_name && (
-                      <div className="text-[10px] opacity-90 truncate">{assignment.employee_name}</div>
+                  <div key={shift.id}>
+                    <div
+                      className={`absolute top-1 bottom-1 rounded-lg px-2 py-1 ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-lg overflow-hidden`}
+                      style={{ left: `${startPercent}%`, width: `${widthPercent}%` }}
+                      onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
+                    >
+                      <div className="text-xs font-semibold truncate">{getEventLabel(shift)}</div>
+                      {shift.employee_name && (
+                        <div className="text-[10px] opacity-90 truncate">{shift.employee_name}</div>
+                      )}
+                      <div className="text-[10px] opacity-90">{shift.start_time}</div>
+                      
+                      {shift.status === 'confirmed' && (
+                        <Badge className="absolute top-1 right-1 bg-green-600 text-white text-[8px] px-1 py-0">
+                          <CheckCircle className="w-2 h-2" />
+                        </Badge>
+                      )}
+                      {shift.status === 'rejected' && (
+                        <Badge className="absolute top-1 right-1 bg-red-600 text-white text-[8px] px-1 py-0">
+                          <XCircle className="w-2 h-2" />
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {isPending && (
+                      <div className="absolute flex gap-1" style={{ left: `${startPercent}%`, top: 'calc(100% + 4px)' }}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 text-[10px] bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onConfirmShift(shift.id);
+                          }}
+                        >
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Confirm
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 text-[10px] bg-red-50 border-red-300 text-red-700 hover:bg-red-100"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRejectShift(shift.id);
+                          }}
+                        >
+                          <XCircle className="w-3 h-3 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
                     )}
-                    <div className="text-[10px] opacity-90">{assignment.start_time}</div>
                   </div>
                 );
               })}
