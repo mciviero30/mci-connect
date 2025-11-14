@@ -1,127 +1,135 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
-export default function StatsCard({ 
-  title, 
-  value, 
+export default function StatsCard({
+  title,
+  value,
   subtitle,
-  icon: Icon, 
-  trend, 
-  trendValue,
-  color = 'blue',
-  loading = false,
-  className = ''
+  icon: Icon,
+  trend,
+  color = "blue",
+  gradient
 }) {
-  // Updated color system with proper gradient support
-  const isGradient = color.includes('from-');
-  
-  if (isGradient) {
-    // For gradient colors passed directly
+  // If gradient is provided directly as a CSS string, use it
+  if (gradient) {
     return (
-      <Card className={`bg-gradient-to-br ${color} shadow-lg border-0 hover:shadow-xl transition-all ${className}`}>
+      <Card 
+        className="overflow-hidden border-none shadow-lg relative group hover:scale-105 transition-transform duration-300"
+        style={{ 
+          background: gradient,
+          boxShadow: 'none'
+        }}
+      >
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-white/90 mb-1">{title}</p>
-              <p className="text-3xl font-bold text-white">{loading ? '...' : value}</p>
+              <p className="text-white/90 text-sm font-medium mb-2">
+                {title}
+              </p>
+              <h3 className="text-3xl font-bold text-white mb-1">
+                {value}
+              </h3>
               {subtitle && (
-                <p className="text-xs text-white/80 mt-1">{subtitle}</p>
-              )}
-              {(trend || trendValue) && (
-                <div className="flex items-center gap-2 mt-2">
-                  {trend && (
-                    <span className={`text-xs font-medium ${trend === 'up' ? 'text-white/90' : 'text-white/70'}`}>
-                      {trend === 'up' ? '↑' : '↓'}
-                    </span>
-                  )}
-                  {trendValue && (
-                    <span className="text-xs text-white/80">{trendValue}</span>
-                  )}
-                </div>
+                <p className="text-white/80 text-sm">
+                  {subtitle}
+                </p>
               )}
             </div>
             {Icon && (
-              <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
                 <Icon className="w-6 h-6 text-white" />
               </div>
             )}
           </div>
+          {trend && (
+            <div className="flex items-center gap-1 mt-3">
+              {trend > 0 ? (
+                <TrendingUp className="w-4 h-4 text-white/90" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-white/90" />
+              )}
+              <span className="text-sm text-white/90 font-medium">
+                {Math.abs(trend)}% {trend > 0 ? 'increase' : 'decrease'}
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
   }
 
-  // Legacy named color support with better contrast
-  const colorClasses = {
+  // Color theme definitions with Tailwind classes for dual theme support
+  const colorThemes = {
     blue: {
-      gradient: 'from-blue-500 to-blue-600',
-      text: 'text-white',
-      subtitle: 'text-white/90',
-      icon: 'bg-white/20'
+      gradient: "from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800",
+      icon: "bg-blue-500/20 dark:bg-blue-400/20",
+      iconColor: "text-blue-100 dark:text-blue-200"
     },
     green: {
-      gradient: 'from-green-500 to-green-600',
-      text: 'text-white',
-      subtitle: 'text-white/90',
-      icon: 'bg-white/20'
+      gradient: "from-green-600 to-green-700 dark:from-green-700 dark:to-green-800",
+      icon: "bg-green-500/20 dark:bg-green-400/20",
+      iconColor: "text-green-100 dark:text-green-200"
     },
     purple: {
-      gradient: 'from-purple-500 to-purple-600',
-      text: 'text-white',
-      subtitle: 'text-white/90',
-      icon: 'bg-white/20'
+      gradient: "from-purple-600 to-purple-700 dark:from-purple-700 dark:to-purple-800",
+      icon: "bg-purple-500/20 dark:bg-purple-400/20",
+      iconColor: "text-purple-100 dark:text-purple-200"
     },
     amber: {
-      gradient: 'from-amber-500 to-amber-600',
-      text: 'text-white',
-      subtitle: 'text-white/90',
-      icon: 'bg-white/20'
+      gradient: "from-amber-600 to-amber-700 dark:from-amber-700 dark:to-amber-800",
+      icon: "bg-amber-500/20 dark:bg-amber-400/20",
+      iconColor: "text-amber-100 dark:text-amber-200"
     },
     red: {
-      gradient: 'from-red-500 to-red-600',
-      text: 'text-white',
-      subtitle: 'text-white/90',
-      icon: 'bg-white/20'
+      gradient: "from-red-600 to-red-700 dark:from-red-700 dark:to-red-800",
+      icon: "bg-red-500/20 dark:bg-red-400/20",
+      iconColor: "text-red-100 dark:text-red-200"
     },
     slate: {
-      gradient: 'from-slate-600 to-slate-700',
-      text: 'text-white',
-      subtitle: 'text-white/90',
-      icon: 'bg-white/20'
+      gradient: "from-slate-700 to-slate-800 dark:from-slate-800 dark:to-slate-900",
+      icon: "bg-slate-500/20 dark:bg-slate-400/20",
+      iconColor: "text-slate-100 dark:text-slate-200"
     }
   };
 
-  const colors = colorClasses[color] || colorClasses.blue;
+  const theme = colorThemes[color] || colorThemes.blue;
 
   return (
-    <Card className={`bg-gradient-to-br ${colors.gradient} shadow-lg border-0 hover:shadow-xl transition-all ${className}`}>
+    <Card className={`overflow-hidden border-none shadow-sm relative group hover:scale-105 transition-transform duration-300 bg-gradient-to-br ${theme.gradient}`}>
       <CardContent className="p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className={`text-sm font-semibold ${colors.subtitle} mb-1`}>{title}</p>
-            <p className={`text-3xl font-bold ${colors.text}`}>{loading ? '...' : value}</p>
+            <p className="text-white/90 text-sm font-medium mb-2">
+              {title}
+            </p>
+            <h3 className="text-3xl font-bold text-white mb-1">
+              {value}
+            </h3>
             {subtitle && (
-              <p className={`text-xs ${colors.subtitle} mt-1`}>{subtitle}</p>
-            )}
-            {(trend || trendValue) && (
-              <div className="flex items-center gap-2 mt-2">
-                {trend && (
-                  <span className={`text-xs font-medium ${trend === 'up' ? colors.text : colors.subtitle}`}>
-                    {trend === 'up' ? '↑' : '↓'}
-                  </span>
-                )}
-                {trendValue && (
-                  <span className={`text-xs ${colors.subtitle}`}>{trendValue}</span>
-                )}
-              </div>
+              <p className="text-white/80 text-sm">
+                {subtitle}
+              </p>
             )}
           </div>
           {Icon && (
-            <div className={`p-3 ${colors.icon} rounded-2xl backdrop-blur-sm`}>
-              <Icon className="w-6 h-6 text-white" />
+            <div className={`${theme.icon} backdrop-blur-sm p-3 rounded-xl`}>
+              <Icon className={`w-6 h-6 ${theme.iconColor}`} />
             </div>
           )}
         </div>
+        {trend && (
+          <div className="flex items-center gap-1 mt-3">
+            {trend > 0 ? (
+              <TrendingUp className="w-4 h-4 text-white/90" />
+            ) : (
+              <TrendingDown className="w-4 h-4 text-white/90" />
+            )}
+            <span className="text-sm text-white/90 font-medium">
+              {Math.abs(trend)}% {trend > 0 ? 'increase' : 'decrease'}
+            </span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
