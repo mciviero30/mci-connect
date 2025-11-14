@@ -1,31 +1,35 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Plus, Edit, Trash2, Building2, Users, Briefcase, MoreVertical } from "lucide-react";
+import { MapPin, Plus, Edit, Trash2, Building2, Users, Briefcase, MoreVertical, AlertTriangle } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export default function Teams() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const toast = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
+  const [showCapacityDialog, setShowCapacityDialog] = useState(false);
+  const [selectedTeamForCapacity, setSelectedTeamForCapacity] = useState(null);
+  const [newCapacity, setNewCapacity] = useState(10);
 
   const { data: teams, isLoading } = useQuery({
     queryKey: ['teams'],
@@ -51,10 +55,7 @@ export default function Teams() {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       setShowDialog(false);
       setEditingTeam(null);
-      toast({
-        title: "Success",
-        description: "Team created successfully",
-      });
+      toast.success("Team created successfully");
     }
   });
 
@@ -64,21 +65,59 @@ export default function Teams() {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       setShowDialog(false);
       setEditingTeam(null);
-      toast({
-        title: "Success",
-        description: "Team updated successfully",
-      });
+      setShowCapacityDialog(false);
+      toast.success("Team updated successfully");
     }
   });
 
+  // ============================================
+  // ROBUST DELETE WITH VALIDATION
+  // ============================================
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Team.delete(id),
+    mutationFn: async (team) => {
+      // VALIDATION: Check for associated employees
+      const associatedEmployees = employees.filter(e => 
+        (e.team_id === team.id || e.team_name === team.team_name) &&
+        e.employment_status !== 'deleted' &&
+        e.employment_status !== 'archived'
+      );
+
+      // VALIDATION: Check for associated jobs
+      const associatedJobs = jobs.filter(j =>
+        (j.team_id === team.id || j.team_name === team.team_name) &&
+        j.status !== 'archived'
+      );
+
+      // Throw validation error if dependencies exist
+      if (associatedEmployees.length > 0 || associatedJobs.length > 0) {
+        throw new Error(
+          `Cannot delete: ${associatedEmployees.length} employee(s) and ${associatedJobs.length} job(s) associated with this team. Please reassign them first.`
+        );
+      }
+
+      // If validation passes, proceed with deletion
+      return base44.entities.Team.delete(team.id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast({
-        title: "Success",
-        description: "Team deleted successfully",
+      toast.success("Team deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
+  // Quick capacity update mutation
+  const updateCapacityMutation = useMutation({
+    mutationFn: ({ teamId, capacity }) => {
+      return base44.entities.Team.update(teamId, {
+        maximum_headcount: capacity
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+      setShowCapacityDialog(false);
+      toast.success("Team capacity updated");
     }
   });
 
@@ -87,7 +126,7 @@ export default function Teams() {
     location: '',
     state: '',
     is_headquarters: false,
-    maximum_headcount: 10, // NEW: Prompt #56 - Default capacity
+    maximum_headcount: 10,
     status: 'active',
     description: ''
   });
@@ -103,7 +142,6 @@ export default function Teams() {
 
   const handleEdit = (team) => {
     setEditingTeam(team);
-    // Ensure maximum_headcount is set, default to 10 if not present
     setFormData({
       ...team,
       maximum_headcount: team.maximum_headcount || 10
@@ -113,7 +151,7 @@ export default function Teams() {
 
   const handleDelete = (team) => {
     if (window.confirm(`Are you sure you want to delete ${team.team_name}?`)) {
-      deleteMutation.mutate(team.id);
+      deleteMutation.mutate(team);
     }
   };
 
@@ -124,19 +162,23 @@ export default function Teams() {
       location: '',
       state: '',
       is_headquarters: false,
-      maximum_headcount: 10, // NEW
+      maximum_headcount: 10,
       status: 'active',
       description: ''
     });
     setShowDialog(true);
   };
 
+  const handleQuickCapacityEdit = (team, currentEmployees) => {
+    setSelectedTeamForCapacity(team);
+    setNewCapacity(team.maximum_headcount || 10);
+    setShowCapacityDialog(true);
+  };
+
   const getTeamStats = (teamId, teamName) => {
-    // Filter by both team_id AND team_name for backwards compatibility
-    // Also include employees where employment_status is undefined, null, or 'active'
     const teamEmployees = employees.filter(e => {
       const isInTeam = (e.team_id === teamId || e.team_name === teamName);
-      const isActive = !e.employment_status || e.employment_status === 'active';
+      const isActive = !e.employment_status || e.employment_status === 'active' || e.employment_status === 'pending_registration';
       return isInTeam && isActive;
     });
 
@@ -176,7 +218,7 @@ export default function Teams() {
             const capacityPercentage = (stats.employees / maxHeadcount) * 100;
 
             return (
-              <Card key={team.id} className="bg-slate-50 shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200">
+              <Card key={team.id} className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <Link to={createPageUrl(`TeamDetails?id=${team.id}`)} className="flex-1">
@@ -195,16 +237,17 @@ export default function Teams() {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900 hover:bg-slate-200">
+                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
                           <MoreVertical className="w-5 h-5" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-white border-slate-200">
-                        <DropdownMenuItem onClick={() => handleEdit(team)} className="text-slate-900 hover:bg-slate-100">
+                        <DropdownMenuItem onClick={() => handleEdit(team)} className="text-slate-900 hover:bg-slate-100 cursor-pointer">
                           <Edit className="w-4 h-4 mr-2" />
                           Edit Team
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(team)} className="text-red-600 hover:bg-red-50">
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleDelete(team)} className="text-red-600 hover:bg-red-50 cursor-pointer">
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Team
                         </DropdownMenuItem>
@@ -217,7 +260,7 @@ export default function Teams() {
                   <Link to={createPageUrl(`TeamDetails?id=${team.id}`)}>
                     <Badge className={
                       team.status === 'active'
-                        ? 'bg-blue-50 border-blue-200 text-blue-700 mb-4'
+                        ? 'bg-green-100 border-green-300 text-green-700 mb-4'
                         : 'bg-slate-200 border-slate-300 text-slate-600 mb-4'
                     }>
                       {team.status}
@@ -227,21 +270,30 @@ export default function Teams() {
                       <p className="text-slate-600 text-sm mb-4">{team.description}</p>
                     )}
 
-                    {/* NEW: Prompt #56 - Team Capacity Indicator */}
-                    <div className="mb-4 p-3 bg-white rounded-lg border border-slate-200">
+                    {/* INTERACTIVE CAPACITY INDICATOR */}
+                    <div 
+                      className="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleQuickCapacityEdit(team, stats.employees);
+                      }}
+                    >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-slate-600 font-medium">Team Capacity</span>
-                        <span className={`text-sm font-bold ${
-                          isAtCapacity ? 'text-red-600' :
-                          capacityPercentage > 80 ? 'text-amber-600' :
-                          'text-green-600'
-                        }`}>
-                          {stats.employees}/{maxHeadcount}
-                        </span>
+                        <span className="text-xs text-slate-700 font-medium">Team Capacity</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-bold ${
+                            isAtCapacity ? 'text-red-600' :
+                            capacityPercentage > 80 ? 'text-amber-600' :
+                            'text-green-600'
+                          }`}>
+                            {stats.employees}/{maxHeadcount}
+                          </span>
+                          <Edit className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="w-full bg-slate-200 rounded-full h-2.5">
                         <div
-                          className={`h-2 rounded-full transition-all duration-300 ${
+                          className={`h-2.5 rounded-full transition-all duration-300 ${
                             isAtCapacity ? 'bg-red-500' :
                             capacityPercentage > 80 ? 'bg-amber-500' :
                             'bg-green-500'
@@ -251,8 +303,14 @@ export default function Teams() {
                       </div>
                       {isAtCapacity && (
                         <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
-                          <span>⚠️</span>
+                          <AlertTriangle className="w-3 h-3" />
                           <span>Team at full capacity</span>
+                        </p>
+                      )}
+                      {capacityPercentage > 80 && !isAtCapacity && (
+                        <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          <span>Nearing capacity</span>
                         </p>
                       )}
                     </div>
@@ -281,6 +339,7 @@ export default function Teams() {
           })}
         </div>
 
+        {/* MAIN TEAM FORM DIALOG */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent className="bg-white border-slate-200 text-slate-900 max-w-2xl">
             <DialogHeader>
@@ -329,7 +388,6 @@ export default function Teams() {
                   </Select>
                 </div>
 
-                {/* NEW: Prompt #56 - Maximum Headcount field */}
                 <div>
                   <Label className="text-slate-700">Maximum Headcount *</Label>
                   <Input
@@ -344,7 +402,7 @@ export default function Teams() {
                 </div>
               </div>
 
-              <div> {/* Status field moved to its own row for layout consistency */}
+              <div>
                 <Label className="text-slate-700">Status</Label>
                 <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
                   <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
@@ -373,7 +431,7 @@ export default function Teams() {
                   id="is_headquarters"
                   checked={formData.is_headquarters}
                   onChange={(e) => setFormData({...formData, is_headquarters: e.target.checked})}
-                  className="w-4 h-4"
+                  className="w-4 h-4 accent-[#3B9FF3] cursor-pointer"
                 />
                 <Label htmlFor="is_headquarters" className="cursor-pointer text-slate-700">Mark as Headquarters (HQ)</Label>
               </div>
@@ -387,6 +445,79 @@ export default function Teams() {
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* QUICK CAPACITY EDIT DIALOG */}
+        <Dialog open={showCapacityDialog} onOpenChange={setShowCapacityDialog}>
+          <DialogContent className="bg-white border-slate-200 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900">Update Team Capacity</DialogTitle>
+              <DialogDescription className="text-slate-600">
+                {selectedTeamForCapacity?.team_name}
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedTeamForCapacity && (
+              <div className="space-y-4 py-4">
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertDescription className="text-blue-900 text-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="w-4 h-4" />
+                      <span className="font-semibold">
+                        Current: {getTeamStats(selectedTeamForCapacity.id, selectedTeamForCapacity.team_name).employees} employees
+                      </span>
+                    </div>
+                    <p className="text-xs text-blue-700">
+                      Set the maximum number of employees for this team.
+                    </p>
+                  </AlertDescription>
+                </Alert>
+
+                <div>
+                  <Label className="text-slate-700">Maximum Headcount</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    value={newCapacity}
+                    onChange={(e) => setNewCapacity(parseInt(e.target.value) || 1)}
+                    className="bg-slate-50 border-slate-200 text-slate-900 text-2xl font-bold text-center"
+                  />
+                  
+                  {newCapacity < getTeamStats(selectedTeamForCapacity.id, selectedTeamForCapacity.team_name).employees && (
+                    <Alert className="mt-3 bg-amber-50 border-amber-300">
+                      <AlertTriangle className="w-4 h-4" />
+                      <AlertDescription className="text-amber-800 text-xs">
+                        Warning: New capacity is lower than current employee count. Consider reassigning employees.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCapacityDialog(false)}
+                className="border-slate-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedTeamForCapacity) {
+                    updateCapacityMutation.mutate({
+                      teamId: selectedTeamForCapacity.id,
+                      capacity: newCapacity
+                    });
+                  }
+                }}
+                className="bg-[#3B9FF3] hover:bg-[#2A8FE3] text-white"
+              >
+                Update Capacity
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
