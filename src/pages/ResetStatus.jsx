@@ -15,6 +15,12 @@ export default function ResetStatus() {
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState(null);
 
+  // Obtener el usuario actual
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
@@ -24,23 +30,28 @@ export default function ResetStatus() {
     initialData: []
   });
 
-  // Filtrar todos excepto Marzio Civiero
+  // Filtrar SOLO por email del usuario actual - mucho más seguro
   const employeesToDelete = employees.filter(emp => 
-    emp.full_name?.toLowerCase() !== 'marzio civiero' &&
+    emp.email !== currentUser?.email &&
     emp.employment_status !== 'deleted'
   );
 
-  const marzio = employees.find(emp => emp.full_name?.toLowerCase() === 'marzio civiero');
+  const myAccount = employees.find(emp => emp.email === currentUser?.email);
 
   const handleDeleteAll = async () => {
+    if (!currentUser) {
+      toast.error(language === 'es' ? '⚠️ No se pudo identificar tu cuenta' : '⚠️ Could not identify your account');
+      return;
+    }
+
     if (employeesToDelete.length === 0) {
       toast.error(language === 'es' ? '⚠️ No hay empleados para eliminar' : '⚠️ No employees to delete');
       return;
     }
 
     const confirmMsg = language === 'es'
-      ? `🚨 ADVERTENCIA 🚨\n\n¿Estás SEGURO que quieres ELIMINAR ${employeesToDelete.length} empleados?\n\nEsta acción cambiará su status a "deleted" y perderán acceso al sistema.\n\nSe mantendrá SOLO:\n- ${marzio?.full_name || 'Marzio Civiero'}\n\nEMPLEADOS A ELIMINAR:\n${employeesToDelete.slice(0, 10).map(e => `- ${e.full_name}`).join('\n')}${employeesToDelete.length > 10 ? `\n... y ${employeesToDelete.length - 10} más` : ''}\n\n⚠️ Esta acción NO se puede deshacer fácilmente ⚠️`
-      : `🚨 WARNING 🚨\n\n Are you SURE you want to DELETE ${employeesToDelete.length} employees?\n\nThis will set their status to "deleted" and they will lose system access.\n\nWILL KEEP ONLY:\n- ${marzio?.full_name || 'Marzio Civiero'}\n\nEMPLOYEES TO DELETE:\n${employeesToDelete.slice(0, 10).map(e => `- ${e.full_name}`).join('\n')}${employeesToDelete.length > 10 ? `\n... and ${employeesToDelete.length - 10} more` : ''}\n\n⚠️ This action CANNOT be easily undone ⚠️`;
+      ? `🚨 ADVERTENCIA 🚨\n\n¿Estás SEGURO que quieres ELIMINAR ${employeesToDelete.length} empleados?\n\nEsta acción cambiará su status a "deleted" y perderán acceso al sistema.\n\nSe mantendrá SOLO TU CUENTA:\n- ${myAccount?.full_name || currentUser.full_name} (${currentUser.email})\n\nEMPLEADOS A ELIMINAR:\n${employeesToDelete.slice(0, 10).map(e => `- ${e.full_name} (${e.email})`).join('\n')}${employeesToDelete.length > 10 ? `\n... y ${employeesToDelete.length - 10} más` : ''}\n\n⚠️ Esta acción NO se puede deshacer fácilmente ⚠️`
+      : `🚨 WARNING 🚨\n\nAre you SURE you want to DELETE ${employeesToDelete.length} employees?\n\nThis will set their status to "deleted" and they will lose system access.\n\nWILL KEEP ONLY YOUR ACCOUNT:\n- ${myAccount?.full_name || currentUser.full_name} (${currentUser.email})\n\nEMPLOYEES TO DELETE:\n${employeesToDelete.slice(0, 10).map(e => `- ${e.full_name} (${e.email})`).join('\n')}${employeesToDelete.length > 10 ? `\n... and ${employeesToDelete.length - 10} more` : ''}\n\n⚠️ This action CANNOT be easily undone ⚠️`;
 
     if (!window.confirm(confirmMsg)) {
       return;
@@ -54,17 +65,24 @@ export default function ResetStatus() {
     setProcessing(true);
     const results = {
       success: [],
-      failed: []
+      failed: [],
+      skipped: []
     };
 
     for (const emp of employeesToDelete) {
+      // Verificación extra por seguridad
+      if (emp.email === currentUser.email) {
+        results.skipped.push(emp.full_name);
+        continue;
+      }
+
       try {
         await base44.entities.User.update(emp.id, {
           employment_status: 'deleted'
         });
-        results.success.push(emp.full_name);
+        results.success.push(`${emp.full_name} (${emp.email})`);
       } catch (error) {
-        results.failed.push({ name: emp.full_name, error: error.message });
+        results.failed.push({ name: `${emp.full_name} (${emp.email})`, error: error.message });
       }
     }
 
@@ -72,20 +90,20 @@ export default function ResetStatus() {
     setResults(results);
     queryClient.invalidateQueries({ queryKey: ['employees'] });
     
-    toast.success(
-      language === 'es' 
-        ? `✅ ${results.success.length} empleados eliminados`
-        : `✅ ${results.success.length} employees deleted`
-    );
+    const message = language === 'es' 
+      ? `✅ ${results.success.length} empleados eliminados. Tu cuenta está segura.`
+      : `✅ ${results.success.length} employees deleted. Your account is safe.`;
+    
+    toast.success(message);
   };
 
-  if (isLoading) {
+  if (isLoading || !currentUser) {
     return (
       <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
-            <p className="text-white">{language === 'es' ? 'Cargando empleados...' : 'Loading employees...'}</p>
+            <p className="text-white">{language === 'es' ? 'Cargando...' : 'Loading...'}</p>
           </div>
         </div>
       </div>
@@ -105,28 +123,33 @@ export default function ResetStatus() {
           <Card className="bg-green-500/10 border-green-500/30">
             <CardContent className="p-6">
               <h3 className="text-green-400 font-semibold mb-2">
-                {language === 'es' ? '✅ SE MANTENDRÁ' : '✅ WILL KEEP'}
+                {language === 'es' ? '✅ SE MANTENDRÁ (TU CUENTA)' : '✅ WILL KEEP (YOUR ACCOUNT)'}
               </h3>
-              {marzio ? (
+              {myAccount ? (
                 <div className="flex items-center gap-3 p-3 bg-green-500/10 rounded-lg">
-                  {marzio.profile_photo_url ? (
+                  {myAccount.profile_photo_url ? (
                     <img
-                      src={marzio.profile_photo_url}
-                      alt={marzio.full_name}
+                      src={myAccount.profile_photo_url}
+                      alt={myAccount.full_name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
                     <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                      {marzio.full_name?.[0]?.toUpperCase()}
+                      {myAccount.full_name?.[0]?.toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-white">{marzio.full_name}</p>
-                    <p className="text-sm text-green-300">{marzio.email}</p>
+                    <p className="font-semibold text-white">{myAccount.full_name}</p>
+                    <p className="text-sm text-green-300">{myAccount.email}</p>
+                    <p className="text-xs text-green-400 mt-1">🔒 {language === 'es' ? 'Protegido - No se eliminará' : 'Protected - Will NOT be deleted'}</p>
                   </div>
                 </div>
               ) : (
-                <p className="text-green-300">Marzio Civiero (tu cuenta)</p>
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <p className="text-white font-semibold">{currentUser.full_name}</p>
+                  <p className="text-sm text-green-300">{currentUser.email}</p>
+                  <p className="text-xs text-green-400 mt-1">🔒 {language === 'es' ? 'Tu cuenta - Protegida' : 'Your account - Protected'}</p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -139,7 +162,7 @@ export default function ResetStatus() {
               <div className="text-center">
                 <p className="text-5xl font-bold text-white mb-1">{employeesToDelete.length}</p>
                 <p className="text-red-300 text-sm">
-                  {language === 'es' ? 'empleados' : 'employees'}
+                  {language === 'es' ? 'empleados (todos menos tú)' : 'employees (all except you)'}
                 </p>
               </div>
             </CardContent>
@@ -157,7 +180,7 @@ export default function ResetStatus() {
             {employeesToDelete.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-slate-400">
-                  {language === 'es' ? 'No hay empleados para eliminar' : 'No employees to delete'}
+                  {language === 'es' ? 'No hay empleados para eliminar (solo estás tú)' : 'No employees to delete (only you)'}
                 </p>
               </div>
             ) : (
@@ -196,8 +219,8 @@ export default function ResetStatus() {
               <ul className="text-red-200 text-xs space-y-1 list-disc list-inside">
                 <li>{language === 'es' ? 'Los empleados NO podrán acceder al sistema' : 'Employees will NOT be able to access the system'}</li>
                 <li>{language === 'es' ? 'Su status cambiará a "deleted"' : 'Their status will change to "deleted"'}</li>
-                <li>{language === 'es' ? 'Necesitarás reactivarlos manualmente desde el Dashboard' : 'You will need to manually reactivate them from Dashboard'}</li>
-                <li>{language === 'es' ? 'Solo se mantendrá: Marzio Civiero' : 'Only will keep: Marzio Civiero'}</li>
+                <li>{language === 'es' ? 'Tu cuenta está PROTEGIDA y NO será eliminada' : 'Your account is PROTECTED and will NOT be deleted'}</li>
+                <li>{language === 'es' ? 'Identificación por EMAIL (más seguro que por nombre)' : 'Identified by EMAIL (safer than by name)'}</li>
               </ul>
             </div>
 
@@ -215,8 +238,8 @@ export default function ResetStatus() {
                 <>
                   <Trash2 className="w-5 h-5 mr-2" />
                   {language === 'es' 
-                    ? `🗑️ ELIMINAR ${employeesToDelete.length} EMPLEADOS (EXCEPTO MARZIO)`
-                    : `🗑️ DELETE ${employeesToDelete.length} EMPLOYEES (EXCEPT MARZIO)`
+                    ? `🗑️ ELIMINAR ${employeesToDelete.length} EMPLEADOS (EXCEPTO TÚ)`
+                    : `🗑️ DELETE ${employeesToDelete.length} EMPLOYEES (EXCEPT YOU)`
                   }
                 </>
               )}
@@ -241,6 +264,19 @@ export default function ResetStatus() {
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {results.success.map((name, idx) => (
                         <div key={idx} className="text-sm text-green-800">• {name}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {results.skipped.length > 0 && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="font-semibold text-blue-900 mb-2">
+                      🔒 {language === 'es' ? 'Protegidos (tu cuenta):' : 'Protected (your account):'} {results.skipped.length}
+                    </p>
+                    <div className="space-y-1">
+                      {results.skipped.map((name, idx) => (
+                        <div key={idx} className="text-sm text-blue-800">• {name}</div>
                       ))}
                     </div>
                   </div>
