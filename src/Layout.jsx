@@ -73,10 +73,15 @@ import { OfflineProvider } from "@/components/offline/OfflineManager";
 import CertificationMonitor from "@/components/certifications/CertificationMonitor";
 
 const ThemeToggle = () => {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    // Apply theme to document
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -85,9 +90,21 @@ const ThemeToggle = () => {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-white/10 p-2 rounded-lg transition-colors">
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-white/90" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-white/90" />
+    <Button 
+      variant="ghost" 
+      size="icon" 
+      onClick={toggleTheme} 
+      className={`p-2 rounded-lg transition-colors ${
+        theme === 'dark' 
+          ? 'hover:bg-white/10' 
+          : 'hover:bg-slate-100'
+      }`}
+    >
+      {theme === 'light' ? (
+        <Moon className="h-[1.2rem] w-[1.2rem] text-slate-600" />
+      ) : (
+        <Sun className="h-[1.2rem] w-[1.2rem] text-white" />
+      )}
       <span className="sr-only">Toggle theme</span>
     </Button>
   );
@@ -97,6 +114,18 @@ const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  // Sync theme state with localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newTheme = localStorage.getItem('theme') || 'light';
+      setTheme(newTheme);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
@@ -321,10 +350,10 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#181818]' : 'bg-[#FAFAFA]'}`}>
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white font-medium">{t('loading')}...</p>
+          <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-[#1C1C1C]'}`}>{t('loading')}...</p>
         </div>
       </div>
     );
@@ -332,13 +361,17 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (error && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
-        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-[#282828] backdrop-blur-xl border border-[#303030]">
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#181818]' : 'bg-[#FAFAFA]'}`}>
+        <div className={`text-center max-w-md p-8 rounded-3xl shadow-2xl backdrop-blur-xl ${
+          theme === 'dark' 
+            ? 'bg-[#282828] border border-[#303030]' 
+            : 'bg-white border border-[#E0E0E0]'
+        }`}>
           <div className="w-20 h-20 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-500/20">
             <Building2 className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">MCI Connect</h1>
-          <p className="text-[#A0A0A0] mb-4">{t('error')}</p>
+          <h1 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-[#1C1C1C]'}`}>MCI Connect</h1>
+          <p className={theme === 'dark' ? 'text-[#A0A0A0] mb-4' : 'text-slate-600 mb-4'}>{t('error')}</p>
           <Button onClick={() => window.location.reload()} className="bg-[#3B9FF3] hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20">
             {t('reload')}
           </Button>
@@ -349,14 +382,18 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (user && user.employment_status === 'deleted') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
-        <div className="text-center max-w-md p-8 rounded-3xl shadow-2xl bg-[#282828] backdrop-blur-xl border border-red-500/30">
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#181818]' : 'bg-[#FAFAFA]'}`}>
+        <div className={`text-center max-w-md p-8 rounded-3xl shadow-2xl backdrop-blur-xl border ${
+          theme === 'dark' 
+            ? 'bg-[#282828] border-red-500/30' 
+            : 'bg-white border-red-300'
+        }`}>
           <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/20">
             <UserX className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
+          <h1 className={`text-2xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-[#1C1C1C]'}`}>Access Denied</h1>
           <p className="text-red-400 mb-4">Your account has been deactivated.</p>
-          <p className="text-[#A0A0A0] text-sm mb-6">
+          <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-[#A0A0A0]' : 'text-slate-600'}`}>
             Please contact your administrator if you believe this is an error.
           </p>
           <Button onClick={() => base44.auth.logout()} className="bg-red-500 hover:bg-red-600 text-white">
@@ -386,6 +423,8 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   const profileImage = getProfileImage();
 
+  const isDark = theme === 'dark';
+
   return (
     <SidebarProvider>
       <MobileOptimizations />
@@ -393,30 +432,49 @@ const LayoutContent = ({ children, currentPageName }) => {
         <NotificationEngine user={user} />
       </NotificationService>
       
-      {/* GLOBAL CERTIFICATION MONITORING */}
       {user && <CertificationMonitor userEmail={user.email} />}
         
-      <div className="min-h-screen flex w-full bg-[#181818]">
+      <div className={`min-h-screen flex w-full ${isDark ? 'bg-[#181818]' : 'bg-[#FAFAFA]'}`}>
         <style>{`
-          /* DARK MODE MINIMALIST DESIGN - HIGH CONTRAST */
+          /* ============================================ */
+          /* DUAL THEME SYSTEM - LIGHT & DARK MODE      */
+          /* ============================================ */
+          
+          /* LIGHT MODE (DEFAULT) */
           :root {
+            --bg-primary: #FAFAFA;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #F5F5F5;
+            --text-primary: #1C1C1C;
+            --text-secondary: #666666;
+            --border-subtle: #E0E0E0;
+            --border-hover: #CCCCCC;
+            --sidebar-bg: linear-gradient(180deg, #FFFFFF 0%, #F8F8F8 100%);
+            --sidebar-border: #E0E0E0;
+          }
+          
+          /* DARK MODE */
+          .dark-mode {
             --bg-primary: #181818;
             --bg-secondary: #282828;
+            --bg-tertiary: #1F1F1F;
             --text-primary: #FFFFFF;
             --text-secondary: #A0A0A0;
             --border-subtle: #303030;
             --border-hover: #404040;
+            --sidebar-bg: linear-gradient(180deg, #1a1a1a 0%, #202020 50%, #1a1a1a 100%);
+            --sidebar-border: #303030;
           }
           
           /* Main app background */
           body {
-            background: #181818 !important;
+            background: var(--bg-primary) !important;
           }
           
           /* Sidebar styling */
           [data-sidebar="sidebar"] {
-            background: linear-gradient(180deg, #1a1a1a 0%, #202020 50%, #1a1a1a 100%) !important;
-            border-right: 1px solid var(--border-subtle) !important;
+            background: var(--sidebar-bg) !important;
+            border-right: 1px solid var(--sidebar-border) !important;
             box-shadow: none !important;
           }
 
@@ -433,17 +491,17 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
           
           .sidebar-scroll-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(59, 159, 243, 0.05);
             border-radius: 3px;
           }
           
           .sidebar-scroll-content::-webkit-scrollbar-thumb {
-            background: rgba(59, 159, 243, 0.4);
+            background: rgba(59, 159, 243, 0.3);
             border-radius: 3px;
           }
           
           .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(59, 159, 243, 0.6);
+            background: rgba(59, 159, 243, 0.5);
           }
 
           /* Custom scrollbar for main content */
@@ -453,92 +511,26 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
           
           *::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(59, 159, 243, 0.05);
           }
           
           *::-webkit-scrollbar-thumb {
-            background: rgba(59, 159, 243, 0.3);
+            background: rgba(59, 159, 243, 0.2);
             border-radius: 4px;
           }
           
           *::-webkit-scrollbar-thumb:hover {
-            background: rgba(59, 159, 243, 0.5);
+            background: rgba(59, 159, 243, 0.4);
           }
 
-          /* Dialog/Modal styling - dark mode */
-          [role="dialog"] {
-            background: var(--bg-secondary) !important;
-            border: 1px solid var(--border-subtle) !important;
-            color: var(--text-primary) !important;
-          }
-
-          /* Card styling for dark backgrounds */
-          .dark-mode-card {
-            background: var(--bg-secondary) !important;
-            border: 1px solid var(--border-subtle) !important;
-            box-shadow: none !important;
-          }
-
-          .dark-mode-card:hover {
-            border-color: var(--border-hover) !important;
-          }
-
-          /* Table styling */
-          table {
-            border-color: var(--border-subtle) !important;
-          }
-
-          table th {
-            background: var(--bg-secondary) !important;
-            color: var(--text-primary) !important;
-            border-color: var(--border-subtle) !important;
-          }
-
-          table td {
-            border-color: var(--border-subtle) !important;
-            color: var(--text-primary) !important;
-          }
-
-          table tr:hover {
-            background: rgba(255, 255, 255, 0.02) !important;
-          }
-
-          /* Remove excessive shadows in dark mode */
+          /* Remove excessive shadows - clean minimalist look */
           .shadow-lg, .shadow-xl, .shadow-2xl {
             box-shadow: none !important;
           }
 
-          /* Input fields on dark backgrounds */
-          input[type="text"],
-          input[type="email"],
-          input[type="number"],
-          input[type="date"],
-          input[type="password"],
-          textarea,
-          select {
-            background: var(--bg-secondary) !important;
-            border: 1px solid var(--border-subtle) !important;
-            color: var(--text-primary) !important;
-          }
-
-          input::placeholder,
-          textarea::placeholder {
-            color: var(--text-secondary) !important;
-          }
-
-          /* Tabs styling */
-          [role="tablist"] {
-            background: var(--bg-secondary) !important;
-            border: 1px solid var(--border-subtle) !important;
-          }
-
-          [role="tab"] {
-            color: var(--text-secondary) !important;
-          }
-
-          [role="tab"][data-state="active"] {
-            background: var(--bg-primary) !important;
-            color: var(--text-primary) !important;
+          /* Light mode specific overrides */
+          body:not(.dark-mode) {
+            color: #1C1C1C;
           }
 
           @media (max-width: 1024px) {
@@ -549,9 +541,11 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-none">
-          <SidebarHeader className="p-4 border-b border-[#303030] flex-shrink-0 backdrop-blur-sm">
+          <SidebarHeader className={`p-4 flex-shrink-0 backdrop-blur-sm ${
+            isDark ? 'border-b border-[#303030]' : 'border-b border-[#E0E0E0]'
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#3B9FF3] to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
                   alt="MCI Connect"
@@ -559,8 +553,8 @@ const LayoutContent = ({ children, currentPageName }) => {
                 />
               </div>
               <div className="flex-1">
-                <h2 className="font-bold text-white text-lg tracking-tight">MCI Connect</h2>
-                <p className="text-xs text-blue-300 font-medium">
+                <h2 className={`font-bold text-lg tracking-tight ${isDark ? 'text-white' : 'text-[#1C1C1C]'}`}>MCI Connect</h2>
+                <p className="text-xs text-blue-500 font-medium">
                   {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
                 </p>
               </div>
@@ -574,7 +568,9 @@ const LayoutContent = ({ children, currentPageName }) => {
           >
             {navigation.map((section, idx) => (
               <SidebarGroup key={idx} className="mb-4">
-                <SidebarGroupLabel className="text-[10px] font-bold text-blue-300/80 uppercase tracking-wider px-3 py-2 mb-1">
+                <SidebarGroupLabel className={`text-[10px] font-bold uppercase tracking-wider px-3 py-2 mb-1 ${
+                  isDark ? 'text-blue-300/80' : 'text-blue-600/80'
+                }`}>
                   {section.section}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -590,11 +586,15 @@ const LayoutContent = ({ children, currentPageName }) => {
                             className={`transition-all duration-300 rounded-xl mb-0.5 border-none ${
                               isActive
                                 ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white'
-                                : 'hover:bg-white/10 text-[#A0A0A0] hover:text-white backdrop-blur-sm'
+                                : isDark 
+                                  ? 'hover:bg-white/10 text-[#A0A0A0] hover:text-white' 
+                                  : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
                             }`}
                           >
                             <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative group">
-                              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-blue-300'}`} />
+                              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${
+                                isActive ? 'text-white' : isDark ? 'text-blue-400' : 'text-blue-500'
+                              }`} />
                               <span className="font-medium text-sm">
                                 {item.title}
                               </span>
@@ -620,22 +620,32 @@ const LayoutContent = ({ children, currentPageName }) => {
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-[#303030] p-4 flex-shrink-0 backdrop-blur-sm">
+          <SidebarFooter className={`p-4 flex-shrink-0 backdrop-blur-sm ${
+            isDark ? 'border-t border-[#303030]' : 'border-t border-[#E0E0E0]'
+          }`}>
             <div className="mb-3 px-2 flex items-center gap-2">
               <Select value={language} onValueChange={changeLanguage}>
-                <SelectTrigger className="h-9 bg-[#282828] border-[#303030] text-white flex-1 backdrop-blur-sm hover:bg-[#303030]">
+                <SelectTrigger className={`h-9 flex-1 backdrop-blur-sm ${
+                  isDark 
+                    ? 'bg-[#282828] border-[#303030] text-white hover:bg-[#303030]' 
+                    : 'bg-white border-[#E0E0E0] text-[#1C1C1C] hover:bg-slate-50'
+                }`}>
                   <Languages className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#282828] border-[#303030]">
-                  <SelectItem value="en" className="text-white hover:bg-[#303030]">🇺🇸 English</SelectItem>
-                  <SelectItem value="es" className="text-white hover:bg-[#303030]">🇪🇸 Español</SelectItem>
+                <SelectContent className={isDark ? 'bg-[#282828] border-[#303030]' : 'bg-white border-[#E0E0E0]'}>
+                  <SelectItem value="en" className={isDark ? 'text-white hover:bg-[#303030]' : 'text-[#1C1C1C] hover:bg-slate-100'}>🇺🇸 English</SelectItem>
+                  <SelectItem value="es" className={isDark ? 'text-white hover:bg-[#303030]' : 'text-[#1C1C1C] hover:bg-slate-100'}>🇪🇸 Español</SelectItem>
                 </SelectContent>
               </Select>
               <ThemeToggle />
             </div>
 
-            <div className="flex items-center justify-between bg-[#282828] rounded-xl p-3 backdrop-blur-sm border border-[#303030]">
+            <div className={`flex items-center justify-between rounded-xl p-3 backdrop-blur-sm border ${
+              isDark 
+                ? 'bg-[#282828] border-[#303030]' 
+                : 'bg-white border-[#E0E0E0]'
+            }`}>
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
@@ -644,31 +654,35 @@ const LayoutContent = ({ children, currentPageName }) => {
                     className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center border-2 border-400/30">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center border-2 border-blue-400/30">
                     <span className="text-white font-bold text-sm">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-white text-sm truncate">
+                  <p className={`font-semibold text-sm truncate ${isDark ? 'text-white' : 'text-[#1C1C1C]'}`}>
                     {user?.full_name || 'User'}
                   </p>
-                  <p className="text-xs text-blue-300 truncate">
+                  <p className={`text-xs truncate ${isDark ? 'text-blue-300' : 'text-blue-600'}`}>
                     {user?.role === 'admin' ? t('admin') : t('user')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Link to={createPageUrl("Configuracion")} className="p-2 hover:bg-white/10 rounded-lg transition-colors" title={t('settings')}>
-                  <Settings className="w-4 h-4 text-blue-300 hover:text-white" />
+                <Link to={createPageUrl("Configuracion")} className={`p-2 rounded-lg transition-colors ${
+                  isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                }`} title={t('settings')}>
+                  <Settings className={`w-4 h-4 ${isDark ? 'text-blue-300 hover:text-white' : 'text-blue-600 hover:text-blue-700'}`} />
                 </Link>
                 <button
                   onClick={() => base44.auth.logout()}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  className={`p-2 rounded-lg transition-colors ${
+                    isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+                  }`}
                   title={t('logout')}
                 >
-                  <LogOut className="w-4 h-4 text-blue-300 hover:text-white" />
+                  <LogOut className={`w-4 h-4 ${isDark ? 'text-blue-300 hover:text-white' : 'text-blue-600 hover:text-blue-700'}`} />
                 </button>
               </div>
             </div>
@@ -676,10 +690,16 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="backdrop-blur-xl bg-[#1a1a1a] border-b border-[#303030] px-6 py-4 md:hidden flex-shrink-0">
+          <header className={`backdrop-blur-xl px-6 py-4 md:hidden flex-shrink-0 ${
+            isDark 
+              ? 'bg-[#1a1a1a] border-b border-[#303030]' 
+              : 'bg-white border-b border-[#E0E0E0]'
+          }`}>
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="hover:bg-white/10 p-2 rounded-lg transition-colors">
-                <Menu className="w-5 h-5 text-white" />
+              <SidebarTrigger className={`p-2 rounded-lg transition-colors ${
+                isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
+              }`}>
+                <Menu className={`w-5 h-5 ${isDark ? 'text-white' : 'text-[#1C1C1C]'}`} />
               </SidebarTrigger>
               <div className="flex items-center gap-2">
                 <img
@@ -688,14 +708,14 @@ const LayoutContent = ({ children, currentPageName }) => {
                   className="w-6 h-6"
                 />
                 <div>
-                  <h1 className="text-lg font-bold text-white leading-none">MCI Connect</h1>
-                  {isAdmin && <p className="text-[10px] text-blue-300 leading-none">Management System</p>}
+                  <h1 className={`text-lg font-bold leading-none ${isDark ? 'text-white' : 'text-[#1C1C1C]'}`}>MCI Connect</h1>
+                  {isAdmin && <p className="text-[10px] text-blue-500 leading-none">Management System</p>}
                 </div>
               </div>
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto bg-[#181818]" data-scrollable="true">
+          <div className={`flex-1 overflow-y-auto ${isDark ? 'bg-[#181818]' : 'bg-[#FAFAFA]'}`} data-scrollable="true">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
