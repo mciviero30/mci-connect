@@ -1,17 +1,8 @@
-
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ToastContext = createContext();
-
-export const useToast = () => {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
-  }
-  return context;
-};
 
 const toastIcons = {
   success: CheckCircle,
@@ -34,7 +25,7 @@ const iconColors = {
   info: 'text-blue-700'
 };
 
-export function Toast({ id, message, type, onRemove }) {
+function Toast({ id, message, type, onRemove }) {
   const Icon = toastIcons[type] || Info;
   
   useEffect(() => {
@@ -65,21 +56,7 @@ export function Toast({ id, message, type, onRemove }) {
   );
 }
 
-export const ToastClose = ({ onClick }) => (
-  <button onClick={onClick} className="flex-shrink-0 hover:opacity-70 transition-opacity p-0.5">
-    <X className="w-4 h-4" />
-  </button>
-);
-
-export const ToastTitle = ({ children }) => (
-  <p className="font-bold text-sm">{children}</p>
-);
-
-export const ToastDescription = ({ children }) => (
-  <p className="text-sm">{children}</p>
-);
-
-export const ToastViewport = ({ children }) => (
+const ToastViewport = ({ children }) => (
   <div className="fixed bottom-4 right-4 z-[9999] space-y-2 max-w-md pointer-events-none">
     <div className="pointer-events-auto">
       {children}
@@ -137,4 +114,12 @@ export const ToastProvider = ({ children }) => {
       </ToastViewport>
     </ToastContext.Provider>
   );
+};
+
+export const useToast = () => {
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error('useToast must be used within ToastProvider');
+  }
+  return context;
 };

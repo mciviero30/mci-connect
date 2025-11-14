@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -123,3 +124,6 @@ export const useToast = () => {
   }
   return context;
 };
+
+// Re-export from toast.jsx for backward compatibility
+export { useToast, ToastProvider } from './toast';
