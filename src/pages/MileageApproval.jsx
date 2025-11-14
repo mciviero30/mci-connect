@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
-import StatsCard from "../components/shared/StatsCard";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import {
   Dialog,
@@ -214,34 +214,61 @@ export default function MileageApproval() {
         />
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            title={language === 'es' ? 'Pendientes' : 'Pending'}
-            value={pendingLogs.length}
-            icon={Car}
-            color="from-amber-500 to-amber-600"
-            loading={isLoading}
-          />
-          <StatsCard
-            title={language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}
-            value={`${totalPendingMiles.toFixed(0)} mi`}
-            icon={MapPin}
-            color="from-slate-600 to-slate-700"
-            loading={isLoading}
-          />
-          <StatsCard
-            title={language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}
-            value={`$${totalPendingAmount.toFixed(2)}`}
-            icon={Car}
-            color="from-amber-500 to-amber-600"
-            loading={isLoading}
-          />
-          <StatsCard
-            title={language === 'es' ? 'Total Aprobado' : 'Total Approved'}
-            value={`$${totalApprovedAmount.toFixed(2)}`}
-            icon={CheckCircle}
-            color="from-[#3B9FF3] to-[#2A8FE3]"
-            loading={isLoading}
-          />
+          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg border-0 hover:shadow-xl transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+                  <p className="text-3xl font-bold text-white">{pendingLogs.length}</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-2xl">
+                  <Car className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg border-0 hover:shadow-xl transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
+                  <p className="text-3xl font-bold text-white">{totalPendingMiles.toFixed(0)} mi</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-2xl">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg border-0 hover:shadow-xl transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
+                  <p className="text-3xl font-bold text-white">${totalPendingAmount.toFixed(2)}</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-2xl">
+                  <Car className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 shadow-lg border-0 hover:shadow-xl transition-all">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
+                  <p className="text-3xl font-bold text-white">${totalApprovedAmount.toFixed(2)}</p>
+                </div>
+                <div className="p-3 bg-white/20 rounded-2xl">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="bg-white shadow-xl border-slate-200">

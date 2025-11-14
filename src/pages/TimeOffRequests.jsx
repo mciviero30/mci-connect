@@ -359,38 +359,38 @@ export default function TimeOffRequests() {
         />
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-amber-200">
+          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg border-0 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Pending</p>
-                  <p className="text-3xl font-bold text-amber-600">{pending.length}</p>
+                  <p className="text-sm font-semibold text-white/90">Pending</p>
+                  <p className="text-3xl font-bold text-white">{pending.length}</p>
                 </div>
-                <Clock className="w-8 h-8 text-amber-500" />
+                <Clock className="w-8 h-8 text-white/80" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-green-200">
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 shadow-lg border-0 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Approved</p>
-                  <p className="text-3xl font-bold text-green-600">{approved.length}</p>
+                  <p className="text-sm font-semibold text-white/90">Approved</p>
+                  <p className="text-3xl font-bold text-white">{approved.length}</p>
                 </div>
-                <Check className="w-8 h-8 text-green-500" />
+                <Check className="w-8 h-8 text-white/80" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-red-200">
+          <Card className="bg-gradient-to-br from-red-500 to-red-600 shadow-lg border-0 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Rejected</p>
-                  <p className="text-3xl font-bold text-red-600">{rejected.length}</p>
+                  <p className="text-sm font-semibold text-white/90">Rejected</p>
+                  <p className="text-3xl font-bold text-white">{rejected.length}</p>
                 </div>
-                <X className="w-8 h-8 text-red-500" />
+                <X className="w-8 h-8 text-white/80" />
               </div>
             </CardContent>
           </Card>
