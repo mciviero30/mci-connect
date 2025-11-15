@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,7 +22,7 @@ import {
   Settings as SettingsIcon,
   Save,
   X as XIcon,
-  Trophy // Added Trophy icon
+  Trophy
 } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
@@ -45,9 +44,9 @@ import StatsWidget from "../components/dashboard/widgets/StatsWidget";
 import ChartWidget from "../components/dashboard/widgets/ChartWidget";
 import ListWidget from "../components/dashboard/widgets/ListWidget";
 import WidgetLibrary from "../components/dashboard/WidgetLibrary";
-import RecognitionFeed from "../components/recognition/RecognitionFeed"; // New import
-import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget"; // New import
-import GiveKudosDialog from "../components/recognition/GiveKudosDialog"; // New import
+import RecognitionFeed from "../components/recognition/RecognitionFeed";
+import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget";
+import GiveKudosDialog from "../components/recognition/GiveKudosDialog";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -72,7 +71,7 @@ export default function Dashboard() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
   const [widgets, setWidgets] = useState([]);
-  const [showKudosDialog, setShowKudosDialog] = useState(false); // New state
+  const [showKudosDialog, setShowKudosDialog] = useState(false);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -279,7 +278,6 @@ export default function Dashboard() {
     ? allExpenses.filter(e => e.status === 'pending').length
     : expenses.filter(e => e.status === 'pending').length;
 
-  // FIXED: Correct arrow function syntax with parentheses around parameter
   const totalWorkedHours = allTimeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
 
   const todaysBirthdays = allEmployees.filter(emp => {
@@ -355,7 +353,7 @@ export default function Dashboard() {
           <div>
             <StatsWidget value={`${currentWeekHours.toFixed(1)}h`} label={t('workHours')} icon={Clock} badge="Esta Semana" color="blue" />
             <Progress value={Math.min(weekProgress, 100)} className="h-2 mt-3" />
-            <p className="text-xs text-slate-500 mt-2">{yearHours.toFixed(1)}h {t('yearToDate')}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{yearHours.toFixed(1)}h {t('yearToDate')}</p>
           </div>
         );
       
@@ -363,7 +361,7 @@ export default function Dashboard() {
         return (
           <div>
             <StatsWidget value={`${drivingHoursThisWeek.toFixed(1)}h`} label={t('drivingHours')} icon={MapPin} badge="Esta Semana" color="green" />
-            <div className="flex items-center gap-2 text-xs text-slate-500 mt-2">
+            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
               <DollarSign className="w-3 h-3" />
               <span>${drivingPayThisWeek.toFixed(2)} ganados</span>
             </div>
@@ -374,7 +372,7 @@ export default function Dashboard() {
         return (
           <div>
             <StatsWidget value={`$${(currentWeekPay + drivingPayThisWeek).toFixed(2)}`} label={t('weeklyPay')} icon={DollarSign} badge="Esta Semana" color="amber" />
-            <div className="flex items-center gap-2 text-xs text-slate-500 mt-2">
+            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
               <span>Trabajo: ${currentWeekPay.toFixed(2)}</span>
               <span>•</span>
               <span>Manejo: ${drivingPayThisWeek.toFixed(2)}</span>
@@ -387,14 +385,14 @@ export default function Dashboard() {
       
       case 'pending-timesheets':
         return (
-          <Alert className="bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300">
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-            <AlertTitle className="text-amber-900 font-bold">
+          <Alert className="bg-yellow-50/50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700/50">
+            <AlertTriangle className="h-5 w-5 text-yellow-700 dark:text-yellow-400" />
+            <AlertTitle className="text-yellow-900 dark:text-yellow-200 font-bold">
               {pendingTimesheetsCount} {language === 'es' ? 'horas pendientes' : 'pending hours'}
             </AlertTitle>
             <AlertDescription>
               <Link to={createPageUrl('Horarios')}>
-                <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white mt-2">
+                <Button size="sm" className="bg-yellow-700 hover:bg-yellow-800 dark:bg-yellow-600 dark:hover:bg-yellow-700 text-white mt-2">
                   <Clock className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Revisar' : 'Review'}
                 </Button>
@@ -404,17 +402,17 @@ export default function Dashboard() {
         );
       
       case 'birthdays-today':
-        if (todaysBirthdays.length === 0) return <p className="text-slate-500 text-sm text-center py-8">No birthdays today</p>;
+        if (todaysBirthdays.length === 0) return <p className="text-slate-600 dark:text-slate-400 text-sm text-center py-8">No birthdays today</p>;
         return (
           <ListWidget
             items={todaysBirthdays}
             renderItem={(emp) => (
               <Link to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
-                <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-pink-200 hover:border-pink-400 hover:shadow-md transition-all cursor-pointer">
+                <div className="flex items-center gap-3 p-4 bg-pink-50/50 dark:bg-pink-900/20 rounded-xl border border-pink-200 dark:border-pink-700/50 hover:border-pink-400 dark:hover:border-pink-500 hover:shadow-md transition-all cursor-pointer">
                   <div className="text-4xl">🎂</div>
                   <div className="flex-1">
-                    <p className="font-bold text-slate-900">{getDisplayName(emp)}</p>
-                    <p className="text-sm text-slate-600">{emp.position}</p>
+                    <p className="font-bold text-slate-900 dark:text-white">{getDisplayName(emp)}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{emp.position}</p>
                   </div>
                   <Badge className="bg-pink-500 text-white">¡Felicidades!</Badge>
                 </div>
@@ -424,16 +422,16 @@ export default function Dashboard() {
         );
       
       case 'recent-recognitions':
-        if (recentAchievements.length === 0) return <p className="text-slate-500 text-sm text-center py-8">No recent recognitions</p>;
+        if (recentAchievements.length === 0) return <p className="text-slate-600 dark:text-slate-400 text-sm text-center py-8">No recent recognitions</p>;
         return (
           <ListWidget
             items={recentAchievements}
             renderItem={(rec) => (
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border border-amber-200 hover:shadow-md transition-all">
+              <div className="flex items-center gap-3 p-4 bg-amber-50/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-700/50 hover:shadow-md transition-all">
                 <div className="text-3xl">🏆</div>
                 <div className="flex-1">
-                  <p className="font-bold text-slate-900 text-sm">{rec.title}</p>
-                  <p className="text-xs text-slate-600">{rec.employee_name}</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">{rec.title}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">{rec.employee_name}</p>
                 </div>
                 <Badge className="bg-amber-500 text-white">+{rec.points} pts</Badge>
               </div>
@@ -450,16 +448,16 @@ export default function Dashboard() {
               const job = jobs.find(j => j.id === assignment.job_id);
               return (
                 <Link to={createPageUrl(`JobDetails?id=${assignment.job_id}`)}>
-                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer">
+                  <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700/50 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all cursor-pointer">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-bold text-slate-900">{assignment.job_name}</h3>
+                      <h3 className="font-bold text-slate-900 dark:text-white">{assignment.job_name}</h3>
                       {job && (
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+                        <Badge className="bg-blue-100 dark:bg-blue-800/50 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600">
                           {job.status}
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-1">
                         <CalendarIcon className="w-4 h-4" />
                         {format(new Date(assignment.date), 'MMM dd')}
@@ -485,15 +483,15 @@ export default function Dashboard() {
         return (
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Trophy className="w-5 h-5 text-[#3B9FF3]" />
-              <h3 className="font-bold text-white">Top Performers</h3>
+              <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h3 className="font-bold text-slate-900 dark:text-white">Top Performers</h3>
             </div>
             <TopRecognitionsWidget limit={5} />
           </div>
         );
 
       default:
-        return <p className="text-slate-500 text-sm">Widget not implemented</p>;
+        return <p className="text-slate-600 dark:text-slate-400 text-sm">Widget not implemented</p>;
     }
   };
 
@@ -512,17 +510,17 @@ export default function Dashboard() {
 
   if (userLoading || prefsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#3B9FF3] mx-auto mb-4" />
-          <p className="text-white font-medium">Loading dashboard...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+          <p className="text-slate-900 dark:text-white font-medium">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -538,7 +536,7 @@ export default function Dashboard() {
                   className="w-20 h-20 rounded-full object-cover ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#3B9FF3] to-blue-500 flex items-center justify-center ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl">
                   <span className="text-white font-bold text-3xl">
                     {user?.full_name?.[0]?.toUpperCase() || 'U'}
                   </span>
@@ -550,11 +548,11 @@ export default function Dashboard() {
             </button>
 
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
                 {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
               </h1>
               <div className="flex items-center gap-2">
-                <p className="text-slate-300 text-lg">
+                <p className="text-slate-600 dark:text-slate-400 text-lg">
                   {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
                 </p>
                 <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md">
@@ -570,7 +568,7 @@ export default function Dashboard() {
                 <Button
                   onClick={handleCancelEdit}
                   variant="outline"
-                  className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
+                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <XIcon className="w-4 h-4 mr-2" />
                   Cancel
@@ -587,7 +585,7 @@ export default function Dashboard() {
             ) : (
               <>
                 <Button
-                  onClick={() => setShowKudosDialog(true)} // New button for Give Kudos
+                  onClick={() => setShowKudosDialog(true)}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
                 >
                   <Award className="w-4 h-4 mr-2" />
@@ -596,14 +594,14 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
-                  className="border-blue-500/50 text-blue-300 hover:bg-blue-500/10 hover:text-white"
+                  className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Widget
                 </Button>
                 <Button
                   onClick={() => setIsEditMode(true)}
-                  className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white shadow-lg shadow-blue-500/30"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
                 >
                   <SettingsIcon className="w-4 h-4 mr-2" />
                   Customize
@@ -662,7 +660,7 @@ export default function Dashboard() {
           <div className="text-center mt-8">
             <Button
               onClick={() => setShowTimeOffDialog(true)}
-              className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/30"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30"
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               {t('requestTimeOff')}
@@ -683,7 +681,7 @@ export default function Dashboard() {
           currentWidgets={widgets}
           userRole={isAdmin ? 'admin' : 'employee'}
         />
-        <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} /> {/* New Dialog */}
+        <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} />
       </div>
     </div>
   );
