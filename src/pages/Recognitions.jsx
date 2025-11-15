@@ -30,7 +30,7 @@ export default function Recognitions() {
   const uniqueReceivers = new Set(allRecognitions.map(r => r.employee_email)).size;
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Recognition & Kudos"
@@ -49,50 +49,50 @@ export default function Recognitions() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 border-blue-700">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-300 text-sm">Total Recognitions</p>
-                  <p className="text-3xl font-bold text-white mt-2">{totalRecognitions}</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">Total Recognitions</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{totalRecognitions}</p>
                 </div>
-                <Award className="w-12 h-12 text-blue-400 opacity-50" />
+                <Award className="w-12 h-12 text-blue-600 dark:text-blue-400 opacity-30" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 border-purple-700">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-300 text-sm">Total Points</p>
-                  <p className="text-3xl font-bold text-white mt-2">{totalPoints}</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">Total Points</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{totalPoints}</p>
                 </div>
-                <Sparkles className="w-12 h-12 text-purple-400 opacity-50" />
+                <Sparkles className="w-12 h-12 text-purple-600 dark:text-purple-400 opacity-30" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-900/50 to-green-800/50 border-green-700">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-300 text-sm">People Giving</p>
-                  <p className="text-3xl font-bold text-white mt-2">{uniqueGivers}</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">People Giving</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{uniqueGivers}</p>
                 </div>
-                <Users className="w-12 h-12 text-green-400 opacity-50" />
+                <Users className="w-12 h-12 text-green-600 dark:text-green-400 opacity-30" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-900/50 to-orange-800/50 border-orange-700">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-300 text-sm">People Recognized</p>
-                  <p className="text-3xl font-bold text-white mt-2">{uniqueReceivers}</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">People Recognized</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{uniqueReceivers}</p>
                 </div>
-                <TrendingUp className="w-12 h-12 text-orange-400 opacity-50" />
+                <TrendingUp className="w-12 h-12 text-orange-600 dark:text-orange-400 opacity-30" />
               </div>
             </CardContent>
           </Card>
@@ -102,10 +102,10 @@ export default function Recognitions() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recognition Feed */}
           <div className="lg:col-span-2">
-            <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700">
+            <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#3B9FF3]" />
+                <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Recent Recognitions
                 </CardTitle>
               </CardHeader>
@@ -117,10 +117,10 @@ export default function Recognitions() {
 
           {/* Top Recognitions */}
           <div>
-            <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 sticky top-8">
+            <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm sticky top-8">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Award className="w-5 h-5 text-[#3B9FF3]" />
+                <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                  <Award className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   Top Performers
                 </CardTitle>
               </CardHeader>
