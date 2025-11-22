@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, Clock } from "lucide-react";
+import { User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, Clock, UserCircle, FileText, Calendar as CalendarIcon, Receipt, Banknote } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { getDisplayName } from "@/components/utils/nameHelpers";
@@ -34,6 +34,14 @@ export default function MyProfile() {
     initialData: []
   });
 
+  // Fetch performance reviews (recognitions)
+  const { data: myRecognitions = [] } = useQuery({
+    queryKey: ['myRecognitions', user?.email],
+    queryFn: () => base44.entities.Recognition.filter({ employee_email: user.email }, '-created_date', 10),
+    enabled: !!user?.email,
+    initialData: []
+  });
+
   // Fetch certification alerts
   const { data: myAlerts = [] } = useQuery({
     queryKey: ['myCertificationAlerts', user?.email],
@@ -48,6 +56,9 @@ export default function MyProfile() {
   const [formData, setFormData] = useState({
     phone: user?.phone || '',
     address: user?.address || '',
+    emergency_contact_name: user?.emergency_contact_name || '',
+    emergency_contact_phone: user?.emergency_contact_phone || '',
+    emergency_contact_relationship: user?.emergency_contact_relationship || '',
   });
 
   const updateProfileMutation = useMutation({
@@ -316,6 +327,65 @@ export default function MyProfile() {
               </div>
             </div>
 
+            {/* Emergency Contact Section */}
+            <div className="pt-6 border-t border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <UserCircle className="w-5 h-5 text-[#3B9FF3]" />
+                Emergency Contact
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-slate-700">Name</Label>
+                  {editing ? (
+                    <Input
+                      value={formData.emergency_contact_name}
+                      onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                      placeholder="Contact name"
+                      className="bg-white"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <User className="w-5 h-5 text-slate-400" />
+                      <span className="text-slate-900">{user.emergency_contact_name || 'Not set'}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-700">Phone</Label>
+                  {editing ? (
+                    <PhoneInput
+                      value={formData.emergency_contact_phone}
+                      onChange={(value) => setFormData({ ...formData, emergency_contact_phone: value })}
+                      className="bg-white"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <Phone className="w-5 h-5 text-slate-400" />
+                      <span className="text-slate-900">{user.emergency_contact_phone || 'Not set'}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-700">Relationship</Label>
+                  {editing ? (
+                    <Input
+                      value={formData.emergency_contact_relationship}
+                      onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
+                      placeholder="e.g., Spouse, Parent"
+                      className="bg-white"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <UserCircle className="w-5 h-5 text-slate-400" />
+                      <span className="text-slate-900">{user.emergency_contact_relationship || 'Not set'}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {editing && (
               <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
                 <Button
@@ -325,6 +395,9 @@ export default function MyProfile() {
                     setFormData({
                       phone: user?.phone || '',
                       address: user?.address || '',
+                      emergency_contact_name: user?.emergency_contact_name || '',
+                      emergency_contact_phone: user?.emergency_contact_phone || '',
+                      emergency_contact_relationship: user?.emergency_contact_relationship || '',
                     });
                   }}
                   className="border-slate-300"
@@ -333,6 +406,102 @@ export default function MyProfile() {
                 </Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Performance Reviews Section */}
+        <Card className="border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg mt-6">
+          <CardHeader className="border-b border-slate-200">
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <FileText className="w-5 h-5 text-[#3B9FF3]" />
+              Recent Performance & Recognition
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {myRecognitions.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                <p>No performance reviews or recognitions yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {myRecognitions.map((recognition) => (
+                  <div key={recognition.id} className="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="bg-blue-100 text-blue-800">
+                            {recognition.recognition_type}
+                          </Badge>
+                          <span className="text-xs text-slate-500">
+                            {format(new Date(recognition.created_date), 'MMM dd, yyyy')}
+                          </span>
+                        </div>
+                        <p className="text-slate-900 font-medium mb-1">{recognition.title}</p>
+                        <p className="text-sm text-slate-600">{recognition.description}</p>
+                        {recognition.given_by_name && (
+                          <p className="text-xs text-slate-500 mt-2">
+                            Given by: {recognition.given_by_name}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-[#3B9FF3]">
+                          +{recognition.points}
+                        </div>
+                        <div className="text-xs text-slate-500">points</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {user.last_performance_review_date && (
+              <div className="mt-6 pt-6 border-t border-slate-200">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CalendarIcon className="w-4 h-4" />
+                  <span>Last formal review: {format(new Date(user.last_performance_review_date), 'MMMM dd, yyyy')}</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Quick Links to Other Self-Service Features */}
+        <Card className="border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg mt-6">
+          <CardHeader className="border-b border-slate-200">
+            <CardTitle className="text-slate-900">Self-Service Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-3 gap-4">
+              <a 
+                href="/TimeOffRequests" 
+                className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all group"
+              >
+                <CalendarIcon className="w-8 h-8 text-[#3B9FF3] mb-2 group-hover:scale-110 transition-transform" />
+                <h4 className="font-semibold text-slate-900 mb-1">Request Time Off</h4>
+                <p className="text-sm text-slate-600">Submit vacation or leave requests</p>
+              </a>
+
+              <a 
+                href="/MisGastos" 
+                className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all group"
+              >
+                <Receipt className="w-8 h-8 text-[#3B9FF3] mb-2 group-hover:scale-110 transition-transform" />
+                <h4 className="font-semibold text-slate-900 mb-1">Submit Expenses</h4>
+                <p className="text-sm text-slate-600">Upload receipts and expense reports</p>
+              </a>
+
+              <a 
+                href="/MyPayroll" 
+                className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all group"
+              >
+                <Banknote className="w-8 h-8 text-[#3B9FF3] mb-2 group-hover:scale-110 transition-transform" />
+                <h4 className="font-semibold text-slate-900 mb-1">View Payslips</h4>
+                <p className="text-sm text-slate-600">Access your payroll history</p>
+              </a>
+            </div>
           </CardContent>
         </Card>
 
