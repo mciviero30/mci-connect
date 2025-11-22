@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Edit, Trash2, TrendingUp, Calendar, Target, Plus } from 'lucide-react';
+import { Edit, Trash2, TrendingUp, Calendar, Target, Plus, MessageSquare } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import GoalProgressChart from './GoalProgressChart';
 import GoalProgressUpdater from './GoalProgressUpdater';
+import CommentThread from '../comments/CommentThread';
 
 const statusColors = {
   not_started: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
@@ -27,6 +28,7 @@ const priorityColors = {
 export default function GoalCard({ goal, onEdit, onDelete, showActions = false }) {
   const [showChart, setShowChart] = useState(false);
   const [showProgressUpdater, setShowProgressUpdater] = useState(false);
+  const [showComments, setShowComments] = useState(false);
   
   const progressPercentage = goal.target_value > 0 
     ? Math.min(((goal.current_value || 0) / goal.target_value) * 100, 100) 
@@ -131,6 +133,15 @@ export default function GoalCard({ goal, onEdit, onDelete, showActions = false }
             <TrendingUp className="w-4 h-4 mr-2" />
             {showChart ? 'Hide' : 'Show'} Chart
           </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowComments(!showComments)}
+            className="flex-1"
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Comments
+          </Button>
           {goal.status !== 'completed' && (
             <Button
               size="sm"
@@ -144,6 +155,11 @@ export default function GoalCard({ goal, onEdit, onDelete, showActions = false }
         </div>
 
         {showChart && <GoalProgressChart goalId={goal.id} />}
+        {showComments && (
+          <div className="mt-4">
+            <CommentThread entityType="goal" entityId={goal.id} />
+          </div>
+        )}
       </CardContent>
       
       <GoalProgressUpdater
