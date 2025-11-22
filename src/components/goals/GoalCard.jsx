@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Edit, Trash2, TrendingUp, Calendar, Target } from 'lucide-react';
+import { Edit, Trash2, TrendingUp, Calendar, Target, Plus } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import GoalProgressChart from './GoalProgressChart';
+import GoalProgressUpdater from './GoalProgressUpdater';
 
 const statusColors = {
   not_started: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
@@ -25,6 +26,7 @@ const priorityColors = {
 
 export default function GoalCard({ goal, onEdit, onDelete, showActions = false }) {
   const [showChart, setShowChart] = useState(false);
+  const [showProgressUpdater, setShowProgressUpdater] = useState(false);
   
   const progressPercentage = goal.target_value > 0 
     ? Math.min(((goal.current_value || 0) / goal.target_value) * 100, 100) 
@@ -118,19 +120,37 @@ export default function GoalCard({ goal, onEdit, onDelete, showActions = false }
           )}
         </div>
 
-        {/* Chart Toggle */}
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setShowChart(!showChart)}
-          className="w-full"
-        >
-          <TrendingUp className="w-4 h-4 mr-2" />
-          {showChart ? 'Hide' : 'Show'} Progress Chart
-        </Button>
+        {/* Actions */}
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowChart(!showChart)}
+            className="flex-1"
+          >
+            <TrendingUp className="w-4 h-4 mr-2" />
+            {showChart ? 'Hide' : 'Show'} Chart
+          </Button>
+          {goal.status !== 'completed' && (
+            <Button
+              size="sm"
+              onClick={() => setShowProgressUpdater(true)}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Update
+            </Button>
+          )}
+        </div>
 
         {showChart && <GoalProgressChart goalId={goal.id} />}
       </CardContent>
+      
+      <GoalProgressUpdater
+        goal={goal}
+        open={showProgressUpdater}
+        onClose={() => setShowProgressUpdater(false)}
+      />
     </Card>
   );
 }
