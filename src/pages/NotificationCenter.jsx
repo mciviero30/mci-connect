@@ -136,11 +136,15 @@ export default function NotificationCenter() {
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
                   <SelectItem value="all" className="text-slate-900 dark:text-white">All Types</SelectItem>
+                  <SelectItem value="mention" className="text-slate-900 dark:text-white">Mentions</SelectItem>
+                  <SelectItem value="comment" className="text-slate-900 dark:text-white">Comments</SelectItem>
+                  <SelectItem value="goal_status_change" className="text-slate-900 dark:text-white">Goal Updates</SelectItem>
+                  <SelectItem value="goal_deadline" className="text-slate-900 dark:text-white">Goal Deadlines</SelectItem>
+                  <SelectItem value="recognition" className="text-slate-900 dark:text-white">Recognitions</SelectItem>
                   <SelectItem value="system_alert" className="text-slate-900 dark:text-white">System Alerts</SelectItem>
                   <SelectItem value="overtime_alert" className="text-slate-900 dark:text-white">Overtime Alerts</SelectItem>
                   <SelectItem value="invoice_overdue" className="text-slate-900 dark:text-white">Overdue Invoices</SelectItem>
-                  <SelectItem value="invoice_due_soon" className="text-slate-900 dark:text-white">Upcoming Invoices</SelectItem>
-                  <SelectItem value="certification_expiring" className="text-slate-900 dark:text-white">Certification Expiring</SelectItem>
+                  <SelectItem value="certification_expiring" className="text-slate-900 dark:text-white">Certifications</SelectItem>
                   <SelectItem value="performance_review_due" className="text-slate-900 dark:text-white">Performance Reviews</SelectItem>
                 </SelectContent>
               </Select>
