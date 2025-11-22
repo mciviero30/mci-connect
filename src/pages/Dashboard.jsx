@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -117,7 +117,14 @@ export default function Dashboard() {
     }
   });
 
-  // DATA QUERIES
+  // Check which widgets need data
+  const needsEmployeeData = !isAdmin && widgets.some(w => ['work-hours', 'driving-hours', 'weekly-pay'].includes(w.type));
+  const needsExpenseData = widgets.some(w => ['my-expenses', 'pending-expenses'].includes(w.type));
+  const needsAssignmentData = !isAdmin && widgets.some(w => w.type === 'my-assignments');
+  const needsRecognitionData = widgets.some(w => ['recent-recognitions', 'recognition-feed', 'top-recognitions'].includes(w.type));
+  const needsAdminData = isAdmin && widgets.some(w => ['active-employees', 'total-hours', 'pending-timesheets'].includes(w.type));
+
+  // DATA QUERIES - Only load what's needed
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['myTimeEntries', user?.email],
     queryFn: async () => {
@@ -127,8 +134,8 @@ export default function Dashboard() {
         status: 'approved'
       }, '-date', 100);
     },
-    enabled: !!user?.email && !isAdmin,
-    staleTime: 60000,
+    enabled: !!user?.email && needsEmployeeData,
+    staleTime: 300000,
     initialData: [],
   });
 
@@ -140,8 +147,8 @@ export default function Dashboard() {
         employee_email: user.email
       }, '-date', 50);
     },
-    enabled: !!user?.email && !isAdmin,
-    staleTime: 60000,
+    enabled: !!user?.email && needsExpenseData && !isAdmin,
+    staleTime: 300000,
     initialData: [],
   });
 
@@ -154,16 +161,16 @@ export default function Dashboard() {
         status: 'approved'
       }, '-date', 50);
     },
-    enabled: !!user?.email && !isAdmin,
-    staleTime: 60000,
+    enabled: !!user?.email && needsEmployeeData,
+    staleTime: 300000,
     initialData: [],
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
-    enabled: !!user,
-    staleTime: 120000,
+    enabled: !!user && (widgets.some(w => ['active-jobs', 'my-assignments'].includes(w.type))),
+    staleTime: 300000,
     initialData: [],
   });
 
@@ -184,39 +191,39 @@ export default function Dashboard() {
         return assignDate >= weekStart && assignDate <= weekEnd;
       });
     },
-    enabled: !!user?.email && !isAdmin,
-    staleTime: 120000,
+    enabled: !!user?.email && needsAssignmentData,
+    staleTime: 300000,
     initialData: [],
   });
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('full_name'),
-    enabled: isAdmin,
-    staleTime: 300000,
+    enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
+    staleTime: 600000,
     initialData: [],
   });
 
   const { data: allTimeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200),
-    enabled: isAdmin,
-    staleTime: 120000,
+    enabled: isAdmin && widgets.some(w => w.type === 'total-hours'),
+    staleTime: 300000,
     initialData: [],
   });
 
   const { data: allExpenses = [] } = useQuery({
     queryKey: ['allExpenses'],
     queryFn: () => base44.entities.Expense.list('-date', 200),
-    enabled: isAdmin,
-    staleTime: 120000,
+    enabled: isAdmin && needsExpenseData,
+    staleTime: 300000,
     initialData: [],
   });
 
   const { data: recognitions = [] } = useQuery({
     queryKey: ['recentRecognitions'],
     queryFn: () => base44.entities.Recognition.list('-date', 5),
-    enabled: !!user,
+    enabled: needsRecognitionData,
     staleTime: 300000,
     initialData: [],
   });
@@ -224,71 +231,103 @@ export default function Dashboard() {
   const { data: pendingTimeEntries = [] } = useQuery({
     queryKey: ['pendingTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100),
-    enabled: isAdmin,
-    staleTime: 60000,
+    enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets'),
+    staleTime: 300000,
     initialData: [],
   });
 
-  // CALCULATIONS
-  const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-  const yearStart = startOfYear(today);
-  const hourlyRate = parseFloat(user?.hourly_rate || 25);
+  // CALCULATIONS - Memoized for performance
+  const calculations = React.useMemo(() => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+    const yearStart = startOfYear(today);
+    const hourlyRate = parseFloat(user?.hourly_rate || 25);
 
-  let currentWeekHours = 0;
-  let currentWeekPay = 0;
-  let yearHours = 0;
-  let drivingHoursThisWeek = 0;
-  let drivingPayThisWeek = 0;
+    let currentWeekHours = 0;
+    let currentWeekPay = 0;
+    let yearHours = 0;
+    let drivingHoursThisWeek = 0;
+    let drivingPayThisWeek = 0;
 
-  if (!isAdmin) {
-    const weekEntries = timeEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
-      return entryDate >= weekStart && entryDate <= weekEnd;
+    if (!isAdmin && timeEntries.length > 0) {
+      const weekEntries = timeEntries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= weekStart && entryDate <= weekEnd;
+      });
+
+      currentWeekHours = weekEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+      const normalHours = Math.min(currentWeekHours, 40);
+      const overtimeHours = Math.max(0, currentWeekHours - 40);
+      currentWeekPay = (normalHours * hourlyRate) + (overtimeHours * hourlyRate * 1.5);
+
+      const yearEntries = timeEntries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= yearStart;
+      });
+      yearHours = yearEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+
+      const weekDriving = drivingLogs.filter(log => {
+        const logDate = new Date(log.date);
+        return logDate >= weekStart && logDate <= weekEnd;
+      });
+
+      drivingHoursThisWeek = weekDriving.reduce((sum, log) => sum + (log.hours || 0), 0);
+      drivingPayThisWeek = weekDriving.reduce((sum, log) => sum + ((log.hours || 0) * hourlyRate), 0);
+    }
+
+    const activeEmployees = allEmployees.filter(e =>
+      e.employment_status === 'active' ||
+      e.employment_status === 'pending_registration' ||
+      !e.employment_status
+    );
+
+    const pendingExpenseCount = isAdmin
+      ? allExpenses.filter(e => e.status === 'pending').length
+      : expenses.filter(e => e.status === 'pending').length;
+
+    const totalWorkedHours = allTimeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+
+    const todaysBirthdays = allEmployees.filter(emp => {
+      if (!emp.dob) return false;
+      const dob = new Date(emp.dob);
+      return isSameDay(new Date(today.getFullYear(), dob.getMonth(), dob.getDate()), today);
     });
 
-    currentWeekHours = weekEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
-    const normalHours = Math.min(currentWeekHours, 40);
-    const overtimeHours = Math.max(0, currentWeekHours - 40);
-    currentWeekPay = (normalHours * hourlyRate) + (overtimeHours * hourlyRate * 1.5);
+    const recentAchievements = recognitions.slice(0, 3);
+    const weekProgress = (currentWeekHours / 40) * 100;
+    const pendingTimesheetsCount = pendingTimeEntries.length;
 
-    const yearEntries = timeEntries.filter(entry => {
-      const entryDate = new Date(entry.date);
-      return entryDate >= yearStart;
-    });
-    yearHours = yearEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+    return {
+      currentWeekHours,
+      currentWeekPay,
+      yearHours,
+      drivingHoursThisWeek,
+      drivingPayThisWeek,
+      activeEmployees,
+      pendingExpenseCount,
+      totalWorkedHours,
+      todaysBirthdays,
+      recentAchievements,
+      weekProgress,
+      pendingTimesheetsCount
+    };
+  }, [timeEntries, drivingLogs, allEmployees, allExpenses, expenses, allTimeEntries, recognitions, pendingTimeEntries, user?.hourly_rate, isAdmin]);
 
-    const weekDriving = drivingLogs.filter(log => {
-      const logDate = new Date(log.date);
-      return logDate >= weekStart && logDate <= weekEnd;
-    });
-
-    drivingHoursThisWeek = weekDriving.reduce((sum, log) => sum + (log.hours || 0), 0);
-    drivingPayThisWeek = weekDriving.reduce((sum, log) => sum + ((log.hours || 0) * hourlyRate), 0);
-  }
-
-  const activeEmployees = allEmployees.filter(e =>
-    e.employment_status === 'active' ||
-    e.employment_status === 'pending_registration' ||
-    !e.employment_status
-  );
-
-  const pendingExpenseCount = isAdmin
-    ? allExpenses.filter(e => e.status === 'pending').length
-    : expenses.filter(e => e.status === 'pending').length;
-
-  const totalWorkedHours = allTimeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
-
-  const todaysBirthdays = allEmployees.filter(emp => {
-    if (!emp.dob) return false;
-    const dob = new Date(emp.dob);
-    return isSameDay(new Date(today.getFullYear(), dob.getMonth(), dob.getDate()), today);
-  });
-
-  const recentAchievements = recognitions.slice(0, 3);
-  const weekProgress = (currentWeekHours / 40) * 100;
-  const pendingTimesheetsCount = pendingTimeEntries.length;
+  const {
+    currentWeekHours,
+    currentWeekPay,
+    yearHours,
+    drivingHoursThisWeek,
+    drivingPayThisWeek,
+    activeEmployees,
+    pendingExpenseCount,
+    totalWorkedHours,
+    todaysBirthdays,
+    recentAchievements,
+    weekProgress,
+    pendingTimesheetsCount
+  } = calculations;
 
   // WIDGET HANDLERS
   const handleDragEnd = (result) => {
