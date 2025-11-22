@@ -60,6 +60,7 @@ import MisProyectos from './pages/MisProyectos';
 import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import RoleManagement from './pages/RoleManagement';
 import NotificationCenter from './pages/NotificationCenter';
+import ReportingHub from './pages/ReportingHub';
 import __Layout from './Layout.jsx';
 
 
@@ -126,6 +127,7 @@ export const PAGES = {
     "AIAssistantPersonal": AIAssistantPersonal,
     "RoleManagement": RoleManagement,
     "NotificationCenter": NotificationCenter,
+    "ReportingHub": ReportingHub,
 }
 
 export const pagesConfig = {

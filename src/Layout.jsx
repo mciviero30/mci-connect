@@ -296,6 +296,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'REPORTS & AI',
       items: [
+        { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3, badge: '🚀' },
         { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
         { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, badge: '✨' },
