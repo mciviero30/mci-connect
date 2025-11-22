@@ -229,33 +229,33 @@ export default function PushNotificationManager({ user }) {
   }
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+    <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-900">
-          <Smartphone className="w-5 h-5 text-[#3B9FF3]" />
+        <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+          <Smartphone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           Push Notifications
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-slate-600 dark:text-slate-400">
           Get instant alerts on your device for important updates
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700/50">
           <div className="flex items-center gap-3">
             {isSubscribed ? (
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Bell className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                <Bell className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             ) : (
-              <div className="p-2 bg-slate-100 rounded-lg">
+              <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                 <BellOff className="w-5 h-5 text-slate-400" />
               </div>
             )}
             <div>
-              <p className="font-semibold text-slate-900">
+              <p className="font-semibold text-slate-900 dark:text-white">
                 {isSubscribed ? 'Enabled' : 'Disabled'}
               </p>
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 {isSubscribed ? 'Receiving push notifications' : 'Enable to receive alerts'}
               </p>
             </div>
@@ -265,8 +265,8 @@ export default function PushNotificationManager({ user }) {
             onClick={isSubscribed ? unsubscribeFromPush : subscribeToPush}
             disabled={isLoading}
             className={isSubscribed 
-              ? "bg-red-500 hover:bg-red-600 text-white" 
-              : "bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white"
+              ? "bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white" 
+              : "bg-blue-600 hover:bg-blue-700 text-white"
             }
           >
             {isLoading ? (
@@ -287,32 +287,36 @@ export default function PushNotificationManager({ user }) {
 
         {deviceInfo && (
           <div className="flex gap-2">
-            <Badge variant="outline" className="text-slate-700">
+            <Badge variant="outline" className="text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600">
               {deviceInfo.deviceType}
             </Badge>
-            <Badge variant="outline" className="text-slate-700">
+            <Badge variant="outline" className="text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600">
               {deviceInfo.browser}
             </Badge>
           </div>
         )}
 
         {permission === 'denied' && (
-          <Alert className="bg-red-50 border-red-300">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <AlertDescription className="text-red-900">
+          <Alert className="bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700/50">
+            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <AlertDescription className="text-red-900 dark:text-red-200">
               Push notifications are blocked. Please enable them in your browser settings.
             </AlertDescription>
           </Alert>
         )}
 
-        <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-          <h4 className="font-semibold text-slate-900 mb-2 text-sm">What you'll receive:</h4>
-          <ul className="space-y-1 text-xs text-slate-600">
+        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+          <h4 className="font-semibold text-slate-900 dark:text-white mb-2 text-sm">What you'll receive:</h4>
+          <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
             <li>✓ New announcements and company updates</li>
             <li>✓ Job assignments and schedule changes</li>
             <li>✓ Timesheet and expense approvals</li>
             <li>✓ Important system alerts</li>
             <li>✓ Time-off request responses</li>
+            <li>✓ Overtime alerts and warnings</li>
+            <li>✓ Performance review reminders</li>
+            <li>✓ Invoice due date notifications</li>
+            <li>✓ Certification expiration alerts</li>
           </ul>
         </div>
       </CardContent>

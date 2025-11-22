@@ -60,6 +60,33 @@ export default function NotificationEngine({ user }) {
     initialData: []
   });
 
+  // Monitor invoices for due dates
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: () => base44.entities.Invoice.list(),
+    enabled: user?.role === 'admin',
+    refetchInterval: 3600000, // Check every hour
+    initialData: []
+  });
+
+  // Monitor time entries for overtime
+  const { data: allTimeEntries = [] } = useQuery({
+    queryKey: ['allTimeEntries'],
+    queryFn: () => base44.entities.TimeEntry.list(),
+    enabled: user?.role === 'admin',
+    refetchInterval: 600000, // Check every 10 minutes
+    initialData: []
+  });
+
+  // Monitor employees for performance reviews
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => base44.entities.User.list(),
+    enabled: user?.role === 'admin',
+    refetchInterval: 86400000, // Check daily
+    initialData: []
+  });
+
   // Check and create notifications
   useEffect(() => {
     if (!user?.email) return;
@@ -165,19 +192,145 @@ export default function NotificationEngine({ user }) {
           });
 
           for (const cert of expiringCerts.slice(0, 5)) { // Limit to 5
-            if (!notificationExists('system_alert', cert.id)) {
+            if (!notificationExists('certification_expiring', cert.id)) {
               const daysLeft = differenceInDays(new Date(cert.expiration_date), today);
               await base44.entities.Notification.create({
                 recipient_email: user.email,
                 recipient_name: user.full_name,
-                type: 'system_alert',
+                type: 'certification_expiring',
                 priority: daysLeft <= 7 ? 'urgent' : 'high',
                 title: `⚠️ Certification Expiring: ${cert.employee_name}`,
-                message: `${cert.certification_name} expires in ${daysLeft} days.`,
+                message: `${cert.certification_name} expires in ${daysLeft} days. Renewal required.`,
                 action_url: '/Empleados',
                 related_entity_type: 'certification',
                 related_entity_id: cert.id
               }).catch(err => console.error('Failed to create notification:', err));
+            }
+          }
+
+          // Overdue and upcoming invoices
+          const overdueInvoices = invoices.filter(inv => {
+            if (inv.status === 'paid' || inv.status === 'cancelled' || !inv.due_date) return false;
+            const dueDate = new Date(inv.due_date);
+            return dueDate < today;
+          });
+
+          const upcomingInvoices = invoices.filter(inv => {
+            if (inv.status === 'paid' || inv.status === 'cancelled' || !inv.due_date) return false;
+            const dueDate = new Date(inv.due_date);
+            const daysUntilDue = differenceInDays(dueDate, today);
+            return daysUntilDue >= 0 && daysUntilDue <= 7;
+          });
+
+          // Overdue invoices notifications
+          for (const invoice of overdueInvoices.slice(0, 3)) {
+            if (!notificationExists('invoice_overdue', invoice.id)) {
+              const daysOverdue = differenceInDays(today, new Date(invoice.due_date));
+              await base44.entities.Notification.create({
+                recipient_email: user.email,
+                recipient_name: user.full_name,
+                type: 'invoice_overdue',
+                priority: 'urgent',
+                title: `🚨 Invoice Overdue: ${invoice.customer_name}`,
+                message: `Invoice #${invoice.invoice_number} is ${daysOverdue} days overdue. Balance: $${(invoice.balance || invoice.total || 0).toFixed(2)}`,
+                action_url: '/Facturas',
+                related_entity_type: 'invoice',
+                related_entity_id: invoice.id
+              }).catch(err => console.error('Failed to create notification:', err));
+            }
+          }
+
+          // Upcoming invoices notifications
+          for (const invoice of upcomingInvoices.slice(0, 3)) {
+            if (!notificationExists('invoice_due_soon', invoice.id)) {
+              const daysUntilDue = differenceInDays(new Date(invoice.due_date), today);
+              await base44.entities.Notification.create({
+                recipient_email: user.email,
+                recipient_name: user.full_name,
+                type: 'invoice_due_soon',
+                priority: daysUntilDue <= 3 ? 'high' : 'medium',
+                title: `📅 Invoice Due Soon: ${invoice.customer_name}`,
+                message: `Invoice #${invoice.invoice_number} due in ${daysUntilDue} days. Balance: $${(invoice.balance || invoice.total || 0).toFixed(2)}`,
+                action_url: '/Facturas',
+                related_entity_type: 'invoice',
+                related_entity_id: invoice.id
+              }).catch(err => console.error('Failed to create notification:', err));
+            }
+          }
+
+          // Overtime alerts - Group by employee
+          const overtimeMap = new Map();
+          allTimeEntries.forEach(entry => {
+            const entryDate = new Date(entry.date);
+            const weeksDiff = Math.floor(differenceInDays(today, entryDate) / 7);
+            if (weeksDiff > 0) return; // Only current week
+
+            const key = entry.employee_email;
+            if (!overtimeMap.has(key)) {
+              overtimeMap.set(key, {
+                email: entry.employee_email,
+                name: entry.employee_name,
+                totalHours: 0,
+                overtimeHours: 0
+              });
+            }
+            
+            const data = overtimeMap.get(key);
+            data.totalHours += entry.hours_worked || 0;
+            if (entry.hour_type === 'overtime') {
+              data.overtimeHours += entry.hours_worked || 0;
+            }
+          });
+
+          // Check for excessive overtime (more than 10 hours in a week)
+          for (const [email, data] of overtimeMap) {
+            if (data.overtimeHours > 10) {
+              const notifId = `overtime_${email}_${today.toISOString().split('T')[0]}`;
+              if (!notificationExists('overtime_alert', notifId)) {
+                await base44.entities.Notification.create({
+                  recipient_email: user.email,
+                  recipient_name: user.full_name,
+                  type: 'overtime_alert',
+                  priority: data.overtimeHours > 20 ? 'urgent' : 'high',
+                  title: `⏰ Excessive Overtime: ${data.name}`,
+                  message: `${data.name} has ${data.overtimeHours.toFixed(1)} overtime hours this week (${data.totalHours.toFixed(1)} total). Consider workload adjustment.`,
+                  action_url: '/Horarios',
+                  related_entity_type: 'time_entry',
+                  related_entity_id: notifId
+                }).catch(err => console.error('Failed to create notification:', err));
+              }
+            }
+          }
+
+          // Performance review reminders
+          for (const emp of employees) {
+            if (emp.employment_status !== 'active') continue;
+            
+            // Check if review is due (90 days since hire or last review)
+            const hireDate = emp.hire_date ? new Date(emp.hire_date) : null;
+            const lastReviewDate = emp.last_performance_review_date ? new Date(emp.last_performance_review_date) : null;
+            
+            const referenceDate = lastReviewDate || hireDate;
+            if (!referenceDate) continue;
+
+            const daysSinceReview = differenceInDays(today, referenceDate);
+            
+            // Alert if 90 days have passed (quarterly review due)
+            if (daysSinceReview >= 90 && daysSinceReview <= 95) {
+              const notifId = `review_${emp.email}_${daysSinceReview}`;
+              if (!notificationExists('performance_review_due', notifId)) {
+                await base44.entities.Notification.create({
+                  recipient_email: user.email,
+                  recipient_name: user.full_name,
+                  type: 'performance_review_due',
+                  priority: 'high',
+                  title: `📋 Performance Review Due: ${emp.full_name}`,
+                  message: `Quarterly performance review is due for ${emp.full_name}. Last review: ${daysSinceReview} days ago.`,
+                  action_url: '/PerformanceManagement',
+                  related_entity_type: 'employee',
+                  related_entity_id: notifId
+                }).catch(err => console.error('Failed to create notification:', err));
+              }
             }
           }
         }
@@ -234,7 +387,10 @@ export default function NotificationEngine({ user }) {
     pendingTimeOff.length,
     inventory.length,
     certifications.length,
-    assignments.length
+    assignments.length,
+    invoices.length,
+    allTimeEntries.length,
+    employees.length
   ]);
 
   return null; // This component doesn't render anything
