@@ -281,7 +281,9 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'TIME & PAYROLL',
       items: [
-        { title: 'Time Tracking', url: createPageUrl("Horarios"), icon: Clock },
+        { title: 'Time Tracking', url: createPageUrl("TimeTracking"), icon: Clock, badge: '🚀' },
+        { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3, badge: '🚀' },
+        { title: 'Approvals', url: createPageUrl("Horarios"), icon: Clock },
         { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
         { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car },
         { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote },

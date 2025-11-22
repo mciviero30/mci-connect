@@ -64,6 +64,8 @@ import ReportingHub from './pages/ReportingHub';
 import ActivityFeed from './pages/ActivityFeed';
 import Goals from './pages/Goals';
 import TeamGoals from './pages/TeamGoals';
+import TimeTracking from './pages/TimeTracking';
+import TimeReports from './pages/TimeReports';
 import __Layout from './Layout.jsx';
 
 
@@ -134,6 +136,8 @@ export const PAGES = {
     "ActivityFeed": ActivityFeed,
     "Goals": Goals,
     "TeamGoals": TeamGoals,
+    "TimeTracking": TimeTracking,
+    "TimeReports": TimeReports,
 }
 
 export const pagesConfig = {
