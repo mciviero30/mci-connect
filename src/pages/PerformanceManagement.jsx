@@ -3,11 +3,12 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Award, Plus, Trophy, Star, TrendingUp, Info, Shield, AlertTriangle, Edit, Trash2 } from "lucide-react";
+import { Award, Plus, Trophy, Star, TrendingUp, Info, Shield, AlertTriangle, Edit, Trash2, Target } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,6 +100,12 @@ export default function PerformanceManagement() {
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list('-created_date', 200),
+    initialData: []
+  });
+
+  const { data: goals = [] } = useQuery({
+    queryKey: ['allGoals'],
+    queryFn: () => base44.entities.Goal.list('-created_date', 100),
     initialData: []
   });
 
@@ -232,11 +239,15 @@ export default function PerformanceManagement() {
     }
   };
 
-  // Enhanced stats with more performance data
+  // Enhanced stats with more performance data + Goals
   const employeeStats = employees.map(emp => {
     const empRecognitions = recognitions.filter(r => r.employee_email === emp.email);
     const empTimeEntries = timeEntries.filter(e => e.employee_email === emp.email && e.status === 'approved');
     const empJobs = [...new Set(empTimeEntries.map(e => e.job_id))].length;
+    const empGoals = goals.filter(g => g.owner_email === emp.email);
+    const completedGoals = empGoals.filter(g => g.status === 'completed').length;
+    const activeGoals = empGoals.filter(g => ['on_track', 'at_risk', 'behind', 'not_started'].includes(g.status)).length;
+    const goalCompletionRate = empGoals.length > 0 ? (completedGoals / empGoals.length) * 100 : 0;
     
     const totalPoints = empRecognitions.reduce((sum, r) => sum + (r.points || 0), 0);
     const totalHours = empTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
@@ -249,7 +260,11 @@ export default function PerformanceManagement() {
       totalPoints,
       totalHours,
       uniqueJobs: empJobs,
-      latestRecognition
+      latestRecognition,
+      totalGoals: empGoals.length,
+      completedGoals,
+      activeGoals,
+      goalCompletionRate
     };
   }).sort((a, b) => b.totalPoints - a.totalPoints);
 
@@ -409,6 +424,19 @@ export default function PerformanceManagement() {
                       <span>•</span>
                       <span>{emp.uniqueJobs} jobs</span>
                     </div>
+
+                    {emp.totalGoals > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-200">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-slate-500 flex items-center gap-1">
+                            <Target className="w-3 h-3" />
+                            Goals: {emp.completedGoals}/{emp.totalGoals}
+                          </span>
+                          <span className="text-xs font-medium text-blue-600">{emp.goalCompletionRate.toFixed(0)}%</span>
+                        </div>
+                        <Progress value={emp.goalCompletionRate} className="h-1.5" />
+                      </div>
+                    )}
 
                     {emp.latestRecognition && (
                       <div className="mt-3 pt-3 border-t border-slate-200">
