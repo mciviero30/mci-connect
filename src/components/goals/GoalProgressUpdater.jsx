@@ -23,6 +23,10 @@ export default function GoalProgressUpdater({ goal, open, onClose }) {
 
   const updateProgressMutation = useMutation({
     mutationFn: async (data) => {
+      const newStatus = data.new_value >= goal.target_value ? 'completed' : 
+                        data.new_value >= goal.target_value * 0.7 ? 'on_track' : 
+                        data.new_value >= goal.target_value * 0.4 ? 'at_risk' : 'behind';
+      
       // Create progress log
       await base44.entities.GoalProgress.create({
         goal_id: goal.id,
@@ -30,9 +34,7 @@ export default function GoalProgressUpdater({ goal, open, onClose }) {
         updated_by_name: user.full_name,
         previous_value: goal.current_value,
         new_value: data.new_value,
-        status: data.new_value >= goal.target_value ? 'completed' : 
-                data.new_value >= goal.target_value * 0.7 ? 'on_track' : 
-                data.new_value >= goal.target_value * 0.4 ? 'at_risk' : 'behind',
+        status: newStatus,
         notes: data.notes,
         achievements: data.achievements,
         challenges: data.challenges
@@ -41,11 +43,46 @@ export default function GoalProgressUpdater({ goal, open, onClose }) {
       // Update goal
       await base44.entities.Goal.update(goal.id, {
         current_value: data.new_value,
-        status: data.new_value >= goal.target_value ? 'completed' : 
-                data.new_value >= goal.target_value * 0.7 ? 'on_track' : 
-                data.new_value >= goal.target_value * 0.4 ? 'at_risk' : 'behind',
+        status: newStatus,
         completed_date: data.new_value >= goal.target_value ? new Date().toISOString().split('T')[0] : null
       });
+
+      // Create notifications for status changes
+      if (newStatus !== goal.status) {
+        const statusMessages = {
+          completed: `🎉 Goal completed: "${goal.title}"`,
+          at_risk: `⚠️ Goal at risk: "${goal.title}"`,
+          behind: `🚨 Goal behind schedule: "${goal.title}"`,
+          on_track: `✅ Goal back on track: "${goal.title}"`
+        };
+
+        if (goal.owner_email !== user.email) {
+          await base44.entities.Notification.create({
+            user_email: goal.owner_email,
+            type: 'goal_status_change',
+            title: 'Goal Status Updated',
+            message: statusMessages[newStatus] || `Goal status changed to ${newStatus}`,
+            link: null,
+            is_read: false
+          });
+        }
+
+        // Notify collaborators
+        if (goal.collaborators && goal.collaborators.length > 0) {
+          for (const collab of goal.collaborators) {
+            if (collab !== user.email) {
+              await base44.entities.Notification.create({
+                user_email: collab,
+                type: 'goal_status_change',
+                title: 'Team Goal Updated',
+                message: `${user.full_name} updated: ${statusMessages[newStatus]}`,
+                link: null,
+                is_read: false
+              });
+            }
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['goals']);

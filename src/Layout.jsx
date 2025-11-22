@@ -73,6 +73,7 @@ import NotificationService from "@/components/notifications/NotificationService"
 import NotificationEngine from "@/components/notifications/NotificationEngine";
 import { OfflineProvider } from "@/components/offline/OfflineManager";
 import CertificationMonitor from "@/components/certifications/CertificationMonitor";
+import DeadlineMonitor from "@/components/notifications/DeadlineMonitor";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -443,8 +444,13 @@ const LayoutContent = ({ children, currentPageName }) => {
       <NotificationService user={user}>
         <NotificationEngine user={user} />
       </NotificationService>
-      
-      {user && <CertificationMonitor userEmail={user.email} />}
+
+      {user && (
+        <>
+          <CertificationMonitor userEmail={user.email} />
+          <DeadlineMonitor userEmail={user.email} />
+        </>
+      )}
         
       <div className="min-h-screen flex w-full bg-[#FAFAFA] dark:bg-[#181818]">
         <style>{`
