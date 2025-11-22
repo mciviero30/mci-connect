@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -11,10 +10,17 @@ import { Line, Bar } from 'recharts';
 import { LineChart, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ReportFilters from '../components/reportes/ReportFilters';
+import ExportButtons, { exportToCSV, exportToPDF } from '../components/reportes/ExportButtons';
+import { useToast } from '@/components/ui/toast';
 
 export default function FinancialDashboard() {
   const { t, language } = useLanguage();
-  const [selectedPeriod, setSelectedPeriod] = useState('thisMonth');
+  const toast = useToast();
+  const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [selectedTeam, setSelectedTeam] = useState('all');
+  const [isExporting, setIsExporting] = useState(false);
 
   // Fetch all financial data
   const { data: jobs } = useQuery({
@@ -47,11 +53,50 @@ export default function FinancialDashboard() {
     initialData: []
   });
 
+  const { data: teams } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    initialData: []
+  });
+
+  // Filter data by date range and team
+  const filteredData = useMemo(() => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const filteredJobs = jobs.filter(j => {
+      if (selectedTeam !== 'all' && j.team_id !== selectedTeam) return false;
+      return true;
+    });
+
+    const filteredInvoices = invoices.filter(inv => {
+      const invDate = new Date(inv.invoice_date);
+      return invDate >= start && invDate <= end;
+    });
+
+    const filteredExpenses = expenses.filter(exp => {
+      const expDate = new Date(exp.date);
+      return expDate >= start && expDate <= end;
+    });
+
+    const filteredTimeEntries = timeEntries.filter(te => {
+      const teDate = new Date(te.date);
+      return teDate >= start && teDate <= end;
+    });
+
+    return {
+      jobs: filteredJobs,
+      invoices: filteredInvoices,
+      expenses: filteredExpenses,
+      timeEntries: filteredTimeEntries
+    };
+  }, [jobs, invoices, expenses, timeEntries, startDate, endDate, selectedTeam]);
+
   // 1. BUDGET VS ACTUAL POR JOB
   const jobBudgetAnalysis = useMemo(() => {
-    return jobs.filter(j => j.status === 'active').map(job => {
-      const jobExpenses = expenses.filter(e => e.job_id === job.id);
-      const jobTimeEntries = timeEntries.filter(t => t.job_id === job.id);
+    return filteredData.jobs.filter(j => j.status === 'active').map(job => {
+      const jobExpenses = filteredData.expenses.filter(e => e.job_id === job.id);
+      const jobTimeEntries = filteredData.timeEntries.filter(t => t.job_id === job.id);
       
       const actualExpenses = jobExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
       const laborCost = jobTimeEntries.reduce((sum, t) => {
@@ -75,7 +120,7 @@ export default function FinancialDashboard() {
         status: variance >= 0 ? 'on-budget' : 'over-budget'
       };
     }).sort((a, b) => a.variance - b.variance);
-  }, [jobs, expenses, timeEntries, employees]);
+  }, [filteredData, employees]);
 
   // 2. CASH FLOW FORECAST (próximos 90 días)
   const cashFlowForecast = useMemo(() => {
@@ -88,7 +133,7 @@ export default function FinancialDashboard() {
       const monthEnd = endOfMonth(date);
       
       // Ingresos proyectados
-      const monthInvoices = invoices.filter(inv => {
+      const monthInvoices = filteredData.invoices.filter(inv => {
         const dueDate = new Date(inv.due_date);
         return dueDate >= monthStart && dueDate <= monthEnd && inv.status !== 'cancelled';
       });
@@ -96,7 +141,7 @@ export default function FinancialDashboard() {
       const projectedIncome = monthInvoices.reduce((sum, inv) => sum + (inv.balance || inv.total || 0), 0);
       
       // Gastos proyectados (promedio histórico)
-      const monthExpenses = expenses.filter(e => {
+      const monthExpenses = filteredData.expenses.filter(e => {
         const expDate = new Date(e.date);
         return expDate >= monthStart && expDate <= monthEnd;
       });
@@ -114,7 +159,7 @@ export default function FinancialDashboard() {
     }
     
     return forecast;
-  }, [invoices, expenses, language]);
+  }, [filteredData, language]);
 
   // 3. PROFIT MARGIN TRACKER
   const profitMarginData = useMemo(() => {
@@ -126,12 +171,12 @@ export default function FinancialDashboard() {
       const monthStart = startOfMonth(date);
       const monthEnd = endOfMonth(date);
       
-      const monthInvoices = invoices.filter(inv => {
+      const monthInvoices = filteredData.invoices.filter(inv => {
         const invDate = new Date(inv.invoice_date);
         return invDate >= monthStart && invDate <= monthEnd;
       });
       
-      const monthExpenses = expenses.filter(e => {
+      const monthExpenses = filteredData.expenses.filter(e => {
         const expDate = new Date(e.date);
         return expDate >= monthStart && expDate <= monthEnd;
       });
@@ -151,12 +196,12 @@ export default function FinancialDashboard() {
     }
     
     return last6Months;
-  }, [invoices, expenses, language]);
+  }, [filteredData, language]);
 
   // 4. INVOICES OVERDUE (para auto-reminders)
   const overdueInvoices = useMemo(() => {
     const today = new Date();
-    return invoices.filter(inv => {
+    return filteredData.invoices.filter(inv => {
       if (inv.status === 'paid' || inv.status === 'cancelled') return false;
       if (!inv.due_date) return false;
       
@@ -168,7 +213,7 @@ export default function FinancialDashboard() {
       ...inv,
       daysOverdue: differenceInDays(today, new Date(inv.due_date))
     })).sort((a, b) => b.daysOverdue - a.daysOverdue);
-  }, [invoices]);
+  }, [filteredData]);
 
   // 5. LATE PAYMENT PENALTIES CALCULATION
   const latePaymentPenalties = useMemo(() => {
@@ -196,7 +241,7 @@ export default function FinancialDashboard() {
     const monthEnd = endOfMonth(today);
     
     // Revenue
-    const monthInvoices = invoices.filter(inv => {
+    const monthInvoices = filteredData.invoices.filter(inv => {
       const invDate = new Date(inv.invoice_date);
       return invDate >= monthStart && invDate <= monthEnd;
     });
@@ -204,7 +249,7 @@ export default function FinancialDashboard() {
     const totalRevenue = monthInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
     
     // Expenses by category
-    const monthExpenses = expenses.filter(e => {
+    const monthExpenses = filteredData.expenses.filter(e => {
       const expDate = new Date(e.date);
       return expDate >= monthStart && expDate <= monthEnd;
     });
@@ -226,13 +271,13 @@ export default function FinancialDashboard() {
       netIncome,
       netMargin
     };
-  }, [invoices, expenses]);
+  }, [filteredData]);
 
   // 7. EXPENSE FORECASTING
   const expenseForecast = useMemo(() => {
     // Calculate average expenses per category for last 3 months
     const today = new Date();
-    const last3Months = expenses.filter(e => {
+    const last3Months = filteredData.expenses.filter(e => {
       const expDate = new Date(e.date);
       const monthsAgo = differenceInDays(today, expDate) / 30;
       return monthsAgo <= 3;
@@ -254,7 +299,7 @@ export default function FinancialDashboard() {
     }));
     
     return nextMonthForecast;
-  }, [expenses]);
+  }, [filteredData]);
 
   const totalBudgetVariance = jobBudgetAnalysis.reduce((sum, job) => sum + job.variance, 0);
   const jobsOverBudget = jobBudgetAnalysis.filter(j => j.variance < 0).length;
@@ -262,67 +307,151 @@ export default function FinancialDashboard() {
     ? profitMarginData.reduce((sum, m) => sum + m.margin, 0) / profitMarginData.length 
     : 0;
 
+  // Export functions
+  const handleExportCSV = () => {
+    setIsExporting(true);
+    try {
+      const exportData = jobBudgetAnalysis.map(job => ({
+        'Job Name': job.name,
+        'Budget': job.budget,
+        'Actual Cost': job.actual,
+        'Variance': job.variance,
+        'Variance %': job.variancePercent.toFixed(2),
+        'Status': job.status
+      }));
+      exportToCSV(exportData, 'financial_dashboard');
+      toast.success('Report exported successfully!');
+    } catch (error) {
+      toast.error('Failed to export report');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    setIsExporting(true);
+    try {
+      const htmlContent = `
+        <h2>Budget vs Actual Analysis</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Job Name</th>
+              <th>Budget</th>
+              <th>Actual Cost</th>
+              <th>Variance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${jobBudgetAnalysis.map(job => `
+              <tr>
+                <td>${job.name}</td>
+                <td>$${job.budget.toLocaleString()}</td>
+                <td>$${job.actual.toLocaleString()}</td>
+                <td>${job.variance >= 0 ? '+' : ''}$${job.variance.toLocaleString()}</td>
+                <td>${job.status}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <h2>Profit & Loss Statement</h2>
+        <table>
+          <tr><td><strong>Total Revenue:</strong></td><td>$${plStatement.revenue.toLocaleString()}</td></tr>
+          <tr><td><strong>Total Expenses:</strong></td><td>$${plStatement.totalExpenses.toLocaleString()}</td></tr>
+          <tr><td><strong>Net Income:</strong></td><td>$${plStatement.netIncome.toLocaleString()}</td></tr>
+          <tr><td><strong>Net Margin:</strong></td><td>${plStatement.netMargin.toFixed(1)}%</td></tr>
+        </table>
+      `;
+      exportToPDF(htmlContent, 'Financial Dashboard Report');
+      toast.success('Report exported successfully!');
+    } catch (error) {
+      toast.error('Failed to export report');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-green-50">
+    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? "Dashboard Financiero" : "Financial Dashboard"}
           description={language === 'es' ? "Análisis completo de finanzas y rentabilidad" : "Complete financial and profitability analysis"}
           icon={DollarSign}
+          actions={
+            <ExportButtons
+              onExportCSV={handleExportCSV}
+              onExportPDF={handleExportPDF}
+              isExporting={isExporting}
+              fileName="financial_dashboard"
+            />
+          }
+        />
+
+        {/* Filters */}
+        <ReportFilters
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          department={selectedTeam}
+          onDepartmentChange={setSelectedTeam}
+          teams={teams}
         />
 
         {/* KEY METRICS */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg border-0">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-white text-sm font-medium">
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
                   {language === 'es' ? 'Margen Promedio' : 'Avg Profit Margin'}
                 </p>
-                <TrendingUp className="w-5 h-5 text-white" />
+                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
-              <p className="text-3xl font-bold text-white">{avgProfitMargin.toFixed(1)}%</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white">{avgProfitMargin.toFixed(1)}%</p>
             </CardContent>
           </Card>
 
-          <Card className={`shadow-lg border-0 ${totalBudgetVariance >= 0 ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-red-500 to-red-600'} text-white`}>
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-white text-sm font-medium">
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
                   {language === 'es' ? 'Varianza Total' : 'Total Variance'}
                 </p>
-                {totalBudgetVariance >= 0 ? <ArrowUpRight className="w-5 h-5 text-white" /> : <ArrowDownRight className="w-5 h-5 text-white" />}
+                {totalBudgetVariance >= 0 ? <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400" /> : <ArrowDownRight className="w-5 h-5 text-red-600 dark:text-red-400" />}
               </div>
-              <p className="text-3xl font-bold text-white">
+              <p className={`text-3xl font-bold ${totalBudgetVariance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 ${Math.abs(totalBudgetVariance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg border-0">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-white text-sm font-medium">
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
                   {language === 'es' ? 'Facturas Vencidas' : 'Overdue Invoices'}
                 </p>
-                <AlertTriangle className="w-5 h-5 text-white" />
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
-              <p className="text-3xl font-bold text-white">{overdueInvoices.length}</p>
-              <p className="text-white text-xs mt-1">
+              <p className="text-3xl font-bold text-slate-900 dark:text-white">{overdueInvoices.length}</p>
+              <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">
                 ${overdueInvoices.reduce((sum, inv) => sum + (inv.balance || inv.total || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg border-0">
+          <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-white text-sm font-medium">
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
                   {language === 'es' ? 'Penalidades' : 'Late Penalties'}
                 </p>
-                <DollarSign className="w-5 h-5 text-white" />
+                <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-3xl font-bold text-slate-900 dark:text-white">
                 ${latePaymentPenalties.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
@@ -330,10 +459,10 @@ export default function FinancialDashboard() {
         </div>
 
         {/* CASH FLOW FORECAST */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Calendar className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               {language === 'es' ? 'Pronóstico de Flujo de Caja (12 meses)' : 'Cash Flow Forecast (12 months)'}
             </CardTitle>
           </CardHeader>

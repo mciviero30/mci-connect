@@ -58,7 +58,7 @@ import AIAutomationDashboard from './pages/AIAutomationDashboard';
 import MiScorecard from './pages/MiScorecard';
 import MisProyectos from './pages/MisProyectos';
 import AIAssistantPersonal from './pages/AIAssistantPersonal';
-import Layout from './Layout.jsx';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -127,5 +127,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Dashboard",
     Pages: PAGES,
-    Layout: Layout,
+    Layout: __Layout,
 };
