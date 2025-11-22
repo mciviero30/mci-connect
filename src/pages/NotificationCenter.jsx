@@ -38,6 +38,7 @@ export default function NotificationCenter() {
       );
     },
     enabled: !!user?.email,
+    refetchInterval: 30000, // Poll every 30 seconds for real-time updates
   });
 
   const markAsReadMutation = useMutation({

@@ -113,18 +113,35 @@ export default function PerformanceManagement() {
   // CREATE MUTATION - Standard creation
   // ============================================
   const createMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       const selectedType = recognitionTypes.find(t => t.value === data.recognition_type);
-      return base44.entities.Recognition.create({
+      const recognition = await base44.entities.Recognition.create({
         ...data,
         given_by_email: user.email,
         given_by_name: user.full_name,
         points: selectedType?.points || 0,
-        message: data.description // Map description to message
+        message: data.description
       });
+
+      // Create notification for the employee
+      if (data.employee_email !== user.email) {
+        await base44.entities.Notification.create({
+          recipient_email: data.employee_email,
+          recipient_name: data.employee_name,
+          type: 'recognition',
+          priority: 'medium',
+          title: `🏆 You received a ${selectedType?.label}!`,
+          message: `${user.full_name} recognized you: "${data.title}" (+${selectedType?.points} points)`,
+          link: null,
+          is_read: false
+        });
+      }
+
+      return recognition;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recognitions'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
       setShowDialog(false);
       setEditingRecognition(null);
       setFormData({

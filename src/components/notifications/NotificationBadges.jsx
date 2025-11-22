@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Clock, DollarSign, Award, TrendingUp } from 'lucide-react';
+import { AlertCircle, Clock, DollarSign, Award, TrendingUp, MessageSquare, AtSign, Target, Trophy } from 'lucide-react';
 
 export const NotificationIcon = ({ type }) => {
   const icons = {
@@ -9,6 +9,11 @@ export const NotificationIcon = ({ type }) => {
     invoice_due_soon: <DollarSign className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
     certification_expiring: <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
     performance_review_due: <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />,
+    mention: <AtSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />,
+    comment: <MessageSquare className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
+    goal_status_change: <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />,
+    goal_deadline: <Target className="w-5 h-5 text-red-600 dark:text-red-400" />,
+    recognition: <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
   };
 
   return icons[type] || <AlertCircle className="w-5 h-5 text-slate-600 dark:text-slate-400" />;
