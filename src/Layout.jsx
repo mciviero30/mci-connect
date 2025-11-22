@@ -40,6 +40,7 @@ import {
   Brain,
   Zap,
   Shield,
+  Bell,
 } from "lucide-react";
 import {
   Sidebar,
