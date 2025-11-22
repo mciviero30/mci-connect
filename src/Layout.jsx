@@ -362,6 +362,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
+        { title: 'Activity Feed', url: createPageUrl("ActivityFeed"), icon: Zap },
       ]
     }
     ];

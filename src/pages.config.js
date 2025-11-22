@@ -61,6 +61,7 @@ import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import RoleManagement from './pages/RoleManagement';
 import NotificationCenter from './pages/NotificationCenter';
 import ReportingHub from './pages/ReportingHub';
+import ActivityFeed from './pages/ActivityFeed';
 import __Layout from './Layout.jsx';
 
 
@@ -128,6 +129,7 @@ export const PAGES = {
     "RoleManagement": RoleManagement,
     "NotificationCenter": NotificationCenter,
     "ReportingHub": ReportingHub,
+    "ActivityFeed": ActivityFeed,
 }
 
 export const pagesConfig = {
