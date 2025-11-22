@@ -272,6 +272,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
         { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
         { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target, badge: '🚀' },
+        { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users, badge: '🚀' },
         { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
       ]
     },

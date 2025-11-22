@@ -63,6 +63,7 @@ import NotificationCenter from './pages/NotificationCenter';
 import ReportingHub from './pages/ReportingHub';
 import ActivityFeed from './pages/ActivityFeed';
 import Goals from './pages/Goals';
+import TeamGoals from './pages/TeamGoals';
 import __Layout from './Layout.jsx';
 
 
@@ -132,6 +133,7 @@ export const PAGES = {
     "ReportingHub": ReportingHub,
     "ActivityFeed": ActivityFeed,
     "Goals": Goals,
+    "TeamGoals": TeamGoals,
 }
 
 export const pagesConfig = {
