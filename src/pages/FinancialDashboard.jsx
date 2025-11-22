@@ -503,10 +503,10 @@ export default function FinancialDashboard() {
         </Card>
 
         {/* PROFIT MARGIN TREND */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <TrendingUp className="w-5 h-5 text-green-600" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
               {language === 'es' ? 'Tendencia de Margen de Ganancia' : 'Profit Margin Trend'}
             </CardTitle>
           </CardHeader>
@@ -552,34 +552,34 @@ export default function FinancialDashboard() {
         </Card>
 
         {/* BUDGET VS ACTUAL */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-slate-900">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Budget vs Real por Proyecto' : 'Budget vs Actual by Project'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {jobBudgetAnalysis.slice(0, 10).map(job => (
-                <div key={job.id} className="border-b border-slate-200 pb-4 last:border-0">
+                <div key={job.id} className="border-b border-slate-200 dark:border-slate-700 pb-4 last:border-0">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="font-semibold text-slate-900">{job.name}</h4>
-                      <div className="flex gap-4 text-sm text-slate-600 mt-1">
+                      <h4 className="font-semibold text-slate-900 dark:text-white">{job.name}</h4>
+                      <div className="flex gap-4 text-sm text-slate-600 dark:text-slate-400 mt-1">
                         <span>Budget: ${job.budget.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         <span>Real: ${job.actual.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold text-lg ${job.variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`font-bold text-lg ${job.variance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                         {job.variance >= 0 ? '+' : ''}${job.variance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </p>
-                      <p className={`text-sm ${job.variance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`text-sm ${job.variance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                         {job.variancePercent >= 0 ? '+' : ''}{job.variancePercent.toFixed(1)}%
                       </p>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${job.variance >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
                       style={{ width: `${Math.min((job.actual / job.budget) * 100, 100)}%` }}
@@ -592,52 +592,52 @@ export default function FinancialDashboard() {
         </Card>
 
         {/* P&L STATEMENT */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-slate-900">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Estado de Pérdidas y Ganancias (Este Mes)' : 'Profit & Loss Statement (This Month)'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="border-b border-slate-200 pb-3">
+              <div className="border-b border-slate-200 dark:border-slate-700 pb-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-slate-700">{language === 'es' ? 'Ingresos Totales' : 'Total Revenue'}</span>
-                  <span className="font-bold text-green-600 text-lg">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{language === 'es' ? 'Ingresos Totales' : 'Total Revenue'}</span>
+                  <span className="font-bold text-green-600 dark:text-green-400 text-lg">
                     ${plStatement.revenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <p className="font-semibold text-slate-700">{language === 'es' ? 'Gastos por Categoría' : 'Expenses by Category'}</p>
+                <p className="font-semibold text-slate-700 dark:text-slate-300">{language === 'es' ? 'Gastos por Categoría' : 'Expenses by Category'}</p>
                 {Object.entries(plStatement.expenses).map(([category, amount]) => (
                   <div key={category} className="flex justify-between items-center pl-4">
-                    <span className="text-slate-600 capitalize">{category.replace('_', ' ')}</span>
-                    <span className="text-red-600">
+                    <span className="text-slate-600 dark:text-slate-400 capitalize">{category.replace('_', ' ')}</span>
+                    <span className="text-red-600 dark:text-red-400">
                       -${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-slate-200 pt-3">
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-slate-700">{language === 'es' ? 'Total Gastos' : 'Total Expenses'}</span>
-                  <span className="font-bold text-red-600 text-lg">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{language === 'es' ? 'Total Gastos' : 'Total Expenses'}</span>
+                  <span className="font-bold text-red-600 dark:text-red-400 text-lg">
                     -${plStatement.totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
 
-              <div className="border-t-2 border-slate-300 pt-3">
+              <div className="border-t-2 border-slate-300 dark:border-slate-600 pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-900 text-lg">{language === 'es' ? 'Ingreso Neto' : 'Net Income'}</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-lg">{language === 'es' ? 'Ingreso Neto' : 'Net Income'}</span>
                   <div className="text-right">
-                    <p className={`font-bold text-xl ${plStatement.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`font-bold text-xl ${plStatement.netIncome >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       ${plStatement.netIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Margen' : 'Margin'}: {plStatement.netMargin.toFixed(1)}%
                     </p>
                   </div>
@@ -649,9 +649,9 @@ export default function FinancialDashboard() {
 
         {/* OVERDUE INVOICES ALERTS */}
         {overdueInvoices.length > 0 && (
-          <Card className="mb-8 bg-red-50 border-red-200 shadow-lg">
+          <Card className="mb-8 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700/50 shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-900">
+              <CardTitle className="flex items-center gap-2 text-red-900 dark:text-red-200">
                 <AlertTriangle className="w-5 h-5" />
                 {language === 'es' ? 'Facturas Vencidas - Acción Requerida' : 'Overdue Invoices - Action Required'}
               </CardTitle>
@@ -659,15 +659,15 @@ export default function FinancialDashboard() {
             <CardContent>
               <div className="space-y-3">
                 {overdueInvoices.slice(0, 5).map(inv => (
-                  <div key={inv.id} className="bg-white rounded-lg p-4 border border-red-200">
+                  <div key={inv.id} className="bg-white dark:bg-[#282828] rounded-lg p-4 border border-red-200 dark:border-red-700/50">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-semibold text-slate-900">{inv.customer_name}</p>
-                        <p className="text-sm text-slate-600">{inv.invoice_number}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white">{inv.customer_name}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{inv.invoice_number}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-red-600">${(inv.balance || inv.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                        <p className="text-xs text-red-700 font-semibold">{inv.daysOverdue} {language === 'es' ? 'días vencido' : 'days overdue'}</p>
+                        <p className="font-bold text-red-600 dark:text-red-400">${(inv.balance || inv.total).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-xs text-red-700 dark:text-red-300 font-semibold">{inv.daysOverdue} {language === 'es' ? 'días vencido' : 'days overdue'}</p>
                       </div>
                     </div>
                   </div>
@@ -678,37 +678,37 @@ export default function FinancialDashboard() {
         )}
 
         {/* EXPENSE FORECAST */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-slate-900">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Pronóstico de Gastos (Próximo Mes)' : 'Expense Forecast (Next Month)'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {expenseForecast.map(forecast => (
-                <div key={forecast.category} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <div key={forecast.category} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                   <div>
-                    <p className="font-medium text-slate-900 capitalize">{forecast.category.replace('_', ' ')}</p>
-                    <p className="text-xs text-slate-600">
+                    <p className="font-medium text-slate-900 dark:text-white capitalize">{forecast.category.replace('_', ' ')}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Confianza' : 'Confidence'}: 
                       <span className={`ml-1 font-semibold ${
-                        forecast.confidence === 'high' ? 'text-green-600' : 
-                        forecast.confidence === 'medium' ? 'text-amber-600' : 'text-red-600'
+                        forecast.confidence === 'high' ? 'text-green-600 dark:text-green-400' : 
+                        forecast.confidence === 'medium' ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {forecast.confidence}
                       </span>
                     </p>
                   </div>
-                  <p className="font-bold text-lg text-slate-900">
+                  <p className="font-bold text-lg text-slate-900 dark:text-white">
                     ${forecast.projected.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               ))}
-              <div className="border-t-2 border-slate-300 pt-3 mt-3">
+              <div className="border-t-2 border-slate-300 dark:border-slate-600 pt-3 mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-900">{language === 'es' ? 'Total Proyectado' : 'Total Projected'}</span>
-                  <span className="font-bold text-xl text-slate-900">
+                  <span className="font-bold text-slate-900 dark:text-white">{language === 'es' ? 'Total Proyectado' : 'Total Projected'}</span>
+                  <span className="font-bold text-xl text-slate-900 dark:text-white">
                     ${expenseForecast.reduce((sum, f) => sum + f.projected, 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
