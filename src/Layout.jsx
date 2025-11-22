@@ -271,6 +271,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
         { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
         { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+        { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target, badge: '🚀' },
         { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
       ]
     },
