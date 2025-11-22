@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Filter, Target, Users, Calendar, Briefcase, User } from 'lucide-react';
 import { format, differenceInDays } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { StatsCardSkeleton, GoalCardSkeleton } from '../shared/SkeletonLoader';
 
 const statusColors = {
   not_started: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
@@ -20,39 +21,58 @@ export default function TeamGoalsDashboard({ goals, teams, selectedTeam, onTeamC
   const [projectFilter, setProjectFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Get unique owners and projects
-  const uniqueOwners = [...new Set(goals.map(g => g.owner_email))].filter(Boolean);
-  const uniqueProjects = [...new Set(goals.map(g => g.linked_job_id))].filter(Boolean);
+  // Memoize expensive computations
+  const { uniqueOwners, uniqueProjects, filteredGoals, goalsGroupedByTeam } = useMemo(() => {
+    const owners = [...new Set(goals.map(g => g.owner_email))].filter(Boolean);
+    const projects = [...new Set(goals.map(g => g.linked_job_id))].filter(Boolean);
 
-  // Filter goals
-  const filteredGoals = goals.filter(goal => {
-    const ownerMatch = ownerFilter === 'all' || goal.owner_email === ownerFilter;
-    const projectMatch = projectFilter === 'all' || goal.linked_job_id === projectFilter;
-    const statusMatch = statusFilter === 'all' || goal.status === statusFilter;
-    return ownerMatch && projectMatch && statusMatch;
-  });
+    const filtered = goals.filter(goal => {
+      const ownerMatch = ownerFilter === 'all' || goal.owner_email === ownerFilter;
+      const projectMatch = projectFilter === 'all' || goal.linked_job_id === projectFilter;
+      const statusMatch = statusFilter === 'all' || goal.status === statusFilter;
+      return ownerMatch && projectMatch && statusMatch;
+    });
 
-  // Group by team
-  const goalsGroupedByTeam = filteredGoals.reduce((acc, goal) => {
-    const teamKey = goal.team_id || 'no_team';
-    if (!acc[teamKey]) {
-      acc[teamKey] = {
-        teamName: goal.team_name || 'No Team',
-        goals: []
-      };
-    }
-    acc[teamKey].goals.push(goal);
-    return acc;
-  }, {});
+    const grouped = filtered.reduce((acc, goal) => {
+      const teamKey = goal.team_id || 'no_team';
+      if (!acc[teamKey]) {
+        acc[teamKey] = {
+          teamName: goal.team_name || 'No Team',
+          goals: []
+        };
+      }
+      acc[teamKey].goals.push(goal);
+      return acc;
+    }, {});
+
+    return { uniqueOwners: owners, uniqueProjects: projects, filteredGoals: filtered, goalsGroupedByTeam: grouped };
+  }, [goals, ownerFilter, projectFilter, statusFilter]);
 
   if (isLoading) {
     return (
-      <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-        <CardContent className="p-12 text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading team goals...</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <CardContent className="p-4">
+            <div className="grid md:grid-cols-4 gap-4 animate-pulse">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-10 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <CardHeader>
+            <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-40 animate-pulse"></div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <GoalCardSkeleton key={i} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

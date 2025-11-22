@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,9 +9,10 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import GoalForm from '../components/goals/GoalForm';
-import GoalCard from '../components/goals/GoalCard';
+import GoalCardMemoized from '../components/goals/GoalCardMemoized';
 import GoalProgressChart from '../components/goals/GoalProgressChart';
 import { useToast } from '@/components/ui/toast';
+import { GoalCardSkeleton, StatsCardSkeleton } from '../components/shared/SkeletonLoader';
 
 export default function Goals() {
   const { t, language } = useLanguage();
@@ -39,11 +40,15 @@ export default function Goals() {
       }
     },
     enabled: !!user?.email,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    staleTime: 900000, // 15 minutes
+    cacheTime: 1800000,
   });
 
   const createMutation = useMutation({
@@ -85,24 +90,28 @@ export default function Goals() {
     }
   };
 
-  const filteredGoals = goals.filter(goal => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return ['not_started', 'on_track', 'at_risk', 'behind'].includes(goal.status);
-    if (filter === 'completed') return goal.status === 'completed';
-    if (filter === 'personal') return goal.category === 'personal';
-    if (filter === 'team') return goal.category === 'team';
-    return true;
-  });
+  const { filteredGoals, stats, completionRate } = useMemo(() => {
+    const filtered = goals.filter(goal => {
+      if (filter === 'all') return true;
+      if (filter === 'active') return ['not_started', 'on_track', 'at_risk', 'behind'].includes(goal.status);
+      if (filter === 'completed') return goal.status === 'completed';
+      if (filter === 'personal') return goal.category === 'personal';
+      if (filter === 'team') return goal.category === 'team';
+      return true;
+    });
 
-  const stats = {
-    total: goals.length,
-    active: goals.filter(g => ['not_started', 'on_track', 'at_risk', 'behind'].includes(g.status)).length,
-    completed: goals.filter(g => g.status === 'completed').length,
-    onTrack: goals.filter(g => g.status === 'on_track').length,
-    atRisk: goals.filter(g => g.status === 'at_risk').length,
-  };
+    const calculatedStats = {
+      total: goals.length,
+      active: goals.filter(g => ['not_started', 'on_track', 'at_risk', 'behind'].includes(g.status)).length,
+      completed: goals.filter(g => g.status === 'completed').length,
+      onTrack: goals.filter(g => g.status === 'on_track').length,
+      atRisk: goals.filter(g => g.status === 'at_risk').length,
+    };
 
-  const completionRate = goals.length > 0 ? ((stats.completed / goals.length) * 100).toFixed(1) : 0;
+    const rate = goals.length > 0 ? ((calculatedStats.completed / goals.length) * 100).toFixed(1) : 0;
+
+    return { filteredGoals: filtered, stats: calculatedStats, completionRate: rate };
+  }, [goals, filter]);
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
@@ -187,17 +196,25 @@ export default function Goals() {
         )}
 
         {/* Goals Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {filteredGoals.map(goal => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              onEdit={(g) => { setEditingGoal(g); setShowForm(true); }}
-              onDelete={(id) => deleteMutation.mutate(id)}
-              showActions={true}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <GoalCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
+            {filteredGoals.map(goal => (
+              <GoalCardMemoized
+                key={goal.id}
+                goal={goal}
+                onEdit={(g) => { setEditingGoal(g); setShowForm(true); }}
+                onDelete={(id) => deleteMutation.mutate(id)}
+                showActions={true}
+              />
+            ))}
+          </div>
+        )}
 
         {filteredGoals.length === 0 && !isLoading && (
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">

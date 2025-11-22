@@ -31,11 +31,15 @@ export default function TeamGoals() {
         }, '-created_date');
       }
     },
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
   });
 
   const { data: allGoals = [] } = useQuery({
     queryKey: ['allGoalsForStats'],
     queryFn: () => base44.entities.Goal.filter({ category: 'team' }),
+    staleTime: 900000, // 15 minutes
+    cacheTime: 1800000,
   });
 
   const stats = {

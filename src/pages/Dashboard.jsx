@@ -124,7 +124,7 @@ export default function Dashboard() {
   const needsRecognitionData = widgets.some(w => ['recent-recognitions', 'recognition-feed', 'top-recognitions'].includes(w.type));
   const needsAdminData = isAdmin && widgets.some(w => ['active-employees', 'total-hours', 'pending-timesheets'].includes(w.type));
 
-  // DATA QUERIES - Only load what's needed
+  // DATA QUERIES - Optimized with increased staleTime and conditional loading
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['myTimeEntries', user?.email],
     queryFn: async () => {
@@ -135,7 +135,8 @@ export default function Dashboard() {
       }, '-date', 100);
     },
     enabled: !!user?.email && needsEmployeeData,
-    staleTime: 300000,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000, // 15 minutes
     initialData: [],
   });
 
@@ -148,7 +149,8 @@ export default function Dashboard() {
       }, '-date', 50);
     },
     enabled: !!user?.email && needsExpenseData && !isAdmin,
-    staleTime: 300000,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
     initialData: [],
   });
 
@@ -162,7 +164,8 @@ export default function Dashboard() {
       }, '-date', 50);
     },
     enabled: !!user?.email && needsEmployeeData,
-    staleTime: 300000,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
     initialData: [],
   });
 
@@ -170,7 +173,8 @@ export default function Dashboard() {
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
     enabled: !!user && (widgets.some(w => ['active-jobs', 'my-assignments'].includes(w.type))),
-    staleTime: 300000,
+    staleTime: 900000, // 15 minutes - jobs don't change often
+    cacheTime: 1800000, // 30 minutes
     initialData: [],
   });
 
@@ -192,7 +196,8 @@ export default function Dashboard() {
       });
     },
     enabled: !!user?.email && needsAssignmentData,
-    staleTime: 300000,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
     initialData: [],
   });
 
@@ -200,7 +205,8 @@ export default function Dashboard() {
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('full_name'),
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
-    staleTime: 600000,
+    staleTime: 1800000, // 30 minutes - employee list rarely changes
+    cacheTime: 3600000, // 1 hour
     initialData: [],
   });
 
@@ -208,7 +214,8 @@ export default function Dashboard() {
     queryKey: ['allTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200),
     enabled: isAdmin && widgets.some(w => w.type === 'total-hours'),
-    staleTime: 300000,
+    staleTime: 900000, // 15 minutes
+    cacheTime: 1800000,
     initialData: [],
   });
 
@@ -216,7 +223,8 @@ export default function Dashboard() {
     queryKey: ['allExpenses'],
     queryFn: () => base44.entities.Expense.list('-date', 200),
     enabled: isAdmin && needsExpenseData,
-    staleTime: 300000,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
     initialData: [],
   });
 
@@ -224,7 +232,8 @@ export default function Dashboard() {
     queryKey: ['recentRecognitions'],
     queryFn: () => base44.entities.Recognition.list('-date', 5),
     enabled: needsRecognitionData,
-    staleTime: 300000,
+    staleTime: 900000, // 15 minutes - recognitions don't change frequently
+    cacheTime: 1800000,
     initialData: [],
   });
 
@@ -232,12 +241,13 @@ export default function Dashboard() {
     queryKey: ['pendingTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100),
     enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets'),
-    staleTime: 300000,
+    staleTime: 300000, // 5 minutes - pending items need more frequent updates
+    cacheTime: 600000,
     initialData: [],
   });
 
-  // CALCULATIONS - Memoized for performance
-  const calculations = React.useMemo(() => {
+  // CALCULATIONS - Heavily memoized for optimal performance
+  const calculations = useMemo(() => {
     const today = new Date();
     const weekStart = startOfWeek(today, { weekStartsOn: 1 });
     const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
@@ -552,7 +562,8 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-          <p className="text-slate-900 dark:text-white font-medium">Loading dashboard...</p>
+          <p className="text-slate-900 dark:text-white font-medium">Cargando dashboard...</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparando tus widgets personalizados</p>
         </div>
       </div>
     );
