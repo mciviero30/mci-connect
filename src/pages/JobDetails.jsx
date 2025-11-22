@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -18,13 +17,15 @@ import {
   ArrowLeft,
   Loader2,
   AlertTriangle,
-  CalendarPlus
+  CalendarPlus,
+  MessageSquare
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
 import StatsCard from "../components/shared/StatsCard";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import CommentThread from "../components/comments/CommentThread";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
@@ -46,6 +47,7 @@ export default function JobDetails() {
     queryKey: ['jobTimeEntries', jobId],
     queryFn: () => base44.entities.TimeEntry.filter({ job_id: jobId }, '-date'),
     enabled: !!jobId,
+    staleTime: 600000,
     initialData: []
   });
 
@@ -53,6 +55,7 @@ export default function JobDetails() {
     queryKey: ['jobExpenses', jobId],
     queryFn: () => base44.entities.Expense.filter({ job_id: jobId }, '-date'),
     enabled: !!jobId,
+    staleTime: 600000,
     initialData: []
   });
 
@@ -60,6 +63,7 @@ export default function JobDetails() {
     queryKey: ['jobInventoryTransactions', jobId],
     queryFn: () => base44.entities.InventoryTransaction.filter({ job_id: jobId }, '-created_date'),
     enabled: !!jobId,
+    staleTime: 900000,
     initialData: []
   });
 
@@ -67,6 +71,7 @@ export default function JobDetails() {
     queryKey: ['jobFiles', jobId],
     queryFn: () => base44.entities.JobFile.filter({ job_id: jobId }),
     enabled: !!jobId,
+    staleTime: 1800000,
     initialData: []
   });
 
@@ -74,6 +79,7 @@ export default function JobDetails() {
     queryKey: ['jobAssignments', jobId],
     queryFn: () => base44.entities.JobAssignment.filter({ job_id: jobId }, '-date'),
     enabled: !!jobId,
+    staleTime: 600000,
     initialData: []
   });
 
@@ -183,6 +189,10 @@ export default function JobDetails() {
             <TabsTrigger value="photos" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Camera className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Fotos' : 'Photos'}
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Comentarios' : 'Comments'}
             </TabsTrigger>
           </TabsList>
 
@@ -515,6 +525,11 @@ export default function JobDetails() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Comments Tab */}
+          <TabsContent value="comments">
+            <CommentThread entityType="job" entityId={jobId} />
           </TabsContent>
         </Tabs>
       </div>

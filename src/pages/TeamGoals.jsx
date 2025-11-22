@@ -17,6 +17,7 @@ export default function TeamGoals() {
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
+    staleTime: 1800000,
   });
 
   const { data: goals = [], isLoading } = useQuery({

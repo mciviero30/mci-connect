@@ -10,6 +10,7 @@ export default function GoalProgressChart({ goalId }) {
     queryKey: ['goalProgress', goalId],
     queryFn: () => base44.entities.GoalProgress.filter({ goal_id: goalId }, 'created_date'),
     enabled: !!goalId,
+    staleTime: 300000, // 5 minutes - progress updates need to be fresher
   });
 
   if (isLoading) {
