@@ -309,6 +309,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
+        { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
       ]
     },
     {
@@ -358,9 +359,10 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
+        { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
       ]
     }
-  ];
+    ];
 
   if (isLoading) {
     return (
