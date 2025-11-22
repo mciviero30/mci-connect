@@ -271,7 +271,6 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
         { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
         { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
-        { title: 'Goals', url: createPageUrl("GoalManagement"), icon: Target },
         { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
       ]
     },
@@ -351,7 +350,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'MY PERFORMANCE',
       items: [
-        { title: 'My Goals', url: createPageUrl("MyGoals"), icon: Target },
         { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target, badge: '🚀' },
         { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase, badge: '🚀' },
         { title: 'AI Assistant', url: createPageUrl("AIAssistantPersonal"), icon: Brain, badge: '🚀' },
