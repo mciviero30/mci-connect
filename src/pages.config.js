@@ -62,6 +62,8 @@ import RoleManagement from './pages/RoleManagement';
 import NotificationCenter from './pages/NotificationCenter';
 import ReportingHub from './pages/ReportingHub';
 import ActivityFeed from './pages/ActivityFeed';
+import GoalManagement from './pages/GoalManagement';
+import MyGoals from './pages/MyGoals';
 import __Layout from './Layout.jsx';
 
 
@@ -130,6 +132,8 @@ export const PAGES = {
     "NotificationCenter": NotificationCenter,
     "ReportingHub": ReportingHub,
     "ActivityFeed": ActivityFeed,
+    "GoalManagement": GoalManagement,
+    "MyGoals": MyGoals,
 }
 
 export const pagesConfig = {
