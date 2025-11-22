@@ -9,7 +9,8 @@ import PageHeader from '../components/shared/PageHeader';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format, isWithinInterval } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { ExportButtons } from '../components/reportes/ExportButtons';
+import ExportButtons from '../components/reportes/ExportButtons';
+import { exportToCSV } from '../components/reportes/ExportButtons';
 
 export default function TimeReports() {
   const { language } = useLanguage();
@@ -175,11 +176,13 @@ export default function TimeReports() {
             : 'Detailed time and cost analysis by project'}
           icon={BarChart3}
           actions={
-            <ExportButtons 
-              data={exportData}
-              filename={`time-report-${format(new Date(), 'yyyy-MM-dd')}`}
-              sheetName="Time Report"
-            />
+            <Button 
+              onClick={() => exportToCSV(exportData, 'time-report')}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Exportar CSV' : 'Export CSV'}
+            </Button>
           }
         />
 
