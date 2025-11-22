@@ -62,6 +62,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { LanguageProvider, useLanguage } from "@/components/i18n/LanguageContext";
+import { PermissionsProvider } from "@/components/permissions/PermissionsContext";
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
@@ -313,6 +314,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'ADMIN',
       items: [
+        { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
         { title: 'Clean Data', url: createPageUrl("AdminCleanup"), icon: Trash2 },
         { title: 'Testing', url: createPageUrl("TestingChecklist"), icon: ClipboardList },
       ]
@@ -669,7 +671,9 @@ export default function Layout({ children, currentPageName }) {
     <ToastProvider>
       <ErrorBoundary>
         <LanguageProvider>
-          <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
+          <PermissionsProvider>
+            <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
+          </PermissionsProvider>
         </LanguageProvider>
       </ErrorBoundary>
     </ToastProvider>
