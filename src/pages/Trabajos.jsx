@@ -242,35 +242,35 @@ export default function Trabajos() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Text Search */}
               <div className="space-y-2">
-                <Label className="text-slate-700 text-sm font-medium">
+                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
                   {language === 'es' ? 'Buscar' : 'Search'}
                 </Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <Input
                     placeholder={language === 'es' ? 'Buscar por nombre, dirección o cliente...' : 'Search by name, address or customer...'}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-50 border-slate-200"
+                    className="pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
 
               {/* Status Filter */}
               <div className="space-y-2">
-                <Label className="text-slate-700 text-sm font-medium">
+                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
                   {language === 'es' ? 'Estado' : 'Status'}
                 </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-slate-50 border-slate-200">
+                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
+                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
                     <SelectItem value="all">
                       {language === 'es' ? 'Todos los Estados' : 'All Status'}
                     </SelectItem>
@@ -298,14 +298,14 @@ export default function Trabajos() {
 
               {/* Team Filter */}
               <div className="space-y-2">
-                <Label className="text-slate-700 text-sm font-medium">
+                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
                   {language === 'es' ? 'Equipo' : 'Team'}
                 </Label>
                 <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="bg-slate-50 border-slate-200">
+                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
+                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
                     <SelectItem value="all">
                       {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
                     </SelectItem>
@@ -333,7 +333,7 @@ export default function Trabajos() {
                     setStatusFilter('all');
                     setTeamFilter('all');
                   }}
-                  className="text-slate-600 hover:text-slate-900"
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
                   <X className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
@@ -353,18 +353,18 @@ export default function Trabajos() {
               : 0;
 
             return (
-              <Card key={job.id} className="bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200">
+              <Card key={job.id} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200 dark:border-slate-700">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-3 h-3 rounded-full bg-${job.color || 'slate'}-500`}></div>
-                        <h3 className="font-bold text-xl text-slate-900">{job.name}</h3>
+                        <h3 className="font-bold text-xl text-slate-900 dark:text-white">{job.name}</h3>
                       </div>
 
                       {/* Customer Name (from Prompt #46) */}
                       {job.customer_name && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-2">
                           <Users className="w-3 h-3" />
                           <span className="font-medium">{job.customer_name}</span>
                         </div>
@@ -394,7 +394,7 @@ export default function Trabajos() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-slate-600 hover:text-[#3B9FF3] hover:bg-blue-50"
+                          className="text-slate-600 dark:text-slate-400 hover:text-[#3B9FF3] hover:bg-blue-50 dark:hover:bg-slate-700"
                           title={t('viewDetails')}
                         >
                           <Eye className="w-5 h-5" />
@@ -404,22 +404,22 @@ export default function Trabajos() {
                       {isAdmin && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                            <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                               <MoreVertical className="w-5 h-5" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-white border-slate-200">
-                            <DropdownMenuItem onClick={() => handleEdit(job)} className="text-slate-900 hover:bg-slate-100">
+                          <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                            <DropdownMenuItem onClick={() => handleEdit(job)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                               <Edit className="w-4 h-4 mr-2" />
                               {t('edit')}
                             </DropdownMenuItem>
                             {job.status !== 'archived' && (
-                              <DropdownMenuItem onClick={() => archiveMutation.mutate(job.id)} className="text-slate-900 hover:bg-slate-100">
+                              <DropdownMenuItem onClick={() => archiveMutation.mutate(job.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                                 <Archive className="w-4 h-4 mr-2" />
                                 {t('archive')}
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem onClick={() => deleteMutation.mutate(job.id)} className="text-slate-900 hover:bg-slate-100 focus:bg-red-50">
+                            <DropdownMenuItem onClick={() => deleteMutation.mutate(job.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 focus:bg-red-50 dark:focus:bg-red-900/20">
                               <Trash2 className="w-4 h-4 mr-2 text-red-500" />
                               <span className="text-red-500">{t('delete')}</span>
                             </DropdownMenuItem>
@@ -431,12 +431,12 @@ export default function Trabajos() {
 
                   <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
                     {job.description && (
-                      <p className="text-slate-600 mb-4 line-clamp-2">{job.description}</p>
+                      <p className="text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{job.description}</p>
                     )}
 
                     {/* Address with structured fields */}
                     {(job.address || job.city) && (
-                      <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
+                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-3">
                         <MapPin className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate">
                           {job.address}
@@ -449,14 +449,14 @@ export default function Trabajos() {
 
                     {/* Financial KPIs Section (Prompt #46) */}
                     {job.contract_amount && (
-                      <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                      <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                         <div className="space-y-2">
                           {/* Contract Amount */}
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-slate-600">
+                            <span className="text-xs text-slate-600 dark:text-slate-400">
                               {language === 'es' ? 'Valor Contratado' : 'Contract Value'}
                             </span>
-                            <span className="text-sm font-bold text-[#3B9FF3]">
+                            <span className="text-sm font-bold text-[#3B9FF3] dark:text-blue-400">
                               {formatCurrency(contractAmount)}
                             </span>
                           </div>
@@ -465,17 +465,17 @@ export default function Trabajos() {
                           {estimatedCost > 0 && (
                             <>
                               <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-600">
+                                <span className="text-xs text-slate-600 dark:text-slate-400">
                                   {language === 'es' ? 'Costo Estimado' : 'Estimated Cost'}
                                 </span>
-                                <span className="text-sm font-semibold text-slate-700">
+                                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                   {formatCurrency(estimatedCost)}
                                 </span>
                               </div>
 
                               {/* Profit Margin */}
-                              <div className="flex items-center justify-between pt-2 border-t border-blue-200">
-                                <span className="text-xs font-medium text-slate-700">
+                              <div className="flex items-center justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
+                                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
                                   {language === 'es' ? 'Margen de Ganancia' : 'Profit Margin'}
                                 </span>
                                 <span className={`text-sm font-bold ${getProfitMarginColor(profitMargin)}`}>
@@ -495,13 +495,13 @@ export default function Trabajos() {
         </div>
 
         {filteredJobs.length === 0 && !isLoading && (
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
-              <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-700 mb-2">
+              <Briefcase className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
                 {jobs.length === 0 ? t('noJobs') : (language === 'es' ? 'No se encontraron trabajos' : 'No jobs found')}
               </h3>
-              <p className="text-slate-500 mb-6">
+              <p className="text-slate-500 dark:text-slate-400 mb-6">
                 {jobs.length === 0
                   ? t('startByAddingJob')
                   : (language === 'es' ? 'Intenta ajustar los filtros' : 'Try adjusting your filters')
@@ -528,9 +528,9 @@ export default function Trabajos() {
 
         {/* AI Wizard Dialog */}
         <Dialog open={showAIWizard} onOpenChange={setShowAIWizard}>
-          <DialogContent className="max-w-4xl bg-white border-slate-200">
+          <DialogContent className="max-w-4xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900 flex items-center gap-2">
+              <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-purple-500" />
                 {language === 'es' ? 'Crear Proyecto con Asistente IA' : 'Create Project with AI Assistant'}
               </DialogTitle>
@@ -546,9 +546,9 @@ export default function Trabajos() {
 
         {/* Regular Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-2xl bg-white border-slate-200">
+          <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900">{editingJob ? t('editJob') : t('newJob')}</DialogTitle>
+              <DialogTitle className="text-2xl text-slate-900 dark:text-white">{editingJob ? t('editJob') : t('newJob')}</DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <JobForm

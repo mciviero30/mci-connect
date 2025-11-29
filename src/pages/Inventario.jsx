@@ -385,85 +385,85 @@ export default function Inventario() {
 
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600">Total Items</CardTitle>
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Total Items</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{items.length}</div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-white">{items.length}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-amber-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-amber-200 dark:border-amber-800">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 Low Stock
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-amber-600">{lowStockItems.length}</div>
+              <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{lowStockItems.length}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-green-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-green-200 dark:border-green-800">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600">Total Value</CardTitle>
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Total Value</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600">${totalValue.toFixed(2)}</div>
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">${totalValue.toFixed(2)}</div>
             </CardContent>
           </Card>
 
           {/* UPDATED: Items Used This Month */}
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-blue-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-blue-200 dark:border-blue-800">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600">Items Used This Month</CardTitle>
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Items Used This Month</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600">{itemsUsedThisMonth}</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{itemsUsedThisMonth}</div>
             </CardContent>
           </Card>
         </div>
 
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"/>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400"/>
             <Input 
               placeholder="Search items..."
               value={searchTerm} 
               onChange={e => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-white border-slate-300 text-slate-900"
+              className="pl-12 h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
             />
           </div>
         </div>
 
         <Tabs defaultValue="all" className="mb-6">
-          <TabsList className="bg-slate-100 border-slate-200">
-            <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">All Items ({filteredItems.length})</TabsTrigger>
-            <TabsTrigger value="low_stock" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+          <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+            <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">All Items ({filteredItems.length})</TabsTrigger>
+            <TabsTrigger value="low_stock" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">
               Low Stock ({lowStockItems.length})
               {lowStockItems.length > 0 && (
                 <Badge className="ml-2 bg-amber-500 text-white text-xs">{lowStockItems.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">Transaction History</TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">Transaction History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredItems.map(item => (
-                <Card key={item.id} className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+                <Card key={item.id} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-lg">{item.name}</h3>
-                        <p className="text-sm text-slate-600">{item.category}</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">{item.name}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{item.category}</p>
                         {item.sku && (
-                          <p className="text-xs text-slate-500 mt-1">SKU: {item.sku}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: {item.sku}</p>
                         )}
                         {item.supplier_name && (
-                          <p className="text-xs text-slate-500 mt-1">Supplier: {item.supplier_name}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Supplier: {item.supplier_name}</p>
                         )}
                       </div>
                       {item.photo_url && (
@@ -473,7 +473,7 @@ export default function Inventario() {
 
                     <div className="space-y-2 mb-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 text-sm">Quantity:</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">Quantity:</span>
                         <Badge className={
                           item.status === 'out_of_stock' ? 'bg-red-100 text-red-700 border-red-300' :
                           item.status === 'low_stock' ? 'bg-amber-100 text-amber-700 border-amber-300' :
@@ -484,29 +484,29 @@ export default function Inventario() {
                       </div>
                       {item.cost !== undefined && item.cost !== null && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-600 text-sm">Unit Cost:</span>
-                          <span className="text-slate-900 font-semibold">${item.cost.toFixed(2)}</span>
+                          <span className="text-slate-600 dark:text-slate-400 text-sm">Unit Cost:</span>
+                          <span className="text-slate-900 dark:text-white font-semibold">${item.cost.toFixed(2)}</span>
                         </div>
                       )}
                       {item.location && (
                         <div className="flex justify-between items-center">
-                          <span className="text-slate-600 text-sm">Location:</span>
-                          <span className="text-slate-900 text-sm">{item.location}</span>
+                          <span className="text-slate-600 dark:text-slate-400 text-sm">Location:</span>
+                          <span className="text-slate-900 dark:text-white text-sm">{item.location}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleTransaction(item)} className="flex-1 bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
+                      <Button size="sm" variant="outline" onClick={() => handleTransaction(item)} className="flex-1 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
                         <ArrowDown className="w-4 h-4 mr-1" />
                         Use
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleEditItem(item)} className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
+                      <Button size="sm" variant="outline" onClick={() => handleEditItem(item)} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => {
                         if (window.confirm('Delete this item?')) deleteItemMutation.mutate(item.id);
-                      }} className="text-red-600 hover:bg-red-50">
+                      }} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -522,23 +522,23 @@ export default function Inventario() {
                 <Card key={item.id} className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-3 mb-4">
-                      <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
+                      <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-lg">{item.name}</h3>
-                        <p className="text-sm text-slate-600">{item.category}</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">{item.name}</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{item.category}</p>
                       </div>
                     </div>
 
                     <div className="space-y-2 mb-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 text-sm">Current:</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">Current:</span>
                         <Badge className="bg-amber-100 text-amber-700 border-amber-300">
                           {item.quantity} {item.unit}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-600 text-sm">Min Required:</span>
-                        <span className="text-slate-900 font-semibold">{item.min_quantity} {item.unit}</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-sm">Min Required:</span>
+                        <span className="text-slate-900 dark:text-white font-semibold">{item.min_quantity} {item.unit}</span>
                       </div>
                     </div>
 
@@ -553,14 +553,14 @@ export default function Inventario() {
           </TabsContent>
 
           <TabsContent value="history">
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {transactions.length === 0 ? (
-                    <p className="text-center text-slate-500">No transactions recorded yet.</p>
+                    <p className="text-center text-slate-500 dark:text-slate-400">No transactions recorded yet.</p>
                   ) : (
                     transactions.map(transaction => (
-                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+                      <div key={transaction.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                         <div className="flex items-center gap-4">
                           <div className={`p-2 rounded-lg ${
                             transaction.type === 'add' ? 'bg-green-100' :
@@ -572,18 +572,18 @@ export default function Inventario() {
                              <History className="w-5 h-5 text-blue-600" />}
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900">{transaction.item_name}</p>
-                            <p className="text-sm text-slate-600">
+                            <p className="font-semibold text-slate-900 dark:text-white">{transaction.item_name}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
                               {transaction.type === 'add' ? 'Added' : transaction.type === 'remove' ? 'Removed' : 'Adjusted'} {transaction.quantity} units
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               {transaction.employee_name} • {new Date(transaction.created_date).toLocaleString()}
                             </p>
                             {transaction.job_name && (
-                              <p className="text-xs text-[#3B9FF3] mt-1">Job: {transaction.job_name}</p>
+                              <p className="text-xs text-[#3B9FF3] dark:text-blue-400 mt-1">Job: {transaction.job_name}</p>
                             )}
                             {transaction.reason && (
-                              <p className="text-xs text-slate-500 mt-1">Reason: {transaction.reason}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Reason: {transaction.reason}</p>
                             )}
                           </div>
                         </div>

@@ -217,20 +217,20 @@ export default function NewsFeed() {
         )}
 
         {isCreating && (
-          <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200 mb-6">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700 mb-6">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <Input
                   placeholder={t('title')}
                   value={newPost.title}
                   onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                  className="text-lg font-semibold bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                  className="text-lg font-semibold bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400"
                 />
                 <Textarea
                   placeholder={t('content')}
                   value={newPost.content}
                   onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                  className="min-h-[120px] bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                  className="min-h-[120px] bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400"
                 />
                 
                 <div className="flex items-center gap-4">
@@ -246,7 +246,7 @@ export default function NewsFeed() {
                     variant="outline"
                     onClick={() => document.getElementById('image-upload').click()}
                     disabled={uploadingImage}
-                    className="bg-white border-slate-300 text-slate-700"
+                    className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {uploadingImage ? t('loading') : t('upload')}
@@ -255,7 +255,7 @@ export default function NewsFeed() {
                   <select
                     value={newPost.priority}
                     onChange={(e) => setNewPost({ ...newPost, priority: e.target.value })}
-                    className="px-3 py-2 border rounded-lg bg-white border-slate-300 text-slate-900"
+                    className="px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
                   >
                     <option value="normal">{t('normal')}</option>
                     <option value="important">{t('important')}</option>
@@ -271,7 +271,7 @@ export default function NewsFeed() {
                   <Button variant="outline" onClick={() => {
                     setCreating(false);
                     setNewPost({ title: '', content: '', image_url: '', priority: 'normal' });
-                  }} className="bg-white border-slate-300 text-slate-700">
+                  }} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300">
                     {t('cancel')}
                   </Button>
                   <Button
@@ -298,13 +298,13 @@ export default function NewsFeed() {
             };
 
             return (
-              <Card key={post.id} className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg hover:shadow-xl transition-shadow">
+              <Card key={post.id} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">{post.title}</h2>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <span className="font-medium text-slate-700">{post.author_name}</span>
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{post.title}</h2>
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{post.author_name}</span>
                         <span>•</span>
                         <span>{format(new Date(post.created_date), "MMM d, yyyy")}</span>
                       </div>
@@ -314,18 +314,18 @@ export default function NewsFeed() {
                     </Badge>
                   </div>
 
-                  <p className="text-slate-700 whitespace-pre-wrap mb-4">{post.content}</p>
+                  <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap mb-4">{post.content}</p>
 
                   {post.image_url && (
                     <img src={post.image_url} alt={post.title} className="w-full rounded-lg mb-4 max-h-96 object-cover" />
                   )}
 
-                  <div className="flex items-center gap-4 pt-4 border-t border-slate-200">
+                  <div className="flex items-center gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleLike(post)}
-                      className={`${hasLiked ? 'text-[#3B9FF3]' : 'text-slate-600'} hover:text-[#3B9FF3] hover:bg-blue-50`}
+                      className={`${hasLiked ? 'text-[#3B9FF3]' : 'text-slate-600 dark:text-slate-400'} hover:text-[#3B9FF3] hover:bg-blue-50 dark:hover:bg-slate-700`}
                     >
                       <Heart className={`w-5 h-5 mr-2 ${hasLiked ? 'fill-current' : ''}`} />
                       {likes.length}
@@ -337,10 +337,10 @@ export default function NewsFeed() {
           })}
 
           {posts.length === 0 && !isLoading && (
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
               <CardContent className="p-12 text-center">
-                <Megaphone className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500">{t('noAnnouncements')}</p>
+                <Megaphone className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">{t('noAnnouncements')}</p>
               </CardContent>
             </Card>
           )}

@@ -33,8 +33,8 @@ const EmojiPicker = ({ onSelect }) => {
         <button
           key={idx}
           onClick={() => onSelect(emoji)}
-          className="text-2xl hover:bg-slate-700 p-2 rounded transition-colors"
-        >
+          className="text-2xl hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded transition-colors"
+          >
           {emoji}
         </button>
       ))}
@@ -88,13 +88,13 @@ const GifSearch = ({ onSelect }) => {
       
       <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
         {loading && (
-          <div className="col-span-2 text-center py-8 text-slate-500">Loading...</div>
+          <div className="col-span-2 text-center py-8 text-slate-500 dark:text-slate-400">Loading...</div>
         )}
         {!loading && gifs.length === 0 && search && (
-          <div className="col-span-2 text-center py-8 text-slate-500">No GIFs found</div>
+          <div className="col-span-2 text-center py-8 text-slate-500 dark:text-slate-400">No GIFs found</div>
         )}
         {!loading && gifs.length === 0 && !search && (
-          <div className="col-span-2 text-center py-8 text-slate-500">Type to search GIFs</div>
+          <div className="col-span-2 text-center py-8 text-slate-500 dark:text-slate-400">Type to search GIFs</div>
         )}
         {gifs.map((gif) => (
           <button
@@ -202,9 +202,9 @@ export default function Chat() {
         />
 
         <div className="grid lg:grid-cols-4 gap-6">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="text-lg text-slate-900">{t('channels')}</CardTitle>
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-lg text-slate-900 dark:text-white">{t('channels')}</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               <div className="space-y-2">
@@ -217,7 +217,7 @@ export default function Chat() {
                       className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
                         selectedGroup === group.id
                           ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg'
-                          : 'hover:bg-slate-100 text-slate-700'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <Icon className="w-5 h-5" />
@@ -229,28 +229,28 @@ export default function Chat() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-3 bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
+          <Card className="lg:col-span-3 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                 <MessageSquare className="w-5 h-5 text-[#3B9FF3]" />
                 {groups.find(g => g.id === selectedGroup)?.name || t('chat')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="h-[600px] flex flex-col">
-                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
-                  {isLoading && <div className="text-center text-slate-500 py-8">Loading messages...</div>}
-                  {!isLoading && messages.length === 0 && <div className="text-center text-slate-500 py-8">No messages yet.</div>}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50 dark:bg-[#1e1e1e]">
+                  {isLoading && <div className="text-center text-slate-500 dark:text-slate-400 py-8">Loading messages...</div>}
+                  {!isLoading && messages.length === 0 && <div className="text-center text-slate-500 dark:text-slate-400 py-8">No messages yet.</div>}
                   {messages.map((msg) => {
                     const isMe = msg.sender_email === user?.email;
                     const msgType = msg.message_type || 'text';
                     
                     return (
                       <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[70%] ${isMe ? 'bg-[#3B9FF3] text-white' : 'bg-white text-slate-900 border border-slate-200'} rounded-2xl shadow-lg overflow-hidden`}>
+                        <div className={`max-w-[70%] ${isMe ? 'bg-[#3B9FF3] text-white' : 'bg-white dark:bg-[#282828] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700'} rounded-2xl shadow-lg overflow-hidden`}>
                           {!isMe && (
                             <div className="px-4 pt-3 pb-1">
-                              <p className="text-xs font-semibold text-slate-600">{msg.sender_name}</p>
+                              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">{msg.sender_name}</p>
                             </div>
                           )}
                           
@@ -263,7 +263,7 @@ export default function Chat() {
                           )}
                           
                           <div className="px-4 pb-2">
-                            <p className={`text-xs ${isMe ? 'text-blue-100' : 'text-slate-500'}`}>
+                            <p className={`text-xs ${isMe ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
                               {format(new Date(msg.created_date), 'HH:mm')}
                             </p>
                           </div>
@@ -274,7 +274,7 @@ export default function Chat() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <form onSubmit={handleSend} className="p-4 border-t border-slate-200 bg-white">
+                <form onSubmit={handleSend} className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#282828]">
                   <div className="flex gap-2 items-end">
                     <div className="flex gap-2">
                       <input
@@ -290,7 +290,7 @@ export default function Chat() {
                         size="icon"
                         onClick={() => document.getElementById('image-upload').click()}
                         disabled={uploadingImage}
-                        className="bg-slate-100 hover:bg-slate-200 text-[#3B9FF3]"
+                        className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3]"
                       >
                         <Image className="w-5 h-5" />
                       </Button>
@@ -301,16 +301,16 @@ export default function Chat() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="bg-slate-100 hover:bg-slate-200 text-[#3B9FF3]"
+                            className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3]"
                           >
                             <Smile className="w-5 h-5" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-80 bg-white border-slate-200 p-0">
+                        <PopoverContent className="w-80 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
                           <Tabs defaultValue="emojis">
-                            <TabsList className="w-full bg-slate-100 border-b border-slate-200">
-                              <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">Emojis</TabsTrigger>
-                              <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">GIFs</TabsTrigger>
+                            <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                              <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
+                              <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
                             </TabsList>
                             <TabsContent value="emojis" className="m-0">
                               <EmojiPicker onSelect={handleEmojiSelect} />
@@ -327,7 +327,7 @@ export default function Chat() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder={t('typeMessage')}
-                      className="flex-1 h-12 bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                      className="flex-1 h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400"
                     />
                     <Button 
                       type="submit" 
