@@ -348,9 +348,9 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
           </AlertDescription>
         </Alert>
 
-        <div className="bg-slate-800 rounded-lg p-4">
-          <p className="text-white text-sm mb-2">What will happen:</p>
-          <ol className="list-decimal list-inside text-sm text-slate-300 space-y-1 ml-2">
+        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+          <p className="text-slate-900 dark:text-white text-sm mb-2">What will happen:</p>
+          <ol className="list-decimal list-inside text-sm text-slate-600 dark:text-slate-300 space-y-1 ml-2">
             <li>All employee data will be deleted</li>
             <li>Employment status will be set to "deleted"</li>
             <li>Employee will be blocked from logging in</li>
@@ -363,7 +363,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
             type="button" 
             variant="outline" 
             onClick={() => setShowDeleteConfirm(false)}
-            className="bg-slate-800 border-slate-700 text-slate-300"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
           >
             Cancel
           </Button>
@@ -392,8 +392,8 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
           </AlertDescription>
         </Alert>
 
-        <div className="bg-slate-800 rounded-lg p-4 space-y-2 text-sm text-slate-300">
-          <p className="font-bold text-white mb-2">📝 Step-by-step instructions:</p>
+        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <p className="font-bold text-slate-900 dark:text-white mb-2">📝 Step-by-step instructions:</p>
           <ol className="list-decimal list-inside space-y-1 ml-2">
             <li>Open Dashboard in browser (desktop recommended)</li>
             <li>Go to: <span className="text-cyan-400 font-mono">Data → User</span></li>
@@ -606,7 +606,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
 
         {/* Payroll Section */}
         <div className="md:col-span-2 mt-4 pt-4 border-t border-slate-700">
-          <h3 className="text-lg font-semibold text-cyan-400 mb-3">Payroll Information</h3>
+          <h3 className="text-lg font-semibold text-cyan-600 dark:text-cyan-400 mb-3">Payroll Information</h3>
         </div>
 
         <div>
@@ -717,7 +717,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
       </div>
 
-      <div className="flex justify-between gap-3 mt-6 pt-4 border-t border-slate-700">
+      <div className="flex justify-between gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
         <Button 
           type="button" 
           variant="outline" 
