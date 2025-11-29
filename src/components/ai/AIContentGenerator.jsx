@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
-import { Sparkles, Wand2, Loader2, Check, RefreshCw } from 'lucide-react';
+import { Sparkles, Wand2, Loader2, Check, RefreshCw, Image, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,9 @@ export default function AIContentGenerator({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const suggestionsAnnouncement = [
     "Company update about new benefits",
@@ -95,11 +98,43 @@ export default function AIContentGenerator({
     setIsGenerating(false);
   };
 
+  const generateAIImage = async () => {
+    if (!generatedContent?.title) return;
+    
+    setIsGeneratingImage(true);
+    try {
+      const result = await base44.integrations.Core.GenerateImage({
+        prompt: `Professional corporate image for company announcement: "${generatedContent.title}". Modern, clean, professional style suitable for business communication. No text in image.`
+      });
+      if (result?.url) {
+        setImageUrl(result.url);
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+    }
+    setIsGeneratingImage(false);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploadingImage(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setImageUrl(file_url);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+    setIsUploadingImage(false);
+  };
+
   const handleUseContent = () => {
     if (generatedContent) {
       onContentGenerated({
         ...generatedContent,
-        employee_email: selectedEmployee
+        employee_email: selectedEmployee,
+        image_url: imageUrl
       });
       handleClose();
     }
@@ -109,6 +144,7 @@ export default function AIContentGenerator({
     setPrompt('');
     setGeneratedContent(null);
     setSelectedEmployee('');
+    setImageUrl('');
     onOpenChange(false);
   };
 
@@ -234,6 +270,64 @@ export default function AIContentGenerator({
                       }`}>
                         {generatedContent.priority}
                       </span>
+                    </div>
+
+                    {/* Image Section for Announcements */}
+                    <div className="mt-4 pt-4 border-t border-purple-200 dark:border-purple-700">
+                      <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Add an image (optional)</p>
+                      
+                      {imageUrl ? (
+                        <div className="relative">
+                          <img src={imageUrl} alt="Announcement" className="w-full h-40 object-cover rounded-lg" />
+                          <button
+                            onClick={() => setImageUrl('')}
+                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={generateAIImage}
+                            disabled={isGeneratingImage}
+                            className="flex-1 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-400"
+                          >
+                            {isGeneratingImage ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-4 h-4 mr-1" />
+                            )}
+                            AI Image
+                          </Button>
+                          
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            id="ai-image-upload"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById('ai-image-upload').click()}
+                            disabled={isUploadingImage}
+                            className="flex-1 border-slate-300 dark:border-slate-600"
+                          >
+                            {isUploadingImage ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <Image className="w-4 h-4 mr-1" />
+                            )}
+                            Upload
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </>
                 ) : (
