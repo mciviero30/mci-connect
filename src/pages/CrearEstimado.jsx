@@ -11,6 +11,9 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
@@ -453,18 +456,41 @@ export default function CrearEstimado() {
                 <div key={index} className="grid md:grid-cols-12 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
                   <div className="md:col-span-3">
                     <Label className="text-slate-700 text-xs">Item</Label>
-                    <Select value={item.item_name || ''} onValueChange={(value) => updateItem(index, 'item_name', value)}>
-                      <SelectTrigger className="bg-white border-slate-300 text-slate-900 h-9">
-                        <SelectValue placeholder="Select item" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        {quoteItems.map(qi => (
-                          <SelectItem key={qi.id} value={qi.name} className="text-slate-900">
-                            {qi.name} - ${qi.unit_price}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between bg-white border-slate-300 text-slate-900 h-9 font-normal"
+                        >
+                          {item.item_name || "Select item"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0 bg-white border-slate-200">
+                        <Command className="bg-white">
+                          <CommandInput placeholder="Search items..." className="text-slate-900" />
+                          <CommandEmpty className="text-slate-500 p-4 text-sm">No items found.</CommandEmpty>
+                          <CommandGroup className="max-h-[300px] overflow-y-auto">
+                            {[...quoteItems]
+                              .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                              .map(qi => (
+                                <CommandItem
+                                  key={qi.id}
+                                  value={qi.name}
+                                  onSelect={() => updateItem(index, 'item_name', qi.name)}
+                                  className="text-slate-900 cursor-pointer"
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${item.item_name === qi.name ? 'opacity-100' : 'opacity-0'}`}
+                                  />
+                                  {qi.name} - ${qi.unit_price}
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <div className="md:col-span-3">
