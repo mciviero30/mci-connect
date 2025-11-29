@@ -195,32 +195,8 @@ User question: ${userMessage}`;
     setTimeout(() => handleSendMessage(), 100);
   };
 
-  return (
-    <>
-      {/* FIXED: Cleaner button without separate tooltip */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-40 pointer-events-auto"
-          >
-            <Button
-              onClick={() => setIsOpen(true)}
-              size="icon"
-              className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-xl shadow-purple-500/30 transition-all hover:scale-110"
-              title={language === 'es' ? '¡Pregúntame algo!' : 'Ask me anything!'}
-            >
-              <Sparkles className="w-5 h-5 text-white" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Chat Panel */}
-      <AnimatePresence>
-        {isOpen && (
+  // No floating AI button - AI Assistant accessible via sidebar menu for employees
+  return null;
           <motion.div
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
