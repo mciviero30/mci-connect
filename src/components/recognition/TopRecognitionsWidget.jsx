@@ -129,7 +129,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
                       className="w-10 h-10 rounded-full border-2 border-slate-300 dark:border-slate-600 group-hover:border-blue-500 dark:group-hover:border-[#3B9FF3] transition-all"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center border-2 border-slate-600 group-hover:border-[#3B9FF3] transition-all">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center border-2 border-slate-300 dark:border-slate-600 group-hover:border-blue-500 dark:group-hover:border-[#3B9FF3] transition-all">
                       <span className="text-white font-bold text-sm">
                         {employee.name?.[0]?.toUpperCase()}
                       </span>
