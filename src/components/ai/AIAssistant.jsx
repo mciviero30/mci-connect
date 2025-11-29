@@ -204,25 +204,15 @@ User question: ${userMessage}`;
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-24 right-6 z-40 pointer-events-auto"
+            className="fixed bottom-6 right-6 z-40 pointer-events-auto"
           >
             <Button
               onClick={() => setIsOpen(true)}
-              size="lg"
-              className="h-14 px-5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-2xl shadow-purple-500/30 group flex items-center gap-2.5 transition-all hover:scale-105"
+              size="icon"
+              className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 shadow-xl shadow-purple-500/30 transition-all hover:scale-110"
               title={language === 'es' ? '¡Pregúntame algo!' : 'Ask me anything!'}
             >
-              <div className="flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 text-white group-hover:rotate-12 transition-transform" />
-                <div className="flex flex-col items-start">
-                  <span className="text-white font-bold text-sm leading-tight">
-                    {language === 'es' ? 'Asistente IA' : 'AI Assistant'}
-                  </span>
-                  <span className="text-white/80 text-[10px] leading-tight">
-                    {language === 'es' ? '¡Pregúntame!' : 'Ask me anything!'}
-                  </span>
-                </div>
-              </div>
+              <Sparkles className="w-5 h-5 text-white" />
             </Button>
           </motion.div>
         )}
@@ -235,7 +225,7 @@ User question: ${userMessage}`;
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-24 right-6 z-40 w-[380px] max-w-[calc(100vw-48px)]"
+            className="fixed bottom-20 right-6 z-40 w-[380px] max-w-[calc(100vw-48px)]"
           >
             <Card className="shadow-2xl border-slate-200 overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-4">

@@ -50,7 +50,7 @@ export default function RealTimeNotifications({ userEmail }) {
   };
 
   return (
-    <div className="fixed top-20 right-6 z-[9998] space-y-2 max-w-sm pointer-events-none">
+    <div className="fixed top-4 right-4 z-[9998] space-y-2 max-w-sm pointer-events-none">
       <AnimatePresence>
         {toastNotifications.map(notification => (
           <motion.div
