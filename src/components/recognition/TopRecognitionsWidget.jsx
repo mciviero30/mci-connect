@@ -51,12 +51,12 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-slate-800/50 rounded-xl p-3 animate-pulse">
+          <div key={i} className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-3 animate-pulse">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-slate-700 rounded-full"></div>
+              <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
               <div className="flex-1">
-                <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
               </div>
             </div>
           </div>
