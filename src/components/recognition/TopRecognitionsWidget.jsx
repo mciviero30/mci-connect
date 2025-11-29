@@ -108,7 +108,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
 
                   {/* Employee Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-white text-sm truncate">
+                    <p className="font-bold text-slate-900 dark:text-white text-sm truncate">
                       {employee.name}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
