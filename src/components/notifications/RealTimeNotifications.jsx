@@ -49,8 +49,11 @@ export default function RealTimeNotifications({ userEmail }) {
     setToastNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  // Only show toast notifications if there are any - no floating bell icon
+  if (toastNotifications.length === 0) return null;
+
   return (
-    <div className="fixed top-4 right-4 z-[9998] space-y-2 max-w-sm pointer-events-none">
+    <div className="fixed top-20 right-4 z-[9998] space-y-2 max-w-sm pointer-events-none">
       <AnimatePresence>
         {toastNotifications.map(notification => (
           <motion.div
