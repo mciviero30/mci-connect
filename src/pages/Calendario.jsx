@@ -288,7 +288,7 @@ export default function Calendario() {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
         <div className="max-w-7xl mx-auto">
           <PageHeader
             title={t('calendar')}
