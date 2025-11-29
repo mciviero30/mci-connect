@@ -131,7 +131,7 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-slate-700 text-white max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl bg-white dark:bg-[#1e1e1e] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-xl">
@@ -139,13 +139,13 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
             </div>
             Give Kudos
           </DialogTitle>
-          <p className="text-slate-300 mt-2">Recognize a colleague for their great work!</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Recognize a colleague for their great work!</p>
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
           {/* Select Employee */}
           <div>
-            <label className="text-sm font-semibold text-slate-300 mb-2 block">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
               Select Employee
             </label>
             {!selectedEmployee ? (
@@ -154,9 +154,9 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
                   placeholder="Search by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-slate-800 border-slate-600 text-white mb-3"
+                  className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white mb-3"
                 />
-                <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                <div className="max-h-48 overflow-y-auto space-y-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
                   {filteredEmployees.slice(0, 10).map(emp => (
                     <button
                       key={emp.id}
@@ -164,7 +164,7 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
                         setSelectedEmployee(emp);
                         setSearchTerm('');
                       }}
-                      className="w-full flex items-center gap-3 p-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-all text-left"
+                      className="w-full flex items-center gap-3 p-3 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all text-left border border-slate-200 dark:border-transparent"
                     >
                       {emp.profile_photo_url ? (
                         <img src={emp.profile_photo_url} alt={emp.full_name} className="w-10 h-10 rounded-full" />
@@ -174,18 +174,18 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-white">{getDisplayName(emp)}</p>
-                        <p className="text-xs text-slate-400">{emp.position || emp.department}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white">{getDisplayName(emp)}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{emp.position || emp.department}</p>
                       </div>
                     </button>
                   ))}
                   {filteredEmployees.length === 0 && (
-                    <p className="text-slate-400 text-center py-4">No employees found</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-center py-4">No employees found</p>
                   )}
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-3 p-4 bg-slate-800 rounded-lg border-2 border-[#3B9FF3]">
+              <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-slate-800 rounded-lg border-2 border-blue-500">
                 {selectedEmployee.profile_photo_url ? (
                   <img src={selectedEmployee.profile_photo_url} alt={selectedEmployee.full_name} className="w-12 h-12 rounded-full" />
                 ) : (
@@ -194,14 +194,14 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
                   </div>
                 )}
                 <div className="flex-1">
-                  <p className="font-bold text-white">{getDisplayName(selectedEmployee)}</p>
-                  <p className="text-sm text-slate-400">{selectedEmployee.position || selectedEmployee.department}</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{getDisplayName(selectedEmployee)}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{selectedEmployee.position || selectedEmployee.department}</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedEmployee(null)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 >
                   Change
                 </Button>
@@ -211,7 +211,7 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
 
           {/* Select Category */}
           <div>
-            <label className="text-sm font-semibold text-slate-300 mb-3 block">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 block">
               Recognition Category
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -229,14 +229,14 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
                   className={`p-4 rounded-xl border-2 transition-all ${
                     selectedCategory === category.value
                       ? `bg-gradient-to-br ${category.color} border-white shadow-lg scale-105`
-                      : 'bg-slate-600/40 border-slate-500 hover:border-slate-400 hover:bg-slate-500/50'
+                      : 'bg-slate-100 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
                   }`}
                 >
                   <div className="text-3xl mb-2">{category.icon}</div>
-                  <p className={`font-semibold text-sm ${selectedCategory === category.value ? 'text-white' : 'text-slate-200'}`}>
+                  <p className={`font-semibold text-sm ${selectedCategory === category.value ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}>
                     {category.label}
                   </p>
-                  <Badge className={`mt-2 ${selectedCategory === category.value ? 'bg-white/20 text-white' : 'bg-slate-600 text-slate-200'}`}>
+                  <Badge className={`mt-2 ${selectedCategory === category.value ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200'}`}>
                     +{category.points} pts
                   </Badge>
                 </button>
@@ -246,37 +246,37 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
 
           {/* Message */}
           <div>
-            <label className="text-sm font-semibold text-slate-300 mb-2 block flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-400" />
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-500" />
               Your Message
-              <span className="text-xs font-normal text-slate-500">(optional - auto-generated)</span>
+              <span className="text-xs font-normal text-slate-400">(optional - auto-generated)</span>
             </label>
             <Textarea
               placeholder="Share why this person deserves recognition..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="bg-slate-700/50 border-slate-600 text-white min-h-[100px] placeholder:text-slate-500"
+              className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[100px] placeholder:text-slate-400"
               maxLength={500}
             />
-            <p className="text-xs text-slate-500 mt-1">{message.length}/500 characters</p>
+            <p className="text-xs text-slate-400 mt-1">{message.length}/500 characters</p>
           </div>
 
           {/* Summary */}
           {selectedEmployee && selectedCategory && (
-            <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl p-4 border border-blue-500/30">
-              <p className="text-sm text-slate-300 mb-2">Preview:</p>
-              <p className="text-white font-semibold">
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl p-4 border border-blue-200 dark:border-blue-500/30">
+              <p className="text-sm text-slate-500 dark:text-slate-300 mb-2">Preview:</p>
+              <p className="text-slate-900 dark:text-white font-semibold">
                 {getDisplayName(selectedEmployee)} will receive +{selectedCategoryData?.points} points for {selectedCategoryData?.label}!
               </p>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-700">
+          <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
             <Button
               variant="outline"
               onClick={handleClose}
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Cancel
             </Button>
