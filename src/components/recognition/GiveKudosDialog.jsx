@@ -24,13 +24,14 @@ const RECOGNITION_CATEGORIES = [
   { value: 'positive_attitude', label: 'Positive Attitude', icon: '😊', color: 'from-yellow-500 to-amber-500', points: 8 },
 ];
 
-export default function GiveKudosDialog({ open, onOpenChange }) {
+export default function GiveKudosDialog({ open, onOpenChange, prefillData = null }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [message, setMessage] = useState('');
+  const [hasAppliedPrefill, setHasAppliedPrefill] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -41,6 +42,35 @@ export default function GiveKudosDialog({ open, onOpenChange }) {
     queryFn: () => base44.entities.User.list('full_name'),
     initialData: [],
   });
+
+  // Apply prefill data from AI generator
+  React.useEffect(() => {
+    if (prefillData && open && !hasAppliedPrefill) {
+      if (prefillData.employee_email) {
+        const emp = employees.find(e => e.email === prefillData.employee_email);
+        if (emp) setSelectedEmployee(emp);
+      }
+      if (prefillData.message) setMessage(prefillData.message);
+      if (prefillData.recognition_type) {
+        // Map AI types to our categories
+        const typeMapping = {
+          'teamwork': 'teamwork',
+          'excellence': 'quality_work',
+          'innovation': 'innovation',
+          'leadership': 'leadership',
+          'customer_service': 'customer_service',
+          'safety': 'safety_excellence',
+          'mentor': 'mentorship',
+          'problem_solving': 'problem_solving',
+          'going_extra_mile': 'going_extra_mile',
+          'positive_attitude': 'positive_attitude'
+        };
+        const mappedType = typeMapping[prefillData.recognition_type] || 'quality_work';
+        setSelectedCategory(mappedType);
+      }
+      setHasAppliedPrefill(true);
+    }
+  }, [prefillData, open, employees, hasAppliedPrefill]);
 
   const createRecognitionMutation = useMutation({
     mutationFn: async (recognitionData) => {
@@ -63,6 +93,7 @@ export default function GiveKudosDialog({ open, onOpenChange }) {
     setSelectedCategory('');
     setMessage('');
     setSearchTerm('');
+    setHasAppliedPrefill(false);
     onOpenChange(false);
   };
 
