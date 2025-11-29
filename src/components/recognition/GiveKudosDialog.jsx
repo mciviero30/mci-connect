@@ -12,16 +12,16 @@ import { useToast } from '@/components/ui/toast';
 import { getDisplayName } from '@/components/utils/nameHelpers';
 
 const RECOGNITION_CATEGORIES = [
-  { value: 'teamwork', label: 'Teamwork', icon: '🤝', color: 'from-blue-500 to-cyan-500', points: 10 },
-  { value: 'innovation', label: 'Innovation', icon: '💡', color: 'from-purple-500 to-pink-500', points: 15 },
-  { value: 'customer_service', label: 'Customer Service', icon: '⭐', color: 'from-yellow-500 to-orange-500', points: 10 },
-  { value: 'leadership', label: 'Leadership', icon: '👑', color: 'from-indigo-500 to-purple-500', points: 15 },
-  { value: 'quality_work', label: 'Quality Work', icon: '✨', color: 'from-green-500 to-emerald-500', points: 10 },
-  { value: 'problem_solving', label: 'Problem Solving', icon: '🎯', color: 'from-red-500 to-pink-500', points: 12 },
-  { value: 'going_extra_mile', label: 'Going the Extra Mile', icon: '🚀', color: 'from-orange-500 to-red-500', points: 15 },
-  { value: 'mentorship', label: 'Mentorship', icon: '🎓', color: 'from-teal-500 to-cyan-500', points: 12 },
-  { value: 'safety_excellence', label: 'Safety Excellence', icon: '🛡️', color: 'from-green-500 to-lime-500', points: 10 },
-  { value: 'positive_attitude', label: 'Positive Attitude', icon: '😊', color: 'from-yellow-500 to-amber-500', points: 8 },
+  { value: 'teamwork', label: 'Teamwork', icon: '🤝', color: 'from-blue-500 to-cyan-500', points: 10, defaultMessage: 'Thank you for being such a great team player! Your collaboration and support make our team stronger.' },
+  { value: 'innovation', label: 'Innovation', icon: '💡', color: 'from-purple-500 to-pink-500', points: 15, defaultMessage: 'Your creative thinking and innovative ideas are truly inspiring. Thank you for pushing boundaries!' },
+  { value: 'customer_service', label: 'Customer Service', icon: '⭐', color: 'from-yellow-500 to-orange-500', points: 10, defaultMessage: 'Your dedication to customer satisfaction is outstanding. Thank you for representing us so well!' },
+  { value: 'leadership', label: 'Leadership', icon: '👑', color: 'from-indigo-500 to-purple-500', points: 15, defaultMessage: 'Your leadership skills inspire everyone around you. Thank you for guiding the team to success!' },
+  { value: 'quality_work', label: 'Quality Work', icon: '✨', color: 'from-green-500 to-emerald-500', points: 10, defaultMessage: 'The quality of your work is exceptional. Thank you for your attention to detail and excellence!' },
+  { value: 'problem_solving', label: 'Problem Solving', icon: '🎯', color: 'from-red-500 to-pink-500', points: 12, defaultMessage: 'Your ability to solve problems quickly and effectively is amazing. Thank you for finding solutions!' },
+  { value: 'going_extra_mile', label: 'Going the Extra Mile', icon: '🚀', color: 'from-orange-500 to-red-500', points: 15, defaultMessage: 'You consistently go above and beyond expectations. Thank you for your dedication and extra effort!' },
+  { value: 'mentorship', label: 'Mentorship', icon: '🎓', color: 'from-teal-500 to-cyan-500', points: 12, defaultMessage: 'Your guidance and mentorship help others grow. Thank you for sharing your knowledge and experience!' },
+  { value: 'safety_excellence', label: 'Safety Excellence', icon: '🛡️', color: 'from-green-500 to-lime-500', points: 10, defaultMessage: 'Your commitment to safety keeps everyone protected. Thank you for prioritizing our well-being!' },
+  { value: 'positive_attitude', label: 'Positive Attitude', icon: '😊', color: 'from-yellow-500 to-amber-500', points: 8, defaultMessage: 'Your positive energy brightens the workplace. Thank you for bringing joy to the team!' },
 ];
 
 export default function GiveKudosDialog({ open, onOpenChange, prefillData = null }) {
@@ -98,19 +98,20 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
   };
 
   const handleSubmit = () => {
-    if (!selectedEmployee || !selectedCategory || !message.trim()) {
-      toast.error('Please fill all fields');
+    if (!selectedEmployee || !selectedCategory) {
+      toast.error('Please select an employee and category');
       return;
     }
 
     const category = RECOGNITION_CATEGORIES.find(c => c.value === selectedCategory);
+    const finalMessage = message.trim() || category.defaultMessage;
     
     createRecognitionMutation.mutate({
       employee_email: selectedEmployee.email,
       employee_name: selectedEmployee.full_name,
       recognition_type: selectedCategory,
       title: category.label,
-      message: message.trim(),
+      message: finalMessage,
       given_by_email: currentUser.email,
       given_by_name: currentUser.full_name,
       points: category.points,
@@ -217,18 +218,25 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
               {RECOGNITION_CATEGORIES.map(category => (
                 <button
                   key={category.value}
-                  onClick={() => setSelectedCategory(category.value)}
+                  onClick={() => {
+                    setSelectedCategory(category.value);
+                    // Auto-fill message if empty or if it's a default message from another category
+                    const isDefaultMessage = RECOGNITION_CATEGORIES.some(c => c.defaultMessage === message);
+                    if (!message || isDefaultMessage) {
+                      setMessage(category.defaultMessage);
+                    }
+                  }}
                   className={`p-4 rounded-xl border-2 transition-all ${
                     selectedCategory === category.value
                       ? `bg-gradient-to-br ${category.color} border-white shadow-lg scale-105`
-                      : 'bg-slate-800 border-slate-700 hover:border-slate-600'
+                      : 'bg-slate-700/50 border-slate-600 hover:border-slate-500 hover:bg-slate-700'
                   }`}
                 >
                   <div className="text-3xl mb-2">{category.icon}</div>
-                  <p className={`font-semibold text-sm ${selectedCategory === category.value ? 'text-white' : 'text-slate-300'}`}>
+                  <p className={`font-semibold text-sm ${selectedCategory === category.value ? 'text-white' : 'text-slate-200'}`}>
                     {category.label}
                   </p>
-                  <Badge className={`mt-2 ${selectedCategory === category.value ? 'bg-white/20 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                  <Badge className={`mt-2 ${selectedCategory === category.value ? 'bg-white/20 text-white' : 'bg-slate-600 text-slate-200'}`}>
                     +{category.points} pts
                   </Badge>
                 </button>
@@ -239,17 +247,18 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
           {/* Message */}
           <div>
             <label className="text-sm font-semibold text-slate-300 mb-2 block flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#3B9FF3]" />
+              <Sparkles className="w-4 h-4 text-blue-400" />
               Your Message
+              <span className="text-xs font-normal text-slate-500">(optional - auto-generated)</span>
             </label>
             <Textarea
               placeholder="Share why this person deserves recognition..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white min-h-[120px]"
+              className="bg-slate-700/50 border-slate-600 text-white min-h-[100px] placeholder:text-slate-500"
               maxLength={500}
             />
-            <p className="text-xs text-slate-400 mt-1">{message.length}/500 characters</p>
+            <p className="text-xs text-slate-500 mt-1">{message.length}/500 characters</p>
           </div>
 
           {/* Summary */}
@@ -273,8 +282,8 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!selectedEmployee || !selectedCategory || !message.trim() || createRecognitionMutation.isPending}
-              className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white shadow-lg"
+              disabled={!selectedEmployee || !selectedCategory || createRecognitionMutation.isPending}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg"
             >
               <Send className="w-4 h-4 mr-2" />
               {createRecognitionMutation.isPending ? 'Sending...' : 'Send Kudos'}
