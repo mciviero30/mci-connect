@@ -177,10 +177,10 @@ export default function AssignmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-800">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl text-white flex items-center gap-2">
+            <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               {isAppointment && <CalendarIcon className="w-6 h-6 text-[#3B9FF3]" />}
               {isJobWork && <Briefcase className="w-6 h-6 text-purple-500" />}
               {shift 
@@ -204,12 +204,12 @@ export default function AssignmentDialog({
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           {isAppointment && (
             <div>
-              <Label className="text-white mb-2 block">Event Title *</Label>
+              <Label className="text-slate-900 dark:text-white mb-2 block">Event Title *</Label>
               <Input
                 value={shiftTitle}
                 onChange={(e) => setShiftTitle(e.target.value)}
                 placeholder="e.g., Team Meeting, Client Call, Site Visit"
-                className="bg-slate-800 border-slate-700 text-white"
+                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
                 required
               />
             </div>
@@ -217,14 +217,14 @@ export default function AssignmentDialog({
 
           {isJobWork && (
             <div>
-              <Label className="text-white mb-2 block">Job / Project *</Label>
+              <Label className="text-slate-900 dark:text-white mb-2 block">Job / Project *</Label>
               <Select value={jobId} onValueChange={setJobId} required>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800">
+                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                   {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-white">
+                    <SelectItem key={job.id} value={job.id} className="text-slate-900 dark:text-white">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full bg-${job.color}-500`} />
                         {job.name}
@@ -238,15 +238,15 @@ export default function AssignmentDialog({
 
           {isAppointment && (
             <div>
-              <Label className="text-white mb-2 block">Related Job (Optional)</Label>
+              <Label className="text-slate-900 dark:text-white mb-2 block">Related Job (Optional)</Label>
               <Select value={jobId} onValueChange={setJobId}>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue placeholder="Link to a job (optional)" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800">
-                  <SelectItem value={null} className="text-white">None</SelectItem>
+                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                  <SelectItem value={null} className="text-slate-900 dark:text-white">None</SelectItem>
                   {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-white">
+                    <SelectItem key={job.id} value={job.id} className="text-slate-900 dark:text-white">
                       <div className="flex items-center gap-2">
                         <div className={`w-3 h-3 rounded-full bg-${job.color}-500`} />
                         {job.name}
@@ -260,41 +260,41 @@ export default function AssignmentDialog({
 
           {isJobWork && (
             <div>
-              <Label className="text-white mb-2 block">Shift Title (Optional)</Label>
+              <Label className="text-slate-900 dark:text-white mb-2 block">Shift Title (Optional)</Label>
               <Input
                 value={shiftTitle}
                 onChange={(e) => setShiftTitle(e.target.value)}
                 placeholder="e.g., Morning Installation, Material Setup"
-                className="bg-slate-800 border-slate-700 text-white"
+                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
           )}
 
           {selectedJob && (
-            <Card className="p-4 bg-slate-800/50 border-slate-700">
-              <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+            <Card className="p-4 bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#3B9FF3]" />
                 Job Details
               </h3>
               <div className="space-y-2 text-sm">
                 {selectedJob.address && (
-                  <p className="text-slate-300"><span className="text-slate-500">Address:</span> {selectedJob.address}</p>
+                  <p className="text-slate-700 dark:text-slate-300"><span className="text-slate-500">Address:</span> {selectedJob.address}</p>
                 )}
                 {selectedJob.description && (
-                  <p className="text-slate-300"><span className="text-slate-500">Description:</span> {selectedJob.description}</p>
+                  <p className="text-slate-700 dark:text-slate-300"><span className="text-slate-500">Description:</span> {selectedJob.description}</p>
                 )}
               </div>
             </Card>
           )}
 
           <div>
-            <Label className="text-white mb-2 block flex items-center gap-2">
+            <Label className="text-slate-900 dark:text-white mb-2 block flex items-center gap-2">
               <Users className="w-4 h-4" />
               Employees {isJobWork && '*'}
             </Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start bg-slate-800 border-slate-700 text-white h-auto min-h-10">
+                <Button variant="outline" className="w-full justify-start bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-auto min-h-10">
                   {selectedEmployees.length === 0 ? (
                     "Select employees..."
                   ) : (
@@ -311,9 +311,9 @@ export default function AssignmentDialog({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0 bg-slate-900 border-slate-800">
-                <Command>
-                  <CommandInput placeholder="Search employee..." className="text-white" />
+              <PopoverContent className="w-full p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                <Command className="bg-white dark:bg-slate-900">
+                  <CommandInput placeholder="Search employee..." className="text-slate-900 dark:text-white" />
                   <CommandEmpty className="text-slate-500 p-4">Not found.</CommandEmpty>
                   <CommandGroup>
                     {(employees || []).filter(e => e.employment_status === 'active').map(emp => (
@@ -326,10 +326,10 @@ export default function AssignmentDialog({
                               : [...prev, emp.email]
                           );
                         }}
-                        className="text-white"
+                        className="text-slate-900 dark:text-white"
                       >
                         <div className="flex items-center gap-2">
-                          <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'bg-[#3B9FF3] border-[#3B9FF3]' : 'border-slate-600'}`} />
+                          <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'bg-[#3B9FF3] border-[#3B9FF3]' : 'border-slate-400 dark:border-slate-600'}`} />
                           {emp.full_name}
                         </div>
                       </CommandItem>
@@ -342,38 +342,38 @@ export default function AssignmentDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-white mb-2 block">Start Date</Label>
-              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className="bg-slate-800 border-slate-700 text-white" />
+              <Label className="text-slate-900 dark:text-white mb-2 block">Start Date</Label>
+              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
             </div>
             <div>
-              <Label className="text-white mb-2 block">End Date</Label>
-              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate} required className="bg-slate-800 border-slate-700 text-white" />
+              <Label className="text-slate-900 dark:text-white mb-2 block">End Date</Label>
+              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-white mb-2 block">Start Time</Label>
-              <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required className="bg-slate-800 border-slate-700 text-white" />
+              <Label className="text-slate-900 dark:text-white mb-2 block">Start Time</Label>
+              <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
             </div>
             <div>
-              <Label className="text-white mb-2 block">End Time</Label>
-              <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required className="bg-slate-800 border-slate-700 text-white" />
+              <Label className="text-slate-900 dark:text-white mb-2 block">End Time</Label>
+              <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
             </div>
           </div>
 
           <div>
-            <Label className="text-white mb-2 block">Notes / Instructions</Label>
+            <Label className="text-slate-900 dark:text-white mb-2 block">Notes / Instructions</Label>
             <Textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Additional information..."
-              className="bg-slate-800 border-slate-700 text-white h-24"
+              className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-24"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="bg-slate-800 border-slate-700 text-white">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
               <X className="w-4 h-4 mr-2" />
               Cancel
             </Button>
