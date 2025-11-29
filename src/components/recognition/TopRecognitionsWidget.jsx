@@ -115,7 +115,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
                       <Badge className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white text-xs">
                         {employee.totalPoints} pts
                       </Badge>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         {employee.recognitionCount} {employee.recognitionCount === 1 ? 'kudos' : 'kudos'}
                       </span>
                     </div>
