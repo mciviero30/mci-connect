@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -123,13 +122,35 @@ export default function CrearEstimado() {
     }
   });
 
+  // Helper to get customer display name
+  const getCustomerDisplayName = (customer) => {
+    if (!customer) return '';
+    
+    // If has first and last name
+    if (customer.first_name || customer.last_name) {
+      const first = customer.first_name || '';
+      const last = customer.last_name || '';
+      return `${first} ${last}`.trim();
+    }
+    
+    // If has full_name or name
+    if (customer.full_name) return customer.full_name;
+    if (customer.name) return customer.name;
+    
+    // If has company
+    if (customer.company) return customer.company;
+    
+    // Fallback to email
+    return customer.email || 'Unknown';
+  };
+
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setFormData({
         ...formData,
         customer_id: customerId,
-        customer_name: `${customer.first_name} ${customer.last_name}`,
+        customer_name: getCustomerDisplayName(customer),
         customer_email: customer.email || '',
         customer_phone: customer.phone || '',
       });
@@ -283,7 +304,7 @@ export default function CrearEstimado() {
                     <SelectContent className="bg-white border-slate-200">
                       {customers.map(customer => (
                         <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
-                          {customer.first_name} {customer.last_name}
+                          {getCustomerDisplayName(customer)}
                         </SelectItem>
                       ))}
                     </SelectContent>
