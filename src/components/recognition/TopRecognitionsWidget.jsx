@@ -67,9 +67,9 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
 
   if (recognitions.length === 0) {
     return (
-      <div className="text-center py-8">
-        <Award className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-        <p className="text-slate-400 text-sm">No recognitions yet</p>
+      <div className="text-center py-8 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <Award className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+        <p className="text-slate-500 dark:text-slate-400 text-sm">No recognitions yet. Be the first to give kudos!</p>
       </div>
     );
   }
