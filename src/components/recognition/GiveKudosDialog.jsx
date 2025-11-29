@@ -229,7 +229,7 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
                   className={`p-4 rounded-xl border-2 transition-all ${
                     selectedCategory === category.value
                       ? `bg-gradient-to-br ${category.color} border-white shadow-lg scale-105`
-                      : 'bg-slate-700/50 border-slate-600 hover:border-slate-500 hover:bg-slate-700'
+                      : 'bg-slate-600/40 border-slate-500 hover:border-slate-400 hover:bg-slate-500/50'
                   }`}
                 >
                   <div className="text-3xl mb-2">{category.icon}</div>
