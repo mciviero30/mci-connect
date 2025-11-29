@@ -33,9 +33,9 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-slate-800/50 rounded-xl p-4 animate-pulse">
-            <div className="h-4 bg-slate-700 rounded w-3/4 mb-2"></div>
-            <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+          <div key={i} className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 animate-pulse">
+            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
           </div>
         ))}
       </div>
@@ -44,10 +44,10 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
 
   if (recognitions.length === 0) {
     return (
-      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700">
+      <Card className="bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 border-slate-200 dark:border-slate-700">
         <CardContent className="p-8 text-center">
-          <Award className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-400">No recognitions yet. Be the first to give kudos!</p>
+          <Award className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+          <p className="text-slate-500 dark:text-slate-400">No recognitions yet. Be the first to give kudos!</p>
         </CardContent>
       </Card>
     );
@@ -57,8 +57,8 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
     <div className="space-y-4">
       {showTitle && (
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-[#3B9FF3]" />
-          <h3 className="text-lg font-bold text-white">Recognition Feed</h3>
+          <Sparkles className="w-5 h-5 text-blue-500" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recognition Feed</h3>
         </div>
       )}
       
@@ -74,7 +74,7 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Card className="bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-slate-700 hover:border-slate-600 transition-all backdrop-blur-sm">
+              <Card className="bg-white dark:bg-gradient-to-br dark:from-slate-800/90 dark:to-slate-900/90 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all backdrop-blur-sm shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
                     {/* Icon */}
@@ -86,9 +86,9 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex-1">
-                          <p className="text-white font-semibold text-sm">
+                          <p className="text-slate-900 dark:text-white font-semibold text-sm">
                             {recognition.given_by_name}
-                            <span className="text-slate-400 font-normal"> recognized </span>
+                            <span className="text-slate-500 dark:text-slate-400 font-normal"> recognized </span>
                             {recognition.employee_name}
                           </p>
                         </div>
@@ -97,15 +97,15 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
                         </Badge>
                       </div>
 
-                      <Badge variant="outline" className="mb-2 text-slate-300 border-slate-600">
+                      <Badge variant="outline" className="mb-2 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600">
                         {recognition.title}
                       </Badge>
 
-                      <p className="text-slate-300 text-sm mb-3 line-clamp-3">
+                      <p className="text-slate-600 dark:text-slate-300 text-sm mb-3 line-clamp-3">
                         "{recognition.message}"
                       </p>
 
-                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
                         <span>{format(new Date(recognition.created_date), 'MMM dd, yyyy')}</span>
                         <span>•</span>
                         <span>{format(new Date(recognition.created_date), 'h:mm a')}</span>
