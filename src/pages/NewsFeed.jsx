@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Megaphone, Heart, Plus, Upload, Cake, PartyPopper } from "lucide-react";
+import { Megaphone, Heart, Plus, Upload, Cake, PartyPopper, Wand2 } from "lucide-react";
+import AIContentGenerator from "../components/ai/AIContentGenerator";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay, isSameMonth } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
@@ -20,6 +21,7 @@ export default function NewsFeed() {
   const [isCreating, setCreating] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '', priority: 'normal' });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const isAdmin = user?.role === 'admin';
@@ -136,10 +138,16 @@ export default function NewsFeed() {
           icon={Megaphone}
           actions={
             isAdmin && !isCreating && (
-              <Button onClick={() => setCreating(true)} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg">
-                <Plus className="w-5 h-5 mr-2" />
-                {t('newAnnouncement')}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => setShowAIGenerator(true)} variant="outline" size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                  <Wand2 className="w-5 h-5 mr-2" />
+                  AI Generate
+                </Button>
+                <Button onClick={() => setCreating(true)} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg">
+                  <Plus className="w-5 h-5 mr-2" />
+                  {t('newAnnouncement')}
+                </Button>
+              </div>
             )
           }
         />
@@ -337,6 +345,20 @@ export default function NewsFeed() {
             </Card>
           )}
         </div>
+        <AIContentGenerator
+          open={showAIGenerator}
+          onOpenChange={setShowAIGenerator}
+          type="announcement"
+          onContentGenerated={(content) => {
+            setNewPost({
+              title: content.title,
+              content: content.content,
+              image_url: '',
+              priority: content.priority
+            });
+            setCreating(true);
+          }}
+        />
       </div>
     </div>
   );
