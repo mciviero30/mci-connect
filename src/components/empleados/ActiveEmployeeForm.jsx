@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -444,34 +443,34 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <Label className="text-white">First Name *</Label>
+          <Label className="text-slate-900 dark:text-white">First Name *</Label>
           <Input
             value={formData.first_name}
             onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             autoCapitalizeInput={true}
             required
           />
         </div>
 
         <div>
-          <Label className="text-white">Last Name *</Label>
+          <Label className="text-slate-900 dark:text-white">Last Name *</Label>
           <Input
             value={formData.last_name}
             onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             autoCapitalizeInput={true}
             required
           />
         </div>
 
         <div>
-          <Label className="text-white">Email *</Label>
+          <Label className="text-slate-900 dark:text-white">Email *</Label>
           <Input
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             required
             disabled
           />
@@ -479,23 +478,23 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Phone</Label>
+          <Label className="text-slate-900 dark:text-white">Phone</Label>
           <Input
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             placeholder="(000)000-0000"
             maxLength={13}
           />
         </div>
 
         <div>
-          <Label className="text-white">Position</Label>
+          <Label className="text-slate-900 dark:text-white">Position</Label>
           <Select value={formData.position} onValueChange={(value) => setFormData({ ...formData, position: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue placeholder="Select position" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <SelectItem value="CEO">CEO</SelectItem>
               <SelectItem value="manager">Manager</SelectItem>
               <SelectItem value="technician">Technician</SelectItem>
@@ -507,12 +506,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Department</Label>
+          <Label className="text-slate-900 dark:text-white">Department</Label>
           <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <SelectItem value="HR">HR</SelectItem>
               <SelectItem value="field">Field</SelectItem>
               <SelectItem value="operations">Operations</SelectItem>
@@ -527,12 +526,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Team *</Label>
+          <Label className="text-slate-900 dark:text-white">Team *</Label>
           <Select value={formData.team_id} onValueChange={handleTeamChange}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               {teams.map(team => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.team_name} - {team.location}, {team.state}
@@ -551,12 +550,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
 
         {/* Team Role Field */}
         <div>
-          <Label className="text-white">Team Role *</Label>
+          <Label className="text-slate-900 dark:text-white">Team Role *</Label>
           <Select value={formData.team_role} onValueChange={(value) => setFormData({ ...formData, team_role: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue placeholder="Select team role" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               {teamRoleOptions.map(role => (
                 <SelectItem key={role.value} value={role.value}>
                   {role.label}
@@ -568,12 +567,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Direct Manager</Label>
+          <Label className="text-slate-900 dark:text-white">Direct Manager</Label>
           <Select value={formData.direct_manager_name} onValueChange={(value) => setFormData({ ...formData, direct_manager_name: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue placeholder="Select manager" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               {managers.map(mgr => (
                 <SelectItem key={mgr.id} value={mgr.full_name}>
                   {mgr.full_name} - {mgr.position}
@@ -585,23 +584,23 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
 
         {/* Existing Hourly Rate and Hire Date */}
         <div>
-          <Label className="text-white">Hourly Rate</Label>
+          <Label className="text-slate-900 dark:text-white">Hourly Rate</Label>
           <Input
             type="number"
             step="0.01"
             value={formData.hourly_rate}
             onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
           />
         </div>
 
         <div>
-          <Label className="text-white">Hire Date</Label>
+          <Label className="text-slate-900 dark:text-white">Hire Date</Label>
           <Input
             type="date"
             value={formData.hire_date}
             onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
           />
         </div>
 
@@ -611,14 +610,14 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Hourly Rate (Normal) *</Label>
+          <Label className="text-slate-900 dark:text-white">Hourly Rate (Normal) *</Label>
           <Input
             type="number"
             step="0.01"
             min="0"
             value={formData.hourly_rate}
             onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             placeholder="25.00"
             required
           />
@@ -626,14 +625,14 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Hourly Rate (Overtime) *</Label>
+          <Label className="text-slate-900 dark:text-white">Hourly Rate (Overtime) *</Label>
           <Input
             type="number"
             step="0.01"
             min="0"
             value={formData.hourly_rate_overtime}
             onChange={(e) => setFormData({ ...formData, hourly_rate_overtime: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             placeholder="37.50"
             required
           />
@@ -641,14 +640,14 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Per Diem Amount *</Label>
+          <Label className="text-slate-900 dark:text-white">Per Diem Amount *</Label>
           <Input
             type="number"
             step="0.01"
             min="0"
             value={formData.per_diem_amount}
             onChange={(e) => setFormData({ ...formData, per_diem_amount: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             placeholder="50.00"
             required
           />
@@ -656,12 +655,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div>
-          <Label className="text-white">Pay Frequency *</Label>
+          <Label className="text-slate-900 dark:text-white">Pay Frequency *</Label>
           <Select value={formData.pay_frequency} onValueChange={(value) => setFormData({ ...formData, pay_frequency: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <SelectItem value="weekly">Weekly</SelectItem>
               <SelectItem value="biweekly">Biweekly</SelectItem>
               <SelectItem value="monthly">Monthly</SelectItem>
@@ -671,31 +670,31 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
 
         {/* Existing SSN, DOB, T-Shirt fields */}
         <div>
-          <Label className="text-white">SSN/Tax ID</Label>
+          <Label className="text-slate-900 dark:text-white">SSN/Tax ID</Label>
           <Input
             value={formData.ssn_tax_id}
             onChange={(e) => setFormData({ ...formData, ssn_tax_id: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
           />
         </div>
 
         <div>
-          <Label className="text-white">Date of Birth</Label>
+          <Label className="text-slate-900 dark:text-white">Date of Birth</Label>
           <Input
             type="date"
             value={formData.dob}
             onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
           />
         </div>
 
         <div>
-          <Label className="text-white">T-Shirt Size</Label>
+          <Label className="text-slate-900 dark:text-white">T-Shirt Size</Label>
           <Select value={formData.tshirt_size} onValueChange={(value) => setFormData({ ...formData, tshirt_size: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <SelectItem value="XS">XS</SelectItem>
               <SelectItem value="S">S</SelectItem>
               <SelectItem value="M">M</SelectItem>
@@ -708,11 +707,11 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
 
         <div className="md:col-span-2">
-          <Label className="text-white">Address</Label>
+          <Label className="text-slate-900 dark:text-white">Address</Label>
           <Input
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
             autoCapitalizeInput={true}
           />
         </div>
