@@ -94,7 +94,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
 
         return (
           <Link key={employee.email} to={createPageUrl(`EmployeeProfile?id=${employeeData?.id}`)}>
-            <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 hover:border-slate-600 transition-all cursor-pointer group">
+            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-slate-600 transition-all cursor-pointer group">
               <CardContent className="p-3">
                 <div className="flex items-center gap-3">
                   {/* Rank Badge */}
