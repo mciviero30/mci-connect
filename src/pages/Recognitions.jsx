@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Award, TrendingUp, Sparkles, Users } from 'lucide-react';
+import { Award, TrendingUp, Sparkles, Users, Wand2 } from 'lucide-react';
+import AIContentGenerator from '../components/ai/AIContentGenerator';
 import PageHeader from '../components/shared/PageHeader';
 import RecognitionFeed from '../components/recognition/RecognitionFeed';
 import TopRecognitionsWidget from '../components/recognition/TopRecognitionsWidget';
@@ -11,9 +12,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Recognitions() {
   const [showKudosDialog, setShowKudosDialog] = useState(false);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [aiGeneratedContent, setAIGeneratedContent] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
+  });
+
+  const { data: allEmployees = [] } = useQuery({
+    queryKey: ['allEmployees'],
+    queryFn: () => base44.entities.User.list(),
+    initialData: [],
   });
 
   const { data: allRecognitions = [] } = useQuery({
@@ -37,13 +46,23 @@ export default function Recognitions() {
           description="Celebrate great work and recognize your colleagues"
           icon={Award}
           actions={
-            <Button
-              onClick={() => setShowKudosDialog(true)}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Give Kudos
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowAIGenerator(true)}
+                variant="outline"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg"
+              >
+                <Wand2 className="w-4 h-4 mr-2" />
+                AI Generate
+              </Button>
+              <Button
+                onClick={() => setShowKudosDialog(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Give Kudos
+              </Button>
+            </div>
           }
         />
 
@@ -131,7 +150,30 @@ export default function Recognitions() {
           </div>
         </div>
 
-        <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} />
+        <GiveKudosDialog 
+          open={showKudosDialog} 
+          onOpenChange={(open) => {
+            setShowKudosDialog(open);
+            if (!open) setAIGeneratedContent(null);
+          }}
+          prefillData={aiGeneratedContent}
+        />
+
+        <AIContentGenerator
+          open={showAIGenerator}
+          onOpenChange={setShowAIGenerator}
+          type="recognition"
+          employees={allEmployees.filter(e => e.employment_status !== 'deleted')}
+          onContentGenerated={(content) => {
+            setAIGeneratedContent({
+              employee_email: content.employee_email,
+              message: content.message,
+              recognition_type: content.recognition_type,
+              points: content.points
+            });
+            setShowKudosDialog(true);
+          }}
+        />
       </div>
     </div>
   );
