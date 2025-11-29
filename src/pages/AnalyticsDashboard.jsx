@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -291,7 +290,7 @@ export default function AnalyticsDashboard() {
   const topCustomersByProfit = customerProfitability.slice(0, 5);
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? "Dashboard de Analytics" : "Analytics Dashboard"}
@@ -362,10 +361,10 @@ export default function AnalyticsDashboard() {
         </div>
 
         {/* TOP JOBS BY PROFIT */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Award className="w-5 h-5 text-blue-600" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Award className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               {language === 'es' ? 'Top 5 Proyectos por Rentabilidad' : 'Top 5 Jobs by Profitability'}
             </CardTitle>
           </CardHeader>
@@ -388,24 +387,24 @@ export default function AnalyticsDashboard() {
         </Card>
 
         {/* EMPLOYEE PRODUCTIVITY */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Users className="w-5 h-5 text-green-600" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
               {language === 'es' ? 'Top 5 Empleados por Revenue Generado' : 'Top 5 Employees by Revenue Generated'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {topEmployeesByRevenue.map((emp, idx) => (
-                <div key={emp.email} className="border-b border-slate-200 pb-4 last:border-0">
+                <div key={emp.email} className="border-b border-slate-200 dark:border-slate-700 pb-4 last:border-0">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-slate-400">#{idx + 1}</span>
-                        <h4 className="font-semibold text-slate-900">{emp.name}</h4>
+                        <span className="text-2xl font-bold text-slate-400 dark:text-slate-500">#{idx + 1}</span>
+                        <h4 className="font-semibold text-slate-900 dark:text-white">{emp.name}</h4>
                       </div>
-                      <div className="flex gap-4 text-sm text-slate-600 mt-1">
+                      <div className="flex gap-4 text-sm text-slate-600 dark:text-slate-400 mt-1">
                         <span>{emp.totalHours.toFixed(1)} {language === 'es' ? 'horas' : 'hours'}</span>
                         <span>•</span>
                         <span>{emp.jobsCount} {language === 'es' ? 'trabajos' : 'jobs'}</span>
@@ -414,15 +413,15 @@ export default function AnalyticsDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg text-green-600">
+                      <p className="font-bold text-lg text-green-600 dark:text-green-400">
                         ${emp.billableRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </p>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         {language === 'es' ? 'Eficiencia' : 'Efficiency'}: {emp.efficiency.toFixed(0)}%
                       </p>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                     <div 
                       className="h-2 rounded-full bg-green-500"
                       style={{ width: `${Math.min((emp.efficiency / 200) * 100, 100)}%` }}
@@ -435,10 +434,10 @@ export default function AnalyticsDashboard() {
         </Card>
 
         {/* CUSTOMER PROFITABILITY */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <DollarSign className="w-5 h-5 text-purple-600" />
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               {language === 'es' ? 'Top 5 Clientes por Rentabilidad' : 'Top 5 Customers by Profitability'}
             </CardTitle>
           </CardHeader>
@@ -461,9 +460,9 @@ export default function AnalyticsDashboard() {
         </Card>
 
         {/* REVENUE BY SERVICE TYPE */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
           <CardHeader>
-            <CardTitle className="text-slate-900">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Revenue por Tipo de Servicio' : 'Revenue by Service Type'}
             </CardTitle>
           </CardHeader>
@@ -493,29 +492,29 @@ export default function AnalyticsDashboard() {
         </Card>
 
         {/* COST PER HOUR ANALYSIS */}
-        <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+        <Card className="mb-8 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
           <CardHeader>
-            <CardTitle className="text-slate-900">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Costo Real por Hora (Top 10 Empleados)' : 'True Cost per Hour (Top 10 Employees)'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {costPerHourAnalysis.slice(0, 10).map(emp => (
-                <div key={emp.name} className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <div key={emp.name} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                   <div>
-                    <p className="font-medium text-slate-900">{emp.name}</p>
-                    <p className="text-xs text-slate-600">
+                    <p className="font-medium text-slate-900 dark:text-white">{emp.name}</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Tarifa base' : 'Base rate'}: ${emp.hourlyRate.toFixed(2)}/hr | 
                       {emp.totalHours.toFixed(0)} hrs | 
                       ${emp.expenses.toFixed(0)} {language === 'es' ? 'gastos' : 'expenses'}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg text-slate-900">
+                    <p className="font-bold text-lg text-slate-900 dark:text-white">
                       ${emp.costPerHour.toFixed(2)}/hr
                     </p>
-                    <p className="text-xs text-slate-600">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Costo total' : 'Total cost'}: ${emp.totalCost.toLocaleString('en-US', { minimumFractionDigits: 0 })}
                     </p>
                   </div>
@@ -527,10 +526,10 @@ export default function AnalyticsDashboard() {
 
         {/* OVERTIME COST BREAKDOWN */}
         {overtimeCostAnalysis.length > 0 && (
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <Clock className="w-5 h-5 text-amber-600" />
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 {language === 'es' ? 'Análisis de Costos de Overtime' : 'Overtime Cost Analysis'}
               </CardTitle>
             </CardHeader>
