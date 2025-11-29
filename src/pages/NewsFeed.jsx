@@ -353,7 +353,7 @@ export default function NewsFeed() {
             setNewPost({
               title: content.title,
               content: content.content,
-              image_url: '',
+              image_url: content.image_url || '',
               priority: content.priority
             });
             setCreating(true);
