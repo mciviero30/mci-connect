@@ -126,7 +126,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
                     <img
                       src={employeeData.profile_photo_url}
                       alt={employee.name}
-                      className="w-10 h-10 rounded-full border-2 border-slate-600 group-hover:border-[#3B9FF3] transition-all"
+                      className="w-10 h-10 rounded-full border-2 border-slate-300 dark:border-slate-600 group-hover:border-blue-500 dark:group-hover:border-[#3B9FF3] transition-all"
                     />
                   ) : (
                     <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center border-2 border-slate-600 group-hover:border-[#3B9FF3] transition-all">
