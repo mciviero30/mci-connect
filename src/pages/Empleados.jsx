@@ -45,14 +45,55 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 
+// Helper function to format name properly
+const formatDisplayName = (employee) => {
+  // Priority 1: Use first_name + last_name if available
+  if (employee.first_name || employee.last_name) {
+    const first = employee.first_name || '';
+    const last = employee.last_name || '';
+    const combined = `${first} ${last}`.trim();
+    if (combined && !combined.includes('@') && !combined.includes('.')) {
+      return combined;
+    }
+  }
+  
+  // Priority 2: Use full_name if it's properly formatted (not an email pattern)
+  if (employee.full_name && !employee.full_name.includes('@')) {
+    // Check if it looks like a proper name (has space or capitalized)
+    if (employee.full_name.includes(' ') || /^[A-Z]/.test(employee.full_name)) {
+      return employee.full_name;
+    }
+    // If it's like "marzio.civiero", convert to "Marzio Civiero"
+    if (employee.full_name.includes('.')) {
+      return employee.full_name
+        .split('.')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
+    // Single word like "marzio" -> "Marzio"
+    return employee.full_name.charAt(0).toUpperCase() + employee.full_name.slice(1).toLowerCase();
+  }
+  
+  // Priority 3: Extract from email
+  if (employee.email) {
+    const emailName = employee.email.split('@')[0];
+    if (emailName.includes('.')) {
+      return emailName
+        .split('.')
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(' ');
+    }
+    return emailName.charAt(0).toUpperCase() + emailName.slice(1).toLowerCase();
+  }
+  
+  return 'Unknown';
+};
+
 // COMPACT EMPLOYEE CARD COMPONENT
 const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, isInactive = false }) => {
   const { t } = useLanguage();
   
-  const displayName = employee.full_name || 
-    `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-    employee.email?.split('@')[0] || 
-    t('unknownEmployee');
+  const displayName = formatDisplayName(employee);
 
   return (
     <Card className={`group hover:shadow-lg transition-all duration-200 ${
@@ -164,9 +205,7 @@ const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, isInactive = 
 const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, onRestore, onDelete }) => {
   const { t, language } = useLanguage();
   
-  const displayName = employee.full_name || 
-    `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-    t('noName');
+  const displayName = formatDisplayName(employee);
 
   const statusConfig = {
     pending: { label: t('pending'), color: 'bg-yellow-100 text-yellow-800', icon: Clock },
@@ -300,10 +339,7 @@ const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, 
 const DeletedEmployeeCard = ({ employee, onRestore }) => {
   const { t, language } = useLanguage();
   
-  const displayName = employee.full_name || 
-    `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-    employee.email?.split('@')[0] || 
-    t('unknownEmployee');
+  const displayName = formatDisplayName(employee);
 
   return (
     <Card className="border-red-200 bg-red-50/50">
