@@ -305,11 +305,13 @@ export default function CrearEstimado() {
                       <SelectValue placeholder={t('selectCustomer')} />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-slate-200">
-                      {customers.map(customer => (
-                        <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
-                          {getCustomerDisplayName(customer)}
-                        </SelectItem>
-                      ))}
+                      {[...customers]
+                        .sort((a, b) => getCustomerDisplayName(a).localeCompare(getCustomerDisplayName(b)))
+                        .map(customer => (
+                          <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
+                            {getCustomerDisplayName(customer)}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
