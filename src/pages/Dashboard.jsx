@@ -573,62 +573,67 @@ export default function Dashboard() {
     <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowAvatarCreator(true)}
-              className="group relative hover:scale-105 transition-transform"
-            >
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt={user?.full_name}
-                  className="w-20 h-20 rounded-full object-cover ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl">
-                  <span className="text-white font-bold text-3xl">
-                    {user?.full_name?.[0]?.toUpperCase() || 'U'}
-                  </span>
+        <div className="mb-8">
+          {/* Top row: Avatar, greeting, and badge */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowAvatarCreator(true)}
+                className="group relative hover:scale-105 transition-transform flex-shrink-0"
+              >
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt={user?.full_name}
+                    className="w-16 h-16 rounded-full object-cover ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center ring-4 ring-blue-500/50 hover:ring-blue-400 transition-all shadow-xl">
+                    <span className="text-white font-bold text-2xl">
+                      {user?.full_name?.[0]?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
+                <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
+                  <User className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-              )}
-              <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
-                <User className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </button>
+              </button>
 
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
-              </h1>
-              <div className="flex items-center gap-2">
-                <p className="text-slate-600 dark:text-slate-400 text-lg">
+              <div className="min-w-0">
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white truncate">
+                  {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
+                </h1>
+                <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base">
                   {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
                 </p>
-                <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md">
-                  MCI Connect • Customizable Dashboard
-                </Badge>
               </div>
             </div>
+
+            <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md self-start lg:self-center whitespace-nowrap">
+              MCI Connect • Customizable Dashboard
+            </Badge>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Action buttons row */}
+          <div className="flex flex-wrap items-center gap-2">
             {isEditMode ? (
               <>
                 <Button
                   onClick={handleCancelEdit}
                   variant="outline"
+                  size="sm"
                   className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
-                  <XIcon className="w-4 h-4 mr-2" />
+                  <XIcon className="w-4 h-4 mr-1" />
                   Cancel
                 </Button>
                 <Button
                   onClick={handleSaveLayout}
+                  size="sm"
                   className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
                   disabled={savePreferencesMutation.isPending}
                 >
-                  <Save className="w-4 h-4 mr-2" />
+                  <Save className="w-4 h-4 mr-1" />
                   {savePreferencesMutation.isPending ? 'Saving...' : 'Save Layout'}
                 </Button>
               </>
@@ -636,24 +641,27 @@ export default function Dashboard() {
               <>
                 <Button
                   onClick={() => setShowKudosDialog(true)}
+                  size="sm"
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
                 >
-                  <Award className="w-4 h-4 mr-2" />
+                  <Award className="w-4 h-4 mr-1" />
                   Give Kudos
                 </Button>
                 <Button
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
+                  size="sm"
                   className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-4 h-4 mr-1" />
                   Add Widget
                 </Button>
                 <Button
                   onClick={() => setIsEditMode(true)}
+                  size="sm"
                   className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
                 >
-                  <SettingsIcon className="w-4 h-4 mr-2" />
+                  <SettingsIcon className="w-4 h-4 mr-1" />
                   Customize
                 </Button>
               </>
