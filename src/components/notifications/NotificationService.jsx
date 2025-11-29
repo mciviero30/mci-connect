@@ -100,36 +100,6 @@ export default function NotificationService({ user, children }) {
     }
   });
 
-  return (
-    <>
-      {children}
-      
-      {/* Botón flotante de notificaciones */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={() => setShowCenter(!showCenter)}
-          size="lg"
-          className="relative bg-gradient-to-r from-[#3B9FF3] to-blue-600 hover:from-[#2d8fe0] hover:to-blue-700 text-white shadow-2xl shadow-blue-500/30 rounded-full w-14 h-14 p-0"
-        >
-          <Bell className="w-6 h-6" />
-          {unreadCount > 0 && (
-            <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </div>
-
-      {/* Centro de notificaciones */}
-      {showCenter && (
-        <NotificationCenter
-          notifications={notifications}
-          onClose={() => setShowCenter(false)}
-          onMarkAsRead={markAsReadMutation.mutate}
-          onMarkAllAsRead={markAllAsReadMutation.mutate}
-          onDelete={deleteNotificationMutation.mutate}
-        />
-      )}
-    </>
-  );
+  // No floating bell button - notifications accessible via sidebar menu
+  return <>{children}</>;
 }
