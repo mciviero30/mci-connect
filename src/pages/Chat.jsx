@@ -16,6 +16,7 @@ import MentionInput from "../components/chat/MentionInput";
 import DirectMessagesList from "../components/chat/DirectMessagesList";
 import CreateGroupDialog from "../components/chat/CreateGroupDialog";
 import UserProfileModal from "../components/chat/UserProfileModal";
+import ChatNotificationCenter from "../components/chat/ChatNotificationCenter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
@@ -192,19 +193,26 @@ export default function Chat() {
       setMessage('');
       setReplyingTo(null);
       
-      // Send notifications to mentioned users
+      // Send chat notifications to mentioned users
       const mentions = extractMentions(message);
       if (mentions.length > 0) {
         mentions.forEach(mentionedName => {
           const mentionedUser = employees.find(e => e.full_name === mentionedName);
           if (mentionedUser && mentionedUser.email !== user.email) {
-            base44.entities.Notification.create({
-              user_email: mentionedUser.email,
-              type: 'chat_mention',
+            base44.entities.ChatNotification.create({
+              recipient_email: mentionedUser.email,
+              type: 'mention',
               title: `${user.full_name} mentioned you`,
               message: message.substring(0, 100),
-              link: '/Chat',
-              is_read: false
+              sender_email: user.email,
+              sender_name: user.full_name,
+              group_id: chatMode === 'direct' && selectedDMConv 
+                ? `dm_${selectedDMConv.id}` 
+                : chatMode === 'groups' && selectedCustomGroup 
+                ? `group_${selectedCustomGroup.id}` 
+                : selectedGroup,
+              is_read: false,
+              is_dismissed: false
             }).catch(err => console.error('Error creating mention notification:', err));
           }
         });
@@ -400,6 +408,25 @@ export default function Chat() {
           title={t('chat')}
           description={t('realTimeCommunication')}
           icon={MessageSquare}
+          actions={
+            <ChatNotificationCenter 
+              userEmail={user?.email}
+              onNavigate={(notification) => {
+                if (notification.group_id) {
+                  if (notification.group_id.startsWith('dm_')) {
+                    setChatMode('direct');
+                    setSelectedDMConv({ id: notification.group_id.replace('dm_', '') });
+                  } else if (notification.group_id.startsWith('group_')) {
+                    const group = customGroups.find(g => g.id === notification.group_id.replace('group_', ''));
+                    if (group) selectCustomGroup(group);
+                  } else {
+                    setChatMode('channels');
+                    setSelectedGroup(notification.group_id);
+                  }
+                }
+              }}
+            />
+          }
         />
 
         <div className="grid lg:grid-cols-4 gap-6">
