@@ -396,24 +396,24 @@ export default function Chat() {
 
         <div className="grid lg:grid-cols-4 gap-6">
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
-            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-slate-900 dark:text-white">{t('channels')}</CardTitle>
+                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Conversations</CardTitle>
                 <div className="flex gap-1">
                   <Button
-                    size="sm"
+                    size="icon"
                     variant="ghost"
                     onClick={() => setShowCreateGroup(true)}
-                    className="text-[#3B9FF3] dark:text-blue-400"
+                    className="h-8 w-8 text-[#3B9FF3] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     title="Create group chat"
                   >
                     <Users className="w-4 h-4" />
                   </Button>
                   <Button
-                    size="sm"
+                    size="icon"
                     variant="ghost"
                     onClick={() => setShowNewDM(true)}
-                    className="text-[#3B9FF3] dark:text-blue-400"
+                    className="h-8 w-8 text-[#3B9FF3] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     title="Start direct message"
                   >
                     <UserPlus className="w-4 h-4" />
@@ -421,27 +421,28 @@ export default function Chat() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full bg-slate-100 dark:bg-slate-800 mb-3 grid grid-cols-3">
-                  <TabsTrigger value="channels" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                    <Hash className="w-4 h-4 mr-1" />
+                <TabsList className="w-full h-9 bg-slate-100 dark:bg-slate-800 mb-3 grid grid-cols-3 p-1 rounded-lg">
+                  <TabsTrigger value="channels" className="text-xs rounded-md data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white data-[state=active]:shadow-sm dark:text-slate-300">
+                    <Hash className="w-3.5 h-3.5 mr-1" />
                     Channels
                   </TabsTrigger>
-                  <TabsTrigger value="groups" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                    <Users className="w-4 h-4 mr-1" />
+                  <TabsTrigger value="groups" className="text-xs rounded-md data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white data-[state=active]:shadow-sm dark:text-slate-300">
+                    <Users className="w-3.5 h-3.5 mr-1" />
                     Groups
                   </TabsTrigger>
-                  <TabsTrigger value="direct" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                    <AtSign className="w-4 h-4 mr-1" />
+                  <TabsTrigger value="direct" className="text-xs rounded-md data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white data-[state=active]:shadow-sm dark:text-slate-300">
+                    <AtSign className="w-3.5 h-3.5 mr-1" />
                     DMs
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="channels" className="mt-0">
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {groups.map(group => {
                       const Icon = group.icon;
+                      const isActive = chatMode === 'channels' && selectedGroup === group.id;
                       return (
                         <button
                           key={group.id}
@@ -450,14 +451,18 @@ export default function Chat() {
                             setSelectedDMConv(null);
                             setSelectedCustomGroup(null);
                           }}
-                          className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
-                            chatMode === 'channels' && selectedGroup === group.id
-                              ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg'
+                          className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
+                            isActive
+                              ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
                               : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                           }`}
                         >
-                          <Icon className="w-5 h-5" />
-                          <span className="font-medium truncate">{group.name}</span>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            isActive ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'
+                          }`}>
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#3B9FF3] dark:text-blue-400'}`} />
+                          </div>
+                          <span className="font-medium text-sm truncate">{group.name}</span>
                         </button>
                       );
                     })}
@@ -465,31 +470,28 @@ export default function Chat() {
                 </TabsContent>
 
                 <TabsContent value="groups" className="mt-0">
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {customGroups
                       .filter(g => g.is_active && g.members.includes(user?.email))
                       .map(group => {
                         const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
+                        const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
                         return (
                           <button
                             key={group.id}
                             onClick={() => selectCustomGroup(group)}
-                            className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
-                              chatMode === 'groups' && selectedCustomGroup?.id === group.id
-                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg'
+                            className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
+                              isActive
+                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                             }`}
                           >
-                            <div className={`w-10 h-10 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center`}>
-                              <Users className="w-5 h-5 text-white" />
+                            <div className={`w-8 h-8 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center`}>
+                              <Users className="w-4 h-4 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{group.group_name}</p>
-                              <p className={`text-xs truncate ${
-                                chatMode === 'groups' && selectedCustomGroup?.id === group.id
-                                  ? 'text-blue-100'
-                                  : 'text-slate-500 dark:text-slate-400'
-                              }`}>
+                              <p className="font-medium text-sm truncate">{group.group_name}</p>
+                              <p className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
                                 {group.members.length} members
                               </p>
                             </div>
@@ -497,14 +499,14 @@ export default function Chat() {
                         );
                       })}
                     {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
-                      <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                        <Users className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">No groups yet</p>
+                      <div className="text-center py-6 text-slate-500 dark:text-slate-400">
+                        <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm mb-2">No groups yet</p>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => setShowCreateGroup(true)}
-                          className="mt-3"
+                          className="h-8 text-xs"
                         >
                           Create Group
                         </Button>
