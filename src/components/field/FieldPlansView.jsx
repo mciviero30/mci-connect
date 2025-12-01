@@ -155,7 +155,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Planos</h1>
+        <h1 className="text-2xl font-bold text-[#D4C85C]">Plans</h1>
         <div className="flex gap-2">
           <Button 
             variant="outline"
@@ -178,8 +178,8 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       {plans.length === 0 ? (
         <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
           <Upload className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay planos</h3>
-          <p className="text-slate-400 mb-4">Sube tu primer plano para comenzar</p>
+          <h3 className="text-lg font-semibold text-white mb-2">No plans yet</h3>
+                          <p className="text-slate-400 mb-4">Upload your first plan to get started</p>
           <Button 
             onClick={() => setShowUpload(true)}
             className="bg-amber-500 hover:bg-amber-600"
@@ -203,12 +203,12 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (window.confirm('¿Estás seguro de eliminar este plano?')) {
+                      if (window.confirm('Are you sure you want to delete this plan and all its tasks?')) {
                         deletePlanMutation.mutate(plan.id);
                       }
                     }}
                     className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
-                    title="Eliminar"
+                    title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -218,7 +218,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                       setAnalyzePlan(plan);
                     }}
                     className="p-2 rounded-lg bg-amber-500/80 hover:bg-amber-500 text-white transition-colors"
-                    title="Analizar y crear tareas"
+                    title="Analyze and create tasks"
                   >
                     <Wand2 className="w-4 h-4" />
                   </button>
@@ -251,7 +251,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     {taskCount > 0 && (
                       <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full z-10">
-                        {taskCount} tareas
+                        {taskCount} tasks
                       </div>
                     )}
                   </div>
@@ -274,20 +274,20 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Subir Nuevo Plano</DialogTitle>
+            <DialogTitle>Upload New Plan</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Nombre del Plano</Label>
+              <Label className="text-slate-300">Plan Name</Label>
               <Input 
                 value={newPlan.name}
                 onChange={(e) => setNewPlan({...newPlan, name: e.target.value})}
-                placeholder="Ej: Planta Baja"
+                placeholder="e.g., Floor Plan Level 1"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Archivo</Label>
+              <Label className="text-slate-300">File</Label>
               <div className="mt-1.5">
                 {newPlan.file ? (
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-800">
@@ -328,7 +328,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     {uploading ? (
                       <div className="flex flex-col items-center w-full px-8">
                         <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-2" />
-                        <span className="text-sm text-slate-400 mb-2">Subiendo archivo...</span>
+                        <span className="text-sm text-slate-400 mb-2">Uploading file...</span>
                         {uploadProgress > 0 && (
                           <div className="w-full">
                             <Progress value={uploadProgress} className="h-2" />
@@ -341,8 +341,8 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     ) : (
                       <>
                         <Upload className="w-8 h-8 text-slate-500 mb-2" />
-                        <span className="text-sm text-slate-400">Click para subir imagen o PDF</span>
-                        <span className="text-xs text-slate-500 mt-1">Máximo {MAX_FILE_SIZE_MB}MB</span>
+                        <span className="text-sm text-slate-400">Click to upload image or PDF</span>
+                                                      <span className="text-xs text-slate-500 mt-1">Max {MAX_FILE_SIZE_MB}MB</span>
                       </>
                     )}
                     <input 
@@ -374,14 +374,14 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreatePlan}
                 disabled={!newPlan.file || !newPlan.name || createPlanMutation.isPending}
                 className="bg-amber-500 hover:bg-amber-600"
               >
-                {createPlanMutation.isPending ? 'Guardando...' : 'Guardar Plano'}
+                {createPlanMutation.isPending ? 'Saving...' : 'Save Plan'}
               </Button>
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           plan={analyzePlan}
           jobId={jobId}
           onTasksCreated={(count) => {
-            toast.success(`${count} tareas creadas exitosamente`);
+            toast.success(`${count} tasks created successfully`);
             setAnalyzePlan(null);
           }}
         />
