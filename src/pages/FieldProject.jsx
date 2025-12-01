@@ -46,6 +46,7 @@ import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
 import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
 import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
+import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -71,13 +72,23 @@ export default function FieldProject() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['field-tasks', jobId],
-    queryFn: () => base44.entities.Task.filter({ job_id: jobId }, '-created_date'),
+    queryFn: async () => {
+      const data = await base44.entities.Task.filter({ job_id: jobId }, '-created_date');
+      // Cache for offline use
+      saveOfflineData('tasks', data);
+      return data;
+    },
     enabled: !!jobId,
   });
 
   const { data: plans = [] } = useQuery({
     queryKey: ['field-plans', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }, 'order'),
+    queryFn: async () => {
+      const data = await base44.entities.Plan.filter({ job_id: jobId }, 'order');
+      // Cache for offline use
+      saveOfflineData('plans', data);
+      return data;
+    },
     enabled: !!jobId,
   });
 
@@ -172,7 +183,11 @@ export default function FieldProject() {
   };
 
   return (
+    <FieldOfflineProvider jobId={jobId}>
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex flex-col md:flex-row">
+      {/* Offline Status Indicator */}
+      <OfflineStatusBadge />
+      
       {/* Mobile Header */}
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
@@ -253,5 +268,6 @@ export default function FieldProject() {
         />
       )}
     </div>
+    </FieldOfflineProvider>
   );
 }
