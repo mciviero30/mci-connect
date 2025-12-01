@@ -211,7 +211,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   const renderPdfPage = async (pdf, pageNum) => {
     const page = await pdf.getPage(pageNum);
-    const scale = 2; // Higher scale for better quality
+    const scale = 1.5; // Balanced scale for quality vs performance
     const viewport = page.getViewport({ scale });
 
     // Create canvas
@@ -230,6 +230,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     const imageDataUrl = canvas.toDataURL('image/png');
     setPdfCanvas(imageDataUrl);
     setPdfPage(pageNum);
+    
+    // Auto-fit zoom to container
+    if (containerRef.current) {
+      const containerWidth = containerRef.current.clientWidth - 100;
+      const containerHeight = containerRef.current.clientHeight - 100;
+      const fitZoom = Math.min(
+        containerWidth / viewport.width,
+        containerHeight / viewport.height,
+        1
+      );
+      setZoom(Math.max(0.2, fitZoom));
+    }
   };
 
   const handlePdfPageChange = async (newPage) => {
@@ -248,8 +260,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     };
   }, [plan?.file_url]);
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.15, 4));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.15, 0.1));
   const handleReset = () => {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
@@ -301,7 +313,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         e.touches[0].clientY - e.touches[1].clientY
       );
       const scale = distance / lastTouchDistance;
-      setZoom(prev => Math.min(Math.max(prev * scale, 0.5), 3));
+      setZoom(prev => Math.min(Math.max(prev * scale, 0.1), 4));
       setLastTouchDistance(distance);
     } else if (e.touches.length === 1 && isDragging && touchStart) {
       // Pan
