@@ -806,7 +806,7 @@ export default function Inventario() {
                     value={itemForm.team_id || ""} 
                     onValueChange={(v) => {
                       const team = teams.find(t => t.id === v);
-                      setItemForm({...itemForm, team_id: v, team_name: team?.name || ''});
+                      setItemForm({...itemForm, team_id: v, team_name: team?.team_name || ''});
                     }}
                   >
                     <SelectTrigger className="bg-white border-slate-300 text-slate-900">
@@ -815,7 +815,7 @@ export default function Inventario() {
                     <SelectContent className="bg-white border-slate-200 z-[100]">
                       {teams.map(team => (
                         <SelectItem key={team.id} value={team.id} className="text-slate-900">
-                          <span className="text-slate-900">{team.name}</span>
+                          {team.team_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
