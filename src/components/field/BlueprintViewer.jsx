@@ -294,9 +294,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   return (
     <TooltipProvider>
-    <div className="h-full flex">
-      {/* Left Toolbar - Like Fieldwire */}
-      <div className="hidden md:flex flex-col bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 w-12 py-2">
+    <div className="h-full flex relative">
+      {/* Left Toolbar - Like Fieldwire - Always visible */}
+      <div className="absolute left-2 top-16 z-50 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg w-11 py-2">
         {toolbarItems.map((item, idx) => {
           if (item.type === 'divider') {
             return <div key={item.id} className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />;
@@ -335,26 +335,27 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           );
         })}
         
+        {/* Divider before visibility */}
+        <div className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />
+        
         {/* Toggle Pins Visibility */}
-        <div className="mt-auto">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setShowPins(!showPins)}
-                className={`mx-1 p-2 rounded-lg transition-all ${
-                  showPins 
-                    ? 'text-[#FFB800]' 
-                    : 'text-slate-400'
-                }`}
-              >
-                {showPins ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => setShowPins(!showPins)}
+              className={`mx-1 p-2 rounded-lg transition-all ${
+                showPins 
+                  ? 'text-[#FFB800]' 
+                  : 'text-slate-400'
+              }`}
+            >
+              {showPins ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Main Viewer */}
@@ -383,8 +384,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           </div>
         </div>
         
-        {/* Mobile Toolbar - Bottom */}
-        <div className="md:hidden fixed bottom-20 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex justify-around z-40">
+        {/* Mobile Toolbar - Bottom - Hidden since we have left toolbar */}
+        <div className="hidden fixed bottom-20 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex justify-around z-40">
           <button
             onClick={() => { setActiveTool('select'); setIsPlacingPin(false); }}
             className={`p-2 rounded-lg ${activeTool === 'select' ? 'bg-[#FFB800] text-white' : 'text-slate-600'}`}
