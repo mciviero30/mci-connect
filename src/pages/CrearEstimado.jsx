@@ -85,8 +85,7 @@ export default function CrearEstimado() {
       const tax_amount = subtotal * (quoteData.tax_rate / 100);
       const total = subtotal + tax_amount;
       const estimated_hours = quoteData.items.reduce((sum, item) => {
-        const itemData = quoteItems.find(qi => qi.name === item.item_name);
-        return sum + ((itemData?.installation_time || 0) * (item.quantity || 0));
+        return sum + ((item.installation_time || 0) * (item.quantity || 0));
       }, 0);
 
       const finalData = {
