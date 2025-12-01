@@ -459,19 +459,34 @@ export default function CrearEstimado() {
               </Button>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
+              {/* Table Header */}
+              <div className="hidden md:grid md:grid-cols-12 gap-2 px-4 py-2 bg-slate-100 rounded-t-lg border border-slate-200 text-xs font-semibold text-slate-600">
+                <div className="col-span-3">Item</div>
+                <div className="col-span-3">{t('description')}</div>
+                <div className="col-span-1 text-center">{t('quantity')}</div>
+                <div className="col-span-1 text-center">Unit</div>
+                <div className="col-span-2 text-center">{t('unitPrice')}</div>
+                <div className="col-span-1 text-right">{t('total')}</div>
+                <div className="col-span-1"></div>
+              </div>
+
               {formData.items.map((item, index) => (
-                <div key={index} className="grid md:grid-cols-12 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div 
+                  key={index} 
+                  className={`grid md:grid-cols-12 gap-2 px-4 py-3 bg-white border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
+                >
+                  {/* Item Selector */}
                   <div className="md:col-span-3">
-                    <Label className="text-slate-700 text-xs">Item</Label>
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">Item</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           role="combobox"
-                          className="w-full justify-between bg-white border-slate-300 text-slate-900 h-9 font-normal"
+                          className="w-full justify-between bg-white border-slate-300 text-slate-900 h-9 font-normal text-sm truncate"
                         >
-                          {item.item_name || "Select item"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          <span className="truncate">{item.item_name || "Select item"}</span>
+                          <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[300px] p-0 bg-white border-slate-200">
@@ -500,18 +515,21 @@ export default function CrearEstimado() {
                     </Popover>
                   </div>
 
+                  {/* Description */}
                   <div className="md:col-span-3">
-                    <Label className="text-slate-700 text-xs">{t('description')}</Label>
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('description')}</Label>
                     <Input
                       value={item.description}
                       onChange={(e) => updateItem(index, 'description', e.target.value)}
                       required
-                      className="bg-white border-slate-300 text-slate-900 h-9"
+                      placeholder="Description"
+                      className="bg-white border-slate-300 text-slate-900 h-9 text-sm"
                     />
                   </div>
 
+                  {/* Quantity */}
                   <div className="md:col-span-1">
-                    <Label className="text-slate-700 text-xs">{t('quantity')}</Label>
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('quantity')}</Label>
                     <Input
                       type="number"
                       value={item.quantity}
@@ -519,52 +537,59 @@ export default function CrearEstimado() {
                       min="0"
                       step="0.01"
                       required
-                      className="bg-white border-slate-300 text-slate-900 h-9"
+                      className="bg-white border-slate-300 text-slate-900 h-9 text-sm text-center"
                     />
                   </div>
 
+                  {/* Unit */}
                   <div className="md:col-span-1">
-                    <Label className="text-slate-700 text-xs">Unit</Label>
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">Unit</Label>
                     <Input
                       value={item.unit}
                       onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900 h-9"
+                      className="bg-white border-slate-300 text-slate-900 h-9 text-sm text-center"
                     />
                   </div>
 
+                  {/* Unit Price */}
                   <div className="md:col-span-2">
-                    <Label className="text-slate-700 text-xs">{t('unitPrice')}</Label>
-                    <Input
-                      type="number"
-                      value={item.unit_price}
-                      onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                      min="0"
-                      step="0.01"
-                      required
-                      className="bg-white border-slate-300 text-slate-900 h-9"
-                    />
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('unitPrice')}</Label>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                      <Input
+                        type="number"
+                        value={item.unit_price}
+                        onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                        min="0"
+                        step="0.01"
+                        required
+                        className="bg-white border-slate-300 text-slate-900 h-9 text-sm pl-6 text-right"
+                      />
+                    </div>
                   </div>
 
-                  <div className="md:col-span-1">
-                    <Label className="text-slate-700 text-xs">{t('total')}</Label>
-                    <div className="h-9 flex items-center text-[#3B9FF3] font-bold">
-                      ${item.total.toFixed(2)}
+                  {/* Total */}
+                  <div className="md:col-span-1 text-right">
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('total')}</Label>
+                    <div className="text-[#3B9FF3] font-bold text-sm">
+                      ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
                     {item.installation_time > 0 && (
-                      <p className="text-xs text-amber-600 mt-0.5" title="Solo referencia interna MCI">
+                      <div className="text-[10px] text-amber-600" title="Solo referencia interna MCI">
                         ⏱ {((item.installation_time || 0) * (item.quantity || 0)).toFixed(1)}h
-                      </p>
+                      </div>
                     )}
                   </div>
 
-                  <div className="md:col-span-1 flex items-end">
+                  {/* Delete Button */}
+                  <div className="md:col-span-1 flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => removeItem(index)}
                       disabled={formData.items.length === 1}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 w-9"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
