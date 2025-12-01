@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Upload, X, ZoomIn, ZoomOut, Move, Trash2, MoreVertical, AlertTriangle, Loader2 } from 'lucide-react';
+import { Plus, Upload, X, ZoomIn, ZoomOut, Move, Trash2, MoreVertical, AlertTriangle, Loader2, Wand2, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BlueprintViewer from './BlueprintViewer.jsx';
+import PlanAnalyzer from './PlanAnalyzer.jsx';
+import WallTemplatesManager from './WallTemplatesManager.jsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
@@ -21,6 +24,8 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const [fileSizeWarning, setFileSizeWarning] = useState('');
   const [fileError, setFileError] = useState('');
   const [newPlan, setNewPlan] = useState({ name: '', file: null, fileSize: 0 });
+  const [analyzePlan, setAnalyzePlan] = useState(null);
+  const [showTemplates, setShowTemplates] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -142,13 +147,23 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#D4C85C]">Planos</h1>
-        <Button 
-          onClick={() => setShowUpload(true)}
-          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Subir Plano
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowTemplates(true)}
+            className="border-slate-700 text-slate-300 hover:text-white"
+          >
+            <Settings2 className="w-4 h-4 mr-2" />
+            Templates
+          </Button>
+          <Button 
+            onClick={() => setShowUpload(true)}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Subir Plano
+          </Button>
+        </div>
       </div>
 
       {plans.length === 0 ? (
@@ -174,18 +189,31 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                 key={plan.id}
                 className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden hover:border-amber-500/50 transition-all group relative"
               >
-                {/* Delete button - always visible */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm('¿Estás seguro de eliminar este plano?')) {
-                      deletePlanMutation.mutate(plan.id);
-                    }
-                  }}
-                  className="absolute top-2 left-2 z-20 p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                {/* Action buttons */}
+                <div className="absolute top-2 left-2 z-20 flex gap-1">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('¿Estás seguro de eliminar este plano?')) {
+                        deletePlanMutation.mutate(plan.id);
+                      }
+                    }}
+                    className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAnalyzePlan(plan);
+                    }}
+                    className="p-2 rounded-lg bg-amber-500/80 hover:bg-amber-500 text-white transition-colors"
+                    title="Analizar y crear tareas"
+                  >
+                    <Wand2 className="w-4 h-4" />
+                  </button>
+                </div>
 
                 <div 
                   onClick={() => setSelectedPlan(plan)}
@@ -350,6 +378,26 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Plan Analyzer */}
+      {analyzePlan && (
+        <PlanAnalyzer
+          open={!!analyzePlan}
+          onOpenChange={(open) => !open && setAnalyzePlan(null)}
+          plan={analyzePlan}
+          jobId={jobId}
+          onTasksCreated={(count) => {
+            toast.success(`${count} tareas creadas exitosamente`);
+            setAnalyzePlan(null);
+          }}
+        />
+      )}
+
+      {/* Wall Templates Manager */}
+      <WallTemplatesManager
+        open={showTemplates}
+        onOpenChange={setShowTemplates}
+      />
     </div>
   );
 }
