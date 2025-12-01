@@ -17,6 +17,7 @@ import DirectMessagesList from "../components/chat/DirectMessagesList";
 import CreateGroupDialog from "../components/chat/CreateGroupDialog";
 import UserProfileModal from "../components/chat/UserProfileModal";
 import ChatNotificationCenter from "../components/chat/ChatNotificationCenter";
+import JobChatMembers from "../components/chat/JobChatMembers";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
