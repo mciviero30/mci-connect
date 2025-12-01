@@ -34,7 +34,7 @@ export default function DashboardWidget({
       exit={{ opacity: 0, scale: 0.9 }}
       className={sizeClasses[widget.size || 'medium']}
     >
-      <Card className={`h-full bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all ${
+      <Card className={`h-full bg-white dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all ${
         isEditing ? 'ring-2 ring-blue-400 ring-offset-2' : ''
       }`}>
         <CardHeader className="pb-3">
