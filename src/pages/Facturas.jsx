@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -300,7 +299,7 @@ export default function Facturas() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('invoices')}
@@ -340,43 +339,43 @@ export default function Facturas() {
         />
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">{t('drafts')}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{drafts.length}</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{t('drafts')}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{drafts.length}</p>
                 </div>
-                <div className="p-3 bg-slate-100 rounded-2xl">
-                  <FileCheck className="w-6 h-6 text-slate-600" />
+                <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-2xl">
+                  <FileCheck className="w-6 h-6 text-slate-600 dark:text-slate-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">{t('paid')}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{paid.length}</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{t('paid')}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{paid.length}</p>
                 </div>
-                <div className="p-3 bg-green-100 rounded-2xl">
-                  <FileCheck className="w-6 h-6 text-green-600" />
+                <div className="p-3 bg-green-100 dark:bg-green-700 rounded-2xl">
+                  <FileCheck className="w-6 h-6 text-green-600 dark:text-green-200" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">{t('overdue')}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{overdue.length}</p>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{t('overdue')}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{overdue.length}</p>
                 </div>
-                <div className="p-3 bg-red-100 rounded-2xl">
-                  <FileCheck className="w-6 h-6 text-red-600" />
+                <div className="p-3 bg-red-100 dark:bg-red-700 rounded-2xl">
+                  <FileCheck className="w-6 h-6 text-red-600 dark:text-red-200" />
                 </div>
               </div>
             </CardContent>
@@ -413,19 +412,19 @@ export default function Facturas() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-4">
             <div className="flex gap-2 mb-4">
               <Input
                 placeholder={t('search') + "..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
+                className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
               />
               <Button
                 onClick={() => setShowFilters(!showFilters)}
                 variant={showFilters ? "default" : "outline"}
-                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
+                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}
               >
                 <Filter className="w-4 h-4 mr-2" />
                 {language === 'es' ? 'Filtros' : 'Filters'}
@@ -596,12 +595,12 @@ export default function Facturas() {
             const isOverdue = daysOverdue > 0;
 
             return (
-              <Card key={invoice.id} className={`bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all group ${isOverdue ? 'border-l-4 border-l-red-500' : ''}`}>
+              <Card key={invoice.id} className={`bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all group ${isOverdue ? 'border-l-4 border-l-red-500' : ''}`}>
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <h3 className="font-bold text-xl text-slate-900">{invoice.customer_name}</h3>
+                        <h3 className="font-bold text-xl text-slate-900 dark:text-white">{invoice.customer_name}</h3>
                         <Badge className={statusColors[invoice.status] || statusColors.draft}>
                           {getStatusLabel(invoice.status)}
                         </Badge>
@@ -613,8 +612,8 @@ export default function Facturas() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-slate-600 font-medium mb-1">{invoice.job_name}</p>
-                      <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
+                      <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">{invoice.job_name}</p>
+                      <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 flex-wrap">
                         <span>{invoice.invoice_number}</span>
                         <span>•</span>
                         <span>{format(new Date(invoice.invoice_date), 'MMM dd, yyyy')}</span>
@@ -637,16 +636,16 @@ export default function Facturas() {
 
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-[#3B9FF3]">
+                        <p className="text-2xl font-bold text-[#3B9FF3] dark:text-blue-400">
                           ${invoice.total?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                         {invoice.amount_paid > 0 && (
-                          <p className="text-sm text-green-600 font-semibold">
+                          <p className="text-sm text-green-600 dark:text-green-400 font-semibold">
                             {language === 'es' ? 'Pagado' : 'Paid'}: ${invoice.amount_paid.toFixed(2)}
                           </p>
                         )}
                         {invoice.balance > 0 && (
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
                             {language === 'es' ? 'Saldo' : 'Balance'}: ${invoice.balance.toFixed(2)}
                           </p>
                         )}
@@ -711,10 +710,10 @@ export default function Facturas() {
           })}
 
           {filteredInvoices.length === 0 && !isLoading && (
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
               <CardContent className="p-12 text-center">
-                <FileCheck className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                <FileCheck className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
                   {hasActiveFilters 
                     ? (language === 'es' ? 'No se encontraron facturas con estos filtros' : 'No invoices found with these filters')
                     : t('noInvoices')}
@@ -740,21 +739,21 @@ export default function Facturas() {
         {/* Payment Dialog */}
         {paymentDialogOpen && selectedInvoice && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+            <div className="bg-white dark:bg-[#282828] rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
                 {language === 'es' ? 'Registrar Pago' : 'Register Payment'}
               </h3>
-              <p className="text-slate-600 mb-4">
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
                 {language === 'es' ? 'Factura' : 'Invoice'}: <span className="font-semibold">{selectedInvoice.invoice_number}</span>
               </p>
               <div className="mb-4">
-                <Label htmlFor="outstanding-balance" className="text-slate-700 mb-2 block">{language === 'es' ? 'Saldo Pendiente' : 'Outstanding Balance'}</Label>
-                <p id="outstanding-balance" className="text-3xl font-bold text-[#3B9FF3]">
+                <Label htmlFor="outstanding-balance" className="text-slate-700 dark:text-slate-300 mb-2 block">{language === 'es' ? 'Saldo Pendiente' : 'Outstanding Balance'}</Label>
+                <p id="outstanding-balance" className="text-3xl font-bold text-[#3B9FF3] dark:text-blue-400">
                   ${(selectedInvoice.balance || selectedInvoice.total).toFixed(2)}
                 </p>
               </div>
               <div className="mb-6">
-                <Label htmlFor="payment-amount" className="text-slate-700 mb-2 block">{language === 'es' ? 'Monto del Pago' : 'Payment Amount'}</Label>
+                <Label htmlFor="payment-amount" className="text-slate-700 dark:text-slate-300 mb-2 block">{language === 'es' ? 'Monto del Pago' : 'Payment Amount'}</Label>
                 <Input
                   id="payment-amount"
                   type="number"

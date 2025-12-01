@@ -218,13 +218,13 @@ export default function JobPerformanceAnalysis() {
           actions={
             <div className="flex gap-3">
               <Select value={filterTeam} onValueChange={setFilterTeam}>
-                <SelectTrigger className="w-40 bg-slate-50 border-slate-200 text-slate-900">
+                <SelectTrigger className="w-40 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200">
-                  <SelectItem value="all" className="text-slate-900 hover:bg-slate-100">All Teams</SelectItem>
+                <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                  <SelectItem value="all" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">All Teams</SelectItem>
                   {teams?.map(team => (
-                    <SelectItem key={team.id} value={team.id} className="text-slate-900 hover:bg-slate-100">
+                    <SelectItem key={team.id} value={team.id} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                       {team.team_name}
                     </SelectItem>
                   ))}
@@ -232,13 +232,13 @@ export default function JobPerformanceAnalysis() {
               </Select>
 
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-40 bg-slate-50 border-slate-200 text-slate-900">
+                <SelectTrigger className="w-40 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200">
-                  <SelectItem value="all" className="text-slate-900 hover:bg-slate-100">All Status</SelectItem>
-                  <SelectItem value="active" className="text-slate-900 hover:bg-slate-100">Active</SelectItem>
-                  <SelectItem value="completed" className="text-slate-900 hover:bg-slate-100">Completed</SelectItem>
+                <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                  <SelectItem value="all" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">All Status</SelectItem>
+                  <SelectItem value="active" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Active</SelectItem>
+                  <SelectItem value="completed" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -247,57 +247,57 @@ export default function JobPerformanceAnalysis() {
 
         {/* Summary Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white shadow-lg border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-slate-600">Overall Efficiency</CardTitle>
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Overall Efficiency</CardTitle>
               <Target className="w-5 h-5 text-[#3B9FF3]" />
             </CardHeader>
             <CardContent>
-              <div className={`text-3xl font-bold ${overallEfficiency >= 100 ? 'text-emerald-600' : 'text-amber-600'}`}>
+              <div className={`text-3xl font-bold ${overallEfficiency >= 100 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                 {overallEfficiency.toFixed(0)}%
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {totalEstimatedHours.toFixed(0)}h est. / {totalActualHours.toFixed(0)}h actual
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-lg border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-slate-600">Efficient Jobs</CardTitle>
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Efficient Jobs</CardTitle>
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-emerald-600">{efficientJobs}</div>
-              <p className="text-xs text-slate-500 mt-1">
+              <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{efficientJobs}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {filteredJobs.length > 0 ? ((efficientJobs / filteredJobs.length) * 100).toFixed(0) : 0}% of total jobs
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-lg border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-slate-600">Needs Improvement</CardTitle>
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Needs Improvement</CardTitle>
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-amber-600">{inefficientJobs}</div>
-              <p className="text-xs text-slate-500 mt-1">
+              <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{inefficientJobs}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 Below 100% efficiency
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-lg border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm text-slate-600">Total Labor Cost</CardTitle>
-              <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Total Labor Cost</CardTitle>
+              <DollarSign className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-[#3B9FF3]">
+              <div className="text-3xl font-bold text-[#3B9FF3] dark:text-blue-400">
                 ${totalLaborCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {totalActualHours.toFixed(0)} total hours
               </p>
             </CardContent>
@@ -305,32 +305,32 @@ export default function JobPerformanceAnalysis() {
         </div>
 
         {/* NEW: Prompt #66 - Team Profitability Section */}
-        <Card className="bg-white shadow-xl border-slate-200 mb-8">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <MapPin className="w-5 h-5 text-[#3B9FF3]" />
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700 mb-8">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <MapPin className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
               Team-Level Profitability Analysis
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {teamProfitabilityData.length === 0 ? (
               <div className="text-center py-12">
-                <MapPin className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-700 mb-2">No Profitability Data</h3>
-                <p className="text-slate-500">No completed projects found with revenue or expenses for teams.</p>
+                <MapPin className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">No Profitability Data</h3>
+                <p className="text-slate-500 dark:text-slate-400">No completed projects found with revenue or expenses for teams.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50 border-slate-200">
-                      <TableHead className="text-left p-4 text-slate-700 font-semibold">Team Name</TableHead>
-                      <TableHead className="text-left p-4 text-slate-700 font-semibold">Location</TableHead>
-                      <TableHead className="text-center p-4 text-slate-700 font-semibold">Total Projects</TableHead>
-                      <TableHead className="text-center p-4 text-slate-700 font-semibold">Avg Profit Margin</TableHead>
-                      <TableHead className="text-center p-4 text-slate-700 font-semibold">Total Labor Hours</TableHead>
-                      <TableHead className="text-right p-4 text-slate-700 font-semibold">Total Revenue</TableHead>
-                      <TableHead className="text-right p-4 text-slate-700 font-semibold">Total Costs</TableHead>
+                    <TableRow className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                      <TableHead className="text-left p-4 text-slate-700 dark:text-slate-300 font-semibold">Team Name</TableHead>
+                      <TableHead className="text-left p-4 text-slate-700 dark:text-slate-300 font-semibold">Location</TableHead>
+                      <TableHead className="text-center p-4 text-slate-700 dark:text-slate-300 font-semibold">Total Projects</TableHead>
+                      <TableHead className="text-center p-4 text-slate-700 dark:text-slate-300 font-semibold">Avg Profit Margin</TableHead>
+                      <TableHead className="text-center p-4 text-slate-700 dark:text-slate-300 font-semibold">Total Labor Hours</TableHead>
+                      <TableHead className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Total Revenue</TableHead>
+                      <TableHead className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Total Costs</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -343,14 +343,14 @@ export default function JobPerformanceAnalysis() {
                         const isLowProfit = profitMargin < 10;
 
                         return (
-                          <TableRow key={team.teamId} className="hover:bg-slate-50 border-slate-200">
-                            <TableCell className="font-medium text-slate-900 p-4">
+                          <TableRow key={team.teamId} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 border-slate-200 dark:border-slate-700">
+                            <TableCell className="font-medium text-slate-900 dark:text-white p-4">
                               <div className="flex items-center gap-2">
-                                <Building2 className="w-4 h-4 text-[#3B9FF3]" />
+                                <Building2 className="w-4 h-4 text-[#3B9FF3] dark:text-blue-400" />
                                 {team.teamName}
                               </div>
                             </TableCell>
-                            <TableCell className="text-slate-700 p-4">{team.location || '-'}</TableCell>
+                            <TableCell className="text-slate-700 dark:text-slate-300 p-4">{team.location || '-'}</TableCell>
                             <TableCell className="text-center p-4">
                               <Badge className="bg-blue-100 text-blue-800 border-blue-300">
                                 {team.totalProjects}
@@ -365,13 +365,13 @@ export default function JobPerformanceAnalysis() {
                                 {profitMargin.toFixed(1)}%
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-center font-semibold text-slate-900 p-4">
+                            <TableCell className="text-center font-semibold text-slate-900 dark:text-white p-4">
                               {team.totalLaborHours.toFixed(1)}h
                             </TableCell>
-                            <TableCell className="text-right font-bold text-[#3B9FF3] p-4">
+                            <TableCell className="text-right font-bold text-[#3B9FF3] dark:text-blue-400 p-4">
                               ${team.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </TableCell>
-                            <TableCell className="text-right text-slate-700 p-4">
+                            <TableCell className="text-right text-slate-700 dark:text-slate-300 p-4">
                               ${team.totalCosts.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </TableCell>
                           </TableRow>
@@ -387,10 +387,10 @@ export default function JobPerformanceAnalysis() {
 
         {/* Team Performance Comparison */}
         {teamPerformance.length > 0 && (
-          <Card className="bg-white shadow-lg border-slate-200 mb-8">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <Users className="w-5 h-5 text-[#3B9FF3]" />
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700 mb-8">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <Users className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                 Team Performance Comparison
               </CardTitle>
             </CardHeader>
@@ -424,10 +424,10 @@ export default function JobPerformanceAnalysis() {
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* Top Performers */}
-          <Card className="bg-white shadow-lg border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <Award className="w-5 h-5 text-emerald-600" />
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <Award className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 Top Performers
               </CardTitle>
             </CardHeader>
@@ -453,10 +453,10 @@ export default function JobPerformanceAnalysis() {
           </Card>
 
           {/* Bottom Performers */}
-          <Card className="bg-white shadow-lg border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 Needs Improvement
               </CardTitle>
             </CardHeader>
@@ -483,41 +483,41 @@ export default function JobPerformanceAnalysis() {
         </div>
 
         {/* Detailed Job List */}
-        <Card className="bg-white shadow-lg border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="text-slate-900">All Jobs Performance</CardTitle>
+        <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="text-slate-900 dark:text-white">All Jobs Performance</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50">
+                <thead className="bg-slate-50 dark:bg-slate-800/50">
                   <tr>
-                    <th className="text-left p-4 text-slate-700 font-semibold">Job Name</th>
-                    <th className="text-left p-4 text-slate-700 font-semibold">Team</th>
-                    <th className="text-right p-4 text-slate-700 font-semibold">Est. Hours</th>
-                    <th className="text-right p-4 text-slate-700 font-semibold">Actual Hours</th>
-                    <th className="text-right p-4 text-slate-700 font-semibold">Difference</th>
-                    <th className="text-right p-4 text-slate-700 font-semibold">Efficiency</th>
-                    <th className="text-right p-4 text-slate-700 font-semibold">Labor Cost</th>
-                    <th className="text-center p-4 text-slate-700 font-semibold">Status</th>
+                    <th className="text-left p-4 text-slate-700 dark:text-slate-300 font-semibold">Job Name</th>
+                    <th className="text-left p-4 text-slate-700 dark:text-slate-300 font-semibold">Team</th>
+                    <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Est. Hours</th>
+                    <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Actual Hours</th>
+                    <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Difference</th>
+                    <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Efficiency</th>
+                    <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">Labor Cost</th>
+                    <th className="text-center p-4 text-slate-700 dark:text-slate-300 font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredJobs.map(job => (
-                    <tr key={job.id} className="border-t border-slate-200 hover:bg-slate-50 transition-colors">
+                    <tr key={job.id} className="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="p-4">
                         <Link
                           to={createPageUrl(`JobDetails?id=${job.id}`)}
-                          className="text-[#3B9FF3] hover:text-blue-700 font-medium"
+                          className="text-[#3B9FF3] dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                         >
                           {job.name}
                         </Link>
                       </td>
-                      <td className="p-4 text-slate-700">{teams?.find(t => t.id === job.team_id)?.team_name || '-'}</td>
-                      <td className="p-4 text-right text-slate-700">{job.estimatedHours.toFixed(1)}h</td>
-                      <td className="p-4 text-right text-slate-700">{job.actualHours.toFixed(1)}h</td>
+                      <td className="p-4 text-slate-700 dark:text-slate-300">{teams?.find(t => t.id === job.team_id)?.team_name || '-'}</td>
+                      <td className="p-4 text-right text-slate-700 dark:text-slate-300">{job.estimatedHours.toFixed(1)}h</td>
+                      <td className="p-4 text-right text-slate-700 dark:text-slate-300">{job.actualHours.toFixed(1)}h</td>
                       <td className="p-4 text-right">
-                        <span className={job.hoursDifference >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+                        <span className={job.hoursDifference >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>
                           {job.hoursDifference >= 0 ? '+' : ''}{job.hoursDifference.toFixed(1)}h
                         </span>
                       </td>
@@ -531,7 +531,7 @@ export default function JobPerformanceAnalysis() {
                           {job.efficiency.toFixed(0)}%
                         </Badge>
                       </td>
-                      <td className="p-4 text-right text-slate-700">
+                      <td className="p-4 text-right text-slate-700 dark:text-slate-300">
                         ${job.laborCost.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                       </td>
                       <td className="p-4 text-center">
@@ -551,9 +551,9 @@ export default function JobPerformanceAnalysis() {
 
             {filteredJobs.length === 0 && (
               <div className="p-12 text-center">
-                <BarChart3 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-700 mb-2">No Performance Data</h3>
-                <p className="text-slate-500">
+                <BarChart3 className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">No Performance Data</h3>
+                <p className="text-slate-500 dark:text-slate-400">
                   Jobs need approved quotes with estimated hours and logged time entries to show performance data.
                 </p>
               </div>

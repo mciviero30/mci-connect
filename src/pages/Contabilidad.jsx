@@ -140,9 +140,9 @@ export default function Contabilidad() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <Card className="lg:col-span-2 bg-white shadow-lg border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="text-slate-900">{t('incomeVsExpenses')}</CardTitle>
+          <Card className="lg:col-span-2 bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-slate-900 dark:text-white">{t('incomeVsExpenses')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={300}>
@@ -166,9 +166,9 @@ export default function Contabilidad() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white shadow-lg border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="text-slate-900">{t('expensesByCategory')}</CardTitle>
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-slate-900 dark:text-white">{t('expensesByCategory')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={300}>
@@ -209,9 +209,9 @@ export default function Contabilidad() {
         />
 
         <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
-          <DialogContent className="max-w-2xl bg-white border-slate-200">
+          <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">{editingTransaction ? t('edit') : t('new')} {t('transaction')}</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white">{editingTransaction ? t('edit') : t('new')} {t('transaction')}</DialogTitle>
             </DialogHeader>
             <TransactionForm
               transaction={editingTransaction}

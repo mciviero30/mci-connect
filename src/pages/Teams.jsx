@@ -196,7 +196,7 @@ export default function Teams() {
   const activeTeams = teams.filter(t => t.status === 'active');
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Teams Management"
@@ -218,18 +218,18 @@ export default function Teams() {
             const capacityPercentage = (stats.employees / maxHeadcount) * 100;
 
             return (
-              <Card key={team.id} className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200">
+              <Card key={team.id} className="bg-white dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200 dark:border-slate-700">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <Link to={createPageUrl(`TeamDetails?id=${team.id}`)} className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <Building2 className="w-6 h-6 text-[#3B9FF3]" />
-                        <CardTitle className="text-xl text-slate-900">{team.team_name}</CardTitle>
+                        <Building2 className="w-6 h-6 text-[#3B9FF3] dark:text-blue-400" />
+                        <CardTitle className="text-xl text-slate-900 dark:text-white">{team.team_name}</CardTitle>
                         {team.is_headquarters && (
                           <Badge className="bg-amber-100 border-amber-300 text-amber-700">HQ</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                         <MapPin className="w-4 h-4" />
                         <span>{team.location}, {team.state}</span>
                       </div>
@@ -237,17 +237,17 @@ export default function Teams() {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                        <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                           <MoreVertical className="w-5 h-5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-white border-slate-200">
-                        <DropdownMenuItem onClick={() => handleEdit(team)} className="text-slate-900 hover:bg-slate-100 cursor-pointer">
+                      <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                        <DropdownMenuItem onClick={() => handleEdit(team)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
                           <Edit className="w-4 h-4 mr-2" />
                           Edit Team
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDelete(team)} className="text-red-600 hover:bg-red-50 cursor-pointer">
+                        <DropdownMenuItem onClick={() => handleDelete(team)} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Team
                         </DropdownMenuItem>
@@ -267,31 +267,31 @@ export default function Teams() {
                     </Badge>
 
                     {team.description && (
-                      <p className="text-slate-600 text-sm mb-4">{team.description}</p>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{team.description}</p>
                     )}
 
                     {/* INTERACTIVE CAPACITY INDICATOR */}
                     <div 
-                      className="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all"
+                      className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all"
                       onClick={(e) => {
                         e.preventDefault();
                         handleQuickCapacityEdit(team, stats.employees);
                       }}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-slate-700 font-medium">Team Capacity</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">Team Capacity</span>
                         <div className="flex items-center gap-2">
                           <span className={`text-sm font-bold ${
-                            isAtCapacity ? 'text-red-600' :
-                            capacityPercentage > 80 ? 'text-amber-600' :
-                            'text-green-600'
+                            isAtCapacity ? 'text-red-600 dark:text-red-400' :
+                            capacityPercentage > 80 ? 'text-amber-600 dark:text-amber-400' :
+                            'text-green-600 dark:text-green-400'
                           }`}>
                             {stats.employees}/{maxHeadcount}
                           </span>
-                          <Edit className="w-3 h-3 text-slate-400 group-hover:text-blue-600" />
+                          <Edit className="w-3 h-3 text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                         </div>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2.5">
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
                         <div
                           className={`h-2.5 rounded-full transition-all duration-300 ${
                             isAtCapacity ? 'bg-red-500' :
@@ -316,20 +316,20 @@ export default function Teams() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white rounded-lg p-3 border border-slate-200">
+                      <div className="bg-white dark:bg-[#1e1e1e] rounded-lg p-3 border border-slate-200 dark:border-slate-700">
                         <div className="flex items-center gap-2 mb-1">
-                          <Users className="w-4 h-4 text-[#3B9FF3]" />
-                          <span className="text-xs text-slate-600">Employees</span>
+                          <Users className="w-4 h-4 text-[#3B9FF3] dark:text-blue-400" />
+                          <span className="text-xs text-slate-600 dark:text-slate-400">Employees</span>
                         </div>
-                        <p className="text-2xl font-bold text-slate-900">{stats.employees}</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.employees}</p>
                       </div>
 
-                      <div className="bg-white rounded-lg p-3 border border-slate-200">
+                      <div className="bg-white dark:bg-[#1e1e1e] rounded-lg p-3 border border-slate-200 dark:border-slate-700">
                         <div className="flex items-center gap-2 mb-1">
-                          <Briefcase className="w-4 h-4 text-[#3B9FF3]" />
-                          <span className="text-xs text-slate-600">Active Jobs</span>
+                          <Briefcase className="w-4 h-4 text-[#3B9FF3] dark:text-blue-400" />
+                          <span className="text-xs text-slate-600 dark:text-slate-400">Active Jobs</span>
                         </div>
-                        <p className="text-2xl font-bold text-slate-900">{stats.jobs}</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.jobs}</p>
                       </div>
                     </div>
                   </Link>
@@ -341,9 +341,9 @@ export default function Teams() {
 
         {/* MAIN TEAM FORM DIALOG */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent className="bg-white border-slate-200 text-slate-900 max-w-2xl">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900">{editingTeam ? 'Edit Team' : 'New Team'}</DialogTitle>
+              <DialogTitle className="text-2xl text-slate-900 dark:text-white">{editingTeam ? 'Edit Team' : 'New Team'}</DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -450,10 +450,10 @@ export default function Teams() {
 
         {/* QUICK CAPACITY EDIT DIALOG */}
         <Dialog open={showCapacityDialog} onOpenChange={setShowCapacityDialog}>
-          <DialogContent className="bg-white border-slate-200 max-w-md">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">Update Team Capacity</DialogTitle>
-              <DialogDescription className="text-slate-600">
+              <DialogTitle className="text-slate-900 dark:text-white">Update Team Capacity</DialogTitle>
+              <DialogDescription className="text-slate-600 dark:text-slate-400">
                 {selectedTeamForCapacity?.team_name}
               </DialogDescription>
             </DialogHeader>

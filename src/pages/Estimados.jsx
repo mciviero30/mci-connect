@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -358,7 +357,7 @@ export default function Estimados() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('quotes')}
@@ -389,43 +388,43 @@ export default function Estimados() {
         />
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">{t('drafts')}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{drafts.length}</p>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('drafts')}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{drafts.length}</p>
                 </div>
-                <div className="p-3 bg-slate-200 rounded-2xl">
-                  <FileText className="w-6 h-6 text-slate-700" />
+                <div className="p-3 bg-slate-200 dark:bg-slate-700 rounded-2xl">
+                  <FileText className="w-6 h-6 text-slate-700 dark:text-slate-300" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">{t('sent')}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{sent.length}</p>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('sent')}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{sent.length}</p>
                 </div>
-                <div className="p-3 bg-blue-200 rounded-2xl">
-                  <FileText className="w-6 h-6 text-blue-700" />
+                <div className="p-3 bg-blue-200 dark:bg-blue-700 rounded-2xl">
+                  <FileText className="w-6 h-6 text-blue-700 dark:text-blue-200" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-700">{t('converted')}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{converted.length}</p>
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('converted')}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{converted.length}</p>
                 </div>
-                <div className="p-3 bg-purple-200 rounded-2xl">
-                  <FileCheck className="w-6 h-6 text-purple-700" />
+                <div className="p-3 bg-purple-200 dark:bg-purple-700 rounded-2xl">
+                  <FileCheck className="w-6 h-6 text-purple-700 dark:text-purple-200" />
                 </div>
               </div>
             </CardContent>
@@ -441,19 +440,19 @@ export default function Estimados() {
           </Card>
         </div>
 
-        <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 mb-6">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-4">
             <div className="flex gap-2 mb-4">
               <Input
                 placeholder={t('search') + "..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
+                className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
               />
               <Button
                 onClick={() => setShowFilters(!showFilters)}
                 variant={showFilters ? "default" : "outline"}
-                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
+                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}
               >
                 <Filter className="w-4 h-4 mr-2" />
                 {language === 'es' ? 'Filtros' : 'Filters'}
@@ -477,18 +476,18 @@ export default function Estimados() {
 
             {/* Advanced Filters Panel */}
             {showFilters && (
-              <div className="border-t border-slate-200 pt-4 space-y-4">
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-4">
                 <div className="grid md:grid-cols-3 gap-4">
                   {/* Date Range */}
                   <div>
-                    <Label className="text-slate-700 font-medium mb-2 block">
+                    <Label className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">
                       {language === 'es' ? 'Fecha Desde' : 'Date From'}
                     </Label>
                     <Input
                       type="date"
                       value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900"
+                      className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
                     />
                   </div>
 
@@ -617,12 +616,12 @@ export default function Estimados() {
 
         <div className="space-y-4">
           {filteredQuotes.map(quote => (
-            <Card key={quote.id} className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all group">
+            <Card key={quote.id} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all group">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                      <h3 className="font-bold text-xl text-slate-900">{quote.customer_name}</h3>
+                      <h3 className="font-bold text-xl text-slate-900 dark:text-white">{quote.customer_name}</h3>
                       <Badge className={statusColors[quote.status] || statusColors.draft}>
                         {getStatusLabel(quote.status)}
                       </Badge>
@@ -633,8 +632,8 @@ export default function Estimados() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-slate-600 font-medium mb-1">{quote.job_name}</p>
-                    <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
+                    <p className="text-slate-600 dark:text-slate-400 font-medium mb-1">{quote.job_name}</p>
+                    <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 flex-wrap">
                       <span>{quote.quote_number}</span>
                       <span>•</span>
                       <span>{format(new Date(quote.quote_date), 'MMM dd, yyyy')}</span>

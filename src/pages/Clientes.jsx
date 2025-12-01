@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -148,7 +147,7 @@ export default function Clientes() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('customers')}
@@ -166,12 +165,12 @@ export default function Clientes() {
 
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
             <Input
               placeholder={t('search')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
+              className="pl-12 h-12 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
             />
           </div>
         </div>
@@ -181,15 +180,15 @@ export default function Clientes() {
             const displayName = getCustomerDisplayName(customer);
             
             return (
-              <Card key={customer.id} className="bg-slate-50 shadow-lg hover:shadow-xl transition-all duration-300 border-slate-200">
+              <Card key={customer.id} className="bg-slate-50 dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-700">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
                       {/* CRITICAL: Line 1 - Contact Full Name (FIXED) */}
-                      <h3 className="font-bold text-xl text-slate-900 mb-1 break-words">
+                      <h3 className="font-bold text-xl text-slate-900 dark:text-white mb-1 break-words">
                         {displayName}
                         {customer.title && (
-                          <span className="text-sm font-normal text-slate-600 ml-2">
+                          <span className="text-sm font-normal text-slate-600 dark:text-slate-400 ml-2">
                             ({customer.title})
                           </span>
                         )}
@@ -197,7 +196,7 @@ export default function Clientes() {
                       
                       {/* CRITICAL: Line 2 - Company Name (SEPARATE FROM NAME) */}
                       {customer.company && (
-                        <div className="flex items-center gap-2 text-sm text-[#3B9FF3] mt-1">
+                        <div className="flex items-center gap-2 text-sm text-[#3B9FF3] dark:text-blue-400 mt-1">
                           <Building2 className="w-4 h-4 flex-shrink-0" />
                           <span className="truncate">{customer.company}</span>
                         </div>
@@ -207,16 +206,16 @@ export default function Clientes() {
                     {isAdmin && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900 hover:bg-slate-200 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 flex-shrink-0">
                             <MoreVertical className="w-5 h-5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-white border-slate-200">
-                          <DropdownMenuItem onClick={() => handleEdit(customer)} className="text-slate-900 hover:bg-slate-100">
+                        <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                          <DropdownMenuItem onClick={() => handleEdit(customer)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                             <Edit className="w-4 h-4 mr-2" />
                             {t('edit')}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(customer)} className="text-red-600 hover:bg-red-50">
+                          <DropdownMenuItem onClick={() => handleDelete(customer)} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                             <Trash2 className="w-4 h-4 mr-2" />
                             {t('delete')}
                           </DropdownMenuItem>
@@ -227,20 +226,20 @@ export default function Clientes() {
 
                   <div className="space-y-2">
                     {customer.email && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <Mail className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <Mail className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
                         <span className="truncate">{customer.email}</span>
                       </div>
                     )}
                     {customer.phone && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <Phone className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
                         <span>{customer.phone}</span>
                       </div>
                     )}
                     {customer.address && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <MapPin className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
                         <span className="truncate">
                           {customer.address}
                           {customer.city && `, ${customer.city}`}
@@ -256,11 +255,11 @@ export default function Clientes() {
         </div>
 
         {sortedCustomers.length === 0 && !isLoading && (
-          <Card className="bg-white shadow-lg border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
-              <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-700 mb-2">{t('noCustomers')}</h3>
-              <p className="text-slate-500 mb-6">Start by adding your first customer</p>
+              <Users className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('noCustomers')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6">Start by adding your first customer</p>
               {isAdmin && (
                 <Button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE2] text-white shadow-lg">
                   <Plus className="w-4 h-4 mr-2" />
@@ -277,9 +276,9 @@ export default function Clientes() {
             setEditingCustomer(null);
           }
         }}>
-          <DialogContent className="max-w-2xl bg-white border-slate-200">
+          <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900">
+              <DialogTitle className="text-2xl text-slate-900 dark:text-white">
                 {editingCustomer ? t('editCustomer') : t('newCustomer')}
               </DialogTitle>
             </DialogHeader>

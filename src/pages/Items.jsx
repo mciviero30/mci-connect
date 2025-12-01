@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -576,7 +575,7 @@ export default function Items() {
 
   return (
     <TooltipProvider>
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
         <div className="max-w-7xl mx-auto">
           <PageHeader
             title={language === 'es' ? 'Biblioteca de Items' : 'Item Library'}
@@ -608,9 +607,9 @@ export default function Items() {
           />
 
           {/* LABOR RATE INFO WITH EDIT BUTTON */}
-          <Alert className="mb-4 bg-indigo-50 border-indigo-300">
-            <Calculator className="w-4 h-4" />
-            <AlertDescription className="text-indigo-900 text-sm flex items-center justify-between">
+          <Alert className="mb-4 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-800">
+            <Calculator className="w-4 h-4 dark:text-indigo-400" />
+            <AlertDescription className="text-indigo-900 dark:text-indigo-300 text-sm flex items-center justify-between">
               <div>
                 <strong>Standard Labor Rate:</strong> ${STANDARD_LABOR_RATE.toFixed(2)}/hour
                 <span className="ml-2 text-indigo-700">
@@ -633,9 +632,9 @@ export default function Items() {
           </Alert>
 
           {/* AUDIT NOTICE */}
-          <Alert className="mb-6 bg-blue-50 border-blue-300">
-            <History className="w-4 h-4" />
-            <AlertDescription className="text-blue-900 text-sm">
+          <Alert className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800">
+            <History className="w-4 h-4 dark:text-blue-400" />
+            <AlertDescription className="text-blue-900 dark:text-blue-300 text-sm">
               <strong>Price Audit Active:</strong> All price and cost changes are automatically logged for financial reporting and compliance.
             </AlertDescription>
           </Alert>
@@ -703,82 +702,82 @@ export default function Items() {
           )}
 
           <div className="grid md:grid-cols-5 gap-6 mb-6">
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-slate-600">
+                <CardTitle className="text-sm text-slate-600 dark:text-slate-400">
                   {language === 'es' ? 'Total Items' : 'Total Items'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900">{items.length}</div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white">{items.length}</div>
               </CardContent>
             </Card>
 
             {Object.entries(categoryConfig).map(([key, config]) => {
               const count = items.filter(i => i.category === key).length;
               return (
-                <Card key={key} className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+                <Card key={key} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm text-slate-600">{config.label}</CardTitle>
+                    <CardTitle className="text-sm text-slate-600 dark:text-slate-400">{config.label}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-slate-900">{count}</div>
+                    <div className="text-3xl font-bold text-slate-900 dark:text-white">{count}</div>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
 
-          <Card className="bg-white shadow-lg border-slate-200 mb-6">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700 mb-6">
             <CardContent className="p-4 flex gap-4 items-center">
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                 <Input
                   placeholder={language === 'es' ? 'Buscar items...' : 'Search items...'}
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-12 bg-white border-slate-300 text-slate-900"
+                  className="pl-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
                 />
               </div>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-48 bg-white border-slate-300 text-slate-900">
+                <SelectTrigger className="w-48 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200">
-                  <SelectItem value="all" className="text-slate-900">{language === 'es' ? 'Todas las categorías' : 'All Categories'}</SelectItem>
+                <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                  <SelectItem value="all" className="text-slate-900 dark:text-white">{language === 'es' ? 'Todas las categorías' : 'All Categories'}</SelectItem>
                   {Object.entries(categoryConfig).map(([key, config]) => (
-                    <SelectItem key={key} value={key} className="text-slate-900">{config.label}</SelectItem>
+                    <SelectItem key={key} value={key} className="text-slate-900 dark:text-white">{config.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50 border-slate-200">
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Nombre' : 'Name'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Stock' : 'Stock'}</TableHead>
-                      <TableHead className="text-right text-slate-700">{language === 'es' ? 'Precio Venta' : 'Sale Price'}</TableHead>
-                      <TableHead className="text-right text-slate-700">{language === 'es' ? 'Costo Interno' : 'Internal Cost'}</TableHead>
-                      <TableHead className="text-right text-slate-700">{language === 'es' ? 'Margen' : 'Profit Margin'}</TableHead>
-                      <TableHead className="text-right text-slate-700">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+                    <TableRow className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Nombre' : 'Name'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Stock' : 'Stock'}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Precio Venta' : 'Sale Price'}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Costo Interno' : 'Internal Cost'}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Margen' : 'Profit Margin'}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center h-24 text-slate-500">
+                        <TableCell colSpan={7} className="text-center h-24 text-slate-500 dark:text-slate-400">
                           {language === 'es' ? 'Cargando...' : 'Loading...'}
                         </TableCell>
                       </TableRow>
                     ) : filteredItems.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center h-24 text-slate-500">
+                        <TableCell colSpan={7} className="text-center h-24 text-slate-500 dark:text-slate-400">
                           {language === 'es' ? 'No se encontraron items' : 'No items found'}
                         </TableCell>
                       </TableRow>
@@ -799,13 +798,13 @@ export default function Items() {
                         const hasNegativeMargin = item.unit_price < item.cost_per_unit;
 
                         return (
-                          <TableRow key={item.id} className={`hover:bg-slate-50 border-slate-200 ${
-                            hasNegativeMargin ? 'bg-orange-50/50' : ''
+                          <TableRow key={item.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800/30 border-slate-200 dark:border-slate-700 ${
+                            hasNegativeMargin ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''
                           }`}>
                             <TableCell>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <p className="font-semibold text-slate-900">{item.name}</p>
+                                  <p className="font-semibold text-slate-900 dark:text-white">{item.name}</p>
                                   {hasNegativeMargin && (
                                     <Badge className="bg-orange-100 text-orange-700 text-xs">
                                       <TrendingDown className="w-3 h-3 mr-1" />
@@ -814,10 +813,10 @@ export default function Items() {
                                   )}
                                 </div>
                                 {item.description && (
-                                  <p className="text-xs text-slate-500 truncate max-w-xs">{item.description}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs">{item.description}</p>
                                 )}
                                 {item.supplier && (
-                                  <p className="text-xs text-slate-400 mt-1">
+                                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                                     {language === 'es' ? 'Proveedor' : 'Supplier'}: {item.supplier}
                                   </p>
                                 )}
@@ -856,10 +855,10 @@ export default function Items() {
                               )}
                             </TableCell>
 
-                            <TableCell className="text-right font-bold text-[#3B9FF3]">
+                            <TableCell className="text-right font-bold text-[#3B9FF3] dark:text-blue-400">
                               ${(item.unit_price || 0).toFixed(2)}
                             </TableCell>
-                            <TableCell className="text-right text-slate-600">
+                            <TableCell className="text-right text-slate-600 dark:text-slate-400">
                               ${(item.cost_per_unit || 0).toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right">
@@ -927,9 +926,9 @@ export default function Items() {
               resetFormData();
             }
           }}>
-            <DialogContent className="max-w-2xl bg-white max-h-[90vh] overflow-y-auto border-slate-200">
+            <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] max-h-[90vh] overflow-y-auto border-slate-200 dark:border-slate-700">
               <DialogHeader>
-                <DialogTitle className="text-2xl text-slate-900">
+                <DialogTitle className="text-2xl text-slate-900 dark:text-white">
                   {editingItem
                     ? (language === 'es' ? 'Editar Item' : 'Edit Item')
                     : (language === 'es' ? 'Nuevo Item' : 'New Item')}
@@ -1223,11 +1222,11 @@ export default function Items() {
 
           {/* AUDIT TRAIL DIALOG */}
           <Dialog open={showAuditDialog} onOpenChange={setShowAuditDialog}>
-            <DialogContent className="bg-white border-slate-200 max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-3xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="text-slate-900">Price History Audit Trail</DialogTitle>
+                <DialogTitle className="text-slate-900 dark:text-white">Price History Audit Trail</DialogTitle>
                 {selectedItemForAudit && (
-                  <DialogDescription className="text-slate-600">
+                  <DialogDescription className="text-slate-600 dark:text-slate-400">
                     {selectedItemForAudit.name}
                   </DialogDescription>
                 )}

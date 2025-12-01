@@ -95,7 +95,7 @@ export default function Gastos() {
   const totalApproved = approvedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('expenses')}
@@ -150,13 +150,13 @@ export default function Gastos() {
             setSelectedEmployee(null);
           }
         }}>
-          <DialogContent className="bg-white border-slate-200">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">{t('selectEmployee')}</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white">{t('selectEmployee')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               {loadingEmployees ? (
-                <div className="text-center py-4 text-slate-600">
+                <div className="text-center py-4 text-slate-600 dark:text-slate-400">
                   {t('loading')}...
                 </div>
               ) : employeesError ? (
@@ -175,17 +175,17 @@ export default function Gastos() {
               ) : (
                 <>
                   <div>
-                    <Label className="text-slate-700 mb-2 block">{t('employee')}</Label>
+                    <Label className="text-slate-700 dark:text-slate-300 mb-2 block">{t('employee')}</Label>
                     <Select value={selectedEmployee?.id} onValueChange={(id) => {
                       const emp = activeEmployees.find(e => e.id === id);
                       setSelectedEmployee(emp);
                     }}>
-                      <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
+                      <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
                         <SelectValue placeholder={t('selectEmployee')} />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
+                      <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
                         {activeEmployees.map(emp => (
-                          <SelectItem key={emp.id} value={emp.id} className="text-slate-900 hover:bg-slate-100">
+                          <SelectItem key={emp.id} value={emp.id} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                             {emp.full_name || `${emp.first_name} ${emp.last_name}`}
                           </SelectItem>
                         ))}
@@ -213,9 +213,9 @@ export default function Gastos() {
             setSelectedEmployee(null);
           }
         }}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">
+              <DialogTitle className="text-slate-900 dark:text-white">
                 {t('newExpense')} - {selectedEmployee?.full_name || `${selectedEmployee?.first_name} ${selectedEmployee?.last_name}`}
               </DialogTitle>
             </DialogHeader>
