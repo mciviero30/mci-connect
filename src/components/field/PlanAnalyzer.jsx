@@ -143,14 +143,23 @@ Return the data as JSON array.`;
       const total = detectedWalls.length;
       let created = 0;
 
-      for (const wall of detectedWalls) {
-        if (!wall.template) continue;
+      const wallsWithTemplates = detectedWalls.filter(w => w.template);
+      const gridCols = Math.ceil(Math.sqrt(wallsWithTemplates.length));
+      
+      for (let i = 0; i < wallsWithTemplates.length; i++) {
+        const wall = wallsWithTemplates[i];
 
         const checklist = (wall.template.checklist_items || [])
           .sort((a, b) => a.order - b.order)
           .map(item => ({ text: item.text, completed: false }));
 
         const taskTitle = `Wall ${wall.wall_number}${wall.room_name ? ` - ${wall.room_name}` : ''}`;
+        
+        // Calculate grid position for pin placement
+        const row = Math.floor(i / gridCols);
+        const col = i % gridCols;
+        const pin_x = 10 + (col * (80 / gridCols)) + (40 / gridCols);
+        const pin_y = 10 + (row * (80 / Math.ceil(wallsWithTemplates.length / gridCols))) + 5;
         
         await createTaskMutation.mutateAsync({
           job_id: jobId,
@@ -163,10 +172,12 @@ Return the data as JSON array.`;
           checklist: checklist,
           blueprint_id: plan.id,
           assigned_to: user?.email,
+          pin_x: pin_x,
+          pin_y: pin_y,
         });
 
         created++;
-        setProgress(Math.round((created / total) * 100));
+        setProgress(Math.round((created / wallsWithTemplates.length) * 100));
       }
 
       onTasksCreated?.(created);
