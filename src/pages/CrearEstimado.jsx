@@ -61,7 +61,7 @@ export default function CrearEstimado() {
     quote_date: format(new Date(), 'yyyy-MM-dd'),
     valid_until: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
     install_date: '',
-    items: [{ description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0 }],
+    items: [{ description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
     tax_rate: 0,
     notes: '',
     terms: 'Payment due within 30 days. Late payments subject to fees. Thank you for your business.',
