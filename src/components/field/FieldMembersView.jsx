@@ -10,7 +10,10 @@ import {
   Mail,
   MoreVertical,
   Trash2,
-  Crown
+  Crown,
+  ExternalLink,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +38,7 @@ const roleIcons = {
 export default function FieldMembersView({ jobId }) {
   const [showInvite, setShowInvite] = useState(false);
   const [inviteData, setInviteData] = useState({ email: '', name: '', role: 'collaborator' });
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -94,6 +98,15 @@ export default function FieldMembersView({ jobId }) {
     inviteMutation.mutate(inviteData);
   };
 
+  // Client portal link
+  const clientPortalUrl = `${window.location.origin}/ClientPortal`;
+  
+  const copyClientLink = () => {
+    navigator.clipboard.writeText(clientPortalUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
   // Group members by role
   const admins = members.filter(m => m.role === 'admin');
   const collaborators = members.filter(m => m.role === 'collaborator');
@@ -111,6 +124,40 @@ export default function FieldMembersView({ jobId }) {
           Invitar Miembro
         </Button>
       </div>
+
+      {/* Client Portal Link */}
+      {clients.length > 0 && (
+        <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <ExternalLink className="w-5 h-5 text-green-400" />
+              </div>
+              <div>
+                <p className="font-medium text-white">Portal del Cliente</p>
+                <p className="text-sm text-slate-400">Comparte este enlace con tus clientes</p>
+              </div>
+            </div>
+            <Button 
+              onClick={copyClientLink}
+              variant="outline"
+              className="border-green-500/50 text-green-400 hover:bg-green-500/20"
+            >
+              {copiedLink ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Copiado!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copiar Enlace
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
