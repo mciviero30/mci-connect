@@ -80,7 +80,7 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e]">
+    <div className="min-h-screen bg-[#6b6b52]">
       {/* Header */}
       <div className="px-6 py-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -94,13 +94,13 @@ export default function Field() {
               <h1 className="text-3xl font-bold text-white">Dashboard</h1>
             </div>
             <p className="text-slate-400">Gestión central de proyectos de construcción</p>
-            <Badge className="mt-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border-amber-500/30">
+            <Badge className="mt-2 bg-gradient-to-r from-[#d4d4a0]/20 to-[#c4c490]/20 text-[#d4d4a0] border-[#d4d4a0]/30">
               🏗️ MCI Field • Field Execution
             </Badge>
           </div>
           <Button 
             onClick={() => setShowNewProject(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25"
+            className="bg-gradient-to-r from-[#d4d4a0] to-[#c4c490] hover:from-[#e4e4b0] hover:to-[#d4d4a0] text-[#4a4a3a] shadow-lg shadow-[#d4d4a0]/25"
           >
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Proyecto
@@ -177,7 +177,7 @@ export default function Field() {
           {/* Projects Grid */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#d4d4a0] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredJobs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -232,7 +232,7 @@ export default function Field() {
               <Button 
                 onClick={handleCreateProject}
                 disabled={!newProject.name || createJobMutation.isPending}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                className="bg-gradient-to-r from-[#d4d4a0] to-[#c4c490] hover:from-[#e4e4b0] hover:to-[#d4d4a0] text-[#4a4a3a]"
               >
                 {createJobMutation.isPending ? 'Creando...' : 'Crear Proyecto'}
               </Button>
@@ -246,17 +246,17 @@ export default function Field() {
 
 function StatsCard({ label, value, icon: Icon, color }) {
   const colorClasses = {
-    blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
-    green: 'from-green-500/20 to-green-600/20 border-green-500/30',
-    orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
-    emerald: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30',
+    blue: 'from-[#d4d4a0]/20 to-[#c4c490]/20 border-[#d4d4a0]/30',
+    green: 'from-[#d4d4a0]/20 to-[#c4c490]/20 border-[#d4d4a0]/30',
+    orange: 'from-[#d4d4a0]/20 to-[#c4c490]/20 border-[#d4d4a0]/30',
+    emerald: 'from-[#d4d4a0]/20 to-[#c4c490]/20 border-[#d4d4a0]/30',
   };
 
   const iconColors = {
-    blue: 'bg-blue-500/20 text-blue-400',
-    green: 'bg-green-500/20 text-green-400',
-    orange: 'bg-orange-500/20 text-orange-400',
-    emerald: 'bg-emerald-500/20 text-emerald-400',
+    blue: 'bg-[#d4d4a0]/20 text-[#d4d4a0]',
+    green: 'bg-[#d4d4a0]/20 text-[#d4d4a0]',
+    orange: 'bg-[#d4d4a0]/20 text-[#d4d4a0]',
+    emerald: 'bg-[#d4d4a0]/20 text-[#d4d4a0]',
   };
 
   return (
@@ -292,8 +292,8 @@ function ProjectCard({ job, index }) {
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:bg-slate-800 hover:border-slate-600 transition-all cursor-pointer group">
           <div className="flex items-start justify-between mb-3">
-            <div className="p-2 bg-amber-500/20 rounded-lg">
-              <FolderOpen className="w-5 h-5 text-amber-400" />
+            <div className="p-2 bg-[#d4d4a0]/20 rounded-lg">
+              <FolderOpen className="w-5 h-5 text-[#d4d4a0]" />
             </div>
             <Badge className={statusColors[job.status] || statusColors.active}>
               {job.status === 'active' ? 'Activo' : 
@@ -301,7 +301,7 @@ function ProjectCard({ job, index }) {
                job.status === 'on_hold' ? 'En Pausa' : 'Archivado'}
             </Badge>
           </div>
-          <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors mb-1">
+          <h3 className="font-semibold text-white group-hover:text-[#d4d4a0] transition-colors mb-1">
             {jobName}
           </h3>
           <p className="text-sm text-slate-400 line-clamp-1">
@@ -330,7 +330,7 @@ function EmptyState({ onCreateProject }) {
       </p>
       <Button 
         onClick={onCreateProject}
-        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+        className="bg-gradient-to-r from-[#d4d4a0] to-[#c4c490] hover:from-[#e4e4b0] hover:to-[#d4d4a0] text-[#4a4a3a]"
       >
         <Plus className="w-4 h-4 mr-2" />
         Crear Proyecto
