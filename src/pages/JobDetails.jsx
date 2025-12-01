@@ -569,6 +569,7 @@ export default function JobDetails() {
               job={job}
               timeEntries={timeEntries}
               expenses={expenses}
+              estimatedHours={estimatedHours}
               language={language}
             />
           </TabsContent>
