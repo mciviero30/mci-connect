@@ -397,9 +397,9 @@ export default function Chat() {
         <div className="grid lg:grid-cols-4 gap-6">
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Conversations</CardTitle>
-                <div className="flex gap-1">
+                <div className="flex">
                   <Button
                     size="icon"
                     variant="ghost"
