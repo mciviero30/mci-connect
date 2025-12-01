@@ -373,6 +373,9 @@ export default function Inventario() {
                   setItemForm({
                     name: '',
                     category: 'materials',
+                    inventory_type: 'tools',
+                    team_id: '',
+                    team_name: '',
                     description: '',
                     sku: '',
                     quantity: 0,
