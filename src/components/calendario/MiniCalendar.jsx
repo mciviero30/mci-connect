@@ -48,41 +48,41 @@ export default function MiniCalendar({
     : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   return (
-    <div className="bg-white dark:bg-[#282828] rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+    <div className="bg-white dark:bg-[#282828] rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setViewDate(subMonths(viewDate, 1))}
-          className="h-7 w-7 p-0"
+          className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
         >
           <ChevronLeft className="w-4 h-4" />
         </Button>
-        <span className="text-sm font-semibold text-slate-900 dark:text-white">
-          {format(viewDate, 'MMM yyyy')}
+        <span className="text-base font-semibold text-slate-900 dark:text-white">
+          {format(viewDate, 'MMMM yyyy')}
         </span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setViewDate(addMonths(viewDate, 1))}
-          className="h-7 w-7 p-0"
+          className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
         >
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
 
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
+      <div className="grid grid-cols-7 gap-0.5 mb-2">
         {weekDays.map((d, i) => (
-          <div key={i} className="text-center text-xs font-medium text-slate-500 dark:text-slate-400 py-1">
+          <div key={i} className="text-center text-xs font-semibold text-slate-400 dark:text-slate-500 py-2">
             {d}
           </div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-0.5">
         {days.map((d, i) => {
           const isCurrentMonth = isSameMonth(d, viewDate);
           const isSelected = isSameDay(d, currentDate);
@@ -94,16 +94,16 @@ export default function MiniCalendar({
               key={i}
               onClick={() => onDateSelect(d)}
               className={`
-                relative h-8 w-8 rounded-lg text-xs font-medium transition-all
+                relative h-9 w-full rounded-md text-sm font-medium transition-all
                 ${!isCurrentMonth ? 'text-slate-300 dark:text-slate-600' : 'text-slate-700 dark:text-slate-300'}
-                ${isSelected ? 'bg-[#3B9FF3] text-white' : ''}
-                ${isTodayDate && !isSelected ? 'ring-2 ring-[#3B9FF3] ring-inset' : ''}
-                ${!isSelected ? 'hover:bg-slate-100 dark:hover:bg-slate-700' : ''}
+                ${isSelected ? 'bg-[#3B9FF3] text-white shadow-md' : ''}
+                ${isTodayDate && !isSelected ? 'bg-blue-50 dark:bg-blue-900/30 text-[#3B9FF3] font-bold' : ''}
+                ${!isSelected && isCurrentMonth ? 'hover:bg-slate-100 dark:hover:bg-slate-700' : ''}
               `}
             >
               {format(d, 'd')}
               {shiftCount > 0 && !isSelected && (
-                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-purple-500" />
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-purple-500" />
               )}
             </button>
           );

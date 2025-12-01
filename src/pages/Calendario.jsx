@@ -621,9 +621,9 @@ export default function Calendario() {
             </div>
           )}
 
-          <div className="grid lg:grid-cols-4 gap-6">
+          <div className="grid lg:grid-cols-[280px_1fr] gap-6">
             {/* Sidebar with Mini Calendar and Team Availability */}
-            <div className="hidden lg:block space-y-4">
+            <div className="hidden lg:flex lg:flex-col gap-4">
               <MiniCalendar
                 currentDate={currentDate}
                 onDateSelect={setCurrentDate}
@@ -641,7 +641,7 @@ export default function Calendario() {
             </div>
 
             {/* Main Calendar Area */}
-            <div className="lg:col-span-3">
+            <div className="min-w-0">
               <Tabs value={view} className="w-full">
                 <TabsContent value="day">
                   <DayView
