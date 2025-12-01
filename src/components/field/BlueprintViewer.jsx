@@ -19,7 +19,7 @@ const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [zoom, setZoom] = useState(0.5);
-  const [position, setPosition] = useState({ x: 50, y: 0 });
+  const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedTask, setSelectedTask] = useState(null);
@@ -551,10 +551,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           {/* Success State - Show Image/PDF */}
           {loadingState === 'success' && (
             <div 
-              className="relative w-full h-full flex items-center justify-center"
+              className="relative w-full h-full flex items-start justify-start pl-16 pt-4"
               style={{
                 transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-                transformOrigin: 'center center',
+                transformOrigin: 'top left',
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
