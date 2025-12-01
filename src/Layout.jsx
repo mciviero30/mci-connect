@@ -249,13 +249,14 @@ const LayoutContent = ({ children, currentPageName }) => {
       ]
     },
     {
-      section: 'JOBS & PROJECTS',
-      items: [
-        { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
-        { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
-        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
-      ]
-    },
+        section: 'JOBS & PROJECTS',
+        items: [
+          { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+          { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin, badge: '🏗️' },
+          { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+          { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
+        ]
+      },
     {
       section: 'FINANCE',
       items: [
