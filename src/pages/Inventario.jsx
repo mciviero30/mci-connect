@@ -461,12 +461,10 @@ export default function Inventario() {
               <SelectValue placeholder="All Teams" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 z-[100]">
-              <SelectItem value="all" className="text-slate-900 dark:text-white">
-                <span>All Teams</span>
-              </SelectItem>
+              <SelectItem value="all" className="text-slate-900 dark:text-white">All Teams</SelectItem>
               {teams.map(team => (
                 <SelectItem key={team.id} value={team.id} className="text-slate-900 dark:text-white">
-                  <span>{team.name}</span>
+                  {team.team_name}
                 </SelectItem>
               ))}
             </SelectContent>
