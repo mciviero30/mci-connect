@@ -32,12 +32,9 @@ export default function TaskPin({ task, onClick, isSelected }) {
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
       <div className="relative">
-        {/* Pin with wall number */}
-        <div className={`min-w-[24px] h-6 px-1.5 rounded-full ${status.bg} border-2 border-white shadow-lg flex items-center justify-center gap-0.5`}>
-          <MapPin className="w-3 h-3 text-white" />
-          {wallNumber && (
-            <span className="text-[10px] font-bold text-white">{wallNumber}</span>
-          )}
+        {/* Compact pin with just wall number */}
+        <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
+          <span className="text-[11px] font-bold text-white">{wallNumber || '?'}</span>
         </div>
         {/* Pin point */}
         <div 
@@ -46,13 +43,10 @@ export default function TaskPin({ task, onClick, isSelected }) {
             border-r-[5px] border-r-transparent 
             border-t-[6px] ${status.point}`}
         />
-        {/* Tooltip on hover */}
+        {/* Tooltip on hover - minimal */}
         {(showTooltip || isSelected) && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-1.5 bg-slate-800 rounded-lg shadow-xl whitespace-nowrap z-30 border border-slate-600">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${status.bg}`} />
-              <p className="text-sm font-medium text-white">#{wallNumber} {task.title}</p>
-            </div>
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-slate-800 rounded-lg shadow-xl whitespace-nowrap z-30 border border-slate-600">
+            <p className="text-xs font-medium text-white">Wall {wallNumber}</p>
             <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-800" />
           </div>
         )}
