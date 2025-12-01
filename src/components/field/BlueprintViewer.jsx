@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move } from 'lucide-react';
+import { 
+  ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
+  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import TaskPin from './TaskPin.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
@@ -29,6 +33,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
+  
+  // Toolbar state
+  const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser
+  const [showPins, setShowPins] = useState(true);
   
   const containerRef = useRef(null);
   const imageRef = useRef(null);
@@ -248,7 +256,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleImageClick = (e) => {
-    if (!isPlacingPin) return;
+    if (activeTool !== 'pin' && !isPlacingPin) return;
     
     const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -257,7 +265,27 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setPendingPinPosition({ x, y });
     setShowCreateTask(true);
     setIsPlacingPin(false);
+    setActiveTool('select');
   };
+
+  // Toolbar items
+  const toolbarItems = [
+    { id: 'fullscreen', icon: Maximize2, label: 'Fullscreen', action: handleReset },
+    { id: 'divider1', type: 'divider' },
+    { id: 'zoomIn', icon: ZoomIn, label: 'Zoom In', action: handleZoomIn },
+    { id: 'zoomOut', icon: ZoomOut, label: 'Zoom Out', action: handleZoomOut },
+    { id: 'divider2', type: 'divider' },
+    { id: 'pin', icon: MapPin, label: 'Add Pin', tool: true },
+    { id: 'link', icon: Link2, label: 'Add Link', tool: true },
+    { id: 'pencil', icon: Pencil, label: 'Draw', tool: true },
+    { id: 'text', icon: Type, label: 'Add Text', tool: true },
+    { id: 'eraser', icon: Eraser, label: 'Eraser', tool: true },
+    { id: 'divider3', type: 'divider' },
+    { id: 'print', icon: Printer, label: 'Print', action: () => window.print() },
+    { id: 'divider4', type: 'divider' },
+    { id: 'select', icon: MousePointer, label: 'Select', tool: true },
+    { id: 'undo', icon: Undo2, label: 'Undo', action: () => {} },
+  ];
 
   const handleTaskCreated = () => {
     setPendingPinPosition(null);
@@ -265,50 +293,126 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   return (
+    <TooltipProvider>
     <div className="h-full flex">
+      {/* Left Toolbar - Like Fieldwire */}
+      <div className="hidden md:flex flex-col bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 w-12 py-2">
+        {toolbarItems.map((item, idx) => {
+          if (item.type === 'divider') {
+            return <div key={item.id} className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />;
+          }
+          
+          const isActive = item.tool && activeTool === item.id;
+          return (
+            <Tooltip key={item.id}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => {
+                    if (item.tool) {
+                      setActiveTool(item.id);
+                      if (item.id === 'pin') {
+                        setIsPlacingPin(true);
+                      } else {
+                        setIsPlacingPin(false);
+                      }
+                    } else if (item.action) {
+                      item.action();
+                    }
+                  }}
+                  className={`mx-1 p-2 rounded-lg transition-all ${
+                    isActive 
+                      ? 'bg-[#FFB800] text-white' 
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{item.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+        
+        {/* Toggle Pins Visibility */}
+        <div className="mt-auto">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowPins(!showPins)}
+                className={`mx-1 p-2 rounded-lg transition-all ${
+                  showPins 
+                    ? 'text-[#FFB800]' 
+                    : 'text-slate-400'
+                }`}
+              >
+                {showPins ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
+
       {/* Main Viewer */}
-      <div className="flex-1 flex flex-col bg-slate-900">
-        {/* Toolbar - Responsive */}
-        <div className="flex items-center justify-between p-2 md:p-4 border-b border-slate-700/50">
+      <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
+        {/* Top Header - Simplified */}
+        <div className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 md:gap-3">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-400 hover:text-white p-2">
+            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden md:inline ml-2">Back</span>
             </Button>
-            <span className="text-white font-medium text-sm md:text-base truncate max-w-[120px] md:max-w-none">{plan.name}</span>
+            <span className="text-slate-900 dark:text-white font-medium text-sm md:text-base truncate max-w-[150px] md:max-w-none">{plan.name}</span>
           </div>
-          <div className="flex items-center gap-1 md:gap-2">
-            <Button
-              variant={isPlacingPin ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsPlacingPin(!isPlacingPin)}
-              className={`${isPlacingPin 
-                ? "bg-amber-500 hover:bg-amber-600 text-white" 
-                : "border-slate-700 text-slate-300 hover:bg-slate-800"
-              } px-2 md:px-3`}
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden md:inline ml-2">{isPlacingPin ? 'Cancel' : 'Add Task'}</span>
+          
+          {/* Right side tools */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 dark:text-slate-400">
+              <Search className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-0.5 md:gap-1 bg-slate-800 rounded-lg p-0.5 md:p-1">
-              <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-7 w-7 md:h-8 md:w-8 text-slate-400 hover:text-white">
-                <ZoomOut className="w-4 h-4" />
-              </Button>
-              <span className="text-xs md:text-sm text-slate-400 w-10 md:w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-7 w-7 md:h-8 md:w-8 text-slate-400 hover:text-white">
-                <ZoomIn className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleReset} className="h-7 w-7 md:h-8 md:w-8 text-slate-400 hover:text-white">
-                <Maximize2 className="w-4 h-4" />
-              </Button>
-            </div>
+            <button
+              onClick={() => setShowPins(!showPins)}
+              className={`p-2 rounded-lg ${showPins ? 'text-[#FFB800]' : 'text-slate-400'}`}
+            >
+              {showPins ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+            </button>
           </div>
+        </div>
+        
+        {/* Mobile Toolbar - Bottom */}
+        <div className="md:hidden fixed bottom-20 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex justify-around z-40">
+          <button
+            onClick={() => { setActiveTool('select'); setIsPlacingPin(false); }}
+            className={`p-2 rounded-lg ${activeTool === 'select' ? 'bg-[#FFB800] text-white' : 'text-slate-600'}`}
+          >
+            <MousePointer className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => { setActiveTool('pin'); setIsPlacingPin(true); }}
+            className={`p-2 rounded-lg ${activeTool === 'pin' ? 'bg-[#FFB800] text-white' : 'text-slate-600'}`}
+          >
+            <MapPin className="w-5 h-5" />
+          </button>
+          <button onClick={handleZoomOut} className="p-2 rounded-lg text-slate-600">
+            <ZoomOut className="w-5 h-5" />
+          </button>
+          <span className="flex items-center text-sm text-slate-500 px-2">{Math.round(zoom * 100)}%</span>
+          <button onClick={handleZoomIn} className="p-2 rounded-lg text-slate-600">
+            <ZoomIn className="w-5 h-5" />
+          </button>
+          <button onClick={handleReset} className="p-2 rounded-lg text-slate-600">
+            <Maximize2 className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Canvas - Touch enabled */}
         <div 
           ref={containerRef}
-          className={`flex-1 overflow-hidden touch-none ${isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -397,8 +501,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     }}
                   />
                 )}
-                {/* Task Pins - only for images */}
-                {!isPdfFile(plan.file_url) && tasks.map((task) => (
+                {/* Task Pins - only for images, toggle visibility */}
+                {showPins && !isPdfFile(plan.file_url) && tasks.map((task) => (
                   <TaskPin 
                     key={task.id}
                     task={task}
@@ -420,9 +524,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           )}
         </div>
 
-        {isPlacingPin && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-4 py-2 rounded-lg shadow-lg">
-            Click on the plan to place the task
+        {(isPlacingPin || activeTool === 'pin') && (
+          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
+            Tap on the plan to place pin
           </div>
         )}
       </div>
@@ -446,5 +550,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         onCreated={handleTaskCreated}
       />
     </div>
+    </TooltipProvider>
   );
 }
