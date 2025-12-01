@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Upload, X, ZoomIn, ZoomOut, Move } from 'lucide-react';
+import { Plus, Upload, X, ZoomIn, ZoomOut, Move, Trash2, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BlueprintViewer from './BlueprintViewer.jsx';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -22,6 +23,13 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
       setShowUpload(false);
       setNewPlan({ name: '', file: null });
+    },
+  });
+
+  const deletePlanMutation = useMutation({
+    mutationFn: (planId) => base44.entities.Plan.delete(planId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
     },
   });
 
@@ -113,13 +121,34 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     </div>
                   )}
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors">
-                    {plan.name}
-                  </h3>
-                  {plan.folder && (
-                    <p className="text-sm text-slate-400">{plan.folder}</p>
-                  )}
+                <div className="p-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors">
+                      {plan.name}
+                    </h3>
+                    {plan.folder && (
+                      <p className="text-sm text-slate-400">{plan.folder}</p>
+                    )}
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <button className="p-1.5 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deletePlanMutation.mutate(plan.id);
+                        }}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             );
