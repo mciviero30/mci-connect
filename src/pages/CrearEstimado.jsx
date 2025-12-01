@@ -287,6 +287,11 @@ export default function CrearEstimado() {
               <p className="opacity-90">{t('subtotal')}: ${subtotal.toFixed(2)}</p>
               <p className="opacity-90">{t('tax')}: ${taxAmount.toFixed(2)}</p>
               <p className="text-xs opacity-75 mt-1">{formData.items.length} {language === 'es' ? 'ítems' : 'items'}</p>
+              {formData.items.reduce((sum, item) => sum + ((item.installation_time || 0) * (item.quantity || 0)), 0) > 0 && (
+                <p className="text-xs opacity-75 mt-0.5" title="Solo referencia interna MCI">
+                  ⏱ {formData.items.reduce((sum, item) => sum + ((item.installation_time || 0) * (item.quantity || 0)), 0).toFixed(1)}h {language === 'es' ? '(ref. MCI)' : '(MCI ref.)'}
+                </p>
+              )}
             </div>
           </div>
         </div>
