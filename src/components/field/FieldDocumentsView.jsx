@@ -310,7 +310,7 @@ export default function FieldDocumentsView({ jobId }) {
               <Button 
                 onClick={handleCreateDocument}
                 disabled={!newDoc.file_url || !newDoc.name || createDocMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 {createDocMutation.isPending ? 'Guardando...' : 'Guardar'}
               </Button>
@@ -342,7 +342,7 @@ export default function FieldDocumentsView({ jobId }) {
               <Button 
                 onClick={handleCreateFolder}
                 disabled={!newFolderName || createFolderMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 {createFolderMutation.isPending ? 'Creando...' : 'Crear Carpeta'}
               </Button>

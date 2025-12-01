@@ -226,7 +226,7 @@ export default function ClientApprovalsView({ jobId }) {
               <Button
                 onClick={() => createMutation.mutate(newApproval)}
                 disabled={!newApproval.title}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 <Send className="w-4 h-4 mr-2" />
                 Enviar Solicitud

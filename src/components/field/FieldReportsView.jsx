@@ -280,7 +280,7 @@ export default function FieldReportsView({ jobId }) {
               <Button 
                 onClick={handleCreateReport}
                 disabled={!newReport.name || createReportMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 {createReportMutation.isPending ? 'Creando...' : 'Crear Reporte'}
               </Button>

@@ -269,7 +269,7 @@ export default function FieldMilestonesView({ jobId }) {
               <Button
                 onClick={() => createMutation.mutate(newMilestone)}
                 disabled={!newMilestone.name || !newMilestone.target_date}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 Crear Hito
               </Button>

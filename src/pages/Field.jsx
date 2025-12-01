@@ -94,13 +94,13 @@ export default function Field() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
             </div>
             <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
-            <Badge className="mt-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border-amber-500/30">
+            <Badge className="mt-2 bg-[#FFB800]/20 text-[#FFB800] border-[#FFB800]/30">
               🏗️ MCI Field • Field Execution
             </Badge>
           </div>
           <Button 
             onClick={() => setShowNewProject(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25"
+            className="bg-[#FFB800] hover:bg-[#E5A600] text-white shadow-lg shadow-[#FFB800]/25"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Project
@@ -177,7 +177,7 @@ export default function Field() {
           {/* Projects Grid */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredJobs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -232,7 +232,7 @@ export default function Field() {
               <Button 
                 onClick={handleCreateProject}
                 disabled={!newProject.name || createJobMutation.isPending}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 {createJobMutation.isPending ? 'Creating...' : 'Create Project'}
               </Button>
@@ -292,8 +292,8 @@ function ProjectCard({ job, index }) {
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
         <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer group shadow-sm">
           <div className="flex items-start justify-between mb-3">
-            <div className="p-2 bg-amber-500/20 rounded-lg">
-              <FolderOpen className="w-5 h-5 text-amber-400" />
+            <div className="p-2 bg-[#FFB800]/20 rounded-lg">
+              <FolderOpen className="w-5 h-5 text-[#FFB800]" />
             </div>
             <Badge className={statusColors[job.status] || statusColors.active}>
               {job.status === 'active' ? 'Active' : 
@@ -301,7 +301,7 @@ function ProjectCard({ job, index }) {
                job.status === 'on_hold' ? 'On Hold' : 'Archived'}
             </Badge>
           </div>
-          <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors mb-1">
+          <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#FFB800] transition-colors mb-1">
             {jobName}
           </h3>
           <p className="text-sm text-slate-400 line-clamp-1">
@@ -330,7 +330,7 @@ function EmptyState({ onCreateProject }) {
       </p>
       <Button 
         onClick={onCreateProject}
-        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+        className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
       >
         <Plus className="w-4 h-4 mr-2" />
         Create Project

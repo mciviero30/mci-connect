@@ -359,7 +359,7 @@ export default function FieldChecklistsView({ jobId }) {
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
                 Cancelar
               </Button>
-              <Button onClick={handleCreate} className="bg-amber-500 hover:bg-amber-600">
+              <Button onClick={handleCreate} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
                 Crear Plantilla
               </Button>
             </div>

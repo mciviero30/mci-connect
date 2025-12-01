@@ -366,7 +366,7 @@ export default function FieldMembersView({ jobId }) {
               <Button 
                 onClick={handleInvite}
                 disabled={!inviteData.email || inviteMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 {inviteMutation.isPending ? 'Enviando...' : 'Enviar Invitación'}
               </Button>

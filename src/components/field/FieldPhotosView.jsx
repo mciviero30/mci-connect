@@ -200,7 +200,7 @@ export default function FieldPhotosView({ jobId }) {
               <Button 
                 onClick={handleCreatePhoto}
                 disabled={!newPhoto.file_url || createPhotoMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 {createPhotoMutation.isPending ? 'Guardando...' : 'Guardar Foto'}
               </Button>
