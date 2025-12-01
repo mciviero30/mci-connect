@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Briefcase, CalendarClock, X, Filter, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Briefcase, CalendarClock, X, Filter, Clock, CheckCircle, XCircle, Repeat, Copy, Layout, Users, BarChart3, List, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,16 @@ import DayView from "../components/calendario/DayView";
 import WeekView from "../components/calendario/WeekView";
 import MonthView from "../components/calendario/MonthView";
 import AssignmentDialog from "../components/calendario/AssignmentDialog";
+import AgendaView from "../components/calendario/AgendaView";
+import MiniCalendar from "../components/calendario/MiniCalendar";
+import RecurringShiftDialog from "../components/calendario/RecurringShiftDialog";
+import ConflictAlert, { detectConflicts } from "../components/calendario/ConflictAlert";
+import TeamAvailability from "../components/calendario/TeamAvailability";
+import ShiftTemplates from "../components/calendario/ShiftTemplates";
+import CopyWeekDialog from "../components/calendario/CopyWeekDialog";
+import ResourceView from "../components/calendario/ResourceView";
+import OccupancyStats from "../components/calendario/OccupancyStats";
+import GoogleCalendarSync from "../components/calendario/GoogleCalendarSync";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
 import { useToast } from "@/components/ui/toast";
@@ -35,6 +45,14 @@ export default function Calendario() {
   const [eventTypeFilter, setEventTypeFilter] = useState('all');
   const [employeeFilter, setEmployeeFilter] = useState('all');
   const [jobFilter, setJobFilter] = useState('all');
+  
+  // New feature states
+  const [showRecurring, setShowRecurring] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showCopyWeek, setShowCopyWeek] = useState(false);
+  const [showGoogleSync, setShowGoogleSync] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [conflicts, setConflicts] = useState([]);
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
@@ -57,6 +75,12 @@ export default function Calendario() {
   const { data: employees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
+    initialData: [],
+  });
+
+  const { data: timeOffRequests = [] } = useQuery({
+    queryKey: ['timeOffRequests'],
+    queryFn: () => base44.entities.TimeOffRequest.filter({ status: 'approved' }),
     initialData: [],
   });
 
@@ -170,6 +194,57 @@ export default function Calendario() {
     if (window.confirm(language === 'es' ? '¿Eliminar turno?' : 'Delete shift?')) {
       deleteMutation.mutate(id);
     }
+  };
+
+  // Create recurring shifts
+  const handleCreateRecurring = async (dates) => {
+    if (!editingShift) return;
+    
+    const baseShift = { ...editingShift };
+    delete baseShift.id;
+    delete baseShift.created_date;
+    delete baseShift.updated_date;
+    
+    for (const date of dates) {
+      await createMutation.mutateAsync({
+        ...baseShift,
+        date: format(date, 'yyyy-MM-dd'),
+        status: 'pending'
+      });
+    }
+    
+    setShowRecurring(false);
+    toast.success(language === 'es' ? `${dates.length} turnos creados` : `${dates.length} shifts created`);
+  };
+
+  // Apply template
+  const handleApplyTemplate = (template) => {
+    if (selectedDate) {
+      setEditingShift({
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        start_time: template.start_time,
+        end_time: template.end_time,
+        shift_type: template.shift_type,
+        title: template.name
+      });
+      setSelectedEventType(template.shift_type);
+      setShowDialog(true);
+    }
+  };
+
+  // Copy week
+  const handleCopyWeek = async (newShifts) => {
+    for (const shift of newShifts) {
+      await createMutation.mutateAsync(shift);
+    }
+    toast.success(language === 'es' ? `${newShifts.length} turnos copiados` : `${newShifts.length} shifts copied`);
+  };
+
+  // Check conflicts when editing
+  const checkConflicts = (shiftData) => {
+    const detected = detectConflicts(shifts, shiftData);
+    setConflicts(detected);
+    return detected.length === 0;
   };
 
   const handleConfirmShift = (shiftId) => {
@@ -494,59 +569,146 @@ export default function Calendario() {
               <h2 className="text-xl font-bold text-slate-900 dark:text-white ml-4">{getDateRange()}</h2>
             </div>
 
-            <Tabs value={view} onValueChange={setView}>
-              <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                  {language === 'es' ? 'Día' : 'Day'}
-                </TabsTrigger>
-                <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                  {language === 'es' ? 'Semana' : 'Week'}
-                </TabsTrigger>
-                <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                  {language === 'es' ? 'Mes' : 'Month'}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-2">
+              <Tabs value={view} onValueChange={setView}>
+                <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    {language === 'es' ? 'Día' : 'Day'}
+                  </TabsTrigger>
+                  <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    {language === 'es' ? 'Semana' : 'Week'}
+                  </TabsTrigger>
+                  <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    {language === 'es' ? 'Mes' : 'Month'}
+                  </TabsTrigger>
+                  <TabsTrigger value="agenda" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    <List className="w-4 h-4" />
+                  </TabsTrigger>
+                  <TabsTrigger value="resource" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    <Grid3X3 className="w-4 h-4" />
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {isAdmin && (
+                <div className="flex gap-1">
+                  <Button variant="outline" size="sm" onClick={() => setShowTemplates(true)} className="bg-white dark:bg-slate-800" title={language === 'es' ? 'Plantillas' : 'Templates'}>
+                    <Layout className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowCopyWeek(true)} className="bg-white dark:bg-slate-800" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)} className="bg-white dark:bg-slate-800" title={language === 'es' ? 'Estadísticas' : 'Stats'}>
+                    <BarChart3 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowGoogleSync(true)} className="bg-white dark:bg-slate-800" title={language === 'es' ? 'Sincronizar' : 'Sync'}>
+                    <CalendarIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
-          <Tabs value={view} className="w-full">
-            <TabsContent value="day">
-              <DayView
-                currentDate={currentDate}
+          {/* Stats Panel */}
+          {showStats && (
+            <div className="mb-6">
+              <OccupancyStats
                 shifts={filteredShifts}
-                onDateClick={handleDateClick}
-                onShiftClick={handleShiftClick}
-                onConfirmShift={handleConfirmShift}
-                onRejectShift={handleRejectShift}
-                isAdmin={isAdmin}
-                currentUser={user}
-              />
-            </TabsContent>
-            <TabsContent value="week">
-              <WeekView
+                employees={employees}
                 currentDate={currentDate}
-                shifts={filteredShifts}
-                onDateClick={handleDateClick}
-                onShiftClick={handleShiftClick}
-                onConfirmShift={handleConfirmShift}
-                onRejectShift={handleRejectShift}
-                isAdmin={isAdmin}
-                currentUser={user}
+                language={language}
               />
-            </TabsContent>
-            <TabsContent value="month">
-              <MonthView
+            </div>
+          )}
+
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Sidebar with Mini Calendar and Team Availability */}
+            <div className="hidden lg:block space-y-4">
+              <MiniCalendar
                 currentDate={currentDate}
-                shifts={filteredShifts}
-                onDateClick={handleDateClick}
-                onShiftClick={handleShiftClick}
-                onConfirmShift={handleConfirmShift}
-                onRejectShift={handleRejectShift}
-                isAdmin={isAdmin}
-                currentUser={user}
+                onDateSelect={setCurrentDate}
+                shifts={shifts}
+                language={language}
               />
-            </TabsContent>
-          </Tabs>
+              <TeamAvailability
+                employees={employees}
+                shifts={shifts}
+                currentDate={currentDate}
+                timeOffRequests={timeOffRequests}
+                onEmployeeClick={(emp) => setEmployeeFilter(emp.email)}
+                language={language}
+              />
+            </div>
+
+            {/* Main Calendar Area */}
+            <div className="lg:col-span-3">
+              <Tabs value={view} className="w-full">
+                <TabsContent value="day">
+                  <DayView
+                    currentDate={currentDate}
+                    shifts={filteredShifts}
+                    onDateClick={handleDateClick}
+                    onShiftClick={handleShiftClick}
+                    onConfirmShift={handleConfirmShift}
+                    onRejectShift={handleRejectShift}
+                    isAdmin={isAdmin}
+                    currentUser={user}
+                  />
+                </TabsContent>
+                <TabsContent value="week">
+                  <WeekView
+                    currentDate={currentDate}
+                    shifts={filteredShifts}
+                    onDateClick={handleDateClick}
+                    onShiftClick={handleShiftClick}
+                    onConfirmShift={handleConfirmShift}
+                    onRejectShift={handleRejectShift}
+                    isAdmin={isAdmin}
+                    currentUser={user}
+                  />
+                </TabsContent>
+                <TabsContent value="month">
+                  <MonthView
+                    currentDate={currentDate}
+                    shifts={filteredShifts}
+                    onDateClick={handleDateClick}
+                    onShiftClick={handleShiftClick}
+                    onConfirmShift={handleConfirmShift}
+                    onRejectShift={handleRejectShift}
+                    isAdmin={isAdmin}
+                    currentUser={user}
+                  />
+                </TabsContent>
+                <TabsContent value="agenda">
+                  <AgendaView
+                    currentDate={currentDate}
+                    shifts={filteredShifts}
+                    onShiftClick={handleShiftClick}
+                    onConfirmShift={handleConfirmShift}
+                    onRejectShift={handleRejectShift}
+                    isAdmin={isAdmin}
+                    currentUser={user}
+                    language={language}
+                  />
+                </TabsContent>
+                <TabsContent value="resource">
+                  <ResourceView
+                    currentDate={currentDate}
+                    employees={employees}
+                    shifts={filteredShifts}
+                    onShiftClick={handleShiftClick}
+                    onCellClick={(date, time, email) => {
+                      setSelectedDate(new Date(date));
+                      setSelectedTime(time);
+                      setShowEventTypeSelector(true);
+                    }}
+                    isAdmin={isAdmin}
+                    language={language}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
 
           <Dialog open={showEventTypeSelector} onOpenChange={setShowEventTypeSelector}>
             <DialogContent className="max-w-md bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
@@ -632,8 +794,45 @@ export default function Calendario() {
               onSubmit={handleSubmit}
               onDelete={handleDelete}
               isProcessing={createMutation.isPending || updateMutation.isPending}
+              onShowRecurring={() => setShowRecurring(true)}
+              conflicts={conflicts}
             />
           )}
+
+          {/* Recurring Shift Dialog */}
+          <RecurringShiftDialog
+            open={showRecurring}
+            onOpenChange={setShowRecurring}
+            baseShift={editingShift}
+            onCreateRecurring={handleCreateRecurring}
+            language={language}
+          />
+
+          {/* Shift Templates */}
+          <ShiftTemplates
+            open={showTemplates}
+            onOpenChange={setShowTemplates}
+            onApplyTemplate={handleApplyTemplate}
+            language={language}
+          />
+
+          {/* Copy Week Dialog */}
+          <CopyWeekDialog
+            open={showCopyWeek}
+            onOpenChange={setShowCopyWeek}
+            currentDate={currentDate}
+            shifts={shifts}
+            onCopyWeek={handleCopyWeek}
+            language={language}
+          />
+
+          {/* Google Calendar Sync */}
+          <GoogleCalendarSync
+            open={showGoogleSync}
+            onOpenChange={setShowGoogleSync}
+            shifts={filteredShifts}
+            language={language}
+          />
         </div>
       </div>
     </DragDropContext>
