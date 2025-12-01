@@ -621,93 +621,89 @@ export default function Calendario() {
             </div>
           )}
 
-          <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-            {/* Sidebar with Mini Calendar and Team Availability */}
-            <div className="hidden lg:flex lg:flex-col gap-4">
-              <MiniCalendar
+          {/* Main Calendar Area - Full Width */}
+          <Tabs value={view} className="w-full">
+            <TabsContent value="day">
+              <DayView
                 currentDate={currentDate}
-                onDateSelect={setCurrentDate}
-                shifts={shifts}
+                shifts={filteredShifts}
+                onDateClick={handleDateClick}
+                onShiftClick={handleShiftClick}
+                onConfirmShift={handleConfirmShift}
+                onRejectShift={handleRejectShift}
+                isAdmin={isAdmin}
+                currentUser={user}
+              />
+            </TabsContent>
+            <TabsContent value="week">
+              <WeekView
+                currentDate={currentDate}
+                shifts={filteredShifts}
+                onDateClick={handleDateClick}
+                onShiftClick={handleShiftClick}
+                onConfirmShift={handleConfirmShift}
+                onRejectShift={handleRejectShift}
+                isAdmin={isAdmin}
+                currentUser={user}
+              />
+            </TabsContent>
+            <TabsContent value="month">
+              <MonthView
+                currentDate={currentDate}
+                shifts={filteredShifts}
+                onDateClick={handleDateClick}
+                onShiftClick={handleShiftClick}
+                onConfirmShift={handleConfirmShift}
+                onRejectShift={handleRejectShift}
+                isAdmin={isAdmin}
+                currentUser={user}
+              />
+            </TabsContent>
+            <TabsContent value="agenda">
+              <AgendaView
+                currentDate={currentDate}
+                shifts={filteredShifts}
+                onShiftClick={handleShiftClick}
+                onConfirmShift={handleConfirmShift}
+                onRejectShift={handleRejectShift}
+                isAdmin={isAdmin}
+                currentUser={user}
                 language={language}
               />
-              <TeamAvailability
+            </TabsContent>
+            <TabsContent value="resource">
+              <ResourceView
+                currentDate={currentDate}
                 employees={employees}
-                shifts={shifts}
-                currentDate={currentDate}
-                timeOffRequests={timeOffRequests}
-                onEmployeeClick={(emp) => setEmployeeFilter(emp.email)}
+                shifts={filteredShifts}
+                onShiftClick={handleShiftClick}
+                onCellClick={(date, time, email) => {
+                  setSelectedDate(new Date(date));
+                  setSelectedTime(time);
+                  setShowEventTypeSelector(true);
+                }}
+                isAdmin={isAdmin}
                 language={language}
               />
-            </div>
+            </TabsContent>
+          </Tabs>
 
-            {/* Main Calendar Area */}
-            <div className="min-w-0">
-              <Tabs value={view} className="w-full">
-                <TabsContent value="day">
-                  <DayView
-                    currentDate={currentDate}
-                    shifts={filteredShifts}
-                    onDateClick={handleDateClick}
-                    onShiftClick={handleShiftClick}
-                    onConfirmShift={handleConfirmShift}
-                    onRejectShift={handleRejectShift}
-                    isAdmin={isAdmin}
-                    currentUser={user}
-                  />
-                </TabsContent>
-                <TabsContent value="week">
-                  <WeekView
-                    currentDate={currentDate}
-                    shifts={filteredShifts}
-                    onDateClick={handleDateClick}
-                    onShiftClick={handleShiftClick}
-                    onConfirmShift={handleConfirmShift}
-                    onRejectShift={handleRejectShift}
-                    isAdmin={isAdmin}
-                    currentUser={user}
-                  />
-                </TabsContent>
-                <TabsContent value="month">
-                  <MonthView
-                    currentDate={currentDate}
-                    shifts={filteredShifts}
-                    onDateClick={handleDateClick}
-                    onShiftClick={handleShiftClick}
-                    onConfirmShift={handleConfirmShift}
-                    onRejectShift={handleRejectShift}
-                    isAdmin={isAdmin}
-                    currentUser={user}
-                  />
-                </TabsContent>
-                <TabsContent value="agenda">
-                  <AgendaView
-                    currentDate={currentDate}
-                    shifts={filteredShifts}
-                    onShiftClick={handleShiftClick}
-                    onConfirmShift={handleConfirmShift}
-                    onRejectShift={handleRejectShift}
-                    isAdmin={isAdmin}
-                    currentUser={user}
-                    language={language}
-                  />
-                </TabsContent>
-                <TabsContent value="resource">
-                  <ResourceView
-                    currentDate={currentDate}
-                    employees={employees}
-                    shifts={filteredShifts}
-                    onShiftClick={handleShiftClick}
-                    onCellClick={(date, time, email) => {
-                      setSelectedDate(new Date(date));
-                      setSelectedTime(time);
-                      setShowEventTypeSelector(true);
-                    }}
-                    isAdmin={isAdmin}
-                    language={language}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
+          {/* Mini Calendar and Team Availability - Below Calendar */}
+          <div className="grid md:grid-cols-2 gap-4 mt-6">
+            <MiniCalendar
+              currentDate={currentDate}
+              onDateSelect={setCurrentDate}
+              shifts={shifts}
+              language={language}
+            />
+            <TeamAvailability
+              employees={employees}
+              shifts={shifts}
+              currentDate={currentDate}
+              timeOffRequests={timeOffRequests}
+              onEmployeeClick={(emp) => setEmployeeFilter(emp.email)}
+              language={language}
+            />
           </div>
 
           <Dialog open={showEventTypeSelector} onOpenChange={setShowEventTypeSelector}>
