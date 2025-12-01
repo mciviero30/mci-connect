@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { 
-  X, Eye, Edit, FileCheck, Mail, Calendar, 
+  X, Eye, Edit, FileCheck, Mail, CalendarDays, 
   DollarSign, Clock, AlertTriangle, User 
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -64,7 +64,7 @@ export default function QuotePreviewModal({ quote, open, onClose, onConvert, onS
               <p className="text-xs text-slate-500">{t('total')}</p>
             </div>
             <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <Calendar className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+              <CalendarDays className="w-5 h-5 text-blue-600 mx-auto mb-1" />
               <p className="text-lg font-semibold text-slate-900 dark:text-white">
                 {format(new Date(quote.quote_date), 'MMM d', { locale: language === 'es' ? es : undefined })}
               </p>
