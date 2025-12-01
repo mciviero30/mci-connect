@@ -21,7 +21,8 @@ import {
   ClipboardCheck,
   CheckCircle2,
   Activity,
-  QrCode
+  QrCode,
+  Brain
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,7 @@ import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
 import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
 import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
 import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
+import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -70,6 +72,12 @@ export default function FieldProject() {
     enabled: !!jobId,
   });
 
+  const { data: members = [] } = useQuery({
+    queryKey: ['field-members', jobId],
+    queryFn: () => base44.entities.ProjectMember.filter({ project_id: jobId }),
+    enabled: !!jobId,
+  });
+
   const sidebarItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
@@ -85,6 +93,7 @@ export default function FieldProject() {
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
   ];
 
   if (isLoading) {
@@ -142,6 +151,8 @@ export default function FieldProject() {
         return <FieldActivityLogView jobId={jobId} />;
       case 'analytics':
         return <FieldAnalyticsView jobId={jobId} tasks={tasks} />;
+      case 'ai-assistant':
+        return <FieldAIAssistant jobId={jobId} job={job} tasks={tasks} members={members} />;
       default:
         return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
     }
@@ -202,6 +213,9 @@ export default function FieldProject() {
                 }`}>
                   {item.count}
                 </span>
+              )}
+              {item.badge && (
+                <span className="text-xs">{item.badge}</span>
               )}
             </button>
           ))}
