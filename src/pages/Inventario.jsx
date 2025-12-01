@@ -501,7 +501,15 @@ export default function Inventario() {
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <h3 className="font-bold text-slate-900 dark:text-white text-lg">{item.name}</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{item.category}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge className={item.inventory_type === 'hardware' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}>
+                            {item.inventory_type === 'hardware' ? '🔩 Hardware' : '🔧 Tools'}
+                          </Badge>
+                          <span className="text-sm text-slate-600 dark:text-slate-400">{item.category}</span>
+                        </div>
+                        {item.team_name && (
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">Team: {item.team_name}</p>
+                        )}
                         {item.sku && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: {item.sku}</p>
                         )}
