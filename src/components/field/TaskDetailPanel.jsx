@@ -14,7 +14,8 @@ import {
   Send,
   Trash2,
   Edit2,
-  Save
+  Save,
+  Link2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,8 +23,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
+import TaskTimeTracker from './TaskTimeTracker.jsx';
+import TaskDependencies from './TaskDependencies.jsx';
 
-export default function TaskDetailPanel({ task, onClose, jobId }) {
+export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const [newComment, setNewComment] = useState('');
@@ -142,6 +145,12 @@ export default function TaskDetailPanel({ task, onClose, jobId }) {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Time Tracker */}
+        <TaskTimeTracker taskId={task.id} jobId={jobId} />
+
+        {/* Dependencies */}
+        <TaskDependencies taskId={task.id} jobId={jobId} allTasks={allTasks} />
 
         {/* Priority */}
         <div>
