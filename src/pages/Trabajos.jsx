@@ -68,25 +68,6 @@ export default function Trabajos() {
     mutationFn: async (data) => {
       console.log('Creating job:', data);
       const createdJob = await base44.entities.Job.create(data);
-      
-      // Auto-sync to MCI Field app via backend function
-      try {
-        const syncResult = await base44.functions.syncJobToMCIField({
-          jobData: {
-            ...data,
-            id: createdJob.id
-          }
-        });
-        
-        if (syncResult.success) {
-          console.log('✅ Job synced to MCI Field automatically');
-        } else {
-          console.warn('⚠️ MCI Field sync failed:', syncResult.error);
-        }
-      } catch (syncError) {
-        console.warn('⚠️ MCI Field sync error:', syncError.message);
-      }
-      
       return createdJob;
     },
     onSuccess: (createdJob) => {
