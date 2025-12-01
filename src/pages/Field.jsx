@@ -91,7 +91,7 @@ export default function Field() {
                 alt="MCI Field"
                 className="w-12 h-12 object-contain"
               />
-              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-[#D4C85C]">Dashboard</h1>
             </div>
             <p className="text-slate-400">Gestión central de proyectos de construcción</p>
             <Badge className="mt-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border-amber-500/30">
