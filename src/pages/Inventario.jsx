@@ -445,8 +445,9 @@ export default function Inventario() {
           </Card>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
+        {/* Filters */}
+        <div className="mb-6 flex flex-wrap gap-4">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400"/>
             <Input 
               placeholder="Search items..."
@@ -455,6 +456,29 @@ export default function Inventario() {
               className="pl-12 h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
             />
           </div>
+          <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+            <SelectTrigger className="w-[200px] h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
+              <SelectValue placeholder="All Teams" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <SelectItem value="all" className="text-slate-900 dark:text-white">All Teams</SelectItem>
+              {teams.map(team => (
+                <SelectItem key={team.id} value={team.id} className="text-slate-900 dark:text-white">
+                  {team.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedInventoryType} onValueChange={setSelectedInventoryType}>
+            <SelectTrigger className="w-[180px] h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
+              <SelectValue placeholder="Inventory Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <SelectItem value="all" className="text-slate-900 dark:text-white">All Types</SelectItem>
+              <SelectItem value="tools" className="text-slate-900 dark:text-white">🔧 Tools</SelectItem>
+              <SelectItem value="hardware" className="text-slate-900 dark:text-white">🔩 Hardware</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <Tabs defaultValue="all" className="mb-6">
