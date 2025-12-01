@@ -18,7 +18,8 @@ import {
   Loader2,
   AlertTriangle,
   CalendarPlus,
-  MessageSquare
+  MessageSquare,
+  CalendarDays as Calendar
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
