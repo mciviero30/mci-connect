@@ -172,10 +172,10 @@ export default function Dashboard() {
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
-    enabled: !!user && (widgets.some(w => ['active-jobs', 'my-assignments'].includes(w.type))),
-    staleTime: 900000, // 15 minutes - jobs don't change often
-    cacheTime: 1800000, // 30 minutes
-    initialData: [],
+    enabled: !!user,
+    staleTime: 60000, // 1 minute - keep jobs fresh
+    cacheTime: 300000, // 5 minutes
+    refetchOnMount: true,
   });
 
   const { data: assignments = [] } = useQuery({
