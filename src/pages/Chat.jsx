@@ -143,6 +143,7 @@ export default function Chat() {
   const [selectedCustomGroup, setSelectedCustomGroup] = useState(null);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
+  const [showJobMembers, setShowJobMembers] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
