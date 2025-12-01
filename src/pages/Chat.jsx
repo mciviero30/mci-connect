@@ -15,6 +15,7 @@ import TypingIndicator from "../components/chat/TypingIndicator";
 import MentionInput from "../components/chat/MentionInput";
 import DirectMessagesList from "../components/chat/DirectMessagesList";
 import CreateGroupDialog from "../components/chat/CreateGroupDialog";
+import UserProfileModal from "../components/chat/UserProfileModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
@@ -138,6 +139,8 @@ export default function Chat() {
   const [typingUsers, setTypingUsers] = useState([]);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [selectedCustomGroup, setSelectedCustomGroup] = useState(null);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
@@ -362,6 +365,11 @@ export default function Chat() {
     setChatMode('groups');
     setSelectedCustomGroup(group);
     setSelectedDMConv(null);
+  };
+
+  const openUserProfile = (email) => {
+    setSelectedProfileEmail(email);
+    setShowUserProfile(true);
   };
 
   useEffect(() => {
@@ -593,6 +601,7 @@ export default function Chat() {
                       onReply={setReplyingTo}
                       onReaction={handleReaction}
                       userEmail={user?.email}
+                      onUserClick={openUserProfile}
                     />
                   ))}
                   
@@ -728,6 +737,15 @@ export default function Chat() {
           employees={employees}
           currentUser={user}
           onCreateGroup={handleCreateGroup}
+        />
+
+        {/* User Profile Modal */}
+        <UserProfileModal
+          open={showUserProfile}
+          onOpenChange={setShowUserProfile}
+          userEmail={selectedProfileEmail}
+          currentUserEmail={user?.email}
+          isCurrentUser={selectedProfileEmail === user?.email}
         />
       </div>
     </div>

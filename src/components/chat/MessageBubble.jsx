@@ -26,7 +26,8 @@ export default function MessageBubble({
   isMe, 
   onReply, 
   onReaction,
-  userEmail 
+  userEmail,
+  onUserClick 
 }) {
   const [showReactions, setShowReactions] = useState(false);
   const msgType = message.message_type || 'text';
@@ -116,7 +117,12 @@ export default function MessageBubble({
         {/* Sender name for others */}
         {!isMe && (
           <div className="px-4 pt-3 pb-1">
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">{message.sender_name}</p>
+            <button 
+              onClick={() => onUserClick?.(message.sender_email)}
+              className="text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-[#3B9FF3] dark:hover:text-blue-400 transition-colors cursor-pointer"
+            >
+              {message.sender_name}
+            </button>
           </div>
         )}
         
