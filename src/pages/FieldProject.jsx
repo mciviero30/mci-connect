@@ -71,21 +71,21 @@ export default function FieldProject() {
   });
 
   const sidebarItems = [
-    { id: 'overview', label: 'Resumen', icon: LayoutDashboard },
-    { id: 'plans', label: 'Planos', icon: Map, count: plans.length },
-    { id: 'tasks', label: 'Tareas', icon: CheckSquare, count: tasks.length },
-    { id: 'milestones', label: 'Hitos', icon: Flag },
-    { id: 'photos', label: 'Fotos', icon: Camera },
-    { id: 'documents', label: 'Documentos', icon: FileText },
-    { id: 'budget', label: 'Presupuesto', icon: DollarSign },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
+    { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
+    { id: 'milestones', label: 'Milestones', icon: Flag },
+    { id: 'photos', label: 'Photos', icon: Camera },
+    { id: 'documents', label: 'Documents', icon: FileText },
+    { id: 'budget', label: 'Budget', icon: DollarSign },
     { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
-    { id: 'approvals', label: 'Aprobaciones', icon: CheckCircle2 },
-    { id: 'materials', label: 'Materiales QR', icon: QrCode },
+    { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
+    { id: 'materials', label: 'Materials QR', icon: QrCode },
     { id: 'chat', label: 'Chat', icon: MessageSquare },
-    { id: 'members', label: 'Equipo', icon: Users },
-    { id: 'forms', label: 'Formularios', icon: ClipboardList },
-    { id: 'reports', label: 'Reportes', icon: BarChart3 },
-    { id: 'activity', label: 'Actividad', icon: Activity },
+    { id: 'members', label: 'Team', icon: Users },
+    { id: 'forms', label: 'Forms', icon: ClipboardList },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
@@ -101,9 +101,9 @@ export default function FieldProject() {
     return (
       <div className="min-h-screen bg-[#1a1f2e] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-400 mb-4">Proyecto no encontrado</p>
+          <p className="text-slate-400 mb-4">Project not found</p>
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-amber-500 hover:bg-amber-600">Volver</Button>
+            <Button className="bg-amber-500 hover:bg-amber-600">Back</Button>
           </Link>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default function FieldProject() {
           <Link to={createPageUrl('Field')}>
             <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver
+              Back
             </Button>
           </Link>
           <div className="flex items-center gap-3">
@@ -174,7 +174,7 @@ export default function FieldProject() {
                   ? 'bg-green-500/20 text-green-400 border-green-500/30'
                   : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
               }`}>
-                {job.status === 'active' ? 'Activo' : job.status}
+                {job.status === 'active' ? 'Active' : job.status}
               </Badge>
             </div>
           </div>

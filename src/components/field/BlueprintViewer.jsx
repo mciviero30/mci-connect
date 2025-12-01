@@ -210,7 +210,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-400 hover:text-white">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver
+              Back
             </Button>
             <span className="text-white font-medium">{plan.name}</span>
           </div>
@@ -225,7 +225,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
               }
             >
               <Plus className="w-4 h-4 mr-2" />
-              {isPlacingPin ? 'Cancelar' : 'Añadir Tarea'}
+              {isPlacingPin ? 'Cancel' : 'Add Task'}
             </Button>
             <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
               <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-8 w-8 text-slate-400 hover:text-white">
@@ -256,7 +256,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
             <div className="flex-1 flex flex-col items-center justify-center h-full">
               <Loader2 className="w-12 h-12 text-amber-500 animate-spin mb-4" />
               <p className="text-white mb-4">
-                {isRetrying ? errorMessage : 'Cargando plano...'}
+                {isRetrying ? errorMessage : 'Loading plan...'}
               </p>
               {loadProgress > 0 && (
                 <div className="w-64">
@@ -274,14 +274,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
             <div className="flex-1 flex flex-col items-center justify-center h-full">
               <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center max-w-md">
                 <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">Error al cargar el plano</h3>
+                <h3 className="text-lg font-semibold text-white mb-2">Error loading plan</h3>
                 <p className="text-slate-400 mb-6">{errorMessage}</p>
                 <Button 
                   onClick={handleManualRetry}
                   className="bg-amber-500 hover:bg-amber-600"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Reintentar
+                  Retry
                 </Button>
               </div>
             </div>
@@ -313,7 +313,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                         rel="noopener noreferrer"
                         className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors"
                       >
-                        Abrir PDF en nueva pestaña
+                        Open PDF in new tab
                       </a>
                     </div>
                   </div>
@@ -356,7 +356,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
         {isPlacingPin && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-4 py-2 rounded-lg shadow-lg">
-            Haz clic en el plano para colocar la tarea
+            Click on the plan to place the task
           </div>
         )}
       </div>
