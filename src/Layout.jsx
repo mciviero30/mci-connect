@@ -249,6 +249,13 @@ const LayoutContent = ({ children, currentPageName }) => {
     return () => sidebar.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Redirect client-only users to ClientPortal
+  useEffect(() => {
+    if (isClientOnly && currentPageName !== 'ClientPortal') {
+      window.location.href = createPageUrl('ClientPortal');
+    }
+  }, [isClientOnly, currentPageName]);
+
   const adminNavigation = [
     {
       section: 'GENERAL',
@@ -414,13 +421,6 @@ const LayoutContent = ({ children, currentPageName }) => {
       </div>
     );
   }
-
-  // Redirect client-only users to ClientPortal
-  useEffect(() => {
-    if (isClientOnly && currentPageName !== 'ClientPortal') {
-      window.location.href = createPageUrl('ClientPortal');
-    }
-  }, [isClientOnly, currentPageName]);
 
   if (user && user.employment_status === 'deleted') {
     return (
