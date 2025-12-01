@@ -151,6 +151,18 @@ const LayoutContent = ({ children, currentPageName }) => {
     cacheTime: Infinity,
   });
 
+  // Check if user is a client member (for redirect to ClientPortal)
+  const { data: clientMemberships = [] } = useQuery({
+    queryKey: ['client-memberships-check', user?.email],
+    queryFn: () => base44.entities.ProjectMember.filter({ 
+      user_email: user?.email,
+      role: 'client'
+    }),
+    enabled: !!user?.email && user?.role !== 'admin',
+  });
+
+  const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
+
   useEffect(() => {
     if (!user) return;
     if (user.employment_status !== 'pending_registration') return;
@@ -423,8 +435,20 @@ const LayoutContent = ({ children, currentPageName }) => {
     );
   }
 
+  // Redirect client-only users to ClientPortal
+  useEffect(() => {
+    if (isClientOnly && currentPageName !== 'ClientPortal') {
+      window.location.href = createPageUrl('ClientPortal');
+    }
+  }, [isClientOnly, currentPageName]);
+
   const navigation = user?.role === 'admin' ? adminNavigation : employeeNavigation;
   const isAdmin = user?.role === 'admin';
+
+  // If client only, render ClientPortal directly without sidebar
+  if (isClientOnly) {
+    return children;
+  }
 
   const getProfileImage = () => {
     if (!user) return null;
