@@ -45,14 +45,14 @@ export default function DashboardWidget({
             </CardTitle>
             {isEditing && (
               <div className="flex items-center gap-1">
-                <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-slate-100 rounded">
+                <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                   <GripVertical className="w-4 h-4 text-slate-400" />
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleResize}
-                  className="h-7 w-7 hover:bg-slate-100"
+                  className="h-7 w-7 hover:bg-slate-100 dark:hover:bg-slate-700"
                   title="Resize widget"
                 >
                   {widget.size === 'small' ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
@@ -61,7 +61,7 @@ export default function DashboardWidget({
                   variant="ghost"
                   size="icon"
                   onClick={() => onRemove(widget.id)}
-                  className="h-7 w-7 hover:bg-red-100 text-red-600"
+                  className="h-7 w-7 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600"
                 >
                   <X className="w-4 h-4" />
                 </Button>
