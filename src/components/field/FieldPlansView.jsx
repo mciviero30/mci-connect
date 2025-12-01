@@ -228,12 +228,12 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                   onClick={() => setSelectedPlan(plan)}
                   className="cursor-pointer"
                 >
-                  <div className="aspect-video relative overflow-hidden bg-slate-700">
+                  <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-slate-700">
                     {isPdf ? (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
                           <div className="text-5xl mb-2">📄</div>
-                          <p className="text-white text-sm">PDF</p>
+                          <p className="text-slate-600 dark:text-white text-sm">PDF</p>
                         </div>
                       </div>
                     ) : (

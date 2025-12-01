@@ -129,10 +129,10 @@ export default function FieldChatView({ jobId }) {
       {/* Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-slate-700/50">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 bg-white dark:bg-transparent">
           <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-slate-400" />
-            <h2 className="font-semibold text-white capitalize">{activeChannel}</h2>
+            <Hash className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+            <h2 className="font-semibold text-slate-900 dark:text-white capitalize">{activeChannel}</h2>
           </div>
         </div>
 
@@ -188,25 +188,25 @@ export default function FieldChatView({ jobId }) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-slate-700/50">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-700/50 bg-white dark:bg-transparent">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
               <Paperclip className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
               <Image className="w-5 h-5" />
             </Button>
             <Input 
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder={`Mensaje en #${activeChannel}...`}
-              className="flex-1 bg-slate-800 border-slate-700 text-white"
+              placeholder={`Message in #${activeChannel}...`}
+              className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
             />
             <Button 
               onClick={handleSendMessage}
               disabled={!message.trim() || sendMessageMutation.isPending}
-              className="bg-amber-500 hover:bg-amber-600"
+              className="bg-[#F5A623] hover:bg-[#E09000] text-white"
             >
               <Send className="w-4 h-4" />
             </Button>
