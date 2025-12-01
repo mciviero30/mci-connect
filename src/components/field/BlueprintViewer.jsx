@@ -559,40 +559,46 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
               }}
             >
               <div className="relative" style={{ minWidth: '100px', minHeight: '100px' }}>
-                {isPdfFile(plan.file_url) && pdfCanvas ? (
-                  <>
-                    <img 
-                      ref={imageRef}
-                      src={pdfCanvas}
-                      alt={plan.name}
-                      style={{ maxWidth: 'none', maxHeight: 'none' }}
-                      onClick={handleImageClick}
-                      draggable={false}
-                    />
-                    {/* PDF Page Controls */}
-                    {pdfTotalPages > 1 && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center gap-3 z-30">
-                        <button
-                          onClick={() => handlePdfPageChange(pdfPage - 1)}
-                          disabled={pdfPage <= 1}
-                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <ArrowLeft className="w-4 h-4" />
-                        </button>
-                        <span className="text-sm text-slate-600 dark:text-slate-300">
-                          Page {pdfPage} / {pdfTotalPages}
-                        </span>
-                        <button
-                          onClick={() => handlePdfPageChange(pdfPage + 1)}
-                          disabled={pdfPage >= pdfTotalPages}
-                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rotate-180"
-                        >
-                          <ArrowLeft className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
-                  </>
-                ) : !isPdfFile(plan.file_url) ? (
+                {isPdfFile(plan.file_url) ? (
+                  pdfCanvas ? (
+                    <>
+                      <img 
+                        ref={imageRef}
+                        src={pdfCanvas}
+                        alt={plan.name}
+                        style={{ maxWidth: 'none', maxHeight: 'none' }}
+                        onClick={handleImageClick}
+                        draggable={false}
+                      />
+                      {/* PDF Page Controls */}
+                      {pdfTotalPages > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center gap-3 z-30">
+                          <button
+                            onClick={() => handlePdfPageChange(pdfPage - 1)}
+                            disabled={pdfPage <= 1}
+                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </button>
+                          <span className="text-sm text-slate-600 dark:text-slate-300">
+                            Page {pdfPage} / {pdfTotalPages}
+                          </span>
+                          <button
+                            onClick={() => handlePdfPageChange(pdfPage + 1)}
+                            disabled={pdfPage >= pdfTotalPages}
+                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rotate-180"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+                    </div>
+                  )
+                ) : (
                   <img 
                     ref={imageRef}
                     src={plan.file_url}
