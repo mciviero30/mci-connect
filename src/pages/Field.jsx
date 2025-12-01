@@ -89,7 +89,7 @@ export default function Field() {
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/4d23ffc0e_Gemini_Generated_Image_9yx0pj9yx0pj9yx0.png"
                 alt="MCI Field"
-                className="w-16 h-16 object-contain"
+                className="w-24 h-24 object-contain"
               />
               <h1 className="text-3xl font-bold text-slate-900 dark:text-[#D4C85C]">Dashboard</h1>
             </div>
