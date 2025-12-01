@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import CreateTaskDialog from './CreateTaskDialog';
-import TaskDetailPanel from './TaskDetailPanel';
+import CreateTaskDialog from './CreateTaskDialog.jsx';
+import TaskDetailPanel from './TaskDetailPanel.jsx';
 
 export default function FieldTasksView({ jobId, tasks, plans }) {
   const [view, setView] = useState('kanban');

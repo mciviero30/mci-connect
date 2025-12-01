@@ -21,16 +21,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 // Import Field Components
-import FieldProjectOverview from '@/components/field/FieldProjectOverview';
-import FieldPlansView from '@/components/field/FieldPlansView';
-import FieldTasksView from '@/components/field/FieldTasksView';
-import FieldPhotosView from '@/components/field/FieldPhotosView';
-import FieldDocumentsView from '@/components/field/FieldDocumentsView';
-import FieldChatView from '@/components/field/FieldChatView';
-import FieldMembersView from '@/components/field/FieldMembersView';
-import FieldAnalyticsView from '@/components/field/FieldAnalyticsView';
-import FieldFormsView from '@/components/field/FieldFormsView';
-import FieldReportsView from '@/components/field/FieldReportsView';
+import FieldProjectOverview from '@/components/field/FieldProjectOverview.jsx';
+import FieldPlansView from '@/components/field/FieldPlansView.jsx';
+import FieldTasksView from '@/components/field/FieldTasksView.jsx';
+import FieldPhotosView from '@/components/field/FieldPhotosView.jsx';
+import FieldDocumentsView from '@/components/field/FieldDocumentsView.jsx';
+import FieldChatView from '@/components/field/FieldChatView.jsx';
+import FieldMembersView from '@/components/field/FieldMembersView.jsx';
+import FieldAnalyticsView from '@/components/field/FieldAnalyticsView.jsx';
+import FieldFormsView from '@/components/field/FieldFormsView.jsx';
+import FieldReportsView from '@/components/field/FieldReportsView.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();

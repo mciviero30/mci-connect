@@ -3,9 +3,9 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import TaskPin from './TaskPin';
-import TaskDetailPanel from './TaskDetailPanel';
-import CreateTaskDialog from './CreateTaskDialog';
+import TaskPin from './TaskPin.jsx';
+import TaskDetailPanel from './TaskDetailPanel.jsx';
+import CreateTaskDialog from './CreateTaskDialog.jsx';
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [zoom, setZoom] = useState(1);
