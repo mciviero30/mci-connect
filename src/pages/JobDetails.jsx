@@ -26,6 +26,8 @@ import StatsCard from "../components/shared/StatsCard";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import CommentThread from "../components/comments/CommentThread";
+import JobTimeline from "../components/jobs/JobTimeline";
+import CostAccumulationChart from "../components/jobs/CostAccumulationChart";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
@@ -115,7 +117,7 @@ export default function JobDetails() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <Link to={createPageUrl('Trabajos')}>
@@ -189,6 +191,14 @@ export default function JobDetails() {
             <TabsTrigger value="photos" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Camera className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Fotos' : 'Photos'}
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <Calendar className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Cronología' : 'Timeline'}
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Presupuesto' : 'Budget'}
             </TabsTrigger>
             <TabsTrigger value="comments" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <MessageSquare className="w-4 h-4 mr-2" />
@@ -525,6 +535,28 @@ export default function JobDetails() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Timeline Tab */}
+          <TabsContent value="timeline">
+            <JobTimeline
+              job={job}
+              timeEntries={timeEntries}
+              expenses={expenses}
+              inventoryTransactions={inventoryTransactions}
+              assignments={jobAssignments}
+              language={language}
+            />
+          </TabsContent>
+
+          {/* Budget Tab */}
+          <TabsContent value="budget">
+            <CostAccumulationChart
+              job={job}
+              timeEntries={timeEntries}
+              expenses={expenses}
+              language={language}
+            />
           </TabsContent>
 
           {/* Comments Tab */}
