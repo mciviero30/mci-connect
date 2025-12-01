@@ -86,9 +86,11 @@ export default function Field() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl">
-                <Briefcase className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/03ed46b90_Screenshot2025-12-01at23044AM.png"
+                alt="MCI Field"
+                className="w-12 h-12 object-contain"
+              />
               <h1 className="text-3xl font-bold text-white">Dashboard</h1>
             </div>
             <p className="text-slate-400">Gestión central de proyectos de construcción</p>
