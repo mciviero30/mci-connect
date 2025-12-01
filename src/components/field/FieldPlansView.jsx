@@ -155,34 +155,34 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Plans</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Plans</h1>
         <div className="flex gap-2">
           <Button 
             variant="outline"
             onClick={() => setShowTemplates(true)}
-            className="border-slate-700 text-slate-300 hover:text-white"
+            className="border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
           >
             <Settings2 className="w-4 h-4 mr-2" />
             Templates
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Subir Plano
+            Upload Plan
           </Button>
         </div>
       </div>
 
       {plans.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <Upload className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No plans yet</h3>
-                          <p className="text-slate-400 mb-4">Upload your first plan to get started</p>
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <Upload className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No plans yet</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Upload your first plan to get started</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-amber-500 hover:bg-amber-600"
+            className="bg-[#F5A623] hover:bg-[#E09000]"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Plan
@@ -196,7 +196,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden hover:border-amber-500/50 transition-all group relative"
+                className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-[#F5A623]/50 transition-all group relative shadow-sm"
               >
                 {/* Action buttons */}
                 <div className="absolute top-2 left-2 z-20 flex gap-1">
@@ -256,11 +256,11 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors">
+                    <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#F5A623] transition-colors">
                       {plan.name}
                     </h3>
                     {plan.folder && (
-                      <p className="text-sm text-slate-400">{plan.folder}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{plan.folder}</p>
                     )}
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               <Button 
                 onClick={handleCreatePlan}
                 disabled={!newPlan.file || !newPlan.name || createPlanMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#F5A623] hover:bg-[#E09000]"
               >
                 {createPlanMutation.isPending ? 'Saving...' : 'Save Plan'}
               </Button>
