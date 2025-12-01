@@ -213,6 +213,7 @@ export default function CrearEstimado() {
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
+        newItems[index].installation_time = selectedItem.installation_time || 0;
         newItems[index].total = (newItems[index].quantity || 0) * (selectedItem.unit_price || 0);
         
         toast({
@@ -220,8 +221,8 @@ export default function CrearEstimado() {
             ? `Ítem "${selectedItem.name}" cargado` 
             : `Item "${selectedItem.name}" loaded`,
           description: language === 'es'
-            ? `Precio unitario: $${selectedItem.unit_price}`
-            : `Unit price: $${selectedItem.unit_price}`,
+            ? `Precio unitario: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Tiempo: ${selectedItem.installation_time}h` : ''}`
+            : `Unit price: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Time: ${selectedItem.installation_time}h` : ''}`,
           variant: 'success',
         });
       }
