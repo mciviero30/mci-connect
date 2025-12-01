@@ -9,6 +9,7 @@ export default function CostAccumulationChart({
   job, 
   timeEntries = [], 
   expenses = [], 
+  estimatedHours = 0,
   language = 'en' 
 }) {
   const chartData = useMemo(() => {
