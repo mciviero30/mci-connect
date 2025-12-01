@@ -44,12 +44,10 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
 
   if (recognitions.length === 0) {
     return (
-      <Card className="bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 border-slate-200 dark:border-slate-700">
-        <CardContent className="p-8 text-center">
-          <Award className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-500 dark:text-slate-400">No recognitions yet. Be the first to give kudos!</p>
-        </CardContent>
-      </Card>
+      <div className="p-8 text-center">
+        <Award className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+        <p className="text-slate-500 dark:text-slate-400">No recognitions yet. Be the first to give kudos!</p>
+      </div>
     );
   }
 
