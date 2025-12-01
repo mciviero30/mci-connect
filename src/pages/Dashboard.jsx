@@ -389,7 +389,11 @@ export default function Dashboard() {
         return <StatsWidget value={activeEmployees.length} label={t('employees')} icon={Users} color="blue" />;
       
       case 'active-jobs':
-        return <StatsWidget value={jobs.length} label={t('jobs')} icon={Briefcase} color="green" />;
+        return (
+          <Link to={createPageUrl('Trabajos')}>
+            <StatsWidget value={jobs.length} label={t('jobs')} icon={Briefcase} color="green" />
+          </Link>
+        );
       
       case 'pending-expenses':
         return <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="amber" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />;
