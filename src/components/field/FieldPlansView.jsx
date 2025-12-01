@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Upload, X, ZoomIn, ZoomOut, Move, Trash2, MoreVertical } from 'lucide-react';
+import { Plus, Upload, X, ZoomIn, ZoomOut, Move, Trash2, MoreVertical, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BlueprintViewer from './BlueprintViewer.jsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+const MAX_FILE_SIZE_MB = 100;
+const WARNING_FILE_SIZE_MB = 50;
 
 export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [newPlan, setNewPlan] = useState({ name: '', file: null });
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [fileSizeWarning, setFileSizeWarning] = useState('');
+  const [fileError, setFileError] = useState('');
+  const [newPlan, setNewPlan] = useState({ name: '', file: null, fileSize: 0 });
   
   const queryClient = useQueryClient();
 
@@ -33,16 +40,75 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
     },
   });
 
+  const validateFile = (file) => {
+    const fileSizeMB = file.size / (1024 * 1024);
+    const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'];
+    const extension = file.name.split('.').pop()?.toLowerCase();
+
+    // Reset warnings/errors
+    setFileSizeWarning('');
+    setFileError('');
+
+    // Validate extension
+    if (!validExtensions.includes(extension)) {
+      setFileError('Tipo de archivo no válido. Solo se permiten: JPG, PNG, GIF, WebP, SVG, PDF');
+      return false;
+    }
+
+    // Check file size
+    if (fileSizeMB > MAX_FILE_SIZE_MB) {
+      setFileError(`El archivo excede el límite de ${MAX_FILE_SIZE_MB}MB. Por favor, comprime el archivo antes de subirlo.`);
+      return false;
+    }
+
+    if (fileSizeMB > WARNING_FILE_SIZE_MB) {
+      setFileSizeWarning(`⚠️ Archivo grande (${fileSizeMB.toFixed(1)}MB). Considera comprimir el archivo para una carga más rápida.`);
+    }
+
+    return true;
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validate file
+    if (!validateFile(file)) {
+      return;
+    }
+
     setUploading(true);
+    setUploadProgress(0);
+
+    // Simulate progress for large files
+    const fileSizeMB = file.size / (1024 * 1024);
+    let progressInterval;
+    if (fileSizeMB > 5) {
+      progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + Math.random() * 10;
+        });
+      }, 300);
+    }
+
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setNewPlan({ ...newPlan, file: file_url, name: newPlan.name || file.name.split('.')[0] });
+      if (progressInterval) clearInterval(progressInterval);
+      setUploadProgress(100);
+      setNewPlan({ 
+        ...newPlan, 
+        file: file_url, 
+        name: newPlan.name || file.name.split('.')[0],
+        fileSize: file.size 
+      });
     } catch (error) {
       console.error('Upload error:', error);
+      if (progressInterval) clearInterval(progressInterval);
+      setFileError('Error al subir el archivo. Por favor, intenta de nuevo.');
     }
     setUploading(false);
   };
@@ -191,18 +257,45 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                       {newPlan.name || 'Archivo subido'}
                     </div>
                     <button 
-                      onClick={() => setNewPlan({...newPlan, file: null})}
+                      onClick={() => {
+                        setNewPlan({...newPlan, file: null, fileSize: 0});
+                        setFileSizeWarning('');
+                        setFileError('');
+                      }}
                       className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-full hover:bg-red-600 z-10"
                     >
                       <X className="w-4 h-4 text-white" />
                     </button>
+                    {newPlan.fileSize > 0 && (
+                      <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                        {(newPlan.fileSize / (1024 * 1024)).toFixed(1)} MB
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-amber-500/50 transition-colors">
-                    <Upload className="w-8 h-8 text-slate-500 mb-2" />
-                    <span className="text-sm text-slate-400">
-                      {uploading ? 'Subiendo...' : 'Click para subir imagen'}
-                    </span>
+                  <label className={`flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                    fileError ? 'border-red-500/50 bg-red-500/5' : 'border-slate-700 hover:border-amber-500/50'
+                  }`}>
+                    {uploading ? (
+                      <div className="flex flex-col items-center w-full px-8">
+                        <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-2" />
+                        <span className="text-sm text-slate-400 mb-2">Subiendo archivo...</span>
+                        {uploadProgress > 0 && (
+                          <div className="w-full">
+                            <Progress value={uploadProgress} className="h-2" />
+                            <p className="text-center text-xs text-slate-500 mt-1">
+                              {Math.round(uploadProgress)}%
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-slate-500 mb-2" />
+                        <span className="text-sm text-slate-400">Click para subir imagen o PDF</span>
+                        <span className="text-xs text-slate-500 mt-1">Máximo {MAX_FILE_SIZE_MB}MB</span>
+                      </>
+                    )}
                     <input 
                       type="file" 
                       accept="image/*,.pdf"
@@ -211,6 +304,22 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                       disabled={uploading}
                     />
                   </label>
+                )}
+                
+                {/* File Size Warning */}
+                {fileSizeWarning && (
+                  <div className="mt-2 p-2 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-400">{fileSizeWarning}</p>
+                  </div>
+                )}
+                
+                {/* File Error */}
+                {fileError && (
+                  <div className="mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-400">{fileError}</p>
+                  </div>
                 )}
               </div>
             </div>

@@ -1,11 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import TaskPin from './TaskPin.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
+
+// Constants for retry logic
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 5000;
+const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [zoom, setZoom] = useState(1);
@@ -17,8 +23,141 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
   
+  // Loading states
+  const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  
   const containerRef = useRef(null);
   const imageRef = useRef(null);
+  const timeoutRef = useRef(null);
+
+  // Validate file type
+  const isValidFileType = (url) => {
+    if (!url) return false;
+    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
+    const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'];
+    return validExtensions.includes(extension);
+  };
+
+  const isPdfFile = (url) => {
+    if (!url) return false;
+    const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
+    return extension === 'pdf';
+  };
+
+  // Get specific error message
+  const getErrorMessage = (error, type) => {
+    if (type === 'timeout') {
+      return 'La carga del plano excedió el tiempo límite. El archivo puede ser muy grande.';
+    }
+    if (type === 'network') {
+      return 'Error de conexión. Verifica tu conexión a internet.';
+    }
+    if (type === 'invalid_type') {
+      return 'Tipo de archivo no compatible. Solo se admiten imágenes (JPG, PNG, GIF, WebP, SVG) y PDF.';
+    }
+    if (type === 'corrupt') {
+      return 'El archivo parece estar corrupto o dañado.';
+    }
+    if (type === 'size') {
+      return 'El archivo excede el tamaño máximo permitido.';
+    }
+    return 'Error al cargar el plano. Por favor, intenta de nuevo.';
+  };
+
+  // Load image with timeout and progress simulation
+  const loadImage = () => {
+    if (!plan?.file_url) {
+      setLoadingState('error');
+      setErrorMessage('No se encontró la URL del plano.');
+      return;
+    }
+
+    // Validate file type
+    if (!isValidFileType(plan.file_url)) {
+      setLoadingState('error');
+      setErrorMessage(getErrorMessage(null, 'invalid_type'));
+      return;
+    }
+
+    // Handle PDF files differently
+    if (isPdfFile(plan.file_url)) {
+      setLoadingState('success');
+      setLoadProgress(100);
+      return;
+    }
+
+    setLoadingState('loading');
+    setLoadProgress(0);
+    setErrorMessage('');
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setLoadProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+
+    // Set timeout
+    timeoutRef.current = setTimeout(() => {
+      clearInterval(progressInterval);
+      if (loadingState === 'loading') {
+        handleLoadError('timeout');
+      }
+    }, LOAD_TIMEOUT_MS);
+
+    // Create image element to preload
+    const img = new Image();
+    img.onload = () => {
+      clearTimeout(timeoutRef.current);
+      clearInterval(progressInterval);
+      setLoadProgress(100);
+      setLoadingState('success');
+      setRetryCount(0);
+    };
+    img.onerror = () => {
+      clearTimeout(timeoutRef.current);
+      clearInterval(progressInterval);
+      handleLoadError('network');
+    };
+    img.src = plan.file_url;
+  };
+
+  const handleLoadError = (type) => {
+    if (retryCount < MAX_RETRIES) {
+      setIsRetrying(true);
+      setErrorMessage(`Reintentando carga... (${retryCount + 1}/${MAX_RETRIES})`);
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        setIsRetrying(false);
+        loadImage();
+      }, RETRY_DELAY_MS);
+    } else {
+      setLoadingState('error');
+      setErrorMessage(getErrorMessage(null, type));
+    }
+  };
+
+  const handleManualRetry = () => {
+    setRetryCount(0);
+    loadImage();
+  };
+
+  useEffect(() => {
+    loadImage();
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [plan?.file_url]);
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
@@ -112,43 +251,95 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <div 
-            className="relative w-full h-full flex items-center justify-center"
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-              transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-            }}
-          >
-            <div className="relative">
-              <img 
-                ref={imageRef}
-                src={plan.file_url}
-                alt={plan.name}
-                className="max-w-none"
-                onClick={handleImageClick}
-                draggable={false}
-              />
-              {/* Task Pins */}
-              {tasks.map((task) => (
-                <TaskPin 
-                  key={task.id}
-                  task={task}
-                  onClick={() => setSelectedTask(task)}
-                  isSelected={selectedTask?.id === task.id}
-                />
-              ))}
-              {/* Pending Pin */}
-              {pendingPinPosition && (
-                <div 
-                  className="absolute w-6 h-6 -ml-3 -mt-6 animate-bounce"
-                  style={{ left: `${pendingPinPosition.x}%`, top: `${pendingPinPosition.y}%` }}
-                >
-                  <div className="w-full h-full bg-amber-500 rounded-full border-2 border-white shadow-lg" />
+          {/* Loading State */}
+          {loadingState === 'loading' && (
+            <div className="flex-1 flex flex-col items-center justify-center h-full">
+              <Loader2 className="w-12 h-12 text-amber-500 animate-spin mb-4" />
+              <p className="text-white mb-4">
+                {isRetrying ? errorMessage : 'Cargando plano...'}
+              </p>
+              {loadProgress > 0 && (
+                <div className="w-64">
+                  <Progress value={loadProgress} className="h-2" />
+                  <p className="text-center text-sm text-slate-400 mt-2">
+                    {Math.round(loadProgress)}%
+                  </p>
                 </div>
               )}
             </div>
-          </div>
+          )}
+
+          {/* Error State */}
+          {loadingState === 'error' && (
+            <div className="flex-1 flex flex-col items-center justify-center h-full">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center max-w-md">
+                <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">Error al cargar el plano</h3>
+                <p className="text-slate-400 mb-6">{errorMessage}</p>
+                <Button 
+                  onClick={handleManualRetry}
+                  className="bg-amber-500 hover:bg-amber-600"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reintentar
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Success State - Show Image/PDF */}
+          {loadingState === 'success' && (
+            <div 
+              className="relative w-full h-full flex items-center justify-center"
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transformOrigin: 'center center',
+                transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+              }}
+            >
+              <div className="relative">
+                {isPdfFile(plan.file_url) ? (
+                  <iframe
+                    src={plan.file_url}
+                    title={plan.name}
+                    className="w-[800px] h-[600px] border-0"
+                    onClick={handleImageClick}
+                  />
+                ) : (
+                  <img 
+                    ref={imageRef}
+                    src={plan.file_url}
+                    alt={plan.name}
+                    className="max-w-none"
+                    onClick={handleImageClick}
+                    draggable={false}
+                    onError={() => {
+                      setLoadingState('error');
+                      setErrorMessage(getErrorMessage(null, 'corrupt'));
+                    }}
+                  />
+                )}
+                {/* Task Pins */}
+                {tasks.map((task) => (
+                  <TaskPin 
+                    key={task.id}
+                    task={task}
+                    onClick={() => setSelectedTask(task)}
+                    isSelected={selectedTask?.id === task.id}
+                  />
+                ))}
+                {/* Pending Pin */}
+                {pendingPinPosition && (
+                  <div 
+                    className="absolute w-6 h-6 -ml-3 -mt-6 animate-bounce"
+                    style={{ left: `${pendingPinPosition.x}%`, top: `${pendingPinPosition.y}%` }}
+                  >
+                    <div className="w-full h-full bg-amber-500 rounded-full border-2 border-white shadow-lg" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {isPlacingPin && (
