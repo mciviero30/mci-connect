@@ -174,15 +174,34 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                 onClick={() => setSelectedPlan(plan)}
                 className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden cursor-pointer hover:border-amber-500/50 transition-all group"
               >
-                <div className="aspect-video relative overflow-hidden">
-                  <img 
-                    src={plan.file_url}
-                    alt={plan.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="aspect-video relative overflow-hidden bg-slate-700">
+                  {plan.file_url?.toLowerCase().includes('.pdf') ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-5xl mb-2">📄</div>
+                        <p className="text-white text-sm">PDF</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <img 
+                      src={plan.file_url}
+                      alt={plan.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  )}
+                  <div className="hidden w-full h-full flex items-center justify-center absolute inset-0">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">🖼️</div>
+                      <p className="text-slate-400 text-sm">Vista previa no disponible</p>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                   {taskCount > 0 && (
-                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full z-10">
                       {taskCount} tareas
                     </div>
                   )}
@@ -197,15 +216,18 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                   </div>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <button className="p-1.5 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white">
+                    <DropdownMenuTrigger asChild>
+                      <button 
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white"
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
                       <DropdownMenuItem 
-                        onClick={(e) => {
-                          e.stopPropagation();
+                        onSelect={(e) => {
+                          e.preventDefault();
                           deletePlanMutation.mutate(plan.id);
                         }}
                         className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
@@ -243,31 +265,32 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               <div className="mt-1.5">
                 {newPlan.file ? (
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-800">
-                    <img 
-                      src={newPlan.file} 
-                      alt="Preview" 
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '';
-                        e.target.className = 'hidden';
-                      }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
-                      {newPlan.name || 'Archivo subido'}
-                    </div>
+                    {newPlan.file.toLowerCase().endsWith('.pdf') || newPlan.file.includes('.pdf') ? (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-700">
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">📄</div>
+                          <p className="text-white text-sm">{newPlan.name || 'PDF subido'}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <img 
+                        src={newPlan.file} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain relative z-10"
+                      />
+                    )}
                     <button 
                       onClick={() => {
                         setNewPlan({...newPlan, file: null, fileSize: 0});
                         setFileSizeWarning('');
                         setFileError('');
                       }}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-full hover:bg-red-600 z-10"
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-full hover:bg-red-600 z-20"
                     >
                       <X className="w-4 h-4 text-white" />
                     </button>
                     {newPlan.fileSize > 0 && (
-                      <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white">
+                      <div className="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-white z-20">
                         {(newPlan.fileSize / (1024 * 1024)).toFixed(1)} MB
                       </div>
                     )}
