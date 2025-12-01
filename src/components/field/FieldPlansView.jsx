@@ -177,10 +177,22 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               <div className="mt-1.5">
                 {newPlan.file ? (
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-800">
-                    <img src={newPlan.file} alt="Preview" className="w-full h-full object-contain" />
+                    <img 
+                      src={newPlan.file} 
+                      alt="Preview" 
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '';
+                        e.target.className = 'hidden';
+                      }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                      {newPlan.name || 'Archivo subido'}
+                    </div>
                     <button 
                       onClick={() => setNewPlan({...newPlan, file: null})}
-                      className="absolute top-2 right-2 p-1 bg-red-500 rounded-full"
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-full hover:bg-red-600 z-10"
                     >
                       <X className="w-4 h-4 text-white" />
                     </button>
