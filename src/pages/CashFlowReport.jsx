@@ -113,7 +113,7 @@ export default function CashFlowReport() {
   ];
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Reporte de Flujo de Efectivo' : 'Cash Flow Report'}
@@ -185,9 +185,9 @@ export default function CashFlowReport() {
         {/* Charts */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* Revenue Breakdown */}
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="text-slate-900">
+          <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-slate-900 dark:text-white">
                 {language === 'es' ? 'Ingresos por Categoría' : 'Revenue by Category'}
               </CardTitle>
             </CardHeader>
@@ -215,9 +215,9 @@ export default function CashFlowReport() {
           </Card>
 
           {/* Expense Breakdown */}
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="text-slate-900">
+          <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-slate-900 dark:text-white">
                 {language === 'es' ? 'Gastos por Categoría' : 'Expenses by Category'}
               </CardTitle>
             </CardHeader>
@@ -246,9 +246,9 @@ export default function CashFlowReport() {
         </div>
 
         {/* Comparison Bar Chart */}
-        <Card className="bg-white shadow-xl border-slate-200 mb-8">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="text-slate-900">
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700 mb-8">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Comparación General' : 'Overall Comparison'}
             </CardTitle>
           </CardHeader>
@@ -268,33 +268,33 @@ export default function CashFlowReport() {
         {/* Detailed Tables */}
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Revenue Details */}
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
+          <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 {language === 'es' ? 'Detalles de Ingresos' : 'Revenue Details'}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50">
-                    <TableHead className="text-slate-700">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
-                    <TableHead className="text-right text-slate-700">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
+                  <TableRow className="bg-slate-50 dark:bg-slate-800/50">
+                    <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
+                    <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {revenueByCategory.map((cat, idx) => (
-                    <TableRow key={idx} className="hover:bg-slate-50">
-                      <TableCell className="font-medium text-slate-900">{cat.category}</TableCell>
-                      <TableCell className="text-right font-bold text-emerald-600">
+                    <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                      <TableCell className="font-medium text-slate-900 dark:text-white">{cat.category}</TableCell>
+                      <TableCell className="text-right font-bold text-emerald-600 dark:text-emerald-400">
                         ${cat.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-emerald-50 font-bold">
-                    <TableCell className="text-slate-900">{language === 'es' ? 'Total' : 'Total'}</TableCell>
-                    <TableCell className="text-right text-emerald-900">
+                  <TableRow className="bg-emerald-50 dark:bg-emerald-900/20 font-bold">
+                    <TableCell className="text-slate-900 dark:text-white">{language === 'es' ? 'Total' : 'Total'}</TableCell>
+                    <TableCell className="text-right text-emerald-900 dark:text-emerald-300">
                       ${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </TableCell>
                   </TableRow>
@@ -304,33 +304,33 @@ export default function CashFlowReport() {
           </Card>
 
           {/* Expense Details */}
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <TrendingDown className="w-5 h-5 text-red-600" />
+          <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+            <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
                 {language === 'es' ? 'Detalles de Gastos' : 'Expense Details'}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50">
-                    <TableHead className="text-slate-700">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
-                    <TableHead className="text-right text-slate-700">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
+                  <TableRow className="bg-slate-50 dark:bg-slate-800/50">
+                    <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
+                    <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {expensesByCategory.map((cat, idx) => (
-                    <TableRow key={idx} className="hover:bg-slate-50">
-                      <TableCell className="font-medium text-slate-900">{cat.category}</TableCell>
-                      <TableCell className="text-right font-bold text-red-600">
+                    <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                      <TableCell className="font-medium text-slate-900 dark:text-white">{cat.category}</TableCell>
+                      <TableCell className="text-right font-bold text-red-600 dark:text-red-400">
                         ${cat.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="bg-red-50 font-bold">
-                    <TableCell className="text-slate-900">{language === 'es' ? 'Total' : 'Total'}</TableCell>
-                    <TableCell className="text-right text-red-900">
+                  <TableRow className="bg-red-50 dark:bg-red-900/20 font-bold">
+                    <TableCell className="text-slate-900 dark:text-white">{language === 'es' ? 'Total' : 'Total'}</TableCell>
+                    <TableCell className="text-right text-red-900 dark:text-red-300">
                       ${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </TableCell>
                   </TableRow>

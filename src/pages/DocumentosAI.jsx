@@ -338,7 +338,7 @@ export default function DocumentosAI() {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Documentos con AI"
@@ -365,37 +365,37 @@ export default function DocumentosAI() {
                   setSelectedType(key);
                   setShowGenerator(true);
                 }}
-                className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group"
+                className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl hover:scale-105 transition-all cursor-pointer group"
               >
                 <CardContent className="p-6">
                   <div className={`w-16 h-16 bg-gradient-to-br ${type.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
                     <Icon className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="font-bold text-slate-900 text-lg mb-2">{type.label}</h3>
-                  <p className="text-sm text-slate-600">{type.description}</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-2">{type.label}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{type.description}</p>
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="text-slate-900">Documentos Generados</CardTitle>
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="text-slate-900 dark:text-white">Documentos Generados</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             {documents.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500">No hay documentos generados aún</p>
-                <p className="text-sm text-slate-400 mt-2">Comienza creando tu primer documento con AI</p>
+                <FileText className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">No hay documentos generados aún</p>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">Comienza creando tu primer documento con AI</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {documents.map(doc => {
                   const Icon = DOCUMENT_TYPES[doc.document_type]?.icon || FileText;
                   return (
-                    <Card key={doc.id} className="bg-slate-50 border-slate-200 hover:shadow-md transition-all">
+                    <Card key={doc.id} className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:shadow-md transition-all">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3 flex-1">
@@ -403,8 +403,8 @@ export default function DocumentosAI() {
                               <Icon className="w-5 h-5 text-white" />
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-bold text-slate-900">{doc.title}</h3>
-                              <div className="flex items-center gap-2 mt-1 text-sm text-slate-600">
+                              <h3 className="font-bold text-slate-900 dark:text-white">{doc.title}</h3>
+                              <div className="flex items-center gap-2 mt-1 text-sm text-slate-600 dark:text-slate-400">
                                 <span>{doc.employee_name || doc.job_name || 'General'}</span>
                                 <span>•</span>
                                 <span>{format(new Date(doc.created_date), 'MMM dd, yyyy')}</span>
@@ -450,9 +450,9 @@ export default function DocumentosAI() {
           setShowGenerator(open);
           if (!open) resetForm();
         }}>
-          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-slate-900">
+              <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                 <Sparkles className="w-5 h-5 text-purple-500" />
                 Generar Documento con AI
               </DialogTitle>
@@ -600,9 +600,9 @@ export default function DocumentosAI() {
         </Dialog>
 
         <Dialog open={!!editingDoc} onOpenChange={() => setEditingDoc(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">{editingDoc?.title}</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white">{editingDoc?.title}</DialogTitle>
             </DialogHeader>
             {editingDoc && (
               <div className="space-y-4">

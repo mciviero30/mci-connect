@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -229,7 +228,7 @@ Devuelve un JSON con:
   const cooldownSeconds = getCooldownSeconds();
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Auditoría AI de Gastos' : 'AI Expenses Audit'}
@@ -241,14 +240,14 @@ Devuelve un JSON con:
 
         {/* Statistics Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <Card className="bg-white shadow-lg border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <DollarSign className="w-4 h-4 text-slate-500" />
-                <span className="text-xs text-slate-600">{language === 'es' ? 'Total Gastos' : 'Total Expenses'}</span>
+                <DollarSign className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span className="text-xs text-slate-600 dark:text-slate-400">{language === 'es' ? 'Total Gastos' : 'Total Expenses'}</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 ${stats.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </p>
             </CardContent>
@@ -313,15 +312,15 @@ Devuelve un JSON con:
         </div>
 
         {/* AI Audit Button */}
-        <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border-purple-500/30 shadow-xl mb-6">
+        <Card className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 dark:from-purple-500/20 dark:to-blue-500/20 border-purple-500/30 dark:border-purple-500/40 shadow-xl mb-6">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-purple-500" />
                   {language === 'es' ? 'Ejecutar Auditoría Completa con IA' : 'Run Full AI Audit'}
                 </h3>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {language === 'es' 
                     ? 'Analiza los gastos del último mes para detectar duplicados, anomalías y errores' 
                     : 'Analyze expenses from last month to detect duplicates, anomalies, and errors'}
@@ -357,10 +356,10 @@ Devuelve un JSON con:
         {aiAnalysis && (
           <div className="space-y-6 mb-6">
             {/* Overall Score */}
-            <Card className="bg-white shadow-xl border-slate-200">
-              <CardHeader className="border-b border-slate-200">
+            <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-slate-900">
+                  <span className="flex items-center gap-2 text-slate-900 dark:text-white">
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
                     {language === 'es' ? 'Puntuación de Confianza General' : 'Overall Confidence Score'}
                   </span>
@@ -389,13 +388,13 @@ Devuelve un JSON con:
                 </Alert>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <p className="text-sm text-slate-600 mb-1">{language === 'es' ? 'Problemas Detectados' : 'Issues Found'}</p>
-                    <p className="text-3xl font-bold text-slate-900">{aiAnalysis.total_issues_found}</p>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{language === 'es' ? 'Problemas Detectados' : 'Issues Found'}</p>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">{aiAnalysis.total_issues_found}</p>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <p className="text-sm text-slate-600 mb-1">{language === 'es' ? 'Gastos Revisados' : 'Expenses Reviewed'}</p>
-                    <p className="text-3xl font-bold text-slate-900">{Math.min(expenses.length, 50)}</p>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{language === 'es' ? 'Gastos Revisados' : 'Expenses Reviewed'}</p>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">{Math.min(expenses.length, 50)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -403,9 +402,9 @@ Devuelve un JSON con:
 
             {/* Anomalies List */}
             {aiAnalysis.anomalies && aiAnalysis.anomalies.length > 0 && (
-              <Card className="bg-white shadow-xl border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="text-slate-900">
+              <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="text-slate-900 dark:text-white">
                     {language === 'es' ? 'Anomalías Detectadas' : 'Detected Anomalies'}
                   </CardTitle>
                 </CardHeader>
@@ -481,9 +480,9 @@ Devuelve un JSON con:
         )}
 
         {/* Expenses Table with AI Confidence */}
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="text-slate-900">
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Gastos del Último Mes' : 'Last Month Expenses'}
             </CardTitle>
           </CardHeader>
@@ -494,8 +493,8 @@ Devuelve un JSON con:
               </div>
             ) : expenses.length === 0 ? (
               <div className="text-center py-12">
-                <Calendar className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-500">
+                <Calendar className="w-16 h-16 text-slate-400 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">
                   {language === 'es' ? 'No hay gastos del último mes' : 'No expenses from last month'}
                 </p>
               </div>
@@ -503,21 +502,21 @@ Devuelve un JSON con:
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50">
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Empleado' : 'Employee'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Recibo' : 'Receipt'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Confianza AI' : 'AI Confidence'}</TableHead>
-                      <TableHead className="text-slate-700">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+                    <TableRow className="bg-slate-50 dark:bg-slate-800/50">
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Empleado' : 'Employee'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Fecha' : 'Date'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Recibo' : 'Receipt'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Confianza AI' : 'AI Confidence'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {expenses.map((expense) => (
-                      <TableRow key={expense.id} className="hover:bg-slate-50">
-                        <TableCell className="font-medium text-slate-900">{expense.employee_name}</TableCell>
-                        <TableCell className="text-slate-700">
+                      <TableRow key={expense.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                        <TableCell className="font-medium text-slate-900 dark:text-white">{expense.employee_name}</TableCell>
+                        <TableCell className="text-slate-700 dark:text-slate-300">
                           {format(new Date(expense.date), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell>
@@ -525,7 +524,7 @@ Devuelve un JSON con:
                             {expense.category}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-bold text-slate-900">
+                        <TableCell className="font-bold text-slate-900 dark:text-white">
                           ${expense.amount.toFixed(2)}
                         </TableCell>
                         <TableCell>

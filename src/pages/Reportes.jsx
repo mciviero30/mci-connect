@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -290,7 +289,7 @@ export default function Reportes() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Analytics & Reports' : 'Analytics & Reports'}
@@ -311,10 +310,10 @@ export default function Reportes() {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white border border-slate-200 p-1 shadow-sm">
+          <TabsList className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700 p-1 shadow-sm">
             <TabsTrigger 
               value="overview" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#3B9FF3] data-[state=active]:to-blue-600 data-[state=active]:text-white"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#3B9FF3] data-[state=active]:to-blue-600 data-[state=active]:text-white dark:text-slate-300"
             >
               <BarChart3 className="w-4 h-4 mr-2" />
               {language === 'es' ? 'General' : 'Overview'}
@@ -430,10 +429,10 @@ export default function Reportes() {
             </div>
 
             {/* Revenue Trend */}
-            <Card className="bg-white shadow-lg border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-[#3B9FF3]" />
+            <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                   {language === 'es' ? 'Tendencia de Ingresos' : 'Revenue Trend'}
                 </CardTitle>
               </CardHeader>
@@ -473,37 +472,37 @@ export default function Reportes() {
 
             {/* Quote Performance */}
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-white shadow-lg border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-500" />
+              <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                    <Target className="w-5 h-5 text-purple-500 dark:text-purple-400" />
                     {language === 'es' ? 'Rendimiento de Estimados' : 'Quote Performance'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Estimados Enviados' : 'Quotes Sent'}</span>
-                    <span className="text-2xl font-bold text-slate-900">{filteredQuotes.length}</span>
+                    <span className="text-slate-600 dark:text-slate-400">{language === 'es' ? 'Estimados Enviados' : 'Quotes Sent'}</span>
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{filteredQuotes.length}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Convertidos' : 'Converted'}</span>
-                    <span className="text-2xl font-bold text-green-600">{convertedQuotes.length}</span>
+                    <span className="text-slate-600 dark:text-slate-400">{language === 'es' ? 'Convertidos' : 'Converted'}</span>
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">{convertedQuotes.length}</span>
                   </div>
-                  <div className="flex justify-between items-center border-t pt-4">
-                    <span className="text-slate-600">{language === 'es' ? 'Tasa de Conversión' : 'Conversion Rate'}</span>
-                    <span className="text-3xl font-bold text-[#3B9FF3]">{conversionRate.toFixed(1)}%</span>
+                  <div className="flex justify-between items-center border-t dark:border-slate-700 pt-4">
+                    <span className="text-slate-600 dark:text-slate-400">{language === 'es' ? 'Tasa de Conversión' : 'Conversion Rate'}</span>
+                    <span className="text-3xl font-bold text-[#3B9FF3] dark:text-blue-400">{conversionRate.toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Valor Total' : 'Total Value'}</span>
-                    <span className="text-xl font-bold text-slate-900">${quotesValue.toLocaleString()}</span>
+                    <span className="text-slate-600 dark:text-slate-400">{language === 'es' ? 'Valor Total' : 'Total Value'}</span>
+                    <span className="text-xl font-bold text-slate-900 dark:text-white">${quotesValue.toLocaleString()}</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-white shadow-lg border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-amber-500" />
+              <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                    <Award className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                     {language === 'es' ? 'Mejores Empleados' : 'Top Performers'}
                   </CardTitle>
                 </CardHeader>
@@ -516,11 +515,11 @@ export default function Reportes() {
                             {idx + 1}
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900">{emp.name}</p>
-                            <p className="text-xs text-slate-500">{emp.hours.toFixed(0)}h</p>
+                            <p className="font-semibold text-slate-900 dark:text-white">{emp.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{emp.hours.toFixed(0)}h</p>
                           </div>
                         </div>
-                        <span className="font-bold text-[#3B9FF3]">
+                        <span className="font-bold text-[#3B9FF3] dark:text-blue-400">
                           ${emp.revenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                       </div>
@@ -534,9 +533,9 @@ export default function Reportes() {
           {/* FINANCIAL TAB */}
           <TabsContent value="financial" className="space-y-6">
             {/* Revenue vs Cost Trend */}
-            <Card className="bg-white shadow-lg border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900">
+            <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white">
                   {language === 'es' ? 'Ingresos vs Costos (Tendencia)' : 'Revenue vs Cost (Trend)'}
                 </CardTitle>
               </CardHeader>
@@ -565,9 +564,9 @@ export default function Reportes() {
             </Card>
 
             {/* Expenses Breakdown */}
-            <Card className="bg-white shadow-lg border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900">
+            <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white">
                   {language === 'es' ? 'Gastos por Categoría' : 'Expenses by Category'}
                 </CardTitle>
               </CardHeader>
@@ -605,10 +604,10 @@ export default function Reportes() {
 
           {/* PROJECTS TAB */}
           <TabsContent value="projects" className="space-y-6">
-            <Card className="bg-white shadow-lg border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-[#3B9FF3]" />
+            <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                   {language === 'es' ? 'Rentabilidad de Proyectos' : 'Project Profitability'}
                 </CardTitle>
               </CardHeader>
@@ -644,42 +643,42 @@ export default function Reportes() {
             </Card>
 
             {/* Project Details Table */}
-            <Card className="bg-white shadow-lg border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900">
+            <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white">
                   {language === 'es' ? 'Detalles de Proyectos' : 'Project Details'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-slate-50 border-b border-slate-200">
+                    <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                       <tr>
-                        <th className="text-left p-4 text-slate-700 font-semibold">{language === 'es' ? 'Proyecto' : 'Project'}</th>
-                        <th className="text-right p-4 text-slate-700 font-semibold">{language === 'es' ? 'Ingresos' : 'Revenue'}</th>
-                        <th className="text-right p-4 text-slate-700 font-semibold">{language === 'es' ? 'Costos' : 'Cost'}</th>
-                        <th className="text-right p-4 text-slate-700 font-semibold">{language === 'es' ? 'Ganancia' : 'Profit'}</th>
-                        <th className="text-right p-4 text-slate-700 font-semibold">{language === 'es' ? 'Margen' : 'Margin'}</th>
-                        <th className="text-right p-4 text-slate-700 font-semibold">{language === 'es' ? 'Horas' : 'Hours'}</th>
+                        <th className="text-left p-4 text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Proyecto' : 'Project'}</th>
+                        <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Ingresos' : 'Revenue'}</th>
+                        <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Costos' : 'Cost'}</th>
+                        <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Ganancia' : 'Profit'}</th>
+                        <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Margen' : 'Margin'}</th>
+                        <th className="text-right p-4 text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Horas' : 'Hours'}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {projectProfitability.map((project, idx) => (
-                        <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
-                          <td className="p-4 font-medium text-slate-900">{project.name}</td>
-                          <td className="p-4 text-right text-green-600 font-semibold">
+                        <tr key={idx} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                          <td className="p-4 font-medium text-slate-900 dark:text-white">{project.name}</td>
+                          <td className="p-4 text-right text-green-600 dark:text-green-400 font-semibold">
                             ${project.revenue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </td>
-                          <td className="p-4 text-right text-red-600 font-semibold">
+                          <td className="p-4 text-right text-red-600 dark:text-red-400 font-semibold">
                             ${project.cost.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </td>
-                          <td className={`p-4 text-right font-bold ${project.profit >= 0 ? 'text-[#3B9FF3]' : 'text-red-600'}`}>
+                          <td className={`p-4 text-right font-bold ${project.profit >= 0 ? 'text-[#3B9FF3] dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
                             ${project.profit.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </td>
-                          <td className={`p-4 text-right font-semibold ${project.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <td className={`p-4 text-right font-semibold ${project.margin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {project.margin.toFixed(1)}%
                           </td>
-                          <td className="p-4 text-right text-slate-700">{project.hours.toFixed(0)}h</td>
+                          <td className="p-4 text-right text-slate-700 dark:text-slate-300">{project.hours.toFixed(0)}h</td>
                         </tr>
                       ))}
                     </tbody>
@@ -700,10 +699,10 @@ export default function Reportes() {
 
             {/* Team Performance */}
             {teamPerformance.length > 0 && (
-              <Card className="bg-white shadow-lg border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <UsersIcon className="w-5 h-5 text-[#3B9FF3]" />
+              <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                    <UsersIcon className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                     {language === 'es' ? 'Rendimiento por Equipo' : 'Team Performance'}
                   </CardTitle>
                 </CardHeader>
@@ -742,10 +741,10 @@ export default function Reportes() {
             />
 
             {/* Hours by Day */}
-            <Card className="bg-white shadow-lg border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900 flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-[#3B9FF3]" />
+            <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                   {language === 'es' ? 'Distribución de Horas por Día' : 'Hours Distribution by Day'}
                 </CardTitle>
               </CardHeader>

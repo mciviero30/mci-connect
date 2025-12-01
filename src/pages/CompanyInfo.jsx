@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe, ExternalLink, AlertTriangle, Settings } from 'lucide-react';
@@ -155,9 +154,9 @@ export default function CompanyInfo() {
   const urlToLoad = customUrl || COMPANY_WEBSITE_URL;
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white">
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-[#181818] dark:to-[#1a1a1a]">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 md:p-6 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
+      <div className="flex-shrink-0 p-4 md:p-6 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-[#282828] backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -165,8 +164,8 @@ export default function CompanyInfo() {
                 <Globe className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-slate-900">Company Info</h1>
-                <p className="text-slate-600 text-sm">
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Company Info</h1>
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
                   {getHostname(urlToLoad)}
                 </p>
               </div>
@@ -272,7 +271,7 @@ export default function CompanyInfo() {
 
       {/* WebView Container */}
       <div className="flex-1 overflow-hidden p-4 md:p-6">
-        <Card className="h-full w-full max-w-7xl mx-auto overflow-hidden shadow-xl border-slate-200">
+        <Card className="h-full w-full max-w-7xl mx-auto overflow-hidden shadow-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-[#282828]">
           <iframe
             src={urlToLoad}
             title="Company Website"
@@ -290,10 +289,10 @@ export default function CompanyInfo() {
       </div>
 
       {/* Info Footer */}
-      <div className="flex-shrink-0 p-4 bg-blue-50 border-t border-blue-200">
+      <div className="flex-shrink-0 p-4 bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-blue-700">
+            <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-400">
               <Globe className="w-4 h-4" />
               <span>Navegando: {urlToLoad}</span>
             </div>

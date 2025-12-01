@@ -353,7 +353,7 @@ Return a JSON array of invoice line items. Each item must include:
   const selectedJobData = jobs.find(j => j.id === selectedJob);
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Generador de Facturas AI' : 'AI Invoice Generator'}
@@ -367,10 +367,10 @@ Return a JSON array of invoice line items. Each item must include:
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Configuration Panel */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-white shadow-xl border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="text-slate-900 flex items-center gap-2">
-                  <FileCheck className="w-5 h-5 text-[#3B9FF3]" />
+            <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                  <FileCheck className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                   {language === 'es' ? 'Configuración' : 'Configuration'}
                 </CardTitle>
               </CardHeader>
@@ -617,10 +617,10 @@ Return a JSON array of invoice line items. Each item must include:
           {/* Results Panel */}
           <div className="lg:col-span-2 space-y-6">
             {!generatedInvoice && !isGenerating && (
-              <Card className="bg-white shadow-lg border-slate-200">
+              <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
                 <CardContent className="p-12 text-center">
-                  <Sparkles className="w-20 h-20 text-purple-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-700 mb-2">
+                  <Sparkles className="w-20 h-20 text-purple-300 dark:text-purple-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">
                     {language === 'es' ? 'Listo para Generar' : 'Ready to Generate'}
                   </h3>
                   <p className="text-slate-500">
@@ -637,10 +637,10 @@ Return a JSON array of invoice line items. Each item must include:
             )}
 
             {isGenerating && (
-              <Card className="bg-white shadow-lg border-slate-200">
+              <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
                 <CardContent className="p-12 text-center">
-                  <Loader2 className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-spin" />
-                  <h3 className="text-xl font-bold text-slate-700 mb-2">
+                  <Loader2 className="w-16 h-16 text-purple-500 dark:text-purple-400 mx-auto mb-4 animate-spin" />
+                  <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">
                     {language === 'es' ? 'AI Analizando Datos...' : 'AI Analyzing Data...'}
                   </h3>
                   <p className="text-slate-500">
@@ -654,8 +654,8 @@ Return a JSON array of invoice line items. Each item must include:
 
             {generatedInvoice && analysisData && (
               <Tabs defaultValue="preview" className="space-y-6">
-                <TabsList className="bg-white border border-slate-200 p-1">
-                  <TabsTrigger value="preview" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                <TabsList className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700 p-1">
+                  <TabsTrigger value="preview" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                     {language === 'es' ? 'Vista Previa' : 'Preview'}
                   </TabsTrigger>
                   <TabsTrigger value="analysis" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
@@ -664,10 +664,10 @@ Return a JSON array of invoice line items. Each item must include:
                 </TabsList>
 
                 <TabsContent value="preview">
-                  <Card className="bg-white shadow-xl border-slate-200">
-                    <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+                  <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+                    <CardHeader className="border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-slate-900 flex items-center gap-2">
+                        <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
                           <FileCheck className="w-5 h-5 text-purple-600" />
                           {generatedInvoice.invoice_number}
                         </CardTitle>
@@ -680,13 +680,13 @@ Return a JSON array of invoice line items. Each item must include:
                       {/* Customer Info */}
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-semibold text-slate-900 mb-1">{language === 'es' ? 'Facturar a:' : 'Bill To:'}</h4>
-                          <p className="text-lg font-bold text-slate-900">{generatedInvoice.customer_name}</p>
+                          <h4 className="font-semibold text-slate-900 dark:text-white mb-1">{language === 'es' ? 'Facturar a:' : 'Bill To:'}</h4>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white">{generatedInvoice.customer_name}</p>
                           {generatedInvoice.customer_email && (
-                            <p className="text-sm text-slate-600">{generatedInvoice.customer_email}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{generatedInvoice.customer_email}</p>
                           )}
                           {generatedInvoice.customer_phone && (
-                            <p className="text-sm text-slate-600">{generatedInvoice.customer_phone}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">{generatedInvoice.customer_phone}</p>
                           )}
                         </div>
                         <div className="text-right">
