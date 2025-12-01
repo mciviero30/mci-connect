@@ -229,68 +229,93 @@ export default function Estimados() {
   });
 
   const exportToExcel = () => {
-    if (filteredQuotes.length === 0) {
-      alert(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
+    // Use quotes directly since filteredQuotes might not be defined yet
+    const dataToExport = quotes.filter(quote => {
+      const matchesSearch = !searchTerm ||
+        quote.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        quote.quote_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        quote.job_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      const quoteDate = new Date(quote.quote_date);
+      const matchesDateFrom = !dateFrom || quoteDate >= new Date(dateFrom);
+      const matchesDateTo = !dateTo || quoteDate <= new Date(dateTo);
+      const matchesMinAmount = !minAmount || (quote.total || 0) >= parseFloat(minAmount);
+      const matchesMaxAmount = !maxAmount || (quote.total || 0) <= parseFloat(maxAmount);
+      const matchesTeam = teamFilter === "all" || quote.team_id === teamFilter;
+      const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
+      const matchesNotes = !notesKeyword || 
+        (quote.notes && quote.notes.toLowerCase().includes(notesKeyword.toLowerCase()));
+      return matchesSearch && matchesDateFrom && matchesDateTo && 
+             matchesMinAmount && matchesMaxAmount && matchesTeam && 
+             matchesStatus && matchesNotes;
+    });
+
+    if (!dataToExport || dataToExport.length === 0) {
+      toast.error(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
       return;
     }
 
-    const headers = [
-      'Número',
-      'Cliente',
-      'Email',
-      'Teléfono',
-      'Proyecto',
-      'Dirección',
-      'Fecha',
-      'Válido Hasta',
-      'Subtotal',
-      'Impuesto %',
-      'Impuesto',
-      'Total',
-      'Estado',
-      'Notas'
-    ];
+    try {
+      const headers = [
+        'Número',
+        'Cliente',
+        'Email',
+        'Teléfono',
+        'Proyecto',
+        'Dirección',
+        'Fecha',
+        'Válido Hasta',
+        'Subtotal',
+        'Impuesto %',
+        'Impuesto',
+        'Total',
+        'Estado',
+        'Notas'
+      ];
 
-    const rows = filteredQuotes.map(quote => [
-      quote.quote_number || '',
-      quote.customer_name || '',
-      quote.customer_email || '',
-      quote.customer_phone || '',
-      quote.job_name || '',
-      quote.job_address || '',
-      quote.quote_date || '',
-      quote.valid_until || '',
-      quote.subtotal || 0,
-      quote.tax_rate || 0,
-      quote.tax_amount || 0,
-      quote.total || 0,
-      quote.status || '',
-      (quote.notes || '').replace(/\n/g, ' ')
-    ]);
+      const rows = dataToExport.map(quote => [
+        quote.quote_number || '',
+        quote.customer_name || '',
+        quote.customer_email || '',
+        quote.customer_phone || '',
+        quote.job_name || '',
+        quote.job_address || '',
+        quote.quote_date || '',
+        quote.valid_until || '',
+        quote.subtotal || 0,
+        quote.tax_rate || 0,
+        quote.tax_amount || 0,
+        quote.total || 0,
+        quote.status || '',
+        (quote.notes || '').replace(/\n/g, ' ')
+      ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => {
-        const cellStr = String(cell);
-        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-          return `"${cellStr.replace(/"/g, '""')}"`;
-        }
-        return cellStr;
-      }).join(','))
-    ].join('\n');
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => {
+          const cellStr = String(cell);
+          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        }).join(','))
+      ].join('\n');
 
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `estimados-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `estimados-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-    toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
+      toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(language === 'es' ? '❌ Error al exportar' : '❌ Export failed');
+    }
   };
 
   const clearFilters = () => {
