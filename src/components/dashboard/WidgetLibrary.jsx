@@ -113,23 +113,40 @@ export default function WidgetLibrary({ open, onOpenChange, onAddWidget, current
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-96 overflow-y-auto p-2">
-            {filteredWidgets.map(widget => (
-              <div
-                key={widget.id}
-                className="p-4 border-2 border-slate-700 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer bg-slate-800/50 group"
-                onClick={() => handleAdd(widget)}
-              >
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className="p-3 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                    <widget.icon className="w-6 h-6 text-white" />
+            {filteredWidgets.map(widget => {
+              const isAlreadyAdded = currentWidgetTypes.includes(widget.id);
+              const Icon = widget.icon;
+              return (
+                <div
+                  key={widget.id}
+                  className={`p-4 border-2 rounded-xl transition-all cursor-pointer group ${
+                    isAlreadyAdded 
+                      ? 'border-green-600 bg-green-900/30' 
+                      : 'border-slate-700 hover:border-blue-400 hover:shadow-lg bg-slate-800/50'
+                  }`}
+                  onClick={() => handleAdd(widget)}
+                >
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <div className={`p-3 rounded-xl shadow-md group-hover:scale-110 transition-transform ${
+                      isAlreadyAdded 
+                        ? 'bg-gradient-to-br from-green-500 to-green-600' 
+                        : 'bg-gradient-to-br from-[#3B9FF3] to-blue-500'
+                    }`}>
+                      {Icon && <Icon className="w-6 h-6 text-white" />}
+                    </div>
+                    <p className="font-semibold text-white text-sm">{widget.title}</p>
+                    <div className="flex items-center gap-1">
+                      <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
+                        {widget.size}
+                      </Badge>
+                      {isAlreadyAdded && (
+                        <Badge className="text-xs bg-green-600 text-white">Added</Badge>
+                      )}
+                    </div>
                   </div>
-                  <p className="font-semibold text-white text-sm">{widget.title}</p>
-                  <Badge variant="outline" className="text-xs border-slate-600 text-slate-300">
-                    {widget.size}
-                  </Badge>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {filteredWidgets.length === 0 && (
