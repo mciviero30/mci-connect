@@ -349,6 +349,55 @@ export default function JobDetails() {
 
           {/* Hours Tab */}
           <TabsContent value="hours">
+            {/* Hours Summary Cards */}
+            {estimatedHours > 0 && (
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-amber-700 mb-1">
+                      {language === 'es' ? 'Horas Estimadas' : 'Estimated Hours'}
+                    </p>
+                    <p className="text-3xl font-bold text-amber-900">{estimatedHours.toFixed(1)}h</p>
+                    <p className="text-xs text-amber-600 mt-1">
+                      {language === 'es' ? 'Del quote original' : 'From original quote'}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-cyan-50 to-blue-50 border-cyan-200">
+                  <CardContent className="p-4">
+                    <p className="text-sm text-cyan-700 mb-1">
+                      {language === 'es' ? 'Horas Trabajadas' : 'Hours Worked'}
+                    </p>
+                    <p className="text-3xl font-bold text-cyan-900">{totalHours.toFixed(1)}h</p>
+                    <p className="text-xs text-cyan-600 mt-1">
+                      {((totalHours / estimatedHours) * 100).toFixed(0)}% {language === 'es' ? 'del estimado' : 'of estimate'}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className={`bg-gradient-to-br ${
+                  totalHours > estimatedHours 
+                    ? 'from-red-50 to-orange-50 border-red-200' 
+                    : 'from-green-50 to-emerald-50 border-green-200'
+                }`}>
+                  <CardContent className="p-4">
+                    <p className={`text-sm mb-1 ${totalHours > estimatedHours ? 'text-red-700' : 'text-green-700'}`}>
+                      {language === 'es' ? 'Restantes' : 'Remaining'}
+                    </p>
+                    <p className={`text-3xl font-bold ${totalHours > estimatedHours ? 'text-red-900' : 'text-green-900'}`}>
+                      {totalHours > estimatedHours ? '+' : ''}{(totalHours - estimatedHours).toFixed(1)}h
+                    </p>
+                    <p className={`text-xs mt-1 ${totalHours > estimatedHours ? 'text-red-600' : 'text-green-600'}`}>
+                      {totalHours > estimatedHours 
+                        ? (language === 'es' ? 'Sobre el estimado' : 'Over estimate')
+                        : (language === 'es' ? 'Bajo el estimado' : 'Under estimate')}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             <Card className="bg-white shadow-lg">
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2 text-slate-900">
