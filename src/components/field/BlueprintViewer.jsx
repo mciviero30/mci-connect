@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
-  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search
+  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -11,6 +11,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import TaskPin from './TaskPin.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
+import BlueprintMiniMap from './BlueprintMiniMap.jsx';
+import BlueprintFilterBar from './BlueprintFilterBar.jsx';
+import LiveCollaborators from './LiveCollaborators.jsx';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
@@ -37,6 +40,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   // Toolbar state
   const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser
   const [showPins, setShowPins] = useState(true);
+  const [showMiniMap, setShowMiniMap] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   
   const containerRef = useRef(null);
   const imageRef = useRef(null);
@@ -262,6 +270,107 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     };
   }, [plan?.file_url]);
 
+  // Track container size for mini map
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height
+        });
+      }
+    });
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Track image size when loaded
+  const handleImageLoad = (e) => {
+    setImageSize({
+      width: e.target.naturalWidth,
+      height: e.target.naturalHeight
+    });
+  };
+
+  // Filter tasks based on active filters
+  const filteredTasks = tasks.filter(task => {
+    if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
+    if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
+    if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
+    return true;
+  });
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      switch(e.key.toLowerCase()) {
+        case 'z':
+          if (!e.ctrlKey && !e.metaKey) handleZoomIn();
+          break;
+        case 'x':
+          handleZoomOut();
+          break;
+        case 'p':
+          setActiveTool('pin');
+          setIsPlacingPin(true);
+          break;
+        case 'escape':
+          setActiveTool('select');
+          setIsPlacingPin(false);
+          setSelectedTask(null);
+          break;
+        case 'f':
+          setShowFilters(prev => !prev);
+          break;
+        case 'm':
+          setShowMiniMap(prev => !prev);
+          break;
+        case '0':
+          handleReset();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Double-tap/click to zoom
+  const lastTapRef = useRef(0);
+  const handleDoubleTap = useCallback((e) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      // Double tap detected - zoom in at tap location
+      if (zoom < 2) {
+        setZoom(prev => Math.min(prev * 2, 4));
+      } else {
+        setZoom(1);
+        setPosition({ x: 0, y: 0 });
+      }
+    }
+    lastTapRef.current = now;
+  }, [zoom]);
+
+  // Navigate from mini map
+  const handleMiniMapNavigate = (newPosition) => {
+    setPosition(newPosition);
+  };
+
+  // Zoom to specific task
+  const handleZoomToTask = (task) => {
+    if (!task.pin_x || !task.pin_y) return;
+    
+    const targetX = -(task.pin_x / 100) * imageSize.width * zoom + containerSize.width / 2;
+    const targetY = -(task.pin_y / 100) * imageSize.height * zoom + containerSize.height / 2;
+    
+    setPosition({ x: targetX, y: targetY });
+    setZoom(1.5);
+    setSelectedTask(task);
+  };
+
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.15, 4));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.15, 0.1));
   const handleReset = () => {
@@ -375,6 +484,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'divider4', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'undo', icon: Undo2, label: 'Undo', action: () => {} },
+    { id: 'divider5', type: 'divider' },
+    { id: 'minimap', icon: Square, label: 'Mini Map (M)', action: () => setShowMiniMap(prev => !prev) },
+    { id: 'filter', icon: Search, label: 'Filters (F)', action: () => setShowFilters(prev => !prev) },
   ];
 
   const handleTaskCreated = () => {
@@ -448,6 +560,19 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         </Tooltip>
       </div>
 
+      {/* Live Collaborators */}
+      <LiveCollaborators planId={plan?.id} jobId={jobId} />
+
+      {/* Filters Bar */}
+      {showFilters && (
+        <BlueprintFilterBar 
+          tasks={tasks}
+          activeFilters={taskFilters}
+          onFilterChange={setTaskFilters}
+          onClearFilters={() => setTaskFilters({ status: [], priority: [], category: [] })}
+        />
+      )}
+
       {/* Main Viewer */}
       <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
         {/* Top Header - Simplified */}
@@ -511,6 +636,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onClick={handleDoubleTap}
         >
           {/* Loading State */}
           {loadingState === 'loading' && (
@@ -568,6 +694,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                         alt={plan.name}
                         style={{ maxWidth: 'none', maxHeight: 'none' }}
                         onClick={handleImageClick}
+                        onLoad={handleImageLoad}
                         draggable={false}
                       />
                       {/* PDF Page Controls */}
@@ -605,6 +732,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     alt={plan.name}
                     className="max-w-none"
                     onClick={handleImageClick}
+                    onLoad={handleImageLoad}
                     draggable={false}
                     onError={() => {
                       setLoadingState('error');
@@ -613,7 +741,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   />
                 )}
                 {/* Task Pins - works for both images and PDF canvas */}
-                {showPins && tasks.map((task) => (
+                {showPins && filteredTasks.map((task) => (
                   <TaskPin 
                     key={task.id}
                     task={task}
@@ -636,10 +764,28 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         </div>
 
         {(isPlacingPin || activeTool === 'pin') && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
-            Tap on the plan to place pin
+          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
+            <Crosshair className="w-4 h-4" />
+            Tap on the plan to place pin (ESC to cancel)
           </div>
         )}
+
+        {/* Mini Map */}
+        {showMiniMap && loadingState === 'success' && (
+          <BlueprintMiniMap 
+            imageUrl={pdfCanvas || plan.file_url}
+            viewportPosition={position}
+            zoom={zoom}
+            containerSize={containerSize}
+            imageSize={imageSize}
+            onNavigate={handleMiniMapNavigate}
+          />
+        )}
+
+        {/* Keyboard Shortcuts Hint */}
+        <div className="absolute bottom-4 left-20 text-[10px] text-slate-400 dark:text-slate-500 hidden md:block">
+          Z/X: Zoom • P: Pin • F: Filters • M: Mini Map • ESC: Cancel • Double-click: Quick Zoom
+        </div>
       </div>
 
       {/* Task Detail Panel */}
