@@ -299,12 +299,24 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
             >
               <div className="relative" style={{ width: isPdfFile(plan.file_url) ? '100%' : 'auto', height: isPdfFile(plan.file_url) ? '100%' : 'auto' }}>
                 {isPdfFile(plan.file_url) ? (
-                  <iframe
-                    src={`${plan.file_url}#toolbar=1&navpanes=0&scrollbar=1`}
-                    title={plan.name}
-                    className="w-full h-full min-h-[calc(100vh-200px)] border-0 bg-white"
-                    style={{ minWidth: '100%', minHeight: 'calc(100vh - 150px)' }}
-                  />
+                  <div className="w-full h-full flex flex-col">
+                    <iframe
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(plan.file_url)}&embedded=true`}
+                      title={plan.name}
+                      className="w-full flex-1 border-0 bg-white"
+                      style={{ minHeight: 'calc(100vh - 150px)' }}
+                    />
+                    <div className="p-3 bg-slate-800 border-t border-slate-700 flex justify-center">
+                      <a 
+                        href={plan.file_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Abrir PDF en nueva pestaña
+                      </a>
+                    </div>
+                  </div>
                 ) : (
                   <img 
                     ref={imageRef}
