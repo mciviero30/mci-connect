@@ -93,7 +93,7 @@ export default function Field() {
               />
               <h1 className="text-3xl font-bold text-[#D4C85C]">Dashboard</h1>
             </div>
-            <p className="text-slate-400">Gestión central de proyectos de construcción</p>
+            <p className="text-slate-400">Central management for construction projects</p>
             <Badge className="mt-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border-amber-500/30">
               🏗️ MCI Field • Field Execution
             </Badge>
@@ -110,25 +110,25 @@ export default function Field() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
-            label="PROYECTOS ACTIVOS"
+            label="ACTIVE PROJECTS"
             value={activeProjects}
             icon={TrendingUp}
             color="blue"
           />
           <StatsCard 
-            label="PROYECTOS COMPLETADOS"
+            label="COMPLETED PROJECTS"
             value={completedProjects}
             icon={CheckCircle2}
             color="green"
           />
           <StatsCard 
-            label="TAREAS EN PROGRESO"
+            label="TASKS IN PROGRESS"
             value={tasksInProgress}
             icon={Clock}
             color="orange"
           />
           <StatsCard 
-            label="TAREAS COMPLETADAS"
+            label="COMPLETED TASKS"
             value={tasksCompleted}
             icon={CheckCheck}
             color="emerald"
@@ -138,12 +138,12 @@ export default function Field() {
         {/* Projects Section */}
         <div className="mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold text-white">Mis Proyectos</h2>
+            <h2 className="text-xl font-bold text-white">My Projects</h2>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input 
-                  placeholder="Buscar proyectos..."
+                  placeholder="Search projects..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 w-64"
@@ -158,7 +158,7 @@ export default function Field() {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Activos
+                  Active
                 </button>
                 <button
                   onClick={() => setFilter('all')}
@@ -168,7 +168,7 @@ export default function Field() {
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Todos
+                  All
                 </button>
               </div>
             </div>
@@ -195,20 +195,20 @@ export default function Field() {
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
+            <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Nombre del Proyecto</Label>
+              <Label className="text-slate-300">Project Name</Label>
               <Input 
                 value={newProject.name}
                 onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-                placeholder="Ej: Residencia García"
+                placeholder="e.g., Northwestern Mutual Tower"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Dirección</Label>
+              <Label className="text-slate-300">Address</Label>
               <Input 
                 value={newProject.address}
                 onChange={(e) => setNewProject({...newProject, address: e.target.value})}
@@ -217,24 +217,24 @@ export default function Field() {
               />
             </div>
             <div>
-              <Label className="text-slate-300">Descripción</Label>
+              <Label className="text-slate-300">Description</Label>
               <Textarea 
                 value={newProject.description}
                 onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-                placeholder="Descripción del proyecto..."
+                placeholder="Project description..."
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowNewProject(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreateProject}
                 disabled={!newProject.name || createJobMutation.isPending}
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
               >
-                {createJobMutation.isPending ? 'Creando...' : 'Crear Proyecto'}
+                {createJobMutation.isPending ? 'Creating...' : 'Create Project'}
               </Button>
             </div>
           </div>
@@ -275,7 +275,7 @@ function StatsCard({ label, value, icon: Icon, color }) {
 }
 
 function ProjectCard({ job, index }) {
-  const jobName = job.name || job.job_name_field || 'Sin nombre';
+  const jobName = job.name || job.job_name_field || 'Untitled';
   const statusColors = {
     active: 'bg-green-500/20 text-green-400 border-green-500/30',
     completed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -296,20 +296,20 @@ function ProjectCard({ job, index }) {
               <FolderOpen className="w-5 h-5 text-amber-400" />
             </div>
             <Badge className={statusColors[job.status] || statusColors.active}>
-              {job.status === 'active' ? 'Activo' : 
-               job.status === 'completed' ? 'Completado' : 
-               job.status === 'on_hold' ? 'En Pausa' : 'Archivado'}
+              {job.status === 'active' ? 'Active' : 
+               job.status === 'completed' ? 'Completed' : 
+               job.status === 'on_hold' ? 'On Hold' : 'Archived'}
             </Badge>
           </div>
           <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors mb-1">
             {jobName}
           </h3>
           <p className="text-sm text-slate-400 line-clamp-1">
-            {job.address || job.description || 'Sin dirección'}
+            {job.address || job.description || 'No address'}
           </p>
           {job.client_name_field && (
             <p className="text-xs text-slate-500 mt-2">
-              Cliente: {job.client_name_field}
+              Client: {job.client_name_field}
             </p>
           )}
         </div>
@@ -324,16 +324,16 @@ function EmptyState({ onCreateProject }) {
       <div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
         <AlertCircle className="w-8 h-8 text-slate-500" />
       </div>
-      <h3 className="text-xl font-semibold text-white mb-2">No tienes proyectos asignados</h3>
+      <h3 className="text-xl font-semibold text-white mb-2">No projects assigned</h3>
       <p className="text-slate-400 mb-6">
-        Comienza creando tu primer proyecto o solicita acceso a uno existente
+        Start by creating your first project or request access to an existing one
       </p>
       <Button 
         onClick={onCreateProject}
         className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
       >
         <Plus className="w-4 h-4 mr-2" />
-        Crear Proyecto
+        Create Project
       </Button>
     </div>
   );
