@@ -10,21 +10,29 @@ export default function StatsWidget({ value, label, icon: Icon, badge, color = "
     red: "from-red-500 to-red-600 shadow-red-500/30"
   };
 
+  const badgeClasses = {
+    blue: "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
+    green: "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700",
+    amber: "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700",
+    purple: "bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700",
+    red: "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700"
+  };
+
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between hover:scale-[1.02] transition-transform cursor-pointer">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <div className={`p-3 bg-gradient-to-br ${colorClasses[color]} rounded-xl shadow-md`}>
-            <Icon className="w-6 h-6 text-white" />
+            {Icon && <Icon className="w-6 h-6 text-white" />}
           </div>
           {badge && (
-            <Badge className={`bg-${color}-50 text-${color}-700 border-${color}-200`}>
+            <Badge className={badgeClasses[color]}>
               {badge}
             </Badge>
           )}
         </div>
-        <div className="text-3xl font-bold text-slate-900 mt-2">{value}</div>
-        <p className="text-sm text-slate-600 mt-1">{label}</p>
+        <div className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{value}</div>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{label}</p>
       </div>
     </div>
   );
