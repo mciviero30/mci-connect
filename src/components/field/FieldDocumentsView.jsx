@@ -137,13 +137,13 @@ export default function FieldDocumentsView({ jobId }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#D4C85C]">Documentos</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Documents</h1>
           {currentFolder && (
             <button 
               onClick={() => setCurrentFolder(null)}
-              className="text-sm text-slate-400 hover:text-white mt-1"
+              className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mt-1"
             >
-              ← Volver a raíz
+              ← Back to root
             </button>
           )}
         </div>
@@ -151,17 +151,17 @@ export default function FieldDocumentsView({ jobId }) {
           <Button 
             variant="outline"
             onClick={() => setShowNewFolder(true)}
-            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            className="border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <FolderPlus className="w-4 h-4 mr-2" />
-            Nueva Carpeta
+            New Folder
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Subir Documento
+            Upload Document
           </Button>
         </div>
       </div>
@@ -187,16 +187,16 @@ export default function FieldDocumentsView({ jobId }) {
 
       {/* Documents */}
       {currentDocs.length === 0 && currentFolders.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <FileText className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay documentos</h3>
-          <p className="text-slate-400 mb-4">Sube documentos para compartir con el equipo</p>
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <FileText className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No documents</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Upload documents to share with the team</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-amber-500 hover:bg-amber-600"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Subir Documento
+            Upload Document
           </Button>
         </div>
       ) : currentDocs.length > 0 && (

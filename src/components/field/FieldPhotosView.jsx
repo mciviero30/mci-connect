@@ -68,22 +68,22 @@ export default function FieldPhotosView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Fotos</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Photos</h1>
         <Button 
           onClick={() => setShowUpload(true)}
-          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+          className="bg-[#F5A623] hover:bg-[#E09000] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Subir Foto
+          Upload Photo
         </Button>
       </div>
 
       <Tabs defaultValue="gallery" className="mb-6">
-        <TabsList className="bg-slate-800/50">
-          <TabsTrigger value="gallery" className="data-[state=active]:bg-amber-500">Galería</TabsTrigger>
-          <TabsTrigger value="comparison" className="data-[state=active]:bg-amber-500">
+        <TabsList className="bg-slate-100 dark:bg-slate-800/50">
+          <TabsTrigger value="gallery" className="data-[state=active]:bg-[#F5A623] data-[state=active]:text-white">Gallery</TabsTrigger>
+          <TabsTrigger value="comparison" className="data-[state=active]:bg-[#F5A623] data-[state=active]:text-white">
             <ArrowLeftRight className="w-4 h-4 mr-1" />
-            Comparaciones
+            Comparisons
           </TabsTrigger>
         </TabsList>
         <TabsContent value="comparison" className="mt-4">
@@ -96,16 +96,16 @@ export default function FieldPhotosView({ jobId }) {
           <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : photos.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <Upload className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay fotos</h3>
-          <p className="text-slate-400 mb-4">Sube fotos del progreso del proyecto</p>
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <Upload className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No photos</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Upload photos of project progress</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-amber-500 hover:bg-amber-600"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Subir Foto
+            Upload Photo
           </Button>
         </div>
       ) : (

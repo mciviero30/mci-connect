@@ -88,35 +88,35 @@ export default function ClientApprovalsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Aprobaciones del Cliente</h1>
-        <Button onClick={() => setShowCreate(true)} className="bg-amber-500 hover:bg-amber-600">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Client Approvals</h1>
+        <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
           <Plus className="w-4 h-4 mr-2" />
-          Solicitar Aprobación
+          Request Approval
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-amber-400">{pendingCount}</p>
-          <p className="text-sm text-slate-400">Pendientes</p>
+        <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4">
+          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{pendingCount}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Pending</p>
         </div>
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-green-400">{approvedCount}</p>
-          <p className="text-sm text-slate-400">Aprobadas</p>
+        <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl p-4">
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{approvedCount}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Approved</p>
         </div>
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-red-400">{rejectedCount}</p>
-          <p className="text-sm text-slate-400">Rechazadas</p>
+        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-4">
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{rejectedCount}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Rejected</p>
         </div>
       </div>
 
       {/* Approvals List */}
       {approvals.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <CheckCircle2 className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay solicitudes</h3>
-          <p className="text-slate-400 mb-4">Solicita aprobación del cliente para avances importantes</p>
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <CheckCircle2 className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No requests</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Request client approval for important milestones</p>
         </div>
       ) : (
         <div className="space-y-3">

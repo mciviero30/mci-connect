@@ -47,17 +47,17 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
   });
 
   const statusData = [
-    { name: 'Pendientes', value: statusCounts.pending, color: '#F59E0B' },
-    { name: 'En Progreso', value: statusCounts.in_progress, color: '#3B82F6' },
-    { name: 'Completadas', value: statusCounts.completed, color: '#10B981' },
-    { name: 'Bloqueadas', value: statusCounts.blocked, color: '#EF4444' },
+    { name: 'Pending', value: statusCounts.pending, color: '#F5A623' },
+    { name: 'In Progress', value: statusCounts.in_progress, color: '#3B82F6' },
+    { name: 'Completed', value: statusCounts.completed, color: '#10B981' },
+    { name: 'Blocked', value: statusCounts.blocked, color: '#EF4444' },
   ];
 
   const priorityData = [
-    { name: 'Baja', value: priorityCounts.low },
-    { name: 'Media', value: priorityCounts.medium },
-    { name: 'Alta', value: priorityCounts.high },
-    { name: 'Urgente', value: priorityCounts.urgent },
+    { name: 'Low', value: priorityCounts.low },
+    { name: 'Medium', value: priorityCounts.medium },
+    { name: 'High', value: priorityCounts.high },
+    { name: 'Urgent', value: priorityCounts.urgent },
   ];
 
   const categoryData = Object.entries(categoryCounts).map(([name, value]) => ({
@@ -84,44 +84,44 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-[#D4C85C] mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623] mb-6">Analytics</h1>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-xl p-5">
+        <div className="bg-amber-50 dark:bg-gradient-to-br dark:from-amber-500/20 dark:to-amber-600/20 border border-amber-200 dark:border-amber-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">Total Tareas</p>
-              <p className="text-3xl font-bold text-white mt-1">{totalTasks}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">Total Tasks</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{totalTasks}</p>
             </div>
-            <TrendingUp className="w-8 h-8 text-amber-400 opacity-50" />
+            <TrendingUp className="w-8 h-8 text-amber-500 dark:text-amber-400 opacity-50" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 border border-green-500/30 rounded-xl p-5">
+        <div className="bg-green-50 dark:bg-gradient-to-br dark:from-green-500/20 dark:to-green-600/20 border border-green-200 dark:border-green-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">Completadas</p>
-              <p className="text-3xl font-bold text-white mt-1">{completedTasks}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">Completed</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{completedTasks}</p>
             </div>
-            <CheckCircle2 className="w-8 h-8 text-green-400 opacity-50" />
+            <CheckCircle2 className="w-8 h-8 text-green-500 dark:text-green-400 opacity-50" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl p-5">
+        <div className="bg-blue-50 dark:bg-gradient-to-br dark:from-blue-500/20 dark:to-blue-600/20 border border-blue-200 dark:border-blue-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">En Progreso</p>
-              <p className="text-3xl font-bold text-white mt-1">{statusCounts.in_progress}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">In Progress</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{statusCounts.in_progress}</p>
             </div>
-            <Clock className="w-8 h-8 text-blue-400 opacity-50" />
+            <Clock className="w-8 h-8 text-blue-500 dark:text-blue-400 opacity-50" />
           </div>
         </div>
-        <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 rounded-xl p-5">
+        <div className="bg-purple-50 dark:bg-gradient-to-br dark:from-purple-500/20 dark:to-purple-600/20 border border-purple-200 dark:border-purple-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">% Completado</p>
-              <p className="text-3xl font-bold text-white mt-1">{completionRate}%</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase">% Completed</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{completionRate}%</p>
             </div>
-            <TrendingUp className="w-8 h-8 text-purple-400 opacity-50" />
+            <TrendingUp className="w-8 h-8 text-purple-500 dark:text-purple-400 opacity-50" />
           </div>
         </div>
       </div>
@@ -129,8 +129,8 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Status Distribution */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="font-semibold text-white mb-4">Distribución por Estado</h3>
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Status Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -164,8 +164,8 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         </div>
 
         {/* Priority Distribution */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="font-semibold text-white mb-4">Distribución por Prioridad</h3>
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Priority Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={priorityData}>
@@ -187,8 +187,8 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         </div>
 
         {/* Category Distribution */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="font-semibold text-white mb-4">Tareas por Categoría</h3>
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Tasks by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryData} layout="vertical">
@@ -210,11 +210,11 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         </div>
 
         {/* Workload by User */}
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="font-semibold text-white mb-4">Carga de Trabajo por Usuario</h3>
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Workload by User</h3>
           {workloadData.length === 0 ? (
             <div className="h-64 flex items-center justify-center">
-              <p className="text-slate-400">Sin tareas asignadas</p>
+              <p className="text-slate-500 dark:text-slate-400">No assigned tasks</p>
             </div>
           ) : (
             <div className="h-64">

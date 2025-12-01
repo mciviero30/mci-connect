@@ -94,25 +94,25 @@ export default function FieldMilestonesView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Hitos del Proyecto</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Project Milestones</h1>
         <Button
           onClick={() => setShowCreate(true)}
-          className="bg-amber-500 hover:bg-amber-600"
+          className="bg-[#F5A623] hover:bg-[#E09000] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Nuevo Hito
+          New Milestone
         </Button>
       </div>
 
       {/* Progress Overview */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 mb-6">
+      <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 mb-6 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-white font-medium">Progreso General</span>
-          <span className="text-amber-400">{completedCount} de {milestones.length} completados</span>
+          <span className="text-slate-900 dark:text-white font-medium">Overall Progress</span>
+          <span className="text-[#F5A623]">{completedCount} of {milestones.length} completed</span>
         </div>
-        <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
+        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all"
+            className="h-full bg-gradient-to-r from-[#F5A623] to-orange-500 transition-all"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -120,13 +120,13 @@ export default function FieldMilestonesView({ jobId }) {
 
       {/* Timeline */}
       {milestones.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <Flag className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay hitos</h3>
-          <p className="text-slate-400 mb-4">Define los hitos principales del proyecto</p>
-          <Button onClick={() => setShowCreate(true)} className="bg-amber-500 hover:bg-amber-600">
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <Flag className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No milestones</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Define the main milestones for the project</p>
+          <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
             <Plus className="w-4 h-4 mr-2" />
-            Crear Primer Hito
+            Create First Milestone
           </Button>
         </div>
       ) : (

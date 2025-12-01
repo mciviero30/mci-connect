@@ -97,28 +97,28 @@ export default function FieldReportsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Reportes</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Reports</h1>
         <Button 
           onClick={() => setShowCreate(true)}
-          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+          className="bg-[#F5A623] hover:bg-[#E09000] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Nuevo Reporte
+          New Report
         </Button>
       </div>
 
       {/* Reports List */}
       {reports.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <FileText className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay reportes</h3>
-          <p className="text-slate-400 mb-4">Genera reportes PDF o Excel del progreso del proyecto</p>
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <FileText className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No reports</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Generate PDF or Excel reports of project progress</p>
           <Button 
             onClick={() => setShowCreate(true)}
-            className="bg-amber-500 hover:bg-amber-600"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Crear Reporte
+            Create Report
           </Button>
         </div>
       ) : (

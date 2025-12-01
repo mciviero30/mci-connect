@@ -9,8 +9,8 @@ import { format } from 'date-fns';
 
 const defaultChannels = [
   { id: 'general', name: 'General', icon: Hash },
-  { id: 'tareas', name: 'Tareas', icon: Hash },
-  { id: 'urgente', name: 'Urgente', icon: Hash },
+  { id: 'tasks', name: 'Tasks', icon: Hash },
+  { id: 'urgent', name: 'Urgent', icon: Hash },
 ];
 
 export default function FieldChatView({ jobId }) {
@@ -78,9 +78,9 @@ export default function FieldChatView({ jobId }) {
   return (
     <div className="flex h-full">
       {/* Channels Sidebar */}
-      <div className="w-56 bg-slate-900/50 border-r border-slate-700/50 p-4">
+      <div className="w-56 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-white">Canales</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white">Channels</h3>
           <Button 
             variant="ghost" 
             size="icon"
@@ -109,9 +109,9 @@ export default function FieldChatView({ jobId }) {
 
         {/* Online Members */}
         <div className="mt-6">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
-            Equipo ({members.length})
+            Team ({members.length})
           </h3>
           <div className="space-y-2">
             {members.slice(0, 5).map((member) => (

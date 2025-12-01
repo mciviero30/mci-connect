@@ -115,13 +115,13 @@ export default function FieldMembersView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Equipo del Proyecto</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Project Team</h1>
         <Button 
           onClick={() => setShowInvite(true)}
-          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+          className="bg-[#F5A623] hover:bg-[#E09000] text-white"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Invitar Miembro
+          Invite Member
         </Button>
       </div>
 
@@ -161,36 +161,36 @@ export default function FieldMembersView({ jobId }) {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+        <div className="bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-500/20 rounded-lg">
-              <Crown className="w-5 h-5 text-purple-400" />
+            <div className="p-2 bg-purple-100 dark:bg-purple-500/20 rounded-lg">
+              <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{admins.length}</p>
-              <p className="text-sm text-purple-400">Administradores</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{admins.length}</p>
+              <p className="text-sm text-purple-600 dark:text-purple-400">Admins</p>
             </div>
           </div>
         </div>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+        <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-lg">
-              <User className="w-5 h-5 text-blue-400" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{collaborators.length}</p>
-              <p className="text-sm text-blue-400">Colaboradores</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{collaborators.length}</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">Collaborators</p>
             </div>
           </div>
         </div>
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+        <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/20 rounded-lg">
-              <Users className="w-5 h-5 text-green-400" />
+            <div className="p-2 bg-green-100 dark:bg-green-500/20 rounded-lg">
+              <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{clients.length}</p>
-              <p className="text-sm text-green-400">Clientes</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{clients.length}</p>
+              <p className="text-sm text-green-600 dark:text-green-400">Clients</p>
             </div>
           </div>
         </div>
@@ -291,16 +291,16 @@ export default function FieldMembersView({ jobId }) {
       </div>
 
       {members.length === 0 && (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <Users className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">Sin miembros</h3>
-          <p className="text-slate-400 mb-4">Invita a tu equipo al proyecto</p>
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <Users className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No members</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Invite your team to the project</p>
           <Button 
             onClick={() => setShowInvite(true)}
-            className="bg-amber-500 hover:bg-amber-600"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Invitar Miembro
+            Invite Member
           </Button>
         </div>
       )}

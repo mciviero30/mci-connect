@@ -154,42 +154,42 @@ export default function FieldChecklistsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Checklists e Inspecciones</h1>
-        <Button onClick={() => setShowCreate(true)} className="bg-amber-500 hover:bg-amber-600">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Checklists & Inspections</h1>
+        <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
           <Plus className="w-4 h-4 mr-2" />
-          Nueva Plantilla
+          New Template
         </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-          <p className="text-2xl font-bold text-white">{templates.length}</p>
-          <p className="text-sm text-slate-400">Plantillas</p>
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 shadow-sm">
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{templates.length}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Templates</p>
         </div>
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-green-400">
+        <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl p-4">
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
             {submissions.filter(s => s.status === 'passed').length}
           </p>
-          <p className="text-sm text-slate-400">Aprobadas</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Passed</p>
         </div>
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-amber-400">
+        <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4">
+          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
             {submissions.filter(s => s.status === 'needs_attention').length}
           </p>
-          <p className="text-sm text-slate-400">Requieren Atención</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Need Attention</p>
         </div>
       </div>
 
       {/* Templates Grid */}
       {templates.length === 0 ? (
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-          <ClipboardCheck className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No hay plantillas</h3>
-          <p className="text-slate-400 mb-4">Crea checklists reutilizables</p>
-          <Button onClick={() => setShowCreate(true)} className="bg-amber-500 hover:bg-amber-600">
+        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+          <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No templates</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Create reusable checklists</p>
+          <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
             <Plus className="w-4 h-4 mr-2" />
-            Crear Plantilla
+            Create Template
           </Button>
         </div>
       ) : (
