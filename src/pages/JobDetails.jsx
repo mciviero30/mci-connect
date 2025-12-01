@@ -86,6 +86,18 @@ export default function JobDetails() {
     initialData: []
   });
 
+  // Fetch the quote associated with this job to get estimated hours
+  const { data: relatedQuote } = useQuery({
+    queryKey: ['jobQuote', jobId],
+    queryFn: async () => {
+      const quotes = await base44.entities.Quote.filter({ job_id: jobId });
+      return quotes[0] || null;
+    },
+    enabled: !!jobId,
+    staleTime: 900000
+  });
+
+  const estimatedHours = relatedQuote?.estimated_hours || job?.estimated_hours || 0;
   const totalHours = timeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
   const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
   const totalPayrollCost = totalHours * 25;
