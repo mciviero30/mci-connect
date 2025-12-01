@@ -39,9 +39,18 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   });
 
   const deletePlanMutation = useMutation({
-    mutationFn: (planId) => base44.entities.Plan.delete(planId),
+    mutationFn: async (planId) => {
+      // Delete all tasks associated with this plan
+      const planTasks = tasks.filter(t => t.blueprint_id === planId);
+      for (const task of planTasks) {
+        await base44.entities.Task.delete(task.id);
+      }
+      // Delete the plan
+      await base44.entities.Plan.delete(planId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
     },
   });
 
