@@ -190,7 +190,7 @@ export default function CrearEstimado() {
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0 }],
+      items: [...formData.items, { description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
     });
   };
 
