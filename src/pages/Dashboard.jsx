@@ -386,7 +386,11 @@ export default function Dashboard() {
   const renderWidget = (widget) => {
     switch (widget.type) {
       case 'active-employees':
-        return <StatsWidget value={activeEmployees.length} label={t('employees')} icon={Users} color="blue" />;
+        return (
+          <Link to={createPageUrl('Empleados')}>
+            <StatsWidget value={activeEmployees.length} label={t('employees')} icon={Users} color="blue" />
+          </Link>
+        );
       
       case 'active-jobs':
         return (
