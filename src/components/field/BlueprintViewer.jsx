@@ -51,28 +51,28 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   // Get specific error message
   const getErrorMessage = (error, type) => {
     if (type === 'timeout') {
-      return 'La carga del plano excedió el tiempo límite. El archivo puede ser muy grande.';
+      return 'Plan loading timed out. The file may be too large.';
     }
     if (type === 'network') {
-      return 'Error de conexión. Verifica tu conexión a internet.';
+      return 'Connection error. Please check your internet connection.';
     }
     if (type === 'invalid_type') {
-      return 'Tipo de archivo no compatible. Solo se admiten imágenes (JPG, PNG, GIF, WebP, SVG) y PDF.';
+      return 'Unsupported file type. Only images (JPG, PNG, GIF, WebP, SVG) and PDF are supported.';
     }
     if (type === 'corrupt') {
-      return 'El archivo parece estar corrupto o dañado.';
+      return 'The file appears to be corrupt or damaged.';
     }
     if (type === 'size') {
-      return 'El archivo excede el tamaño máximo permitido.';
+      return 'The file exceeds the maximum allowed size.';
     }
-    return 'Error al cargar el plano. Por favor, intenta de nuevo.';
+    return 'Error loading plan. Please try again.';
   };
 
   // Load image with timeout and progress simulation
   const loadImage = () => {
     if (!plan?.file_url) {
       setLoadingState('error');
-      setErrorMessage('No se encontró la URL del plano.');
+      setErrorMessage('Plan URL not found.');
       return;
     }
 
@@ -133,7 +133,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const handleLoadError = (type) => {
     if (retryCount < MAX_RETRIES) {
       setIsRetrying(true);
-      setErrorMessage(`Reintentando carga... (${retryCount + 1}/${MAX_RETRIES})`);
+      setErrorMessage(`Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
         setIsRetrying(false);
