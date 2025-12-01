@@ -570,21 +570,33 @@ export default function Chat() {
           <Card className="lg:col-span-3 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                    <MessageSquare className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-                    {chatMode === 'direct' && selectedDMConv
-                      ? selectedDMConv.other_user_name
-                      : chatMode === 'groups' && selectedCustomGroup
-                      ? selectedCustomGroup.group_name
-                      : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-                  </CardTitle>
-                  {chatMode === 'groups' && selectedCustomGroup && (
-                    <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                      {selectedCustomGroup.members.length} members
-                    </Badge>
-                  )}
-                </div>
+              <div className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                  <MessageSquare className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                  {chatMode === 'direct' && selectedDMConv
+                    ? selectedDMConv.other_user_name
+                    : chatMode === 'groups' && selectedCustomGroup
+                    ? selectedCustomGroup.group_name
+                    : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
+                </CardTitle>
+                {chatMode === 'groups' && selectedCustomGroup && (
+                  <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                    {selectedCustomGroup.members.length} members
+                  </Badge>
+                )}
+                {/* Invite members button for job channels */}
+                {chatMode === 'channels' && selectedGroup !== 'general' && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowJobMembers(true)}
+                    className="h-7 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  >
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    {t('language') === 'es' ? 'Invitar' : 'Invite'}
+                  </Button>
+                )}
+              </div>
                 
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
