@@ -788,6 +788,15 @@ export default function Chat() {
           currentUserEmail={user?.email}
           isCurrentUser={selectedProfileEmail === user?.email}
         />
+
+        {/* Job Chat Members Dialog */}
+        <JobChatMembers
+          jobId={selectedGroup}
+          jobName={groups.find(g => g.id === selectedGroup)?.name || ''}
+          isOpen={showJobMembers}
+          onClose={() => setShowJobMembers(false)}
+          language={t('language') === 'es' ? 'es' : 'en'}
+        />
       </div>
     </div>
   );
