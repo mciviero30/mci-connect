@@ -787,6 +787,39 @@ export default function Inventario() {
                   />
                 </div>
                 <div>
+                  <Label>Inventory Type *</Label>
+                  <Select value={itemForm.inventory_type} onValueChange={(v) => setItemForm({...itemForm, inventory_type: v})}>
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200">
+                      <SelectItem value="tools" className="text-slate-900">🔧 Tools (Herramientas)</SelectItem>
+                      <SelectItem value="hardware" className="text-slate-900">🔩 Hardware</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Team/Group *</Label>
+                  <Select 
+                    value={itemForm.team_id} 
+                    onValueChange={(v) => {
+                      const team = teams.find(t => t.id === v);
+                      setItemForm({...itemForm, team_id: v, team_name: team?.name || ''});
+                    }}
+                  >
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                      <SelectValue placeholder="Select team..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200">
+                      {teams.map(team => (
+                        <SelectItem key={team.id} value={team.id} className="text-slate-900">
+                          {team.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <Label>Category *</Label>
                   <Select value={itemForm.category} onValueChange={(v) => setItemForm({...itemForm, category: v})}>
                     <SelectTrigger className="bg-white border-slate-300 text-slate-900">
@@ -798,6 +831,7 @@ export default function Inventario() {
                       <SelectItem value="equipment" className="text-slate-900">Equipment</SelectItem>
                       <SelectItem value="safety" className="text-slate-900">Safety</SelectItem>
                       <SelectItem value="supplies" className="text-slate-900">Supplies</SelectItem>
+                      <SelectItem value="hardware" className="text-slate-900">Hardware</SelectItem>
                       <SelectItem value="other" className="text-slate-900">Other</SelectItem>
                     </SelectContent>
                   </Select>
