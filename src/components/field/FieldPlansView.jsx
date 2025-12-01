@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BlueprintViewer from './BlueprintViewer.jsx';
 
-export default function FieldPlansView({ jobId, plans, tasks }) {
+export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
