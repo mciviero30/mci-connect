@@ -19,7 +19,7 @@ const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [zoom, setZoom] = useState(0.5);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 50, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedTask, setSelectedTask] = useState(null);
