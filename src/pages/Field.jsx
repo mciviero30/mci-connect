@@ -103,7 +103,7 @@ export default function Field() {
             className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg shadow-amber-500/25"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Nuevo Proyecto
+            New Project
           </Button>
         </div>
 
