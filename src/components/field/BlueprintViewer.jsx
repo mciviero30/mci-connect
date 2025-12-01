@@ -18,7 +18,7 @@ const RETRY_DELAY_MS = 5000;
 const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.5);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -551,7 +551,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
             <div 
               className="relative w-full h-full flex items-center justify-center"
               style={{
-                transform: isPdfFile(plan.file_url) ? 'none' : `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
                 transformOrigin: 'center center',
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
@@ -563,7 +563,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                       ref={imageRef}
                       src={pdfCanvas}
                       alt={plan.name}
-                      className="max-w-none"
+                      style={{ maxWidth: 'none', maxHeight: 'none' }}
                       onClick={handleImageClick}
                       draggable={false}
                     />
