@@ -14,8 +14,10 @@ import MessageBubble from "../components/chat/MessageBubble";
 import TypingIndicator from "../components/chat/TypingIndicator";
 import MentionInput from "../components/chat/MentionInput";
 import DirectMessagesList from "../components/chat/DirectMessagesList";
+import CreateGroupDialog from "../components/chat/CreateGroupDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import { Badge } from "@/components/ui/badge";
 
 const EMOJIS = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇',
@@ -131,24 +133,31 @@ export default function Chat() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [showNewDM, setShowNewDM] = useState(false);
   const [selectedDMUser, setSelectedDMUser] = useState(null);
-  const [chatMode, setChatMode] = useState('channels'); // 'channels' or 'direct'
+  const [chatMode, setChatMode] = useState('channels'); // 'channels', 'direct', or 'groups'
   const [selectedDMConv, setSelectedDMConv] = useState(null);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [selectedCustomGroup, setSelectedCustomGroup] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
   const { data: messages, isLoading } = useQuery({
-    queryKey: ['messages', selectedGroup, selectedDMConv?.id],
+    queryKey: ['messages', selectedGroup, selectedDMConv?.id, selectedCustomGroup?.id],
     queryFn: () => {
       if (chatMode === 'direct' && selectedDMConv) {
         return base44.entities.ChatMessage.filter({ 
           group_id: `dm_${selectedDMConv.id}` 
         }, 'created_date');
       }
+      if (chatMode === 'groups' && selectedCustomGroup) {
+        return base44.entities.ChatMessage.filter({ 
+          group_id: `group_${selectedCustomGroup.id}` 
+        }, 'created_date');
+      }
       return base44.entities.ChatMessage.filter({ group_id: selectedGroup }, 'created_date');
     },
     initialData: [],
-    refetchInterval: 2000, // Real-time updates every 2 seconds
+    refetchInterval: 2000,
     staleTime: 1000,
   });
 
@@ -164,6 +173,13 @@ export default function Chat() {
     queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
     initialData: [],
     staleTime: 300000,
+  });
+
+  const { data: customGroups = [] } = useQuery({
+    queryKey: ['chatGroups'],
+    queryFn: () => base44.entities.ChatGroup.list('-created_date'),
+    initialData: [],
+    refetchInterval: 5000,
   });
 
   const sendMutation = useMutation({
@@ -215,6 +231,20 @@ export default function Chat() {
     }
   });
 
+  const createGroupMutation = useMutation({
+    mutationFn: (data) => base44.entities.ChatGroup.create(data),
+    onSuccess: (newGroup) => {
+      queryClient.invalidateQueries({ queryKey: ['chatGroups'] });
+      setChatMode('groups');
+      setSelectedCustomGroup(newGroup);
+      setShowCreateGroup(false);
+      toast.success('Group created successfully!');
+    },
+    onError: () => {
+      toast.error('Failed to create group');
+    }
+  });
+
   const extractMentions = (text) => {
     const mentionRegex = /@(\w+(?:\s+\w+)*)/g;
     const matches = [];
@@ -230,9 +260,12 @@ export default function Chat() {
     const messageContent = content || message.trim();
     if (!messageContent) return;
 
-    const groupId = chatMode === 'direct' && selectedDMConv 
-      ? `dm_${selectedDMConv.id}` 
-      : selectedGroup;
+    let groupId = selectedGroup;
+    if (chatMode === 'direct' && selectedDMConv) {
+      groupId = `dm_${selectedDMConv.id}`;
+    } else if (chatMode === 'groups' && selectedCustomGroup) {
+      groupId = `group_${selectedCustomGroup.id}`;
+    }
 
     const messageData = {
       sender_email: user.email,
@@ -312,12 +345,23 @@ export default function Chat() {
   const startDirectMessage = (employee) => {
     setSelectedDMUser(employee);
     setChatMode('direct');
+    setSelectedCustomGroup(null);
     setSelectedDMConv({ 
       id: `${user.email}_${employee.email}`,
       other_user_name: employee.full_name,
       participants: [user.email, employee.email]
     });
     setShowNewDM(false);
+  };
+
+  const handleCreateGroup = (groupData) => {
+    createGroupMutation.mutate(groupData);
+  };
+
+  const selectCustomGroup = (group) => {
+    setChatMode('groups');
+    setSelectedCustomGroup(group);
+    setSelectedDMConv(null);
   };
 
   useEffect(() => {
@@ -355,26 +399,42 @@ export default function Chat() {
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-slate-900 dark:text-white">{t('channels')}</CardTitle>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setShowNewDM(true)}
-                  className="text-[#3B9FF3] dark:text-blue-400"
-                >
-                  <UserPlus className="w-4 h-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowCreateGroup(true)}
+                    className="text-[#3B9FF3] dark:text-blue-400"
+                    title="Create group chat"
+                  >
+                    <Users className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowNewDM(true)}
+                    className="text-[#3B9FF3] dark:text-blue-400"
+                    title="Start direct message"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-4">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full bg-slate-100 dark:bg-slate-800 mb-3">
-                  <TabsTrigger value="channels" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                <TabsList className="w-full bg-slate-100 dark:bg-slate-800 mb-3 grid grid-cols-3">
+                  <TabsTrigger value="channels" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                     <Hash className="w-4 h-4 mr-1" />
                     Channels
                   </TabsTrigger>
-                  <TabsTrigger value="direct" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                  <TabsTrigger value="groups" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                     <Users className="w-4 h-4 mr-1" />
-                    Direct
+                    Groups
+                  </TabsTrigger>
+                  <TabsTrigger value="direct" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    <AtSign className="w-4 h-4 mr-1" />
+                    DMs
                   </TabsTrigger>
                 </TabsList>
 
@@ -388,6 +448,7 @@ export default function Chat() {
                           onClick={() => {
                             setSelectedGroup(group.id);
                             setSelectedDMConv(null);
+                            setSelectedCustomGroup(null);
                           }}
                           className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
                             chatMode === 'channels' && selectedGroup === group.id
@@ -403,11 +464,63 @@ export default function Chat() {
                   </div>
                 </TabsContent>
 
+                <TabsContent value="groups" className="mt-0">
+                  <div className="space-y-2">
+                    {customGroups
+                      .filter(g => g.is_active && g.members.includes(user?.email))
+                      .map(group => {
+                        const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
+                        return (
+                          <button
+                            key={group.id}
+                            onClick={() => selectCustomGroup(group)}
+                            className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
+                              chatMode === 'groups' && selectedCustomGroup?.id === group.id
+                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg'
+                                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                            }`}
+                          >
+                            <div className={`w-10 h-10 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center`}>
+                              <Users className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{group.group_name}</p>
+                              <p className={`text-xs truncate ${
+                                chatMode === 'groups' && selectedCustomGroup?.id === group.id
+                                  ? 'text-blue-100'
+                                  : 'text-slate-500 dark:text-slate-400'
+                              }`}>
+                                {group.members.length} members
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
+                      <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                        <Users className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">No groups yet</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowCreateGroup(true)}
+                          className="mt-3"
+                        >
+                          Create Group
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
                 <TabsContent value="direct" className="mt-0">
                   <DirectMessagesList
                     conversations={[]}
                     currentUserId={user?.email}
-                    onSelect={setSelectedDMConv}
+                    onSelect={(conv) => {
+                      setSelectedDMConv(conv);
+                      setSelectedCustomGroup(null);
+                    }}
                     selectedId={selectedDMConv?.id}
                   />
                 </TabsContent>
@@ -418,12 +531,21 @@ export default function Chat() {
           <Card className="lg:col-span-3 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <MessageSquare className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-                  {chatMode === 'direct' && selectedDMConv
-                    ? selectedDMConv.other_user_name
-                    : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <MessageSquare className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                    {chatMode === 'direct' && selectedDMConv
+                      ? selectedDMConv.other_user_name
+                      : chatMode === 'groups' && selectedCustomGroup
+                      ? selectedCustomGroup.group_name
+                      : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
+                  </CardTitle>
+                  {chatMode === 'groups' && selectedCustomGroup && (
+                    <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                      {selectedCustomGroup.members.length} members
+                    </Badge>
+                  )}
+                </div>
                 
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -596,7 +718,25 @@ export default function Chat() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Create Group Dialog */}
+        <CreateGroupDialog
+          open={showCreateGroup}
+          onOpenChange={setShowCreateGroup}
+          employees={employees}
+          currentUser={user}
+          onCreateGroup={handleCreateGroup}
+        />
       </div>
     </div>
   );
 }
+
+const AVATAR_COLORS = [
+  { value: 'blue', class: 'from-blue-500 to-blue-600' },
+  { value: 'purple', class: 'from-purple-500 to-purple-600' },
+  { value: 'green', class: 'from-green-500 to-green-600' },
+  { value: 'orange', class: 'from-orange-500 to-orange-600' },
+  { value: 'pink', class: 'from-pink-500 to-pink-600' },
+  { value: 'teal', class: 'from-teal-500 to-teal-600' }
+];
