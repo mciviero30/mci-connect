@@ -76,16 +76,19 @@ export default function Inventario() {
   const [itemForm, setItemForm] = useState({
     name: '',
     category: 'materials',
+    inventory_type: 'tools',
+    team_id: '',
+    team_name: '',
     description: '',
     sku: '',
     quantity: 0,
     min_quantity: 0,
-    unit: 'units', // Will be standardized
+    unit: 'units',
     cost: 0,
     location: '',
     photo_url: '',
-    supplier_id: '', // NEW: Supplier field
-    supplier_name: '' // NEW: Supplier name
+    supplier_id: '',
+    supplier_name: ''
   });
 
   const [transactionForm, setTransactionForm] = useState({
