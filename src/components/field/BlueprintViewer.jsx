@@ -61,6 +61,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     return extension === 'pdf';
   };
 
+  // PDF rendering state
+  const [pdfCanvas, setPdfCanvas] = useState(null);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfTotalPages, setPdfTotalPages] = useState(1);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const canvasRef = useRef(null);
+
   // Get specific error message
   const getErrorMessage = (error, type) => {
     if (type === 'timeout') {
@@ -96,10 +103,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       return;
     }
 
-    // Handle PDF files differently
+    // Handle PDF files - render with pdf.js
     if (isPdfFile(plan.file_url)) {
-      setLoadingState('success');
-      setLoadProgress(100);
+      loadPdfWithPdfJs();
       return;
     }
 
@@ -161,6 +167,76 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const handleManualRetry = () => {
     setRetryCount(0);
     loadImage();
+  };
+
+  // Load PDF using pdf.js CDN
+  const loadPdfWithPdfJs = async () => {
+    setLoadingState('loading');
+    setLoadProgress(10);
+
+    try {
+      // Load pdf.js from CDN if not already loaded
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.async = true;
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+
+      setLoadProgress(30);
+
+      // Load the PDF document
+      const loadingTask = window.pdfjsLib.getDocument(plan.file_url);
+      const pdf = await loadingTask.promise;
+      setPdfDoc(pdf);
+      setPdfTotalPages(pdf.numPages);
+      setLoadProgress(60);
+
+      // Render first page
+      await renderPdfPage(pdf, 1);
+      
+      setLoadProgress(100);
+      setLoadingState('success');
+    } catch (error) {
+      console.error('PDF load error:', error);
+      setLoadingState('error');
+      setErrorMessage('Error loading PDF. Please try again.');
+    }
+  };
+
+  const renderPdfPage = async (pdf, pageNum) => {
+    const page = await pdf.getPage(pageNum);
+    const scale = 2; // Higher scale for better quality
+    const viewport = page.getViewport({ scale });
+
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    // Render PDF page to canvas
+    await page.render({
+      canvasContext: context,
+      viewport: viewport
+    }).promise;
+
+    // Convert to image data URL
+    const imageDataUrl = canvas.toDataURL('image/png');
+    setPdfCanvas(imageDataUrl);
+    setPdfPage(pageNum);
+  };
+
+  const handlePdfPageChange = async (newPage) => {
+    if (!pdfDoc || newPage < 1 || newPage > pdfTotalPages) return;
+    setLoadingState('loading');
+    await renderPdfPage(pdfDoc, newPage);
+    setLoadingState('success');
   };
 
   useEffect(() => {
@@ -468,27 +544,41 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
-              <div className="relative" style={{ width: isPdfFile(plan.file_url) ? '100%' : 'auto', height: isPdfFile(plan.file_url) ? '100%' : 'auto' }}>
-                {isPdfFile(plan.file_url) ? (
-                  <div className="w-full h-full flex flex-col">
-                    <iframe
-                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(plan.file_url)}&embedded=true`}
-                      title={plan.name}
-                      className="w-full flex-1 border-0 bg-white"
-                      style={{ minHeight: 'calc(100vh - 150px)' }}
+              <div className="relative">
+                {isPdfFile(plan.file_url) && pdfCanvas ? (
+                  <>
+                    <img 
+                      ref={imageRef}
+                      src={pdfCanvas}
+                      alt={plan.name}
+                      className="max-w-none"
+                      onClick={handleImageClick}
+                      draggable={false}
                     />
-                    <div className="p-3 bg-slate-800 border-t border-slate-700 flex justify-center">
-                      <a 
-                        href={plan.file_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Open PDF in new tab
-                      </a>
-                    </div>
-                  </div>
-                ) : (
+                    {/* PDF Page Controls */}
+                    {pdfTotalPages > 1 && (
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center gap-3 z-30">
+                        <button
+                          onClick={() => handlePdfPageChange(pdfPage - 1)}
+                          disabled={pdfPage <= 1}
+                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                        </button>
+                        <span className="text-sm text-slate-600 dark:text-slate-300">
+                          Page {pdfPage} / {pdfTotalPages}
+                        </span>
+                        <button
+                          onClick={() => handlePdfPageChange(pdfPage + 1)}
+                          disabled={pdfPage >= pdfTotalPages}
+                          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rotate-180"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : !isPdfFile(plan.file_url) ? (
                   <img 
                     ref={imageRef}
                     src={plan.file_url}
@@ -501,9 +591,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                       setErrorMessage(getErrorMessage(null, 'corrupt'));
                     }}
                   />
-                )}
-                {/* Task Pins - only for images, toggle visibility */}
-                {showPins && !isPdfFile(plan.file_url) && tasks.map((task) => (
+                ) : null}
+                {/* Task Pins - works for both images and PDF canvas */}
+                {showPins && tasks.map((task) => (
                   <TaskPin 
                     key={task.id}
                     task={task}
@@ -512,7 +602,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   />
                 ))}
                 {/* Pending Pin */}
-                {pendingPinPosition && !isPdfFile(plan.file_url) && (
+                {pendingPinPosition && (
                   <div 
                     className="absolute w-6 h-6 -ml-3 -mt-6 animate-bounce"
                     style={{ left: `${pendingPinPosition.x}%`, top: `${pendingPinPosition.y}%` }}
