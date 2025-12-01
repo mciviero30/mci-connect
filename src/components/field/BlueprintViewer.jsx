@@ -611,7 +611,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                       setErrorMessage(getErrorMessage(null, 'corrupt'));
                     }}
                   />
-                ) : null}
+                )}
                 {/* Task Pins - works for both images and PDF canvas */}
                 {showPins && tasks.map((task) => (
                   <TaskPin 
