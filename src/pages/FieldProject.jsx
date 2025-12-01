@@ -1,0 +1,189 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { 
+  ArrowLeft,
+  LayoutDashboard,
+  Map,
+  CheckSquare,
+  Camera,
+  FileText,
+  MessageSquare,
+  Users,
+  BarChart3,
+  Settings,
+  ClipboardList,
+  Loader2
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
+// Import Field Components
+import FieldProjectOverview from '@/components/field/FieldProjectOverview';
+import FieldPlansView from '@/components/field/FieldPlansView';
+import FieldTasksView from '@/components/field/FieldTasksView';
+import FieldPhotosView from '@/components/field/FieldPhotosView';
+import FieldDocumentsView from '@/components/field/FieldDocumentsView';
+import FieldChatView from '@/components/field/FieldChatView';
+import FieldMembersView from '@/components/field/FieldMembersView';
+import FieldAnalyticsView from '@/components/field/FieldAnalyticsView';
+import FieldFormsView from '@/components/field/FieldFormsView';
+import FieldReportsView from '@/components/field/FieldReportsView';
+
+export default function FieldProject() {
+  const [searchParams] = useSearchParams();
+  const jobId = searchParams.get('id');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const { data: job, isLoading } = useQuery({
+    queryKey: ['field-job', jobId],
+    queryFn: async () => {
+      const jobs = await base44.entities.Job.filter({ id: jobId });
+      return jobs[0] || null;
+    },
+    enabled: !!jobId,
+  });
+
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['field-tasks', jobId],
+    queryFn: () => base44.entities.Task.filter({ job_id: jobId }, '-created_date'),
+    enabled: !!jobId,
+  });
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['field-plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }, 'order'),
+    enabled: !!jobId,
+  });
+
+  const sidebarItems = [
+    { id: 'overview', label: 'Resumen', icon: LayoutDashboard },
+    { id: 'plans', label: 'Planos', icon: Map, count: plans.length },
+    { id: 'tasks', label: 'Tareas', icon: CheckSquare, count: tasks.length },
+    { id: 'photos', label: 'Fotos', icon: Camera },
+    { id: 'documents', label: 'Documentos', icon: FileText },
+    { id: 'chat', label: 'Chat', icon: MessageSquare },
+    { id: 'members', label: 'Equipo', icon: Users },
+    { id: 'forms', label: 'Formularios', icon: ClipboardList },
+    { id: 'reports', label: 'Reportes', icon: BarChart3 },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#1a1f2e] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-[#1a1f2e] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-slate-400 mb-4">Proyecto no encontrado</p>
+          <Link to={createPageUrl('Field')}>
+            <Button className="bg-amber-500 hover:bg-amber-600">Volver</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
+      case 'plans':
+        return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
+      case 'tasks':
+        return <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />;
+      case 'photos':
+        return <FieldPhotosView jobId={jobId} />;
+      case 'documents':
+        return <FieldDocumentsView jobId={jobId} />;
+      case 'chat':
+        return <FieldChatView jobId={jobId} />;
+      case 'members':
+        return <FieldMembersView jobId={jobId} />;
+      case 'forms':
+        return <FieldFormsView jobId={jobId} />;
+      case 'reports':
+        return <FieldReportsView jobId={jobId} />;
+      case 'analytics':
+        return <FieldAnalyticsView jobId={jobId} tasks={tasks} />;
+      default:
+        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#1a1f2e] flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-slate-900/50 border-r border-slate-700/50 flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-slate-700/50">
+          <Link to={createPageUrl('Field')}>
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Volver
+            </Button>
+          </Link>
+          <div className="flex items-center gap-3">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/03ed46b90_Screenshot2025-12-01at23044AM.png"
+              alt="MCI Field"
+              className="w-8 h-8 object-contain"
+            />
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
+              <Badge className={`text-xs ${
+                job.status === 'active' 
+                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                  : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+              }`}>
+                {job.status === 'active' ? 'Activo' : job.status}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === item.id
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </div>
+              {item.count !== undefined && item.count > 0 && (
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  activeTab === item.id
+                    ? 'bg-amber-500/30 text-amber-300'
+                    : 'bg-slate-700 text-slate-400'
+                }`}>
+                  {item.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        {renderContent()}
+      </div>
+    </div>
+  );
+}
