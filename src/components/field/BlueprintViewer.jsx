@@ -182,10 +182,20 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         script.async = true;
         await new Promise((resolve, reject) => {
           script.onload = resolve;
-          script.onerror = reject;
+          script.onerror = () => reject(new Error('Failed to load PDF.js'));
           document.head.appendChild(script);
         });
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Wait a bit for pdfjsLib to be available
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (window.pdfjsLib) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+      }
+
+      if (!window.pdfjsLib) {
+        throw new Error('PDF.js library not available');
       }
 
       setLoadProgress(30);
@@ -205,42 +215,34 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     } catch (error) {
       console.error('PDF load error:', error);
       setLoadingState('error');
-      setErrorMessage('Error loading PDF. Please try again.');
+      setErrorMessage('Error loading PDF: ' + error.message);
     }
   };
 
   const renderPdfPage = async (pdf, pageNum) => {
-    const page = await pdf.getPage(pageNum);
-    const scale = 1.5; // Balanced scale for quality vs performance
-    const viewport = page.getViewport({ scale });
+    try {
+      const page = await pdf.getPage(pageNum);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
 
-    // Create canvas
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
 
-    // Render PDF page to canvas
-    await page.render({
-      canvasContext: context,
-      viewport: viewport
-    }).promise;
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
 
-    // Convert to image data URL
-    const imageDataUrl = canvas.toDataURL('image/png');
-    setPdfCanvas(imageDataUrl);
-    setPdfPage(pageNum);
-    
-    // Auto-fit zoom to container
-    if (containerRef.current) {
-      const containerWidth = containerRef.current.clientWidth - 100;
-      const containerHeight = containerRef.current.clientHeight - 100;
-      const fitZoom = Math.min(
-        containerWidth / viewport.width,
-        containerHeight / viewport.height,
-        1
-      );
-      setZoom(Math.max(0.2, fitZoom));
+      const imageDataUrl = canvas.toDataURL('image/png');
+      setPdfCanvas(imageDataUrl);
+      setPdfPage(pageNum);
+      setZoom(0.3); // Start at 30% for large PDFs
+    } catch (err) {
+      console.error('PDF render error:', err);
+      setLoadingState('error');
+      setErrorMessage('Error rendering PDF page.');
     }
   };
 
@@ -556,7 +558,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
-              <div className="relative">
+              <div className="relative" style={{ minWidth: '100px', minHeight: '100px' }}>
                 {isPdfFile(plan.file_url) && pdfCanvas ? (
                   <>
                     <img 
