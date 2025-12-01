@@ -268,21 +268,16 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setActiveTool('select');
   };
 
-  // Toolbar items
+  // Toolbar items - simplified
   const toolbarItems = [
-    { id: 'fullscreen', icon: Maximize2, label: 'Fullscreen', action: handleReset },
+    { id: 'fullscreen', icon: Maximize2, label: 'Reset View', action: handleReset },
     { id: 'divider1', type: 'divider' },
     { id: 'zoomIn', icon: ZoomIn, label: 'Zoom In', action: handleZoomIn },
     { id: 'zoomOut', icon: ZoomOut, label: 'Zoom Out', action: handleZoomOut },
     { id: 'divider2', type: 'divider' },
     { id: 'pin', icon: MapPin, label: 'Add Pin', tool: true },
-    { id: 'link', icon: Link2, label: 'Add Link', tool: true },
     { id: 'pencil', icon: Pencil, label: 'Draw', tool: true },
-    { id: 'text', icon: Type, label: 'Add Text', tool: true },
-    { id: 'eraser', icon: Eraser, label: 'Eraser', tool: true },
     { id: 'divider3', type: 'divider' },
-    { id: 'print', icon: Printer, label: 'Print', action: () => window.print() },
-    { id: 'divider4', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'undo', icon: Undo2, label: 'Undo', action: () => {} },
   ];
@@ -294,126 +289,76 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   return (
     <TooltipProvider>
-    <div className="h-full flex relative">
-      {/* Left Toolbar - Like Fieldwire - Always visible */}
-      <div className="absolute left-2 top-16 z-50 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg w-11 py-2">
-        {toolbarItems.map((item, idx) => {
-          if (item.type === 'divider') {
-            return <div key={item.id} className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />;
-          }
-          
-          const isActive = item.tool && activeTool === item.id;
-          return (
-            <Tooltip key={item.id}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => {
-                    if (item.tool) {
-                      setActiveTool(item.id);
-                      if (item.id === 'pin') {
-                        setIsPlacingPin(true);
-                      } else {
-                        setIsPlacingPin(false);
-                      }
-                    } else if (item.action) {
-                      item.action();
-                    }
-                  }}
-                  className={`mx-1 p-2 rounded-lg transition-all ${
-                    isActive 
-                      ? 'bg-[#FFB800] text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <item.icon className="w-5 h-5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>{item.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
-        
-        {/* Divider before visibility */}
-        <div className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />
-        
-        {/* Toggle Pins Visibility */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => setShowPins(!showPins)}
-              className={`mx-1 p-2 rounded-lg transition-all ${
-                showPins 
-                  ? 'text-[#FFB800]' 
-                  : 'text-slate-400'
-              }`}
-            >
-              {showPins ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
-          </TooltipContent>
-        </Tooltip>
+    <div className="h-full flex flex-col relative">
+      {/* Top Header - Compact */}
+      <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 z-50">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <span className="text-slate-900 dark:text-white font-medium text-sm truncate max-w-[200px]">{plan.name}</span>
+        </div>
       </div>
 
-      {/* Main Viewer */}
-      <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
-        {/* Top Header - Simplified */}
-        <div className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-2 md:gap-3">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden md:inline ml-2">Back</span>
-            </Button>
-            <span className="text-slate-900 dark:text-white font-medium text-sm md:text-base truncate max-w-[150px] md:max-w-none">{plan.name}</span>
-          </div>
+      {/* Main Content Area */}
+      <div className="flex-1 relative overflow-hidden bg-slate-100 dark:bg-slate-900">
+        {/* Left Toolbar - Floating */}
+        <div className="absolute left-2 top-2 z-50 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+          {toolbarItems.map((item) => {
+            if (item.type === 'divider') {
+              return <div key={item.id} className="mx-1.5 border-t border-slate-200 dark:border-slate-700" />;
+            }
+            
+            const isActive = item.tool && activeTool === item.id;
+            return (
+              <Tooltip key={item.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => {
+                      if (item.tool) {
+                        setActiveTool(item.id);
+                        setIsPlacingPin(item.id === 'pin');
+                      } else if (item.action) {
+                        item.action();
+                      }
+                    }}
+                    className={`m-0.5 p-1.5 rounded transition-all ${
+                      isActive 
+                        ? 'bg-[#FFB800] text-white' 
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="text-xs">
+                  <p>{item.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
           
-          {/* Right side tools */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 dark:text-slate-400">
-              <Search className="w-4 h-4" />
-            </Button>
-            <button
-              onClick={() => setShowPins(!showPins)}
-              className={`p-2 rounded-lg ${showPins ? 'text-[#FFB800]' : 'text-slate-400'}`}
-            >
-              {showPins ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-        
-        {/* Mobile Toolbar - Bottom - Hidden since we have left toolbar */}
-        <div className="hidden fixed bottom-20 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex justify-around z-40">
-          <button
-            onClick={() => { setActiveTool('select'); setIsPlacingPin(false); }}
-            className={`p-2 rounded-lg ${activeTool === 'select' ? 'bg-[#FFB800] text-white' : 'text-slate-600'}`}
-          >
-            <MousePointer className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => { setActiveTool('pin'); setIsPlacingPin(true); }}
-            className={`p-2 rounded-lg ${activeTool === 'pin' ? 'bg-[#FFB800] text-white' : 'text-slate-600'}`}
-          >
-            <MapPin className="w-5 h-5" />
-          </button>
-          <button onClick={handleZoomOut} className="p-2 rounded-lg text-slate-600">
-            <ZoomOut className="w-5 h-5" />
-          </button>
-          <span className="flex items-center text-sm text-slate-500 px-2">{Math.round(zoom * 100)}%</span>
-          <button onClick={handleZoomIn} className="p-2 rounded-lg text-slate-600">
-            <ZoomIn className="w-5 h-5" />
-          </button>
-          <button onClick={handleReset} className="p-2 rounded-lg text-slate-600">
-            <Maximize2 className="w-5 h-5" />
-          </button>
+          <div className="mx-1.5 border-t border-slate-200 dark:border-slate-700" />
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowPins(!showPins)}
+                className={`m-0.5 p-1.5 rounded transition-all ${showPins ? 'text-[#FFB800]' : 'text-slate-400'}`}
+              >
+                {showPins ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-xs">
+              <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
-        {/* Canvas - Touch enabled */}
+        {/* Canvas */}
         <div 
           ref={containerRef}
-          className={`flex-1 overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`w-full h-full overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -526,8 +471,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         </div>
 
         {(isPlacingPin || activeTool === 'pin') && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
-            Tap on the plan to place pin
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium z-50">
+            Click to place pin
           </div>
         )}
       </div>
