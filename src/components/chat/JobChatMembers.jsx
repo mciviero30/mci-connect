@@ -34,10 +34,11 @@ export default function JobChatMembers({
     queryKey: ['jobChatMembers', jobId],
     queryFn: async () => {
       try {
-        const members = await base44.entities.ChatGroup.filter({ 
-          group_id: `job_${jobId}` 
+        const groups = await base44.entities.ChatGroup.filter({ 
+          job_id: jobId,
+          group_type: 'job_channel'
         });
-        return members.length > 0 ? members[0].members || [] : [];
+        return groups.length > 0 ? groups[0].members || [] : [];
       } catch (error) {
         // If no ChatGroup exists for this job, return empty array
         return [];
