@@ -163,10 +163,11 @@ export default function JobDetails() {
             color="from-[#3B9FF3] to-[#2A8FE3]"
           />
           <StatsCard
-            title={t('totalWorkedHours')}
+            title={language === 'es' ? 'Horas' : 'Hours'}
             value={`${totalHours.toFixed(1)}h`}
+            subtitle={estimatedHours > 0 ? `${language === 'es' ? 'Est:' : 'Est:'} ${estimatedHours.toFixed(1)}h` : null}
             icon={Clock}
-            color="from-green-500 to-emerald-500"
+            color={totalHours > estimatedHours && estimatedHours > 0 ? "from-amber-500 to-orange-500" : "from-green-500 to-emerald-500"}
           />
           <StatsCard
             title={t('totalExpenses')}
