@@ -66,6 +66,7 @@ import Goals from './pages/Goals';
 import TeamGoals from './pages/TeamGoals';
 import TimeTracking from './pages/TimeTracking';
 import TimeReports from './pages/TimeReports';
+import Field from './pages/Field';
 import __Layout from './Layout.jsx';
 
 
@@ -138,6 +139,7 @@ export const PAGES = {
     "TeamGoals": TeamGoals,
     "TimeTracking": TimeTracking,
     "TimeReports": TimeReports,
+    "Field": Field,
 }
 
 export const pagesConfig = {
