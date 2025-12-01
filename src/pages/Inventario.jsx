@@ -317,11 +317,14 @@ export default function Inventario() {
     });
   };
 
-  const filteredItems = items.filter(item =>
-    item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTeam = selectedTeamId === 'all' || item.team_id === selectedTeamId;
+    const matchesType = selectedInventoryType === 'all' || item.inventory_type === selectedInventoryType;
+    return matchesSearch && matchesTeam && matchesType;
+  });
 
   const lowStockItems = items.filter(i => i.status === 'low_stock' || i.status === 'out_of_stock');
   const totalValue = items.reduce((sum, i) => sum + ((i.cost || 0) * (i.quantity || 0)), 0);
