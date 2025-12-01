@@ -54,30 +54,33 @@ const CATEGORIES = [
   { id: 'recognition', label: 'Recognition' },
 ];
 
-export default function WidgetLibrary({ open, onOpenChange, onAddWidget, currentWidgets, userRole }) {
+export default function WidgetLibrary({ open, onOpenChange, onAddWidget, currentWidgets = [], userRole }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const availableWidgets = AVAILABLE_WIDGETS[userRole] || [];
-  const currentWidgetIds = currentWidgets.map(w => w.type);
+  const availableWidgets = AVAILABLE_WIDGETS[userRole] || AVAILABLE_WIDGETS.employee;
+  const currentWidgetTypes = (currentWidgets || []).map(w => w.type);
 
   const filteredWidgets = availableWidgets.filter(widget => {
     const matchesSearch = widget.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || widget.category === selectedCategory;
-    const notAdded = !currentWidgetIds.includes(widget.id);
-    return matchesSearch && matchesCategory && notAdded;
+    // Allow adding same widget type multiple times
+    return matchesSearch && matchesCategory;
   });
 
   const handleAdd = (widget) => {
-    onAddWidget({
+    const newWidget = {
       id: `${widget.id}-${Date.now()}`,
       type: widget.id,
       title: widget.title,
-      icon: widget.icon,
       size: widget.size,
-      position: currentWidgets.length,
+      position: (currentWidgets || []).length,
       visible: true
-    });
+    };
+    
+    if (onAddWidget && typeof onAddWidget === 'function') {
+      onAddWidget(newWidget);
+    }
   };
 
   return (
