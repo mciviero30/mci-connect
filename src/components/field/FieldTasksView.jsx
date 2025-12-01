@@ -26,13 +26,21 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
     },
   });
 
-  // Filter tasks
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  // Extract wall number for sorting
+  const getWallNumber = (title) => {
+    const match = title?.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 999999;
+  };
+
+  // Filter and sort tasks by wall number
+  const filteredTasks = tasks
+    .filter(task => {
+      const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+      return matchesSearch && matchesStatus && matchesPriority;
+    })
+    .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
 
   const columns = [
     { id: 'pending', label: 'Pending', color: 'amber' },
@@ -131,26 +139,33 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
                     {columnTasks.length}
                   </Badge>
                 </div>
-                <div className="space-y-3">
-                  {columnTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, task)}
-                      onClick={() => setSelectedTask(task)}
-                      className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-3 cursor-pointer hover:border-[#FFB800]/50 transition-all"
-                    >
-                      <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-2">{task.title}</h4>
-                      <div className="flex items-center justify-between">
-                        <Badge className={priorityColors[task.priority]}>
-                          {task.priority}
-                        </Badge>
-                        {task.category && (
-                          <span className="text-xs text-slate-500">{task.category}</span>
-                        )}
+                <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
+                  {columnTasks.sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title)).map((task) => {
+                    const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+                    return (
+                      <div
+                        key={task.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task)}
+                        onClick={() => setSelectedTask(task)}
+                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-2 cursor-pointer hover:border-[#FFB800]/50 transition-all flex items-center gap-2"
+                      >
+                        <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
+                          task.status === 'completed' ? 'bg-green-500' :
+                          task.status === 'in_progress' ? 'bg-blue-500' :
+                          task.status === 'blocked' ? 'bg-red-500' :
+                          'bg-amber-500'
+                        }`}>
+                          {wallNum}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <Badge className={`${priorityColors[task.priority]} text-[10px] px-1.5 py-0`}>
+                            {task.priority?.[0]?.toUpperCase()}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -164,7 +179,7 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Title</th>
+                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Wall #</th>
                 <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Status</th>
                 <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Priority</th>
                 <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Category</th>
@@ -172,30 +187,45 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
               </tr>
             </thead>
             <tbody>
-              {filteredTasks.map((task) => (
-                <tr 
-                  key={task.id}
-                  onClick={() => setSelectedTask(task)}
-                  className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
-                >
-                  <td className="p-4 text-slate-900 dark:text-white">{task.title}</td>
-                  <td className="p-4">
-                    <Badge className={`${
-                      task.status === 'completed' ? 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400' :
-                      task.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
-                      task.status === 'blocked' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' :
-                      'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                    }`}>
-                      {task.status}
-                    </Badge>
-                  </td>
-                  <td className="p-4">
-                    <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
-                  </td>
-                  <td className="p-4 text-slate-500 dark:text-slate-400">{task.category}</td>
-                  <td className="p-4 text-slate-500 dark:text-slate-400">{task.assigned_to || '-'}</td>
-                </tr>
-              ))}
+              {filteredTasks.map((task) => {
+                const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+                return (
+                  <tr 
+                    key={task.id}
+                    onClick={() => setSelectedTask(task)}
+                    className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
+                          task.status === 'completed' ? 'bg-green-500' :
+                          task.status === 'in_progress' ? 'bg-blue-500' :
+                          task.status === 'blocked' ? 'bg-red-500' :
+                          'bg-amber-500'
+                        }`}>
+                          {wallNum}
+                        </div>
+                        <span className="text-slate-900 dark:text-white font-medium">Wall {wallNum}</span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <Badge className={`${
+                        task.status === 'completed' ? 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400' :
+                        task.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
+                        task.status === 'blocked' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' :
+                        'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                      }`}>
+                        {task.status}
+                      </Badge>
+                    </td>
+                    <td className="p-4">
+                      <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
+                    </td>
+                    <td className="p-4 text-slate-500 dark:text-slate-400">{task.category}</td>
+                    <td className="p-4 text-slate-500 dark:text-slate-400">{task.assigned_to || '-'}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
