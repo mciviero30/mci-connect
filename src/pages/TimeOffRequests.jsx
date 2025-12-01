@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -172,12 +171,12 @@ export default function TimeOffRequests() {
     const isOverBalance = balance !== null && request.total_days > balance;
     
     return (
-      <Card className={`bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 hover:shadow-xl transition-all ${hasConflict ? 'border-l-4 border-l-orange-400' : ''}`}>
+      <Card className={`bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all ${hasConflict ? 'border-l-4 border-l-orange-400' : ''}`}>
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
-              <h3 className="font-bold text-slate-900 text-lg">{request.employee_name}</h3>
-              <p className="text-sm text-slate-600">{request.employee_email}</p>
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg">{request.employee_name}</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{request.employee_email}</p>
               {request.team_name && (
                 <Badge className="mt-1 bg-slate-100 text-slate-700">
                   {request.team_name}
@@ -198,15 +197,15 @@ export default function TimeOffRequests() {
 
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-600">Dates:</span>
-              <span className="text-slate-900 font-medium">
+              <span className="text-slate-600 dark:text-slate-400">Dates:</span>
+              <span className="text-slate-900 dark:text-white font-medium">
                 {format(new Date(request.start_date), 'MMM d')} - {format(new Date(request.end_date), 'MMM d, yyyy')}
               </span>
             </div>
             
             <div className="flex justify-between text-sm">
-              <span className="text-slate-600">Duration:</span>
-              <span className="text-[#3B9FF3] font-semibold">
+              <span className="text-slate-600 dark:text-slate-400">Duration:</span>
+              <span className="text-[#3B9FF3] dark:text-blue-400 font-semibold">
                 {request.time_scope === 'partial_day' 
                   ? `${request.total_hours || 0}h` 
                   : `${request.total_days || days} day${(request.total_days || days) > 1 ? 's' : ''}`}
@@ -216,8 +215,8 @@ export default function TimeOffRequests() {
             {/* NEW: Days Remaining Column */}
             {balance !== null && (
               <div className="flex justify-between text-sm">
-                <span className="text-slate-600">Days Remaining:</span>
-                <span className={`font-semibold ${isOverBalance ? 'text-red-600' : 'text-green-600'}`}>
+                <span className="text-slate-600 dark:text-slate-400">Days Remaining:</span>
+                <span className={`font-semibold ${isOverBalance ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                   {balance} days
                   {isOverBalance && (
                     <AlertTriangle className="w-4 h-4 inline ml-1 text-red-600" />
@@ -237,14 +236,14 @@ export default function TimeOffRequests() {
             )}
 
             <div className="mt-3">
-              <p className="text-sm text-slate-600 mb-1">Reason:</p>
-              <p className="text-sm text-slate-900">{request.reason}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Reason:</p>
+              <p className="text-sm text-slate-900 dark:text-white">{request.reason}</p>
             </div>
 
             {request.notes && (
-              <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-600 mb-1">Admin Notes:</p>
-                <p className="text-sm text-slate-700">{request.notes}</p>
+              <div className="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Admin Notes:</p>
+                <p className="text-sm text-slate-700 dark:text-slate-300">{request.notes}</p>
               </div>
             )}
           </div>
@@ -350,7 +349,7 @@ export default function TimeOffRequests() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Time-Off Requests"
@@ -396,20 +395,20 @@ export default function TimeOffRequests() {
           </Card>
         </div>
 
-        <Tabs defaultValue={isAdmin ? "pending" : "my_requests"} className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-2">
-          <TabsList className="bg-slate-100 border-slate-200">
-            {isAdmin && (
-              <>
-                <TabsTrigger value="pending" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">
+        <Tabs defaultValue={isAdmin ? "pending" : "my_requests"} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm rounded-xl shadow-lg p-2">
+        <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+          {isAdmin && (
+            <>
+              <TabsTrigger value="pending" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">
                   Pending ({pending.length})
                   {pending.length > 0 && (
                     <Badge className="ml-2 bg-amber-500 text-white text-xs">{pending.length}</Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">All Requests ({requests.length})</TabsTrigger>
+                <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">All Requests ({requests.length})</TabsTrigger>
               </>
             )}
-            <TabsTrigger value="my_requests" className="data-[state=active]:bg-white data-[state=active]:text-slate-900">My Requests ({myRequests.length})</TabsTrigger>
+            <TabsTrigger value="my_requests" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">My Requests ({myRequests.length})</TabsTrigger>
           </TabsList>
 
           {isAdmin && (
@@ -437,9 +436,9 @@ export default function TimeOffRequests() {
 
         {/* Details Dialog with Conflict Calendar */}
         <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-          <DialogContent className="max-w-2xl bg-white border-slate-200 text-slate-900">
+          <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
             <DialogHeader>
-              <DialogTitle>Request Details - {selectedRequest?.employee_name}</DialogTitle>
+              <DialogTitle className="dark:text-white">Request Details - {selectedRequest?.employee_name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               {selectedRequest && (
@@ -517,9 +516,9 @@ export default function TimeOffRequests() {
 
         {/* Reject Dialog */}
         <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-          <DialogContent className="bg-white border-slate-200 text-slate-900">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
             <DialogHeader>
-              <DialogTitle>Reject Request - {selectedRequest?.employee_name}</DialogTitle>
+              <DialogTitle className="dark:text-white">Reject Request - {selectedRequest?.employee_name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>

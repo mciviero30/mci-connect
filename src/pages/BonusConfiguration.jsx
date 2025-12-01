@@ -268,7 +268,7 @@ export default function BonusConfiguration() {
     : [];
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Bonus Configuration"
@@ -283,9 +283,9 @@ export default function BonusConfiguration() {
         />
 
         {/* AUDIT NOTICE */}
-        <Alert className="mb-6 bg-blue-50 border-blue-300">
-          <History className="w-4 h-4" />
-          <AlertDescription className="text-blue-900 text-sm">
+        <Alert className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800">
+          <History className="w-4 h-4 dark:text-blue-400" />
+          <AlertDescription className="text-blue-900 dark:text-blue-300 text-sm">
             <strong>Audit Trail Active:</strong> All bonus creations, modifications, and deletions are automatically logged for payroll reporting and compliance.
           </AlertDescription>
         </Alert>
@@ -300,17 +300,17 @@ export default function BonusConfiguration() {
             const needsReview = bonus.bonus_type === 'percentage' && !hasValidBase;
 
             return (
-              <Card key={bonus.id} className={`bg-white shadow-lg hover:shadow-xl transition-all duration-300 ${
-                needsReview ? 'border-amber-400' : 'border-slate-200'
+              <Card key={bonus.id} className={`bg-white dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all duration-300 ${
+                needsReview ? 'border-amber-400' : 'border-slate-200 dark:border-slate-700'
               }`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <Award className="w-5 h-5 text-[#3B9FF3]" />
-                        <CardTitle className="text-lg text-slate-900">{bonus.employee_name}</CardTitle>
+                        <Award className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                        <CardTitle className="text-lg text-slate-900 dark:text-white">{bonus.employee_name}</CardTitle>
                       </div>
-                      <p className="text-sm text-slate-600 truncate">{bonus.job_name}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{bonus.job_name}</p>
                     </div>
                     <Badge className={
                       bonus.status === 'active' 
@@ -342,24 +342,24 @@ export default function BonusConfiguration() {
                     </Alert>
                   )}
 
-                  <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-2 mb-1">
                       {bonus.bonus_type === 'percentage' ? (
-                        <Percent className="w-5 h-5 text-[#3B9FF3]" />
+                        <Percent className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                       ) : (
-                        <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+                        <DollarSign className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                       )}
-                      <span className="text-xs text-slate-600">
+                      <span className="text-xs text-slate-600 dark:text-slate-400">
                         {bonus.bonus_type === 'percentage' ? 'Percentage of Profit' : 'Fixed Amount'}
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
                       {bonus.bonus_type === 'percentage' ? `${bonus.bonus_value}%` : `$${bonus.bonus_value}`}
                     </p>
                   </div>
 
                   {bonus.notes && (
-                    <p className="text-sm text-slate-600 mb-4 line-clamp-2">{bonus.notes}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{bonus.notes}</p>
                   )}
 
                   <div className="flex gap-2">
@@ -382,9 +382,9 @@ export default function BonusConfiguration() {
 
         {/* BONUS FORM DIALOG */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent className="bg-white border-slate-200 text-slate-900 max-w-2xl">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="text-2xl">{editingBonus ? 'Edit Bonus' : 'New Bonus'}</DialogTitle>
+              <DialogTitle className="text-2xl dark:text-white">{editingBonus ? 'Edit Bonus' : 'New Bonus'}</DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -500,11 +500,11 @@ export default function BonusConfiguration() {
 
         {/* AUDIT TRAIL DIALOG */}
         <Dialog open={showAuditDialog} onOpenChange={setShowAuditDialog}>
-          <DialogContent className="bg-white border-slate-200 max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-3xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">Bonus Audit Trail</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white">Bonus Audit Trail</DialogTitle>
               {selectedBonusForAudit && (
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   {selectedBonusForAudit.employee_name} - {selectedBonusForAudit.job_name}
                 </p>
               )}

@@ -600,10 +600,10 @@ export default function Dashboard() {
               </button>
 
               <div className="min-w-0">
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white truncate">
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                   {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base">
+                <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1">
                   {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
                 </p>
               </div>

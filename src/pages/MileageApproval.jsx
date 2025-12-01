@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -196,7 +195,7 @@ export default function MileageApproval() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Aprobación de Millas' : 'Mileage Approval'}
@@ -271,10 +270,10 @@ export default function MileageApproval() {
           </Card>
         </div>
 
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Car className="w-5 h-5 text-[#3B9FF3]" />
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-800">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Car className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
               {language === 'es' ? 'Registros de Millas' : 'Mileage Records'}
             </CardTitle>
           </CardHeader>
@@ -286,55 +285,55 @@ export default function MileageApproval() {
                 ))}
               </div>
             ) : drivingLogs.length === 0 ? (
-              <div className="p-12 text-center text-slate-500">
+              <div className="p-12 text-center text-slate-500 dark:text-slate-400">
                 {language === 'es' ? 'No hay registros de millas' : 'No mileage records'}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-slate-50 border-slate-200 hover:bg-slate-50">
-                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Empleado' : 'Employee'}</TableHead>
-                      <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
-                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Desde' : 'From'}</TableHead>
-                      <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Hasta' : 'To'}</TableHead>
-                      <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
-                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Millas' : 'Miles'}</TableHead>
-                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Tarifa' : 'Rate'}</TableHead>
-                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
-                      <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
-                      <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
+                    <TableRow className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Empleado' : 'Employee'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">{t('date')}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Desde' : 'From'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Hasta' : 'To'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">{t('job')}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Millas' : 'Miles'}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Tarifa' : 'Rate'}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Monto' : 'Amount'}</TableHead>
+                      <TableHead className="text-slate-700 dark:text-slate-300 font-semibold">{t('status')}</TableHead>
+                      <TableHead className="text-right text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {drivingLogs.map((log) => {
                       const config = statusConfig[log.status] || statusConfig.pending;
                       return (
-                        <TableRow key={log.id} className="hover:bg-slate-50 border-slate-200">
-                          <TableCell className="font-medium text-slate-900">{log.employee_name}</TableCell>
-                          <TableCell className="text-slate-700">
+                        <TableRow key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 border-slate-200 dark:border-slate-700">
+                          <TableCell className="font-medium text-slate-900 dark:text-white">{log.employee_name}</TableCell>
+                          <TableCell className="text-slate-700 dark:text-slate-300">
                             {format(new Date(log.date), 'MMM dd, yyyy')}
                           </TableCell>
-                          <TableCell className="text-slate-700 text-sm">
+                          <TableCell className="text-slate-700 dark:text-slate-300 text-sm">
                             {log.start_location || '-'}
                           </TableCell>
-                          <TableCell className="text-slate-700 text-sm">
+                          <TableCell className="text-slate-700 dark:text-slate-300 text-sm">
                             {log.end_location || '-'}
                           </TableCell>
                           <TableCell>
                             {log.job_name ? (
-                              <span className="text-sm text-slate-900 font-medium">{log.job_name}</span>
+                              <span className="text-sm text-slate-900 dark:text-white font-medium">{log.job_name}</span>
                             ) : (
-                              <span className="text-sm text-slate-500">-</span>
+                              <span className="text-sm text-slate-500 dark:text-slate-400">-</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-right font-semibold text-slate-900">
+                          <TableCell className="text-right font-semibold text-slate-900 dark:text-white">
                             {log.miles} mi
                           </TableCell>
-                          <TableCell className="text-right text-slate-600 text-sm">
+                          <TableCell className="text-right text-slate-600 dark:text-slate-400 text-sm">
                             ${log.rate_per_mile?.toFixed(2)}
                           </TableCell>
-                          <TableCell className="text-right font-bold text-[#3B9FF3]">
+                          <TableCell className="text-right font-bold text-[#3B9FF3] dark:text-blue-400">
                             ${log.total_amount?.toFixed(2)}
                           </TableCell>
                           <TableCell>
@@ -387,9 +386,9 @@ export default function MileageApproval() {
             setSelectedEmployee(null);
           }
         }}>
-          <DialogContent className="bg-white border-slate-200">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">{t('selectEmployee')}</DialogTitle>
+              <DialogTitle className="text-slate-900 dark:text-white">{t('selectEmployee')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -438,9 +437,9 @@ export default function MileageApproval() {
             });
           }
         }}>
-          <DialogContent className="max-w-2xl bg-white border-slate-200">
+          <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">
+              <DialogTitle className="text-slate-900 dark:text-white">
                 {language === 'es' ? 'Nuevo Registro de Millas' : 'New Mileage Record'} - {selectedEmployee?.full_name || `${selectedEmployee?.first_name} ${selectedEmployee?.last_name}`}
               </DialogTitle>
             </DialogHeader>
@@ -567,25 +566,25 @@ export default function MileageApproval() {
 
       {/* Reject Dialog */}
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>
-        <DialogContent className="bg-white border-slate-200">
+        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle className="text-slate-900">
+            <DialogTitle className="text-slate-900 dark:text-white">
               {language === 'es' ? 'Rechazar Millas' : 'Reject Mileage'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {rejectDialog.log && (
-              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-slate-900 font-medium mb-2">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <p className="text-slate-900 dark:text-white font-medium mb-2">
                   <strong>{rejectDialog.log.employee_name}</strong> - {rejectDialog.log.miles} {language === 'es' ? 'millas' : 'miles'}
                 </p>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   ${rejectDialog.log.total_amount?.toFixed(2)} - {format(new Date(rejectDialog.log.date), 'MMM dd, yyyy')}
                 </p>
               </div>
             )}
             <div className="space-y-2">
-              <Label className="text-slate-700 font-medium">
+              <Label className="text-slate-700 dark:text-slate-300 font-medium">
                 {language === 'es' ? 'Motivo del rechazo' : 'Reason for rejection'}
               </Label>
               <Textarea

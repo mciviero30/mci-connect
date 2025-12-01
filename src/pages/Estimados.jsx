@@ -430,9 +430,9 @@ export default function Estimados() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700 shadow-lg border-0 hover:shadow-xl transition-all">
             <CardContent className="p-6">
-              <p className="text-sm font-semibold text-white">{t('totalValue')}</p>
+              <p className="text-sm font-semibold text-cyan-50">{t('totalValue')}</p>
               <p className="text-3xl font-bold text-white mt-1">
                 ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>

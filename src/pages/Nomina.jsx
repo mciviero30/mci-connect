@@ -276,7 +276,7 @@ export default function Nomina() {
                 <Banknote className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900">{t('payroll')}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{t('payroll')}</h1>
                 <div className="flex items-center gap-3 mt-2">
                   <DateRangeFilter 
                     onDateRangeChange={setDateRange}
@@ -347,15 +347,15 @@ export default function Nomina() {
           />
         </div>
 
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl mb-6 border-slate-200">
-          <CardHeader className="border-b border-slate-200">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl mb-6 border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-4">
-              <Search className="w-5 h-5 text-slate-500" />
+              <Search className="w-5 h-5 text-slate-500 dark:text-slate-400" />
               <Input
                 placeholder={language === 'es' ? 'Buscar empleado...' : 'Search employee...'}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-md bg-white border-slate-300 text-slate-900 placeholder:text-slate-500"
+                className="max-w-md bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
               />
             </div>
           </CardHeader>
@@ -367,7 +367,7 @@ export default function Nomina() {
             const config = weekPayroll ? statusConfig[weekPayroll.status] : statusConfig.draft;
             
             return (
-              <Card key={employee.id} className="bg-white/90 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all border-slate-200">
+              <Card key={employee.id} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all border-slate-200 dark:border-slate-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
@@ -386,12 +386,12 @@ export default function Nomina() {
                       )}
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-xl font-bold text-slate-900">{employee.full_name}</h3>
+                          <h3 className="text-xl font-bold text-slate-900 dark:text-white">{employee.full_name}</h3>
                           <Badge className={config.color}>
                             {config.label}
                           </Badge>
                         </div>
-                        <p className="text-sm text-slate-600">{employee.position || t('employee')} • ${hourlyRate}/hr (OT: ${overtimeRate}/hr)</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{employee.position || t('employee')} • ${hourlyRate}/hr (OT: ${overtimeRate}/hr)</p>
                         <div className="flex gap-3 mt-3 flex-wrap">
                           <Badge className="bg-blue-100 border-blue-300 text-blue-800">
                             {normalHours.toFixed(1)}h {language === 'es' ? 'normal' : 'normal'}
@@ -415,30 +415,30 @@ export default function Nomina() {
 
                     <div className="flex items-center gap-6">
                       <div className="text-right">
-                        <p className="text-sm text-slate-600 mb-1">{t('totalPay')}</p>
-                        <p className="text-3xl font-bold text-[#3B9FF3]">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{t('totalPay')}</p>
+                        <p className="text-3xl font-bold text-[#3B9FF3] dark:text-blue-400">
                           ${totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
-                        <div className="text-xs text-slate-600 mt-1 space-y-0.5">
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 space-y-0.5">
                           <div className="flex justify-between gap-4">
                             <span>{language === 'es' ? 'Trabajo' : 'Work'}:</span>
-                            <span className="font-semibold text-slate-700">${workPay.toFixed(2)}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">${workPay.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between gap-4">
                             <span>{language === 'es' ? 'Manejo' : 'Driving'}:</span>
-                            <span className="font-semibold text-slate-700">${drivingPay.toFixed(2)}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">${drivingPay.toFixed(2)}</span>
                           </div>
                           {reimbursements > 0 && (
                             <div className="flex justify-between gap-4">
                               <span>{t('reimbursements')}:</span>
-                              <span className="font-semibold text-slate-700">${reimbursements.toFixed(2)}</span>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">${reimbursements.toFixed(2)}</span>
                             </div>
                           )}
                           {/* NEW: Prompt #60 - Show bonus amount */}
                           {bonusAmount > 0 && (
                             <div className="flex justify-between gap-4">
-                              <span className="text-rose-600">{language === 'es' ? '🎯 Bono' : '🎯 Bonus'}:</span>
-                              <span className="font-semibold text-rose-600">${bonusAmount.toFixed(2)}</span>
+                              <span className="text-rose-600 dark:text-rose-400">{language === 'es' ? '🎯 Bono' : '🎯 Bonus'}:</span>
+                              <span className="font-semibold text-rose-600 dark:text-rose-400">${bonusAmount.toFixed(2)}</span>
                             </div>
                           )}
                         </div>
@@ -461,9 +461,9 @@ export default function Nomina() {
       </div>
 
       <Dialog open={!!selectedEmployee} onOpenChange={() => setSelectedEmployee(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-auto bg-white border-slate-200">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-slate-900">
+            <DialogTitle className="flex items-center gap-3 text-slate-900 dark:text-white">
               <User className="w-6 h-6" />
               {selectedEmployee?.full_name} - {t('payroll')} {t('details')}
             </DialogTitle>

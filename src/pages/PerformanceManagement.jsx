@@ -290,7 +290,7 @@ export default function PerformanceManagement() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Performance & Recognition"
@@ -327,9 +327,9 @@ export default function PerformanceManagement() {
         )}
 
         {/* Top Performers */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl mb-8 border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl mb-8 border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
               <Trophy className="w-5 h-5 text-yellow-400" />
               Top Performers
             </CardTitle>
@@ -338,7 +338,7 @@ export default function PerformanceManagement() {
             <div className="space-y-4">
               {topPerformers.map((emp, idx) => (
                 <Link key={emp.id} to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
-                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-[#3B9FF3]/30 transition-all cursor-pointer">
+                  <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#3B9FF3]/30 dark:hover:border-blue-500/50 transition-all cursor-pointer">
                     <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 text-white font-bold text-lg shadow-lg">
                       #{idx + 1}
                     </div>
@@ -352,9 +352,9 @@ export default function PerformanceManagement() {
                     )}
 
                     <div className="flex-1">
-                      <h3 className="font-bold text-slate-900">{emp.displayName}</h3>
-                      <p className="text-sm text-slate-500">{emp.position}</p>
-                      <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                      <h3 className="font-bold text-slate-900 dark:text-white">{emp.displayName}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{emp.position}</p>
+                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
                         <span>{emp.totalHours.toFixed(1)}h worked</span>
                         <span>•</span>
                         <span>{emp.uniqueJobs} jobs</span>
@@ -376,11 +376,11 @@ export default function PerformanceManagement() {
         </Card>
 
         {/* All Employee Stats with TRANSPARENT CALCULATION */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl mb-8 border-slate-200">
-          <CardHeader className="border-b border-slate-200">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl mb-8 border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <TrendingUp className="w-5 h-5 text-[#3B9FF3]" />
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <TrendingUp className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                 All Employee Stats
               </CardTitle>
               
@@ -411,7 +411,7 @@ export default function PerformanceManagement() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {employeeStats.map(emp => (
                 <Link key={emp.id} to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-[#3B9FF3]/30 transition-all cursor-pointer">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#3B9FF3]/30 dark:hover:border-blue-500/50 transition-all cursor-pointer">
                     <div className="flex items-center gap-3 mb-3">
                       {emp.profile_photo_url ? (
                         <img src={emp.profile_photo_url} alt={emp.displayName} className="w-10 h-10 rounded-full object-cover" />
@@ -421,8 +421,8 @@ export default function PerformanceManagement() {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-slate-900 truncate">{emp.displayName}</h4>
-                        <p className="text-xs text-slate-500 truncate">{emp.position}</p>
+                        <h4 className="font-semibold text-slate-900 dark:text-white truncate">{emp.displayName}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{emp.position}</p>
                       </div>
                     </div>
                     
@@ -436,16 +436,16 @@ export default function PerformanceManagement() {
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                       <span>{emp.totalHours.toFixed(0)}h</span>
                       <span>•</span>
                       <span>{emp.uniqueJobs} jobs</span>
                     </div>
 
                     {emp.totalGoals > 0 && (
-                      <div className="mt-3 pt-3 border-t border-slate-200">
+                      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
                             <Target className="w-3 h-3" />
                             Goals: {emp.completedGoals}/{emp.totalGoals}
                           </span>
@@ -456,8 +456,8 @@ export default function PerformanceManagement() {
                     )}
 
                     {emp.latestRecognition && (
-                      <div className="mt-3 pt-3 border-t border-slate-200">
-                        <p className="text-xs text-slate-500">Latest: {emp.latestRecognition.title}</p>
+                      <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Latest: {emp.latestRecognition.title}</p>
                       </div>
                     )}
                   </div>
@@ -468,27 +468,27 @@ export default function PerformanceManagement() {
         </Card>
 
         {/* Recent Recognitions with EDIT/DELETE (Admin only) */}
-        <Card className="bg-white/90 shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="text-slate-900">All Recognitions</CardTitle>
+        <Card className="bg-white/90 dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="text-slate-900 dark:text-white">All Recognitions</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-3">
               {recognitions.map(rec => {
                 const typeInfo = recognitionTypes.find(t => t.value === rec.recognition_type);
                 return (
-                  <div key={rec.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <div key={rec.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-2xl">{typeInfo?.icon}</span>
-                          <h4 className="font-bold text-slate-900">{rec.title}</h4>
+                          <h4 className="font-bold text-slate-900 dark:text-white">{rec.title}</h4>
                           <Badge className="bg-yellow-500/20 text-yellow-700 border-yellow-500/30">
                             +{rec.points} pts
                           </Badge>
                         </div>
-                        <p className="text-sm text-slate-600 mb-2">{rec.message || rec.description}</p>
-                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{rec.message || rec.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                           <span>👤 {rec.employee_name}</span>
                           <span>•</span>
                           <span>🎁 By: {rec.given_by_name}</span>
@@ -500,16 +500,16 @@ export default function PerformanceManagement() {
                       {isAdmin && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-500 hover:text-slate-900">
+                            <Button variant="ghost" size="icon" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                               <Shield className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-white border-slate-200">
-                            <DropdownMenuItem onClick={() => handleEdit(rec)} className="cursor-pointer">
+                          <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                            <DropdownMenuItem onClick={() => handleEdit(rec)} className="cursor-pointer dark:text-white dark:hover:bg-slate-700">
                               <Edit className="w-4 h-4 mr-2" />
                               Edit (Admin)
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(rec)} className="cursor-pointer text-red-600 focus:text-red-700">
+                            <DropdownMenuItem onClick={() => handleDelete(rec)} className="cursor-pointer text-red-600 dark:text-red-400 focus:text-red-700 dark:hover:bg-red-900/20">
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete (Admin)
                             </DropdownMenuItem>
@@ -524,8 +524,8 @@ export default function PerformanceManagement() {
 
             {recognitions.length === 0 && (
               <div className="text-center py-12">
-                <Award className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-500">No recognitions yet. Start rewarding your team!</p>
+                <Award className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">No recognitions yet. Start rewarding your team!</p>
               </div>
             )}
           </CardContent>
@@ -533,9 +533,9 @@ export default function PerformanceManagement() {
 
         {/* Add/Edit Recognition Dialog */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent className="max-w-lg bg-white border-slate-200">
+          <DialogContent className="max-w-lg bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-slate-900">
+              <DialogTitle className="text-slate-900 dark:text-white">
                 {editingRecognition ? 'Edit Recognition (Admin)' : 'Add Recognition'}
               </DialogTitle>
               {editingRecognition && (

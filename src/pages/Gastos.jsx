@@ -98,7 +98,7 @@ export default function Gastos() {
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
-          title={t('expenses')}
+          title="Expenses"
           description={t('reviewAndApproveExpenses')}
           icon={Receipt}
           actions={
