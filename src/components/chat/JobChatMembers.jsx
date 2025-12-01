@@ -59,7 +59,8 @@ export default function JobChatMembers({
     mutationFn: async (members) => {
       // Check if a ChatGroup already exists for this job
       const existingGroups = await base44.entities.ChatGroup.filter({ 
-        group_id: `job_${jobId}` 
+        job_id: jobId,
+        group_type: 'job_channel'
       });
 
       if (existingGroups.length > 0) {
@@ -70,11 +71,11 @@ export default function JobChatMembers({
       } else {
         // Create new group for job chat
         await base44.entities.ChatGroup.create({
-          group_id: `job_${jobId}`,
+          job_id: jobId,
           group_name: jobName,
           members: members,
           is_active: true,
-          type: 'job_channel'
+          group_type: 'job_channel'
         });
       }
       return members;
