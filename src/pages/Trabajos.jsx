@@ -65,17 +65,46 @@ export default function Trabajos() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       console.log('Creating job:', data);
-      return base44.entities.Job.create(data);
+      const createdJob = await base44.entities.Job.create(data);
+      
+      // Auto-sync to MCI Field app
+      try {
+        const jobDataForField = {
+          id: createdJob.id,
+          name: data.name,
+          description: data.description || '',
+          customer_name: data.customer_name || '',
+          address: data.address || '',
+          city: data.city || '',
+          state: data.state || '',
+          zip: data.zip || '',
+          contract_amount: data.contract_amount || 0,
+          estimated_cost: data.estimated_cost || 0,
+          team_id: data.team_id || '',
+          team_name: data.team_name || '',
+          status: data.status || 'active',
+          color: data.color || 'blue',
+          source: 'mci-connect'
+        };
+        
+        // Copy to clipboard for manual sync if needed
+        navigator.clipboard.writeText(JSON.stringify(jobDataForField, null, 2));
+        console.log('✅ Job data copied to clipboard for MCI Field sync');
+      } catch (syncError) {
+        console.log('Note: Clipboard sync skipped:', syncError.message);
+      }
+      
+      return createdJob;
     },
-    onSuccess: () => {
-      console.log('Job created successfully');
+    onSuccess: (createdJob) => {
+      console.log('Job created successfully:', createdJob.id);
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       setShowForm(false);
-      setShowAIWizard(false); // Ensure AI wizard closes
+      setShowAIWizard(false);
       setEditingJob(null);
-      toast.success(t('jobCreated'));
+      toast.success(`${t('jobCreated')} - Job data copied to clipboard for MCI Field`);
     },
     onError: (error) => {
       console.error('Error creating job:', error);
