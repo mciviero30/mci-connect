@@ -35,11 +35,19 @@ export default function Inventario() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showTransactionDialog, setShowTransactionDialog] = useState(false);
-  const [showMovementDialog, setShowMovementDialog] = useState(false); // NEW: Movement dialog
+  const [showMovementDialog, setShowMovementDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState('all');
+  const [selectedInventoryType, setSelectedInventoryType] = useState('all');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    initialData: []
+  });
 
   const { data: items, isLoading } = useQuery({
     queryKey: ['inventoryItems'],
@@ -59,7 +67,6 @@ export default function Inventario() {
     initialData: []
   });
 
-  // NEW: Query for customers (to use as suppliers)
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list(),
