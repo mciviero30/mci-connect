@@ -93,6 +93,13 @@ export default function CostAccumulationChart({
   const variancePercent = estimatedBudget > 0 ? (variance / estimatedBudget) * 100 : 0;
   const isOverBudget = variance < 0;
 
+  // Hours calculations
+  const totalWorkedHours = timeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
+  const estimatedHoursCost = estimatedHours * 25; // $25/hour average
+  const actualHoursCost = totalWorkedHours * 25;
+  const hoursVariance = estimatedHours - totalWorkedHours;
+  const isOverHours = totalWorkedHours > estimatedHours && estimatedHours > 0;
+
   if (chartData.length === 0) {
     return (
       <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
