@@ -15,7 +15,9 @@ import {
   Trash2,
   Edit2,
   Save,
-  Link2
+  Link2,
+  MapPin,
+  AtSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,11 +27,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { format } from 'date-fns';
 import TaskTimeTracker from './TaskTimeTracker.jsx';
 import TaskDependencies from './TaskDependencies.jsx';
+import TaskChecklistEditor from './TaskChecklistEditor.jsx';
 
-export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] }) {
+export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [], onZoomTo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const [newComment, setNewComment] = useState('');
+  const [showMentions, setShowMentions] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -46,6 +50,12 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] })
   const { data: attachments = [] } = useQuery({
     queryKey: ['task-attachments', task.id],
     queryFn: () => base44.entities.TaskAttachment.filter({ task_id: task.id }),
+  });
+
+  const { data: projectMembers = [] } = useQuery({
+    queryKey: ['project-members', jobId],
+    queryFn: () => base44.entities.ProjectMember.filter({ project_id: jobId }),
+    enabled: !!jobId,
   });
 
   const updateTaskMutation = useMutation({
@@ -85,6 +95,15 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] })
     });
   };
 
+  const handleMention = (email) => {
+    setNewComment(prev => prev + `@${email.split('@')[0]} `);
+    setShowMentions(false);
+  };
+
+  const handleChecklistChange = (newChecklist) => {
+    updateTaskMutation.mutate({ checklist: newChecklist });
+  };
+
   const handleStatusChange = (status) => {
     updateTaskMutation.mutate({ status });
   };
@@ -102,6 +121,17 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] })
       <div className="p-4 border-b border-slate-700 flex items-center justify-between">
         <h3 className="font-semibold text-white">Detalle de Tarea</h3>
         <div className="flex items-center gap-2">
+          {task.pin_x && task.pin_y && onZoomTo && (
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              onClick={() => onZoomTo(task)} 
+              className="text-[#FFB800] hover:text-[#FFB800]/80"
+              title="Zoom to pin"
+            >
+              <MapPin className="w-4 h-4" />
+            </Button>
+          )}
           {isEditing ? (
             <Button size="icon" variant="ghost" onClick={handleSave} className="text-green-400 hover:text-green-300">
               <Save className="w-4 h-4" />
@@ -210,31 +240,17 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] })
           </div>
         )}
 
-        {/* Checklist */}
-        {task.checklist?.length > 0 && (
-          <div>
-            <label className="text-xs text-slate-400 uppercase mb-2 block">Checklist</label>
-            <div className="space-y-2">
-              {task.checklist.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <input 
-                    type="checkbox" 
-                    checked={item.completed}
-                    onChange={() => {
-                      const newChecklist = [...task.checklist];
-                      newChecklist[idx].completed = !newChecklist[idx].completed;
-                      updateTaskMutation.mutate({ checklist: newChecklist });
-                    }}
-                    className="rounded border-slate-600"
-                  />
-                  <span className={`text-sm ${item.completed ? 'text-slate-500 line-through' : 'text-slate-300'}`}>
-                    {item.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Checklist - Enhanced */}
+        <div>
+          <label className="text-xs text-slate-400 uppercase mb-2 block flex items-center gap-2">
+            <CheckSquare className="w-3 h-3" />
+            Checklist
+          </label>
+          <TaskChecklistEditor 
+            checklist={task.checklist || []}
+            onChange={handleChecklistChange}
+          />
+        </div>
 
         {/* Attachments */}
         {attachments.length > 0 && (
@@ -275,22 +291,55 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [] })
               </div>
             ))}
           </div>
-          <div className="flex gap-2">
-            <Input 
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Escribe un comentario..."
-              className="bg-slate-900 border-slate-700 text-white"
-              onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
-            />
-            <Button 
-              size="icon"
-              onClick={handleAddComment}
-              disabled={!newComment.trim() || addCommentMutation.isPending}
-              className="bg-amber-500 hover:bg-amber-600"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+          <div className="relative">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Input 
+                  value={newComment}
+                  onChange={(e) => {
+                    setNewComment(e.target.value);
+                    if (e.target.value.endsWith('@')) {
+                      setShowMentions(true);
+                    }
+                  }}
+                  placeholder="Type @ to mention..."
+                  className="bg-slate-900 border-slate-700 text-white pr-10"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                />
+                <button
+                  onClick={() => setShowMentions(!showMentions)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                >
+                  <AtSign className="w-4 h-4" />
+                </button>
+              </div>
+              <Button 
+                size="icon"
+                onClick={handleAddComment}
+                disabled={!newComment.trim() || addCommentMutation.isPending}
+                className="bg-amber-500 hover:bg-amber-600"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {/* Mentions Dropdown */}
+            {showMentions && projectMembers.length > 0 && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-32 overflow-y-auto">
+                {projectMembers.map(member => (
+                  <button
+                    key={member.id}
+                    onClick={() => handleMention(member.user_email)}
+                    className="w-full px-3 py-2 text-left text-sm text-slate-300 hover:bg-slate-700 flex items-center gap-2"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-[#FFB800]/20 flex items-center justify-center text-[#FFB800] text-xs font-bold">
+                      {member.user_name?.[0] || member.user_email?.[0]?.toUpperCase()}
+                    </div>
+                    <span>{member.user_name || member.user_email}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
