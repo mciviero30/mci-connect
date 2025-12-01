@@ -39,8 +39,8 @@ export default function DashboardWidget({
       }`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-slate-900 text-lg flex items-center gap-2">
-              {widget.icon && <widget.icon className="w-5 h-5 text-[#3B9FF3]" />}
+            <CardTitle className="text-slate-900 dark:text-white text-lg flex items-center gap-2">
+              {widget.icon && <widget.icon className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
               {widget.title}
             </CardTitle>
             {isEditing && (
