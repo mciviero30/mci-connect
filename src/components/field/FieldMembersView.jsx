@@ -115,10 +115,10 @@ export default function FieldMembersView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Project Team</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Project Team</h1>
         <Button 
           onClick={() => setShowInvite(true)}
-          className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Invite Member
@@ -297,7 +297,7 @@ export default function FieldMembersView({ jobId }) {
           <p className="text-slate-500 dark:text-slate-400 mb-4">Invite your team to the project</p>
           <Button 
             onClick={() => setShowInvite(true)}
-            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
           >
             <UserPlus className="w-4 h-4 mr-2" />
             Invite Member

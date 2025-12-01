@@ -80,7 +80,7 @@ export default function FieldActivityLogView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623] flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800] flex items-center gap-2">
           <Activity className="w-6 h-6" />
           Project Activity
         </h1>
@@ -115,7 +115,7 @@ export default function FieldActivityLogView({ jobId }) {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-[#F5A623] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filteredActivities.length === 0 ? (
         <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">

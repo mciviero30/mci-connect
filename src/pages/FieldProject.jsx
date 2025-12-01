@@ -161,10 +161,10 @@ export default function FieldProject() {
           </Link>
           <div className="flex items-center gap-3">
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/4d23ffc0e_Gemini_Generated_Image_9yx0pj9yx0pj9yx0.png"
-              alt="MCI Field"
-              className="w-10 h-10 object-contain"
-            />
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5dcd95f71_Screenshot2025-12-01at21824PM.png"
+                alt="MCI Field"
+                className="w-10 h-10 object-contain"
+              />
             <div className="flex-1 min-w-0">
               <h2 className="font-semibold text-slate-900 dark:text-white truncate">{job.name || job.job_name_field}</h2>
               <Badge className={`text-xs ${

@@ -155,7 +155,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Plans</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Plans</h1>
         <div className="flex gap-2">
           <Button 
             variant="outline"
@@ -182,7 +182,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           <p className="text-slate-500 dark:text-slate-400 mb-4">Upload your first plan to get started</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#F5A623] hover:bg-[#E09000]"
+            className="bg-[#FFB800] hover:bg-[#E5A600]"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Plan
@@ -196,7 +196,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-[#F5A623]/50 transition-all group relative shadow-sm"
+                className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-[#FFB800]/50 transition-all group relative shadow-sm"
               >
                 {/* Action buttons */}
                 <div className="absolute top-2 left-2 z-20 flex gap-1">
@@ -256,7 +256,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#F5A623] transition-colors">
+                    <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#FFB800] transition-colors">
                       {plan.name}
                     </h3>
                     {plan.folder && (
@@ -379,7 +379,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               <Button 
                 onClick={handleCreatePlan}
                 disabled={!newPlan.file || !newPlan.name || createPlanMutation.isPending}
-                className="bg-[#F5A623] hover:bg-[#E09000]"
+                className="bg-[#FFB800] hover:bg-[#E5A600]"
               >
                 {createPlanMutation.isPending ? 'Saving...' : 'Save Plan'}
               </Button>

@@ -154,8 +154,8 @@ export default function FieldChecklistsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Checklists & Inspections</h1>
-        <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Checklists & Inspections</h1>
+        <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
           <Plus className="w-4 h-4 mr-2" />
           New Template
         </Button>
@@ -187,7 +187,7 @@ export default function FieldChecklistsView({ jobId }) {
           <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No templates</h3>
           <p className="text-slate-500 dark:text-slate-400 mb-4">Create reusable checklists</p>
-          <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
+          <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
             <Plus className="w-4 h-4 mr-2" />
             Create Template
           </Button>

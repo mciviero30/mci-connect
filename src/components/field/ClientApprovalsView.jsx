@@ -88,8 +88,8 @@ export default function ClientApprovalsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Client Approvals</h1>
-        <Button onClick={() => setShowCreate(true)} className="bg-[#F5A623] hover:bg-[#E09000] text-white">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Client Approvals</h1>
+        <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
           <Plus className="w-4 h-4 mr-2" />
           Request Approval
         </Button>

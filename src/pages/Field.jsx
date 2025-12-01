@@ -87,11 +87,11 @@ export default function Field() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/4d23ffc0e_Gemini_Generated_Image_9yx0pj9yx0pj9yx0.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5dcd95f71_Screenshot2025-12-01at21824PM.png"
                 alt="MCI Field"
                 className="w-48 h-48 object-contain"
               />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-[#D4C85C]">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
             </div>
             <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
             <Badge className="mt-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border-amber-500/30">

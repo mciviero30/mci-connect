@@ -68,10 +68,10 @@ export default function FieldPhotosView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Photos</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Photos</h1>
         <Button 
           onClick={() => setShowUpload(true)}
-          className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
           Upload Photo
@@ -80,8 +80,8 @@ export default function FieldPhotosView({ jobId }) {
 
       <Tabs defaultValue="gallery" className="mb-6">
         <TabsList className="bg-slate-100 dark:bg-slate-800/50">
-          <TabsTrigger value="gallery" className="data-[state=active]:bg-[#F5A623] data-[state=active]:text-white">Gallery</TabsTrigger>
-          <TabsTrigger value="comparison" className="data-[state=active]:bg-[#F5A623] data-[state=active]:text-white">
+          <TabsTrigger value="gallery" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">Gallery</TabsTrigger>
+          <TabsTrigger value="comparison" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
             <ArrowLeftRight className="w-4 h-4 mr-1" />
             Comparisons
           </TabsTrigger>
@@ -102,7 +102,7 @@ export default function FieldPhotosView({ jobId }) {
           <p className="text-slate-500 dark:text-slate-400 mb-4">Upload photos of project progress</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Photo

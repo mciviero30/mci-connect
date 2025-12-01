@@ -66,7 +66,7 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
     <div className="p-6 flex flex-col h-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623]">Tasks</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Tasks</h1>
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -105,7 +105,7 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
           </div>
           <Button 
             onClick={() => setShowCreateTask(true)}
-            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Task
@@ -138,7 +138,7 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
                       draggable
                       onDragStart={(e) => handleDragStart(e, task)}
                       onClick={() => setSelectedTask(task)}
-                      className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-3 cursor-pointer hover:border-[#F5A623]/50 transition-all"
+                      className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-3 cursor-pointer hover:border-[#FFB800]/50 transition-all"
                     >
                       <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-2">{task.title}</h4>
                       <div className="flex items-center justify-between">

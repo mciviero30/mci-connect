@@ -206,7 +206,7 @@ export default function FieldChatView({ jobId }) {
             <Button 
               onClick={handleSendMessage}
               disabled={!message.trim() || sendMessageMutation.isPending}
-              className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+              className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
             >
               <Send className="w-4 h-4" />
             </Button>

@@ -47,7 +47,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
   });
 
   const statusData = [
-    { name: 'Pending', value: statusCounts.pending, color: '#F5A623' },
+    { name: 'Pending', value: statusCounts.pending, color: '#FFB800' },
     { name: 'In Progress', value: statusCounts.in_progress, color: '#3B82F6' },
     { name: 'Completed', value: statusCounts.completed, color: '#10B981' },
     { name: 'Blocked', value: statusCounts.blocked, color: '#EF4444' },
@@ -84,7 +84,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F5A623] mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800] mb-6">Analytics</h1>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
