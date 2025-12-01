@@ -400,7 +400,11 @@ export default function Dashboard() {
         );
       
       case 'pending-expenses':
-        return <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="amber" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />;
+        return (
+          <Link to={createPageUrl('Gastos')}>
+            <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="amber" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />
+          </Link>
+        );
       
       case 'total-hours':
         return <StatsWidget value={`${totalWorkedHours.toFixed(1)}h`} label={t('totalWorkedHours')} icon={Clock} color="purple" />;
