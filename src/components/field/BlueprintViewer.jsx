@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import TaskPin from './TaskPin.jsx';
@@ -33,6 +33,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const containerRef = useRef(null);
   const imageRef = useRef(null);
   const timeoutRef = useRef(null);
+  
+  // Touch handling for mobile
+  const [touchStart, setTouchStart] = useState(null);
+  const [lastTouchDistance, setLastTouchDistance] = useState(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   // Validate file type
   const isValidFileType = (url) => {
@@ -184,6 +189,64 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setIsDragging(false);
   };
 
+  // Touch handlers for mobile
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      // Pinch zoom start
+      const distance = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setLastTouchDistance(distance);
+    } else if (e.touches.length === 1 && !isPlacingPin) {
+      // Pan start
+      setIsDragging(true);
+      setTouchStart({
+        x: e.touches[0].clientX - position.x,
+        y: e.touches[0].clientY - position.y
+      });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && lastTouchDistance) {
+      // Pinch zoom
+      e.preventDefault();
+      const distance = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const scale = distance / lastTouchDistance;
+      setZoom(prev => Math.min(Math.max(prev * scale, 0.5), 3));
+      setLastTouchDistance(distance);
+    } else if (e.touches.length === 1 && isDragging && touchStart) {
+      // Pan
+      setPosition({
+        x: e.touches[0].clientX - touchStart.x,
+        y: e.touches[0].clientY - touchStart.y
+      });
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    setIsDragging(false);
+    setTouchStart(null);
+    setLastTouchDistance(null);
+    
+    // Handle tap for placing pin
+    if (isPlacingPin && e.changedTouches.length === 1) {
+      const touch = e.changedTouches[0];
+      const rect = imageRef.current?.getBoundingClientRect();
+      if (rect) {
+        const x = ((touch.clientX - rect.left) / rect.width) * 100;
+        const y = ((touch.clientY - rect.top) / rect.height) * 100;
+        setPendingPinPosition({ x, y });
+        setShowCreateTask(true);
+        setIsPlacingPin(false);
+      }
+    }
+  };
+
   const handleImageClick = (e) => {
     if (!isPlacingPin) return;
     
@@ -205,51 +268,54 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     <div className="h-full flex">
       {/* Main Viewer */}
       <div className="flex-1 flex flex-col bg-slate-900">
-        {/* Toolbar */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-700/50">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-400 hover:text-white">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+        {/* Toolbar - Responsive */}
+        <div className="flex items-center justify-between p-2 md:p-4 border-b border-slate-700/50">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-400 hover:text-white p-2">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden md:inline ml-2">Back</span>
             </Button>
-            <span className="text-white font-medium">{plan.name}</span>
+            <span className="text-white font-medium text-sm md:text-base truncate max-w-[120px] md:max-w-none">{plan.name}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             <Button
               variant={isPlacingPin ? "default" : "outline"}
               size="sm"
               onClick={() => setIsPlacingPin(!isPlacingPin)}
-              className={isPlacingPin 
+              className={`${isPlacingPin 
                 ? "bg-amber-500 hover:bg-amber-600 text-white" 
                 : "border-slate-700 text-slate-300 hover:bg-slate-800"
-              }
+              } px-2 md:px-3`}
             >
-              <Plus className="w-4 h-4 mr-2" />
-              {isPlacingPin ? 'Cancel' : 'Add Task'}
+              <Plus className="w-4 h-4" />
+              <span className="hidden md:inline ml-2">{isPlacingPin ? 'Cancel' : 'Add Task'}</span>
             </Button>
-            <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1">
-              <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-8 w-8 text-slate-400 hover:text-white">
+            <div className="flex items-center gap-0.5 md:gap-1 bg-slate-800 rounded-lg p-0.5 md:p-1">
+              <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-7 w-7 md:h-8 md:w-8 text-slate-400 hover:text-white">
                 <ZoomOut className="w-4 h-4" />
               </Button>
-              <span className="text-sm text-slate-400 w-12 text-center">{Math.round(zoom * 100)}%</span>
-              <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-8 w-8 text-slate-400 hover:text-white">
+              <span className="text-xs md:text-sm text-slate-400 w-10 md:w-12 text-center">{Math.round(zoom * 100)}%</span>
+              <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-7 w-7 md:h-8 md:w-8 text-slate-400 hover:text-white">
                 <ZoomIn className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={handleReset} className="h-8 w-8 text-slate-400 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={handleReset} className="h-7 w-7 md:h-8 md:w-8 text-slate-400 hover:text-white">
                 <Maximize2 className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Canvas */}
+        {/* Canvas - Touch enabled */}
         <div 
           ref={containerRef}
-          className={`flex-1 overflow-hidden ${isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 overflow-hidden touch-none ${isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {/* Loading State */}
           {loadingState === 'loading' && (

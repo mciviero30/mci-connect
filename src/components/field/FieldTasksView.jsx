@@ -121,21 +121,21 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
         </div>
       </div>
 
-      {/* Kanban View */}
+      {/* Kanban View - Responsive */}
       {view === 'kanban' && (
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto">
+        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 overflow-x-auto">
           {columns.map((column) => {
             const columnTasks = filteredTasks.filter(t => t.status === column.id);
             return (
               <div 
                 key={column.id}
-                className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 min-h-[400px] shadow-sm"
+                className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-sm"
                 onDrop={(e) => handleDrop(e, column.id)}
                 onDragOver={handleDragOver}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`font-semibold text-${column.color}-600 dark:text-${column.color}-400`}>{column.label}</h3>
-                  <Badge className={`bg-${column.color}-100 dark:bg-${column.color}-500/20 text-${column.color}-600 dark:text-${column.color}-400 border-${column.color}-200 dark:border-${column.color}-500/30`}>
+                <div className="flex items-center justify-between mb-2 md:mb-4">
+                  <h3 className={`font-semibold text-xs md:text-sm text-${column.color}-600 dark:text-${column.color}-400`}>{column.label}</h3>
+                  <Badge className={`bg-${column.color}-100 dark:bg-${column.color}-500/20 text-${column.color}-600 dark:text-${column.color}-400 border-${column.color}-200 dark:border-${column.color}-500/30 text-[10px] md:text-xs`}>
                     {columnTasks.length}
                   </Badge>
                 </div>

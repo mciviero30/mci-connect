@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Upload, X, Expand, Trash2, Download, ArrowLeftRight } from 'lucide-react';
+import { Plus, Upload, X, Expand, Trash2, Download, ArrowLeftRight, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,12 +10,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import PhotoComparisonView from './PhotoComparison.jsx';
+import MobilePhotoCapture from './MobilePhotoCapture.jsx';
 
 export default function FieldPhotosView({ jobId }) {
   const [showUpload, setShowUpload] = useState(false);
+  const [showMobileCapture, setShowMobileCapture] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [newPhoto, setNewPhoto] = useState({ file_url: '', caption: '', location: '' });
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const queryClient = useQueryClient();
 
@@ -69,13 +72,25 @@ export default function FieldPhotosView({ jobId }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Photos</h1>
-        <Button 
-          onClick={() => setShowUpload(true)}
-          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Upload Photo
-        </Button>
+        <div className="flex gap-2">
+          {/* Mobile: Camera capture button */}
+          <Button 
+            onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
+            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+          >
+            {isMobile ? (
+              <>
+                <Camera className="w-4 h-4 mr-2" />
+                Take Photo
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Upload Photo
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="gallery" className="mb-6">
@@ -253,6 +268,16 @@ export default function FieldPhotosView({ jobId }) {
           )}
         </DialogContent>
       </Dialog>
+      {/* Mobile Photo Capture */}
+      <MobilePhotoCapture
+        open={showMobileCapture}
+        onOpenChange={setShowMobileCapture}
+        jobId={jobId}
+        onPhotoCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
+          setShowMobileCapture(false);
+        }}
+      />
     </div>
   );
 }

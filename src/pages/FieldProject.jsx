@@ -45,11 +45,20 @@ import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
 import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
 import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
 import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
+import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get('id');
   const [activeTab, setActiveTab] = useState('overview');
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Handle resize
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const { data: job, isLoading } = useQuery({
     queryKey: ['field-job', jobId],
@@ -158,10 +167,17 @@ export default function FieldProject() {
     }
   };
 
+  const handleBack = () => {
+    window.location.href = createPageUrl('Field');
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 flex flex-col shadow-sm">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      {isMobile && <MobileHeader job={job} onBack={handleBack} />}
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 flex-col shadow-sm">
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-700/50">
           <Link to={createPageUrl('Field')}>
@@ -223,9 +239,19 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto pb-20 md:pb-0">
         {renderContent()}
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <MobileBottomNav 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          taskCount={tasks.length}
+          planCount={plans.length}
+        />
+      )}
     </div>
   );
 }
