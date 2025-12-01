@@ -364,8 +364,10 @@ export default function Dashboard() {
   };
 
   const handleAddWidget = (widget) => {
-    setWidgets([...widgets, widget]);
-    setShowWidgetLibrary(false);
+    if (widget && widget.id && widget.type) {
+      setWidgets(prev => [...prev, widget]);
+      setShowWidgetLibrary(false);
+    }
   };
 
   const handleSaveLayout = () => {
