@@ -397,14 +397,14 @@ export default function Chat() {
         <div className="grid lg:grid-cols-4 gap-6">
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardHeader className="pb-3 border-b border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">Conversations</CardTitle>
                 <div className="flex gap-1">
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => setShowCreateGroup(true)}
-                    className="h-8 w-8 text-[#3B9FF3] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    className="h-7 w-7 text-[#3B9FF3] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     title="Create group chat"
                   >
                     <Users className="w-4 h-4" />
@@ -413,7 +413,7 @@ export default function Chat() {
                     size="icon"
                     variant="ghost"
                     onClick={() => setShowNewDM(true)}
-                    className="h-8 w-8 text-[#3B9FF3] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    className="h-7 w-7 text-[#3B9FF3] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     title="Start direct message"
                   >
                     <UserPlus className="w-4 h-4" />
@@ -423,7 +423,7 @@ export default function Chat() {
             </CardHeader>
             <CardContent className="p-3">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full h-9 bg-slate-100 dark:bg-slate-800 mb-3 grid grid-cols-3 p-1 rounded-lg">
+                <TabsList className="w-full h-9 bg-slate-100 dark:bg-slate-800 mb-4 grid grid-cols-3 p-1 rounded-lg">
                   <TabsTrigger value="channels" className="text-xs rounded-md data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white data-[state=active]:shadow-sm dark:text-slate-300">
                     <Hash className="w-3.5 h-3.5 mr-1" />
                     Channels
