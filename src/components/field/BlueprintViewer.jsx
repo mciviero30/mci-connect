@@ -292,18 +292,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
             <div 
               className="relative w-full h-full flex items-center justify-center"
               style={{
-                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transform: isPdfFile(plan.file_url) ? 'none' : `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
                 transformOrigin: 'center center',
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
-              <div className="relative">
+              <div className="relative" style={{ width: isPdfFile(plan.file_url) ? '100%' : 'auto', height: isPdfFile(plan.file_url) ? '100%' : 'auto' }}>
                 {isPdfFile(plan.file_url) ? (
                   <iframe
-                    src={plan.file_url}
+                    src={`${plan.file_url}#toolbar=1&navpanes=0&scrollbar=1`}
                     title={plan.name}
-                    className="w-[800px] h-[600px] border-0"
-                    onClick={handleImageClick}
+                    className="w-full h-full min-h-[calc(100vh-200px)] border-0 bg-white"
+                    style={{ minWidth: '100%', minHeight: 'calc(100vh - 150px)' }}
                   />
                 ) : (
                   <img 
@@ -319,8 +319,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     }}
                   />
                 )}
-                {/* Task Pins */}
-                {tasks.map((task) => (
+                {/* Task Pins - only for images */}
+                {!isPdfFile(plan.file_url) && tasks.map((task) => (
                   <TaskPin 
                     key={task.id}
                     task={task}
@@ -329,7 +329,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   />
                 ))}
                 {/* Pending Pin */}
-                {pendingPinPosition && (
+                {pendingPinPosition && !isPdfFile(plan.file_url) && (
                   <div 
                     className="absolute w-6 h-6 -ml-3 -mt-6 animate-bounce"
                     style={{ left: `${pendingPinPosition.x}%`, top: `${pendingPinPosition.y}%` }}

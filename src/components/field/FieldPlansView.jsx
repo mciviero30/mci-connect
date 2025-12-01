@@ -168,46 +168,57 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {plans.map((plan) => {
             const taskCount = tasks.filter(t => t.blueprint_id === plan.id).length;
+            const isPdf = plan.file_url?.toLowerCase().includes('.pdf');
             return (
               <div 
                 key={plan.id}
-                onClick={() => setSelectedPlan(plan)}
-                className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden cursor-pointer hover:border-amber-500/50 transition-all group"
+                className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden hover:border-amber-500/50 transition-all group relative"
               >
-                <div className="aspect-video relative overflow-hidden bg-slate-700">
-                  {plan.file_url?.toLowerCase().includes('.pdf') ? (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-5xl mb-2">📄</div>
-                        <p className="text-white text-sm">PDF</p>
+                {/* Delete button - always visible */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('¿Estás seguro de eliminar este plano?')) {
+                      deletePlanMutation.mutate(plan.id);
+                    }
+                  }}
+                  className="absolute top-2 left-2 z-20 p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                <div 
+                  onClick={() => setSelectedPlan(plan)}
+                  className="cursor-pointer"
+                >
+                  <div className="aspect-video relative overflow-hidden bg-slate-700">
+                    {isPdf ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-5xl mb-2">📄</div>
+                          <p className="text-white text-sm">PDF</p>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <img 
-                      src={plan.file_url}
-                      alt={plan.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  )}
-                  <div className="hidden w-full h-full flex items-center justify-center absolute inset-0">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">🖼️</div>
-                      <p className="text-slate-400 text-sm">Vista previa no disponible</p>
-                    </div>
+                    ) : (
+                      <img 
+                        src={plan.file_url}
+                        alt={plan.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = '';
+                          e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><div class="text-4xl mb-2">🖼️</div><p class="text-slate-400 text-sm">Vista previa no disponible</p></div></div>';
+                        }}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                    {taskCount > 0 && (
+                      <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full z-10">
+                        {taskCount} tareas
+                      </div>
+                    )}
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-                  {taskCount > 0 && (
-                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full z-10">
-                      {taskCount} tareas
-                    </div>
-                  )}
-                </div>
-                <div className="p-4 flex items-center justify-between">
-                  <div>
+                  <div className="p-4">
                     <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors">
                       {plan.name}
                     </h3>
@@ -215,17 +226,6 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                       <p className="text-sm text-slate-400">{plan.folder}</p>
                     )}
                   </div>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm('¿Estás seguro de eliminar este plano?')) {
-                        deletePlanMutation.mutate(plan.id);
-                      }
-                    }}
-                    className="p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             );
