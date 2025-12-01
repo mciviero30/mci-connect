@@ -69,31 +69,22 @@ export default function Trabajos() {
       console.log('Creating job:', data);
       const createdJob = await base44.entities.Job.create(data);
       
-      // Auto-sync to MCI Field app
+      // Auto-sync to MCI Field app via backend function
       try {
-        const jobDataForField = {
-          id: createdJob.id,
-          name: data.name,
-          description: data.description || '',
-          customer_name: data.customer_name || '',
-          address: data.address || '',
-          city: data.city || '',
-          state: data.state || '',
-          zip: data.zip || '',
-          contract_amount: data.contract_amount || 0,
-          estimated_cost: data.estimated_cost || 0,
-          team_id: data.team_id || '',
-          team_name: data.team_name || '',
-          status: data.status || 'active',
-          color: data.color || 'blue',
-          source: 'mci-connect'
-        };
+        const syncResult = await base44.functions.syncJobToMCIField({
+          jobData: {
+            ...data,
+            id: createdJob.id
+          }
+        });
         
-        // Copy to clipboard for manual sync if needed
-        navigator.clipboard.writeText(JSON.stringify(jobDataForField, null, 2));
-        console.log('✅ Job data copied to clipboard for MCI Field sync');
+        if (syncResult.success) {
+          console.log('✅ Job synced to MCI Field automatically');
+        } else {
+          console.warn('⚠️ MCI Field sync failed:', syncResult.error);
+        }
       } catch (syncError) {
-        console.log('Note: Clipboard sync skipped:', syncError.message);
+        console.warn('⚠️ MCI Field sync error:', syncError.message);
       }
       
       return createdJob;
@@ -104,7 +95,7 @@ export default function Trabajos() {
       setShowForm(false);
       setShowAIWizard(false);
       setEditingJob(null);
-      toast.success(`${t('jobCreated')} - Job data copied to clipboard for MCI Field`);
+      toast.success(t('jobCreated'));
     },
     onError: (error) => {
       console.error('Error creating job:', error);
