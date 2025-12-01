@@ -216,6 +216,7 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
             task={selectedTask}
             onClose={() => setSelectedTask(null)}
             jobId={jobId}
+            allTasks={tasks}
           />
         </div>
       )}

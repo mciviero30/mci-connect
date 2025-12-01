@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Upload, X, Expand, Trash2, Download } from 'lucide-react';
+import { Plus, Upload, X, Expand, Trash2, Download, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
+import PhotoComparisonView from './PhotoComparison.jsx';
 
 export default function FieldPhotosView({ jobId }) {
   const [showUpload, setShowUpload] = useState(false);
@@ -76,6 +78,19 @@ export default function FieldPhotosView({ jobId }) {
         </Button>
       </div>
 
+      <Tabs defaultValue="gallery" className="mb-6">
+        <TabsList className="bg-slate-800/50">
+          <TabsTrigger value="gallery" className="data-[state=active]:bg-amber-500">Galería</TabsTrigger>
+          <TabsTrigger value="comparison" className="data-[state=active]:bg-amber-500">
+            <ArrowLeftRight className="w-4 h-4 mr-1" />
+            Comparaciones
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="comparison" className="mt-4">
+          <PhotoComparisonView jobId={jobId} photos={photos} />
+        </TabsContent>
+        <TabsContent value="gallery">
+
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
@@ -119,6 +134,9 @@ export default function FieldPhotosView({ jobId }) {
           ))}
         </div>
       )}
+
+        </TabsContent>
+      </Tabs>
 
       {/* Upload Dialog */}
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
