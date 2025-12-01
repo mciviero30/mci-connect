@@ -407,7 +407,11 @@ export default function Dashboard() {
         );
       
       case 'total-hours':
-        return <StatsWidget value={`${totalWorkedHours.toFixed(1)}h`} label={t('totalWorkedHours')} icon={Clock} color="purple" />;
+        return (
+          <Link to={createPageUrl('Horarios')}>
+            <StatsWidget value={`${totalWorkedHours.toFixed(1)}h`} label={t('totalWorkedHours')} icon={Clock} color="purple" />
+          </Link>
+        );
       
       case 'work-hours':
         return (
