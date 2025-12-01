@@ -215,28 +215,17 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                       <p className="text-sm text-slate-400">{plan.folder}</p>
                     )}
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button 
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
-                      <DropdownMenuItem 
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          deletePlanMutation.mutate(plan.id);
-                        }}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm('¿Estás seguro de eliminar este plano?')) {
+                        deletePlanMutation.mutate(plan.id);
+                      }
+                    }}
+                    className="p-2 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             );
