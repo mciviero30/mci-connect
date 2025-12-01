@@ -794,6 +794,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           jobId={jobId}
+          allTasks={tasks}
+          onZoomTo={handleZoomToTask}
         />
       )}
 
