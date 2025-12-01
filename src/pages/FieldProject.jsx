@@ -15,7 +15,13 @@ import {
   BarChart3,
   Settings,
   ClipboardList,
-  Loader2
+  Loader2,
+  DollarSign,
+  Flag,
+  ClipboardCheck,
+  CheckCircle2,
+  Activity,
+  QrCode
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +37,12 @@ import FieldMembersView from '@/components/field/FieldMembersView.jsx';
 import FieldAnalyticsView from '@/components/field/FieldAnalyticsView.jsx';
 import FieldFormsView from '@/components/field/FieldFormsView.jsx';
 import FieldReportsView from '@/components/field/FieldReportsView.jsx';
+import FieldBudgetView from '@/components/field/FieldBudgetView.jsx';
+import FieldMilestonesView from '@/components/field/FieldMilestonesView.jsx';
+import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
+import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
+import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
+import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -62,12 +74,18 @@ export default function FieldProject() {
     { id: 'overview', label: 'Resumen', icon: LayoutDashboard },
     { id: 'plans', label: 'Planos', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tareas', icon: CheckSquare, count: tasks.length },
+    { id: 'milestones', label: 'Hitos', icon: Flag },
     { id: 'photos', label: 'Fotos', icon: Camera },
     { id: 'documents', label: 'Documentos', icon: FileText },
+    { id: 'budget', label: 'Presupuesto', icon: DollarSign },
+    { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
+    { id: 'approvals', label: 'Aprobaciones', icon: CheckCircle2 },
+    { id: 'materials', label: 'Materiales QR', icon: QrCode },
     { id: 'chat', label: 'Chat', icon: MessageSquare },
     { id: 'members', label: 'Equipo', icon: Users },
     { id: 'forms', label: 'Formularios', icon: ClipboardList },
     { id: 'reports', label: 'Reportes', icon: BarChart3 },
+    { id: 'activity', label: 'Actividad', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   ];
 
@@ -100,10 +118,20 @@ export default function FieldProject() {
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
       case 'tasks':
         return <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />;
+      case 'milestones':
+        return <FieldMilestonesView jobId={jobId} />;
       case 'photos':
         return <FieldPhotosView jobId={jobId} />;
       case 'documents':
         return <FieldDocumentsView jobId={jobId} />;
+      case 'budget':
+        return <FieldBudgetView jobId={jobId} />;
+      case 'checklists':
+        return <FieldChecklistsView jobId={jobId} />;
+      case 'approvals':
+        return <ClientApprovalsView jobId={jobId} />;
+      case 'materials':
+        return <QRCodeScanner jobId={jobId} />;
       case 'chat':
         return <FieldChatView jobId={jobId} />;
       case 'members':
@@ -112,6 +140,8 @@ export default function FieldProject() {
         return <FieldFormsView jobId={jobId} />;
       case 'reports':
         return <FieldReportsView jobId={jobId} />;
+      case 'activity':
+        return <FieldActivityLogView jobId={jobId} />;
       case 'analytics':
         return <FieldAnalyticsView jobId={jobId} tasks={tasks} />;
       default:
