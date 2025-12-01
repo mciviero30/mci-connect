@@ -39,7 +39,7 @@ export default function PlanAnalyzer({ open, onOpenChange, plan, jobId, onTasksC
 
     try {
       // Use AI to analyze the plan
-      const analysisPrompt = `Analyze this Falkbuilt installation plan PDF/image and extract all wall information.
+      const analysisPrompt = `Analyze this Falkbuilt installation plan PDF/image and extract all wall information WITH THEIR POSITIONS.
 
 For each wall found, identify:
 1. Wall number (e.g., 001, 002, 003)
@@ -51,15 +51,18 @@ For each wall found, identify:
    - "stack_wall" (glass over solid like FB-STK-SS)
 3. Room name if visible (e.g., "Conference 101", "Private 117")
 4. Door number if present (e.g., "101A", "117A")
+5. IMPORTANT - Position: Estimate the X and Y coordinates (as percentages 0-100) of where the wall number tag appears in the image:
+   - position_x: horizontal position (0=left edge, 100=right edge)
+   - position_y: vertical position (0=top edge, 100=bottom edge)
 
 Look for:
-- Wall tags with numbers like "001", "002" with arrows
+- Wall tags with numbers like "001", "002" with arrows - note their POSITION in the drawing
 - Door swings (arc patterns indicate pivot/hinge doors)
 - Sliding door indicators (parallel lines)
 - Room labels
 - Falkbuilt wall type codes (FB-KAI, FB-HB, FB-SS, FB-STK-SS, etc.)
 
-Return the data as JSON array.`;
+Return the data as JSON array with position coordinates for each wall.`;
 
       setProgress(30);
 
@@ -81,9 +84,11 @@ Return the data as JSON array.`;
                   },
                   room_name: { type: "string" },
                   door_number: { type: "string" },
-                  notes: { type: "string" }
+                  notes: { type: "string" },
+                  position_x: { type: "number", description: "X coordinate as percentage 0-100" },
+                  position_y: { type: "number", description: "Y coordinate as percentage 0-100" }
                 },
-                required: ["wall_number", "wall_type"]
+                required: ["wall_number", "wall_type", "position_x", "position_y"]
               }
             },
             project_info: {
@@ -144,7 +149,6 @@ Return the data as JSON array.`;
       let created = 0;
 
       const wallsWithTemplates = detectedWalls.filter(w => w.template);
-      const gridCols = Math.ceil(Math.sqrt(wallsWithTemplates.length));
       
       for (let i = 0; i < wallsWithTemplates.length; i++) {
         const wall = wallsWithTemplates[i];
@@ -155,11 +159,9 @@ Return the data as JSON array.`;
 
         const taskTitle = `Wall ${wall.wall_number}${wall.room_name ? ` - ${wall.room_name}` : ''}`;
         
-        // Calculate grid position for pin placement
-        const row = Math.floor(i / gridCols);
-        const col = i % gridCols;
-        const pin_x = 10 + (col * (80 / gridCols)) + (40 / gridCols);
-        const pin_y = 10 + (row * (80 / Math.ceil(wallsWithTemplates.length / gridCols))) + 5;
+        // Use AI-detected position or fallback to grid
+        const pin_x = wall.position_x ?? (10 + (i % 5) * 18);
+        const pin_y = wall.position_y ?? (10 + Math.floor(i / 5) * 18);
         
         await createTaskMutation.mutateAsync({
           job_id: jobId,
