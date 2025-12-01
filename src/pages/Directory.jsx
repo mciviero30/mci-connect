@@ -98,8 +98,8 @@ export default function Directory() {
               
               return (
                 <Link key={emp.id} to={`/employee-profile?id=${emp.id}`}>
-                  <Card className={`group hover:shadow-xl transition-all duration-300 border-slate-200 ${
-                    isCurrentUser ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300' : 'bg-white'
+                  <Card className={`group hover:shadow-xl transition-all duration-300 ${
+                    isCurrentUser ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-300 dark:border-blue-700' : 'bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700'
                   }`}>
                     <CardContent className="p-6">
                       <div className="flex items-start gap-4">
@@ -119,7 +119,7 @@ export default function Directory() {
                         
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg text-slate-900 truncate">
+                            <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate">
                               {getDisplayName(emp)}
                             </h3>
                             {isCurrentUser && (
@@ -128,7 +128,7 @@ export default function Directory() {
                           </div>
                           
                           {emp.position && (
-                            <p className="text-sm text-slate-600 mb-2">{capitalizeName(emp.position)}</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{capitalizeName(emp.position)}</p>
                           )}
                           
                           {emp.department && (
@@ -139,13 +139,13 @@ export default function Directory() {
                           
                           <div className="space-y-1 mt-2">
                             {emp.phone && (
-                              <div className="flex items-center gap-2 text-xs text-slate-600">
+                              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                                 <Phone className="w-3 h-3" />
                                 <span>{emp.phone}</span>
                               </div>
                             )}
                             {emp.email && (
-                              <div className="flex items-center gap-2 text-xs text-slate-600">
+                              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                                 <Mail className="w-3 h-3" />
                                 <span className="truncate">{emp.email}</span>
                               </div>
@@ -160,10 +160,10 @@ export default function Directory() {
             })}
           </div>
         ) : (
-          <Card className="bg-white shadow-xl border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
-              <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 mb-4">
+              <Users className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
                 {searchTerm ? 'No employees found matching your search' : 'No employees in directory'}
               </p>
             </CardContent>

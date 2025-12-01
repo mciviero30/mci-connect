@@ -362,7 +362,7 @@ export default function TestingChecklist() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -371,7 +371,7 @@ export default function TestingChecklist() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-[#3B9FF3] to-blue-600 bg-clip-text text-transparent mb-2">
                 📋 QA Testing Checklist
               </h1>
-              <p className="text-slate-600">
+              <p className="text-slate-600 dark:text-slate-400">
                 Guía completa de pruebas de calidad para MCI Connect
               </p>
             </div>
@@ -387,12 +387,12 @@ export default function TestingChecklist() {
           </div>
 
           {/* Progress Overview */}
-          <Card className="bg-white shadow-xl border-slate-200">
+          <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">Progreso General</h3>
-                  <p className="text-sm text-slate-600">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Progreso General</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
                     {passed} de {total} pruebas completadas
                   </p>
                 </div>
@@ -438,18 +438,18 @@ export default function TestingChecklist() {
         {/* Test Categories */}
         <div className="space-y-6">
           {qaTests.map((category) => (
-            <Card key={category.id} className="bg-white shadow-xl border-slate-200">
-              <CardHeader className="border-b border-slate-200">
+            <Card key={category.id} className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`p-3 bg-gradient-to-br ${category.color} rounded-xl shadow-md`}>
                       <category.icon className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-slate-900 text-xl">
+                      <CardTitle className="text-slate-900 dark:text-white text-xl">
                         {category.category}
                       </CardTitle>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
                         {category.tests.length} prueba{category.tests.length > 1 ? 's' : ''}
                       </p>
                     </div>
@@ -494,7 +494,7 @@ export default function TestingChecklist() {
                               )}
                             </button>
                             <div className="flex-1">
-                              <h4 className="font-bold text-slate-900">{test.title}</h4>
+                              <h4 className="font-bold text-slate-900 dark:text-white">{test.title}</h4>
                               {result?.completedAt && (
                                 <p className="text-xs text-slate-500">
                                   Completado: {new Date(result.completedAt).toLocaleString('es-ES')}

@@ -69,7 +69,7 @@ export default function Capacitacion() {
   const completedCount = myProgress.filter(p => p.status === 'completed').length;
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('training')}
@@ -83,7 +83,7 @@ export default function Capacitacion() {
             const isRequired = course.required;
 
             return (
-              <Card key={course.id} className="glass-card shadow-lg hover:shadow-xl transition-all border-slate-800">
+              <Card key={course.id} className="bg-white dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all border-slate-200 dark:border-slate-700">
                 <CardContent className="p-6">
                   {course.thumbnail_url && (
                     <img src={course.thumbnail_url} alt={course.title} className="w-full h-40 object-cover rounded-lg mb-4" />
@@ -91,7 +91,7 @@ export default function Capacitacion() {
 
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="font-bold text-xl text-white mb-2">{course.title}</h3>
+                      <h3 className="font-bold text-xl text-slate-900 dark:text-white mb-2">{course.title}</h3>
                       <div className="flex gap-2 mb-2">
                         {isRequired && (
                           <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
@@ -112,10 +112,10 @@ export default function Capacitacion() {
                   </div>
 
                   {course.description && (
-                    <p className="text-sm text-slate-400 mb-4 line-clamp-3">{course.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">{course.description}</p>
                   )}
 
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4">
                     <Clock className="w-4 h-4" />
                     <span>{course.duration_minutes} {t('minutes')}</span>
                   </div>
@@ -152,10 +152,10 @@ export default function Capacitacion() {
         </div>
 
         {availableCourses.length === 0 && (
-          <Card className="glass-card shadow-lg border-slate-800">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
-              <GraduationCap className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-500">{t('noCoursesAvailable')}</p>
+              <GraduationCap className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-500 dark:text-slate-400">{t('noCoursesAvailable')}</p>
             </CardContent>
           </Card>
         )}

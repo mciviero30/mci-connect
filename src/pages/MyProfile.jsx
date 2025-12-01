@@ -107,14 +107,14 @@ export default function MyProfile() {
     : user.profile_photo_url;
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       {/* BACKGROUND CERTIFICATION MONITORING */}
       <CertificationMonitor userEmail={user.email} />
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Mi Perfil</h1>
-          <p className="text-slate-600">Gestiona tu información personal</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Mi Perfil</h1>
+          <p className="text-slate-600 dark:text-slate-400">Gestiona tu información personal</p>
         </div>
 
         {/* CERTIFICATION ALERTS */}
@@ -184,10 +184,10 @@ export default function MyProfile() {
         )}
 
         {/* Profile Picture - Clickable */}
-        <Card className="mb-6 border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Camera className="w-5 h-5 text-[#3B9FF3]" />
+        <Card className="mb-6 border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Camera className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
               Foto de Perfil
             </CardTitle>
           </CardHeader>
@@ -231,11 +231,11 @@ export default function MyProfile() {
         </Card>
 
         {/* Personal Information */}
-        <Card className="border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg">
-          <CardHeader className="border-b border-slate-200">
+        <Card className="border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-slate-900">
-                <User className="w-5 h-5 text-[#3B9FF3]" />
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <User className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                 {t('information')}
               </CardTitle>
               <Button
@@ -253,7 +253,7 @@ export default function MyProfile() {
                 <Label className="text-slate-700">{t('fullName')}</Label>
                 <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <User className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-900 font-medium">{getDisplayName(user)}</span>
+                  <span className="text-slate-900 dark:text-white font-medium">{getDisplayName(user)}</span>
                 </div>
               </div>
 
@@ -410,10 +410,10 @@ export default function MyProfile() {
         </Card>
 
         {/* Performance Reviews Section */}
-        <Card className="border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg mt-6">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <FileText className="w-5 h-5 text-[#3B9FF3]" />
+        <Card className="border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg mt-6">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <FileText className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
               Recent Performance & Recognition
             </CardTitle>
           </CardHeader>
@@ -469,9 +469,9 @@ export default function MyProfile() {
         </Card>
 
         {/* Quick Links to Other Self-Service Features */}
-        <Card className="border-slate-200 bg-white/90 backdrop-blur-sm shadow-lg mt-6">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="text-slate-900">Self-Service Actions</CardTitle>
+        <Card className="border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg mt-6">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="text-slate-900 dark:text-white">Self-Service Actions</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid md:grid-cols-3 gap-4">

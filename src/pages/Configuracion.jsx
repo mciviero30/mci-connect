@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -276,7 +275,7 @@ export default function Configuracion() {
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Configuración' : 'Settings'}
@@ -285,34 +284,34 @@ export default function Configuracion() {
         />
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+          <TabsList className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700 p-1 rounded-xl shadow-sm">
             {isAdmin && (
               <>
-                <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                   <Building2 className="w-4 h-4" />
                   {language === 'es' ? 'Empresa' : 'Company'}
                 </TabsTrigger>
-                <TabsTrigger value="defaults" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                <TabsTrigger value="defaults" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                   <DollarSign className="w-4 h-4" />
                   {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+                <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                   <Bell className="w-4 h-4" />
                   {language === 'es' ? 'Notificaciones (Admin)' : 'Notifications (Admin)'}
                 </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
               <Users className="w-4 h-4" />
               {language === 'es' ? 'Mi Perfil' : 'My Profile'}
             </TabsTrigger>
             {/* NEW: My Notifications Tab Trigger */}
-            <TabsTrigger value="my-notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+            <TabsTrigger value="my-notifications" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
               <Bell className="w-4 h-4" />
               {language === 'es' ? 'Mis Notificaciones' : 'My Notifications'}
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
                 <HardDrive className="w-4 h-4" />
                 {language === 'es' ? 'Sistema' : 'System'}
               </TabsTrigger>
@@ -321,10 +320,10 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="company">
-              <Card className="bg-white shadow-xl border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <Building2 className="w-5 h-5 text-[#3B9FF3]" />
+              <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Building2 className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                     {language === 'es' ? 'Información de la Empresa' : 'Company Information'}
                   </CardTitle>
                 </CardHeader>
@@ -438,10 +437,10 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="defaults">
-              <Card className="bg-white shadow-xl border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+              <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <DollarSign className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                     {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
                   </CardTitle>
                 </CardHeader>
@@ -523,10 +522,10 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="notifications">
-              <Card className="bg-white shadow-xl border-slate-200">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <Bell className="w-5 h-5 text-[#3B9FF3]" />
+              <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Bell className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                     {language === 'es' ? 'Configuración de Notificaciones (Admin)' : 'Admin Notification Settings'}
                   </CardTitle>
                 </CardHeader>
@@ -583,10 +582,10 @@ export default function Configuracion() {
           )}
 
           <TabsContent value="profile">
-            <Card className="bg-white shadow-xl border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <User className="w-5 h-5 text-[#3B9FF3]" />
+            <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                  <User className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                   {language === 'es' ? 'Mi Perfil' : 'My Profile'}
                 </CardTitle>
               </CardHeader>
@@ -667,10 +666,10 @@ export default function Configuracion() {
 
           {/* NEW: My Notifications Tab */}
           <TabsContent value="my-notifications">
-            <Card className="bg-white shadow-xl border-slate-200">
-              <CardHeader className="border-b border-slate-200">
-                <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <Bell className="w-5 h-5 text-[#3B9FF3]" />
+            <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                  <Bell className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
                   {language === 'es' ? 'Mis Preferencias de Notificaciones' : 'My Notification Preferences'}
                 </CardTitle>
                 <CardDescription>
@@ -1006,10 +1005,10 @@ function SystemMaintenanceTools() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-white shadow-xl border-slate-200">
-        <CardHeader className="border-b border-slate-200">
-          <CardTitle className="flex items-center gap-2 text-slate-900">
-            <HardDrive className="w-5 h-5 text-[#3B9FF3]" />
+      <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+        <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+          <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <HardDrive className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
             {language === 'es' ? 'Auditoría de Archivos' : 'File Audit'}
           </CardTitle>
         </CardHeader>
@@ -1040,10 +1039,10 @@ function SystemMaintenanceTools() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white shadow-xl border-slate-200">
-        <CardHeader className="border-b border-slate-200">
-          <CardTitle className="flex items-center gap-2 text-slate-900">
-            <Shield className="w-5 h-5 text-[#3B9FF3]" />
+      <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
+        <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+          <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Shield className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
             {language === 'es' ? 'Intentos de Login Fallidos' : 'Failed Login Attempts'}
           </CardTitle>
         </CardHeader>

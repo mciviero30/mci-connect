@@ -72,7 +72,7 @@ export default function Formularios() {
   );
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('forms')}
@@ -85,11 +85,11 @@ export default function Formularios() {
             const mySubmissionsForThisForm = mySubmissions.filter(s => s.template_id === template.id);
 
             return (
-              <Card key={template.id} className="glass-card shadow-lg hover:shadow-xl transition-all border-slate-800">
+              <Card key={template.id} className="bg-white dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all border-slate-200 dark:border-slate-700">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="font-bold text-xl text-white mb-2">{template.name}</h3>
+                      <h3 className="font-bold text-xl text-slate-900 dark:text-white mb-2">{template.name}</h3>
                       <Badge className="bg-[#3B9FF3]/20 text-[#3B9FF3] border-[#3B9FF3]">
                         {t(template.type)}
                       </Badge>
@@ -97,11 +97,11 @@ export default function Formularios() {
                   </div>
 
                   {template.description && (
-                    <p className="text-sm text-slate-400 mb-4">{template.description}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{template.description}</p>
                   )}
 
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-                    <div className="text-sm text-slate-500">
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
                       {mySubmissionsForThisForm.length > 0 ? (
                         <div className="flex items-center gap-1 text-[#3B9FF3]">
                           <CheckCircle className="w-4 h-4" />
@@ -122,10 +122,10 @@ export default function Formularios() {
         </div>
 
         {availableTemplates.length === 0 && (
-          <Card className="glass-card shadow-lg border-slate-800">
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
-              <ClipboardList className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-500">{t('noForms')}</p>
+              <ClipboardList className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-500 dark:text-slate-400">{t('noForms')}</p>
             </CardContent>
           </Card>
         )}
@@ -150,9 +150,9 @@ export default function Formularios() {
         </Card>
 
         <Dialog open={!!selectedForm} onOpenChange={() => setSelectedForm(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-800">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-white">{selectedForm?.name}</DialogTitle>
+              <DialogTitle className="text-2xl text-slate-900 dark:text-white">{selectedForm?.name}</DialogTitle>
             </DialogHeader>
             <div className="py-4 space-y-4">
               {selectedForm?.fields.map(field => (

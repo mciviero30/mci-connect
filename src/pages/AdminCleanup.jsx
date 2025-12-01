@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -338,7 +337,7 @@ export default function AdminCleanup() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto"> {/* Changed to max-w-7xl to accommodate new sections */}
         <PageHeader
           title={language === 'es' ? 'Limpieza de Datos' : 'Data Cleanup'}
@@ -347,10 +346,10 @@ export default function AdminCleanup() {
         />
 
         {/* Existing Cleanup Functionality */}
-        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-red-200 mb-8">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-3 text-slate-900">
-              <Trash2 className="w-6 h-6 text-red-500" />
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-red-200 dark:border-red-800 mb-8">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-3 text-slate-900 dark:text-white">
+              <Trash2 className="w-6 h-6 text-red-500 dark:text-red-400" />
               Limpiar Datos de Prueba
             </CardTitle>
           </CardHeader>
@@ -410,10 +409,10 @@ export default function AdminCleanup() {
         </Card>
 
         {/* NEW: Prompt #65 - Duplicate Detection Section */}
-        <Card className="bg-white shadow-xl border-slate-200 mb-8">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Users className="w-5 h-5 text-[#3B9FF3]" />
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700 mb-8">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <Users className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
               Detección de Duplicados
             </CardTitle>
           </CardHeader>
@@ -508,10 +507,10 @@ export default function AdminCleanup() {
         </Card>
 
         {/* NEW: Prompt #65 - Orphaned Records Section */}
-        <Card className="bg-white shadow-xl border-slate-200 mb-8">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <LinkIcon className="w-5 h-5 text-[#3B9FF3]" />
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700 mb-8">
+          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <LinkIcon className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
               Registros Huérfanos
             </CardTitle>
           </CardHeader>
