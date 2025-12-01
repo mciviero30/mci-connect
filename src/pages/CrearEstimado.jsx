@@ -545,6 +545,11 @@ export default function CrearEstimado() {
                     <div className="h-9 flex items-center text-[#3B9FF3] font-bold">
                       ${item.total.toFixed(2)}
                     </div>
+                    {item.installation_time > 0 && (
+                      <p className="text-xs text-amber-600 mt-0.5" title="Solo referencia interna MCI">
+                        ⏱ {((item.installation_time || 0) * (item.quantity || 0)).toFixed(1)}h
+                      </p>
+                    )}
                   </div>
 
                   <div className="md:col-span-1 flex items-end">
