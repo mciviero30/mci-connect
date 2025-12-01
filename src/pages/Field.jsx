@@ -80,7 +80,7 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e]">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
       <div className="px-6 py-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -91,9 +91,9 @@ export default function Field() {
                 alt="MCI Field"
                 className="w-12 h-12 object-contain"
               />
-              <h1 className="text-3xl font-bold text-[#D4C85C]">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-[#D4C85C]">Dashboard</h1>
             </div>
-            <p className="text-slate-400">Central management for construction projects</p>
+            <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
             <Badge className="mt-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 border-amber-500/30">
               🏗️ MCI Field • Field Execution
             </Badge>
@@ -138,7 +138,7 @@ export default function Field() {
         {/* Projects Section */}
         <div className="mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold text-white">My Projects</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">My Projects</h2>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -146,16 +146,16 @@ export default function Field() {
                   placeholder="Search projects..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 w-64"
+                  className="pl-9 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 w-64"
                 />
               </div>
-              <div className="flex bg-slate-800/50 rounded-lg p-1">
+              <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
                 <button
                   onClick={() => setFilter('active')}
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     filter === 'active' 
-                      ? 'bg-slate-700 text-white' 
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   Active
@@ -164,8 +164,8 @@ export default function Field() {
                   onClick={() => setFilter('all')}
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                     filter === 'all' 
-                      ? 'bg-slate-700 text-white' 
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   All
@@ -193,40 +193,40 @@ export default function Field() {
 
       {/* New Project Dialog */}
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Project Name</Label>
+              <Label className="text-slate-600 dark:text-slate-300">Project Name</Label>
               <Input 
                 value={newProject.name}
                 onChange={(e) => setNewProject({...newProject, name: e.target.value})}
                 placeholder="e.g., Northwestern Mutual Tower"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Address</Label>
+              <Label className="text-slate-600 dark:text-slate-300">Address</Label>
               <Input 
                 value={newProject.address}
                 onChange={(e) => setNewProject({...newProject, address: e.target.value})}
-                placeholder="Ej: 123 Main St, Atlanta GA"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                placeholder="e.g., 123 Main St, Atlanta GA"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Description</Label>
+              <Label className="text-slate-600 dark:text-slate-300">Description</Label>
               <Textarea 
                 value={newProject.description}
                 onChange={(e) => setNewProject({...newProject, description: e.target.value})}
                 placeholder="Project description..."
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowNewProject(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowNewProject(false)} className="border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                 Cancel
               </Button>
               <Button 
@@ -260,11 +260,11 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className={`bg-gradient-to-br ${colorClasses[color]} border rounded-xl p-5`}>
+    <div className={`bg-white dark:bg-gradient-to-br dark:${colorClasses[color]} border border-slate-200 dark:border-transparent rounded-xl p-5 shadow-sm`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold text-white mt-2">{value}</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{value}</p>
         </div>
         <div className={`p-3 rounded-full ${iconColors[color]}`}>
           <Icon className="w-6 h-6" />
@@ -290,7 +290,7 @@ function ProjectCard({ job, index }) {
       transition={{ delay: index * 0.05 }}
     >
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:bg-slate-800 hover:border-slate-600 transition-all cursor-pointer group">
+        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer group shadow-sm">
           <div className="flex items-start justify-between mb-3">
             <div className="p-2 bg-amber-500/20 rounded-lg">
               <FolderOpen className="w-5 h-5 text-amber-400" />
@@ -301,7 +301,7 @@ function ProjectCard({ job, index }) {
                job.status === 'on_hold' ? 'On Hold' : 'Archived'}
             </Badge>
           </div>
-          <h3 className="font-semibold text-white group-hover:text-amber-400 transition-colors mb-1">
+          <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors mb-1">
             {jobName}
           </h3>
           <p className="text-sm text-slate-400 line-clamp-1">
@@ -320,11 +320,11 @@ function ProjectCard({ job, index }) {
 
 function EmptyState({ onCreateProject }) {
   return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl p-12 text-center">
-      <div className="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <AlertCircle className="w-8 h-8 text-slate-500" />
+    <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+      <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <AlertCircle className="w-8 h-8 text-slate-400 dark:text-slate-500" />
       </div>
-      <h3 className="text-xl font-semibold text-white mb-2">No projects assigned</h3>
+      <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No projects assigned</h3>
       <p className="text-slate-400 mb-6">
         Start by creating your first project or request access to an existing one
       </p>

@@ -89,7 +89,7 @@ export default function FieldProject() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#1a1f2e] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
       </div>
     );
@@ -97,7 +97,7 @@ export default function FieldProject() {
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-[#1a1f2e] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-400 mb-4">Project not found</p>
           <Link to={createPageUrl('Field')}>
@@ -148,13 +148,13 @@ export default function FieldProject() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e] flex">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex">
       {/* Sidebar */}
-      <div className="w-64 bg-slate-900/50 border-r border-slate-700/50 flex flex-col">
+      <div className="w-64 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 flex flex-col shadow-sm">
         {/* Header */}
-        <div className="p-4 border-b border-slate-700/50">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700/50">
           <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
+            <Button variant="ghost" size="sm" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-3">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
@@ -166,7 +166,7 @@ export default function FieldProject() {
               className="w-8 h-8 object-contain"
             />
             <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-white truncate">{job.name || job.job_name_field}</h2>
               <Badge className={`text-xs ${
                 job.status === 'active' 
                   ? 'bg-green-500/20 text-green-400 border-green-500/30'
@@ -186,8 +186,8 @@ export default function FieldProject() {
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === item.id
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -197,8 +197,8 @@ export default function FieldProject() {
               {item.count !== undefined && item.count > 0 && (
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   activeTab === item.id
-                    ? 'bg-amber-500/30 text-amber-300'
-                    : 'bg-slate-700 text-slate-400'
+                    ? 'bg-amber-500/30 text-amber-600 dark:text-amber-300'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                 }`}>
                   {item.count}
                 </span>
