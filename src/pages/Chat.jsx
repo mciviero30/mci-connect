@@ -4,12 +4,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, Users, Image, Smile, Search } from "lucide-react";
+import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign } from "lucide-react";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MessageBubble from "../components/chat/MessageBubble";
+import TypingIndicator from "../components/chat/TypingIndicator";
+import MentionInput from "../components/chat/MentionInput";
+import DirectMessagesList from "../components/chat/DirectMessagesList";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
 
 const EMOJIS = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇',
@@ -114,47 +120,137 @@ export default function Chat() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const messagesEndRef = useRef(null);
+  const toast = useToast();
+  const typingTimeoutRef = useRef(null);
+  
   const [message, setMessage] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('general');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showNewDM, setShowNewDM] = useState(false);
+  const [selectedDMUser, setSelectedDMUser] = useState(null);
+  const [chatMode, setChatMode] = useState('channels'); // 'channels' or 'direct'
+  const [selectedDMConv, setSelectedDMConv] = useState(null);
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
   const { data: messages, isLoading } = useQuery({
-    queryKey: ['messages', selectedGroup],
-    queryFn: () => base44.entities.ChatMessage.filter({ group_id: selectedGroup }, 'created_date'),
+    queryKey: ['messages', selectedGroup, selectedDMConv?.id],
+    queryFn: () => {
+      if (chatMode === 'direct' && selectedDMConv) {
+        return base44.entities.ChatMessage.filter({ 
+          group_id: `dm_${selectedDMConv.id}` 
+        }, 'created_date');
+      }
+      return base44.entities.ChatMessage.filter({ group_id: selectedGroup }, 'created_date');
+    },
     initialData: [],
-    refetchInterval: 5000, // Changed from 3000 to 5000ms
-    staleTime: 3000, // Add stale time
+    refetchInterval: 2000, // Real-time updates every 2 seconds
+    staleTime: 1000,
   });
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list(),
     initialData: [],
-    staleTime: 60000, // Cache for 1 minute
+    staleTime: 60000,
+  });
+
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
+    initialData: [],
+    staleTime: 300000,
   });
 
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.ChatMessage.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', selectedGroup] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
       setMessage('');
+      setReplyingTo(null);
+      
+      // Send notifications to mentioned users
+      const mentions = extractMentions(message);
+      if (mentions.length > 0) {
+        mentions.forEach(mentionedName => {
+          const mentionedUser = employees.find(e => e.full_name === mentionedName);
+          if (mentionedUser && mentionedUser.email !== user.email) {
+            base44.entities.Notification.create({
+              user_email: mentionedUser.email,
+              type: 'chat_mention',
+              title: `${user.full_name} mentioned you`,
+              message: message.substring(0, 100),
+              link: '/Chat',
+              is_read: false
+            }).catch(err => console.error('Error creating mention notification:', err));
+          }
+        });
+      }
     }
   });
 
-  const handleSend = (e, content = null, type = 'text') => {
+  const reactionMutation = useMutation({
+    mutationFn: ({ messageId, reaction }) => {
+      const msg = messages.find(m => m.id === messageId);
+      const reactions = msg?.reactions || {};
+      const reactionUsers = reactions[reaction] || [];
+      
+      const newReactionUsers = reactionUsers.includes(user.email)
+        ? reactionUsers.filter(email => email !== user.email)
+        : [...reactionUsers, user.email];
+      
+      return base44.entities.ChatMessage.update(messageId, {
+        reactions: {
+          ...reactions,
+          [reaction]: newReactionUsers
+        }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+    }
+  });
+
+  const extractMentions = (text) => {
+    const mentionRegex = /@(\w+(?:\s+\w+)*)/g;
+    const matches = [];
+    let match;
+    while ((match = mentionRegex.exec(text)) !== null) {
+      matches.push(match[1]);
+    }
+    return matches;
+  };
+
+  const handleSend = (e, content = null, type = 'text', fileName = null, fileSize = null) => {
     if (e) e.preventDefault();
     const messageContent = content || message.trim();
     if (!messageContent) return;
 
-    sendMutation.mutate({
+    const groupId = chatMode === 'direct' && selectedDMConv 
+      ? `dm_${selectedDMConv.id}` 
+      : selectedGroup;
+
+    const messageData = {
       sender_email: user.email,
       sender_name: user.full_name,
       message: messageContent,
       message_type: type,
-      group_id: selectedGroup
-    });
+      group_id: groupId,
+      file_name: fileName,
+      file_size: fileSize
+    };
+
+    if (replyingTo) {
+      messageData.reply_to_message_id = replyingTo.id;
+      messageData.reply_to_message = replyingTo.message.substring(0, 100);
+      messageData.reply_to_sender_name = replyingTo.sender_name;
+    }
+
+    sendMutation.mutate(messageData);
   };
 
   const handleImageUpload = async (e) => {
@@ -179,9 +275,62 @@ export default function Chat() {
     handleSend(null, gifUrl, 'gif');
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingFile(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      handleSend(null, file_url, 'file', file.name, file.size);
+      toast.success('File sent successfully');
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload file');
+    }
+    setUploadingFile(false);
+  };
+
+  const handleReaction = (messageId, reaction) => {
+    reactionMutation.mutate({ messageId, reaction });
+  };
+
+  const handleTyping = (text) => {
+    setMessage(text);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set new timeout - could send typing indicator to backend here
+    typingTimeoutRef.current = setTimeout(() => {
+      // Typing stopped
+    }, 1000);
+  };
+
+  const startDirectMessage = (employee) => {
+    setSelectedDMUser(employee);
+    setChatMode('direct');
+    setSelectedDMConv({ 
+      id: `${user.email}_${employee.email}`,
+      other_user_name: employee.full_name,
+      participants: [user.email, employee.email]
+    });
+    setShowNewDM(false);
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Filter messages by search
+  const filteredMessages = searchTerm 
+    ? messages.filter(m => 
+        m.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        m.sender_name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : messages;
 
   const groups = [
     { id: 'general', name: t('general'), icon: Users },
@@ -204,73 +353,126 @@ export default function Chat() {
         <div className="grid lg:grid-cols-4 gap-6">
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-              <CardTitle className="text-lg text-slate-900 dark:text-white">{t('channels')}</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg text-slate-900 dark:text-white">{t('channels')}</CardTitle>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowNewDM(true)}
+                  className="text-[#3B9FF3] dark:text-blue-400"
+                >
+                  <UserPlus className="w-4 h-4" />
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-4">
-              <div className="space-y-2">
-                {groups.map(group => {
-                  const Icon = group.icon;
-                  return (
-                    <button
-                      key={group.id}
-                      onClick={() => setSelectedGroup(group.id)}
-                      className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
-                        selectedGroup === group.id
-                          ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg'
-                          : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium truncate">{group.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
+                <TabsList className="w-full bg-slate-100 dark:bg-slate-800 mb-3">
+                  <TabsTrigger value="channels" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    <Hash className="w-4 h-4 mr-1" />
+                    Channels
+                  </TabsTrigger>
+                  <TabsTrigger value="direct" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                    <Users className="w-4 h-4 mr-1" />
+                    Direct
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="channels" className="mt-0">
+                  <div className="space-y-2">
+                    {groups.map(group => {
+                      const Icon = group.icon;
+                      return (
+                        <button
+                          key={group.id}
+                          onClick={() => {
+                            setSelectedGroup(group.id);
+                            setSelectedDMConv(null);
+                          }}
+                          className={`w-full p-3 rounded-lg text-left flex items-center gap-3 transition-all ${
+                            chatMode === 'channels' && selectedGroup === group.id
+                              ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-lg'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="font-medium truncate">{group.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="direct" className="mt-0">
+                  <DirectMessagesList
+                    conversations={[]}
+                    currentUserId={user?.email}
+                    onSelect={setSelectedDMConv}
+                    selectedId={selectedDMConv?.id}
+                  />
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
 
           <Card className="lg:col-span-3 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl border-slate-200 dark:border-slate-700">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <MessageSquare className="w-5 h-5 text-[#3B9FF3]" />
-                {groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                  <MessageSquare className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                  {chatMode === 'direct' && selectedDMConv
+                    ? selectedDMConv.other_user_name
+                    : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
+                </CardTitle>
+                
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    placeholder="Search messages..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-64 pl-9 h-9 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600"
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <div className="h-[600px] flex flex-col">
+                {/* Reply indicator */}
+                {replyingTo && (
+                  <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-blue-700 dark:text-blue-400">Replying to {replyingTo.sender_name}</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 truncate">{replyingTo.message}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setReplyingTo(null)}
+                      className="text-slate-500 dark:text-slate-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50 dark:bg-[#1e1e1e]">
                   {isLoading && <div className="text-center text-slate-500 dark:text-slate-400 py-8">Loading messages...</div>}
-                  {!isLoading && messages.length === 0 && <div className="text-center text-slate-500 dark:text-slate-400 py-8">No messages yet.</div>}
-                  {messages.map((msg) => {
-                    const isMe = msg.sender_email === user?.email;
-                    const msgType = msg.message_type || 'text';
-                    
-                    return (
-                      <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[70%] ${isMe ? 'bg-[#3B9FF3] text-white' : 'bg-white dark:bg-[#282828] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700'} rounded-2xl shadow-lg overflow-hidden`}>
-                          {!isMe && (
-                            <div className="px-4 pt-3 pb-1">
-                              <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">{msg.sender_name}</p>
-                            </div>
-                          )}
-                          
-                          {msgType === 'image' || msgType === 'gif' ? (
-                            <img src={msg.message} alt="" className="max-w-full max-h-64 object-contain" />
-                          ) : (
-                            <div className="px-4 py-3">
-                              <p className="break-words whitespace-pre-wrap">{msg.message}</p>
-                            </div>
-                          )}
-                          
-                          <div className="px-4 pb-2">
-                            <p className={`text-xs ${isMe ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                              {format(new Date(msg.created_date), 'HH:mm')}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {!isLoading && filteredMessages.length === 0 && !searchTerm && <div className="text-center text-slate-500 dark:text-slate-400 py-8">No messages yet. Start the conversation!</div>}
+                  {!isLoading && filteredMessages.length === 0 && searchTerm && <div className="text-center text-slate-500 dark:text-slate-400 py-8">No messages found matching "{searchTerm}"</div>}
+                  
+                  {filteredMessages.map((msg) => (
+                    <MessageBubble
+                      key={msg.id}
+                      message={msg}
+                      isMe={msg.sender_email === user?.email}
+                      onReply={setReplyingTo}
+                      onReaction={handleReaction}
+                      userEmail={user?.email}
+                    />
+                  ))}
+                  
+                  <TypingIndicator users={typingUsers} />
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -290,9 +492,28 @@ export default function Chat() {
                         size="icon"
                         onClick={() => document.getElementById('image-upload').click()}
                         disabled={uploadingImage}
-                        className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3]"
+                        className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3] dark:text-blue-400"
+                        title="Upload image"
                       >
                         <Image className="w-5 h-5" />
+                      </Button>
+
+                      <input
+                        type="file"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => document.getElementById('file-upload').click()}
+                        disabled={uploadingFile}
+                        className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3] dark:text-blue-400"
+                        title="Upload file"
+                      >
+                        <Paperclip className="w-5 h-5" />
                       </Button>
 
                       <Popover>
@@ -301,7 +522,8 @@ export default function Chat() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3]"
+                            className="bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[#3B9FF3] dark:text-blue-400"
+                            title="Emojis & GIFs"
                           >
                             <Smile className="w-5 h-5" />
                           </Button>
@@ -323,11 +545,13 @@ export default function Chat() {
                       </Popover>
                     </div>
 
-                    <Input
+                    <MentionInput
                       value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder={t('typeMessage')}
-                      className="flex-1 h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400"
+                      onChange={handleTyping}
+                      onSubmit={handleSend}
+                      employees={employees}
+                      placeholder={replyingTo ? `Reply to ${replyingTo.sender_name}...` : t('typeMessage')}
+                      className="h-12 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400"
                     />
                     <Button 
                       type="submit" 
@@ -342,6 +566,36 @@ export default function Chat() {
             </CardContent>
           </Card>
         </div>
+
+        {/* New Direct Message Dialog */}
+        <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900 dark:text-white">Start Direct Message</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {employees
+                .filter(emp => emp.email !== user?.email)
+                .map(emp => (
+                  <button
+                    key={emp.email}
+                    onClick={() => startDirectMessage(emp)}
+                    className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
+                  >
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {emp.full_name?.[0]?.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-slate-900 dark:text-white">{emp.full_name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{emp.position || emp.email}</p>
+                    </div>
+                  </button>
+                ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
