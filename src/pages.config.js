@@ -68,6 +68,7 @@ import TimeTracking from './pages/TimeTracking';
 import TimeReports from './pages/TimeReports';
 import Field from './pages/Field';
 import FieldProject from './pages/FieldProject';
+import ClientPortal from './pages/ClientPortal';
 import __Layout from './Layout.jsx';
 
 
@@ -142,6 +143,7 @@ export const PAGES = {
     "TimeReports": TimeReports,
     "Field": Field,
     "FieldProject": FieldProject,
+    "ClientPortal": ClientPortal,
 }
 
 export const pagesConfig = {

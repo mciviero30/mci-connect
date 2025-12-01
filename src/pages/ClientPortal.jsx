@@ -1,374 +1,430 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   Building2, 
-  MapPin, 
-  Calendar, 
-  DollarSign,
-  Clock,
-  CheckCircle2,
+  CheckCircle2, 
+  Clock, 
+  Camera, 
+  FileText, 
+  BarChart3,
+  MapPin,
+  Calendar,
+  TrendingUp,
   AlertCircle,
-  Eye,
-  Loader2,
-  Image as ImageIcon,
-  Camera,
-  TrendingUp
+  Download,
+  ChevronRight,
+  LogOut
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
-import BlueprintViewer from '../components/trabajos/BlueprintViewer';
-import ClientJobOverview from '../components/client/ClientJobOverview';
 
 export default function ClientPortal() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const accessToken = urlParams.get('token');
-  
-  const [activeTab, setActiveTab] = useState('overview');
-  const [accessRecord, setAccessRecord] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
 
-  // Validate access token and get job
-  const { data: accessData, isLoading: accessLoading, error: accessError } = useQuery({
-    queryKey: ['clientAccess', accessToken],
-    queryFn: async () => {
-      if (!accessToken) throw new Error('No access token provided');
-      
-      const records = await base44.entities.ClientPortalAccess.filter({ 
-        access_token: accessToken,
-        is_active: true 
-      });
-      
-      if (records.length === 0) {
-        throw new Error('Invalid or expired access token');
-      }
-      
-      const record = records[0];
-      setAccessRecord(record);
-      
-      // Update last accessed and count
-      await base44.entities.ClientPortalAccess.update(record.id, {
-        last_accessed: new Date().toISOString(),
-        access_count: (record.access_count || 0) + 1
-      });
-      
-      return record;
-    },
-    enabled: !!accessToken,
-    retry: false
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
-  // Get job details
-  const { data: job, isLoading: jobLoading } = useQuery({
-    queryKey: ['clientJob', accessData?.job_id],
-    queryFn: async () => {
-      const jobs = await base44.entities.Job.filter({ id: accessData.job_id });
-      return jobs[0] || null;
-    },
-    enabled: !!accessData?.job_id,
-    retry: false
-  });
-
-  // Get job photos (visible to client)
-  const { data: jobPhotos = [] } = useQuery({
-    queryKey: ['clientJobPhotos', accessData?.job_id],
-    queryFn: () => base44.entities.JobFile.filter({ job_id: accessData.job_id }),
-    enabled: !!accessData?.job_id,
-    initialData: []
-  });
-
-  // Get blueprints for the job
-  const { data: blueprints = [] } = useQuery({
-    queryKey: ['clientBlueprints', accessData?.job_id],
-    queryFn: () => base44.entities.Blueprint.filter({ 
-      job_id: accessData.job_id,
-      visible_to_client: true,
-      is_current: true 
+  // Get projects where user is a client member
+  const { data: memberships = [] } = useQuery({
+    queryKey: ['client-memberships', user?.email],
+    queryFn: () => base44.entities.ProjectMember.filter({ 
+      user_email: user?.email,
+      role: 'client'
     }),
-    enabled: !!accessData?.job_id,
-    initialData: []
+    enabled: !!user?.email,
   });
 
-  // Get all plan tasks across all blueprints for summary stats
-  const { data: allPlanTasks = [] } = useQuery({
-    queryKey: ['clientPlanTasks', accessData?.job_id],
+  const projectIds = memberships.map(m => m.project_id);
+
+  const { data: jobs = [], isLoading } = useQuery({
+    queryKey: ['client-jobs', projectIds],
     queryFn: async () => {
-      if (!accessData?.job_id) return [];
-      const tasks = await base44.entities.PlanTask.filter({ 
-        job_id: accessData.job_id 
-      });
-      return tasks;
+      if (projectIds.length === 0) return [];
+      const allJobs = await base44.entities.Job.list();
+      return allJobs.filter(j => projectIds.includes(j.id));
     },
-    enabled: !!accessData?.job_id,
-    initialData: []
+    enabled: projectIds.length > 0,
   });
 
-  // Calculate task statistics
-  const taskStats = {
-    total: allPlanTasks.length,
-    completed: allPlanTasks.filter(t => t.status === 'completed').length,
-    inProgress: allPlanTasks.filter(t => t.status === 'in_progress').length,
-    pending: allPlanTasks.filter(t => t.status === 'pending').length,
-    readyForInspection: allPlanTasks.filter(t => t.status === 'ready_for_inspection').length
-  };
+  // For single project view
+  const [selectedJobId, setSelectedJobId] = useState(null);
+  const selectedJob = jobs.find(j => j.id === selectedJobId) || jobs[0];
 
-  const completionPercentage = taskStats.total > 0 
-    ? Math.round((taskStats.completed / taskStats.total) * 100) 
-    : 0;
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['client-tasks', selectedJob?.id],
+    queryFn: () => base44.entities.Task.filter({ job_id: selectedJob.id }),
+    enabled: !!selectedJob?.id,
+  });
 
-  // Error states
-  if (accessLoading) {
+  const { data: photos = [] } = useQuery({
+    queryKey: ['client-photos', selectedJob?.id],
+    queryFn: () => base44.entities.Photo.filter({ job_id: selectedJob.id }, '-created_date'),
+    enabled: !!selectedJob?.id,
+  });
+
+  const { data: documents = [] } = useQuery({
+    queryKey: ['client-documents', selectedJob?.id],
+    queryFn: () => base44.entities.Document.filter({ job_id: selectedJob.id }, '-created_date'),
+    enabled: !!selectedJob?.id,
+  });
+
+  const { data: reports = [] } = useQuery({
+    queryKey: ['client-reports', selectedJob?.id],
+    queryFn: () => base44.entities.Report.filter({ job_id: selectedJob.id }, '-created_date'),
+    enabled: !!selectedJob?.id,
+  });
+
+  // Calculate progress
+  const completedTasks = tasks.filter(t => t.status === 'completed').length;
+  const totalTasks = tasks.length;
+  const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  const pendingTasks = tasks.filter(t => t.status === 'pending').length;
+  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <div className="text-center">
-          <Loader2 className="w-16 h-16 text-[#3B9FF3] animate-spin mx-auto mb-4" />
-          <p className="text-slate-700 font-medium">Verifying access...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (jobs.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-12 text-center max-w-md">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Building2 className="w-8 h-8 text-blue-600" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Sin Proyectos Asignados</h2>
+          <p className="text-slate-600 mb-6">
+            Aún no tienes proyectos asignados como cliente. Contacta a tu contratista para obtener acceso.
+          </p>
+          <Button onClick={() => base44.auth.logout()} variant="outline">
+            <LogOut className="w-4 h-4 mr-2" />
+            Cerrar Sesión
+          </Button>
         </div>
-      </div>
-    );
-  }
-
-  if (accessError || !accessData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white p-4">
-        <Card className="max-w-md w-full bg-white shadow-2xl">
-          <CardContent className="p-12 text-center">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-12 h-12 text-red-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
-            <p className="text-slate-600 mb-4">
-              {accessError?.message || 'Invalid or expired access link. Please contact MCI for assistance.'}
-            </p>
-            <p className="text-sm text-slate-500">
-              If you believe this is an error, please reach out to your project manager.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (jobLoading || !job) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-white">
-        <Loader2 className="w-12 h-12 text-[#3B9FF3] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Building2 className="w-7 h-7 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">MCI Client Portal</h1>
-                <p className="text-sm text-slate-600">24/7 Project Transparency</p>
+                <h1 className="font-bold text-slate-900">Portal del Cliente</h1>
+                <p className="text-sm text-slate-500">Bienvenido, {user?.full_name}</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-slate-600">Welcome,</p>
-              <p className="font-semibold text-slate-900">{accessData.customer_name}</p>
-            </div>
+            <Button onClick={() => base44.auth.logout()} variant="ghost" size="sm">
+              <LogOut className="w-4 h-4 mr-2" />
+              Salir
+            </Button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Project Selector (if multiple) */}
+        {jobs.length > 1 && (
+          <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
+            {jobs.map((job) => (
+              <button
+                key={job.id}
+                onClick={() => setSelectedJobId(job.id)}
+                className={`flex-shrink-0 px-4 py-2 rounded-lg border transition-all ${
+                  selectedJob?.id === job.id
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'
+                }`}
+              >
+                {job.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Project Header */}
-        <Card className="bg-white shadow-lg mb-8">
-          <CardContent className="p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-3xl font-bold text-slate-900">{job.name}</h2>
-                  <Badge className={
-                    job.status === 'completed' ? 'bg-green-500 text-white' :
-                    job.status === 'active' ? 'bg-blue-500 text-white' :
-                    'bg-slate-500 text-white'
-                  }>
-                    {job.status}
-                  </Badge>
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">{selectedJob?.name}</h2>
+              {selectedJob?.address && (
+                <div className="flex items-center gap-2 text-slate-500 mt-1">
+                  <MapPin className="w-4 h-4" />
+                  <span>{selectedJob.address}</span>
                 </div>
-                {job.description && (
-                  <p className="text-slate-600 mb-4">{job.description}</p>
-                )}
-                {job.address && (
-                  <div className="flex items-start gap-2 text-slate-600">
-                    <MapPin className="w-5 h-5 mt-0.5 text-[#3B9FF3]" />
-                    <div>
-                      <p className="font-medium">{job.address}</p>
-                      {job.city && job.state && (
-                        <p className="text-sm">{job.city}, {job.state} {job.zip}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 gap-4 md:w-80">
-                <div className="bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-xl p-4 text-white">
-                  <p className="text-sm opacity-90">Progress</p>
-                  <p className="text-3xl font-bold">{completionPercentage}%</p>
-                </div>
-                <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl p-4 text-white">
-                  <p className="text-sm opacity-90">Tasks Done</p>
-                  <p className="text-3xl font-bold">{taskStats.completed}/{taskStats.total}</p>
-                </div>
-              </div>
+              )}
             </div>
-          </CardContent>
-        </Card>
+            <Badge className={`${
+              selectedJob?.status === 'active' 
+                ? 'bg-green-100 text-green-700 border-green-200' 
+                : 'bg-blue-100 text-blue-700 border-blue-200'
+            } text-sm px-3 py-1`}>
+              {selectedJob?.status === 'active' ? 'En Progreso' : 'Completado'}
+            </Badge>
+          </div>
 
-        {/* Tabs */}
-        <div className="mb-6">
-          <div className="flex gap-2 border-b border-slate-200 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
-                activeTab === 'overview'
-                  ? 'text-[#3B9FF3] border-b-2 border-[#3B9FF3]'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4" />
-                Overview
+          {/* Progress Bar */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-700">Progreso General</span>
+              <span className="text-sm font-bold text-blue-600">{progressPercent}%</span>
+            </div>
+            <Progress value={progressPercent} className="h-3" />
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <span className="text-sm">Completadas</span>
               </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('blueprints')}
-              className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
-                activeTab === 'blueprints'
-                  ? 'text-[#3B9FF3] border-b-2 border-[#3B9FF3]'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                Blueprints & Progress
-                {blueprints.length > 0 && (
-                  <Badge className="bg-[#3B9FF3] text-white">{blueprints.length}</Badge>
-                )}
+              <p className="text-2xl font-bold text-slate-900">{completedTasks}</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <TrendingUp className="w-4 h-4 text-blue-500" />
+                <span className="text-sm">En Progreso</span>
               </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('photos')}
-              className={`px-6 py-3 font-medium transition-all whitespace-nowrap ${
-                activeTab === 'photos'
-                  ? 'text-[#3B9FF3] border-b-2 border-[#3B9FF3]'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4" />
-                Photo Gallery
-                {jobPhotos.length > 0 && (
-                  <Badge className="bg-[#3B9FF3] text-white">{jobPhotos.length}</Badge>
-                )}
+              <p className="text-2xl font-bold text-slate-900">{inProgressTasks}</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <Clock className="w-4 h-4 text-amber-500" />
+                <span className="text-sm">Pendientes</span>
               </div>
-            </button>
+              <p className="text-2xl font-bold text-slate-900">{pendingTasks}</p>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <Camera className="w-4 h-4 text-purple-500" />
+                <span className="text-sm">Fotos</span>
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{photos.length}</p>
+            </div>
           </div>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'overview' && (
-          <ClientJobOverview 
-            job={job} 
-            taskStats={taskStats}
-            completionPercentage={completionPercentage}
-            blueprints={blueprints}
-            jobPhotos={jobPhotos}
-          />
-        )}
+        {/* Tabs Content */}
+        <Tabs defaultValue="progress" className="space-y-6">
+          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl">
+            <TabsTrigger value="progress" className="rounded-lg">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Progreso
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="rounded-lg">
+              <Camera className="w-4 h-4 mr-2" />
+              Fotos ({photos.length})
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-lg">
+              <FileText className="w-4 h-4 mr-2" />
+              Documentos
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="rounded-lg">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Reportes
+            </TabsTrigger>
+          </TabsList>
 
-        {activeTab === 'blueprints' && (
-          <div>
-            {blueprints.length === 0 ? (
-              <Card className="bg-white shadow-lg">
-                <CardContent className="p-12 text-center">
-                  <ImageIcon className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">No Blueprints Yet</h3>
-                  <p className="text-slate-600">
-                    Blueprints and progress tracking will be visible once the project team uploads them.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <BlueprintViewer 
-                jobId={job.id} 
-                jobName={job.name} 
-                isClientView={true}
-              />
-            )}
-          </div>
-        )}
-
-        {activeTab === 'photos' && (
-          <Card className="bg-white shadow-lg">
-            <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-[#3B9FF3]" />
-                Project Photo Gallery
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {jobPhotos.length === 0 ? (
+          {/* Progress Tab */}
+          <TabsContent value="progress">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="font-semibold text-slate-900 mb-4">Tareas del Proyecto</h3>
+              {tasks.length === 0 ? (
                 <div className="text-center py-12">
-                  <Camera className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-slate-700 mb-2">No Photos Yet</h3>
-                  <p className="text-slate-500">
-                    Photos will appear here as the project team uploads progress updates.
-                  </p>
+                  <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No hay tareas registradas aún</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {tasks.map((task) => (
+                    <div 
+                      key={task.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          task.status === 'completed' ? 'bg-green-500' :
+                          task.status === 'in_progress' ? 'bg-blue-500' :
+                          task.status === 'blocked' ? 'bg-red-500' :
+                          'bg-amber-500'
+                        }`} />
+                        <div>
+                          <p className="font-medium text-slate-900">{task.title}</p>
+                          {task.category && (
+                            <p className="text-sm text-slate-500">{task.category}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className={`${
+                        task.status === 'completed' ? 'bg-green-100 text-green-700' :
+                        task.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                        task.status === 'blocked' ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {task.status === 'completed' ? 'Completada' :
+                         task.status === 'in_progress' ? 'En Progreso' :
+                         task.status === 'blocked' ? 'Bloqueada' : 'Pendiente'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Photos Tab */}
+          <TabsContent value="photos">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="font-semibold text-slate-900 mb-4">Galería de Fotos</h3>
+              {photos.length === 0 ? (
+                <div className="text-center py-12">
+                  <Camera className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No hay fotos disponibles</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {jobPhotos.map((photo, idx) => (
-                    <div key={photo.id} className="relative group">
-                      <img
+                  {photos.map((photo) => (
+                    <div 
+                      key={photo.id}
+                      onClick={() => setSelectedPhoto(photo)}
+                      className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative"
+                    >
+                      <img 
                         src={photo.file_url}
-                        alt={`Project photo ${idx + 1}`}
-                        className="w-full h-48 object-cover rounded-lg border-2 border-slate-200 group-hover:border-[#3B9FF3] transition-all shadow-sm group-hover:shadow-lg"
+                        alt={photo.caption || 'Foto del proyecto'}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 rounded-lg transition-all flex items-center justify-center">
-                        <a
-                          href={photo.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Button size="sm" className="bg-white text-slate-900 hover:bg-slate-100">
-                            View Full Size
-                          </Button>
-                        </a>
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                        <p className="text-xs text-white">
+                          {format(new Date(photo.created_date), 'dd MMM yyyy')}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </TabsContent>
 
-        {/* Footer */}
-        <div className="mt-12 text-center text-sm text-slate-500">
-          <p>
-            Questions about your project? Contact your project manager or call MCI directly.
-          </p>
-          <p className="mt-2">
-            © 2025 MCI. This portal provides real-time access to your project information.
-          </p>
+          {/* Documents Tab */}
+          <TabsContent value="documents">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="font-semibold text-slate-900 mb-4">Documentos Compartidos</h3>
+              {documents.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No hay documentos disponibles</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {documents.map((doc) => (
+                    <a 
+                      key={doc.id}
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">{doc.name}</p>
+                          <p className="text-sm text-slate-500">
+                            {format(new Date(doc.created_date), 'dd MMM yyyy')}
+                          </p>
+                        </div>
+                      </div>
+                      <Download className="w-5 h-5 text-slate-400" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Reports Tab */}
+          <TabsContent value="reports">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="font-semibold text-slate-900 mb-4">Reportes Generados</h3>
+              {reports.length === 0 ? (
+                <div className="text-center py-12">
+                  <BarChart3 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No hay reportes disponibles</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {reports.map((report) => (
+                    <div 
+                      key={report.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          report.type === 'excel' ? 'bg-green-100' : 'bg-red-100'
+                        }`}>
+                          <FileText className={`w-5 h-5 ${
+                            report.type === 'excel' ? 'text-green-600' : 'text-red-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">{report.name}</p>
+                          <p className="text-sm text-slate-500">
+                            {report.type === 'excel' ? 'Excel' : 'PDF'} • {format(new Date(report.created_date), 'dd MMM yyyy')}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <Download className="w-4 h-4 mr-2" />
+                        Descargar
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* Photo Modal */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <div className="max-w-4xl max-h-[90vh] relative">
+            <img 
+              src={selectedPhoto.file_url}
+              alt={selectedPhoto.caption || 'Foto'}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+            />
+            {selectedPhoto.caption && (
+              <p className="text-white text-center mt-4">{selectedPhoto.caption}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
