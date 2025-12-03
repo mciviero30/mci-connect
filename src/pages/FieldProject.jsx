@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams } from 'react-router-dom';
+import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import { createPageUrl } from '@/utils';
 import { 
   ArrowLeft,
@@ -53,12 +54,25 @@ export default function FieldProject() {
   const jobId = searchParams.get('id');
   const [activeTab, setActiveTab] = useState('overview');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
 
   // Handle resize
-  React.useEffect(() => {
+  useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Global keyboard shortcut for quick search (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowQuickSearch(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const { data: job, isLoading } = useQuery({
@@ -185,6 +199,9 @@ export default function FieldProject() {
   return (
     <FieldOfflineProvider jobId={jobId}>
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex flex-col md:flex-row">
+      {/* Quick Search Dialog */}
+      <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
+      
       {/* Offline Status Indicator */}
       <OfflineStatusBadge />
       
