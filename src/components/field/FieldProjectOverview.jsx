@@ -9,8 +9,10 @@ import {
   Users
 } from 'lucide-react';
 import { format } from 'date-fns';
+import ProjectProgressBar from './ProjectProgressBar.jsx';
+import OverdueTasksAlert from './OverdueTasksAlert.jsx';
 
-export default function FieldProjectOverview({ job, tasks, plans }) {
+export default function FieldProjectOverview({ job, tasks, plans, onTaskClick }) {
   const pendingTasks = tasks.filter(t => t.status === 'pending').length;
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
   const completedTasks = tasks.filter(t => t.status === 'completed').length;
@@ -33,6 +35,16 @@ export default function FieldProjectOverview({ job, tasks, plans }) {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-slate-900 dark:text-[#D4C85C] mb-6">Project Overview</h1>
+
+      {/* Progress Bar */}
+      <div className="mb-6">
+        <ProjectProgressBar tasks={tasks} />
+      </div>
+
+      {/* Overdue/Urgent Alerts */}
+      <div className="mb-6">
+        <OverdueTasksAlert tasks={tasks} onTaskClick={onTaskClick} />
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
