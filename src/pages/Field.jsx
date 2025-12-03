@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -12,8 +12,10 @@ import {
   CheckCheck,
   Briefcase,
   AlertCircle,
-  FolderOpen
+  FolderOpen,
+  Command
 } from 'lucide-react';
+import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -27,8 +29,21 @@ export default function Field() {
   const [filter, setFilter] = useState('active');
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', description: '', address: '' });
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
   
   const queryClient = useQueryClient();
+
+  // Global keyboard shortcut for quick search (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowQuickSearch(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -98,13 +113,25 @@ export default function Field() {
               🏗️ MCI Field • Field Execution
             </Badge>
           </div>
-          <Button 
-            onClick={() => setShowNewProject(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white shadow-lg shadow-[#FFB800]/25"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Project
-          </Button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowQuickSearch(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              <span className="text-sm hidden md:inline">Quick Search</span>
+              <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-white dark:bg-slate-900 rounded text-[10px] font-medium">
+                <Command className="w-3 h-3" />K
+              </kbd>
+            </button>
+            <Button 
+              onClick={() => setShowNewProject(true)}
+              className="bg-[#FFB800] hover:bg-[#E5A600] text-white shadow-lg shadow-[#FFB800]/25"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Project
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -190,6 +217,9 @@ export default function Field() {
           )}
         </div>
       </div>
+
+      {/* Quick Search Dialog */}
+      <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
 
       {/* New Project Dialog */}
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
