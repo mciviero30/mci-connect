@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 import TaskTimeTracker from './TaskTimeTracker.jsx';
 import TaskDependencies from './TaskDependencies.jsx';
 import TaskChecklistEditor from './TaskChecklistEditor.jsx';
+import OptimalAssigneeSuggestor from './OptimalAssigneeSuggestor.jsx';
 
 export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [], onZoomTo }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -233,12 +234,27 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [], o
         )}
 
         {/* Assigned To */}
-        {task.assigned_to && (
-          <div className="flex items-center gap-2 text-sm">
-            <User className="w-4 h-4 text-slate-400" />
-            <span className="text-slate-300">{task.assigned_to}</span>
+        <div>
+          <label className="text-xs text-slate-400 uppercase mb-1 block">Asignado a</label>
+          <div className="flex items-center gap-2">
+            {task.assigned_to || task.assignee_name ? (
+              <div className="flex items-center gap-2 text-sm flex-1">
+                <User className="w-4 h-4 text-slate-400" />
+                <span className="text-slate-300">{task.assignee_name || task.assigned_to}</span>
+              </div>
+            ) : (
+              <span className="text-slate-500 text-sm flex-1">Sin asignar</span>
+            )}
+            <OptimalAssigneeSuggestor 
+              workUnitId={task.id}
+              jobId={jobId}
+              currentAssignee={task.assignee_email || task.assigned_to}
+              onAssign={() => {
+                queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+              }}
+            />
           </div>
-        )}
+        </div>
 
         {/* Checklist - Enhanced */}
         <div>
