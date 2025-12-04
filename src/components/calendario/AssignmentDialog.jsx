@@ -372,23 +372,39 @@ export default function AssignmentDialog({
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-              <X className="w-4 h-4 mr-2" />
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={
-                isProcessing || 
-                (isAppointment && !shiftTitle) || 
-                (isJobWork && (!jobId || selectedEmployees.length === 0))
-              } 
-              className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isProcessing ? 'Saving...' : 'Save Shift'}
-            </Button>
+          <div className="flex justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            {shift ? (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={handleDelete} 
+                disabled={isProcessing}
+                className="bg-red-500 hover:bg-red-600 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            ) : (
+              <div />
+            )}
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={
+                  isProcessing || 
+                  (isAppointment && !shiftTitle) || 
+                  (isJobWork && (!jobId || selectedEmployees.length === 0))
+                } 
+                className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isProcessing ? 'Saving...' : 'Save Shift'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
