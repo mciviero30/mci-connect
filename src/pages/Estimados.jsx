@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { 
   FileText, Plus, Eye, Trash2, Copy, FileCheck, Download, Filter, X, 
   ArrowUpDown, AlertTriangle, CheckSquare, BarChart3, User, Clock,
-  ChevronUp, ChevronDown, Bell, MessageCircle
+  ChevronUp, ChevronDown, Bell, MessageCircle, Sparkles
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +27,7 @@ import QuoteTemplates from "@/components/quotes/QuoteTemplates";
 import QuoteStats from "@/components/quotes/QuoteStats";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
 import QuoteWhatsApp from "@/components/quotes/QuoteWhatsApp";
+import AIEstimateInput from "@/components/quotes/AIEstimateInput";
 import _ from "lodash";
 
 export default function Estimados() {
@@ -58,6 +59,7 @@ export default function Estimados() {
 
   // Preview modal
   const [previewQuote, setPreviewQuote] = useState(null);
+  const [showAIInput, setShowAIInput] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -518,6 +520,16 @@ export default function Estimados() {
               <div className="flex gap-2 flex-wrap">
                 <QuoteTemplates onSelectTemplate={(data) => navigate(createPageUrl("CrearEstimado"), { state: { template: data } })} />
                 <Button 
+                  onClick={() => setShowAIInput(!showAIInput)}
+                  variant="outline"
+                  className={showAIInput 
+                    ? "bg-amber-100 border-amber-300 text-amber-700" 
+                    : "bg-white border-amber-300 text-amber-700 hover:bg-amber-50"}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'IA' : 'AI'}
+                </Button>
+                <Button 
                   onClick={exportToExcel}
                   variant="outline"
                   className="bg-white border-green-300 text-green-700 hover:bg-green-50"
@@ -550,6 +562,20 @@ export default function Estimados() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {/* AI Quote Input */}
+        {showAIInput && (
+          <div className="mb-6">
+            <AIEstimateInput 
+              language={language}
+              onQuoteGenerated={(quoteData) => {
+                // Navigate to create page with pre-filled data
+                navigate(createPageUrl("CrearEstimado"), { state: { aiDraft: quoteData } });
+                setShowAIInput(false);
+              }}
+            />
+          </div>
+        )}
 
         {activeTab === 'stats' ? (
           <QuoteStats quotes={quotes.filter(q => !q.is_template)} />
