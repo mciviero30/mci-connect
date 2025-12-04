@@ -191,8 +191,23 @@ export default function Calendario() {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm(language === 'es' ? '¿Eliminar turno?' : 'Delete shift?')) {
-      deleteMutation.mutate(id);
+    deleteMutation.mutate(id);
+  };
+
+  const handleDeleteAllForJob = async (jobId, jobName) => {
+    const shiftsToDelete = shifts.filter(s => s.job_id === jobId);
+    const confirmMsg = language === 'es' 
+      ? `¿Eliminar TODOS los ${shiftsToDelete.length} turnos de "${jobName}"?`
+      : `Delete ALL ${shiftsToDelete.length} shifts for "${jobName}"?`;
+    
+    if (window.confirm(confirmMsg)) {
+      for (const shift of shiftsToDelete) {
+        await base44.entities.ScheduleShift.delete(shift.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
+      setShowDialog(false);
+      setEditingShift(null);
+      toast.success(language === 'es' ? `${shiftsToDelete.length} turnos eliminados` : `${shiftsToDelete.length} shifts deleted`);
     }
   };
 
@@ -789,6 +804,7 @@ export default function Calendario() {
               employees={employees}
               onSubmit={handleSubmit}
               onDelete={handleDelete}
+              onDeleteAllForJob={handleDeleteAllForJob}
               isProcessing={createMutation.isPending || updateMutation.isPending}
               onShowRecurring={() => setShowRecurring(true)}
               conflicts={conflicts}

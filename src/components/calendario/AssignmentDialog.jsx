@@ -19,7 +19,8 @@ export default function AssignmentDialog({
   employees, 
   jobs, 
   onSubmit, 
-  onDelete, 
+  onDelete,
+  onDeleteAllForJob,
   isProcessing, 
   selectedDate, 
   selectedTime,
@@ -164,9 +165,23 @@ export default function AssignmentDialog({
     onOpenChange(false);
   };
 
+  const [showDeleteOptions, setShowDeleteOptions] = useState(false);
+
   const handleDelete = () => {
-    if (shift && window.confirm('Are you sure you want to delete this shift?')) {
+    setShowDeleteOptions(true);
+  };
+
+  const handleDeleteSingle = () => {
+    if (shift) {
       onDelete(shift.id);
+      setShowDeleteOptions(false);
+    }
+  };
+
+  const handleDeleteAllForProject = () => {
+    if (shift && shift.job_id && onDeleteAllForJob) {
+      onDeleteAllForJob(shift.job_id, shift.job_name);
+      setShowDeleteOptions(false);
     }
   };
 
@@ -372,8 +387,50 @@ export default function AssignmentDialog({
             />
           </div>
 
+          {/* Delete Options Modal */}
+          {showDeleteOptions && shift && (
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-700 dark:text-red-300 mb-3 font-medium">
+                ¿Qué deseas eliminar? / What do you want to delete?
+              </p>
+              <div className="flex flex-col gap-2">
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={handleDeleteSingle}
+                  disabled={isProcessing}
+                  className="justify-start border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Solo este turno / Only this shift
+                </Button>
+                {shift.job_id && (
+                  <Button 
+                    type="button"
+                    variant="destructive"
+                    onClick={handleDeleteAllForProject}
+                    disabled={isProcessing}
+                    className="justify-start bg-red-500 hover:bg-red-600"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Todos los turnos de "{shift.job_name || 'este proyecto'}" / All shifts for this project
+                  </Button>
+                )}
+                <Button 
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowDeleteOptions(false)}
+                  className="justify-start text-slate-500"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar / Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-            {shift ? (
+            {shift && !showDeleteOptions ? (
               <Button 
                 type="button" 
                 variant="destructive" 
