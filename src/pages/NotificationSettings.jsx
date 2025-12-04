@@ -17,14 +17,19 @@ import { format, addMinutes, addHours, addDays, isPast } from 'date-fns';
 
 const NOTIFICATION_TYPES = [
   { id: 'project_invitation', label: 'Project Invitations', icon: '📋' },
-  { id: 'task_assigned', label: 'Task Assignments', icon: '✅' },
+  { id: 'task_assigned', label: 'Task Assignments', icon: '✅', critical: true },
   { id: 'task_status', label: 'Status Changes', icon: '🔄' },
-  { id: 'task_deadline', label: 'Deadlines & Due Dates', icon: '⏰' },
+  { id: 'task_deadline', label: 'Deadlines & Due Dates', icon: '⏰', critical: true },
   { id: 'access_request', label: 'Access Requests', icon: '🔐' },
   { id: 'mentions', label: 'Mentions', icon: '💬' },
   { id: 'file_uploads', label: 'File Uploads', icon: '📎' },
   { id: 'milestone', label: 'Milestones', icon: '🎯' },
-  { id: 'system_alerts', label: 'System Alerts', icon: '🚨' }
+  { id: 'system_alerts', label: 'System Alerts', icon: '🚨', critical: true },
+  { id: 'quote_approved', label: 'Quote Approvals', icon: '✅', critical: true },
+  { id: 'quote_rejected', label: 'Quote Rejections', icon: '❌' },
+  { id: 'urgent_job', label: 'Urgent Job Updates', icon: '🚨', critical: true },
+  { id: 'expense_approved', label: 'Expense Approvals', icon: '💰' },
+  { id: 'timesheet_approved', label: 'Timesheet Approvals', icon: '⏰' },
 ];
 
 const CHAT_NOTIFICATION_TYPES = [
@@ -380,12 +385,17 @@ export default function NotificationSettings() {
 
                     {/* Notification Types */}
                     {NOTIFICATION_TYPES.map((type) => (
-                      <div key={type.id} className="grid grid-cols-4 gap-4 items-center py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                      <div key={type.id} className={`grid grid-cols-4 gap-4 items-center py-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors ${type.critical ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
                         <div className="col-span-1 flex items-center gap-2">
                           <span className="text-xl">{type.icon}</span>
-                          <Label className="text-sm text-slate-900 dark:text-white font-medium cursor-pointer">
-                            {type.label}
-                          </Label>
+                          <div>
+                            <Label className="text-sm text-slate-900 dark:text-white font-medium cursor-pointer">
+                              {type.label}
+                            </Label>
+                            {type.critical && (
+                              <Badge className="ml-2 bg-amber-100 text-amber-700 text-[10px] px-1">Critical</Badge>
+                            )}
+                          </div>
                         </div>
                         <div className="flex justify-center">
                           <Switch
