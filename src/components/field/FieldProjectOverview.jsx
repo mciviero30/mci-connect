@@ -6,17 +6,26 @@ import {
   CheckCircle2,
   MapPin,
   Calendar,
-  Users
+  Users,
+  ClipboardList,
+  FileCheck
 } from 'lucide-react';
 import { format } from 'date-fns';
 import ProjectProgressBar from './ProjectProgressBar.jsx';
 import OverdueTasksAlert from './OverdueTasksAlert.jsx';
+import { useWorkUnits } from './hooks/useWorkUnits';
 
-export default function FieldProjectOverview({ job, tasks, plans, onTaskClick }) {
-  const pendingTasks = tasks.filter(t => t.status === 'pending').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
-  const blockedTasks = tasks.filter(t => t.status === 'blocked').length;
+export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, onTaskClick }) {
+  // Use unified WorkUnit hook
+  const { workUnits, stats: workUnitStats, isLoading } = useWorkUnits(job?.id);
+  
+  // Use WorkUnits if available, fallback to legacy tasks
+  const tasks = workUnits.length > 0 ? workUnits : (legacyTasks || []);
+  // Use workUnitStats if available, otherwise calculate
+  const pendingTasks = workUnitStats?.pending ?? tasks.filter(t => t.status === 'pending').length;
+  const inProgressTasks = workUnitStats?.in_progress ?? tasks.filter(t => t.status === 'in_progress').length;
+  const completedTasks = workUnitStats?.completed ?? tasks.filter(t => t.status === 'completed').length;
+  const blockedTasks = workUnitStats?.blocked ?? tasks.filter(t => t.status === 'blocked').length;
 
   const stats = [
     { label: 'Pending', value: pendingTasks, icon: Clock, color: 'amber' },
@@ -24,6 +33,13 @@ export default function FieldProjectOverview({ job, tasks, plans, onTaskClick })
     { label: 'Completed', value: completedTasks, icon: CheckCircle2, color: 'green' },
     { label: 'Blocked', value: blockedTasks, icon: AlertTriangle, color: 'red' },
   ];
+
+  // Additional WorkUnit type stats
+  const typeStats = workUnitStats ? [
+    { label: 'Tasks', value: workUnitStats.tasks, icon: CheckSquare },
+    { label: 'Checklists', value: workUnitStats.checklists, icon: ClipboardList },
+    { label: 'Inspections', value: workUnitStats.inspections, icon: FileCheck },
+  ] : null;
 
   const colorClasses = {
     amber: 'bg-amber-50 dark:from-amber-500/20 dark:to-amber-600/20 border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400',
