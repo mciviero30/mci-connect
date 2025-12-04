@@ -75,7 +75,11 @@ export default function Dashboard() {
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
     staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const isAdmin = user?.role === 'admin';
@@ -89,6 +93,10 @@ export default function Dashboard() {
       return prefs[0] || null;
     },
     enabled: !!user?.email,
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   // Initialize widgets from preferences or defaults
@@ -173,9 +181,10 @@ export default function Dashboard() {
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
     enabled: !!user,
-    staleTime: 60000, // 1 minute - keep jobs fresh
-    cacheTime: 300000, // 5 minutes
-    refetchOnMount: true,
+    staleTime: 300000, // 5 minutes
+    cacheTime: 600000, // 10 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: assignments = [] } = useQuery({
