@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useWorkUnits } from './hooks/useWorkUnits';
 
 const categoryLabels = {
   inspection: 'Inspección',
@@ -58,19 +59,37 @@ export default function FieldChecklistsView({ jobId }) {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: templates = [] } = useQuery({
+  // Use unified WorkUnit hook for checklists
+  const { 
+    workUnits: checklists, 
+    createChecklist: createWorkUnitChecklist,
+    updateMutation,
+    deleteMutation: deleteWorkUnit,
+    toggleChecklistItem
+  } = useWorkUnits(jobId, { type: 'checklist' });
+
+  // Legacy fallback queries
+  const { data: legacyTemplates = [] } = useQuery({
     queryKey: ['checklist-templates', jobId],
     queryFn: () => base44.entities.ChecklistTemplate.filter({ job_id: jobId }),
   });
 
-  const { data: submissions = [] } = useQuery({
-    queryKey: ['inspection-submissions', jobId],
-    queryFn: () => base44.entities.InspectionSubmission.filter({ job_id: jobId }, '-created_date'),
-  });
+  // Merge legacy templates with WorkUnit checklists
+  const templates = checklists.length > 0 ? checklists.filter(c => c.is_template) : legacyTemplates;
+  const submissions = checklists.filter(c => c.status === 'completed' && !c.is_template);
 
   const createTemplateMutation = useMutation({
-    mutationFn: (data) => base44.entities.ChecklistTemplate.create({ ...data, job_id: jobId }),
+    mutationFn: (data) => {
+      // Use WorkUnit for new templates
+      return base44.entities.WorkUnit.create({ 
+        ...data, 
+        job_id: jobId,
+        type: 'checklist',
+        is_template: true
+      });
+    },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       queryClient.invalidateQueries({ queryKey: ['checklist-templates', jobId] });
       setShowCreate(false);
       setNewChecklist({ name: '', description: '', category: 'inspection', requires_signature: false, requires_photo: false });
@@ -79,17 +98,29 @@ export default function FieldChecklistsView({ jobId }) {
   });
 
   const submitInspectionMutation = useMutation({
-    mutationFn: (data) => base44.entities.InspectionSubmission.create(data),
+    mutationFn: (data) => {
+      // Create completed WorkUnit from template
+      return base44.entities.WorkUnit.create({
+        ...data,
+        job_id: jobId,
+        type: 'checklist',
+        status: 'completed',
+        completed_date: new Date().toISOString()
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inspection-submissions', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       setShowExecute(null);
       setExecutionResponses([]);
     },
   });
 
   const deleteTemplateMutation = useMutation({
-    mutationFn: (id) => base44.entities.ChecklistTemplate.delete(id),
+    mutationFn: (id) => base44.entities.WorkUnit.delete(id).catch(() => 
+      base44.entities.ChecklistTemplate.delete(id)
+    ),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       queryClient.invalidateQueries({ queryKey: ['checklist-templates', jobId] });
     },
   });
@@ -115,17 +146,25 @@ export default function FieldChecklistsView({ jobId }) {
     if (!newChecklist.name || validItems.length === 0) return;
 
     createTemplateMutation.mutate({
-      ...newChecklist,
-      items: validItems,
+      title: newChecklist.name,
+      description: newChecklist.description,
+      category: newChecklist.category,
+      checklist_items: validItems.map(item => ({
+        id: item.id,
+        text: item.text,
+        checked: false,
+        required: item.required
+      })),
     });
   };
 
   const startExecution = (template) => {
     setShowExecute(template);
-    setExecutionResponses(template.items.map(item => ({
+    const items = template.checklist_items || template.items || [];
+    setExecutionResponses(items.map(item => ({
       item_id: item.id,
       item_text: item.text,
-      completed: false,
+      completed: item.checked || false,
       notes: '',
     })));
   };
@@ -138,16 +177,20 @@ export default function FieldChecklistsView({ jobId }) {
 
   const submitExecution = () => {
     const allCompleted = executionResponses.every(r => r.completed);
-    const hasIncomplete = executionResponses.some(r => !r.completed);
 
     submitInspectionMutation.mutate({
-      job_id: jobId,
-      checklist_template_id: showExecute.id,
-      name: showExecute.name,
-      responses: executionResponses,
-      submitted_by_email: user?.email,
-      submitted_by_name: user?.full_name,
-      status: allCompleted ? 'passed' : hasIncomplete ? 'needs_attention' : 'passed',
+      title: showExecute.title || showExecute.name,
+      description: `Completed by ${user?.full_name}`,
+      category: showExecute.category || 'inspection',
+      checklist_items: executionResponses.map(r => ({
+        id: r.item_id,
+        text: r.item_text,
+        checked: r.completed,
+        notes: r.notes,
+        checked_by: r.completed ? user?.email : null,
+        checked_at: r.completed ? new Date().toISOString() : null
+      })),
+      completed_by: user?.email,
     });
   };
 
@@ -214,13 +257,13 @@ export default function FieldChecklistsView({ jobId }) {
                   </Button>
                 </div>
               </div>
-              <h3 className="font-semibold text-white mb-1">{template.name}</h3>
+              <h3 className="font-semibold text-white mb-1">{template.title || template.name}</h3>
               {template.description && (
                 <p className="text-sm text-slate-400 mb-3 line-clamp-2">{template.description}</p>
               )}
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500">
-                  {template.items?.length || 0} items
+                  {(template.checklist_items || template.items)?.length || 0} items
                 </span>
                 <Button
                   size="sm"
