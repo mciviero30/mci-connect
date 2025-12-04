@@ -8,8 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
+import { useWorkUnits } from './hooks/useWorkUnits';
 
-export default function FieldTasksView({ jobId, tasks, plans }) {
+export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
+  // Use new unified hook, fall back to legacy tasks if provided
+  const { workUnits, updateMutation: workUnitUpdate } = useWorkUnits(jobId, { type: 'task' });
+  const tasks = legacyTasks?.length > 0 ? legacyTasks : workUnits;
   const [view, setView] = useState('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -20,9 +24,15 @@ export default function FieldTasksView({ jobId, tasks, plans }) {
   const queryClient = useQueryClient();
 
   const updateTaskMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    mutationFn: ({ id, data }) => {
+      // Try WorkUnit first, fallback to Task
+      return base44.entities.WorkUnit.update(id, data).catch(() => 
+        base44.entities.Task.update(id, data)
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
     },
   });
 
