@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarDays as CalendarIcon, MapPin, Users, Save, X, Trash2, Briefcase } from 'lucide-react';
+import { CalendarDays as CalendarIcon, MapPin, Users, Save, X, Trash2, Briefcase, Copy } from 'lucide-react';
 import { format, parseISO, addDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -21,6 +21,7 @@ export default function AssignmentDialog({
   onSubmit, 
   onDelete,
   onDeleteAllForJob,
+  onCopyShift,
   isProcessing, 
   selectedDate, 
   selectedTime,
@@ -203,15 +204,30 @@ export default function AssignmentDialog({
                 : (isAppointment ? 'New Appointment' : 'New Job Shift')}
             </DialogTitle>
             {shift && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={handleDelete}
-                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-              >
-                <Trash2 className="w-5 h-5" />
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    onCopyShift?.(shift);
+                    onOpenChange(false);
+                  }}
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  title="Copy shift"
+                >
+                  <Copy className="w-5 h-5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDelete}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </Button>
+              </div>
             )}
           </div>
         </DialogHeader>
