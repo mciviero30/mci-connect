@@ -476,6 +476,112 @@ export async function draftQuoteFromText(clientText, catalogItems = []) {
   };
 }
 
+/**
+ * Suggest optimal assignee for a WorkUnit
+ */
+export async function suggestOptimalAssignee(workUnitId) {
+  const { base44 } = await import('@/api/base44Client');
+  
+  // Fetch WorkUnit details
+  const workUnits = await base44.entities.WorkUnit.filter({ id: workUnitId });
+  const workUnit = workUnits[0];
+  if (!workUnit) throw new Error('WorkUnit not found');
+  
+  // Fetch job for location
+  let jobAddress = '';
+  let jobCoords = null;
+  if (workUnit.job_id) {
+    const jobs = await base44.entities.Job.filter({ id: workUnit.job_id });
+    if (jobs[0]) {
+      jobAddress = jobs[0].address || '';
+      if (jobs[0].latitude && jobs[0].longitude) {
+        jobCoords = { lat: jobs[0].latitude, lng: jobs[0].longitude };
+      }
+    }
+  }
+  
+  // Fetch all active employees
+  const employees = await base44.entities.User.filter({ employment_status: 'active' });
+  
+  // Fetch all pending/in-progress WorkUnits for workload calculation
+  const allWorkUnits = await base44.entities.WorkUnit.filter({});
+  const activeWorkUnits = allWorkUnits.filter(wu => 
+    wu.status === 'pending' || wu.status === 'in_progress'
+  );
+  
+  // Fetch certifications
+  const certifications = await base44.entities.Certification.filter({ status: 'active' });
+  
+  // Build employee context
+  const employeeContext = employees.map(emp => {
+    const empCerts = certifications
+      .filter(c => c.employee_email === emp.email)
+      .map(c => c.name || c.certification_type);
+    
+    const workload = activeWorkUnits.filter(wu => wu.assignee_email === emp.email).length;
+    
+    return {
+      user_id: emp.id,
+      email: emp.email,
+      name: emp.full_name,
+      location: emp.last_known_location || emp.address || 'Unknown',
+      certifications: empCerts,
+      workload_count: workload,
+    };
+  });
+  
+  // Build prompt
+  const schema = {
+    type: 'object',
+    properties: {
+      work_unit_id: { type: 'string' },
+      ranked_list: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            user_id: { type: 'string' },
+            user_name: { type: 'string' },
+            rank: { type: 'integer' },
+            rationale: { type: 'string' },
+            score: { type: 'number' },
+          },
+        },
+      },
+    },
+  };
+  
+  const result = await generateJSON(
+    `You are an assignment optimization AI. Rank the TOP 3 best employees for this task.
+
+TASK DETAILS:
+- Title: ${workUnit.title}
+- Category: ${workUnit.category || 'general'}
+- Priority: ${workUnit.priority || 'medium'}
+- Job Address: ${jobAddress || 'Not specified'}
+- Required Skills/Category: ${workUnit.category}
+
+RANKING CRITERIA (in order of importance):
+1. PROXIMITY: Employees closer to the job address are preferred
+2. CERTIFICATIONS: Match employee certifications to task category
+3. WORKLOAD: Penalize employees with high current workload (prefer lower workload)
+
+AVAILABLE EMPLOYEES:
+${employeeContext.map(e => `- ID: ${e.user_id}, Name: ${e.name}, Location: ${e.location}, Certs: [${e.certifications.join(', ')}], Current Tasks: ${e.workload_count}`).join('\n')}
+
+Return exactly 3 ranked employees with clear rationale for each.
+Set work_unit_id to: ${workUnitId}`,
+    schema
+  );
+  
+  return {
+    work_unit_id: workUnitId,
+    work_unit_title: workUnit.title,
+    job_address: jobAddress,
+    ranked_list: result.ranked_list || [],
+  };
+}
+
 // Export all functions
 export default {
   generateText,
@@ -491,4 +597,5 @@ export default {
   forecastBudget,
   extractQuoteItems,
   draftQuoteFromText,
+  suggestOptimalAssignee,
 };
