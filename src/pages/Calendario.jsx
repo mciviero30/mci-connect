@@ -24,6 +24,7 @@ import CopyWeekDialog from "../components/calendario/CopyWeekDialog";
 import ResourceView from "../components/calendario/ResourceView";
 import OccupancyStats from "../components/calendario/OccupancyStats";
 import GoogleCalendarSync from "../components/calendario/GoogleCalendarSync";
+import AvailabilityOverview from "../components/calendario/AvailabilityOverview";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
 import { useToast } from "@/components/ui/toast";
@@ -52,6 +53,7 @@ export default function Calendario() {
   const [showCopyWeek, setShowCopyWeek] = useState(false);
   const [showGoogleSync, setShowGoogleSync] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showAvailability, setShowAvailability] = useState(false);
   const [conflicts, setConflicts] = useState([]);
   const [copiedShift, setCopiedShift] = useState(null);
 
@@ -637,6 +639,15 @@ export default function Calendario() {
                   <Button variant="outline" size="sm" onClick={() => setShowCopyWeek(true)} className="bg-white dark:bg-slate-800" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
                     <Copy className="w-4 h-4" />
                   </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowAvailability(!showAvailability)} 
+                    className={`bg-white dark:bg-slate-800 ${showAvailability ? 'border-blue-500 text-blue-600' : ''}`}
+                    title={language === 'es' ? 'Disponibilidad' : 'Availability'}
+                  >
+                    <Users className="w-4 h-4" />
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => setShowStats(!showStats)} className="bg-white dark:bg-slate-800" title={language === 'es' ? 'Estadísticas' : 'Stats'}>
                     <BarChart3 className="w-4 h-4" />
                   </Button>
@@ -656,6 +667,17 @@ export default function Calendario() {
                 employees={employees}
                 currentDate={currentDate}
                 language={language}
+              />
+            </div>
+          )}
+
+          {/* Availability Overview Panel */}
+          {showAvailability && (
+            <div className="mb-6">
+              <AvailabilityOverview
+                employees={employees}
+                currentDate={currentDate}
+                isAdmin={isAdmin}
               />
             </div>
           )}
