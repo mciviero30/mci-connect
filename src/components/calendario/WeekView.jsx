@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { format, addDays, isSameDay, isValid } from 'date-fns';
-import { Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, CheckCircle, XCircle, Copy, ClipboardPaste } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function WeekView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser }) {
+export default function WeekView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, onCopyShift, onPasteShift, copiedShift, isAdmin, currentUser }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
   
   const weekStart = new Date(validDate);
@@ -86,9 +86,22 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                       return (
                         <div key={shift.id}>
                           <div
-                            className={`p-2 rounded-lg text-xs ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-md relative`}
+                            className={`p-2 rounded-lg text-xs ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-md relative group/shift`}
                             onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
                           >
+                            {/* Copy button on hover */}
+                            {isAdmin && onCopyShift && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onCopyShift(shift);
+                                }}
+                                className="absolute top-1 left-1 p-1 bg-white/20 rounded opacity-0 group-hover/shift:opacity-100 transition-opacity hover:bg-white/40"
+                                title="Copy shift"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            )}
                             <p className="font-semibold truncate">{getEventLabel(shift)}</p>
                             {shift.employee_name && (
                               <p className="text-[10px] opacity-90 truncate">{shift.employee_name}</p>
@@ -144,12 +157,23 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                     })}
                     
                     {isAdmin && (
-                      <button
-                        onClick={() => onDateClick(day)}
-                        className="w-full p-2 border-2 border-dashed border-slate-300 rounded-lg hover:border-[#3B9FF3] hover:bg-[#3B9FF3]/10 transition-colors flex items-center justify-center gap-1 text-slate-400 hover:text-[#3B9FF3] opacity-0 group-hover:opacity-100"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100">
+                        <button
+                          onClick={() => onDateClick(day)}
+                          className="flex-1 p-2 border-2 border-dashed border-slate-300 rounded-lg hover:border-[#3B9FF3] hover:bg-[#3B9FF3]/10 transition-colors flex items-center justify-center gap-1 text-slate-400 hover:text-[#3B9FF3]"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        {copiedShift && (
+                          <button
+                            onClick={() => onPasteShift(day)}
+                            className="p-2 border-2 border-dashed border-green-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors flex items-center justify-center text-green-500 hover:text-green-600"
+                            title="Paste shift"
+                          >
+                            <ClipboardPaste className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
