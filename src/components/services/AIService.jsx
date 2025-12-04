@@ -308,6 +308,174 @@ export async function forecastBudget(historicalData, months = 3) {
   );
 }
 
+/**
+ * Draft quote from free text - Step 1: Extract items
+ */
+export async function extractQuoteItems(clientText) {
+  const schema = {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            description: { type: 'string' },
+            quantity: { type: 'number' },
+            unit: { type: 'string' },
+            notes: { type: 'string' },
+          },
+        },
+      },
+      customer_name: { type: 'string' },
+      job_name: { type: 'string' },
+      job_address: { type: 'string' },
+      notes: { type: 'string' },
+    },
+  };
+
+  return generateJSON(
+    `Extract quote line items from this client request. Focus on identifying:
+     - Each distinct item/service with quantity and unit of measure
+     - Customer name if mentioned
+     - Job/project name if mentioned
+     - Job address if mentioned
+     
+     DO NOT include prices - only extract descriptions, quantities, and units.
+     Common units: hour, sqft, lnft, unit, each, day, lot, gallon, pound
+     
+     Client request:
+     "${clientText}"`,
+    schema
+  );
+}
+
+/**
+ * Match extracted items against catalog using semantic similarity
+ */
+async function matchItemToCatalog(itemDescription, catalog) {
+  // First try exact match (case insensitive)
+  const exactMatch = catalog.find(
+    c => c.name.toLowerCase() === itemDescription.toLowerCase()
+  );
+  if (exactMatch) {
+    return { match: exactMatch, confidence: 100, matchType: 'exact' };
+  }
+  
+  // Try partial match
+  const partialMatch = catalog.find(
+    c => itemDescription.toLowerCase().includes(c.name.toLowerCase()) ||
+         c.name.toLowerCase().includes(itemDescription.toLowerCase())
+  );
+  if (partialMatch) {
+    return { match: partialMatch, confidence: 85, matchType: 'partial' };
+  }
+  
+  // Use LLM for semantic matching
+  if (catalog.length > 0) {
+    const catalogList = catalog.map(c => `- "${c.name}" (${c.category}, $${c.unit_price}/${c.uom})`).join('\n');
+    
+    const schema = {
+      type: 'object',
+      properties: {
+        matched_item_name: { type: 'string' },
+        confidence: { type: 'number' },
+        reasoning: { type: 'string' },
+      },
+    };
+    
+    try {
+      const result = await generateJSON(
+        `Find the best matching catalog item for: "${itemDescription}"
+         
+         Available catalog items:
+         ${catalogList}
+         
+         If no good match exists, set matched_item_name to empty string and confidence to 0.
+         Confidence should be 0-100 based on how well it matches.`,
+        schema
+      );
+      
+      if (result.matched_item_name && result.confidence > 60) {
+        const match = catalog.find(c => c.name === result.matched_item_name);
+        if (match) {
+          return { match, confidence: result.confidence, matchType: 'semantic' };
+        }
+      }
+    } catch (e) {
+      console.warn('Semantic matching failed:', e);
+    }
+  }
+  
+  return { match: null, confidence: 0, matchType: 'none' };
+}
+
+/**
+ * Draft quote from free text with catalog validation
+ */
+export async function draftQuoteFromText(clientText, catalogItems = []) {
+  // Step 1: Extract items from text using LLM
+  const extracted = await extractQuoteItems(clientText);
+  
+  // Step 2: Validate each item against catalog
+  const validatedItems = await Promise.all(
+    (extracted.items || []).map(async (item) => {
+      const catalogMatch = await matchItemToCatalog(item.description, catalogItems);
+      
+      if (catalogMatch.match) {
+        return {
+          description: item.description,
+          quantity: item.quantity || 1,
+          unit: catalogMatch.match.uom || item.unit || 'unit',
+          unit_price: catalogMatch.match.unit_price,
+          total: (item.quantity || 1) * catalogMatch.match.unit_price,
+          validated: true,
+          catalog_item_id: catalogMatch.match.id,
+          catalog_item_name: catalogMatch.match.name,
+          match_confidence: catalogMatch.confidence,
+          match_type: catalogMatch.matchType,
+        };
+      } else {
+        return {
+          description: item.description,
+          quantity: item.quantity || 1,
+          unit: item.unit || 'unit',
+          unit_price: 0,
+          total: 0,
+          validated: false,
+          catalog_item_id: null,
+          catalog_item_name: null,
+          match_confidence: 0,
+          match_type: 'none',
+          notes: item.notes,
+        };
+      }
+    })
+  );
+  
+  // Calculate totals
+  const subtotal = validatedItems.reduce((sum, item) => sum + (item.total || 0), 0);
+  const validatedCount = validatedItems.filter(i => i.validated).length;
+  const needsReviewCount = validatedItems.filter(i => !i.validated).length;
+  
+  return {
+    items: validatedItems,
+    customer_name: extracted.customer_name || '',
+    job_name: extracted.job_name || '',
+    job_address: extracted.job_address || '',
+    notes: extracted.notes || '',
+    subtotal,
+    validation_summary: {
+      total_items: validatedItems.length,
+      validated_count: validatedCount,
+      needs_review_count: needsReviewCount,
+      validation_percentage: validatedItems.length > 0 
+        ? Math.round((validatedCount / validatedItems.length) * 100) 
+        : 0,
+    },
+  };
+}
+
 // Export all functions
 export default {
   generateText,
@@ -321,4 +489,6 @@ export default {
   analyzeBlueprintImage,
   generateAssistantResponse,
   forecastBudget,
+  extractQuoteItems,
+  draftQuoteFromText,
 };
