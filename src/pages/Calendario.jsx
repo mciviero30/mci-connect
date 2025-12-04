@@ -53,6 +53,7 @@ export default function Calendario() {
   const [showGoogleSync, setShowGoogleSync] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [conflicts, setConflicts] = useState([]);
+  const [copiedShift, setCopiedShift] = useState(null);
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
@@ -209,6 +210,29 @@ export default function Calendario() {
       setEditingShift(null);
       toast.success(language === 'es' ? `${shiftsToDelete.length} turnos eliminados` : `${shiftsToDelete.length} shifts deleted`);
     }
+  };
+
+  const handleCopyShift = (shift) => {
+    const shiftToCopy = { ...shift };
+    delete shiftToCopy.id;
+    delete shiftToCopy.created_date;
+    delete shiftToCopy.updated_date;
+    delete shiftToCopy.created_by;
+    setCopiedShift(shiftToCopy);
+    toast.success(language === 'es' ? '📋 Turno copiado' : '📋 Shift copied');
+  };
+
+  const handlePasteShift = async (targetDate) => {
+    if (!copiedShift) return;
+    
+    const newShift = {
+      ...copiedShift,
+      date: format(targetDate, 'yyyy-MM-dd'),
+      status: 'scheduled'
+    };
+    
+    await createMutation.mutateAsync(newShift);
+    toast.success(language === 'es' ? '✅ Turno pegado' : '✅ Shift pasted');
   };
 
   // Create recurring shifts
@@ -646,6 +670,9 @@ export default function Calendario() {
                 onShiftClick={handleShiftClick}
                 onConfirmShift={handleConfirmShift}
                 onRejectShift={handleRejectShift}
+                onCopyShift={handleCopyShift}
+                onPasteShift={handlePasteShift}
+                copiedShift={copiedShift}
                 isAdmin={isAdmin}
                 currentUser={user}
               />
@@ -658,6 +685,9 @@ export default function Calendario() {
                 onShiftClick={handleShiftClick}
                 onConfirmShift={handleConfirmShift}
                 onRejectShift={handleRejectShift}
+                onCopyShift={handleCopyShift}
+                onPasteShift={handlePasteShift}
+                copiedShift={copiedShift}
                 isAdmin={isAdmin}
                 currentUser={user}
               />
@@ -670,6 +700,9 @@ export default function Calendario() {
                 onShiftClick={handleShiftClick}
                 onConfirmShift={handleConfirmShift}
                 onRejectShift={handleRejectShift}
+                onCopyShift={handleCopyShift}
+                onPasteShift={handlePasteShift}
+                copiedShift={copiedShift}
                 isAdmin={isAdmin}
                 currentUser={user}
               />
@@ -805,6 +838,7 @@ export default function Calendario() {
               onSubmit={handleSubmit}
               onDelete={handleDelete}
               onDeleteAllForJob={handleDeleteAllForJob}
+              onCopyShift={handleCopyShift}
               isProcessing={createMutation.isPending || updateMutation.isPending}
               onShowRecurring={() => setShowRecurring(true)}
               conflicts={conflicts}
