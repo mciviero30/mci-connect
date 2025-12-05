@@ -35,8 +35,7 @@ import TimeOffRequestDialog from "../components/dashboard/TimeOffRequestDialog";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { getDisplayName } from "@/components/utils/nameHelpers";
 import { Progress } from "@/components/ui/progress";
-import CustomAvatar from "../components/avatar/CustomAvatar";
-import AvatarCreator from "../components/avatar/AvatarCreator";
+import PhotoAvatarManager from "../components/avatar/PhotoAvatarManager";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { AnimatePresence, motion } from "framer-motion";
 import DashboardWidget from "../components/dashboard/DashboardWidget";
@@ -67,7 +66,7 @@ export default function Dashboard() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [showTimeOffDialog, setShowTimeOffDialog] = useState(false);
-  const [showAvatarCreator, setShowAvatarCreator] = useState(false);
+  const [showPhotoManager, setShowPhotoManager] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false);
   const [widgets, setWidgets] = useState([]);
@@ -615,7 +614,7 @@ export default function Dashboard() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => setShowAvatarCreator(true)}
+                onClick={() => setShowPhotoManager(true)}
                 className="group relative hover:scale-105 transition-transform flex-shrink-0"
               >
                 {profileImage ? (
@@ -764,10 +763,9 @@ export default function Dashboard() {
         )}
 
         <TimeOffRequestDialog open={showTimeOffDialog} onOpenChange={setShowTimeOffDialog} />
-        <AvatarCreator
-          open={showAvatarCreator}
-          onOpenChange={setShowAvatarCreator}
-          currentConfig={user?.avatar_config}
+        <PhotoAvatarManager
+          open={showPhotoManager}
+          onOpenChange={setShowPhotoManager}
         />
         <WidgetLibrary
           open={showWidgetLibrary}
