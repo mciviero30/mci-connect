@@ -228,7 +228,11 @@ export default function Configuracion() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setProfileForm({ ...profileForm, profile_photo_url: file_url });
-      await base44.auth.updateMe({ profile_photo_url: file_url });
+      // Update profile photo and set it as preferred if no preference exists
+      await base44.auth.updateMe({ 
+        profile_photo_url: file_url,
+        preferred_profile_image: user?.preferred_profile_image || 'photo'
+      });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       toast({
         title: "✅ Success!",
