@@ -69,6 +69,7 @@ import TimeReports from './pages/TimeReports';
 import Field from './pages/Field';
 import FieldProject from './pages/FieldProject';
 import ClientPortal from './pages/ClientPortal';
+import SkillMatrix from './pages/SkillMatrix';
 import __Layout from './Layout.jsx';
 
 
@@ -144,6 +145,7 @@ export const PAGES = {
     "Field": Field,
     "FieldProject": FieldProject,
     "ClientPortal": ClientPortal,
+    "SkillMatrix": SkillMatrix,
 }
 
 export const pagesConfig = {
