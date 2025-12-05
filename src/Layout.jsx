@@ -351,17 +351,18 @@ const LayoutContent = ({ children, currentPageName }) => {
   ];
 
   const employeeNavigation = [
-    {
-      section: 'GENERAL',
-      items: [
-        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
-        { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
-        { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
-        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
-        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
-        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
-      ]
-    },
+        {
+          section: 'GENERAL',
+          items: [
+            { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+            { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
+            { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
+            { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+            { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+            { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
+            { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin, badge: '🏗️' },
+          ]
+        },
     {
       section: 'MY TIME & PAY',
       items: [
