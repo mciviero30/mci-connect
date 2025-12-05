@@ -271,7 +271,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         section: 'JOBS & PROJECTS',
         items: [
           { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
-          { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin, badge: '🏗️' },
+                          { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
           { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
           { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
         ]
@@ -292,18 +292,18 @@ const LayoutContent = ({ children, currentPageName }) => {
                 items: [
                   { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
                   { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
-                  { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award, badge: '🚀' },
+                  { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award },
                   { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
-                  { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target, badge: '🚀' },
-                  { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users, badge: '🚀' },
+                  { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target },
+                                { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users },
                   { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
                 ]
               },
     {
       section: 'TIME & PAYROLL',
       items: [
-        { title: 'Time Tracking', url: createPageUrl("TimeTracking"), icon: Clock, badge: '🚀' },
-        { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3, badge: '🚀' },
+        { title: 'Time Tracking', url: createPageUrl("TimeTracking"), icon: Clock },
+                      { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3 },
         { title: 'Approvals', url: createPageUrl("Horarios"), icon: Clock },
         { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
         { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car },
@@ -313,23 +313,23 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'DASHBOARDS & INSIGHTS',
       items: [
-        { title: 'Financial Dashboard', url: createPageUrl('FinancialDashboard'), icon: DollarSign, badge: '🚀' },
-        { title: 'Analytics Dashboard', url: createPageUrl('AnalyticsDashboard'), icon: BarChart3, badge: '🚀' },
-        { title: 'Jobs Advanced', url: createPageUrl('JobsAdvanced'), icon: Target, badge: '🚀' },
-        { title: 'HR Advanced', url: createPageUrl('HRAdvancedDashboard'), icon: Shield, badge: '🚀' },
-        { title: 'AI Automation', url: createPageUrl('AIAutomationDashboard'), icon: Brain, badge: '🚀' },
+        { title: 'Financial Dashboard', url: createPageUrl('FinancialDashboard'), icon: DollarSign },
+                      { title: 'Analytics Dashboard', url: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
+                      { title: 'Jobs Advanced', url: createPageUrl('JobsAdvanced'), icon: Target },
+                      { title: 'HR Advanced', url: createPageUrl('HRAdvancedDashboard'), icon: Shield },
+                      { title: 'AI Automation', url: createPageUrl('AIAutomationDashboard'), icon: Brain },
       ]
     },
     {
       section: 'REPORTS & AI',
       items: [
-        { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3, badge: '🚀' },
+        { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
         { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
-        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp, badge: '✨' },
-        { title: 'AI Invoice Gen', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles, badge: '✨' },
-        { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles, badge: '✨' },
-        { title: 'AI Expenses', url: createPageUrl('AIExpensesAudit'), icon: Sparkles, badge: '✨' },
+        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
+                      { title: 'AI Invoice Gen', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles },
+                      { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles },
+                      { title: 'AI Expenses', url: createPageUrl('AIExpensesAudit'), icon: Sparkles },
       ]
     },
     {
@@ -378,10 +378,10 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'MY PERFORMANCE',
       items: [
-        { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target, badge: '🚀' },
-        { title: 'My Goals', url: createPageUrl("Goals"), icon: Target, badge: '🚀' },
-        { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase, badge: '🚀' },
-        { title: 'AI Assistant', url: createPageUrl("AIAssistantPersonal"), icon: Brain, badge: '🚀' },
+        { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target },
+                      { title: 'My Goals', url: createPageUrl("Goals"), icon: Target },
+                      { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
+                      { title: 'AI Assistant', url: createPageUrl("AIAssistantPersonal"), icon: Brain },
       ]
     },
     {
