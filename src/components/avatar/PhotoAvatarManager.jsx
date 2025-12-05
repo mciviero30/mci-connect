@@ -122,175 +122,139 @@ CRITICAL REQUIREMENTS:
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-900 p-0">
+        <DialogHeader className="p-4 pb-0">
+          <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white text-lg">
             <Camera className="w-5 h-5 text-blue-600" />
-            Foto y Avatar AI
+            Foto y Avatar
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Left Column - Photo */}
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-              <div className="flex flex-col items-center">
-                {user?.profile_photo_url ? (
-                  <img
-                    src={user.profile_photo_url}
-                    alt="Foto"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-4xl">
-                      {user?.full_name?.[0]?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                )}
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-3">Foto Original</p>
-              </div>
-              
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handlePhotoUpload}
-                className="hidden"
-                id="photo-upload"
+        <div className="p-4 space-y-4">
+          {/* Photo Section */}
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+            {user?.profile_photo_url ? (
+              <img
+                src={user.profile_photo_url}
+                alt="Foto"
+                className="w-16 h-16 rounded-full object-cover border-2 border-white shadow"
               />
-              <Button
-                onClick={() => document.getElementById('photo-upload').click()}
-                disabled={uploadingPhoto || generatingAvatar}
-                variant="outline"
-                className="w-full mt-4"
-              >
-                {uploadingPhoto ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Subiendo...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Cambiar Foto
-                  </>
-                )}
-              </Button>
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow">
+                <span className="text-white font-bold text-xl">
+                  {user?.full_name?.[0]?.toUpperCase() || 'U'}
+                </span>
+              </div>
+            )}
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-900 dark:text-white">Tu Foto</p>
+              <p className="text-xs text-slate-500">JPG, PNG o WEBP</p>
             </div>
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handlePhotoUpload}
+              className="hidden"
+              id="photo-upload-v2"
+            />
+            <Button
+              onClick={() => document.getElementById('photo-upload-v2').click()}
+              disabled={uploadingPhoto || generatingAvatar}
+              variant="outline"
+              size="sm"
+            >
+              {uploadingPhoto ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+            </Button>
           </div>
 
-          {/* Right Column - Avatar Generator */}
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-100 dark:border-blue-800">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mb-3">
-                  <Sparkles className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-center">
-                  Genera Avatar con AI {user?.avatar_image_url && '(o Mejóralo)'}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 text-center mt-1">
-                  Describe tus características y el AI creará tu avatar
-                </p>
-              </div>
-
-              <Textarea
-                value={avatarDescription}
-                onChange={(e) => setAvatarDescription(e.target.value)}
-                placeholder="Ej: Hombre latino con barba, pelo corto negro, lentes..."
-                className="h-16 mt-4 bg-white dark:bg-slate-800 text-sm"
-              />
-
-              <Button
-                onClick={generateAvatar}
-                disabled={generatingAvatar || uploadingPhoto || !user?.profile_photo_url}
-                className="w-full mt-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-              >
-                {generatingAvatar ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generando... (30-60 seg)
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Generar Avatar
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {/* Style Presets */}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                ✨ Elige un preset para aplicar un estilo completo instantáneamente
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {STYLE_PRESETS.map((style) => (
-                  <button
-                    key={style.id}
-                    onClick={() => setSelectedStyle(style.id)}
-                    className={`p-2 rounded-lg border-2 transition-all text-left ${
-                      selectedStyle === style.id
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-slate-900 dark:text-white">{style.name}</span>
-                      {selectedStyle === style.id && <Check className="w-3 h-3 text-blue-600" />}
-                    </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{style.description}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Description */}
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
-              <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
-                ✨ Potenciado por AI
-              </p>
-              <p className="text-[10px] text-amber-700 dark:text-amber-400 mt-1">
-                Describe tu apariencia y el AI creará un avatar personalizado que se parece a ti
-              </p>
-              <div className="mt-2 text-[10px] text-amber-600 dark:text-amber-500">
-                <p>💡 Ejemplos:</p>
-                <p className="ml-2">• "Mujer latina, pelo largo café, ojos felices"</p>
-                <p className="ml-2">• "Hombre con barba, pelo corto negro, lentes"</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Choose Profile Image - Only show if both exist */}
-        {user?.profile_photo_url && user?.avatar_image_url && (
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-700 mt-4">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-              Elige tu imagen de perfil:
+          {/* Style Selection */}
+          <div>
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+              Estilo de Avatar
             </p>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                onClick={switchToPhoto}
-                variant={!usingAvatar ? "default" : "outline"}
-                className={!usingAvatar ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
-              >
-                <Camera className="w-4 h-4 mr-2" />
-                Usar Foto
-                {!usingAvatar && <Check className="w-4 h-4 ml-2" />}
-              </Button>
-              <Button
-                onClick={switchToAvatar}
-                variant={usingAvatar ? "default" : "outline"}
-                className={usingAvatar ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Usar Avatar
-                {usingAvatar && <Check className="w-4 h-4 ml-2" />}
-              </Button>
+            <div className="grid grid-cols-3 gap-1.5">
+              {STYLE_PRESETS.map((style) => (
+                <button
+                  key={style.id}
+                  onClick={() => setSelectedStyle(style.id)}
+                  className={`p-2 rounded-lg border transition-all text-center ${
+                    selectedStyle === style.id
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                  }`}
+                >
+                  <span className="text-sm">{style.name.split(' ')[0]}</span>
+                  <p className="text-[9px] text-slate-500 dark:text-slate-400">{style.description}</p>
+                </button>
+              ))}
             </div>
           </div>
-        )}
+
+          {/* Description */}
+          <div>
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+              Descripción (opcional)
+            </p>
+            <Textarea
+              value={avatarDescription}
+              onChange={(e) => setAvatarDescription(e.target.value)}
+              placeholder="Ej: Hombre con barba, calvo, lentes..."
+              className="h-14 bg-white dark:bg-slate-800 text-sm resize-none"
+            />
+          </div>
+
+          {/* Generate Button */}
+          <Button
+            onClick={generateAvatar}
+            disabled={generatingAvatar || uploadingPhoto || !user?.profile_photo_url}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+          >
+            {generatingAvatar ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generando... (30-60s)
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generar Avatar
+              </>
+            )}
+          </Button>
+
+          {/* Switch between photo and avatar */}
+          {user?.profile_photo_url && user?.avatar_image_url && (
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-xs text-slate-500 mb-2 text-center">Usar como perfil:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={switchToPhoto}
+                  variant={!usingAvatar ? "default" : "outline"}
+                  size="sm"
+                  className={!usingAvatar ? "bg-blue-600 text-white" : ""}
+                >
+                  <Camera className="w-3 h-3 mr-1" />
+                  Foto
+                  {!usingAvatar && <Check className="w-3 h-3 ml-1" />}
+                </Button>
+                <Button
+                  onClick={switchToAvatar}
+                  variant={usingAvatar ? "default" : "outline"}
+                  size="sm"
+                  className={usingAvatar ? "bg-purple-600 text-white" : ""}
+                >
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Avatar
+                  {usingAvatar && <Check className="w-3 h-3 ml-1" />}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
