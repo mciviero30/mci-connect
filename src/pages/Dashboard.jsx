@@ -573,12 +573,22 @@ export default function Dashboard() {
 
   const getProfileImage = () => {
     if (!user) return null;
+    
+    // Check preferred image first
     if (user.preferred_profile_image === 'avatar' && user.avatar_image_url) {
       return user.avatar_image_url;
     }
+    
+    // Then check profile_photo_url
     if (user.profile_photo_url) {
       return user.profile_photo_url;
     }
+    
+    // Fallback to avatar if exists
+    if (user.avatar_image_url) {
+      return user.avatar_image_url;
+    }
+    
     return null;
   };
 
