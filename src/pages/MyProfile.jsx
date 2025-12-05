@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, Clock, UserCircle, FileText, Calendar as CalendarIcon, Receipt, Banknote } from "lucide-react";
+import { 
+  User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, 
+  Clock, UserCircle, FileText, Calendar as CalendarIcon, Receipt, Banknote,
+  Edit3, Save, X, Award, Shield, ChevronRight, Sparkles
+} from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { getDisplayName } from "@/components/utils/nameHelpers";
@@ -14,6 +18,8 @@ import PhotoAvatarManager from "../components/avatar/PhotoAvatarManager";
 import CertificationMonitor from "../components/certifications/CertificationMonitor";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -26,7 +32,6 @@ export default function MyProfile() {
     queryFn: () => base44.auth.me(),
   });
 
-  // Fetch user's certifications for alerts
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['myCertifications', user?.email],
     queryFn: () => base44.entities.Certification.filter({ employee_email: user.email }),
@@ -34,15 +39,13 @@ export default function MyProfile() {
     initialData: []
   });
 
-  // Fetch performance reviews (recognitions)
   const { data: myRecognitions = [] } = useQuery({
     queryKey: ['myRecognitions', user?.email],
-    queryFn: () => base44.entities.Recognition.filter({ employee_email: user.email }, '-created_date', 10),
+    queryFn: () => base44.entities.Recognition.filter({ employee_email: user.email }, '-created_date', 5),
     enabled: !!user?.email,
     initialData: []
   });
 
-  // Fetch certification alerts
   const { data: myAlerts = [] } = useQuery({
     queryKey: ['myCertificationAlerts', user?.email],
     queryFn: () => base44.entities.CertificationAlert.filter({ 
@@ -66,7 +69,6 @@ export default function MyProfile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setEditing(false);
-      alert('✅ Perfil actualizado exitosamente');
     },
   });
 
@@ -84,16 +86,15 @@ export default function MyProfile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#181818]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-[#3B9FF3] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">{t('loading')}...</p>
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">{t('loading')}...</p>
         </div>
       </div>
     );
   }
 
-  // Calculate certification stats
   const expiringSoon = myCertifications.filter(c => {
     if (!c.expiration_date || c.status === 'expired') return false;
     const daysUntilExpiry = differenceInDays(new Date(c.expiration_date), new Date());
@@ -104,292 +105,34 @@ export default function MyProfile() {
 
   const currentImage = user.preferred_profile_image === 'avatar' && user.avatar_image_url
     ? user.avatar_image_url
-    : user.profile_photo_url;
+    : user.profile_photo_url || user.avatar_image_url;
+
+  const totalPoints = myRecognitions.reduce((sum, r) => sum + (r.points || 0), 0);
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
-      {/* BACKGROUND CERTIFICATION MONITORING */}
+    <div className="min-h-screen bg-slate-50 dark:bg-[#181818]">
       <CertificationMonitor userEmail={user.email} />
 
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Mi Perfil</h1>
-          <p className="text-slate-600 dark:text-slate-400">Gestiona tu información personal</p>
-        </div>
-
-        {/* CERTIFICATION ALERTS */}
-        {expiringSoon.length > 0 && (
-          <Alert className="mb-6 bg-amber-50 border-amber-300">
-            <AlertCircle className="w-4 h-4 text-amber-600" />
-            <AlertDescription className="text-amber-900">
-              <strong className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4" />
-                {expiringSoon.length} certification(s) expiring soon
-              </strong>
-              <div className="space-y-1 text-sm">
-                {expiringSoon.map(cert => {
-                  const days = differenceInDays(new Date(cert.expiration_date), new Date());
-                  return (
-                    <div key={cert.id} className="flex items-center justify-between">
-                      <span>• {cert.certification_name}</span>
-                      <Badge className="bg-amber-200 text-amber-900">
-                        {days} days left
-                      </Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {expired.length > 0 && (
-          <Alert className="mb-6 bg-red-50 border-red-300">
-            <AlertCircle className="w-4 h-4 text-red-600" />
-            <AlertDescription className="text-red-900">
-              <strong className="mb-2 block">
-                ⚠️ {expired.length} expired certification(s) - Immediate action required
-              </strong>
-              <div className="space-y-1 text-sm">
-                {expired.map(cert => (
-                  <div key={cert.id}>• {cert.certification_name} (expired {format(new Date(cert.expiration_date), 'MMM dd, yyyy')})</div>
-                ))}
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {myAlerts.length > 0 && (
-          <Alert className="mb-6 bg-blue-50 border-blue-300">
-            <Mail className="w-4 h-4 text-blue-600" />
-            <AlertDescription className="text-blue-900">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <strong>📧 {myAlerts.length} unread certification alert(s)</strong>
-                  <p className="text-sm mt-1">Check your email for details</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    myAlerts.forEach(alert => acknowledgeAlertMutation.mutate(alert.id));
-                  }}
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                >
-                  Dismiss All
-                </Button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Profile Picture - Clickable */}
-        <Card className="mb-6 border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg">
-          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-              <Camera className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-              Foto de Perfil
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center space-y-4">
-              <button
-                onClick={() => setShowPhotoManager(true)}
-                className="group relative cursor-pointer transition-transform hover:scale-105"
-              >
-                {currentImage ? (
-                  <img
-                    src={currentImage}
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-200 shadow-lg group-hover:border-blue-400 transition-all"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#3B9FF3] to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all">
-                    <span className="text-white font-bold text-5xl">
-                      {user.full_name?.[0]?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                )}
-                <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
-                  <Camera className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </button>
-              
-              <div className="text-center">
-                <p className="text-sm text-slate-600 mb-2">Click en la foto para cambiarla</p>
-                <Button
-                  onClick={() => setShowPhotoManager(true)}
-                  variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Gestionar Foto y Avatar
-                </Button>
-              </div>
+      {/* Hero Header */}
+      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-blue-800 dark:to-indigo-900">
+        <div className="max-w-5xl mx-auto px-4 pt-8 pb-24">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Mi Perfil</h1>
+              <p className="text-blue-200 text-sm">Gestiona tu información personal</p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Personal Information */}
-        <Card className="border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg">
-          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <User className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-                {t('information')}
-              </CardTitle>
+            {!editing ? (
               <Button
-                onClick={() => editing ? handleSave() : setEditing(true)}
-                disabled={updateProfileMutation.isPending}
-                className="bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white"
+                onClick={() => setEditing(true)}
+                variant="outline"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
               >
-                {updateProfileMutation.isPending ? t('saving') : editing ? t('save') : t('edit')}
+                <Edit3 className="w-4 h-4 mr-2" />
+                Editar
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-slate-700">{t('fullName')}</Label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <User className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-900 dark:text-white font-medium">{getDisplayName(user)}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700">{t('email')}</Label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <Mail className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-900">{user.email}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700">{t('phone')}</Label>
-                {editing ? (
-                  <PhoneInput
-                    value={formData.phone}
-                    onChange={(value) => setFormData({ ...formData, phone: value })}
-                    className="bg-white"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <Phone className="w-5 h-5 text-slate-400" />
-                    <span className="text-slate-900">{user.phone || 'No registrado'}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-700">{t('position')}</Label>
-                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <Briefcase className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-900">{user.position || 'No asignado'}</span>
-                </div>
-              </div>
-
-              {user.hire_date && (
-                <div className="space-y-2">
-                  <Label className="text-slate-700">{t('hireDate')}</Label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <Calendar className="w-5 h-5 text-slate-400" />
-                    <span className="text-slate-900">{format(new Date(user.hire_date), 'MMM dd, yyyy')}</span>
-                  </div>
-                </div>
-              )}
-
-              {user.team_name && (
-                <div className="space-y-2">
-                  <Label className="text-slate-700">Equipo</Label>
-                  <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <MapPin className="w-5 h-5 text-slate-400" />
-                    <span className="text-slate-900">{user.team_name}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-2 md:col-span-2">
-                <Label className="text-slate-700">{t('address')}</Label>
-                {editing ? (
-                  <Input
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="Ingresa tu dirección"
-                    className="bg-white"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <MapPin className="w-5 h-5 text-slate-400" />
-                    <span className="text-slate-900">{user.address || 'No registrada'}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Emergency Contact Section */}
-            <div className="pt-6 border-t border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <UserCircle className="w-5 h-5 text-[#3B9FF3]" />
-                Emergency Contact
-              </h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700">Name</Label>
-                  {editing ? (
-                    <Input
-                      value={formData.emergency_contact_name}
-                      onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-                      placeholder="Contact name"
-                      className="bg-white"
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <User className="w-5 h-5 text-slate-400" />
-                      <span className="text-slate-900">{user.emergency_contact_name || 'Not set'}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-slate-700">Phone</Label>
-                  {editing ? (
-                    <PhoneInput
-                      value={formData.emergency_contact_phone}
-                      onChange={(value) => setFormData({ ...formData, emergency_contact_phone: value })}
-                      className="bg-white"
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <Phone className="w-5 h-5 text-slate-400" />
-                      <span className="text-slate-900">{user.emergency_contact_phone || 'Not set'}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-slate-700">Relationship</Label>
-                  {editing ? (
-                    <Input
-                      value={formData.emergency_contact_relationship}
-                      onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
-                      placeholder="e.g., Spouse, Parent"
-                      className="bg-white"
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <UserCircle className="w-5 h-5 text-slate-400" />
-                      <span className="text-slate-900">{user.emergency_contact_relationship || 'Not set'}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {editing && (
-              <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
+            ) : (
+              <div className="flex gap-2">
                 <Button
-                  variant="outline"
                   onClick={() => {
                     setEditing(false);
                     setFormData({
@@ -400,116 +143,399 @@ export default function MyProfile() {
                       emergency_contact_relationship: user?.emergency_contact_relationship || '',
                     });
                   }}
-                  className="border-slate-300"
+                  variant="outline"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20"
                 >
-                  {t('cancel')}
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={updateProfileMutation.isPending}
+                  className="bg-white text-blue-700 hover:bg-blue-50"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {updateProfileMutation.isPending ? 'Guardando...' : 'Guardar'}
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
 
-        {/* Performance Reviews Section */}
-        <Card className="border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg mt-6">
-          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-              <FileText className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-              Recent Performance & Recognition
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {myRecognitions.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                <p>No performance reviews or recognitions yet</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {myRecognitions.map((recognition) => (
-                  <div key={recognition.id} className="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className="bg-blue-100 text-blue-800">
-                            {recognition.recognition_type}
-                          </Badge>
-                          <span className="text-xs text-slate-500">
-                            {format(new Date(recognition.created_date), 'MMM dd, yyyy')}
-                          </span>
-                        </div>
-                        <p className="text-slate-900 font-medium mb-1">{recognition.title}</p>
-                        <p className="text-sm text-slate-600">{recognition.description}</p>
-                        {recognition.given_by_name && (
-                          <p className="text-xs text-slate-500 mt-2">
-                            Given by: {recognition.given_by_name}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-[#3B9FF3]">
-                          +{recognition.points}
-                        </div>
-                        <div className="text-xs text-slate-500">points</div>
-                      </div>
+      <div className="max-w-5xl mx-auto px-4 -mt-16">
+        {/* Profile Card */}
+        <Card className="bg-white dark:bg-[#282828] shadow-xl border-0 mb-6 overflow-hidden">
+          <CardContent className="p-0">
+            <div className="flex flex-col md:flex-row">
+              {/* Left - Photo Section */}
+              <div className="md:w-72 p-6 flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-[#282828] border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-700">
+                <button
+                  onClick={() => setShowPhotoManager(true)}
+                  className="group relative mb-4"
+                >
+                  {currentImage ? (
+                    <img
+                      src={currentImage}
+                      alt="Profile"
+                      className="w-28 h-28 rounded-full object-cover ring-4 ring-white dark:ring-slate-700 shadow-lg group-hover:ring-blue-400 transition-all"
+                    />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center ring-4 ring-white dark:ring-slate-700 shadow-lg">
+                      <span className="text-white font-bold text-4xl">
+                        {user.full_name?.[0]?.toUpperCase() || 'U'}
+                      </span>
                     </div>
+                  )}
+                  <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-all">
+                    <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
-                ))}
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white dark:border-slate-700">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                </button>
+                
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white text-center">
+                  {getDisplayName(user)}
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">
+                  {user.position || 'Empleado'}
+                </p>
+                
+                {user.team_name && (
+                  <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-0">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    {user.team_name}
+                  </Badge>
+                )}
+
+                <Button
+                  onClick={() => setShowPhotoManager(true)}
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 text-xs"
+                >
+                  <Camera className="w-3 h-3 mr-1" />
+                  Cambiar foto
+                </Button>
               </div>
-            )}
-            
-            {user.last_performance_review_date && (
-              <div className="mt-6 pt-6 border-t border-slate-200">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <CalendarIcon className="w-4 h-4" />
-                  <span>Last formal review: {format(new Date(user.last_performance_review_date), 'MMMM dd, yyyy')}</span>
+
+              {/* Right - Stats & Info */}
+              <div className="flex-1 p-6">
+                {/* Stats Row */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                    <Award className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalPoints}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Puntos</p>
+                  </div>
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                    <Shield className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{myCertifications.length}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Certificaciones</p>
+                  </div>
+                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+                    <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{myRecognitions.length}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Reconocimientos</p>
+                  </div>
+                </div>
+
+                {/* Quick Info */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm text-slate-700 dark:text-slate-300 truncate">{user.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <Phone className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.phone || 'No registrado'}</span>
+                  </div>
+                  {user.hire_date && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                      <Calendar className="w-4 h-4 text-slate-400" />
+                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                        Desde {format(new Date(user.hire_date), 'MMM yyyy')}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                    <Briefcase className="w-4 h-4 text-slate-400" />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.position || 'No asignado'}</span>
+                  </div>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Quick Links to Other Self-Service Features */}
-        <Card className="border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg mt-6">
-          <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-            <CardTitle className="text-slate-900 dark:text-white">Self-Service Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <a 
-                href="/TimeOffRequests" 
-                className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all group"
-              >
-                <CalendarIcon className="w-8 h-8 text-[#3B9FF3] mb-2 group-hover:scale-110 transition-transform" />
-                <h4 className="font-semibold text-slate-900 mb-1">Request Time Off</h4>
-                <p className="text-sm text-slate-600">Submit vacation or leave requests</p>
-              </a>
-
-              <a 
-                href="/MisGastos" 
-                className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all group"
-              >
-                <Receipt className="w-8 h-8 text-[#3B9FF3] mb-2 group-hover:scale-110 transition-transform" />
-                <h4 className="font-semibold text-slate-900 mb-1">Submit Expenses</h4>
-                <p className="text-sm text-slate-600">Upload receipts and expense reports</p>
-              </a>
-
-              <a 
-                href="/MyPayroll" 
-                className="p-4 border-2 border-slate-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-all group"
-              >
-                <Banknote className="w-8 h-8 text-[#3B9FF3] mb-2 group-hover:scale-110 transition-transform" />
-                <h4 className="font-semibold text-slate-900 mb-1">View Payslips</h4>
-                <p className="text-sm text-slate-600">Access your payroll history</p>
-              </a>
             </div>
           </CardContent>
         </Card>
 
-        <PhotoAvatarManager
-          open={showPhotoManager}
-          onOpenChange={setShowPhotoManager}
-        />
+        {/* Alerts */}
+        {(expiringSoon.length > 0 || expired.length > 0 || myAlerts.length > 0) && (
+          <div className="space-y-3 mb-6">
+            {expired.length > 0 && (
+              <Alert className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <AlertDescription className="text-red-800 dark:text-red-300">
+                  <strong>⚠️ {expired.length} certificación(es) vencida(s)</strong>
+                  <span className="text-sm ml-2">- Acción inmediata requerida</span>
+                </AlertDescription>
+              </Alert>
+            )}
+            {expiringSoon.length > 0 && (
+              <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                <Clock className="w-4 h-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 dark:text-amber-300">
+                  <strong>{expiringSoon.length} certificación(es) por vencer</strong>
+                  <span className="text-sm ml-2">en los próximos 30 días</span>
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Left Column - Details */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Personal Info */}
+            <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <User className="w-4 h-4 text-blue-600" />
+                  Información Personal
+                </h3>
+                
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{getDisplayName(user)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.email}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Teléfono</Label>
+                    {editing ? (
+                      <PhoneInput
+                        value={formData.phone}
+                        onChange={(value) => setFormData({ ...formData, phone: value })}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.phone || '—'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Posición</Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.position || '—'}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dirección</Label>
+                    {editing ? (
+                      <Input
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        placeholder="Ingresa tu dirección"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.address || '—'}</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Emergency Contact */}
+            <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <UserCircle className="w-4 h-4 text-red-500" />
+                  Contacto de Emergencia
+                </h3>
+                
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</Label>
+                    {editing ? (
+                      <Input
+                        value={formData.emergency_contact_name}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                        placeholder="Nombre del contacto"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_name || '—'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Teléfono</Label>
+                    {editing ? (
+                      <PhoneInput
+                        value={formData.emergency_contact_phone}
+                        onChange={(value) => setFormData({ ...formData, emergency_contact_phone: value })}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_phone || '—'}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Relación</Label>
+                    {editing ? (
+                      <Input
+                        value={formData.emergency_contact_relationship}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
+                        placeholder="Ej: Esposo/a, Padre"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_relationship || '—'}</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recognitions */}
+            {myRecognitions.length > 0 && (
+              <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Award className="w-4 h-4 text-amber-500" />
+                    Reconocimientos Recientes
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {myRecognitions.slice(0, 3).map((recognition) => (
+                      <div key={recognition.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                          <Award className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 dark:text-white truncate">{recognition.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {format(new Date(recognition.created_date), 'dd MMM yyyy')}
+                          </p>
+                        </div>
+                        <Badge className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border-0">
+                          +{recognition.points} pts
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Right Column - Quick Actions */}
+          <div className="space-y-6">
+            <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">
+                  Acciones Rápidas
+                </h3>
+                
+                <div className="space-y-2">
+                  <Link to={createPageUrl('TimeOffRequests')}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                      <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                        <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Solicitar Tiempo</p>
+                        <p className="text-xs text-slate-500">Vacaciones o permisos</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+                    </div>
+                  </Link>
+
+                  <Link to={createPageUrl('MisGastos')}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                      <div className="w-9 h-9 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                        <Receipt className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mis Gastos</p>
+                        <p className="text-xs text-slate-500">Subir recibos</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-green-600 transition-colors" />
+                    </div>
+                  </Link>
+
+                  <Link to={createPageUrl('MyPayroll')}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                      <div className="w-9 h-9 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
+                        <Banknote className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mi Nómina</p>
+                        <p className="text-xs text-slate-500">Ver historial de pagos</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
+                    </div>
+                  </Link>
+
+                  <Link to={createPageUrl('MisHoras')}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+                      <div className="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mis Horas</p>
+                        <p className="text-xs text-slate-500">Registrar tiempo</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
+                    </div>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Certifications Summary */}
+            {myCertifications.length > 0 && (
+              <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-green-600" />
+                    Certificaciones
+                  </h3>
+                  
+                  <div className="space-y-2">
+                    {myCertifications.slice(0, 4).map((cert) => {
+                      const isExpired = cert.status === 'expired';
+                      const daysLeft = cert.expiration_date 
+                        ? differenceInDays(new Date(cert.expiration_date), new Date())
+                        : null;
+                      
+                      return (
+                        <div key={cert.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                          <span className="text-sm text-slate-700 dark:text-slate-300 truncate flex-1">
+                            {cert.certification_name}
+                          </span>
+                          {isExpired ? (
+                            <Badge className="bg-red-100 text-red-700 text-xs">Vencida</Badge>
+                          ) : daysLeft !== null && daysLeft <= 30 ? (
+                            <Badge className="bg-amber-100 text-amber-700 text-xs">{daysLeft}d</Badge>
+                          ) : (
+                            <Badge className="bg-green-100 text-green-700 text-xs">Activa</Badge>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
+
+      <PhotoAvatarManager
+        open={showPhotoManager}
+        onOpenChange={setShowPhotoManager}
+      />
     </div>
   );
 }
