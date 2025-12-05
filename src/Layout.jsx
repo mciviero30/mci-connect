@@ -361,7 +361,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
             { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
             { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
-            { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin, badge: '🏗️' },
+            { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
           ]
         },
     {
