@@ -1,16 +1,14 @@
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Calendar, TrendingUp, DollarSign } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Clock, Calendar, TrendingUp, DollarSign, AlertTriangle } from "lucide-react";
 import LiveTimeTracker from "../components/horarios/LiveTimeTracker";
 import TimeEntryList from "../components/horarios/TimeEntryList";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isToday } from "date-fns";
-import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 
 export default function MisHoras() {
   const { t, language } = useLanguage();
@@ -19,25 +17,18 @@ export default function MisHoras() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
-  const { data: timeEntries, isLoading } = useQuery({
+  const { data: timeEntries = [], isLoading } = useQuery({
     queryKey: ['myTimeEntries', user?.email],
     queryFn: async () => {
       if (!user) return [];
       return base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date');
     },
-    initialData: [],
     enabled: !!user,
   });
 
-  // NEW: Prompt #50 - Check for open clock from previous day
-  const openClockAlert = React.useMemo(() => {
+  const openClockAlert = useMemo(() => {
     if (!timeEntries || timeEntries.length === 0) return null;
-    
-    const openEntry = timeEntries.find(entry => 
-      !entry.check_out && entry.date && !isToday(new Date(entry.date))
-    );
-    
-    return openEntry;
+    return timeEntries.find(entry => !entry.check_out && entry.date && !isToday(new Date(entry.date)));
   }, [timeEntries]);
 
   const createMutation = useMutation({
@@ -47,9 +38,7 @@ export default function MisHoras() {
       employee_name: user.full_name,
       status: 'pending',
     }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] }),
   });
 
   const updateMutation = useMutation({
@@ -57,176 +46,117 @@ export default function MisHoras() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       setEditingEntry(null);
-      alert('✅ ' + t('savedSuccessfully'));
     },
   });
-
-  const handleEdit = (entry) => {
-    setEditingEntry(entry);
-  };
 
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
   const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
   const yearStart = startOfYear(today);
-
   const hourlyRate = parseFloat(user?.hourly_rate || 25);
-  
-  // Current Week - ONLY WORK HOURS (not driving)
-  const currentWeekEntries = timeEntries.filter(entry => {
-    const entryDate = new Date(entry.date);
-    return entryDate >= weekStart && entryDate <= weekEnd && entry.status === 'approved';
-  });
-  
-  const currentWeekHours = currentWeekEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
-  const normalWeekHours = Math.min(currentWeekHours, 40);
-  const overtimeWeekHours = Math.max(0, currentWeekHours - 40);
-  const weekPay = (normalWeekHours * hourlyRate) + (overtimeWeekHours * hourlyRate * 1.5);
 
-  // Current Month
-  const currentMonthEntries = timeEntries.filter(entry => {
-    const entryDate = new Date(entry.date);
-    return entryDate >= monthStart && entryDate <= monthEnd && entry.status === 'approved';
-  });
-  
-  const currentMonthHours = currentMonthEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
-  const normalMonthHours = Math.min(currentMonthHours, 160); // 40h/week * 4 weeks
-  const overtimeMonthHours = Math.max(0, currentMonthHours - 160);
-  const monthPay = (normalMonthHours * hourlyRate) + (overtimeMonthHours * hourlyRate * 1.5);
-  
-  // Year to Date
-  const ytdEntries = timeEntries.filter(entry => {
-    const entryDate = new Date(entry.date);
-    return entryDate >= yearStart && entry.status === 'approved';
-  });
-  
-  const ytdHours = ytdEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
-  
-  // Calculate YTD pay with proper OT (this is simplified - real calculation would need weekly breakdown)
-  const ytdPay = ytdEntries.reduce((sum, entry) => {
-    const hours = entry.hours_worked || 0;
-    return sum + (hours * hourlyRate); // Simplified
-  }, 0);
+  const stats = useMemo(() => {
+    const currentWeekEntries = timeEntries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= weekStart && entryDate <= weekEnd && entry.status === 'approved';
+    });
+    
+    const currentWeekHours = currentWeekEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+    const normalWeekHours = Math.min(currentWeekHours, 40);
+    const overtimeWeekHours = Math.max(0, currentWeekHours - 40);
+    const weekPay = (normalWeekHours * hourlyRate) + (overtimeWeekHours * hourlyRate * 1.5);
+
+    const currentMonthEntries = timeEntries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= monthStart && entryDate <= endOfMonth(today) && entry.status === 'approved';
+    });
+    const currentMonthHours = currentMonthEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+
+    const ytdEntries = timeEntries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= yearStart && entry.status === 'approved';
+    });
+    const ytdHours = ytdEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+
+    return { currentWeekHours, weekPay, overtimeWeekHours, currentMonthHours, ytdHours };
+  }, [timeEntries, weekStart, weekEnd, monthStart, yearStart, hourlyRate, today]);
+
+  const pageStats = [
+    {
+      icon: Clock,
+      value: `${stats.currentWeekHours.toFixed(1)}h`,
+      label: t('currentWeek'),
+      subtitle: stats.overtimeWeekHours > 0 ? `+${stats.overtimeWeekHours.toFixed(1)}h OT` : `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d')}`,
+      iconBg: "bg-blue-100 dark:bg-blue-900/50",
+      iconColor: "text-blue-600 dark:text-blue-400"
+    },
+    {
+      icon: DollarSign,
+      value: `$${stats.weekPay.toFixed(0)}`,
+      label: language === 'es' ? 'Pago Semanal' : 'Weekly Pay',
+      subtitle: language === 'es' ? 'Esta semana' : 'This week',
+      iconBg: "bg-green-100 dark:bg-green-900/50",
+      iconColor: "text-green-600 dark:text-green-400"
+    },
+    {
+      icon: Calendar,
+      value: `${stats.currentMonthHours.toFixed(1)}h`,
+      label: t('thisMonth'),
+      subtitle: format(monthStart, 'MMM yyyy'),
+      iconBg: "bg-purple-100 dark:bg-purple-900/50",
+      iconColor: "text-purple-600 dark:text-purple-400"
+    },
+    {
+      icon: TrendingUp,
+      value: `${stats.ytdHours.toFixed(0)}h`,
+      label: t('yearToDate'),
+      subtitle: new Date().getFullYear().toString(),
+      iconBg: "bg-amber-100 dark:bg-amber-900/50",
+      iconColor: "text-amber-600 dark:text-amber-400"
+    }
+  ];
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="max-w-5xl mx-auto">
-        <PageHeader
-          title={t('myHours')}
-          description={t('trackYourWorkHours')}
-          icon={Clock}
+    <EmployeePageLayout
+      title={t('myHours')}
+      subtitle={t('trackYourWorkHours')}
+      stats={pageStats}
+    >
+      {openClockAlert && (
+        <Alert className="mb-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+          <AlertTriangle className="h-5 w-5 text-red-600" />
+          <AlertTitle className="font-bold text-red-900 dark:text-red-300">
+            {language === 'es' ? '⚠️ Reloj Activo Detectado' : '⚠️ Active Clock Detected'}
+          </AlertTitle>
+          <AlertDescription className="text-red-800 dark:text-red-400">
+            {language === 'es' 
+              ? `Tienes un reloj activo del día ${format(new Date(openClockAlert.date), 'dd/MM/yyyy')} para "${openClockAlert.job_name}".`
+              : `You have an active clock from ${format(new Date(openClockAlert.date), 'MM/dd/yyyy')} for "${openClockAlert.job_name}".`
+            }
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <LiveTimeTracker 
+        trackingType="work"
+        onSave={(data) => createMutation.mutate(data)}
+        isLoading={createMutation.isPending}
+      />
+
+      <ModernCard 
+        title={t('myRecords')} 
+        icon={Clock}
+        noPadding
+        className="mt-6"
+      >
+        <TimeEntryList
+          timeEntries={timeEntries}
+          isLoading={isLoading}
+          showActions={true}
+          onEdit={setEditingEntry}
         />
-
-        {/* NEW: Prompt #50 - Alert for open clock from previous day */}
-        {openClockAlert && (
-          <Alert className="mb-6 bg-red-50 border-red-300 text-red-900">
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <AlertTitle className="font-bold">
-              {language === 'es' ? '⚠️ Reloj Activo Detectado' : '⚠️ Active Clock Detected'}
-            </AlertTitle>
-            <AlertDescription>
-              {language === 'es' 
-                ? `Tienes un reloj activo del día ${format(new Date(openClockAlert.date), 'dd/MM/yyyy')} para el trabajo "${openClockAlert.job_name}". Por favor, detenlo ahora en la sección de registros abajo.`
-                : `You have an active clock from ${format(new Date(openClockAlert.date), 'MM/dd/yyyy')} for job "${openClockAlert.job_name}". Please stop it now in the records section below.`
-              }
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <LiveTimeTracker 
-          trackingType="work"
-          onSave={(data) => createMutation.mutate(data)}
-          isLoading={createMutation.isPending}
-        />
-
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">
-                {t('currentWeek')}
-              </CardTitle>
-              <Calendar className="w-5 h-5 text-[#3B9FF3]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[#3B9FF3]">{currentWeekHours.toFixed(1)}h</div>
-              <div className="flex items-center gap-2 mt-2">
-                <DollarSign className="w-4 h-4 text-slate-600" />
-                <span className="text-xl font-bold text-slate-800">${weekPay.toFixed(2)}</span>
-              </div>
-              {overtimeWeekHours > 0 && (
-                <p className="text-xs text-slate-600 mt-1 font-medium">
-                  + {overtimeWeekHours.toFixed(1)}h overtime
-                </p>
-              )}
-              <p className="text-xs text-slate-500 mt-1">
-                {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">
-                {t('thisMonth')}
-              </CardTitle>
-              <Calendar className="w-5 h-5 text-[#3B9FF3]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[#3B9FF3]">{currentMonthHours.toFixed(1)}h</div>
-              <div className="flex items-center gap-2 mt-2">
-                <DollarSign className="w-4 h-4 text-slate-600" />
-                <span className="text-xl font-bold text-slate-800">${monthPay.toFixed(2)}</span>
-              </div>
-              {overtimeMonthHours > 0 && (
-                <p className="text-xs text-slate-600 mt-1 font-medium">
-                  + {overtimeMonthHours.toFixed(1)}h overtime
-                </p>
-              )}
-              <p className="text-xs text-slate-500 mt-1">
-                {format(monthStart, 'MMM yyyy')}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white shadow-xl border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700">
-                {t('yearToDate')}
-              </CardTitle>
-              <TrendingUp className="w-5 h-5 text-[#3B9FF3]" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-[#3B9FF3]">{ytdHours.toFixed(1)}h</div>
-              <div className="flex items-center gap-2 mt-2">
-                <DollarSign className="w-4 h-4 text-slate-600" />
-                <span className="text-xl font-bold text-slate-800">${ytdPay.toFixed(2)}</span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                {new Date().getFullYear()}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Clock className="w-5 h-5 text-[#3B9FF3]" />
-              {t('myRecords')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <TimeEntryList
-              timeEntries={timeEntries}
-              isLoading={isLoading}
-              showActions={true}
-              onEdit={handleEdit}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+      </ModernCard>
+    </EmployeePageLayout>
   );
 }
