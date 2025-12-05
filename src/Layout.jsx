@@ -411,8 +411,8 @@ const LayoutContent = ({ children, currentPageName }) => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
         <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-[#282828] backdrop-blur-xl border border-slate-200 dark:border-slate-700">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20">
-            <Building2 className="w-12 h-12 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20 p-1">
+                            <Building2 className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">MCI Connect</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-4">{t('error')}</p>
@@ -543,12 +543,12 @@ const LayoutContent = ({ children, currentPageName }) => {
         <Sidebar className="border-none">
           <SidebarHeader className="p-4 flex-shrink-0 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/20 p-1">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                  alt="MCI Connect"
-                  className="w-8 h-8 rounded-lg"
-                />
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/20 p-0.5">
+                                    <img
+                                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                                      alt="MCI Connect"
+                                      className="w-full h-full rounded-md"
+                                    />
               </div>
               <div className="flex-1">
                 <h2 className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">MCI Connect</h2>
