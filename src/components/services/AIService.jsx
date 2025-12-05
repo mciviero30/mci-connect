@@ -478,6 +478,7 @@ export async function draftQuoteFromText(clientText, catalogItems = []) {
 
 /**
  * Suggest optimal assignee for a WorkUnit
+ * Now includes Skill Matrix integration for granular skill matching
  */
 export async function suggestOptimalAssignee(workUnitId) {
   const { base44 } = await import('@/api/base44Client');
@@ -512,7 +513,15 @@ export async function suggestOptimalAssignee(workUnitId) {
   // Fetch certifications
   const certifications = await base44.entities.Certification.filter({ status: 'active' });
   
-  // Build employee context
+  // Fetch employee skills from Skill Matrix
+  let employeeSkills = [];
+  try {
+    employeeSkills = await base44.entities.EmployeeSkill.list();
+  } catch (e) {
+    console.warn('Could not fetch employee skills:', e);
+  }
+  
+  // Build employee context with skills
   const employeeContext = employees.map(emp => {
     const empCerts = certifications
       .filter(c => c.employee_email === emp.email)
@@ -520,12 +529,30 @@ export async function suggestOptimalAssignee(workUnitId) {
     
     const workload = activeWorkUnits.filter(wu => wu.assignee_email === emp.email).length;
     
+    // Get employee skills with proficiency levels
+    const skills = employeeSkills
+      .filter(s => s.employee_email === emp.email)
+      .map(s => ({
+        name: s.skill_name,
+        level: s.validated_level || s.proficiency_level,
+        validated: s.validated,
+        category: s.category,
+        years: s.years_experience,
+      }));
+    
+    // Format skills for prompt
+    const skillsStr = skills.length > 0
+      ? skills.map(s => `${s.name} (${s.level}${s.validated ? ', validated' : ''})`).join(', ')
+      : 'No skills listed';
+    
     return {
       user_id: emp.id,
       email: emp.email,
       name: emp.full_name,
       location: emp.last_known_location || emp.address || 'Unknown',
       certifications: empCerts,
+      skills: skillsStr,
+      skill_categories: [...new Set(skills.map(s => s.category))],
       workload_count: workload,
     };
   });
@@ -545,6 +572,7 @@ export async function suggestOptimalAssignee(workUnitId) {
             rank: { type: 'integer' },
             rationale: { type: 'string' },
             score: { type: 'number' },
+            skill_match: { type: 'string' },
           },
         },
       },
@@ -560,16 +588,22 @@ TASK DETAILS:
 - Priority: ${workUnit.priority || 'medium'}
 - Job Address: ${jobAddress || 'Not specified'}
 - Required Skills/Category: ${workUnit.category}
+- Task Tags: ${(workUnit.tags || []).join(', ') || 'None'}
 
 RANKING CRITERIA (in order of importance):
-1. PROXIMITY: Employees closer to the job address are preferred
+1. SKILLS: Match employee skills to task category/requirements. Prefer validated skills and higher proficiency levels (expert > advanced > intermediate > beginner)
 2. CERTIFICATIONS: Match employee certifications to task category
-3. WORKLOAD: Penalize employees with high current workload (prefer lower workload)
+3. WORKLOAD: Prefer employees with lower current workload
+4. PROXIMITY: Employees closer to the job address are preferred
 
 AVAILABLE EMPLOYEES:
-${employeeContext.map(e => `- ID: ${e.user_id}, Name: ${e.name}, Location: ${e.location}, Certs: [${e.certifications.join(', ')}], Current Tasks: ${e.workload_count}`).join('\n')}
+${employeeContext.map(e => `- ID: ${e.user_id}, Name: ${e.name}, Location: ${e.location}
+  Skills: ${e.skills}
+  Certifications: [${e.certifications.join(', ')}]
+  Current Tasks: ${e.workload_count}`).join('\n\n')}
 
 Return exactly 3 ranked employees with clear rationale for each.
+Include which specific skills matched in the skill_match field.
 Set work_unit_id to: ${workUnitId}`,
     schema
   );

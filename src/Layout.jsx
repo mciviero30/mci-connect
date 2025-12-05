@@ -288,16 +288,17 @@ const LayoutContent = ({ children, currentPageName }) => {
       ]
     },
     {
-      section: 'PEOPLE',
-      items: [
-        { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
-        { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
-        { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
-        { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target, badge: '🚀' },
-        { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users, badge: '🚀' },
-        { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
-      ]
-    },
+                section: 'PEOPLE',
+                items: [
+                  { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
+                  { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
+                  { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award, badge: '🚀' },
+                  { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+                  { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target, badge: '🚀' },
+                  { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users, badge: '🚀' },
+                  { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
+                ]
+              },
     {
       section: 'TIME & PAYROLL',
       items: [
