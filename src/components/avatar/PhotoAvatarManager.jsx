@@ -4,17 +4,16 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Camera, Sparkles, Loader2, RefreshCw, Check } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Camera, Sparkles, Loader2, RefreshCw, Check, Upload } from 'lucide-react';
 
-// Style presets - simplified
+// Style presets - simplified v2
 const STYLE_PRESETS = [
-  { id: 'cartoon', name: '🎨 Cartoon', description: 'Estilo Pixar/Disney', prompt: 'High-quality vector illustration style (Pixar/Disney character art), vibrant colors, smooth polished look, clean white circular background' },
-  { id: 'realistic', name: '📸 Realista', description: 'Calidad fotográfica', prompt: 'Hyper-realistic digital portrait, photographic quality, natural lighting, professional photography style' },
-  { id: 'anime', name: '⭐ Anime', description: 'Estilo japonés', prompt: 'Japanese anime/manga art style, expressive eyes, clean linework, vibrant colors, cel-shaded appearance' },
-  { id: 'professional', name: '💼 Profesional', description: 'Estilo LinkedIn', prompt: 'Professional corporate headshot style, LinkedIn-quality, clean business aesthetic, neutral tones' },
-  { id: 'watercolor', name: '🎨 Acuarela', description: 'Estilo artístico', prompt: 'Soft watercolor painting style, gentle flowing colors, artistic brush strokes, pastel and muted tones' },
-  { id: 'cyberpunk', name: '🌃 Cyberpunk', description: 'Neon futurista', prompt: 'Cyberpunk aesthetic with neon accents, futuristic tech elements, dark moody atmosphere with vibrant neon lighting' },
+  { id: 'cartoon', name: '🎨 Cartoon', description: 'Pixar/Disney', prompt: 'High-quality vector illustration style (Pixar/Disney character art), vibrant colors, smooth polished look, clean white circular background' },
+  { id: 'realistic', name: '📸 Realista', description: 'Fotográfico', prompt: 'Hyper-realistic digital portrait, photographic quality, natural lighting, professional photography style' },
+  { id: 'anime', name: '⭐ Anime', description: 'Japonés', prompt: 'Japanese anime/manga art style, expressive eyes, clean linework, vibrant colors, cel-shaded appearance' },
+  { id: 'professional', name: '💼 Pro', description: 'LinkedIn', prompt: 'Professional corporate headshot style, LinkedIn-quality, clean business aesthetic, neutral tones' },
+  { id: 'watercolor', name: '🎨 Acuarela', description: 'Artístico', prompt: 'Soft watercolor painting style, gentle flowing colors, artistic brush strokes, pastel and muted tones' },
+  { id: 'cyberpunk', name: '🌃 Cyber', description: 'Neon', prompt: 'Cyberpunk aesthetic with neon accents, futuristic tech elements, dark moody atmosphere with vibrant neon lighting' },
 ];
 
 export default function PhotoAvatarManager({ open, onOpenChange }) {
