@@ -427,7 +427,7 @@ export default function Dashboard() {
       case 'work-hours':
         return (
           <div>
-            <StatsWidget value={`${currentWeekHours.toFixed(1)}h`} label={t('workHours')} icon={Clock} badge="Esta Semana" color="blue" />
+            <StatsWidget value={`${currentWeekHours.toFixed(1)}h`} label={t('workHours')} icon={Clock} badge="This Week" color="blue" />
             <Progress value={Math.min(weekProgress, 100)} className="h-2 mt-3" />
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{yearHours.toFixed(1)}h {t('yearToDate')}</p>
           </div>
@@ -436,10 +436,10 @@ export default function Dashboard() {
       case 'driving-hours':
         return (
           <div>
-            <StatsWidget value={`${drivingHoursThisWeek.toFixed(1)}h`} label={t('drivingHours')} icon={MapPin} badge="Esta Semana" color="green" />
+            <StatsWidget value={`${drivingHoursThisWeek.toFixed(1)}h`} label={t('drivingHours')} icon={MapPin} badge="This Week" color="green" />
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
               <DollarSign className="w-3 h-3" />
-              <span>${drivingPayThisWeek.toFixed(2)} ganados</span>
+              <span>${drivingPayThisWeek.toFixed(2)} earned</span>
             </div>
           </div>
         );
@@ -447,11 +447,11 @@ export default function Dashboard() {
       case 'weekly-pay':
         return (
           <div>
-            <StatsWidget value={`$${(currentWeekPay + drivingPayThisWeek).toFixed(2)}`} label={t('weeklyPay')} icon={DollarSign} badge="Esta Semana" color="amber" />
+            <StatsWidget value={`$${(currentWeekPay + drivingPayThisWeek).toFixed(2)}`} label={t('weeklyPay')} icon={DollarSign} badge="This Week" color="amber" />
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
-              <span>Trabajo: ${currentWeekPay.toFixed(2)}</span>
+              <span>Work: ${currentWeekPay.toFixed(2)}</span>
               <span>•</span>
-              <span>Manejo: ${drivingPayThisWeek.toFixed(2)}</span>
+              <span>Driving: ${drivingPayThisWeek.toFixed(2)}</span>
             </div>
           </div>
         );
@@ -519,7 +519,7 @@ export default function Dashboard() {
         return (
           <ListWidget
             items={assignments}
-            emptyMessage="No tienes trabajos asignados esta semana"
+            emptyMessage="You have no jobs assigned this week"
             renderItem={(assignment) => {
               const job = jobs.find(j => j.id === assignment.job_id);
               return (
@@ -589,8 +589,8 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-          <p className="text-slate-900 dark:text-white font-medium">Cargando dashboard...</p>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparando tus widgets personalizados</p>
+          <p className="text-slate-900 dark:text-white font-medium">Loading dashboard...</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparing your personalized widgets</p>
         </div>
       </div>
     );
@@ -631,7 +631,7 @@ export default function Dashboard() {
                   {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
                 </h1>
                 <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1">
-                  {isAdmin ? '¡Bienvenido al panel de administración!' : '¡Qué tengas un excelente día!'}
+                  {isAdmin ? 'Welcome to the admin panel!' : 'Have a great day!'}
                 </p>
               </div>
             </div>
