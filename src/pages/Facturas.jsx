@@ -206,17 +206,22 @@ export default function Facturas() {
             {isAdmin && (
               <div className="flex gap-2">
                 <Button 
-                  onClick={() => {
+                  onClick={async () => {
                     if (!selectedInvoice) {
                       toast.error(language === 'es' ? '⚠️ Selecciona una factura para exportar' : '⚠️ Select an invoice to export');
                       return;
                     }
-                    const originalTitle = document.title;
-                    document.title = `${selectedInvoice.invoice_number} - ${selectedInvoice.job_name}`;
-                    setTimeout(() => {
-                      window.print();
-                      document.title = originalTitle;
-                    }, 100);
+                    
+                    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
+                    const filename = `${selectedInvoice.invoice_number} - ${selectedInvoice.customer_name}`;
+                    
+                    try {
+                      await generateOptimizedPDF('invoice-preview-for-pdf', filename);
+                      toast.success(language === 'es' ? 'PDF descargado exitosamente' : 'PDF downloaded successfully');
+                    } catch (error) {
+                      console.error('PDF generation error:', error);
+                      toast.error(language === 'es' ? 'Error generando PDF' : 'Error generating PDF');
+                    }
                   }}
                   variant="outline" 
                   size="sm" 

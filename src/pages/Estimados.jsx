@@ -195,19 +195,22 @@ export default function Estimados() {
     },
   });
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     if (!selectedQuote) {
       toast.error(language === 'es' ? '⚠️ Selecciona un estimado para exportar' : '⚠️ Select a quote to export');
       return;
     }
 
-    const originalTitle = document.title;
-    document.title = `${selectedQuote.quote_number} - ${selectedQuote.job_name}`;
+    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
+    const filename = `${selectedQuote.quote_number} - ${selectedQuote.customer_name}`;
     
-    setTimeout(() => {
-      window.print();
-      document.title = originalTitle;
-    }, 100);
+    try {
+      await generateOptimizedPDF('quote-preview-for-pdf', filename);
+      toast.success(language === 'es' ? 'PDF descargado exitosamente' : 'PDF downloaded successfully');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error(language === 'es' ? 'Error generando PDF' : 'Error generating PDF');
+    }
   };
 
   const clearFilters = () => {
