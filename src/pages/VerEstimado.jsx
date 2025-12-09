@@ -39,7 +39,6 @@ import QuoteDocument from "../components/documentos/QuoteDocument";
 import QuoteInternalNotes from "@/components/quotes/QuoteInternalNotes";
 import QuoteChangeHistory from "@/components/quotes/QuoteChangeHistory";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
-import QuoteWhatsApp from "@/components/quotes/QuoteWhatsApp";
 import QuoteSignature from "@/components/quotes/QuoteSignature";
 import QuoteVersions from "@/components/quotes/QuoteVersions";
 import QuoteCompare from "@/components/quotes/QuoteCompare";
@@ -453,7 +452,6 @@ Lawrenceville, Georgia 30043, U.S.A`
 
             {/* New action buttons */}
             {quote.status === 'sent' && <QuoteReminder quote={quote} />}
-            <QuoteWhatsApp quote={quote} />
             <QuoteVersions quote={quote} />
             <QuoteCompare currentQuote={quote} />
 
