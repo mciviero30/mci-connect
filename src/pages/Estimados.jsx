@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { 
   FileText, Plus, Eye, Trash2, Copy, FileCheck, Download, Filter, X, 
   ArrowUpDown, AlertTriangle, CheckSquare, BarChart3, User, Clock,
-  ChevronUp, ChevronDown, Bell, MessageCircle, Sparkles
+  ChevronUp, ChevronDown, Bell, MessageCircle, Sparkles, MapPin, Calendar
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
