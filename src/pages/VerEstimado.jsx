@@ -508,7 +508,7 @@ Lawrenceville, Georgia 30043, U.S.A`
       <div className="max-w-6xl mx-auto my-8 print:my-0">
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Quote Document */}
-          <div className="lg:col-span-2 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
+          <div id="quote-printable" className="lg:col-span-2 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
             <QuoteDocument quote={quote} />
           </div>
 
@@ -605,22 +605,22 @@ Lawrenceville, Georgia 30043, U.S.A`
           [data-sidebar],
           aside,
           nav,
-          header:not(.lg\\:col-span-2 header),
+          header:not(#quote-printable header),
           .no-print,
           [role="dialog"],
           [role="complementary"],
-          button:not(.lg\\:col-span-2 button) {
+          button:not(#quote-printable button) {
             display: none !important;
             visibility: hidden !important;
           }
           
           /* Show ONLY the quote container and its children */
-          .lg\\:col-span-2,
-          .lg\\:col-span-2 * {
+          #quote-printable,
+          #quote-printable * {
             visibility: visible !important;
           }
           
-          .lg\\:col-span-2 {
+          #quote-printable {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
