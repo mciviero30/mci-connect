@@ -114,9 +114,15 @@ export default function InvoiceDocument({ invoice }) {
                                     <span className="text-slate-600 font-semibold">{index + 1}</span>
                                 </td>
                                 <td className="p-3 align-top">
-                                    <p className="font-semibold text-slate-900">{item.item_name || item.description}</p>
-                                    {item.description && item.item_name && (
-                                        <p className="text-xs text-slate-600 mt-1 leading-relaxed whitespace-pre-wrap">{item.description}</p>
+                                    {item.item_name ? (
+                                        <>
+                                            <p className="font-semibold text-sm text-slate-900">{item.item_name}</p>
+                                            {item.description && (
+                                                <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">{item.description}</p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <p className="text-sm text-slate-900">{item.description}</p>
                                     )}
                                 </td>
                                 <td className="p-3 align-top text-right">
