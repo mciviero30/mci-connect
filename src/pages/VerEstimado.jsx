@@ -324,11 +324,19 @@ Lawrenceville, Georgia 30043, U.S.A`
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    const originalTitle = document.title;
-    document.title = `${quote.quote_number} - ${quote.job_name}`;
-    window.print();
-    document.title = originalTitle;
+  const handleDownloadPDF = async () => {
+    if (!quote) return;
+    
+    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
+    const filename = `${quote.quote_number} - ${quote.customer_name}`;
+    
+    try {
+      await generateOptimizedPDF('quote-printable', filename);
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error('Error generating PDF');
+    }
   };
 
   const handleShare = async () => {
