@@ -180,7 +180,7 @@ export default function QuoteDocument({ quote }) {
             {/* Footer */}
             <div className="text-center pt-6">
                 <p className="text-base text-slate-800 font-semibold mb-1">Thank you for your business!</p>
-                <p className="text-sm text-slate-600">For questions, please contact us at the address above.</p>
+                <p className="text-sm text-slate-600">For questions, please contact us at projects@mci-us.com</p>
             </div>
         </div>
     );
