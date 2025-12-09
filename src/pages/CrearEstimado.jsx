@@ -66,7 +66,7 @@ export default function CrearEstimado() {
     items: [{ description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
     tax_rate: 0,
     notes: '',
-    terms: 'Payment due within 30 days. Late payments subject to fees. Thank you for your business.',
+    terms: '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
   });
 
   const [calculatingTravel, setCalculatingTravel] = useState(false);
