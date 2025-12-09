@@ -67,7 +67,7 @@ export default function CrearFactura() {
     items: [{ description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }],
     tax_rate: 0,
     notes: "",
-    terms: "Payment due within 30 days.\nLate payments subject to fees.\nThank you for your business.",
+    terms: "• Payment: Due 30 days from invoice date (unless otherwise specified).\n• Late Fee: 1.5% monthly interest on overdue balance.\n• Collection: Client responsible for all collection costs including attorney fees.\n• Disputes: Report discrepancies within 5 days in writing. Undisputed amounts due by due date.\n• Scope: Final cost includes all approved Change Orders.",
     status: "draft",
     quote_id: quoteId || null
   });
