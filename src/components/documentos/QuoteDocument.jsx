@@ -88,8 +88,8 @@ export default function QuoteDocument({ quote }) {
             )}
 
             {/* Items Table - Clean Style */}
-            <div className="mb-8 overflow-hidden border-t border-b border-slate-300">
-                <table className="w-full">
+            <div className="mb-8 overflow-hidden border-t border-b border-slate-300 page-break-inside-avoid">
+                <table className="w-full page-break-inside-avoid">
                     <thead>
                         <tr className="bg-slate-50 border-b border-slate-300">
                             <th className="text-left p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-12">#</th>
@@ -140,7 +140,7 @@ export default function QuoteDocument({ quote }) {
             </div>
 
             {/* Totals Section - Clean Style */}
-            <div className="max-w-md ml-auto mb-6 space-y-2">
+            <div className="max-w-md ml-auto mb-6 space-y-2 page-break-inside-avoid">
                 {/* Subtotal */}
                 <div className="flex justify-between items-center py-1.5 border-b border-slate-200">
                     <span className="text-slate-700 font-semibold text-sm">Sub Total</span>
