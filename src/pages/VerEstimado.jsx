@@ -584,38 +584,47 @@ Lawrenceville, Georgia 30043, U.S.A`
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @media print {
-          body * {
-            visibility: hidden;
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           
-          #root, #root * {
-            visibility: hidden;
-          }
-          
-          .max-w-4xl, .max-w-4xl * {
-            visibility: visible;
-          }
-          
-          .max-w-4xl {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
+          body {
             margin: 0 !important;
             padding: 0 !important;
+          }
+          
+          .no-print {
+            display: none !important;
+          }
+          
+          .print\\:my-0 {
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+          }
+          
+          .print\\:shadow-none {
             box-shadow: none !important;
+          }
+          
+          .print\\:rounded-none {
             border-radius: 0 !important;
           }
           
-          .no-print, .no-print * {
-            display: none !important;
-            visibility: hidden !important;
+          .lg\\:col-span-2 {
+            grid-column: span 1 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+          
+          .grid.lg\\:grid-cols-3 {
+            display: block !important;
           }
           
           @page {
-            size: auto;
+            size: letter;
             margin: 0.5in;
           }
         }
