@@ -100,31 +100,32 @@ export default function QuoteDocument({ quote }) {
                         </tr>
                     </thead>
                     <tbody className="bg-white">
-                        {quote.items.map((item, index) => (
+                        {quote.items && quote.items.length > 0 ? quote.items.map((item, index) => (
                             <tr key={index} className="border-b border-slate-200">
                                 <td className="p-3 align-top">
                                     <span className="text-slate-600 font-semibold">{index + 1}</span>
                                 </td>
                                 <td className="p-3 align-top">
-                                    <p className="font-semibold text-slate-900">{item.item_name || item.description}</p>
-                                    {item.description && item.item_name && (
-                                        <p className="text-xs text-slate-600 mt-1 leading-relaxed whitespace-pre-wrap">{item.description}</p>
-                                    )}
+                                    <p className="font-semibold text-slate-900">{item.description}</p>
                                 </td>
                                 <td className="p-3 align-top text-right">
                                     <p className="text-sm font-semibold text-slate-900">
-                                        {item.quantity.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2})}
+                                        {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2})}
                                     </p>
                                     {item.unit && <p className="text-xs text-slate-500 mt-1">{item.unit}</p>}
                                 </td>
                                 <td className="p-3 align-top text-right text-sm text-slate-800 font-semibold">
-                                    ${item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    ${(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                                 <td className="p-3 align-top text-right text-base font-bold text-slate-900">
-                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    ${(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
-                        ))}
+                        )) : (
+                            <tr>
+                                <td colSpan="5" className="p-3 text-center text-slate-500">No items</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
@@ -135,16 +136,16 @@ export default function QuoteDocument({ quote }) {
                 <div className="flex justify-between items-center py-2 border-b border-slate-200">
                     <span className="text-slate-700 font-semibold">Subtotal</span>
                     <span className="text-lg font-bold text-slate-900">
-                        ${quote.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${(quote.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                 </div>
 
                 {/* Tax */}
-                {quote.tax_amount > 0 && (
+                {(quote.tax_amount || 0) > 0 && (
                     <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                        <span className="text-slate-700 font-semibold">Tax ({quote.tax_rate}%)</span>
+                        <span className="text-slate-700 font-semibold">Tax ({quote.tax_rate || 0}%)</span>
                         <span className="text-lg font-bold text-slate-900">
-                            ${quote.tax_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${(quote.tax_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 )}
@@ -154,7 +155,7 @@ export default function QuoteDocument({ quote }) {
                     <div className="flex justify-between items-center">
                         <span className="text-white text-base font-bold uppercase">Total</span>
                         <span className="text-white text-3xl font-bold">
-                            ${quote.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>
