@@ -7,39 +7,48 @@
     size: letter;
     margin: 0.5in;
   }
-  
+
   body {
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
-  
+
   * {
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  
+
   img {
     max-width: 100% !important;
     height: auto !important;
     image-rendering: -webkit-optimize-contrast !important;
     image-rendering: crisp-edges !important;
   }
-  
-  .page-break-inside-avoid {
+
+  .page-break-inside-avoid,
+  .page-break-inside-avoid * {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
-  
+
   table {
     page-break-inside: auto !important;
   }
-  
+
   tr {
     page-break-inside: avoid !important;
     page-break-after: auto !important;
   }
-  
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
   .print\\:hidden {
     display: none !important;
   }
