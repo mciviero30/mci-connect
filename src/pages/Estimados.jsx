@@ -25,9 +25,10 @@ import QuotePreviewModal from "@/components/quotes/QuotePreviewModal";
 import QuoteTemplates from "@/components/quotes/QuoteTemplates";
 import QuoteStats from "@/components/quotes/QuoteStats";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
-import QuoteWhatsApp from "@/components/quotes/QuoteWhatsApp";
 import AIEstimateInput from "@/components/quotes/AIEstimateInput";
 import QuoteDocument from "@/components/documentos/QuoteDocument";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import _ from "lodash";
 
 export default function Estimados() {
@@ -196,44 +197,45 @@ export default function Estimados() {
     },
   });
 
-  const exportToExcel = () => {
-    const dataToExport = filteredQuotes;
-    if (!dataToExport || dataToExport.length === 0) {
-      toast.error(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
+  const exportToPDF = async () => {
+    if (!selectedQuote) {
+      toast.error(language === 'es' ? '⚠️ Selecciona un estimado para exportar' : '⚠️ Select a quote to export');
       return;
     }
 
     try {
-      const headers = ['Número', 'Cliente', 'Email', 'Teléfono', 'Proyecto', 'Dirección', 'Fecha', 'Válido Hasta', 'Subtotal', 'Impuesto %', 'Impuesto', 'Total', 'Estado', 'Notas'];
-      const rows = dataToExport.map(quote => [
-        quote.quote_number || '', quote.customer_name || '', quote.customer_email || '', quote.customer_phone || '',
-        quote.job_name || '', quote.job_address || '', quote.quote_date || '', quote.valid_until || '',
-        quote.subtotal || 0, quote.tax_rate || 0, quote.tax_amount || 0, quote.total || 0,
-        quote.status || '', (quote.notes || '').replace(/\n/g, ' ')
-      ]);
+      toast.success(language === 'es' ? '📄 Generando PDF...' : '📄 Generating PDF...');
 
-      const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => {
-        const cellStr = String(cell);
-        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-          return `"${cellStr.replace(/"/g, '""')}"`;
-        }
-        return cellStr;
-      }).join(','))].join('\n');
+      const element = document.getElementById('quote-preview-for-pdf');
+      if (!element) {
+        toast.error(language === 'es' ? '❌ Error al generar PDF' : '❌ Error generating PDF');
+        return;
+      }
 
-      const BOM = '\uFEFF';
-      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `estimados-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
 
-      toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'letter'
+      });
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`${selectedQuote.quote_number}.pdf`);
+
+      toast.success('✅ ' + (language === 'es' ? 'PDF descargado' : 'PDF downloaded'));
     } catch (error) {
-      toast.error(language === 'es' ? '❌ Error al exportar' : '❌ Export failed');
+      console.error('PDF generation error:', error);
+      toast.error(language === 'es' ? '❌ Error al generar PDF' : '❌ Error generating PDF');
     }
   };
 
@@ -354,9 +356,9 @@ export default function Estimados() {
                   <Sparkles className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'IA' : 'AI'}
                 </Button>
-                <Button onClick={exportToExcel} variant="outline" size="sm" disabled={filteredQuotes.length === 0}>
+                <Button onClick={exportToPDF} variant="outline" size="sm" disabled={!selectedQuote}>
                   <Download className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Exportar' : 'Export'}
+                  {language === 'es' ? 'PDF' : 'PDF'}
                 </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
                   <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
@@ -531,7 +533,7 @@ export default function Estimados() {
               </div>
 
               {/* Quote Document */}
-              <div className="bg-white dark:bg-[#282828] rounded-lg shadow-xl">
+              <div id="quote-preview-for-pdf" className="bg-white dark:bg-[#282828] rounded-lg shadow-xl">
                 <QuoteDocument quote={selectedQuote} />
               </div>
             </div>
