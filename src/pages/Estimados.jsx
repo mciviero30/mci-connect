@@ -304,7 +304,14 @@ export default function Estimados() {
   };
 
   const getStatusLabel = (status) => {
-    return t(status) || status;
+    const labels = {
+      draft: t('draft'),
+      sent: t('sent'),
+      approved: t('approved'),
+      rejected: t('rejected'),
+      converted_to_invoice: t('converted')
+    };
+    return labels[status] || status;
   }
 
   const isAdmin = user?.role === 'admin';
