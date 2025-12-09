@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Save, X, ArrowLeft } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -61,11 +62,14 @@ export default function CrearEstimado() {
     quote_date: format(new Date(), 'yyyy-MM-dd'),
     valid_until: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
     install_date: '',
+    out_of_area: false,
     items: [{ description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
     tax_rate: 0,
     notes: '',
     terms: 'Payment due within 30 days. Late payments subject to fees. Thank you for your business.',
   });
+
+  const [calculatingTravel, setCalculatingTravel] = useState(false);
 
   const createMutation = useMutation({
     mutationFn: async (quoteData) => {
@@ -175,14 +179,148 @@ export default function CrearEstimado() {
     }
   };
 
-  const handleTeamChange = (teamId) => {
+  const handleTeamChange = async (teamId) => {
     const team = teams.find(t => t.id === teamId);
-    if (team) {
-      setFormData({
-        ...formData,
-        team_id: teamId,
-        team_name: team.team_name,
+    if (!team) return;
+
+    setFormData({
+      ...formData,
+      team_id: teamId,
+      team_name: team.team_name,
+    });
+
+    // If out-of-area is enabled and we have addresses, calculate travel
+    if (formData.out_of_area && team.base_address && formData.job_address) {
+      await calculateTravelDistance(team.base_address, formData.job_address);
+    }
+  };
+
+  const calculateTravelDistance = async (origin, destination) => {
+    if (!origin || !destination) return;
+
+    setCalculatingTravel(true);
+    try {
+      const response = await base44.integrations.Core.InvokeLLM({
+        prompt: `Calculate the driving distance and time between these two addresses:
+Origin: ${origin}
+Destination: ${destination}
+
+Return ONLY a JSON object with this exact structure (no additional text):
+{
+  "distance_miles": <number>,
+  "travel_time_hours": <number>
+}
+
+Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.5 hours.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            distance_miles: { type: "number" },
+            travel_time_hours: { type: "number" }
+          }
+        }
       });
+
+      if (response?.distance_miles && response?.travel_time_hours) {
+        // Update travel items with calculated values
+        const updatedItems = formData.items.map(item => {
+          if (item.travel_item_type === 'mileage') {
+            return { ...item, quantity: response.distance_miles * 2, total: response.distance_miles * 2 * (item.unit_price || 0.60) };
+          }
+          if (item.travel_item_type === 'travel_time') {
+            return { ...item, quantity: response.travel_time_hours * 2, total: response.travel_time_hours * 2 * (item.unit_price || 25) };
+          }
+          return item;
+        });
+
+        setFormData(prev => ({
+          ...prev,
+          items: updatedItems,
+          travel_distance_miles: response.distance_miles,
+          travel_time_hours: response.travel_time_hours
+        }));
+
+        toast({
+          title: language === 'es' ? '✓ Distancia Calculada' : '✓ Distance Calculated',
+          description: `${response.distance_miles} mi • ${response.travel_time_hours} hrs`,
+          variant: 'success'
+        });
+      }
+    } catch (error) {
+      console.error('Error calculating distance:', error);
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'No se pudo calcular la distancia' : 'Could not calculate distance',
+        variant: 'destructive'
+      });
+    }
+    setCalculatingTravel(false);
+  };
+
+  const handleOutOfAreaToggle = (enabled) => {
+    setFormData(prev => {
+      let newItems = [...prev.items];
+
+      if (enabled) {
+        // Remove existing travel items first
+        newItems = newItems.filter(item => !item.is_travel_item);
+
+        // Add travel items at the end
+        const travelItems = [
+          {
+            description: language === 'es' ? 'Hotel / Alojamiento' : 'Hotel / Lodging',
+            quantity: 2,
+            unit: 'nights',
+            unit_price: 100,
+            total: 200,
+            is_travel_item: true,
+            travel_item_type: 'hotel'
+          },
+          {
+            description: 'Per Diem / Viáticos',
+            quantity: 2,
+            unit: 'days',
+            unit_price: 40,
+            total: 80,
+            is_travel_item: true,
+            travel_item_type: 'per_diem'
+          },
+          {
+            description: language === 'es' ? 'Millas (Ida y Vuelta)' : 'Mileage (Round Trip)',
+            quantity: 0,
+            unit: 'miles',
+            unit_price: 0.60,
+            total: 0,
+            is_travel_item: true,
+            travel_item_type: 'mileage'
+          },
+          {
+            description: language === 'es' ? 'Tiempo de Viaje (Ida y Vuelta)' : 'Travel Time (Round Trip)',
+            quantity: 0,
+            unit: 'hours',
+            unit_price: 25,
+            total: 0,
+            is_travel_item: true,
+            travel_item_type: 'travel_time'
+          }
+        ];
+
+        newItems = [...newItems, ...travelItems];
+      } else {
+        // Remove travel items
+        newItems = newItems.filter(item => !item.is_travel_item);
+      }
+
+      return { ...prev, out_of_area: enabled, items: newItems };
+    });
+
+    // Calculate travel if we have the necessary data
+    if (enabled && formData.team_id && formData.job_address) {
+      const team = teams.find(t => t.id === formData.team_id);
+      if (team?.base_address) {
+        calculateTravelDistance(team.base_address, formData.job_address);
+      }
     }
   };
 
@@ -194,6 +332,17 @@ export default function CrearEstimado() {
   };
 
   const removeItem = (index) => {
+    // Prevent removing travel items if out_of_area is enabled
+    if (formData.items[index].is_travel_item && formData.out_of_area) {
+      toast({
+        title: language === 'es' ? 'No se puede eliminar' : 'Cannot remove',
+        description: language === 'es' 
+          ? 'Desactiva "Trabajo Fuera del Área" para eliminar ítems de viaje' 
+          : 'Disable "Out-of-Area Job" to remove travel items',
+        variant: 'destructive'
+      });
+      return;
+    }
     const newItems = formData.items.filter((_, i) => i !== index);
     setFormData({ ...formData, items: newItems });
   };
@@ -404,6 +553,7 @@ export default function CrearEstimado() {
                       {teams.map(team => (
                         <SelectItem key={team.id} value={team.id} className="text-slate-900">
                           {team.team_name}
+                          {team.base_address && <span className="text-xs text-slate-500 ml-2">📍 {team.base_address}</span>}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -413,6 +563,43 @@ export default function CrearEstimado() {
                       ? 'Equipo responsable del proyecto' 
                       : 'Team responsible for the project'}
                   </p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-600 rounded-lg">
+                        <MapPin className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <Label className="text-slate-900 dark:text-white font-semibold">
+                          {language === 'es' ? 'Trabajo Fuera del Área' : 'Out-of-Area Job'}
+                        </Label>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          {language === 'es' 
+                            ? 'Agrega costos de viaje automáticamente (hotel, per diem, millas, tiempo de viaje)' 
+                            : 'Automatically adds travel costs (hotel, per diem, mileage, travel time)'}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={formData.out_of_area}
+                      onCheckedChange={handleOutOfAreaToggle}
+                    />
+                  </div>
+                  {calculatingTravel && (
+                    <div className="mt-2 flex items-center gap-2 text-blue-600 text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {language === 'es' ? 'Calculando distancia con Google Maps...' : 'Calculating distance with Google Maps...'}
+                    </div>
+                  )}
+                  {formData.travel_distance_miles && formData.travel_time_hours && (
+                    <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-sm text-green-800 dark:text-green-300 font-medium">
+                        ✓ {language === 'es' ? 'Distancia calculada' : 'Distance calculated'}: {formData.travel_distance_miles} mi • {formData.travel_time_hours} hrs {language === 'es' ? '(ida y vuelta)' : '(round trip)'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -473,20 +660,27 @@ export default function CrearEstimado() {
               {formData.items.map((item, index) => (
                 <div 
                   key={index} 
-                  className={`grid md:grid-cols-12 gap-2 px-4 py-3 bg-white border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
+                  className={`grid md:grid-cols-12 gap-2 px-4 py-3 ${item.is_travel_item ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : 'bg-white'} border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
                 >
                   {/* Item Selector */}
                   <div className="md:col-span-3">
-                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">Item</Label>
+                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">
+                      Item {item.is_travel_item && <span className="text-blue-600 ml-1">(Travel)</span>}
+                    </Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           role="combobox"
-                          className="w-full justify-between bg-white border-slate-300 text-slate-900 h-9 font-normal text-sm truncate"
+                          disabled={item.is_travel_item}
+                          className={`w-full justify-between h-9 font-normal text-sm truncate ${
+                            item.is_travel_item 
+                              ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-300 cursor-not-allowed' 
+                              : 'bg-white border-slate-300 text-slate-900'
+                          }`}
                         >
-                          <span className="truncate">{item.item_name || "Select item"}</span>
-                          <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                          <span className="truncate">{item.item_name || (item.is_travel_item ? item.description : "Select item")}</span>
+                          {!item.is_travel_item && <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[300px] p-0 bg-white border-slate-200">
