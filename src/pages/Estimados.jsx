@@ -921,55 +921,76 @@ export default function Estimados() {
           </div>
         )}
 
-        <div className="space-y-0">
+        <div className="space-y-3">
           {!isLoading && paginatedQuotes.map((quote, idx) => (
             <Card 
               key={quote.id} 
-              className={`bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-sm border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all group cursor-pointer ${
-                idx === 0 ? 'rounded-t-none' : ''
-              } ${selectedQuotes.includes(quote.id) ? 'ring-2 ring-cyan-400' : ''}`}
-              onClick={() => setPreviewQuote(quote)}
+              className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all overflow-hidden ${
+                selectedQuotes.includes(quote.id) ? 'ring-2 ring-cyan-400' : ''
+              }`}
             >
-              <CardContent className="p-4 md:p-6">
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <CardContent className="p-5" onClick={() => setPreviewQuote(quote)}>
+                <div className="flex items-start gap-4 cursor-pointer">
                   {/* Checkbox */}
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div className="pt-1" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                       checked={selectedQuotes.includes(quote.id)} 
                       onCheckedChange={(checked) => handleSelectQuote(quote.id, checked)}
-                      className="border-slate-400"
+                      className="border-slate-300"
                     />
                   </div>
 
-                  {/* Main info */}
+                  {/* Main Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate">{quote.customer_name}</h3>
-                      {isExpired(quote) && (
-                        <Badge className="bg-red-100 text-red-700 border-red-200">
-                          <AlertTriangle className="w-3 h-3 mr-1" />
-                          {language === 'es' ? 'Vencido' : 'Expired'}
-                        </Badge>
-                      )}
-                      {quote.version > 1 && (
-                        <Badge variant="outline" className="text-xs">v{quote.version}</Badge>
-                      )}
-                      {quote.assigned_to_name && (
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          {quote.assigned_to_name}
-                        </span>
-                      )}
+                    {/* Header Row */}
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
+                            {quote.customer_name}
+                          </h3>
+                          {isExpired(quote) && (
+                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              {language === 'es' ? 'Vencido' : 'Expired'}
+                            </Badge>
+                          )}
+                          {quote.version > 1 && (
+                            <Badge variant="outline" className="text-xs">v{quote.version}</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
+                          {quote.job_name}
+                        </p>
+                      </div>
+
+                      {/* Status Badge */}
+                      <Badge className={statusColors[quote.status] || statusColors.draft}>
+                        {getStatusLabel(quote.status)}
+                      </Badge>
                     </div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm truncate">{quote.job_name}</p>
-                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
-                      <span>{quote.quote_number}</span>
+
+                    {/* Meta Info Row */}
+                    <div className="flex items-center flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400 mb-3">
+                      <span className="font-medium">{quote.quote_number}</span>
                       <span>•</span>
                       <span>{format(new Date(quote.quote_date), 'MMM d, yyyy', { locale: language === 'es' ? es : undefined })}</span>
                       {quote.team_name && (
                         <>
                           <span>•</span>
-                          <span className="text-cyan-600">{quote.team_name}</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {quote.team_name}
+                          </span>
+                        </>
+                      )}
+                      {quote.valid_until && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(quote.valid_until), 'MMM d', { locale: language === 'es' ? es : undefined })}
+                          </span>
                         </>
                       )}
                       {quote.reminder_count > 0 && (
@@ -979,79 +1000,77 @@ export default function Estimados() {
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Status */}
-                  <div className="w-32 flex justify-center">
-                    <Badge className={statusColors[quote.status] || statusColors.draft}>
-                      {getStatusLabel(quote.status)}
-                    </Badge>
-                  </div>
+                    {/* Bottom Row - Price and Actions */}
+                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
+                      <div className="flex items-center gap-4">
+                        {/* Price */}
+                        <div>
+                          <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
+                            ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </p>
+                          {quote.profit_margin && (
+                            <p className="text-xs text-green-600">{quote.profit_margin.toFixed(0)}% margin</p>
+                          )}
+                        </div>
+                      </div>
 
-                  {/* Total */}
-                  <div className="w-28 text-right">
-                    <p className="text-xl font-bold text-cyan-600">
-                      ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </p>
-                    {quote.profit_margin && (
-                      <p className="text-xs text-green-600">{quote.profit_margin.toFixed(0)}% margin</p>
-                    )}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-1 w-48 justify-end" onClick={(e) => e.stopPropagation()}>
-                    {quote.status === 'sent' && (
-                      <QuoteReminder quote={quote} />
-                    )}
-                    <QuoteWhatsApp quote={quote} />
-                    {isAdmin && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => duplicateMutation.mutate(quote)}
-                        className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 h-8 w-8"
-                        title={language === 'es' ? 'Duplicar' : 'Duplicate'}
-                      >
-                        <Copy className="w-3 h-3" />
-                      </Button>
-                    )}
-                    {isAdmin && quote.status !== 'converted_to_invoice' && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          if (window.confirm(language === 'es' 
-                            ? '¿Convertir a factura?' 
-                            : 'Convert to invoice?')) {
-                            convertToInvoiceMutation.mutate(quote);
-                          }
-                        }}
-                        disabled={convertToInvoiceMutation.isPending}
-                        className="bg-green-50 hover:bg-green-100 border-green-200 text-green-700 h-8 w-8"
-                        title={language === 'es' ? 'Convertir' : 'Convert'}
-                      >
-                        <FileCheck className="w-3 h-3" />
-                      </Button>
-                    )}
-                    <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)}>
-                      <Button variant="outline" size="icon" className="bg-cyan-50 hover:bg-cyan-100 border-cyan-200 text-cyan-700 h-8 w-8">
-                        <Eye className="w-3 h-3" />
-                      </Button>
-                    </Link>
-                    {isAdmin && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
-                            deleteMutation.mutate(quote.id);
-                          }
-                        }}
-                        className="bg-red-50 hover:bg-red-100 border-red-200 text-red-700 h-8 w-8"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    )}
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        {quote.status === 'sent' && (
+                          <QuoteReminder quote={quote} />
+                        )}
+                        <QuoteWhatsApp quote={quote} />
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => duplicateMutation.mutate(quote)}
+                            className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 h-8 w-8"
+                            title={language === 'es' ? 'Duplicar' : 'Duplicate'}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {isAdmin && quote.status !== 'converted_to_invoice' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (window.confirm(language === 'es' 
+                                ? '¿Convertir a factura?' 
+                                : 'Convert to invoice?')) {
+                                convertToInvoiceMutation.mutate(quote);
+                              }
+                            }}
+                            disabled={convertToInvoiceMutation.isPending}
+                            className="text-slate-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 h-8 w-8"
+                            title={language === 'es' ? 'Convertir' : 'Convert'}
+                          >
+                            <FileCheck className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)}>
+                          <Button variant="ghost" size="icon" className="text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 h-8 w-8">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
+                                deleteMutation.mutate(quote.id);
+                              }
+                            }}
+                            className="text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
