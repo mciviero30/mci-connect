@@ -106,7 +106,7 @@ export default function QuoteDocument({ quote }) {
                                     <span className="text-slate-600 font-semibold">{index + 1}</span>
                                 </td>
                                 <td className="p-3 align-top">
-                                    <p className="font-semibold text-slate-900">{item.description}</p>
+                                    <p className="text-sm text-slate-900">{item.description}</p>
                                 </td>
                                 <td className="p-3 align-top text-right">
                                     <p className="text-sm font-semibold text-slate-900">
