@@ -586,45 +586,56 @@ Lawrenceville, Georgia 30043, U.S.A`
 
       <style>{`
         @media print {
+          /* Hide EVERYTHING first */
           * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+            visibility: hidden !important;
           }
           
-          body {
+          /* Hide the entire HTML structure */
+          html, body {
+            width: 100% !important;
+            height: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
+            overflow: visible !important;
+            background: white !important;
           }
           
-          .no-print {
+          /* Hide sidebars, navigation, dialogs */
+          [data-sidebar],
+          aside,
+          nav,
+          header:not(.lg\\:col-span-2 header),
+          .no-print,
+          [role="dialog"],
+          [role="complementary"],
+          button:not(.lg\\:col-span-2 button) {
             display: none !important;
+            visibility: hidden !important;
           }
           
-          .print\\:my-0 {
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-          }
-          
-          .print\\:shadow-none {
-            box-shadow: none !important;
-          }
-          
-          .print\\:rounded-none {
-            border-radius: 0 !important;
+          /* Show ONLY the quote container and its children */
+          .lg\\:col-span-2,
+          .lg\\:col-span-2 * {
+            visibility: visible !important;
           }
           
           .lg\\:col-span-2 {
-            grid-column: span 1 !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            background: white !important;
           }
           
-          .grid.lg\\:grid-cols-3 {
-            display: block !important;
-          }
-          
+          /* Page settings */
           @page {
-            size: letter;
+            size: auto;
             margin: 0.5in;
           }
         }
