@@ -584,62 +584,7 @@ Lawrenceville, Georgia 30043, U.S.A`
         </div>
       </div>
 
-      <style>{`
-        @media print {
-          /* Hide EVERYTHING first */
-          * {
-            visibility: hidden !important;
-          }
-          
-          /* Hide the entire HTML structure */
-          html, body {
-            width: 100% !important;
-            height: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: visible !important;
-            background: white !important;
-          }
-          
-          /* Hide sidebars, navigation, dialogs */
-          [data-sidebar],
-          aside,
-          nav,
-          header:not(#quote-printable header),
-          .no-print,
-          [role="dialog"],
-          [role="complementary"],
-          button:not(#quote-printable button) {
-            display: none !important;
-            visibility: hidden !important;
-          }
-          
-          /* Show ONLY the quote container and its children */
-          #quote-printable,
-          #quote-printable * {
-            visibility: visible !important;
-          }
-          
-          #quote-printable {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border-radius: 0 !important;
-            background: white !important;
-          }
-          
-          /* Page settings */
-          @page {
-            size: auto;
-            margin: 0.5in;
-          }
-        }
-      `}</style>
+
     </div>
   );
 }
