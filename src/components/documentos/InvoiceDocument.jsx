@@ -212,33 +212,7 @@ export default function InvoiceDocument({ invoice }) {
                 <p className="text-xs text-slate-600">For questions, please contact us at projects@mci-us.com</p>
             </div>
             
-            <style>{`
-                @media print {
-                    @page {
-                        size: letter;
-                        margin: 0.5in;
-                    }
-                    
-                    body {
-                        print-color-adjust: exact;
-                        -webkit-print-color-adjust: exact;
-                    }
-                    
-                    .page-break-inside-avoid {
-                        page-break-inside: avoid;
-                        break-inside: avoid;
-                    }
-                    
-                    table {
-                        page-break-inside: auto;
-                    }
-                    
-                    tr {
-                        page-break-inside: avoid;
-                        page-break-after: auto;
-                    }
-                }
-            `}</style>
+
         </div>
     );
 }
