@@ -27,8 +27,6 @@ import QuoteStats from "@/components/quotes/QuoteStats";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
 import AIEstimateInput from "@/components/quotes/AIEstimateInput";
 import QuoteDocument from "@/components/documentos/QuoteDocument";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import _ from "lodash";
 
 export default function Estimados() {
@@ -197,60 +195,19 @@ export default function Estimados() {
     },
   });
 
-  const exportToPDF = async () => {
+  const exportToPDF = () => {
     if (!selectedQuote) {
       toast.error(language === 'es' ? '⚠️ Selecciona un estimado para exportar' : '⚠️ Select a quote to export');
       return;
     }
 
-    try {
-      toast.success(language === 'es' ? '📄 Generando PDF...' : '📄 Generating PDF...');
-
-      const element = document.getElementById('quote-preview-for-pdf');
-      if (!element) {
-        toast.error(language === 'es' ? '❌ Error al generar PDF' : '❌ Error generating PDF');
-        return;
-      }
-
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'letter'
-      });
-
-      const pdfWidth = 210;
-      const pdfHeight = 279;
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
-      
-      pdf.save(`${selectedQuote.quote_number}.pdf`);
-
-      toast.success('✅ ' + (language === 'es' ? 'PDF descargado' : 'PDF downloaded'));
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast.error(language === 'es' ? '❌ Error al generar PDF' : '❌ Error generating PDF');
-    }
+    const originalTitle = document.title;
+    document.title = `${selectedQuote.quote_number} - ${selectedQuote.job_name}`;
+    
+    setTimeout(() => {
+      window.print();
+      document.title = originalTitle;
+    }, 100);
   };
 
   const clearFilters = () => {

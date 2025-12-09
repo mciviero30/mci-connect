@@ -27,16 +27,16 @@ export default function InvoiceDocument({ invoice }) {
                         <img
                             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
                             alt="Modern Components Installation"
-                            className="h-16 object-contain print:h-14"
+                            className="h-12 object-contain print:h-10"
                         />
                     </div>
 
                     {/* RIGHT: INVOICE Title and Number */}
                     <div className="text-right">
-                        <h1 className="text-5xl font-bold text-slate-900 mb-2">INVOICE</h1>
-                        <p className="text-lg text-slate-600 font-semibold"># {invoice.invoice_number}</p>
+                        <h1 className="text-3xl font-bold text-slate-900 mb-1">INVOICE</h1>
+                        <p className="text-base text-slate-600 font-semibold"># {invoice.invoice_number}</p>
                         {isPaid && (
-                            <div className="mt-2 inline-flex bg-emerald-500 px-4 py-1 rounded-full">
+                            <div className="mt-1 inline-flex bg-emerald-500 px-3 py-0.5 rounded-full">
                                 <span className="text-white text-xs font-bold">✓ PAID</span>
                             </div>
                         )}
@@ -47,8 +47,8 @@ export default function InvoiceDocument({ invoice }) {
                 <div className="grid md:grid-cols-2 gap-8">
                     {/* Company Info */}
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900 mb-2">Modern Components Installation</h3>
-                        <div className="text-sm text-slate-700 space-y-0.5">
+                        <h3 className="text-xs font-bold text-slate-900 mb-1">Modern Components Installation</h3>
+                        <div className="text-xs text-slate-700 space-y-0.5">
                             <p>2414 Meadow Isle Ln</p>
                             <p>Lawrenceville Georgia 30043</p>
                             <p>U.S.A</p>
@@ -57,9 +57,9 @@ export default function InvoiceDocument({ invoice }) {
 
                     {/* Bill To + Dates */}
                     <div>
-                        <div className="mb-6">
-                            <p className="text-sm font-semibold text-slate-600 mb-2">Bill To</p>
-                            <p className="text-lg font-bold text-slate-900">{invoice.customer_name}</p>
+                        <div className="mb-4">
+                            <p className="text-xs font-semibold text-slate-600 mb-1">Bill To</p>
+                            <p className="text-base font-bold text-slate-900">{invoice.customer_name}</p>
                         </div>
                         
                         {invoice.invoice_date && (
@@ -86,11 +86,11 @@ export default function InvoiceDocument({ invoice }) {
 
             {/* Job Name */}
             {invoice.job_name && (
-                <div className="mb-6">
-                    <p className="text-xs text-slate-600 uppercase font-semibold tracking-wider mb-2">Project</p>
-                    <p className="text-xl font-bold text-slate-900 mb-1">{invoice.job_name}</p>
+                <div className="mb-4">
+                    <p className="text-xs text-slate-600 uppercase font-semibold tracking-wider mb-1">Subject :</p>
+                    <p className="text-base font-bold text-slate-900 mb-0.5">{invoice.job_name}</p>
                     {invoice.job_address && (
-                        <p className="text-sm text-slate-600">{invoice.job_address}</p>
+                        <p className="text-xs text-slate-600 whitespace-pre-wrap">{invoice.job_address}</p>
                     )}
                 </div>
             )}
@@ -138,30 +138,30 @@ export default function InvoiceDocument({ invoice }) {
             </div>
 
             {/* Totals Section - Clean Style */}
-            <div className="max-w-md ml-auto mb-8 space-y-3">
+            <div className="max-w-md ml-auto mb-6 space-y-2">
                 {/* Subtotal */}
-                <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                    <span className="text-slate-700 font-semibold">Subtotal</span>
-                    <span className="text-lg font-bold text-slate-900">
+                <div className="flex justify-between items-center py-1.5 border-b border-slate-200">
+                    <span className="text-slate-700 font-semibold text-sm">Sub Total</span>
+                    <span className="text-base font-bold text-slate-900">
                         ${invoice.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                 </div>
 
                 {/* Tax */}
                 {invoice.tax_amount > 0 && (
-                    <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                        <span className="text-slate-700 font-semibold">Tax ({invoice.tax_rate}%)</span>
-                        <span className="text-lg font-bold text-slate-900">
+                    <div className="flex justify-between items-center py-1.5 border-b border-slate-200">
+                        <span className="text-slate-700 font-semibold text-sm">Tax ({invoice.tax_rate}%)</span>
+                        <span className="text-base font-bold text-slate-900">
                             ${invoice.tax_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 )}
 
                 {/* Total */}
-                <div className="bg-slate-900 rounded-lg p-5 shadow-lg">
+                <div className="bg-slate-900 rounded-lg p-4">
                     <div className="flex justify-between items-center">
-                        <span className="text-white text-base font-bold uppercase">Total</span>
-                        <span className="text-white text-3xl font-bold">
+                        <span className="text-white text-sm font-bold uppercase">Total</span>
+                        <span className="text-white text-2xl font-bold">
                             ${invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
@@ -169,20 +169,20 @@ export default function InvoiceDocument({ invoice }) {
 
                 {/* Payment Info */}
                 {invoice.amount_paid > 0 && (
-                    <div className="bg-emerald-50 rounded-lg p-4 border border-emerald-200 mt-4">
+                    <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-200 mt-3">
                         <div className="flex justify-between items-center">
-                            <span className="text-emerald-800 font-semibold">Amount Paid</span>
-                            <span className="text-lg font-bold text-emerald-800">
+                            <span className="text-emerald-800 font-semibold text-sm">Amount Paid</span>
+                            <span className="text-base font-bold text-emerald-800">
                                 -${invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
                     </div>
                 )}
                 {hasBalance && (
-                    <div className="bg-amber-50 rounded-lg p-5 border-2 border-amber-400">
+                    <div className="bg-amber-50 rounded-lg p-4 border-2 border-amber-400">
                         <div className="flex justify-between items-center">
                             <span className="text-amber-900 font-bold uppercase text-sm">Balance Due</span>
-                            <span className="text-2xl font-bold text-amber-900">
+                            <span className="text-xl font-bold text-amber-900">
                                 ${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
@@ -192,25 +192,53 @@ export default function InvoiceDocument({ invoice }) {
 
             {/* Terms */}
             {invoice.terms && (
-                <div className="mb-6 pb-6 border-b border-slate-200">
-                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Payment Terms</h3>
-                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{invoice.terms}</p>
+                <div className="mb-4 pb-4 border-b border-slate-200 page-break-inside-avoid">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Payment Terms</h3>
+                    <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{invoice.terms}</p>
                 </div>
             )}
 
             {/* Notes */}
             {invoice.notes && (
-                <div className="mb-6 pb-6 border-b border-slate-200">
-                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Notes</h3>
-                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{invoice.notes}</p>
+                <div className="mb-4 pb-4 border-b border-slate-200 page-break-inside-avoid">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Notes</h3>
+                    <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{invoice.notes}</p>
                 </div>
             )}
 
             {/* Footer */}
-            <div className="text-center pt-6">
-                <p className="text-base text-slate-800 font-semibold mb-1">Thank you for your business!</p>
-                <p className="text-sm text-slate-600">For questions, please contact us at projects@mci-us.com</p>
+            <div className="text-center pt-4">
+                <p className="text-sm text-slate-800 font-semibold mb-1">Thank you for your business!</p>
+                <p className="text-xs text-slate-600">For questions, please contact us at projects@mci-us.com</p>
             </div>
+            
+            <style>{`
+                @media print {
+                    @page {
+                        size: letter;
+                        margin: 0.5in;
+                    }
+                    
+                    body {
+                        print-color-adjust: exact;
+                        -webkit-print-color-adjust: exact;
+                    }
+                    
+                    .page-break-inside-avoid {
+                        page-break-inside: avoid;
+                        break-inside: avoid;
+                    }
+                    
+                    table {
+                        page-break-inside: auto;
+                    }
+                    
+                    tr {
+                        page-break-inside: avoid;
+                        page-break-after: auto;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

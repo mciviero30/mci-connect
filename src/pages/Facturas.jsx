@@ -205,6 +205,26 @@ export default function Facturas() {
             </div>
             {isAdmin && (
               <div className="flex gap-2">
+                <Button 
+                  onClick={() => {
+                    if (!selectedInvoice) {
+                      toast.error(language === 'es' ? '⚠️ Selecciona una factura para exportar' : '⚠️ Select an invoice to export');
+                      return;
+                    }
+                    const originalTitle = document.title;
+                    document.title = `${selectedInvoice.invoice_number} - ${selectedInvoice.job_name}`;
+                    setTimeout(() => {
+                      window.print();
+                      document.title = originalTitle;
+                    }, 100);
+                  }}
+                  variant="outline" 
+                  size="sm" 
+                  disabled={!selectedInvoice}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'PDF' : 'PDF'}
+                </Button>
                 <Link to={createPageUrl("CrearFactura")}>
                   <Button size="sm" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white">
                     <Plus className="w-4 h-4 mr-2" />
@@ -373,7 +393,7 @@ export default function Facturas() {
               </div>
 
               {/* Invoice Document */}
-              <div className="bg-white dark:bg-[#282828] rounded-lg shadow-xl">
+              <div id="invoice-preview-for-pdf" className="bg-white dark:bg-[#282828] rounded-lg shadow-xl">
                 <InvoiceDocument invoice={selectedInvoice} />
               </div>
             </div>
