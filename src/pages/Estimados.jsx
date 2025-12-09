@@ -9,7 +9,6 @@ import {
   ChevronUp, ChevronDown, Bell, MessageCircle, Sparkles, MapPin, Calendar
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
@@ -28,6 +27,7 @@ import QuoteStats from "@/components/quotes/QuoteStats";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
 import QuoteWhatsApp from "@/components/quotes/QuoteWhatsApp";
 import AIEstimateInput from "@/components/quotes/AIEstimateInput";
+import QuoteDocument from "@/components/documentos/QuoteDocument";
 import _ from "lodash";
 
 export default function Estimados() {
@@ -39,6 +39,8 @@ export default function Estimados() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState("list");
+  const [selectedQuote, setSelectedQuote] = useState(null);
+  const [showAIInput, setShowAIInput] = useState(false);
 
   // Advanced filter states
   const [dateFrom, setDateFrom] = useState("");
@@ -52,18 +54,6 @@ export default function Estimados() {
   // Sorting
   const [sortField, setSortField] = useState("created_date");
   const [sortDirection, setSortDirection] = useState("desc");
-
-  // Selection
-  const [selectedQuotes, setSelectedQuotes] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-
-  // Preview modal
-  const [previewQuote, setPreviewQuote] = useState(null);
-  const [showAIInput, setShowAIInput] = useState(false);
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
 
   // Debounced search
   const debouncedSetSearch = useCallback(
@@ -94,6 +84,9 @@ export default function Estimados() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       toast.success(t('deletedSuccessfully'));
+      if (selectedQuote?.id === deleteMutation.variables) {
+        setSelectedQuote(null);
+      }
     }
   });
 
@@ -118,23 +111,14 @@ export default function Estimados() {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       toast.success(language === 'es' ? '✅ Estimado duplicado' : '✅ Quote duplicated');
     },
-    onError: (error) => {
-      toast.error(`❌ Error: ${error.message}`);
-    }
   });
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: async (quote) => {
-      console.log('🔄 Converting quote to invoice...', quote);
-      
       let jobId = quote.job_id;
       let wasJobCreated = false;
-      let mciFieldSyncSuccess = false;
       
-      // Step 1: Create Job in MCI Connect if it doesn't exist
       if (!jobId) {
-        console.log('📁 No job_id found, creating new job in MCI Connect...');
-        
         const jobData = {
           name: quote.job_name,
           address: quote.job_address,
@@ -151,46 +135,9 @@ export default function Estimados() {
         jobId = newJob.id;
         wasJobCreated = true;
         
-        console.log('✅ Job created in MCI Connect:', newJob);
-        
-        // Step 2: Sync with MCI Field
-        try {
-          console.log('🔗 Syncing job with MCI Field...');
-          
-          const mciFieldResponse = await fetch('https://mci-field.com/api/jobs/sync', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.SHARED_API_TOKEN || 'MCISync_2024_SecureToken_abc123xyz789'}`
-            },
-            body: JSON.stringify({
-              job_name: quote.job_name,
-              job_address: quote.job_address,
-              source: 'mci_connect',
-              mci_connect_job_id: jobId
-            })
-          });
-
-          if (mciFieldResponse.ok) {
-            const mciFieldData = await mciFieldResponse.json();
-            console.log('✅ Job synced with MCI Field:', mciFieldData);
-            mciFieldSyncSuccess = true;
-          } else {
-            console.warn('⚠️ MCI Field sync failed but continuing with invoice creation');
-          }
-        } catch (syncError) {
-          console.error('⚠️ Error syncing with MCI Field:', syncError);
-          // Continue with invoice creation even if sync fails
-        }
-        
-        // Update quote with job_id
-        await base44.entities.Quote.update(quote.id, {
-          job_id: jobId
-        });
+        await base44.entities.Quote.update(quote.id, { job_id: jobId });
       }
 
-      // Step 3: Create Invoice
-      console.log('📄 Creating invoice...');
       const invoices = await base44.entities.Invoice.list();
       const existingNumbers = invoices
         .map(inv => inv.invoice_number)
@@ -228,121 +175,50 @@ export default function Estimados() {
       };
 
       const newInvoice = await base44.entities.Invoice.create(invoiceData);
-      console.log('✅ Invoice created:', newInvoice);
 
-      // Update quote status
       await base44.entities.Quote.update(quote.id, {
         status: 'converted_to_invoice',
         invoice_id: newInvoice.id
       });
 
-      return { newInvoice, wasJobCreated, mciFieldSyncSuccess };
+      return { newInvoice, wasJobCreated };
     },
-    onSuccess: ({ newInvoice, wasJobCreated, mciFieldSyncSuccess }) => {
+    onSuccess: ({ newInvoice }) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       
-      let message = language === 'es' 
-        ? `✅ Factura creada exitosamente`
-        : `✅ Invoice created successfully`;
+      toast.success(language === 'es' ? '✅ Factura creada exitosamente' : '✅ Invoice created successfully');
       
-      if (wasJobCreated) {
-        message += language === 'es' 
-          ? `\n📁 Trabajo creado en MCI Connect`
-          : `\n📁 Job created in MCI Connect`;
-      }
-      
-      if (mciFieldSyncSuccess) {
-        message += language === 'es'
-          ? `\n🔗 Trabajo sincronizado con MCI Field`
-          : `\n🔗 Job synced with MCI Field`;
-      }
-      
-      toast.success(message);
-      
-      // Navigate to the new invoice
       setTimeout(() => {
         navigate(createPageUrl(`VerFactura?id=${newInvoice.id}`));
       }, 1500);
     },
-    onError: (error) => {
-      console.error('❌ Error converting quote:', error);
-      toast.error(`❌ Error: ${error.message}`);
-    }
   });
 
   const exportToExcel = () => {
-    // Use quotes directly since filteredQuotes might not be defined yet
-    const dataToExport = quotes.filter(quote => {
-      const matchesSearch = !searchTerm ||
-        quote.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quote.quote_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quote.job_name?.toLowerCase().includes(searchTerm.toLowerCase());
-      const quoteDate = new Date(quote.quote_date);
-      const matchesDateFrom = !dateFrom || quoteDate >= new Date(dateFrom);
-      const matchesDateTo = !dateTo || quoteDate <= new Date(dateTo);
-      const matchesMinAmount = !minAmount || (quote.total || 0) >= parseFloat(minAmount);
-      const matchesMaxAmount = !maxAmount || (quote.total || 0) <= parseFloat(maxAmount);
-      const matchesTeam = teamFilter === "all" || quote.team_id === teamFilter;
-      const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
-      const matchesNotes = !notesKeyword || 
-        (quote.notes && quote.notes.toLowerCase().includes(notesKeyword.toLowerCase()));
-      return matchesSearch && matchesDateFrom && matchesDateTo && 
-             matchesMinAmount && matchesMaxAmount && matchesTeam && 
-             matchesStatus && matchesNotes;
-    });
-
+    const dataToExport = filteredQuotes;
     if (!dataToExport || dataToExport.length === 0) {
       toast.error(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
       return;
     }
 
     try {
-      const headers = [
-        'Número',
-        'Cliente',
-        'Email',
-        'Teléfono',
-        'Proyecto',
-        'Dirección',
-        'Fecha',
-        'Válido Hasta',
-        'Subtotal',
-        'Impuesto %',
-        'Impuesto',
-        'Total',
-        'Estado',
-        'Notas'
-      ];
-
+      const headers = ['Número', 'Cliente', 'Email', 'Teléfono', 'Proyecto', 'Dirección', 'Fecha', 'Válido Hasta', 'Subtotal', 'Impuesto %', 'Impuesto', 'Total', 'Estado', 'Notas'];
       const rows = dataToExport.map(quote => [
-        quote.quote_number || '',
-        quote.customer_name || '',
-        quote.customer_email || '',
-        quote.customer_phone || '',
-        quote.job_name || '',
-        quote.job_address || '',
-        quote.quote_date || '',
-        quote.valid_until || '',
-        quote.subtotal || 0,
-        quote.tax_rate || 0,
-        quote.tax_amount || 0,
-        quote.total || 0,
-        quote.status || '',
-        (quote.notes || '').replace(/\n/g, ' ')
+        quote.quote_number || '', quote.customer_name || '', quote.customer_email || '', quote.customer_phone || '',
+        quote.job_name || '', quote.job_address || '', quote.quote_date || '', quote.valid_until || '',
+        quote.subtotal || 0, quote.tax_rate || 0, quote.tax_amount || 0, quote.total || 0,
+        quote.status || '', (quote.notes || '').replace(/\n/g, ' ')
       ]);
 
-      const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.map(cell => {
-          const cellStr = String(cell);
-          if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-            return `"${cellStr.replace(/"/g, '""')}"`;
-          }
-          return cellStr;
-        }).join(','))
-      ].join('\n');
+      const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => {
+        const cellStr = String(cell);
+        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+          return `"${cellStr.replace(/"/g, '""')}"`;
+        }
+        return cellStr;
+      }).join(','))].join('\n');
 
       const BOM = '\uFEFF';
       const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -357,7 +233,6 @@ export default function Estimados() {
 
       toast.success('✅ ' + (language === 'es' ? 'Archivo descargado' : 'File downloaded'));
     } catch (error) {
-      console.error('Export error:', error);
       toast.error(language === 'es' ? '❌ Error al exportar' : '❌ Export failed');
     }
   };
@@ -378,32 +253,21 @@ export default function Estimados() {
   // Filter and sort quotes
   const filteredQuotes = useMemo(() => {
     let result = quotes.filter(quote => {
-      // Exclude templates from main list
       if (quote.is_template) return false;
 
-      // Basic search (use debounced)
       const search = debouncedSearch.toLowerCase();
       const matchesSearch = !search ||
         quote.customer_name?.toLowerCase().includes(search) ||
         quote.quote_number?.toLowerCase().includes(search) ||
         quote.job_name?.toLowerCase().includes(search);
 
-      // Date range filter
       const quoteDate = new Date(quote.quote_date);
       const matchesDateFrom = !dateFrom || quoteDate >= new Date(dateFrom);
       const matchesDateTo = !dateTo || quoteDate <= new Date(dateTo);
-
-      // Amount range filter
       const matchesMinAmount = !minAmount || (quote.total || 0) >= parseFloat(minAmount);
       const matchesMaxAmount = !maxAmount || (quote.total || 0) <= parseFloat(maxAmount);
-
-      // Team filter
       const matchesTeam = teamFilter === "all" || quote.team_id === teamFilter;
-
-      // Status filter
       const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
-
-      // Notes keyword filter
       const matchesNotes = !notesKeyword || 
         (quote.notes && quote.notes.toLowerCase().includes(notesKeyword.toLowerCase()));
 
@@ -412,7 +276,6 @@ export default function Estimados() {
              matchesStatus && matchesNotes;
     });
 
-    // Sort
     result.sort((a, b) => {
       let aVal = a[sortField];
       let bVal = b[sortField];
@@ -438,43 +301,6 @@ export default function Estimados() {
     return result;
   }, [quotes, debouncedSearch, dateFrom, dateTo, minAmount, maxAmount, teamFilter, statusFilter, notesKeyword, sortField, sortDirection]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredQuotes.length / pageSize);
-  const paginatedQuotes = filteredQuotes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
-  // Selection handlers
-  const handleSelectAll = (checked) => {
-    setSelectAll(checked);
-    if (checked) {
-      setSelectedQuotes(paginatedQuotes.map(q => q.id));
-    } else {
-      setSelectedQuotes([]);
-    }
-  };
-
-  const handleSelectQuote = (quoteId, checked) => {
-    if (checked) {
-      setSelectedQuotes([...selectedQuotes, quoteId]);
-    } else {
-      setSelectedQuotes(selectedQuotes.filter(id => id !== quoteId));
-      setSelectAll(false);
-    }
-  };
-
-  // Bulk delete
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async () => {
-      await Promise.all(selectedQuotes.map(id => base44.entities.Quote.delete(id)));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(language === 'es' ? `${selectedQuotes.length} estimados eliminados` : `${selectedQuotes.length} quotes deleted`);
-      setSelectedQuotes([]);
-      setSelectAll(false);
-    }
-  });
-
-  // Sort handler
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -484,7 +310,6 @@ export default function Estimados() {
     }
   };
 
-  // Check if quote is expired
   const isExpired = (quote) => {
     return quote.valid_until && new Date(quote.valid_until) < new Date() && quote.status === 'sent';
   };
@@ -509,642 +334,216 @@ export default function Estimados() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
-      <div className="max-w-7xl mx-auto">
-        <PageHeader
-          title={t('quotes')}
-          description={`${filteredQuotes.length} ${t('total').toLowerCase()}`}
-          icon={FileText}
-          actions={
-            isAdmin && (
-              <div className="flex gap-2 flex-wrap">
-                <QuoteTemplates onSelectTemplate={(data) => navigate(createPageUrl("CrearEstimado"), { state: { template: data } })} />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+      {/* Header */}
+      <div className="border-b bg-white dark:bg-[#1a1a1a] sticky top-0 z-10">
+        <div className="p-4 md:p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t('quotes')}</h1>
+              <p className="text-slate-600 dark:text-slate-400">{filteredQuotes.length} {t('total').toLowerCase()}</p>
+            </div>
+            {isAdmin && (
+              <div className="flex gap-2">
                 <Button 
                   onClick={() => setShowAIInput(!showAIInput)}
                   variant="outline"
-                  className={showAIInput 
-                    ? "bg-amber-100 border-amber-300 text-amber-700" 
-                    : "bg-white border-amber-300 text-amber-700 hover:bg-amber-50"}
+                  size="sm"
+                  className={showAIInput ? "bg-amber-100 border-amber-300 text-amber-700" : "bg-white border-amber-300 text-amber-700 hover:bg-amber-50"}
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'IA' : 'AI'}
                 </Button>
-                <Button 
-                  onClick={exportToExcel}
-                  variant="outline"
-                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
-                  disabled={filteredQuotes.length === 0}
-                >
+                <Button onClick={exportToExcel} variant="outline" size="sm" disabled={filteredQuotes.length === 0}>
                   <Download className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Exportar' : 'Export'}
                 </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
-                  <Button className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white shadow-lg">
+                  <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
                     <Plus className="w-4 h-4 mr-2" />
                     {t('newQuote')}
                   </Button>
                 </Link>
               </div>
-            )
-          }
-        />
-
-        {/* Tabs for List vs Stats */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <TabsTrigger value="list" className="data-[state=active]:bg-cyan-100 data-[state=active]:text-cyan-700">
-              <FileText className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Lista' : 'List'}
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="data-[state=active]:bg-cyan-100 data-[state=active]:text-cyan-700">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Estadísticas' : 'Statistics'}
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* AI Quote Input */}
-        {showAIInput && (
-          <div className="mb-6">
-            <AIEstimateInput 
-              language={language}
-              onQuoteGenerated={(quoteData) => {
-                // Navigate to create page with pre-filled data
-                navigate(createPageUrl("CrearEstimado"), { state: { aiDraft: quoteData } });
-                setShowAIInput(false);
-              }}
-            />
-          </div>
-        )}
-
-        {activeTab === 'stats' ? (
-          <QuoteStats quotes={quotes.filter(q => !q.is_template)} />
-        ) : (
-          <>
-
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('drafts')}</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{drafts.length}</p>
-                </div>
-                <div className="p-3 bg-slate-200 dark:bg-slate-700 rounded-2xl">
-                  <FileText className="w-6 h-6 text-slate-700 dark:text-slate-300" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('sent')}</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{sent.length}</p>
-                </div>
-                <div className="p-3 bg-blue-200 dark:bg-blue-700 rounded-2xl">
-                  <FileText className="w-6 h-6 text-blue-700 dark:text-blue-200" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t('converted')}</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{converted.length}</p>
-                </div>
-                <div className="p-3 bg-purple-200 dark:bg-purple-700 rounded-2xl">
-                  <FileCheck className="w-6 h-6 text-purple-700 dark:text-purple-200" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700 shadow-lg border-0 hover:shadow-xl transition-all">
-            <CardContent className="p-6">
-              <p className="text-sm font-semibold text-cyan-50">{t('totalValue')}</p>
-              <p className="text-3xl font-bold text-white mt-1">
-                ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
-          <CardContent className="p-4">
-            {/* Bulk actions */}
-            {selectedQuotes.length > 0 && (
-              <div className="flex items-center gap-4 mb-4 p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
-                <span className="text-sm font-medium text-cyan-700 dark:text-cyan-400">
-                  {selectedQuotes.length} {language === 'es' ? 'seleccionados' : 'selected'}
-                </span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={exportToExcel}
-                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
-                >
-                  <Download className="w-4 h-4 mr-1" />
-                  {language === 'es' ? 'Exportar Selección' : 'Export Selected'}
-                </Button>
-                {isAdmin && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      if (window.confirm(language === 'es' 
-                        ? `¿Eliminar ${selectedQuotes.length} estimados?` 
-                        : `Delete ${selectedQuotes.length} quotes?`)) {
-                        bulkDeleteMutation.mutate();
-                      }
-                    }}
-                    className="bg-white border-red-300 text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    {language === 'es' ? 'Eliminar' : 'Delete'}
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => { setSelectedQuotes([]); setSelectAll(false); }}
-                  className="text-slate-500"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
             )}
+          </div>
+        </div>
+      </div>
 
-            <div className="flex gap-2 mb-4">
-              <Input
-                placeholder={t('search') + "..."}
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-              />
+      {/* AI Input */}
+      {showAIInput && (
+        <div className="p-4 bg-amber-50 border-b">
+          <AIEstimateInput 
+            language={language}
+            onQuoteGenerated={(quoteData) => {
+              navigate(createPageUrl("CrearEstimado"), { state: { aiDraft: quoteData } });
+              setShowAIInput(false);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Main Content - Sidebar + Preview */}
+      <div className="flex h-[calc(100vh-140px)]">
+        {/* Sidebar */}
+        <div className="w-80 border-r bg-white dark:bg-[#1a1a1a] flex flex-col overflow-hidden">
+          {/* Search and Filters */}
+          <div className="p-4 border-b space-y-3">
+            <Input
+              placeholder={t('search') + "..."}
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="bg-slate-50 dark:bg-slate-800"
+            />
+            <div className="flex gap-2">
               <Button
                 onClick={() => setShowFilters(!showFilters)}
                 variant={showFilters ? "default" : "outline"}
-                className={showFilters ? "bg-[#3B9FF3] text-white" : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"}
+                size="sm"
+                className="flex-1"
               >
                 <Filter className="w-4 h-4 mr-2" />
                 {language === 'es' ? 'Filtros' : 'Filters'}
-                {hasActiveFilters && (
-                  <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5 py-0.5">
-                    {[dateFrom, dateTo, minAmount, maxAmount, teamFilter !== "all", statusFilter !== "all", notesKeyword].filter(Boolean).length}
-                  </Badge>
-                )}
+                {hasActiveFilters && <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5">!</Badge>}
               </Button>
               {hasActiveFilters && (
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="bg-white border-red-300 text-red-700 hover:bg-red-50"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                <Button onClick={clearFilters} variant="outline" size="sm">
+                  <X className="w-4 h-4" />
                 </Button>
               )}
             </div>
 
-            {/* Advanced Filters Panel */}
             {showFilters && (
-              <div className="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-4">
-                <div className="grid md:grid-cols-3 gap-4">
-                  {/* Date Range */}
-                  <div>
-                    <Label className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">
-                      {language === 'es' ? 'Fecha Desde' : 'Date From'}
-                    </Label>
-                    <Input
-                      type="date"
-                      value={dateFrom}
-                      onChange={(e) => setDateFrom(e.target.value)}
-                      className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-700 font-medium mb-2 block">
-                      {language === 'es' ? 'Fecha Hasta' : 'Date To'}
-                    </Label>
-                    <Input
-                      type="date"
-                      value={dateTo}
-                      onChange={(e) => setDateTo(e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900"
-                    />
-                  </div>
-
-                  {/* Status Filter */}
-                  <div>
-                    <Label className="text-slate-700 font-medium mb-2 block">
-                      {language === 'es' ? 'Estado' : 'Status'}
-                    </Label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="all" className="text-slate-900">
-                          {language === 'es' ? 'Todos' : 'All'}
-                        </SelectItem>
-                        <SelectItem value="draft" className="text-slate-900">
-                          {language === 'es' ? 'Borrador' : 'Draft'}
-                        </SelectItem>
-                        <SelectItem value="sent" className="text-slate-900">
-                          {language === 'es' ? 'Enviado' : 'Sent'}
-                        </SelectItem>
-                        <SelectItem value="approved" className="text-slate-900">
-                          {language === 'es' ? 'Aprobado' : 'Approved'}
-                        </SelectItem>
-                        <SelectItem value="rejected" className="text-slate-900">
-                          {language === 'es' ? 'Rechazado' : 'Rejected'}
-                        </SelectItem>
-                        <SelectItem value="converted_to_invoice" className="text-slate-900">
-                          {language === 'es' ? 'Convertido' : 'Converted'}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  {/* Amount Range */}
-                  <div>
-                    <Label className="text-slate-700 font-medium mb-2 block">
-                      {language === 'es' ? 'Monto Mínimo' : 'Min Amount'}
-                    </Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={minAmount}
-                      onChange={(e) => setMinAmount(e.target.value)}
-                      placeholder="$0.00"
-                      className="bg-white border-slate-300 text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-700 font-medium mb-2 block">
-                      {language === 'es' ? 'Monto Máximo' : 'Max Amount'}
-                    </Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={maxAmount}
-                      onChange={(e) => setMaxAmount(e.target.value)}
-                      placeholder="$999,999.99"
-                      className="bg-white border-slate-300 text-slate-900"
-                    />
-                  </div>
-
-                  {/* Team Filter */}
-                  <div>
-                    <Label className="text-slate-700 font-medium mb-2 block">
-                      {language === 'es' ? 'Equipo' : 'Team'}
-                    </Label>
-                    <Select value={teamFilter} onValueChange={setTeamFilter}>
-                      <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-slate-200">
-                        <SelectItem value="all" className="text-slate-900">
-                          {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
-                        </SelectItem>
-                        {teams.map(team => (
-                          <SelectItem key={team.id} value={team.id} className="text-slate-900">
-                            {team.team_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Notes Keyword */}
-                <div>
-                  <Label className="text-slate-700 font-medium mb-2 block">
-                    {language === 'es' ? 'Buscar en Notas' : 'Search in Notes'}
-                  </Label>
-                  <Input
-                    value={notesKeyword}
-                    onChange={(e) => setNotesKeyword(e.target.value)}
-                    placeholder={language === 'es' ? 'Palabra clave en notas...' : 'Keyword in notes...'}
-                    className="bg-white border-slate-300 text-slate-900"
-                  />
-                </div>
-
-                <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                  <p className="text-sm text-slate-600">
-                    {language === 'es' 
-                      ? `Mostrando ${filteredQuotes.length} de ${quotes.length} estimados`
-                      : `Showing ${filteredQuotes.length} of ${quotes.length} quotes`}
-                  </p>
-                </div>
+              <div className="space-y-3 pt-3 border-t">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder={language === 'es' ? 'Estado' : 'Status'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{language === 'es' ? 'Todos' : 'All'}</SelectItem>
+                    <SelectItem value="draft">{language === 'es' ? 'Borrador' : 'Draft'}</SelectItem>
+                    <SelectItem value="sent">{language === 'es' ? 'Enviado' : 'Sent'}</SelectItem>
+                    <SelectItem value="approved">{language === 'es' ? 'Aprobado' : 'Approved'}</SelectItem>
+                    <SelectItem value="converted_to_invoice">{language === 'es' ? 'Convertido' : 'Converted'}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Sort buttons */}
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <span className="text-sm text-slate-500 self-center mr-2">{language === 'es' ? 'Ordenar:' : 'Sort:'}</span>
-          {[
-            { field: 'created_date', label: language === 'es' ? 'Fecha' : 'Date' },
-            { field: 'total', label: language === 'es' ? 'Monto' : 'Amount' },
-            { field: 'customer_name', label: language === 'es' ? 'Cliente' : 'Customer' },
-            { field: 'status', label: language === 'es' ? 'Estado' : 'Status' },
-          ].map(({ field, label }) => (
-            <Button
-              key={field}
-              size="sm"
-              variant={sortField === field ? "default" : "outline"}
-              onClick={() => handleSort(field)}
-              className={sortField === field 
-                ? "bg-cyan-600 text-white" 
-                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"}
-            >
-              {label}
-              {sortField === field && (
-                sortDirection === 'asc' ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />
-              )}
-            </Button>
-          ))}
-        </div>
-
-        {/* Loading skeleton */}
-        {isLoading && (
-          <div className="space-y-4">
-            {[1,2,3].map(i => (
-              <Card key={i} className="bg-white/90 dark:bg-[#282828]">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-6 w-6 rounded" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-5 w-48" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                    <Skeleton className="h-8 w-24" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
           </div>
-        )}
 
-        {/* Table Header with select all */}
-        {!isLoading && paginatedQuotes.length > 0 && (
-          <div className="hidden md:flex items-center gap-4 px-6 py-3 bg-slate-100 dark:bg-slate-800 rounded-t-lg border border-b-0 border-slate-200 dark:border-slate-700">
-            <Checkbox 
-              checked={selectAll} 
-              onCheckedChange={handleSelectAll}
-              className="border-slate-400"
-            />
-            <span className="flex-1 text-sm font-medium text-slate-600 dark:text-slate-400">
-              {language === 'es' ? 'Cliente / Proyecto' : 'Customer / Project'}
-            </span>
-            <span className="w-32 text-sm font-medium text-slate-600 dark:text-slate-400 text-center">
-              {language === 'es' ? 'Estado' : 'Status'}
-            </span>
-            <span className="w-28 text-sm font-medium text-slate-600 dark:text-slate-400 text-right">
-              {language === 'es' ? 'Total' : 'Total'}
-            </span>
-            <span className="w-48 text-sm font-medium text-slate-600 dark:text-slate-400 text-center">
-              {language === 'es' ? 'Acciones' : 'Actions'}
-            </span>
-          </div>
-        )}
-
-        <div className="space-y-3">
-          {!isLoading && paginatedQuotes.map((quote, idx) => (
-            <Card 
-              key={quote.id} 
-              className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all overflow-hidden ${
-                selectedQuotes.includes(quote.id) ? 'ring-2 ring-cyan-400' : ''
-              }`}
-            >
-              <CardContent className="p-5" onClick={() => setPreviewQuote(quote)}>
-                <div className="flex items-start gap-4 cursor-pointer">
-                  {/* Checkbox */}
-                  <div className="pt-1" onClick={(e) => e.stopPropagation()}>
-                    <Checkbox 
-                      checked={selectedQuotes.includes(quote.id)} 
-                      onCheckedChange={(checked) => handleSelectQuote(quote.id, checked)}
-                      className="border-slate-300"
-                    />
+          {/* Quote List */}
+          <div className="flex-1 overflow-y-auto">
+            {isLoading ? (
+              <div className="p-4 space-y-3">
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="p-3 border-b">
+                    <Skeleton className="h-5 w-32 mb-2" />
+                    <Skeleton className="h-4 w-24" />
                   </div>
-
-                  {/* Main Content */}
-                  <div className="flex-1 min-w-0">
-                    {/* Header Row */}
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
-                            {quote.customer_name}
-                          </h3>
-                          {isExpired(quote) && (
-                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              {language === 'es' ? 'Vencido' : 'Expired'}
-                            </Badge>
-                          )}
-                          {quote.version > 1 && (
-                            <Badge variant="outline" className="text-xs">v{quote.version}</Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
-                          {quote.job_name}
-                        </p>
-                      </div>
-
-                      {/* Status Badge */}
-                      <Badge className={statusColors[quote.status] || statusColors.draft}>
-                        {getStatusLabel(quote.status)}
-                      </Badge>
-                    </div>
-
-                    {/* Meta Info Row */}
-                    <div className="flex items-center flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400 mb-3">
-                      <span className="font-medium">{quote.quote_number}</span>
-                      <span>•</span>
-                      <span>{format(new Date(quote.quote_date), 'MMM d, yyyy', { locale: language === 'es' ? es : undefined })}</span>
-                      {quote.team_name && (
-                        <>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {quote.team_name}
-                          </span>
-                        </>
-                      )}
-                      {quote.valid_until && (
-                        <>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(quote.valid_until), 'MMM d', { locale: language === 'es' ? es : undefined })}
-                          </span>
-                        </>
-                      )}
-                      {quote.reminder_count > 0 && (
-                        <span className="flex items-center gap-1 text-amber-600">
-                          <Bell className="w-3 h-3" />
-                          {quote.reminder_count}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Bottom Row - Price and Actions */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-700">
-                      <div className="flex items-center gap-4">
-                        {/* Price */}
-                        <div>
-                          <p className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
-                            ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </p>
-                          {quote.profit_margin && (
-                            <p className="text-xs text-green-600">{quote.profit_margin.toFixed(0)}% margin</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        {quote.status === 'sent' && (
-                          <QuoteReminder quote={quote} />
-                        )}
-                        <QuoteWhatsApp quote={quote} />
-                        {isAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => duplicateMutation.mutate(quote)}
-                            className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 h-8 w-8"
-                            title={language === 'es' ? 'Duplicar' : 'Duplicate'}
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        )}
-                        {isAdmin && quote.status !== 'converted_to_invoice' && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              if (window.confirm(language === 'es' 
-                                ? '¿Convertir a factura?' 
-                                : 'Convert to invoice?')) {
-                                convertToInvoiceMutation.mutate(quote);
-                              }
-                            }}
-                            disabled={convertToInvoiceMutation.isPending}
-                            className="text-slate-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 h-8 w-8"
-                            title={language === 'es' ? 'Convertir' : 'Convert'}
-                          >
-                            <FileCheck className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)}>
-                          <Button variant="ghost" size="icon" className="text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 h-8 w-8">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                        {isAdmin && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
-                                deleteMutation.mutate(quote.id);
-                              }
-                            }}
-                            className="text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 h-8 w-8"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+                ))}
+              </div>
+            ) : filteredQuotes.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">
+                <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>{hasActiveFilters ? (language === 'es' ? 'No hay resultados' : 'No results') : t('noQuotes')}</p>
+              </div>
+            ) : (
+              filteredQuotes.map(quote => (
+                <div
+                  key={quote.id}
+                  onClick={() => setSelectedQuote(quote)}
+                  className={`p-4 border-b cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
+                    selectedQuote?.id === quote.id ? 'bg-cyan-50 dark:bg-cyan-900/20 border-l-4 border-l-cyan-600' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-bold text-slate-900 dark:text-white truncate">{quote.customer_name}</h3>
+                    <Badge className={statusColors[quote.status]}>{getStatusLabel(quote.status)}</Badge>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 truncate mb-1">{quote.job_name}</p>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">{quote.quote_number}</span>
+                    <span className="font-bold text-cyan-600">${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {format(new Date(quote.quote_date), 'MMM d, yyyy', { locale: language === 'es' ? es : undefined })}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              ))
+            )}
+          </div>
+        </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="bg-white dark:bg-slate-800"
-              >
-                {language === 'es' ? 'Anterior' : 'Previous'}
-              </Button>
-              <span className="text-sm text-slate-600 dark:text-slate-400 px-4">
-                {currentPage} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="bg-white dark:bg-slate-800"
-              >
-                {language === 'es' ? 'Siguiente' : 'Next'}
-              </Button>
+        {/* Preview Panel */}
+        <div className="flex-1 bg-slate-50 dark:bg-[#181818] overflow-y-auto">
+          {selectedQuote ? (
+            <div className="max-w-4xl mx-auto p-6">
+              {/* Actions Bar */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{selectedQuote.quote_number}</h2>
+                  <Badge className={statusColors[selectedQuote.status]}>{getStatusLabel(selectedQuote.status)}</Badge>
+                </div>
+                {isAdmin && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => duplicateMutation.mutate(selectedQuote)}
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      {language === 'es' ? 'Duplicar' : 'Duplicate'}
+                    </Button>
+                    {selectedQuote.status !== 'converted_to_invoice' && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (window.confirm(language === 'es' ? '¿Convertir a factura?' : 'Convert to invoice?')) {
+                            convertToInvoiceMutation.mutate(selectedQuote);
+                          }
+                        }}
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white"
+                      >
+                        <FileCheck className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Convertir' : 'Convert'}
+                      </Button>
+                    )}
+                    <Link to={createPageUrl(`VerEstimado?id=${selectedQuote.id}`)}>
+                      <Button variant="outline" size="sm">
+                        <Eye className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Ver Detalles' : 'View Details'}
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
+                          deleteMutation.mutate(selectedQuote.id);
+                        }
+                      }}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Quote Document */}
+              <div className="bg-white dark:bg-[#282828] rounded-lg shadow-xl">
+                <QuoteDocument quote={selectedQuote} />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-slate-400">
+                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">{language === 'es' ? 'Selecciona un estimado para ver los detalles' : 'Select a quote to view details'}</p>
+              </div>
             </div>
           )}
-
-          {filteredQuotes.length === 0 && !isLoading && (
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
-              <CardContent className="p-12 text-center">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-700 mb-2">
-                  {hasActiveFilters 
-                    ? (language === 'es' ? 'No se encontraron estimados con estos filtros' : 'No quotes found with these filters')
-                    : t('noQuotes')}
-                </h3>
-                {hasActiveFilters && (
-                  <Button onClick={clearFilters} variant="outline" className="mt-4">
-                    {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
-                  </Button>
-                )}
-                {!hasActiveFilters && isAdmin && (
-                  <Link to={createPageUrl("CrearEstimado")}>
-                    <Button className="mt-4 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t('newQuote')}
-                    </Button>
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </div>
-        </>
-        )}
-
-        {/* Preview Modal */}
-        <QuotePreviewModal
-          quote={previewQuote}
-          open={!!previewQuote}
-          onClose={() => setPreviewQuote(null)}
-          onConvert={(q) => {
-            if (window.confirm(language === 'es' ? '¿Convertir a factura?' : 'Convert to invoice?')) {
-              convertToInvoiceMutation.mutate(q);
-              setPreviewQuote(null);
-            }
-          }}
-        />
       </div>
     </div>
   );
