@@ -5,7 +5,7 @@ export default function QuoteDocument({ quote }) {
     if (!quote) return null;
 
     return (
-        <div className="bg-white p-8 md:p-12 print:p-8 font-sans">
+        <div className="bg-white p-6 print:p-6 font-sans text-[9pt] leading-tight">
             <style jsx>{`
                 @media print {
                     * {
@@ -16,154 +16,154 @@ export default function QuoteDocument({ quote }) {
                 }
             `}</style>
 
-            {/* Header Section - Clean Style */}
-            <div className="mb-8 pb-6 border-b-2 border-slate-200">
-                <div className="flex justify-between items-start mb-8">
+            {/* Header Section - Compact Style */}
+            <div className="mb-4 pb-3 border-b border-slate-300">
+                <div className="flex justify-between items-center mb-3">
                     {/* LEFT: Logo Only */}
                     <div className="flex items-center">
                         <img
                             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
                             alt="Modern Components Installation"
-                            className="h-12 object-contain print:h-10"
+                            className="h-8 object-contain"
                         />
                     </div>
 
                     {/* RIGHT: QUOTE Title and Number */}
                     <div className="text-right">
-                        <h1 className="text-3xl font-bold text-slate-900 mb-1">QUOTE</h1>
-                        <p className="text-base text-slate-600 font-semibold"># {quote.quote_number}</p>
+                        <h1 className="text-xl font-bold text-slate-900 mb-0">QUOTE</h1>
+                        <p className="text-xs text-slate-600 font-semibold"># {quote.quote_number}</p>
                     </div>
                 </div>
 
                 {/* Company Address and Bill To */}
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-2 gap-4 text-[8pt]">
                     {/* Company Info */}
                     <div>
-                        <h3 className="text-xs font-bold text-slate-900 mb-1">Modern Components Installation</h3>
-                        <div className="text-xs text-slate-700 space-y-0.5">
-                            <p>2414 Meadow Isle Ln</p>
-                            <p>Lawrenceville Georgia 30043</p>
-                            <p>U.S.A</p>
+                        <h3 className="text-[8pt] font-bold text-slate-900 mb-0.5 leading-tight">Modern Components Installation</h3>
+                        <div className="text-[7pt] text-slate-700 leading-tight">
+                            <p className="mb-0">2414 Meadow Isle Ln, Lawrenceville GA 30043, U.S.A</p>
                         </div>
                     </div>
 
                     {/* Bill To + Quote Date */}
                     <div>
-                        <div className="mb-4">
-                            <p className="text-xs font-semibold text-slate-600 mb-1">Bill To</p>
-                            <p className="text-base font-bold text-slate-900">{quote.customer_name}</p>
+                        <div className="mb-2">
+                            <p className="text-[7pt] font-semibold text-slate-600 mb-0">Bill To</p>
+                            <p className="text-[9pt] font-bold text-slate-900 leading-tight">{quote.customer_name}</p>
                         </div>
                         
-                        {quote.quote_date && (
-                            <div className="flex justify-between items-center text-sm">
-                                <span className="text-slate-600 font-semibold">Quote Date :</span>
-                                <span className="text-slate-900 font-bold">{format(new Date(quote.quote_date), 'MM.dd.yy')}</span>
-                            </div>
-                        )}
-                        {quote.valid_until && (
-                            <div className="flex justify-between items-center text-sm mt-2">
-                                <span className="text-slate-600 font-semibold">Valid Until :</span>
-                                <span className="text-slate-900 font-bold">{format(new Date(quote.valid_until), 'MM.dd.yy')}</span>
-                            </div>
-                        )}
-                        {quote.install_date && (
-                            <div className="flex justify-between items-center text-sm mt-2">
-                                <span className="text-slate-600 font-semibold">Install Date :</span>
-                                <span className="text-slate-900 font-bold">{format(new Date(quote.install_date), 'MM.dd.yy')}</span>
-                            </div>
-                        )}
+                        <div className="text-[7pt] space-y-0.5">
+                            {quote.quote_date && (
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">Quote Date:</span>
+                                    <span className="text-slate-900 font-semibold">{format(new Date(quote.quote_date), 'MM.dd.yy')}</span>
+                                </div>
+                            )}
+                            {quote.valid_until && (
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">Valid Until:</span>
+                                    <span className="text-slate-900 font-semibold">{format(new Date(quote.valid_until), 'MM.dd.yy')}</span>
+                                </div>
+                            )}
+                            {quote.install_date && (
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">Install Date:</span>
+                                    <span className="text-slate-900 font-semibold">{format(new Date(quote.install_date), 'MM.dd.yy')}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Job Name */}
             {quote.job_name && (
-                <div className="mb-4">
-                    <p className="text-xs text-slate-600 uppercase font-semibold tracking-wider mb-1">Subject :</p>
-                    <p className="text-base font-bold text-slate-900 mb-0.5">{quote.job_name}</p>
+                <div className="mb-2 mt-2">
+                    <p className="text-[7pt] text-slate-600 uppercase font-semibold mb-0.5">Subject:</p>
+                    <p className="text-[9pt] font-bold text-slate-900 leading-tight mb-0">{quote.job_name}</p>
                     {quote.job_address && (
-                        <p className="text-xs text-slate-600 whitespace-pre-wrap">{quote.job_address}</p>
+                        <p className="text-[7pt] text-slate-600 leading-tight">{quote.job_address}</p>
                     )}
                 </div>
             )}
 
-            {/* Items Table - Clean Style */}
-            <div className="mb-8 overflow-hidden border-t border-b border-slate-300 page-break-inside-avoid">
+            {/* Items Table - Compact Style */}
+            <div className="mb-3 overflow-hidden border-t border-b border-slate-300 page-break-inside-avoid">
                 <table className="w-full page-break-inside-avoid">
                     <thead>
                         <tr className="bg-slate-50 border-b border-slate-300">
-                            <th className="text-left p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-12">#</th>
-                            <th className="text-left p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider">Description</th>
-                            <th className="text-right p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-24">Qty</th>
-                            <th className="text-right p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-28">Rate</th>
-                            <th className="text-right p-3 text-slate-700 font-semibold text-xs uppercase tracking-wider w-32">Amount</th>
+                            <th className="text-left px-1.5 py-1 text-slate-700 font-semibold text-[7pt] uppercase w-8">#</th>
+                            <th className="text-left px-1.5 py-1 text-slate-700 font-semibold text-[7pt] uppercase">Description</th>
+                            <th className="text-right px-1.5 py-1 text-slate-700 font-semibold text-[7pt] uppercase w-16">Qty</th>
+                            <th className="text-right px-1.5 py-1 text-slate-700 font-semibold text-[7pt] uppercase w-20">Rate</th>
+                            <th className="text-right px-1.5 py-1 text-slate-700 font-semibold text-[7pt] uppercase w-24">Amount</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white">
                         {quote.items && quote.items.length > 0 ? quote.items.map((item, index) => (
                             <tr key={index} className="border-b border-slate-200 page-break-inside-avoid">
-                                <td className="p-3 align-top">
-                                    <span className="text-slate-600 font-semibold">{index + 1}</span>
+                                <td className="px-1.5 py-1 align-top">
+                                    <span className="text-slate-600 text-[7pt] font-semibold">{index + 1}</span>
                                 </td>
-                                <td className="p-3 align-top">
+                                <td className="px-1.5 py-1 align-top">
                                    {item.item_name ? (
                                        <>
-                                           <p className="font-semibold text-sm text-slate-900">{item.item_name}</p>
+                                           <p className="font-semibold text-[8pt] text-slate-900 leading-tight mb-0">{item.item_name}</p>
                                            {item.description && (
-                                               <p className="text-xs text-slate-600 mt-0.5 whitespace-pre-wrap">{item.description}</p>
+                                               <p className="text-[7pt] text-slate-600 leading-tight mt-0">{item.description}</p>
                                            )}
                                        </>
                                    ) : (
-                                       <p className="text-sm text-slate-900">{item.description}</p>
+                                       <p className="text-[8pt] text-slate-900 leading-tight">{item.description}</p>
                                    )}
                                 </td>
-                                <td className="p-3 align-top text-right">
-                                    <p className="text-sm font-semibold text-slate-900">
+                                <td className="px-1.5 py-1 align-top text-right">
+                                    <p className="text-[8pt] font-semibold text-slate-900">
                                         {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2})}
                                     </p>
-                                    {item.unit && <p className="text-xs text-slate-500 mt-1">{item.unit}</p>}
+                                    {item.unit && <p className="text-[6pt] text-slate-500">{item.unit}</p>}
                                 </td>
-                                <td className="p-3 align-top text-right text-sm text-slate-800 font-semibold">
+                                <td className="px-1.5 py-1 align-top text-right text-[8pt] text-slate-800 font-semibold">
                                     ${(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
-                                <td className="p-3 align-top text-right text-base font-bold text-slate-900">
+                                <td className="px-1.5 py-1 align-top text-right text-[9pt] font-bold text-slate-900">
                                     ${(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                         )) : (
                             <tr>
-                                <td colSpan="5" className="p-3 text-center text-slate-500">No items</td>
+                                <td colSpan="5" className="p-2 text-center text-slate-500 text-[8pt]">No items</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
 
-            {/* Totals Section - Clean Style */}
-            <div className="max-w-md ml-auto mb-6 space-y-2 page-break-inside-avoid">
+            {/* Totals Section - Compact Style */}
+            <div className="max-w-xs ml-auto mb-3 space-y-1 page-break-inside-avoid">
                 {/* Subtotal */}
-                <div className="flex justify-between items-center py-1.5 border-b border-slate-200">
-                    <span className="text-slate-700 font-semibold text-sm">Sub Total</span>
-                    <span className="text-base font-bold text-slate-900">
+                <div className="flex justify-between items-center py-0.5 border-b border-slate-200">
+                    <span className="text-slate-700 font-semibold text-[8pt]">Sub Total</span>
+                    <span className="text-[9pt] font-bold text-slate-900">
                         ${(quote.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                 </div>
 
                 {/* Tax */}
                 {(quote.tax_amount || 0) > 0 && (
-                    <div className="flex justify-between items-center py-1.5 border-b border-slate-200">
-                        <span className="text-slate-700 font-semibold text-sm">Tax ({quote.tax_rate || 0}%)</span>
-                        <span className="text-base font-bold text-slate-900">
+                    <div className="flex justify-between items-center py-0.5 border-b border-slate-200">
+                        <span className="text-slate-700 font-semibold text-[8pt]">Tax ({quote.tax_rate || 0}%)</span>
+                        <span className="text-[9pt] font-bold text-slate-900">
                             ${(quote.tax_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 )}
 
                 {/* Total */}
-                <div className="bg-slate-900 rounded-lg p-4">
+                <div className="bg-slate-900 rounded p-2">
                     <div className="flex justify-between items-center">
-                        <span className="text-white text-sm font-bold uppercase">Total</span>
-                        <span className="text-white text-2xl font-bold">
+                        <span className="text-white text-[8pt] font-bold uppercase">Total</span>
+                        <span className="text-white text-[14pt] font-bold">
                             ${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
@@ -172,24 +172,24 @@ export default function QuoteDocument({ quote }) {
 
             {/* Terms */}
             {quote.terms && (
-                <div className="mb-4 pb-4 border-b border-slate-200 page-break-inside-avoid">
-                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Terms & Conditions</h3>
-                    <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{quote.terms}</p>
+                <div className="mb-2 pb-2 border-b border-slate-200 page-break-inside-avoid">
+                    <h3 className="text-[7pt] font-bold text-slate-600 uppercase mb-0.5">Terms & Conditions</h3>
+                    <p className="text-[7pt] text-slate-700 leading-tight">{quote.terms}</p>
                 </div>
             )}
 
             {/* Notes */}
             {quote.notes && (
-                <div className="mb-4 pb-4 border-b border-slate-200 page-break-inside-avoid">
-                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Notes</h3>
-                    <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{quote.notes}</p>
+                <div className="mb-2 pb-2 border-b border-slate-200 page-break-inside-avoid">
+                    <h3 className="text-[7pt] font-bold text-slate-600 uppercase mb-0.5">Notes</h3>
+                    <p className="text-[7pt] text-slate-700 leading-tight">{quote.notes}</p>
                 </div>
             )}
 
             {/* Footer */}
-            <div className="text-center pt-4">
-                <p className="text-sm text-slate-800 font-semibold mb-1">Thank you for your business!</p>
-                <p className="text-xs text-slate-600">For questions, please contact us at projects@mci-us.com</p>
+            <div className="text-center pt-2">
+                <p className="text-[8pt] text-slate-800 font-semibold mb-0">Thank you for your business!</p>
+                <p className="text-[7pt] text-slate-600">For questions, please contact us at projects@mci-us.com</p>
             </div>
             
 
