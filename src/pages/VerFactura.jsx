@@ -47,7 +47,6 @@ export default function VerFactura() {
 
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
-  const [pdfInstructionsDialog, setPdfInstructionsDialog] = useState(false);
 
   const { data: invoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
@@ -174,23 +173,19 @@ export default function VerFactura() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!invoice) return;
-    setPdfInstructionsDialog(true);
-  };
-
-  const handleProceedToPDF = () => {
-    setPdfInstructionsDialog(false);
-    const originalTitle = document.title;
-    document.title = `${invoice.invoice_number} - ${invoice.customer_name}`;
     
-    // Small delay to ensure dialog is closed
-    setTimeout(() => {
-      window.print();
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 500);
-    }, 100);
+    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
+    const filename = `${invoice.invoice_number} - ${invoice.customer_name}`;
+    
+    try {
+      await generateOptimizedPDF('invoice-printable', filename);
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast.error('Error generating PDF');
+    }
   };
 
   const handleShare = async () => {
@@ -406,66 +401,7 @@ export default function VerFactura() {
         </DialogContent>
       </Dialog>
 
-      {/* PDF Instructions Dialog */}
-      <Dialog open={pdfInstructionsDialog} onOpenChange={setPdfInstructionsDialog}>
-        <DialogContent className="bg-white border-slate-200 max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
-              {language === 'es' ? 'Descargar como PDF' : 'Download as PDF'}
-            </DialogTitle>
-            <DialogDescription className="text-slate-600">
-              {language === 'es' 
-                ? 'Instrucciones para guardar la factura como PDF' 
-                : 'Instructions to save the invoice as PDF'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Alert className="bg-blue-50 border-blue-200">
-            <FileText className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-900 text-sm">
-              {language === 'es' ? (
-                <>
-                  <p className="font-semibold mb-2">Pasos:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-xs">
-                    <li>Se abrirá el diálogo de impresión</li>
-                    <li>En "Destino" o "Printer", selecciona <strong>"Guardar como PDF"</strong> o <strong>"Save as PDF"</strong></li>
-                    <li>Haz clic en "Guardar" o "Save"</li>
-                    <li>Elige la ubicación donde quieres guardar el archivo</li>
-                  </ol>
-                </>
-              ) : (
-                <>
-                  <p className="font-semibold mb-2">Steps:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-xs">
-                    <li>The print dialog will open</li>
-                    <li>In "Destination" or "Printer", select <strong>"Save as PDF"</strong></li>
-                    <li>Click "Save"</li>
-                    <li>Choose where you want to save the file</li>
-                  </ol>
-                </>
-              )}
-            </AlertDescription>
-          </Alert>
 
-          <DialogFooter className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setPdfInstructionsDialog(false)}
-              className="border-slate-300"
-            >
-              {language === 'es' ? 'Cancelar' : 'Cancel'}
-            </Button>
-            <Button 
-              onClick={handleProceedToPDF}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Continuar' : 'Continue'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <style>{`
         @media print {
