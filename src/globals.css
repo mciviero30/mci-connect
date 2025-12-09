@@ -26,8 +26,7 @@
     image-rendering: crisp-edges !important;
   }
 
-  .page-break-inside-avoid,
-  .page-break-inside-avoid * {
+  .page-break-inside-avoid {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
@@ -36,9 +35,14 @@
     page-break-inside: auto !important;
   }
 
-  tr {
+  tr.page-break-inside-avoid {
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
     page-break-after: auto !important;
+  }
+
+  td {
+    page-break-inside: avoid !important;
   }
 
   thead {

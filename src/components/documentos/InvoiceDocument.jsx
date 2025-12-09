@@ -109,7 +109,7 @@ export default function InvoiceDocument({ invoice }) {
                     </thead>
                     <tbody className="bg-white">
                         {invoice.items.map((item, index) => (
-                            <tr key={index} className="border-b border-slate-200">
+                            <tr key={index} className="border-b border-slate-200 page-break-inside-avoid">
                                 <td className="p-3 align-top">
                                     <span className="text-slate-600 font-semibold">{index + 1}</span>
                                 </td>

@@ -13,9 +13,9 @@ export const generateOptimizedPDF = async (elementId, filename) => {
     throw new Error(`Element with id "${elementId}" not found`);
   }
 
-  // Configuración optimizada para calidad y tamaño
+  // Configuración optimizada para balance calidad/tamaño
   const canvas = await html2canvas(element, {
-    scale: 2.5, // Mayor escala para mejor calidad de texto
+    scale: 2, // Balance óptimo para texto legible
     useCORS: true,
     logging: false,
     backgroundColor: '#ffffff',
@@ -25,8 +25,8 @@ export const generateOptimizedPDF = async (elementId, filename) => {
     windowHeight: element.scrollHeight,
   });
 
-  // Usar PNG para mejor calidad de texto
-  const imgData = canvas.toDataURL('image/png');
+  // JPEG con compresión para archivos < 100KB
+  const imgData = canvas.toDataURL('image/jpeg', 0.5);
   
   // Configuración PDF - Letter size (US standard)
   const pdf = new jsPDF({
@@ -43,22 +43,18 @@ export const generateOptimizedPDF = async (elementId, filename) => {
   const imgWidth = pdfWidth;
   const imgHeight = (canvas.height * pdfWidth) / canvas.width;
   
-  // Márgenes para evitar cortes en los bordes
-  const margin = 0;
-  const contentHeight = pdfHeight - (margin * 2);
-  
   let heightLeft = imgHeight;
   let position = 0;
 
   // Primera página
-  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
   heightLeft -= pdfHeight;
 
-  // Páginas adicionales con lógica mejorada
+  // Páginas adicionales - lógica corregida
   while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
+    position = heightLeft - imgHeight; // Posición negativa correcta
     pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
     heightLeft -= pdfHeight;
   }
 
