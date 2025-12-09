@@ -326,7 +326,7 @@ Lawrenceville, Georgia 30043, U.S.A`
 
   const handleDownloadPDF = () => {
     const originalTitle = document.title;
-    document.title = `${quote.quote_number} - ${quote.customer_name}`;
+    document.title = `${quote.quote_number} - ${quote.job_name}`;
     window.print();
     document.title = originalTitle;
   };
