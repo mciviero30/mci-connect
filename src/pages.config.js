@@ -70,6 +70,7 @@ import Field from './pages/Field';
 import FieldProject from './pages/FieldProject';
 import ClientPortal from './pages/ClientPortal';
 import SkillMatrix from './pages/SkillMatrix';
+import CrossAppSync from './pages/CrossAppSync';
 import __Layout from './Layout.jsx';
 
 
@@ -146,6 +147,7 @@ export const PAGES = {
     "FieldProject": FieldProject,
     "ClientPortal": ClientPortal,
     "SkillMatrix": SkillMatrix,
+    "CrossAppSync": CrossAppSync,
 }
 
 export const pagesConfig = {
