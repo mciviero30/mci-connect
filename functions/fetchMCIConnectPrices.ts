@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
         const response = await fetch(mciConnectUrl, {
             method: 'GET',
             headers: {
-                'x-auth-token': mciConnectToken,
+                'Authorization': `Bearer ${mciConnectToken}`,
                 'Content-Type': 'application/json'
             }
         });
