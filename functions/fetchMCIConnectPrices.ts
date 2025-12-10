@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
         }
 
         // Call MCI Connect function
-        const response = await fetch(`${mciConnectUrl}/exposeItemPrices`, {
+        const response = await fetch(mciConnectUrl, {
             method: 'GET',
             headers: {
                 'x-auth-token': mciConnectToken,
