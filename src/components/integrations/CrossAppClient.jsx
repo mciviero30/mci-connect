@@ -3,7 +3,7 @@
  * Secure communication between MCI Connect and other Base44 apps
  */
 
-const BASE44_API_URL = 'https://api.base44.com/v1';
+const BASE44_API_URL = 'https://api.base44.app';
 
 export class CrossAppClient {
   constructor(appId, serviceRoleKey) {
@@ -18,13 +18,14 @@ export class CrossAppClient {
    * Make authenticated request to external app
    */
   async request(endpoint, method = 'GET', data = null) {
-    const url = `${BASE44_API_URL}/apps/${this.appId}${endpoint}`;
+    const url = `${BASE44_API_URL}${endpoint}`;
     
     const options = {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.serviceRoleKey}`,
+        'x-app-id': this.appId,
+        'x-service-role-key': this.serviceRoleKey,
       },
     };
 
