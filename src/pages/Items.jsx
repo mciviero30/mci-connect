@@ -27,9 +27,11 @@ import {
   Download,
   FileSpreadsheet,
   Settings,
-  RefreshCw
+  RefreshCw,
+  FileUp
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
+import ItemPDFImporter from "../components/items/ItemPDFImporter";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +67,7 @@ export default function Items() {
   const [showLaborRateDialog, setShowLaborRateDialog] = useState(false);
   const [laborRateInput, setLaborRateInput] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showPDFImporter, setShowPDFImporter] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -637,6 +640,14 @@ export default function Items() {
                   {isSyncing 
                     ? (language === 'es' ? 'Sincronizando...' : 'Syncing...') 
                     : (language === 'es' ? 'Sincronizar MCI Connect' : 'Sync MCI Connect')}
+                </Button>
+                <Button
+                  onClick={() => setShowPDFImporter(true)}
+                  variant="outline"
+                  className="bg-purple-50 border-purple-300 text-purple-700 hover:bg-purple-100"
+                >
+                  <FileUp className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Importar PDF' : 'Import PDF'}
                 </Button>
                 <Button
                   onClick={exportPriceList}
@@ -1429,6 +1440,16 @@ export default function Items() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* PDF IMPORTER */}
+          <ItemPDFImporter
+            open={showPDFImporter}
+            onClose={() => setShowPDFImporter(false)}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ['quoteItems'] });
+              toast.success(language === 'es' ? 'Items importados exitosamente' : 'Items imported successfully');
+            }}
+          />
         </div>
       </div>
     </TooltipProvider>
