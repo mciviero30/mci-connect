@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
 
         // Get MCI Connect URL and token from secrets
         const mciConnectUrl = Deno.env.get('MCI_CONNECT_URL');
-        const mciConnectToken = Deno.env.get('MCI_CONNECT_TOKEN');
+        const mciConnectToken = Deno.env.get('CROSS_APP_TOKEN');
 
         if (!mciConnectUrl || !mciConnectToken) {
             return Response.json({ 
