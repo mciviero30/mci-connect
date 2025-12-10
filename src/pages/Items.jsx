@@ -205,61 +205,64 @@ export default function Items() {
   }, [formData.category, formData.material_cost, formData.installation_time, STANDARD_LABOR_RATE, isLaborOrService]);
 
   // ============================================
-  // EXPORT PRICE LIST TO CSV
+  // EXPORT PRICE LIST TO PDF
   // ============================================
-  const exportPriceList = () => {
+  const exportPriceList = async () => {
     try {
-      // Prepare CSV data
-      const headers = [
-        'Item Name',
-        'Category',
-        'Unit',
-        'Sale Price',
-        'Internal Cost',
-        'Profit Margin %',
-        'Installation Time (hrs)',
-        'Supplier',
-        'Stock Quantity',
-        'Status'
-      ];
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
 
-      const rows = filteredItems.map(item => {
-        const margin = item.unit_price > 0 && item.cost_per_unit > 0
-          ? (((item.unit_price - item.cost_per_unit) / item.unit_price) * 100).toFixed(1)
-          : '0.0';
+      // Title
+      doc.setFontSize(20);
+      doc.text('Price List', 20, 20);
 
-        return [
-          `"${item.name || ''}"`,
-          item.category || '',
-          item.unit || '',
-          item.unit_price?.toFixed(2) || '0.00',
-          item.cost_per_unit?.toFixed(2) || '0.00',
-          margin,
-          item.installation_time?.toFixed(1) || '',
-          `"${item.supplier || ''}"`,
-          item.in_stock_quantity || '0',
-          item.status || 'active'
-        ];
-      });
+      // Date
+      doc.setFontSize(10);
+      doc.text(`Generated: ${format(new Date(), 'MMM dd, yyyy')}`, 20, 30);
 
-      // Create CSV content
-      const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.join(','))
-      ].join('\n');
+      // Table headers
+      doc.setFontSize(12);
+      const startY = 45;
+      doc.text('Item Name', 20, startY);
+      doc.text('Category', 90, startY);
+      doc.text('Sale Price', 130, startY);
+      doc.text('Supplier', 160, startY);
+      doc.text('Status', 185, startY);
 
-      // Create and download file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
+      // Table content
+      doc.setFontSize(10);
+      let y = startY + 10;
 
-      link.setAttribute('href', url);
-      link.setAttribute('download', `price_list_${format(new Date(), 'yyyy-MM-dd')}.csv`);
-      link.style.visibility = 'hidden';
+      for (const item of filteredItems) {
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
+        const salePrice = `$${(item.unit_price || 0).toFixed(2)}`;
+        const status = item.status || 'active';
+
+        // Truncate long names
+        const itemName = (item.name || '').length > 30 
+          ? (item.name || '').substring(0, 27) + '...' 
+          : (item.name || '');
+
+        const supplier = (item.supplier || '').length > 15
+          ? (item.supplier || '').substring(0, 12) + '...'
+          : (item.supplier || '');
+
+        doc.text(itemName, 20, y);
+        doc.text(categoryLabel, 90, y);
+        doc.text(salePrice, 130, y);
+        doc.text(supplier, 160, y);
+        doc.text(status, 185, y);
+
+        y += 10;
+      }
+
+      // Save PDF
+      doc.save(`price_list_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 
       toast.success(language === 'es'
         ? `Lista de precios exportada: ${filteredItems.length} items`
