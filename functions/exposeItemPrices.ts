@@ -25,10 +25,10 @@ Deno.serve(async (req) => {
             count: items.length,
             items: items.map(item => ({
                 id: item.id,
-                item_name: item.item_name,
+                item_name: item.name,
                 description: item.description,
                 unit_price: item.unit_price,
-                unit: item.unit,
+                unit: item.uom,
                 category: item.category,
                 updated_date: item.updated_date
             }))
