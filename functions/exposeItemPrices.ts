@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
 
         // Fetch active items from ItemCatalog
         const items = await base44.asServiceRole.entities.ItemCatalog.filter({ 
-            status: 'active' 
+            active: true 
         }, '-updated_date', 500);
 
         // Return items data
