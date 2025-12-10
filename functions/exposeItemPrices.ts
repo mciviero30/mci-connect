@@ -4,8 +4,11 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         
-        // Validate token
-        const authToken = req.headers.get('x-auth-token');
+        // Validate token - support both x-auth-token and Authorization Bearer
+        const xAuthToken = req.headers.get('x-auth-token');
+        const authHeader = req.headers.get('Authorization');
+        const bearerToken = authHeader?.replace('Bearer ', '');
+        const authToken = xAuthToken || bearerToken;
         const expectedToken = Deno.env.get('CROSS_APP_TOKEN');
         
         if (!authToken || authToken !== expectedToken) {
