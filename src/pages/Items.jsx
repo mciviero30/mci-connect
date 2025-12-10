@@ -26,7 +26,8 @@ import {
   Info,
   Download,
   FileSpreadsheet,
-  Settings
+  Settings,
+  RefreshCw
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import {
@@ -63,6 +64,7 @@ export default function Items() {
   const [selectedItemForAudit, setSelectedItemForAudit] = useState(null);
   const [showLaborRateDialog, setShowLaborRateDialog] = useState(false);
   const [laborRateInput, setLaborRateInput] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -128,6 +130,48 @@ export default function Items() {
       toast.error(error.message || (language === 'es' ? 'Error al actualizar tasa laboral' : 'Failed to update labor rate'));
     }
   });
+
+  // Sync prices from MCI Connect
+  const syncPricesFromMCIConnect = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await base44.functions.invoke('fetchMCIConnectPrices', {});
+      
+      if (result.data.success) {
+        const mciItems = result.data.items;
+        let updatedCount = 0;
+
+        for (const mciItem of mciItems) {
+          // Find matching item in local catalog by name
+          const localItem = items.find(item => 
+            item.name.toLowerCase() === mciItem.name.toLowerCase()
+          );
+
+          if (localItem && localItem.unit_price !== mciItem.unit_price) {
+            // Update price if it changed
+            await updateMutation.mutateAsync({
+              id: localItem.id,
+              data: {
+                ...localItem,
+                unit_price: mciItem.unit_price
+              }
+            });
+            updatedCount++;
+          }
+        }
+
+        toast.success(language === 'es'
+          ? `Sincronización completa: ${updatedCount} precios actualizados`
+          : `Sync complete: ${updatedCount} prices updated`);
+      }
+    } catch (error) {
+      toast.error(language === 'es'
+        ? `Error al sincronizar: ${error.message}`
+        : `Sync error: ${error.message}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -583,6 +627,17 @@ export default function Items() {
             icon={Package}
             actions={
               <div className="flex gap-2">
+                <Button
+                  onClick={syncPricesFromMCIConnect}
+                  disabled={isSyncing}
+                  variant="outline"
+                  className="bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                >
+                  <RefreshCw className={`w-5 h-5 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing 
+                    ? (language === 'es' ? 'Sincronizando...' : 'Syncing...') 
+                    : (language === 'es' ? 'Sincronizar MCI Connect' : 'Sync MCI Connect')}
+                </Button>
                 <Button
                   onClick={exportPriceList}
                   variant="outline"
