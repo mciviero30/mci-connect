@@ -21,11 +21,13 @@ Deno.serve(async (req) => {
         const hasBalance = invoice.balance > 0;
         const isPaid = invoice.status === 'paid';
 
-        // Dark Header Banner
+        // ==========================================
+        // HEADER BANNER (BLACK) - IDENTICAL TO PRICE LIST
+        // ==========================================
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 30, 'F');
 
-        // Logo in header
+        // Logo
         try {
             const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
             const logoResponse = await fetch(logoUrl);
@@ -33,31 +35,34 @@ Deno.serve(async (req) => {
             const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(await logoBlob.arrayBuffer())));
             doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 7, 70, 16);
         } catch (err) {
-            console.log('Could not load logo:', err);
+            console.log('Logo load error:', err);
         }
 
-        // INVOICE title and balance/paid status in header
+        // INVOICE title and status (white, right-aligned)
         doc.setFontSize(36);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(255, 255, 255);
         doc.text('INVOICE', 195, 15, { align: 'right' });
 
         if (hasBalance) {
-            doc.setFontSize(10);
-            doc.text('BALANCE DUE', 195, 22, { align: 'right' });
-            doc.setFontSize(16);
+            doc.setFontSize(9);
+            doc.text('BALANCE DUE', 195, 21, { align: 'right' });
+            doc.setFontSize(15);
             doc.text('$' + invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 195, 27, { align: 'right' });
         }
 
         if (isPaid) {
-            doc.setFontSize(14);
+            doc.setFontSize(13);
             doc.setTextColor(52, 211, 153);
-            doc.text('✓ PAID', 195, 25, { align: 'right' });
+            doc.text('✓ PAID', 195, 24, { align: 'right' });
         }
 
+        // Reset color
         doc.setTextColor(0, 0, 0);
 
-        // Company info
+        // ==========================================
+        // COMPANY INFO (BELOW HEADER) - ULTRA COMPACT
+        // ==========================================
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.text('Modern Components Installation', 15, 38);
@@ -69,72 +74,83 @@ Deno.serve(async (req) => {
         doc.text('U.S.A', 15, 51);
         doc.text('Phone: 470-209-3783', 15, 56);
 
-        // Bill To
+        // ==========================================
+        // BILL TO & INVOICE INFO - SIDE BY SIDE, COMPACT
+        // ==========================================
+        // Bill To (left)
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
         doc.text(invoice.customer_name, 15, 65);
 
-        // Invoice info (right aligned)
+        // Invoice info (right) - ULTRA COMPACT
         doc.setFontSize(8);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 116, 139);
+        
         let infoY = 65;
-
         doc.text('Invoice#', 155, infoY);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
         doc.text(invoice.invoice_number, 195, infoY, { align: 'right' });
+        infoY += 4;
+
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 116, 139);
-        infoY += 5;
-
+        doc.text('Invoice Date', 155, infoY);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(15, 23, 42);
         if (invoice.invoice_date) {
-            doc.text('Invoice Date', 155, infoY);
-            doc.setFont(undefined, 'bold');
-            doc.setTextColor(15, 23, 42);
             const invDate = new Date(invoice.invoice_date);
             doc.text(`${String(invDate.getMonth() + 1).padStart(2, '0')}.${String(invDate.getDate()).padStart(2, '0')}.${String(invDate.getFullYear()).slice(-2)}`, 195, infoY, { align: 'right' });
-            doc.setFont(undefined, 'normal');
-            doc.setTextColor(100, 116, 139);
-            infoY += 5;
         }
+        infoY += 4;
 
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 116, 139);
+        doc.text('Due Date', 155, infoY);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(15, 23, 42);
         if (invoice.due_date) {
-            doc.text('Due Date', 155, infoY);
-            doc.setFont(undefined, 'bold');
-            doc.setTextColor(15, 23, 42);
             const dueDate = new Date(invoice.due_date);
             doc.text(`${String(dueDate.getMonth() + 1).padStart(2, '0')}.${String(dueDate.getDate()).padStart(2, '0')}.${String(dueDate.getFullYear()).slice(-2)}`, 195, infoY, { align: 'right' });
         }
 
-        // Job Details
-        let currentY = 82;
+        // ==========================================
+        // JOB DETAILS - SINGLE LINE ONLY
+        // ==========================================
+        let currentY = 80;
         if (invoice.job_name) {
             doc.setFontSize(8);
             doc.setTextColor(100, 116, 139);
-            doc.setFont(undefined, 'normal');
             doc.text('Job Details :', 15, currentY);
             
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
-            doc.text(invoice.job_name, 15, currentY + 5);
+            // Truncate job name to fit in one line
+            const truncatedJobName = invoice.job_name.length > 50 ? invoice.job_name.substring(0, 47) + '...' : invoice.job_name;
+            doc.text(truncatedJobName, 15, currentY + 4);
             
+            // Address in same line if exists
             if (invoice.job_address) {
-                doc.setFontSize(8);
+                doc.setFontSize(7);
                 doc.setFont(undefined, 'normal');
-                doc.setTextColor(71, 85, 105);
-                const addressLines = doc.splitTextToSize(invoice.job_address, 180);
-                doc.text(addressLines, 15, currentY + 10);
-                currentY += 10 + (addressLines.length * 4);
+                doc.setTextColor(100, 116, 139);
+                const truncatedAddress = invoice.job_address.length > 80 ? invoice.job_address.substring(0, 77) + '...' : invoice.job_address;
+                doc.text(truncatedAddress, 15, currentY + 8);
+                currentY += 13;
             } else {
-                currentY += 10;
+                currentY += 8;
             }
         }
 
-        // Items table header
-        currentY = Math.max(currentY + 5, 105);
+        // ==========================================
+        // ITEMS TABLE - IDENTICAL TO PRICE LIST FORMAT
+        // ==========================================
+        currentY = Math.max(currentY, 95);
+        
+        // Table header (dark background)
         doc.setFillColor(51, 65, 85);
         doc.rect(15, currentY, 180, 8, 'F');
 
@@ -146,14 +162,14 @@ Deno.serve(async (req) => {
         doc.text('AMOUNT', 195, currentY + 5, { align: 'right' });
 
         doc.setTextColor(0, 0, 0);
-        currentY += 12;
+        currentY += 10;
 
-        // Items - USANDO MISMO FORMATO QUE PRICE LIST (UNA LÍNEA POR ITEM)
+        // Items - ONE LINE PER ITEM (PRICE LIST FORMAT)
         doc.setFontSize(8);
         let itemIndex = 1;
 
         for (const item of invoice.items || []) {
-            // Check if we need a new page
+            // New page check
             if (currentY > 270) {
                 doc.addPage();
                 currentY = 20;
@@ -176,33 +192,26 @@ Deno.serve(async (req) => {
                 doc.rect(15, currentY - 4, 180, 7, 'F');
             }
 
-            // Item number
+            // Row number
             doc.setFont(undefined, 'normal');
             doc.setTextColor(71, 85, 105);
             doc.text(itemIndex.toString(), 18, currentY);
 
-            // Item name (TRUNCADO A UNA LÍNEA como Price List)
-            const maxNameWidth = 155;
-            let displayName = '';
+            // Item name - TRUNCATE TO SINGLE LINE
+            const maxWidth = 155;
+            let itemName = item.item_name || item.description || '';
             
-            if (item.item_name) {
-                displayName = item.item_name;
-            } else if (item.description) {
-                displayName = item.description;
+            // Measure and truncate
+            while (doc.getTextWidth(itemName) > maxWidth && itemName.length > 3) {
+                itemName = itemName.substring(0, itemName.length - 4) + '...';
             }
-
-            // Truncate if too long
-            const nameLines = doc.splitTextToSize(displayName, maxNameWidth);
-            const truncatedName = nameLines.length > 1 
-                ? displayName.substring(0, 80) + '...'
-                : displayName;
 
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
-            doc.text(truncatedName, 30, currentY);
+            doc.text(itemName, 30, currentY);
 
             // Amount
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
             doc.text('$' + (item.total || 0).toFixed(2), 195, currentY, { align: 'right' });
@@ -216,40 +225,46 @@ Deno.serve(async (req) => {
             itemIndex++;
         }
 
-        // Notes
+        // ==========================================
+        // NOTES - ULTRA COMPACT (MAX 3 LINES)
+        // ==========================================
         if (invoice.notes) {
-            currentY += 5;
-            if (currentY > 220) {
+            currentY += 3;
+            if (currentY > 235) {
                 doc.addPage();
                 currentY = 20;
             }
             
-            doc.setFontSize(9);
+            doc.setFontSize(8);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
             doc.text('Notes', 15, currentY);
-            currentY += 4;
+            currentY += 3;
             
             doc.setFillColor(248, 250, 252);
-            const notesLines = doc.splitTextToSize(invoice.notes, 175);
-            const notesHeight = notesLines.length * 4 + 6;
-            doc.roundedRect(15, currentY - 2, 180, notesHeight, 2, 2, 'F');
-            
-            doc.setFontSize(8);
+            doc.setFontSize(7);
             doc.setFont(undefined, 'normal');
             doc.setTextColor(71, 85, 105);
-            doc.text(notesLines, 18, currentY + 2);
-            currentY += notesHeight + 5;
+            
+            // Limit notes to 3 lines
+            const notesLines = doc.splitTextToSize(invoice.notes, 175);
+            const limitedNotes = notesLines.slice(0, 3);
+            const notesHeight = limitedNotes.length * 3 + 4;
+            doc.roundedRect(15, currentY - 1, 180, notesHeight, 1.5, 1.5, 'F');
+            doc.text(limitedNotes, 18, currentY + 2);
+            currentY += notesHeight + 3;
         }
 
-        // Totals
-        if (currentY > 200) {
+        // ==========================================
+        // TOTALS - COMPACT FORMAT
+        // ==========================================
+        if (currentY > 215) {
             doc.addPage();
             currentY = 20;
         }
 
-        const totalsX = 140;
-        doc.setFontSize(9);
+        const totalsX = 145;
+        doc.setFontSize(8);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(71, 85, 105);
         
@@ -257,7 +272,7 @@ Deno.serve(async (req) => {
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
         doc.text(invoice.subtotal.toFixed(2), 195, currentY, { align: 'right' });
-        currentY += 6;
+        currentY += 5;
 
         if (invoice.tax_amount > 0) {
             doc.setFont(undefined, 'normal');
@@ -266,71 +281,73 @@ Deno.serve(async (req) => {
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
             doc.text(invoice.tax_amount.toFixed(2), 195, currentY, { align: 'right' });
-            currentY += 8;
+            currentY += 7;
         } else {
-            currentY += 3;
+            currentY += 2;
         }
 
         // Total box
         doc.setFillColor(241, 245, 249);
-        doc.roundedRect(totalsX - 5, currentY - 4, 60, 10, 2, 2, 'F');
+        doc.roundedRect(totalsX - 3, currentY - 3, 53, 9, 1.5, 1.5, 'F');
         
-        doc.setFontSize(11);
+        doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
         doc.text('Total', totalsX, currentY + 2);
         
-        doc.setFontSize(14);
+        doc.setFontSize(13);
         doc.text('$' + invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 195, currentY + 2, { align: 'right' });
-        currentY += 12;
+        currentY += 11;
 
         // Amount Paid
         if (invoice.amount_paid > 0) {
             doc.setFillColor(236, 253, 245);
             doc.setDrawColor(167, 243, 208);
-            doc.setLineWidth(0.3);
-            doc.roundedRect(totalsX - 5, currentY - 4, 60, 10, 2, 2, 'FD');
+            doc.setLineWidth(0.2);
+            doc.roundedRect(totalsX - 3, currentY - 3, 53, 9, 1.5, 1.5, 'FD');
             
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(5, 150, 105);
             doc.text('Amount Paid', totalsX, currentY + 2);
             
-            doc.setFontSize(11);
+            doc.setFontSize(10);
             doc.text('-$' + invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 195, currentY + 2, { align: 'right' });
-            currentY += 12;
+            currentY += 11;
         }
 
         // Balance Due
         if (hasBalance) {
             doc.setFillColor(15, 23, 42);
-            doc.roundedRect(totalsX - 5, currentY - 4, 60, 10, 2, 2, 'F');
+            doc.roundedRect(totalsX - 3, currentY - 3, 53, 9, 1.5, 1.5, 'F');
             
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(255, 255, 255);
             doc.text('Balance Due', totalsX, currentY + 2);
             
-            doc.setFontSize(14);
+            doc.setFontSize(13);
             doc.text('$' + invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 195, currentY + 2, { align: 'right' });
-            currentY += 15;
+            currentY += 13;
         } else {
-            currentY += 10;
+            currentY += 8;
         }
 
-        // Terms & Conditions at bottom
-        if (currentY > 230) {
+        // ==========================================
+        // TERMS - ULTRA COMPACT (MAX 3 LINES EACH)
+        // ==========================================
+        if (currentY > 245) {
             doc.addPage();
             currentY = 20;
         }
 
-        doc.setFontSize(9);
+        doc.setFontSize(8);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
         doc.text('Terms & Conditions', 15, currentY);
-        currentY += 5;
+        currentY += 4;
 
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(71, 85, 105);
 
@@ -347,12 +364,16 @@ Deno.serve(async (req) => {
             doc.text(term.label, 15, currentY);
             
             doc.setFont(undefined, 'normal');
+            // Limit each term to max 2 lines
             const textLines = doc.splitTextToSize(term.text, 180 - labelWidth - 2);
-            doc.text(textLines, 15 + labelWidth + 2, currentY);
-            currentY += Math.max(4, textLines.length * 4) + 1.5;
+            const limitedLines = textLines.slice(0, 2);
+            doc.text(limitedLines, 15 + labelWidth + 2, currentY);
+            currentY += Math.max(3, limitedLines.length * 3) + 1;
         }
 
-        // Footer on all pages
+        // ==========================================
+        // FOOTER ON ALL PAGES
+        // ==========================================
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
