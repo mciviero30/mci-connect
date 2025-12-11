@@ -42,11 +42,10 @@ Deno.serve(async (req) => {
         doc.setTextColor(255, 255, 255);
         doc.text('QUOTE', 195, 20, { align: 'right' });
 
-        // Reset color
         doc.setTextColor(0, 0, 0);
 
         // ==========================================
-        // COMPANY INFO (BELOW HEADER) - ULTRA COMPACT
+        // COMPANY INFO (BELOW HEADER)
         // ==========================================
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
@@ -60,9 +59,8 @@ Deno.serve(async (req) => {
         doc.text('Phone: 470-209-3783', 15, 56);
 
         // ==========================================
-        // BILL TO & DATES - SIDE BY SIDE, COMPACT
+        // BILL TO & DATES
         // ==========================================
-        // Bill To (left)
         doc.setFontSize(8);
         doc.setTextColor(100, 116, 139);
         doc.text('Bill To', 15, 65);
@@ -71,7 +69,7 @@ Deno.serve(async (req) => {
         doc.setTextColor(15, 23, 42);
         doc.text(quote.customer_name, 15, 72);
 
-        // Dates (right) - ULTRA COMPACT
+        // Dates (right)
         doc.setFontSize(8);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 116, 139);
@@ -119,16 +117,18 @@ Deno.serve(async (req) => {
             doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
-            // Truncate job name to fit in one line
-            const truncatedJobName = quote.job_name.length > 50 ? quote.job_name.substring(0, 47) + '...' : quote.job_name;
+            
+            // Clean and truncate job name
+            const cleanJobName = (quote.job_name || '').replace(/\n/g, ' ');
+            const truncatedJobName = cleanJobName.length > 50 ? cleanJobName.substring(0, 47) + '...' : cleanJobName;
             doc.text(truncatedJobName, 15, currentY + 4);
             
-            // Address in same line if exists
             if (quote.job_address) {
                 doc.setFontSize(7);
                 doc.setFont(undefined, 'normal');
                 doc.setTextColor(100, 116, 139);
-                const truncatedAddress = quote.job_address.length > 80 ? quote.job_address.substring(0, 77) + '...' : quote.job_address;
+                const cleanAddress = (quote.job_address || '').replace(/\n/g, ' ');
+                const truncatedAddress = cleanAddress.length > 80 ? cleanAddress.substring(0, 77) + '...' : cleanAddress;
                 doc.text(truncatedAddress, 15, currentY + 8);
                 currentY += 13;
             } else {
@@ -137,11 +137,11 @@ Deno.serve(async (req) => {
         }
 
         // ==========================================
-        // ITEMS TABLE - IDENTICAL TO PRICE LIST FORMAT
+        // ITEMS TABLE - ONE LINE PER ITEM (STRICT)
         // ==========================================
         currentY = Math.max(currentY, 95);
         
-        // Table header (dark background)
+        // Table header
         doc.setFillColor(51, 65, 85);
         doc.rect(15, currentY, 180, 8, 'F');
 
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
         doc.setTextColor(0, 0, 0);
         currentY += 10;
 
-        // Items - ONE LINE PER ITEM (PRICE LIST FORMAT)
+        // Items - STRICT ONE LINE TRUNCATION
         doc.setFontSize(8);
         let itemIndex = 1;
 
@@ -192,17 +192,28 @@ Deno.serve(async (req) => {
             doc.setTextColor(71, 85, 105);
             doc.text(itemIndex.toString(), 18, currentY);
 
-            // Item name - TRUNCATE TO SINGLE LINE
-            const maxWidth = 115;
-            let itemName = item.item_name || item.description || '';
+            // CRITICAL: Clean and truncate item name to SINGLE LINE
+            let rawName = item.item_name || item.description || '';
+            // Remove ALL newlines and extra spaces
+            rawName = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
             
-            // Measure and truncate
-            while (doc.getTextWidth(itemName) > maxWidth && itemName.length > 3) {
-                itemName = itemName.substring(0, itemName.length - 4) + '...';
-            }
-
+            // Set font for measurement
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
+            
+            // Truncate based on actual text width (max 115 units)
+            let itemName = rawName;
+            const maxWidth = 115;
+            
+            while (doc.getTextWidth(itemName) > maxWidth && itemName.length > 3) {
+                itemName = itemName.substring(0, itemName.length - 1);
+            }
+            
+            // Add ellipsis if truncated
+            if (itemName.length < rawName.length) {
+                itemName = itemName.substring(0, itemName.length - 3) + '...';
+            }
+
             doc.text(itemName, 30, currentY);
 
             // Qty, Rate, Amount
@@ -222,11 +233,11 @@ Deno.serve(async (req) => {
         }
 
         // ==========================================
-        // NOTES - ULTRA COMPACT (MAX 3 LINES)
+        // NOTES - MAX 2 LINES
         // ==========================================
         if (quote.notes) {
             currentY += 3;
-            if (currentY > 240) {
+            if (currentY > 245) {
                 doc.addPage();
                 currentY = 20;
             }
@@ -240,17 +251,18 @@ Deno.serve(async (req) => {
             doc.setFont(undefined, 'normal');
             doc.setTextColor(71, 85, 105);
             
-            // Limit notes to 3 lines maximum
-            const notesLines = doc.splitTextToSize(quote.notes, 180);
-            const limitedNotes = notesLines.slice(0, 3);
+            // Clean notes and limit to 2 lines
+            const cleanNotes = quote.notes.replace(/\n/g, ' ').trim();
+            const notesLines = doc.splitTextToSize(cleanNotes, 180);
+            const limitedNotes = notesLines.slice(0, 2);
             doc.text(limitedNotes, 15, currentY + 4);
             currentY += 4 + (limitedNotes.length * 3) + 3;
         }
 
         // ==========================================
-        // TOTALS - COMPACT FORMAT
+        // TOTALS
         // ==========================================
-        if (currentY > 230) {
+        if (currentY > 235) {
             doc.addPage();
             currentY = 20;
         }
@@ -293,7 +305,7 @@ Deno.serve(async (req) => {
         currentY += 12;
 
         // ==========================================
-        // TERMS - ULTRA COMPACT (MAX 3 LINES EACH)
+        // TERMS - COMPACT
         // ==========================================
         if (currentY > 250) {
             doc.addPage();
@@ -322,7 +334,6 @@ Deno.serve(async (req) => {
             doc.text(term.label, 15, currentY);
             
             doc.setFont(undefined, 'normal');
-            // Limit each term to max 2 lines
             const textLines = doc.splitTextToSize(term.text, 180 - labelWidth - 2);
             const limitedLines = textLines.slice(0, 2);
             doc.text(limitedLines, 15 + labelWidth + 2, currentY);
@@ -330,7 +341,7 @@ Deno.serve(async (req) => {
         }
 
         // ==========================================
-        // FOOTER ON ALL PAGES
+        // FOOTER
         // ==========================================
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
