@@ -102,28 +102,15 @@ export default function InvoiceDocument({ invoice }) {
                     <tbody className="bg-white">
                         {invoice.items.map((item, index) => (
                             <tr key={index} className="border-b border-slate-200 page-break-inside-avoid">
-                                <td className="px-4 py-4 align-top">
+                                <td className="px-4 py-2 align-middle">
                                     <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                                 </td>
-                                <td className="px-4 py-4 align-top">
-                                   {item.item_name ? (
-                                       <>
-                                           <p className="font-semibold text-sm text-slate-900 mb-1 leading-relaxed">{item.item_name}</p>
-                                           {item.description && (
-                                               <p className="text-sm text-slate-600 leading-relaxed">{item.description}</p>
-                                           )}
-                                       </>
-                                   ) : (
-                                       <p className="text-sm text-slate-900 leading-relaxed">{item.description}</p>
-                                   )}
-                                   {item.quantity && item.unit_price && (
-                                       <p className="text-xs text-slate-500 mt-1">
-                                           {item.quantity.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
-                                           {item.unit && ` ${item.unit}`} × {item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                       </p>
-                                   )}
+                                <td className="px-4 py-2 align-middle">
+                                   <p className="font-semibold text-sm text-slate-900 truncate">
+                                       {(item.item_name || item.description || '').replace(/\n/g, ' ').trim()}
+                                   </p>
                                 </td>
-                                <td className="px-4 py-4 align-top text-right text-base font-semibold text-slate-900">
+                                <td className="px-4 py-2 align-middle text-right text-base font-semibold text-slate-900">
                                     ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
