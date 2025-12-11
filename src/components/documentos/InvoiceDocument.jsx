@@ -19,34 +19,34 @@ export default function InvoiceDocument({ invoice }) {
                 }
             `}</style>
 
-            {/* Header Section */}
-            <div className="flex justify-between items-start mb-8">
-                {/* LEFT: Logo and Company Info */}
-                <div className="w-1/2">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
-                        alt="Modern Components Installation"
-                        className="h-14 mb-3 object-contain"
-                    />
-                    <div className="text-sm leading-relaxed">
-                        <p className="font-bold mb-0">Modern Components Installation</p>
-                        <p className="mb-0">2414 Meadow Isle Ln</p>
-                        <p className="mb-0">Lawrenceville Georgia 30043</p>
-                        <p className="mb-0">U.S.A</p>
-                    </div>
-                </div>
-
-                {/* RIGHT: INVOICE Title, Number and Balance Due */}
-                <div className="text-right w-1/2">
-                    <h1 className="text-6xl font-bold text-slate-900 mb-1" style={{letterSpacing: '0.05em'}}>INVOICE</h1>
+            {/* Dark Header Banner */}
+            <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+                <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    alt="Modern Components Installation"
+                    className="h-10 object-contain"
+                />
+                <div className="text-right">
+                    <h1 className="text-5xl font-bold tracking-wider">INVOICE</h1>
                     {hasBalance && (
-                        <p className="text-base font-bold text-slate-900 mb-1">
+                        <p className="text-base font-bold mt-1">
                             BALANCE DUE <span className="text-2xl ml-2">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </p>
                     )}
                     {isPaid && (
-                        <p className="text-xl font-bold text-emerald-600">✓ PAID</p>
+                        <p className="text-xl font-bold text-emerald-400 mt-1">✓ PAID</p>
                     )}
+                </div>
+            </div>
+
+            {/* Company Info */}
+            <div className="mb-6">
+                <div className="text-sm leading-relaxed">
+                    <p className="font-bold mb-0">Modern Components Installation</p>
+                    <p className="mb-0">2414 Meadow Isle Ln</p>
+                    <p className="mb-0">Lawrenceville Georgia 30043</p>
+                    <p className="mb-0">U.S.A</p>
+                    <p className="mb-0">Phone: 470-209-3783</p>
                 </div>
             </div>
 
@@ -141,6 +141,7 @@ export default function InvoiceDocument({ invoice }) {
             {/* Notes Section */}
             {invoice.notes && (
                 <div className="mb-8 page-break-inside-avoid">
+                    <h3 className="text-sm font-bold text-slate-900 mb-2">Notes</h3>
                     <div className="bg-slate-50 p-5 rounded">
                         <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.notes}</p>
                     </div>
