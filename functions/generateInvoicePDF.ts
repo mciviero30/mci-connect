@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
         doc.setTextColor(0, 0, 0);
         currentY += 10;
 
-        // Items - STRICT ONE LINE TRUNCATION
+        // Items - STRICT ONE LINE ONLY (NO DETAILS BELOW)
         doc.setFontSize(8);
         let itemIndex = 1;
 
@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
             // Alternating row background
             if (itemIndex % 2 === 0) {
                 doc.setFillColor(248, 250, 252);
-                doc.rect(15, currentY - 4, 180, 7, 'F');
+                doc.rect(15, currentY - 3, 180, 5, 'F');
             }
 
             // Row number
@@ -197,16 +197,15 @@ Deno.serve(async (req) => {
             doc.setTextColor(71, 85, 105);
             doc.text(itemIndex.toString(), 18, currentY);
 
-            // CRITICAL: Clean and truncate item name to SINGLE LINE
+            // CRITICAL: ONLY show truncated item name - NO DETAILS BELOW
             let rawName = item.item_name || item.description || '';
-            // Remove ALL newlines and extra spaces
             rawName = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
             
-            // Set font for measurement
+            doc.setFontSize(8);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
             
-            // Truncate based on actual text width (max 155 units)
+            // Truncate to max 155 width
             let itemName = rawName;
             const maxWidth = 155;
             
@@ -214,25 +213,21 @@ Deno.serve(async (req) => {
                 itemName = itemName.substring(0, itemName.length - 1);
             }
             
-            // Add ellipsis if truncated
             if (itemName.length < rawName.length) {
                 itemName = itemName.substring(0, itemName.length - 3) + '...';
             }
 
             doc.text(itemName, 30, currentY);
 
-            // Amount
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'bold');
-            doc.setTextColor(15, 23, 42);
-            doc.text('$' + (item.total || 0).toFixed(2), 195, currentY, { align: 'right' });
+            // Amount (same line)
+            doc.text('$' + (item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 195, currentY, { align: 'right' });
 
-            // Separator
+            // Thin separator
             doc.setDrawColor(226, 232, 240);
             doc.setLineWidth(0.1);
-            doc.line(15, currentY + 2, 195, currentY + 2);
+            doc.line(15, currentY + 1.5, 195, currentY + 1.5);
 
-            currentY += 7;
+            currentY += 5;
             itemIndex++;
         }
 
