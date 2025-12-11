@@ -151,8 +151,8 @@ Deno.serve(async (req) => {
         doc.text('#', 18, currentY + 5);
         doc.text('ITEM & DESCRIPTION', 30, currentY + 5);
         doc.text('QTY', 155, currentY + 5, { align: 'right' });
-        doc.text('RATE', 172, currentY + 5, { align: 'right' });
-        doc.text('AMOUNT', 195, currentY + 5, { align: 'right' });
+        doc.text('RATE', 175, currentY + 5, { align: 'right' });
+        doc.text('AMOUNT', 190, currentY + 5, { align: 'right' });
 
         doc.setTextColor(0, 0, 0);
         currentY += 10;
@@ -174,8 +174,8 @@ Deno.serve(async (req) => {
                 doc.setTextColor(255, 255, 255);
                 doc.text('#', 18, currentY);
                 doc.text('ITEM & DESCRIPTION', 30, currentY);
-                doc.text('QTY', 152, currentY, { align: 'right' });
-                doc.text('RATE', 172, currentY, { align: 'right' });
+                doc.text('QTY', 155, currentY, { align: 'right' });
+                doc.text('RATE', 175, currentY, { align: 'right' });
                 doc.text('AMOUNT', 190, currentY, { align: 'right' });
                 doc.setTextColor(0, 0, 0);
                 currentY += 8;
@@ -212,10 +212,13 @@ Deno.serve(async (req) => {
 
             doc.text(itemName, 30, currentY);
 
-            // Qty, Rate, Amount
-            doc.text((item.quantity || 0).toFixed(2), 152, currentY, { align: 'right' });
-            doc.text((item.unit_price || 0).toFixed(2), 172, currentY, { align: 'right' });
-            doc.text((item.total || 0).toFixed(2), 190, currentY, { align: 'right' });
+            // Qty with unit
+            const qtyText = (item.quantity || 0).toFixed(2) + (item.unit ? ' ' + item.unit : '');
+            doc.text(qtyText, 155, currentY, { align: 'right' });
+            
+            // Rate and Amount with $
+            doc.text('$' + (item.unit_price || 0).toFixed(2), 175, currentY, { align: 'right' });
+            doc.text('$' + (item.total || 0).toFixed(2), 190, currentY, { align: 'right' });
 
             // Separator
             doc.setDrawColor(226, 232, 240);
