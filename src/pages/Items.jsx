@@ -205,122 +205,162 @@ export default function Items() {
   }, [formData.category, formData.material_cost, formData.installation_time, STANDARD_LABOR_RATE, isLaborOrService]);
 
   // ============================================
-  // EXPORT PRICE LIST TO PDF
+  // EXPORT PRICE LIST TO PDF (Professional Layout)
   // ============================================
   const exportPriceList = async () => {
     try {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
 
-      // Add logo if available
-      if (companySettings?.company_logo_url) {
-        try {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.src = companySettings.company_logo_url;
-          await new Promise((resolve) => {
-            img.onload = () => {
-              doc.addImage(img, 'PNG', 15, 10, 25, 25);
-              resolve();
-            };
-            img.onerror = resolve;
-          });
-        } catch (err) {
-          console.log('Could not load logo:', err);
-        }
+      // Load and add logo
+      try {
+        const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = logoUrl;
+        await new Promise((resolve) => {
+          img.onload = () => {
+            doc.addImage(img, 'PNG', 15, 15, 30, 12);
+            resolve();
+          };
+          img.onerror = resolve;
+        });
+      } catch (err) {
+        console.log('Could not load logo:', err);
       }
 
-      // Company header
-      doc.setFontSize(18);
-      doc.setFont(undefined, 'bold');
-      doc.text('Modern Components Installations', 45, 20);
-      
+      // Company info (left side header)
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
-      if (companySettings?.phone) {
-        doc.text(`Phone: ${companySettings.phone}`, 45, 27);
-      }
-      if (companySettings?.email) {
-        doc.text(`Email: ${companySettings.email}`, 45, 32);
-      }
-      if (companySettings?.website) {
-        doc.text(`Web: ${companySettings.website}`, 45, 37);
-      }
-
-      // Title and date
-      doc.setFontSize(16);
       doc.setFont(undefined, 'bold');
-      doc.text('PRICE LIST', 105, 55, { align: 'center' });
+      doc.text('Modern Components Installation', 15, 35);
       
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'normal');
+      doc.text('2414 Meadow Isle Ln', 15, 40);
+      doc.text('Lawrenceville Georgia 30043', 15, 44);
+      doc.text('U.S.A', 15, 48);
+      doc.text('Phone: 470-209-3783', 15, 53);
+
+      // PRICE LIST title (right side)
+      doc.setFontSize(32);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(30, 41, 59); // slate-900
+      doc.text('PRICE LIST', 195, 30, { align: 'right' });
+
+      // Generated date
       doc.setFontSize(9);
       doc.setFont(undefined, 'normal');
-      doc.text(`Generated: ${format(new Date(), 'MMMM dd, yyyy')}`, 105, 62, { align: 'center' });
+      doc.setTextColor(100, 116, 139); // slate-500
+      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 38, { align: 'right' });
+
+      // Reset text color
+      doc.setTextColor(0, 0, 0);
 
       // Separator line
-      doc.setLineWidth(0.5);
-      doc.line(15, 68, 195, 68);
+      doc.setLineWidth(0.3);
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.line(15, 60, 195, 60);
 
-      // Table headers
-      doc.setFontSize(10);
+      // Table header (dark background)
+      doc.setFillColor(51, 65, 85); // slate-700
+      doc.rect(15, 65, 180, 8, 'F');
+
+      doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
-      const startY = 75;
-      doc.text('Item Name', 15, startY);
-      doc.text('Category', 85, startY);
-      doc.text('Sale Price', 125, startY);
-      doc.text('Supplier', 155, startY);
-      doc.text('Status', 185, startY);
+      doc.setTextColor(255, 255, 255); // white text
+      doc.text('#', 18, 70);
+      doc.text('ITEM NAME', 30, 70);
+      doc.text('CATEGORY', 100, 70);
+      doc.text('SALE PRICE', 155, 70, { align: 'right' });
+      doc.text('SUPPLIER', 180, 70);
+
+      // Reset text color for content
+      doc.setTextColor(0, 0, 0);
 
       // Table content
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      let y = startY + 7;
+      let y = 78;
+      let rowIndex = 1;
 
       for (const item of filteredItems) {
+        // Check if we need a new page
         if (y > 270) {
           doc.addPage();
           y = 20;
           
-          // Repeat headers on new page
+          // Repeat table header on new page
+          doc.setFillColor(51, 65, 85);
+          doc.rect(15, y - 5, 180, 8, 'F');
           doc.setFont(undefined, 'bold');
-          doc.text('Item Name', 15, y);
-          doc.text('Category', 85, y);
-          doc.text('Sale Price', 125, y);
-          doc.text('Supplier', 155, y);
-          doc.text('Status', 185, y);
+          doc.setTextColor(255, 255, 255);
+          doc.text('#', 18, y);
+          doc.text('ITEM NAME', 30, y);
+          doc.text('CATEGORY', 100, y);
+          doc.text('SALE PRICE', 155, y, { align: 'right' });
+          doc.text('SUPPLIER', 180, y);
+          doc.setTextColor(0, 0, 0);
           doc.setFont(undefined, 'normal');
-          y += 7;
+          y += 8;
+          rowIndex = 1;
+        }
+
+        // Alternating row background
+        if (rowIndex % 2 === 0) {
+          doc.setFillColor(248, 250, 252); // slate-50
+          doc.rect(15, y - 4, 180, 7, 'F');
         }
 
         const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
         const salePrice = `$${(item.unit_price || 0).toFixed(2)}`;
-        const status = item.status || 'active';
 
-        // Truncate long names
-        const itemName = (item.name || '').length > 35 
-          ? (item.name || '').substring(0, 32) + '...' 
+        // Truncate long text
+        const itemName = (item.name || '').length > 40 
+          ? (item.name || '').substring(0, 37) + '...' 
           : (item.name || '');
 
-        const supplier = (item.supplier || '').length > 18
-          ? (item.supplier || '').substring(0, 15) + '...'
+        const supplier = (item.supplier || '').length > 12
+          ? (item.supplier || '').substring(0, 9) + '...'
           : (item.supplier || '');
 
-        doc.text(itemName, 15, y);
-        doc.text(categoryLabel, 85, y);
-        doc.text(salePrice, 125, y);
-        doc.text(supplier, 155, y);
-        doc.text(status, 185, y);
+        // Row content
+        doc.setTextColor(71, 85, 105); // slate-600
+        doc.text(rowIndex.toString(), 18, y);
+        
+        doc.setTextColor(15, 23, 42); // slate-900
+        doc.setFont(undefined, 'bold');
+        doc.text(itemName, 30, y);
+        
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(71, 85, 105);
+        doc.text(categoryLabel, 100, y);
+        
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text(salePrice, 155, y, { align: 'right' });
+        
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 116, 139);
+        doc.text(supplier, 180, y);
 
-        y += 6;
+        // Draw separator line
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.1);
+        doc.line(15, y + 2, 195, y + 2);
+
+        y += 7;
+        rowIndex++;
       }
 
-      // Footer
+      // Footer on all pages
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(128);
+        doc.setFontSize(7);
+        doc.setTextColor(148, 163, 184); // slate-400
         doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
-        doc.text('Modern Components Installations - Price List', 15, 290);
+        doc.text('Modern Components Installation', 15, 290);
+        doc.text('470-209-3783', 195, 290, { align: 'right' });
       }
 
       // Save PDF
@@ -330,6 +370,7 @@ export default function Items() {
         ? `Lista de precios exportada: ${filteredItems.length} items`
         : `Price list exported: ${filteredItems.length} items`);
     } catch (error) {
+      console.error('PDF Export Error:', error);
       toast.error(language === 'es'
         ? 'Error al exportar lista de precios'
         : 'Failed to export price list');
