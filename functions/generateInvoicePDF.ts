@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
         if (isPaid) {
             doc.setFontSize(14);
-            doc.setTextColor(52, 211, 153); // emerald
+            doc.setTextColor(52, 211, 153);
             doc.text('✓ PAID', 195, 25, { align: 'right' });
         }
 
@@ -148,83 +148,71 @@ Deno.serve(async (req) => {
         doc.setTextColor(0, 0, 0);
         currentY += 12;
 
-        // Items
+        // Items - USANDO MISMO FORMATO QUE PRICE LIST (UNA LÍNEA POR ITEM)
         doc.setFontSize(8);
         let itemIndex = 1;
 
         for (const item of invoice.items || []) {
-            if (currentY > 250) {
+            // Check if we need a new page
+            if (currentY > 270) {
                 doc.addPage();
                 currentY = 20;
                 
                 // Repeat header
                 doc.setFillColor(51, 65, 85);
-                doc.rect(15, currentY, 180, 8, 'F');
+                doc.rect(15, currentY - 5, 180, 8, 'F');
                 doc.setFont(undefined, 'bold');
                 doc.setTextColor(255, 255, 255);
-                doc.text('#', 18, currentY + 5);
-                doc.text('ITEM & DESCRIPTION', 30, currentY + 5);
-                doc.text('AMOUNT', 195, currentY + 5, { align: 'right' });
+                doc.text('#', 18, currentY);
+                doc.text('ITEM & DESCRIPTION', 30, currentY);
+                doc.text('AMOUNT', 195, currentY, { align: 'right' });
                 doc.setTextColor(0, 0, 0);
-                currentY += 12;
+                currentY += 8;
             }
 
-            const itemStartY = currentY;
+            // Alternating row background
+            if (itemIndex % 2 === 0) {
+                doc.setFillColor(248, 250, 252);
+                doc.rect(15, currentY - 4, 180, 7, 'F');
+            }
 
             // Item number
             doc.setFont(undefined, 'normal');
             doc.setTextColor(71, 85, 105);
             doc.text(itemIndex.toString(), 18, currentY);
 
-            // Item name & description
-            const maxDescWidth = 155;
+            // Item name (TRUNCADO A UNA LÍNEA como Price List)
+            const maxNameWidth = 155;
+            let displayName = '';
             
             if (item.item_name) {
-                // Show item name in bold
-                doc.setFont(undefined, 'bold');
-                doc.setTextColor(15, 23, 42);
-                const nameLines = doc.splitTextToSize(item.item_name, maxDescWidth);
-                doc.text(nameLines, 30, currentY);
-                currentY += nameLines.length * 3.5;
-                
-                // Show description in gray if exists
-                if (item.description && item.description.trim()) {
-                    doc.setFont(undefined, 'normal');
-                    doc.setTextColor(100, 116, 139);
-                    const descLines = doc.splitTextToSize(item.description, maxDescWidth);
-                    doc.text(descLines, 30, currentY);
-                    currentY += descLines.length * 3.5;
-                }
+                displayName = item.item_name;
             } else if (item.description) {
-                // No item_name, just show description in normal font
-                doc.setFont(undefined, 'normal');
-                doc.setTextColor(15, 23, 42);
-                const descLines = doc.splitTextToSize(item.description, maxDescWidth);
-                doc.text(descLines, 30, currentY);
-                currentY += descLines.length * 3.5;
+                displayName = item.description;
             }
 
-            // Calculation line
-            if (item.quantity && item.unit_price) {
-                doc.setFontSize(7);
-                doc.setTextColor(100, 116, 139);
-                const calcText = `${item.quantity.toFixed(2)}${item.unit ? ' ' + item.unit : ''} × ${item.unit_price.toFixed(2)}`;
-                doc.text(calcText, 30, currentY);
-                currentY += 4;
-            }
+            // Truncate if too long
+            const nameLines = doc.splitTextToSize(displayName, maxNameWidth);
+            const truncatedName = nameLines.length > 1 
+                ? displayName.substring(0, 80) + '...'
+                : displayName;
 
-            // Amount (aligned to item start)
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text(truncatedName, 30, currentY);
+
+            // Amount
             doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
-            doc.text('$' + (item.total || 0).toFixed(2), 195, itemStartY, { align: 'right' });
+            doc.text('$' + (item.total || 0).toFixed(2), 195, currentY, { align: 'right' });
 
             // Separator
             doc.setDrawColor(226, 232, 240);
             doc.setLineWidth(0.1);
-            doc.line(15, currentY + 1, 195, currentY + 1);
+            doc.line(15, currentY + 2, 195, currentY + 2);
 
-            currentY += 5;
+            currentY += 7;
             itemIndex++;
         }
 
@@ -362,6 +350,17 @@ Deno.serve(async (req) => {
             const textLines = doc.splitTextToSize(term.text, 180 - labelWidth - 2);
             doc.text(textLines, 15 + labelWidth + 2, currentY);
             currentY += Math.max(4, textLines.length * 4) + 1.5;
+        }
+
+        // Footer on all pages
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(7);
+            doc.setTextColor(148, 163, 184);
+            doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+            doc.text('Modern Components Installation', 15, 290);
+            doc.text('470-209-3783', 195, 290, { align: 'right' });
         }
 
         const pdfBytes = doc.output('arraybuffer');
