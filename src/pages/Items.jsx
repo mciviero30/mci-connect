@@ -214,13 +214,13 @@ export default function Items() {
 
       // Load and add logo
       try {
-        const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png';
+        const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.src = logoUrl;
         await new Promise((resolve) => {
           img.onload = () => {
-            doc.addImage(img, 'PNG', 15, 15, 30, 12);
+            doc.addImage(img, 'PNG', 15, 15, 40, 16);
             resolve();
           };
           img.onerror = resolve;
@@ -792,13 +792,13 @@ export default function Items() {
             </AlertDescription>
           </Alert>
 
-          {/* AUDIT NOTICE */}
-          <Alert className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800">
-            <History className="w-4 h-4 dark:text-blue-400" />
-            <AlertDescription className="text-blue-900 dark:text-blue-300 text-sm">
-              <strong>Price Audit Active:</strong> All price and cost changes are automatically logged for financial reporting and compliance.
-            </AlertDescription>
-          </Alert>
+          {/* AUDIT NOTICE - Compact */}
+          <div className="mb-6 flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/30 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700">
+            <History className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span>
+              <strong className="text-slate-700 dark:text-slate-300">Price Audit Active:</strong> All changes are logged automatically
+            </span>
+          </div>
 
           {/* CRITICAL ALERTS */}
           {(lowStockItems.length > 0 || outOfStockItems.length > 0 || negativeMarginItems.length > 0) && (
