@@ -212,31 +212,83 @@ export default function Items() {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
 
-      // Title
-      doc.setFontSize(20);
-      doc.text('Price List', 20, 20);
+      // Add logo if available
+      if (companySettings?.company_logo_url) {
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = companySettings.company_logo_url;
+          await new Promise((resolve) => {
+            img.onload = () => {
+              doc.addImage(img, 'PNG', 15, 10, 25, 25);
+              resolve();
+            };
+            img.onerror = resolve;
+          });
+        } catch (err) {
+          console.log('Could not load logo:', err);
+        }
+      }
 
-      // Date
+      // Company header
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text('Modern Components Installations', 45, 20);
+      
       doc.setFontSize(10);
-      doc.text(`Generated: ${format(new Date(), 'MMM dd, yyyy')}`, 20, 30);
+      doc.setFont(undefined, 'normal');
+      if (companySettings?.phone) {
+        doc.text(`Phone: ${companySettings.phone}`, 45, 27);
+      }
+      if (companySettings?.email) {
+        doc.text(`Email: ${companySettings.email}`, 45, 32);
+      }
+      if (companySettings?.website) {
+        doc.text(`Web: ${companySettings.website}`, 45, 37);
+      }
+
+      // Title and date
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('PRICE LIST', 105, 55, { align: 'center' });
+      
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Generated: ${format(new Date(), 'MMMM dd, yyyy')}`, 105, 62, { align: 'center' });
+
+      // Separator line
+      doc.setLineWidth(0.5);
+      doc.line(15, 68, 195, 68);
 
       // Table headers
-      doc.setFontSize(12);
-      const startY = 45;
-      doc.text('Item Name', 20, startY);
-      doc.text('Category', 90, startY);
-      doc.text('Sale Price', 130, startY);
-      doc.text('Supplier', 160, startY);
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      const startY = 75;
+      doc.text('Item Name', 15, startY);
+      doc.text('Category', 85, startY);
+      doc.text('Sale Price', 125, startY);
+      doc.text('Supplier', 155, startY);
       doc.text('Status', 185, startY);
 
       // Table content
-      doc.setFontSize(10);
-      let y = startY + 10;
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      let y = startY + 7;
 
       for (const item of filteredItems) {
         if (y > 270) {
           doc.addPage();
           y = 20;
+          
+          // Repeat headers on new page
+          doc.setFont(undefined, 'bold');
+          doc.text('Item Name', 15, y);
+          doc.text('Category', 85, y);
+          doc.text('Sale Price', 125, y);
+          doc.text('Supplier', 155, y);
+          doc.text('Status', 185, y);
+          doc.setFont(undefined, 'normal');
+          y += 7;
         }
 
         const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
@@ -244,25 +296,35 @@ export default function Items() {
         const status = item.status || 'active';
 
         // Truncate long names
-        const itemName = (item.name || '').length > 30 
-          ? (item.name || '').substring(0, 27) + '...' 
+        const itemName = (item.name || '').length > 35 
+          ? (item.name || '').substring(0, 32) + '...' 
           : (item.name || '');
 
-        const supplier = (item.supplier || '').length > 15
-          ? (item.supplier || '').substring(0, 12) + '...'
+        const supplier = (item.supplier || '').length > 18
+          ? (item.supplier || '').substring(0, 15) + '...'
           : (item.supplier || '');
 
-        doc.text(itemName, 20, y);
-        doc.text(categoryLabel, 90, y);
-        doc.text(salePrice, 130, y);
-        doc.text(supplier, 160, y);
+        doc.text(itemName, 15, y);
+        doc.text(categoryLabel, 85, y);
+        doc.text(salePrice, 125, y);
+        doc.text(supplier, 155, y);
         doc.text(status, 185, y);
 
-        y += 10;
+        y += 6;
+      }
+
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128);
+        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+        doc.text('Modern Components Installations - Price List', 15, 290);
       }
 
       // Save PDF
-      doc.save(`price_list_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      doc.save(`MCI_Price_List_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 
       toast.success(language === 'es'
         ? `Lista de precios exportada: ${filteredItems.length} items`
