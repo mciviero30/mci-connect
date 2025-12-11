@@ -220,7 +220,7 @@ export default function Items() {
         img.src = logoUrl;
         await new Promise((resolve) => {
           img.onload = () => {
-            doc.addImage(img, 'PNG', 15, 15, 40, 16);
+            doc.addImage(img, 'PNG', 15, 15, 50, 20);
             resolve();
           };
           img.onerror = resolve;
