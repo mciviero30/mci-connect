@@ -19,34 +19,37 @@ export default function InvoiceDocument({ invoice }) {
                 }
             `}</style>
 
-            {/* Header Section */}
-            <div className="flex justify-between items-start mb-8">
-                {/* LEFT: Logo and Company Info */}
-                <div className="w-1/2">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
-                        alt="Modern Components Installation"
-                        className="h-14 mb-3 object-contain"
-                    />
-                    <div className="text-sm leading-relaxed">
-                        <p className="font-bold mb-0">Modern Components Installation</p>
-                        <p className="mb-0">2414 Meadow Isle Ln</p>
-                        <p className="mb-0">Lawrenceville Georgia 30043</p>
-                        <p className="mb-0">U.S.A</p>
-                    </div>
-                </div>
-
-                {/* RIGHT: INVOICE Title, Number and Balance Due */}
-                <div className="text-right w-1/2">
-                    <h1 className="text-6xl font-bold text-slate-900 mb-1" style={{letterSpacing: '0.05em'}}>INVOICE</h1>
+            {/* Black Header Bar */}
+            <div className="bg-black px-10 py-5 -mx-10 -mt-10 mb-8 flex items-center justify-between">
+                <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    alt="Modern Components Installation"
+                    className="h-16 object-contain"
+                />
+                <div className="text-right">
+                    <h1 className="text-5xl font-bold text-white" style={{letterSpacing: '0.05em'}}>INVOICE</h1>
                     {hasBalance && (
-                        <p className="text-base font-bold text-slate-900 mb-1">
+                        <p className="text-base font-bold text-white mt-1">
                             BALANCE DUE <span className="text-2xl ml-2">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </p>
                     )}
                     {isPaid && (
-                        <p className="text-xl font-bold text-emerald-600">✓ PAID</p>
+                        <p className="text-xl font-bold text-emerald-400 mt-1">✓ PAID</p>
                     )}
+                </div>
+            </div>
+
+            {/* Company Info and Invoice Number */}
+            <div className="flex justify-between items-start mb-8">
+                <div className="text-sm leading-relaxed">
+                    <p className="font-bold mb-0">Modern Components Installation</p>
+                    <p className="mb-0">2414 Meadow Isle Ln</p>
+                    <p className="mb-0">Lawrenceville Georgia 30043</p>
+                    <p className="mb-0">U.S.A</p>
+                    <p className="mb-0">Phone: 470-209-3783</p>
+                </div>
+                <div className="text-right">
+                    <p className="text-lg font-semibold text-slate-700"># {invoice.invoice_number}</p>
                 </div>
             </div>
 
@@ -54,30 +57,21 @@ export default function InvoiceDocument({ invoice }) {
             <div className="grid grid-cols-2 gap-12 mb-8">
                 {/* Bill To */}
                 <div>
+                    <p className="text-sm text-slate-600 mb-1">Bill To</p>
                     <p className="text-xl font-bold text-slate-900">{invoice.customer_name}</p>
                 </div>
 
                 {/* Invoice Info */}
                 <div className="text-right text-sm space-y-1">
-                    <div className="flex justify-between">
-                        <span className="text-slate-600">Invoice#</span>
-                        <span className="font-semibold text-slate-900">{invoice.invoice_number}</span>
-                    </div>
                     {invoice.invoice_date && (
                         <div className="flex justify-between">
-                            <span className="text-slate-600">Invoice Date</span>
+                            <span className="text-slate-600">Invoice Date :</span>
                             <span className="font-semibold text-slate-900">{format(new Date(invoice.invoice_date), 'MM.dd.yy')}</span>
-                        </div>
-                    )}
-                    {invoice.terms && (
-                        <div className="flex justify-between">
-                            <span className="text-slate-600">Terms</span>
-                            <span className="font-semibold text-slate-900">{invoice.terms}</span>
                         </div>
                     )}
                     {invoice.due_date && (
                         <div className="flex justify-between">
-                            <span className="text-slate-600">Due Date</span>
+                            <span className="text-slate-600">Due Date :</span>
                             <span className="font-semibold text-slate-900">{format(new Date(invoice.due_date), 'MM.dd.yy')}</span>
                         </div>
                     )}
@@ -101,8 +95,10 @@ export default function InvoiceDocument({ invoice }) {
                     <thead>
                         <tr className="bg-slate-700 text-white">
                             <th className="text-left px-4 py-3 text-sm font-semibold w-12">#</th>
-                            <th className="text-left px-4 py-3 text-sm font-semibold">ITEM & DESCRIPTION</th>
-                            <th className="text-right px-4 py-3 text-sm font-semibold w-32">AMOUNT</th>
+                            <th className="text-left px-4 py-3 text-sm font-semibold">Item & Description</th>
+                            <th className="text-right px-4 py-3 text-sm font-semibold w-24">Qty</th>
+                            <th className="text-right px-4 py-3 text-sm font-semibold w-28">Rate</th>
+                            <th className="text-right px-4 py-3 text-sm font-semibold w-32">Amount</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white">
@@ -124,28 +120,28 @@ export default function InvoiceDocument({ invoice }) {
                                    )}
                                    {item.quantity && item.unit_price && (
                                        <p className="text-xs text-slate-500 mt-1">
-                                           {item.quantity.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
-                                           {item.unit && ` ${item.unit}`} × {item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                           {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
+                                           {item.unit && ` ${item.unit}`} × {(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                        </p>
                                    )}
                                 </td>
+                                <td className="px-4 py-4 align-top text-right">
+                                    <p className="text-sm font-medium text-slate-900">
+                                        {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                    </p>
+                                    {item.unit && <p className="text-xs text-slate-500 mt-0.5">{item.unit}</p>}
+                                </td>
+                                <td className="px-4 py-4 align-top text-right text-sm font-medium text-slate-900">
+                                    {(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </td>
                                 <td className="px-4 py-4 align-top text-right text-base font-semibold text-slate-900">
-                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-
-            {/* Notes Section */}
-            {invoice.notes && (
-                <div className="mb-8 page-break-inside-avoid">
-                    <div className="bg-slate-50 p-5 rounded">
-                        <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.notes}</p>
-                    </div>
-                </div>
-            )}
 
             {/* Totals Section */}
             <div className="flex justify-end">
@@ -184,6 +180,22 @@ export default function InvoiceDocument({ invoice }) {
                     )}
                 </div>
             </div>
+
+            {/* Notes Section */}
+            {invoice.notes && (
+                <div className="mt-8 page-break-inside-avoid">
+                    <h3 className="text-sm font-bold text-slate-900 mb-2">Notes</h3>
+                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.notes}</p>
+                </div>
+            )}
+
+            {/* Terms & Conditions */}
+            {invoice.terms && (
+                <div className="mt-8 page-break-inside-avoid">
+                    <h3 className="text-sm font-bold text-slate-900 mb-2">Terms & Conditions</h3>
+                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.terms}</p>
+                </div>
+            )}
         </div>
     );
 }
