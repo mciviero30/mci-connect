@@ -183,12 +183,11 @@ export default function InvoiceDocument({ invoice }) {
             {/* Terms at Bottom */}
             <div className="mt-8 page-break-inside-avoid">
                 <h3 className="text-sm font-bold text-slate-900 mb-2">Terms & Conditions</h3>
-                <div className="text-sm text-slate-700 leading-relaxed space-y-2">
-                    <p><strong>Payment Terms:</strong> Invoices are due 30 days from the invoice date, unless specified otherwise by contract.</p>
-                    <p><strong>Late Payment:</strong> Payments are subject to a late interest charge of 1.5% per month on the outstanding balance, calculated from the due date.</p>
-                    <p><strong>Collection Costs:</strong> The client is responsible for all collection costs, including reasonable attorney fees, incurred by MCI to recover overdue balances.</p>
-                    <p><strong>Disputes:</strong> Any discrepancies must be reported to MCI in writing within 5 days of the invoice date. Failure to report constitutes full acceptance of the amount due.</p>
-                    <p><strong>Scope:</strong> The final cost reflects the estimated scope and all approved Change Orders. The undisputed portion of any invoice must be paid by the due date.</p>
+                <div className="text-sm text-slate-700 leading-relaxed space-y-1.5">
+                    <p><strong>Payment:</strong> Due in 30 days unless otherwise specified. Late payments incur 1.5% monthly interest.</p>
+                    <p><strong>Collections:</strong> Client responsible for all collection costs including attorney fees.</p>
+                    <p><strong>Disputes:</strong> Report discrepancies within 5 days in writing. Non-reporting constitutes acceptance.</p>
+                    <p><strong>Scope:</strong> Final cost reflects estimated scope and approved Change Orders. Undisputed amounts due by due date.</p>
                 </div>
             </div>
         </div>
