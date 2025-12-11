@@ -87,31 +87,32 @@ export default function QuoteDocument({ quote }) {
                 <table className="w-full border-collapse">
                     <thead>
                         <tr className="bg-slate-700 text-white">
-                            <th className="text-left px-4 py-3 text-sm font-semibold w-12">#</th>
-                            <th className="text-left px-4 py-3 text-sm font-semibold">Item & Description</th>
-                            <th className="text-right px-4 py-3 text-sm font-semibold w-24">Qty</th>
-                            <th className="text-right px-4 py-3 text-sm font-semibold w-28">Rate</th>
-                            <th className="text-right px-4 py-3 text-sm font-semibold w-32">Amount</th>
+                            <th className="text-left px-3 py-2 text-sm font-semibold w-12">#</th>
+                            <th className="text-left px-3 py-2 text-sm font-semibold">ITEM & DESCRIPTION</th>
+                            <th className="text-right px-3 py-2 text-sm font-semibold w-24">QTY</th>
+                            <th className="text-right px-3 py-2 text-sm font-semibold w-28">RATE</th>
+                            <th className="text-right px-3 py-2 text-sm font-semibold w-32">AMOUNT</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white">
                         {quote.items && quote.items.length > 0 ? quote.items.map((item, index) => (
                             <tr key={index} className="border-b border-slate-200 page-break-inside-avoid">
-                                <td className="px-4 py-2 align-middle">
+                                <td className="px-3 py-2 align-middle">
                                     <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                                 </td>
-                                <td className="px-4 py-2 align-middle">
+                                <td className="px-3 py-2 align-middle">
                                    <p className="font-semibold text-sm text-slate-900 truncate">
                                        {(item.item_name || item.description || '').replace(/\n/g, ' ').trim()}
                                    </p>
                                 </td>
-                                <td className="px-4 py-2 align-middle text-right text-sm font-medium text-slate-900">
-                                    {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {item.unit || ''}
+                                <td className="px-3 py-2 align-middle text-right text-sm font-medium text-slate-900">
+                                    {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                                    {item.unit && <span className="text-xs ml-1">{item.unit}</span>}
                                 </td>
-                                <td className="px-4 py-2 align-middle text-right text-sm font-medium text-slate-900">
+                                <td className="px-3 py-2 align-middle text-right text-sm font-medium text-slate-900">
                                     {(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
-                                <td className="px-4 py-2 align-middle text-right text-base font-semibold text-slate-900">
+                                <td className="px-3 py-2 align-middle text-right text-base font-semibold text-slate-900">
                                     {(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
