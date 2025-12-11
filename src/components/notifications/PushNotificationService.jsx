@@ -68,7 +68,7 @@ async function checkUserPreference(userEmail, notificationType) {
  * Send browser push notification
  */
 function sendBrowserNotification(title, body, options = {}) {
-  if ('Notification' in window && Notification.permission === 'granted') {
+  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
     const notification = new Notification(title, {
       body,
       icon: '/logo192.png',

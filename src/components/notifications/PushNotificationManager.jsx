@@ -30,7 +30,7 @@ export default function PushNotificationManager({ user }) {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default');
   const [deviceInfo, setDeviceInfo] = useState(null);
 
   useEffect(() => {
@@ -85,6 +85,9 @@ export default function PushNotificationManager({ user }) {
   };
 
   const requestPermission = async () => {
+    if (!('Notification' in window)) {
+      return false;
+    }
     const result = await Notification.requestPermission();
     setPermission(result);
     return result === 'granted';
