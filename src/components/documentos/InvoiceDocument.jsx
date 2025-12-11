@@ -24,7 +24,7 @@ export default function InvoiceDocument({ invoice }) {
                 <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
                     alt="Modern Components Installation"
-                    className="h-10 object-contain"
+                    className="h-14 object-contain"
                 />
                 <div className="text-right">
                     <h1 className="text-5xl font-bold tracking-wider">INVOICE</h1>
@@ -67,12 +67,6 @@ export default function InvoiceDocument({ invoice }) {
                         <div className="flex justify-between">
                             <span className="text-slate-600">Invoice Date</span>
                             <span className="font-semibold text-slate-900">{format(new Date(invoice.invoice_date), 'MM.dd.yy')}</span>
-                        </div>
-                    )}
-                    {invoice.terms && (
-                        <div className="flex justify-between">
-                            <span className="text-slate-600">Terms</span>
-                            <span className="font-semibold text-slate-900">{invoice.terms}</span>
                         </div>
                     )}
                     {invoice.due_date && (

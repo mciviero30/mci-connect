@@ -21,7 +21,7 @@ export default function QuoteDocument({ quote }) {
                 <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
                     alt="Modern Components Installation"
-                    className="h-10 object-contain"
+                    className="h-14 object-contain"
                 />
                 <h1 className="text-5xl font-bold tracking-wider">QUOTE</h1>
             </div>
