@@ -173,12 +173,14 @@ export default function QuoteDocument({ quote }) {
             </div>
 
             {/* Terms */}
-            {quote.terms && (
-                <div className="mt-8 page-break-inside-avoid">
-                    <h3 className="text-sm font-bold text-slate-900 mb-2">Terms & Conditions</h3>
-                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{quote.terms}</p>
+            <div className="mt-8 page-break-inside-avoid">
+                <h3 className="text-sm font-bold text-slate-900 mb-2">Terms & Conditions</h3>
+                <div className="text-sm text-slate-700 leading-relaxed space-y-1.5">
+                    <p><strong>Approval:</strong> PO required to schedule work.</p>
+                    <p><strong>Offload:</strong> Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.</p>
+                    <p><strong>Hours:</strong> Regular hours only. OT/after-hours billed separately via Change Order.</p>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
