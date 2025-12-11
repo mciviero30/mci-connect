@@ -185,6 +185,14 @@ export default function InvoiceDocument({ invoice }) {
                     )}
                 </div>
             </div>
+
+            {/* Terms at Bottom */}
+            {invoice.terms && (
+                <div className="mt-8 page-break-inside-avoid">
+                    <h3 className="text-sm font-bold text-slate-900 mb-2">Terms & Conditions</h3>
+                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.terms}</p>
+                </div>
+            )}
         </div>
     );
 }
