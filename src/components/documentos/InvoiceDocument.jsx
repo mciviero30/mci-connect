@@ -184,13 +184,12 @@ export default function InvoiceDocument({ invoice }) {
             {/* Notes Section */}
             {invoice.notes && (
                 <div className="mt-8 page-break-inside-avoid">
-                    <div className="bg-slate-50 p-5 rounded">
-                        <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.notes}</p>
-                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 mb-2">Notes</h3>
+                    <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{invoice.notes}</p>
                 </div>
             )}
 
-            {/* Terms */}
+            {/* Terms & Conditions */}
             {invoice.terms && (
                 <div className="mt-8 page-break-inside-avoid">
                     <h3 className="text-sm font-bold text-slate-900 mb-2">Terms & Conditions</h3>
