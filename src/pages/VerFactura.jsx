@@ -176,11 +176,17 @@ export default function VerFactura() {
   const handleDownloadPDF = async () => {
     if (!invoice) return;
     
-    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
-    const filename = `${invoice.invoice_number} - ${invoice.customer_name}`;
-    
     try {
-      await generateOptimizedPDF('invoice-printable', filename);
+      const response = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invoice.invoice_number}-${invoice.customer_name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
       toast.success('PDF downloaded successfully');
     } catch (error) {
       console.error('PDF generation error:', error);

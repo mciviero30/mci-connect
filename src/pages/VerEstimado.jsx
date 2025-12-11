@@ -326,11 +326,17 @@ Lawrenceville, Georgia 30043, U.S.A`
   const handleDownloadPDF = async () => {
     if (!quote) return;
     
-    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
-    const filename = `${quote.quote_number} - ${quote.customer_name}`;
-    
     try {
-      await generateOptimizedPDF('quote-printable', filename);
+      const response = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${quote.quote_number}-${quote.customer_name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
       toast.success('PDF downloaded successfully');
     } catch (error) {
       console.error('PDF generation error:', error);
