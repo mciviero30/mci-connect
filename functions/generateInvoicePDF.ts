@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
         doc.setTextColor(255, 255, 255);
         doc.text('#', 18, currentY + 5);
         doc.text('ITEM & DESCRIPTION', 30, currentY + 5);
-        doc.text('AMOUNT', 195, currentY + 5, { align: 'right' });
+        doc.text('AMOUNT', 190, currentY + 5, { align: 'right' });
 
         doc.setTextColor(0, 0, 0);
         currentY += 10;
@@ -189,45 +189,44 @@ Deno.serve(async (req) => {
             // Alternating row background
             if (itemIndex % 2 === 0) {
                 doc.setFillColor(248, 250, 252);
-                doc.rect(15, currentY - 3, 180, 5, 'F');
+                doc.rect(15, currentY - 2, 180, 4.5, 'F');
             }
 
             // Row number
             doc.setFont(undefined, 'normal');
             doc.setTextColor(71, 85, 105);
+            doc.setFontSize(8);
             doc.text(itemIndex.toString(), 18, currentY);
 
-            // CRITICAL: ONLY show truncated item name - NO DETAILS BELOW
+            // Item name (truncated)
             let rawName = item.item_name || item.description || '';
             rawName = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-            
-            doc.setFontSize(8);
+
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
-            
-            // Truncate to max 155 width
+
             let itemName = rawName;
-            const maxWidth = 155;
-            
+            const maxWidth = 140;
+
             while (doc.getTextWidth(itemName) > maxWidth && itemName.length > 3) {
                 itemName = itemName.substring(0, itemName.length - 1);
             }
-            
+
             if (itemName.length < rawName.length) {
                 itemName = itemName.substring(0, itemName.length - 3) + '...';
             }
 
             doc.text(itemName, 30, currentY);
 
-            // Amount (same line)
-            doc.text('$' + (item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 195, currentY, { align: 'right' });
+            // Amount
+            doc.text('$' + (item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 190, currentY, { align: 'right' });
 
             // Thin separator
             doc.setDrawColor(226, 232, 240);
             doc.setLineWidth(0.1);
-            doc.line(15, currentY + 1.5, 195, currentY + 1.5);
+            doc.line(15, currentY + 1, 195, currentY + 1);
 
-            currentY += 5;
+            currentY += 4.5;
             itemIndex++;
         }
 

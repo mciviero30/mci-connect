@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
         doc.setTextColor(0, 0, 0);
         currentY += 10;
 
-        // Items - STRICT ONE LINE TRUNCATION
+        // Items - SINGLE LINE WITH ALL COLUMNS
         doc.setFontSize(8);
         let itemIndex = 1;
 
@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
             if (currentY > 270) {
                 doc.addPage();
                 currentY = 20;
-                
+
                 // Repeat header
                 doc.setFillColor(51, 65, 85);
                 doc.rect(15, currentY - 5, 180, 8, 'F');
@@ -174,9 +174,9 @@ Deno.serve(async (req) => {
                 doc.setTextColor(255, 255, 255);
                 doc.text('#', 18, currentY);
                 doc.text('ITEM & DESCRIPTION', 30, currentY);
-                doc.text('QTY', 155, currentY, { align: 'right' });
+                doc.text('QTY', 152, currentY, { align: 'right' });
                 doc.text('RATE', 172, currentY, { align: 'right' });
-                doc.text('AMOUNT', 195, currentY, { align: 'right' });
+                doc.text('AMOUNT', 190, currentY, { align: 'right' });
                 doc.setTextColor(0, 0, 0);
                 currentY += 8;
             }
@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
             // Alternating row background
             if (itemIndex % 2 === 0) {
                 doc.setFillColor(248, 250, 252);
-                doc.rect(15, currentY - 4, 180, 7, 'F');
+                doc.rect(15, currentY - 2, 180, 4.5, 'F');
             }
 
             // Row number
@@ -192,24 +192,20 @@ Deno.serve(async (req) => {
             doc.setTextColor(71, 85, 105);
             doc.text(itemIndex.toString(), 18, currentY);
 
-            // CRITICAL: Clean and truncate item name to SINGLE LINE
+            // Item name (truncated)
             let rawName = item.item_name || item.description || '';
-            // Remove ALL newlines and extra spaces
             rawName = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-            
-            // Set font for measurement
+
             doc.setFont(undefined, 'bold');
             doc.setTextColor(15, 23, 42);
-            
-            // Truncate based on actual text width (max 115 units)
+
             let itemName = rawName;
-            const maxWidth = 115;
-            
+            const maxWidth = 100;
+
             while (doc.getTextWidth(itemName) > maxWidth && itemName.length > 3) {
                 itemName = itemName.substring(0, itemName.length - 1);
             }
-            
-            // Add ellipsis if truncated
+
             if (itemName.length < rawName.length) {
                 itemName = itemName.substring(0, itemName.length - 3) + '...';
             }
@@ -217,18 +213,16 @@ Deno.serve(async (req) => {
             doc.text(itemName, 30, currentY);
 
             // Qty, Rate, Amount
-            doc.setFont(undefined, 'bold');
-            doc.setTextColor(15, 23, 42);
-            doc.text((item.quantity || 0).toFixed(2), 155, currentY, { align: 'right' });
+            doc.text((item.quantity || 0).toFixed(2), 152, currentY, { align: 'right' });
             doc.text((item.unit_price || 0).toFixed(2), 172, currentY, { align: 'right' });
-            doc.text((item.total || 0).toFixed(2), 195, currentY, { align: 'right' });
+            doc.text((item.total || 0).toFixed(2), 190, currentY, { align: 'right' });
 
             // Separator
             doc.setDrawColor(226, 232, 240);
             doc.setLineWidth(0.1);
-            doc.line(15, currentY + 2, 195, currentY + 2);
+            doc.line(15, currentY + 1, 195, currentY + 1);
 
-            currentY += 7;
+            currentY += 4.5;
             itemIndex++;
         }
 
