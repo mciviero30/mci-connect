@@ -180,25 +180,28 @@ Deno.serve(async (req) => {
             const maxDescWidth = 155;
             
             if (item.item_name) {
+                // Show item name in bold
                 doc.setFont(undefined, 'bold');
                 doc.setTextColor(15, 23, 42);
                 const nameLines = doc.splitTextToSize(item.item_name, maxDescWidth);
                 doc.text(nameLines, 30, currentY);
-                currentY += nameLines.length * 4;
+                currentY += nameLines.length * 3.5;
                 
-                if (item.description) {
+                // Show description in gray if exists
+                if (item.description && item.description.trim()) {
                     doc.setFont(undefined, 'normal');
                     doc.setTextColor(100, 116, 139);
                     const descLines = doc.splitTextToSize(item.description, maxDescWidth);
                     doc.text(descLines, 30, currentY);
-                    currentY += descLines.length * 4;
+                    currentY += descLines.length * 3.5;
                 }
             } else if (item.description) {
+                // No item_name, just show description in normal font
                 doc.setFont(undefined, 'normal');
                 doc.setTextColor(15, 23, 42);
                 const descLines = doc.splitTextToSize(item.description, maxDescWidth);
                 doc.text(descLines, 30, currentY);
-                currentY += descLines.length * 4;
+                currentY += descLines.length * 3.5;
             }
 
             // Calculation line
