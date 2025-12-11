@@ -16,26 +16,26 @@ export default function QuoteDocument({ quote }) {
                 }
             `}</style>
 
-            {/* Header Section */}
-            <div className="flex justify-between items-start mb-8">
-                {/* LEFT: Logo and Company Info */}
-                <div className="w-1/2">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
-                        alt="Modern Components Installation"
-                        className="h-14 mb-3 object-contain"
-                    />
-                    <div className="text-sm leading-relaxed">
-                        <p className="font-bold mb-0">Modern Components Installation</p>
-                        <p className="mb-0">2414 Meadow Isle Ln</p>
-                        <p className="mb-0">Lawrenceville Georgia 30043</p>
-                        <p className="mb-0">U.S.A</p>
-                    </div>
-                </div>
+            {/* Black Header Bar */}
+            <div className="bg-black px-10 py-5 -mx-10 -mt-10 mb-8 flex items-center justify-between">
+                <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    alt="Modern Components Installation"
+                    className="h-16 object-contain"
+                />
+                <h1 className="text-5xl font-bold text-white" style={{letterSpacing: '0.05em'}}>QUOTE</h1>
+            </div>
 
-                {/* RIGHT: QUOTE Title and Number */}
-                <div className="text-right w-1/2">
-                    <h1 className="text-6xl font-bold text-slate-900 mb-1" style={{letterSpacing: '0.05em'}}>QUOTE</h1>
+            {/* Company Info and Quote Details */}
+            <div className="flex justify-between items-start mb-8">
+                <div className="text-sm leading-relaxed">
+                    <p className="font-bold mb-0">Modern Components Installation</p>
+                    <p className="mb-0">2414 Meadow Isle Ln</p>
+                    <p className="mb-0">Lawrenceville Georgia 30043</p>
+                    <p className="mb-0">U.S.A</p>
+                    <p className="mb-0">Phone: 470-209-3783</p>
+                </div>
+                <div className="text-right">
                     <p className="text-lg font-semibold text-slate-700"># {quote.quote_number}</p>
                 </div>
             </div>

@@ -212,7 +212,11 @@ export default function Items() {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
 
-      // Load and add logo
+      // Black header bar
+      doc.setFillColor(0, 0, 0);
+      doc.rect(0, 0, 210, 30, 'F');
+
+      // Load and add logo on black bar
       try {
         const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
         const img = new Image();
@@ -220,7 +224,7 @@ export default function Items() {
         img.src = logoUrl;
         await new Promise((resolve) => {
           img.onload = () => {
-            doc.addImage(img, 'PNG', 15, 15, 50, 20);
+            doc.addImage(img, 'PNG', 15, 7, 60, 16);
             resolve();
           };
           img.onerror = resolve;
@@ -229,50 +233,45 @@ export default function Items() {
         console.log('Could not load logo:', err);
       }
 
-      // Company info (left side header)
-      doc.setFontSize(10);
-      doc.setFont(undefined, 'bold');
-      doc.text('Modern Components Installation', 15, 35);
-      
-      doc.setFontSize(8);
-      doc.setFont(undefined, 'normal');
-      doc.text('2414 Meadow Isle Ln', 15, 40);
-      doc.text('Lawrenceville Georgia 30043', 15, 44);
-      doc.text('U.S.A', 15, 48);
-      doc.text('Phone: 470-209-3783', 15, 53);
-
-      // PRICE LIST title (right side)
+      // PRICE LIST title (right side on black bar)
       doc.setFontSize(32);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(30, 41, 59); // slate-900
-      doc.text('PRICE LIST', 195, 30, { align: 'right' });
-
-      // Generated date
-      doc.setFontSize(9);
-      doc.setFont(undefined, 'normal');
-      doc.setTextColor(100, 116, 139); // slate-500
-      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 38, { align: 'right' });
+      doc.setTextColor(255, 255, 255);
+      doc.text('PRICE LIST', 195, 19, { align: 'right' });
 
       // Reset text color
       doc.setTextColor(0, 0, 0);
 
-      // Separator line
-      doc.setLineWidth(0.3);
-      doc.setDrawColor(226, 232, 240); // slate-200
-      doc.line(15, 60, 195, 60);
+      // Company info (below black bar)
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.text('Modern Components Installation', 15, 40);
+
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'normal');
+      doc.text('2414 Meadow Isle Ln', 15, 45);
+      doc.text('Lawrenceville Georgia 30043', 15, 49);
+      doc.text('U.S.A', 15, 53);
+      doc.text('Phone: 470-209-3783', 15, 57);
+
+      // Generated date (right side)
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 45, { align: 'right' });
+      doc.setTextColor(0, 0, 0);
 
       // Table header (dark background)
       doc.setFillColor(51, 65, 85); // slate-700
-      doc.rect(15, 65, 180, 8, 'F');
+      doc.rect(15, 70, 180, 8, 'F');
 
       doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(255, 255, 255); // white text
-      doc.text('#', 18, 70);
-      doc.text('ITEM NAME', 30, 70);
-      doc.text('CATEGORY', 100, 70);
-      doc.text('SALE PRICE', 155, 70, { align: 'right' });
-      doc.text('SUPPLIER', 180, 70);
+      doc.text('#', 18, 75);
+      doc.text('ITEM NAME', 30, 75);
+      doc.text('CATEGORY', 100, 75);
+      doc.text('SALE PRICE', 155, 75, { align: 'right' });
+      doc.text('SUPPLIER', 180, 75);
 
       // Reset text color for content
       doc.setTextColor(0, 0, 0);
@@ -280,7 +279,7 @@ export default function Items() {
       // Table content
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      let y = 78;
+      let y = 83;
       let rowIndex = 1;
 
       for (const item of filteredItems) {
@@ -302,6 +301,7 @@ export default function Items() {
           doc.setTextColor(0, 0, 0);
           doc.setFont(undefined, 'normal');
           y += 8;
+          rowIndex = 1;
           rowIndex = 1;
         }
 
