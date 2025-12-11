@@ -327,7 +327,10 @@ Lawrenceville, Georgia 30043, U.S.A`
     if (!quote) return;
     
     try {
+      console.log('🔄 Generating Quote PDF using backend function...');
       const response = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
+      console.log('✅ PDF generated, downloading...');
+      
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -335,12 +338,16 @@ Lawrenceville, Georgia 30043, U.S.A`
       a.download = `${quote.quote_number}-${quote.customer_name}.pdf`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }, 100);
+      
       toast.success('PDF downloaded successfully');
     } catch (error) {
       console.error('PDF generation error:', error);
-      toast.error('Error generating PDF');
+      toast.error(`Error: ${error.message}`);
     }
   };
 

@@ -177,7 +177,10 @@ export default function VerFactura() {
     if (!invoice) return;
     
     try {
+      console.log('🔄 Generating Invoice PDF using backend function...');
       const response = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
+      console.log('✅ PDF generated, downloading...');
+      
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -185,12 +188,16 @@ export default function VerFactura() {
       a.download = `${invoice.invoice_number}-${invoice.customer_name}.pdf`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      }, 100);
+      
       toast.success('PDF downloaded successfully');
     } catch (error) {
       console.error('PDF generation error:', error);
-      toast.error('Error generating PDF');
+      toast.error(`Error: ${error.message}`);
     }
   };
 
