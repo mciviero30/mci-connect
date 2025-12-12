@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
             const textLines = doc.splitTextToSize(term.text, 180 - labelWidth - 2);
             const limitedLines = textLines.slice(0, 2);
             doc.text(limitedLines, 15 + labelWidth + 2, currentY);
-            currentY += Math.max(3, limitedLines.length * 3) + 1;
+            currentY += Math.max(3, limitedLines.length * 3) + 0.5;
         }
 
         // ==========================================
