@@ -1,285 +1,314 @@
-import React, { useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Clock, Calendar, Users, TrendingUp, DollarSign, BarChart3, Download, Filter } from 'lucide-react';
-import PageHeader from '../components/shared/PageHeader';
-import { useLanguage } from '@/components/i18n/LanguageContext';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
-import { useToast } from '@/components/ui/toast';
-import TimeLogDialog from '../components/time-tracking/TimeLogDialog';
-import TeamTimeView from '../components/time-tracking/TeamTimeView';
-import PersonalTimeView from '../components/time-tracking/PersonalTimeView';
+import React, { useState, useMemo } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, Play, Square, Coffee, CheckCircle, XCircle, Calendar, Download, Users } from "lucide-react";
+import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
+import { useToast } from "@/components/ui/toast";
+import { useLanguage } from "@/components/i18n/LanguageContext";
+import DailyTimeView from "@/components/time-tracking/DailyTimeView";
+import WeeklyTimeView from "@/components/time-tracking/WeeklyTimeView";
+import TimeReportsView from "@/components/time-tracking/TimeReportsView";
+import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView";
 
 export default function TimeTracking() {
-  const { language, t } = useLanguage();
+  const { t, language } = useLanguage();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('personal');
-  const [showLogDialog, setShowLogDialog] = useState(false);
-  const [dateRange, setDateRange] = useState('week');
-  const [selectedEmployee, setSelectedEmployee] = useState('all');
-  const [selectedJob, setSelectedJob] = useState('all');
+  const [activeTab, setActiveTab] = useState('daily');
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: timeEntries = [] } = useQuery({
-    queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date'),
-    staleTime: 300000,
-  });
+  const isManager = user?.position === 'manager' || user?.position === 'CEO' || user?.position === 'supervisor' || user?.role === 'admin';
 
-  const { data: jobs = [] } = useQuery({
-    queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
-    staleTime: 600000,
-  });
-
-  const { data: employees = [] } = useQuery({
-    queryKey: ['activeEmployees'],
+  // Get today's active time entry
+  const { data: todayEntry } = useQuery({
+    queryKey: ['todayTimeEntry', user?.email],
     queryFn: async () => {
-      const users = await base44.entities.User.list();
-      return users.filter(u => u.employment_status === 'active');
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const entries = await base44.entities.TimeEntry.filter({
+        employee_email: user.email,
+        date: today
+      });
+      return entries.find(e => !e.check_out) || null;
     },
-    enabled: user?.role === 'admin',
-    staleTime: 600000,
+    enabled: !!user,
   });
 
-  // Filter time entries based on selections
-  const filteredEntries = useMemo(() => {
-    let filtered = timeEntries;
+  // Get this week's entries for summary
+  const { data: weekEntries = [] } = useQuery({
+    queryKey: ['weekTimeEntries', user?.email, selectedDate],
+    queryFn: async () => {
+      const start = format(startOfWeek(selectedDate), 'yyyy-MM-dd');
+      const end = format(endOfWeek(selectedDate), 'yyyy-MM-dd');
+      return await base44.entities.TimeEntry.filter({
+        employee_email: user.email,
+        date: { $gte: start, $lte: end }
+      });
+    },
+    enabled: !!user,
+  });
 
-    // Date range filter
-    const now = new Date();
-    let start, end;
-    if (dateRange === 'week') {
-      start = startOfWeek(now);
-      end = endOfWeek(now);
-    } else if (dateRange === 'month') {
-      start = startOfMonth(now);
-      end = endOfMonth(now);
-    }
+  // Clock In
+  const clockInMutation = useMutation({
+    mutationFn: async (jobId) => {
+      const now = new Date();
+      return await base44.entities.TimeEntry.create({
+        employee_email: user.email,
+        employee_name: user.full_name,
+        date: format(now, 'yyyy-MM-dd'),
+        check_in: format(now, 'HH:mm:ss'),
+        job_id: jobId || '',
+        breaks: [],
+        status: 'pending'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
+      toast.success(language === 'es' ? '¡Entrada registrada!' : 'Clocked in!');
+    },
+  });
 
-    if (start && end) {
-      filtered = filtered.filter(entry => 
-        isWithinInterval(new Date(entry.date), { start, end })
-      );
-    }
+  // Clock Out
+  const clockOutMutation = useMutation({
+    mutationFn: async () => {
+      const now = new Date();
+      const checkIn = new Date(`${todayEntry.date}T${todayEntry.check_in}`);
+      const checkOut = now;
+      
+      const totalMinutes = differenceInMinutes(checkOut, checkIn);
+      const breakMinutes = todayEntry.total_break_minutes || 0;
+      const workedMinutes = totalMinutes - breakMinutes;
+      const hours = workedMinutes / 60;
 
-    // Employee filter
-    if (user?.role === 'admin' && selectedEmployee !== 'all') {
-      filtered = filtered.filter(e => e.employee_email === selectedEmployee);
-    } else if (user?.role !== 'admin') {
-      filtered = filtered.filter(e => e.employee_email === user?.email);
-    }
+      return await base44.entities.TimeEntry.update(todayEntry.id, {
+        check_out: format(now, 'HH:mm:ss'),
+        hours_worked: Number(hours.toFixed(2))
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
+      queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
+      toast.success(language === 'es' ? '¡Salida registrada!' : 'Clocked out!');
+    },
+  });
 
-    // Job filter
-    if (selectedJob !== 'all') {
-      filtered = filtered.filter(e => e.job_id === selectedJob);
-    }
+  // Start Break
+  const startBreakMutation = useMutation({
+    mutationFn: async (breakType) => {
+      const now = new Date();
+      const breaks = [...(todayEntry.breaks || [])];
+      breaks.push({
+        type: breakType,
+        start_time: format(now, 'HH:mm:ss'),
+        end_time: null,
+        duration_minutes: 0
+      });
 
-    return filtered;
-  }, [timeEntries, dateRange, selectedEmployee, selectedJob, user]);
+      return await base44.entities.TimeEntry.update(todayEntry.id, { breaks });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
+      toast.success(language === 'es' ? 'Pausa iniciada' : 'Break started');
+    },
+  });
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const totalHours = filteredEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    const normalHours = filteredEntries
-      .filter(e => e.hour_type === 'normal')
-      .reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    const overtimeHours = filteredEntries
-      .filter(e => e.hour_type === 'overtime')
-      .reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    
-    const uniqueEmployees = new Set(filteredEntries.map(e => e.employee_email)).size;
-    const uniqueJobs = new Set(filteredEntries.map(e => e.job_id).filter(Boolean)).size;
+  // End Break
+  const endBreakMutation = useMutation({
+    mutationFn: async () => {
+      const now = new Date();
+      const breaks = [...todayEntry.breaks];
+      const activeBreak = breaks.find(b => !b.end_time);
+      
+      if (activeBreak) {
+        const startTime = new Date(`${todayEntry.date}T${activeBreak.start_time}`);
+        const duration = differenceInMinutes(now, startTime);
+        activeBreak.end_time = format(now, 'HH:mm:ss');
+        activeBreak.duration_minutes = duration;
+      }
 
-    return {
-      totalHours: totalHours.toFixed(1),
-      normalHours: normalHours.toFixed(1),
-      overtimeHours: overtimeHours.toFixed(1),
-      uniqueEmployees,
-      uniqueJobs,
-      entries: filteredEntries.length
-    };
-  }, [filteredEntries]);
+      const totalBreakMinutes = breaks.reduce((sum, b) => sum + (b.duration_minutes || 0), 0);
 
-  const isAdmin = user?.role === 'admin';
+      return await base44.entities.TimeEntry.update(todayEntry.id, {
+        breaks,
+        total_break_minutes: totalBreakMinutes
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
+      toast.success(language === 'es' ? 'Pausa terminada' : 'Break ended');
+    },
+  });
+
+  const weekTotal = useMemo(() => {
+    return weekEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+  }, [weekEntries]);
+
+  const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
-        <PageHeader
-          title={language === 'es' ? 'Seguimiento de Tiempo' : 'Time Tracking'}
-          description={language === 'es' 
-            ? 'Registra y monitorea horas trabajadas en proyectos y tareas' 
-            : 'Log and monitor hours worked on projects and tasks'}
-          icon={Clock}
-          actions={
-            <Button 
-              onClick={() => setShowLogDialog(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Clock className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Registrar Tiempo' : 'Log Time'}
+    <div className="min-h-screen bg-slate-50 dark:bg-[#181818] p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <Clock className="w-8 h-8 text-blue-600" />
+              {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-1">
+              {language === 'es' ? 'Registra tus horas de trabajo' : 'Track your working hours'}
+            </p>
+          </div>
+
+          {isManager && (
+            <Button onClick={() => setActiveTab('approvals')} variant="outline">
+              <Users className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}
             </Button>
-          }
-        />
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
-                    {language === 'es' ? 'Total Horas' : 'Total Hours'}
-                  </p>
-                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.totalHours}</p>
-                </div>
-                <Clock className="w-12 h-12 text-blue-600 dark:text-blue-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">
-                    {language === 'es' ? 'Horas Normales' : 'Normal Hours'}
-                  </p>
-                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.normalHours}</p>
-                </div>
-                <TrendingUp className="w-12 h-12 text-green-600 dark:text-green-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">
-                    {language === 'es' ? 'Horas Extra' : 'Overtime Hours'}
-                  </p>
-                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{stats.overtimeHours}</p>
-                </div>
-                <Calendar className="w-12 h-12 text-amber-600 dark:text-amber-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">
-                    {language === 'es' ? 'Trabajos Activos' : 'Active Jobs'}
-                  </p>
-                  <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{stats.uniqueJobs}</p>
-                </div>
-                <BarChart3 className="w-12 h-12 text-purple-600 dark:text-purple-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
+          )}
         </div>
 
-        {/* Filters */}
-        <Card className="mb-6 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <Filter className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-              
-              <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="w-40 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-[#282828]">
-                  <SelectItem value="week">{language === 'es' ? 'Esta Semana' : 'This Week'}</SelectItem>
-                  <SelectItem value="month">{language === 'es' ? 'Este Mes' : 'This Month'}</SelectItem>
-                  <SelectItem value="all">{language === 'es' ? 'Todo' : 'All Time'}</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Clock In/Out Card */}
+        <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-2 border-blue-100 dark:border-blue-900">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>{format(new Date(), 'EEEE, MMMM d, yyyy')}</span>
+              <Badge variant={todayEntry ? 'default' : 'secondary'} className="text-lg px-4 py-1">
+                {todayEntry ? (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Activo' : 'Active'}
+                  </>
+                ) : (
+                  <>
+                    <Square className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Fuera' : 'Off'}
+                  </>
+                )}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!todayEntry ? (
+              <Button
+                size="lg"
+                onClick={() => clockInMutation.mutate()}
+                disabled={clockInMutation.isPending}
+                className="w-full h-16 text-lg bg-green-600 hover:bg-green-700"
+              >
+                <Play className="w-6 h-6 mr-2" />
+                {language === 'es' ? 'Registrar Entrada' : 'Clock In'}
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{language === 'es' ? 'Entrada' : 'Check In'}</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{todayEntry.check_in}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{language === 'es' ? 'Horas' : 'Hours'}</p>
+                    <p className="text-2xl font-bold text-blue-600">{todayEntry.hours_worked || '0.00'}</p>
+                  </div>
+                </div>
 
-              <Select value={selectedJob} onValueChange={setSelectedJob}>
-                <SelectTrigger className="w-52 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-[#282828]">
-                  <SelectItem value="all">{language === 'es' ? 'Todos los Trabajos' : 'All Jobs'}</SelectItem>
-                  {jobs.map(job => (
-                    <SelectItem key={job.id} value={job.id}>{job.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <div className="flex gap-3">
+                  {!activeBreak ? (
+                    <>
+                      <Button
+                        onClick={() => startBreakMutation.mutate('break')}
+                        disabled={startBreakMutation.isPending}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Coffee className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Iniciar Pausa' : 'Start Break'}
+                      </Button>
+                      <Button
+                        onClick={() => clockOutMutation.mutate()}
+                        disabled={clockOutMutation.isPending}
+                        className="flex-1 bg-red-600 hover:bg-red-700"
+                      >
+                        <Square className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Registrar Salida' : 'Clock Out'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => endBreakMutation.mutate()}
+                      disabled={endBreakMutation.isPending}
+                      className="w-full bg-orange-600 hover:bg-orange-700"
+                    >
+                      <Coffee className="w-4 h-4 mr-2" />
+                      {language === 'es' ? 'Terminar Pausa' : 'End Break'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-              {isAdmin && (
-                <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                  <SelectTrigger className="w-52 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-[#282828]">
-                    <SelectItem value="all">{language === 'es' ? 'Todos los Empleados' : 'All Employees'}</SelectItem>
-                    {employees.map(emp => (
-                      <SelectItem key={emp.email} value={emp.email}>{emp.full_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+        {/* Week Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'es' ? 'Resumen Semanal' : 'Weekly Summary'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-600">{weekTotal.toFixed(2)}</p>
+                <p className="text-sm text-slate-600">{language === 'es' ? 'Horas Totales' : 'Total Hours'}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{weekEntries.filter(e => e.status === 'approved').length}</p>
+                <p className="text-sm text-slate-600">{language === 'es' ? 'Aprobadas' : 'Approved'}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-yellow-600">{weekEntries.filter(e => e.status === 'pending').length}</p>
+                <p className="text-sm text-slate-600">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Main Content Tabs */}
+        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700 p-1 mb-6">
-            <TabsTrigger value="personal" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <Clock className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Mi Tiempo' : 'My Time'}
-            </TabsTrigger>
-            {isAdmin && (
-              <TabsTrigger value="team" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                <Users className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Equipo' : 'Team'}
-              </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="daily">{language === 'es' ? 'Diario' : 'Daily'}</TabsTrigger>
+            <TabsTrigger value="weekly">{language === 'es' ? 'Semanal' : 'Weekly'}</TabsTrigger>
+            <TabsTrigger value="reports">{language === 'es' ? 'Reportes' : 'Reports'}</TabsTrigger>
+            {isManager && (
+              <TabsTrigger value="approvals">{language === 'es' ? 'Aprobar' : 'Approve'}</TabsTrigger>
             )}
           </TabsList>
 
-          <TabsContent value="personal">
-            <PersonalTimeView 
-              entries={filteredEntries.filter(e => e.employee_email === user?.email)} 
-              jobs={jobs}
-            />
+          <TabsContent value="daily" className="mt-6">
+            <DailyTimeView user={user} selectedDate={selectedDate} onDateChange={setSelectedDate} />
           </TabsContent>
 
-          {isAdmin && (
-            <TabsContent value="team">
-              <TeamTimeView 
-                entries={filteredEntries} 
-                jobs={jobs}
-                employees={employees}
-              />
+          <TabsContent value="weekly" className="mt-6">
+            <WeeklyTimeView user={user} selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          </TabsContent>
+
+          <TabsContent value="reports" className="mt-6">
+            <TimeReportsView user={user} />
+          </TabsContent>
+
+          {isManager && (
+            <TabsContent value="approvals" className="mt-6">
+              <ManagerApprovalView />
             </TabsContent>
           )}
         </Tabs>
-
-        {showLogDialog && (
-          <TimeLogDialog
-            open={showLogDialog}
-            onClose={() => setShowLogDialog(false)}
-            jobs={jobs}
-            user={user}
-          />
-        )}
       </div>
     </div>
   );
