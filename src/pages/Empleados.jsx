@@ -522,36 +522,14 @@ export default function Empleados() {
         errors: []
       };
 
-      // STEP 1: Create new users from pending employees
-      const employeesWithEmail = pendingEmployees.filter(e => e.email);
+      // STEP 1: Skip user creation - users must be invited via Dashboard
+      // Count pending employees that need invitation
+      const employeesWithEmail = pendingEmployees.filter(e => e.email && e.status === 'pending');
       const existingEmails = new Set(employees.map(e => e.email));
-
-      for (const pending of employeesWithEmail) {
-        if (existingEmails.has(pending.email)) continue;
-
-        const fullName = `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 
-          pending.full_name || 'Employee';
-
-        try {
-          await base44.entities.User.create({
-            email: pending.email,
-            full_name: fullName,
-            first_name: pending.first_name || '',
-            last_name: pending.last_name || '',
-            role: 'user',
-            phone: pending.phone || '',
-            position: pending.position || '',
-            department: pending.department || '',
-            team_id: pending.team_id || '',
-            team_name: pending.team_name || '',
-            employment_status: 'pending_registration'
-          });
-          results.created++;
-        } catch (error) {
-          if (!error.message.includes('already exists')) {
-            results.errors.push(`Create ${pending.email}: ${error.message}`);
-          }
-        }
+      const needsInvitation = employeesWithEmail.filter(e => !existingEmails.has(e.email));
+      
+      if (needsInvitation.length > 0) {
+        results.errors.push(`${needsInvitation.length} empleados necesitan ser invitados desde el Dashboard`);
       }
 
       // STEP 2: Update existing users with pending employee data
@@ -639,31 +617,10 @@ export default function Empleados() {
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
         employee.full_name || 'Employee';
 
-      // Create user if doesn't exist
-      const existingUser = employees.find(e => e.email === employee.email);
-      if (!existingUser) {
-        try {
-          await base44.entities.User.create({
-            email: employee.email,
-            full_name: fullName,
-            first_name: employee.first_name || '',
-            last_name: employee.last_name || '',
-            role: 'user',
-            phone: employee.phone || '',
-            position: employee.position || '',
-            team_id: employee.team_id || '',
-            team_name: employee.team_name || '',
-            employment_status: 'pending_registration'
-          });
-        } catch (error) {
-          if (!error.message.includes('already exists')) throw error;
-        }
-      }
-
       // Send welcome email
       const emailBody = language === 'es' 
-        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
-        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nPasos para acceder:\n1. Revisa tu email para la invitación de Base44\n2. Acepta la invitación y crea tu contraseña\n3. Accede a: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
+        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nSteps to access:\n1. Check your email for the Base44 invitation\n2. Accept the invitation and create your password\n3. Access: ${appUrl}\n\nWelcome to the team!\nMCI Team`;
 
       await base44.integrations.Core.SendEmail({
         to: employee.email,
@@ -682,7 +639,9 @@ export default function Empleados() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' ? 'Invitación enviada' : 'Invitation sent');
+      toast.success(language === 'es' 
+        ? 'Email enviado. Ahora invita al usuario desde el Dashboard (Data → User → Invite User)'
+        : 'Email sent. Now invite the user from Dashboard (Data → User → Invite User)');
     },
     onError: (error) => {
       toast.error(t('error') + ': ' + error.message);
@@ -703,31 +662,10 @@ export default function Empleados() {
           const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
             employee.full_name || 'Employee';
 
-          // Create user if doesn't exist
-          const existingUser = employees.find(e => e.email === employee.email);
-          if (!existingUser) {
-            try {
-              await base44.entities.User.create({
-                email: employee.email,
-                full_name: fullName,
-                first_name: employee.first_name || '',
-                last_name: employee.last_name || '',
-                role: 'user',
-                phone: employee.phone || '',
-                position: employee.position || '',
-                team_id: employee.team_id || '',
-                team_name: employee.team_name || '',
-                employment_status: 'pending_registration'
-              });
-            } catch (error) {
-              if (!error.message.includes('already exists')) throw error;
-            }
-          }
-
           // Send email
           const emailBody = language === 'es' 
-            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
-            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nPasos para acceder:\n1. Revisa tu email para la invitación de Base44\n2. Acepta la invitación y crea tu contraseña\n3. Accede a: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
+            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nSteps to access:\n1. Check your email for the Base44 invitation\n2. Accept the invitation and create your password\n3. Access: ${appUrl}\n\nWelcome to the team!\nMCI Team`;
 
           await base44.integrations.Core.SendEmail({
             to: employee.email,
@@ -760,8 +698,8 @@ export default function Empleados() {
       if (results.success > 0) {
         toast.success(
           language === 'es' 
-            ? `${results.success} invitaciones enviadas exitosamente`
-            : `${results.success} invitations sent successfully`
+            ? `${results.success} emails enviados. Ahora invítalos desde el Dashboard.`
+            : `${results.success} emails sent. Now invite them from Dashboard.`
         );
       }
       if (results.failed > 0) {
