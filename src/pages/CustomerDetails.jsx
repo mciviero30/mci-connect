@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +25,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function CustomerDetails() {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
   const { t } = useLanguage();
   const toast = useToast();
   const queryClient = useQueryClient();
