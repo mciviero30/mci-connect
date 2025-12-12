@@ -256,6 +256,29 @@ const LayoutContent = ({ children, currentPageName }) => {
     }
   }, [isClientOnly, currentPageName]);
 
+  // Permission-based navigation
+  const getNavigationForUser = () => {
+    const position = user?.position;
+    const department = user?.department;
+    const isAdmin = user?.role === 'admin';
+    
+    // Full access: CEO, administrator, admin role
+    const hasFullAccess = isAdmin || position === 'CEO' || position === 'administrator';
+    
+    // Manager access: managers + HR department
+    const hasManagerAccess = hasFullAccess || position === 'manager' || department === 'HR';
+    
+    if (hasFullAccess) {
+      return adminNavigation;
+    }
+    
+    if (hasManagerAccess) {
+      return managerNavigation;
+    }
+    
+    return employeeNavigation;
+  };
+
   const adminNavigation = [
     {
       section: 'GENERAL',
@@ -347,6 +370,55 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
         { title: 'Clean Data', url: createPageUrl("AdminCleanup"), icon: Trash2 },
         { title: 'Testing', url: createPageUrl("TestingChecklist"), icon: ClipboardList },
+      ]
+    }
+  ];
+
+  const managerNavigation = [
+    {
+      section: 'GENERAL',
+      items: [
+        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
+      ]
+    },
+    {
+      section: 'JOBS & PROJECTS',
+      items: [
+        { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+        { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
+        { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+      ]
+    },
+    {
+      section: 'PEOPLE',
+      items: [
+        { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
+        { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
+        { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+        { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target },
+        { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users },
+      ]
+    },
+    {
+      section: 'TIME & PAYROLL',
+      items: [
+        { title: 'Time Tracking', url: createPageUrl("TimeTracking"), icon: Clock },
+        { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3 },
+        { title: 'Approvals', url: createPageUrl("Horarios"), icon: Clock },
+        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
+      ]
+    },
+    {
+      section: 'RESOURCES',
+      items: [
+        { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
+        { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
+        { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
       ]
     }
   ];
@@ -444,8 +516,8 @@ const LayoutContent = ({ children, currentPageName }) => {
     );
   }
 
-  const navigation = user?.role === 'admin' ? adminNavigation : employeeNavigation;
-  const isAdmin = user?.role === 'admin';
+  const navigation = getNavigationForUser();
+  const isAdmin = user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator';
 
   // If client only, render ClientPortal directly without sidebar
   if (isClientOnly) {
