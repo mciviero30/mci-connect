@@ -72,6 +72,7 @@ import ClientPortal from './pages/ClientPortal';
 import SkillMatrix from './pages/SkillMatrix';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
+import WelcomeMessage from './pages/WelcomeMessage';
 import __Layout from './Layout.jsx';
 
 
@@ -150,6 +151,7 @@ export const PAGES = {
     "SkillMatrix": SkillMatrix,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
+    "WelcomeMessage": WelcomeMessage,
 }
 
 export const pagesConfig = {
