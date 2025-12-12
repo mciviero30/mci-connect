@@ -224,10 +224,12 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['employee'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
       onClose();
       alert('✅ Employee updated successfully and synced to directory!');
+      setTimeout(() => window.location.reload(), 300);
     },
     onError: (error) => {
       if (error.message === 'PERMISSION_DENIED') {
