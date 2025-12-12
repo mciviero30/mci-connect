@@ -19,6 +19,12 @@ export default function QuoteDocument({ quote }) {
                         print-color-adjust: exact !important;
                         color-adjust: exact !important;
                     }
+
+                    .print-word-wrap {
+                        overflow: visible !important;
+                        white-space: normal !important;
+                        word-break: break-word !important;
+                    }
                 }
             `}</style>
 
@@ -107,7 +113,7 @@ export default function QuoteDocument({ quote }) {
                                     <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                                 </td>
                                 <td className="px-3 py-2 align-middle">
-                                   <p className="font-semibold text-sm text-slate-900 truncate">
+                                   <p className="font-semibold text-sm text-slate-900 truncate print:truncate-none print-word-wrap">
                                        {(item.item_name || item.description || '').replace(/\n/g, ' ').trim()}
                                    </p>
                                 </td>
