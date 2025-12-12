@@ -177,10 +177,10 @@ export default function Chat() {
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      const users = await base44.entities.User.filter({ 
-        employment_status: 'active' 
+      const users = await base44.entities.EmployeeDirectory.filter({ 
+        status: 'active' 
       });
-      console.log('Active users fetched:', users);
+      console.log('Active employees fetched:', users);
       return users;
     },
     initialData: [],
@@ -756,7 +756,7 @@ export default function Chat() {
             <div className="space-y-2 max-h-96 overflow-y-auto p-2">
               {employees && employees.length > 0 ? (
                 employees
-                  .filter(emp => emp.email !== user?.email && emp.employment_status === 'active')
+                  .filter(emp => emp.email !== user?.email && emp.status === 'active')
                   .map(emp => {
                     const displayName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email.split('@')[0];
                     const displayPosition = emp.position || emp.email;
