@@ -261,21 +261,14 @@ const LayoutContent = ({ children, currentPageName }) => {
     const position = user?.position;
     const department = user?.department;
     const isAdmin = user?.role === 'admin';
-    
-    // Full access: CEO, administrator, admin role
-    const hasFullAccess = isAdmin || position === 'CEO' || position === 'administrator';
-    
-    // Manager access: managers + HR department
-    const hasManagerAccess = hasFullAccess || position === 'manager' || department === 'HR';
-    
+
+    // Full access: CEO, administrator, admin role, managers, and HR
+    const hasFullAccess = isAdmin || position === 'CEO' || position === 'administrator' || position === 'manager' || department === 'HR';
+
     if (hasFullAccess) {
       return adminNavigation;
     }
-    
-    if (hasManagerAccess) {
-      return managerNavigation;
-    }
-    
+
     return employeeNavigation;
   };
 
