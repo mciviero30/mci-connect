@@ -750,7 +750,7 @@ export default function Chat() {
             <div className="space-y-2 max-h-96 overflow-y-auto p-2">
               {employees && employees.length > 0 ? (
                 employees
-                  .filter(emp => emp.email !== user?.email && emp.employment_status !== 'deleted')
+                  .filter(emp => emp.email !== user?.email)
                   .map(emp => (
                     <button
                       key={emp.email}
