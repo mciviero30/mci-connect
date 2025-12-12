@@ -130,15 +130,15 @@ export default function Formularios() {
           </Card>
         )}
 
-        <Card className="glass-card shadow-xl border-slate-800">
+        <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
           <CardContent className="p-6">
-            <h2 className="text-xl font-bold text-white mb-4">{t('completed')}</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{t('completed')}</h2>
             <div className="space-y-3">
               {mySubmissions.slice(0, 10).map(submission => (
-                <div key={submission.id} className="p-4 bg-slate-800/50 rounded-lg flex items-center justify-between border border-slate-700">
+                <div key={submission.id} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg flex items-center justify-between border border-slate-200 dark:border-slate-700">
                   <div>
-                    <p className="font-semibold text-white">{submission.template_name}</p>
-                    <p className="text-sm text-slate-500">
+                    <p className="font-semibold text-slate-900 dark:text-white">{submission.template_name}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
                       {format(new Date(submission.submission_date), "MMM dd, yyyy 'at' HH:mm")}
                     </p>
                   </div>
@@ -157,7 +157,7 @@ export default function Formularios() {
             <div className="py-4 space-y-4">
               {selectedForm?.fields.map(field => (
                 <div key={field.id}>
-                  <Label className="block font-medium text-slate-300 mb-2">
+                  <Label className="block font-medium text-slate-900 dark:text-slate-300 mb-2">
                     {field.label} {field.required && <span className="text-[#3B9FF3]">*</span>}
                   </Label>
                   
@@ -165,7 +165,7 @@ export default function Formularios() {
                     <Input
                       value={responses[field.id] || ''}
                       onChange={(e) => setResponses({ ...responses, [field.id]: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                     />
                   )}
 
@@ -174,7 +174,7 @@ export default function Formularios() {
                       value={responses[field.id] || ''}
                       onChange={(e) => setResponses({ ...responses, [field.id]: e.target.value })}
                       rows={4}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                     />
                   )}
 
@@ -183,7 +183,7 @@ export default function Formularios() {
                       type="number"
                       value={responses[field.id] || ''}
                       onChange={(e) => setResponses({ ...responses, [field.id]: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                     />
                   )}
 
@@ -195,7 +195,7 @@ export default function Formularios() {
                         onChange={(e) => setResponses({ ...responses, [field.id]: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <span className="text-sm text-slate-300">{field.label}</span>
+                      <span className="text-sm text-slate-900 dark:text-slate-300">{field.label}</span>
                     </div>
                   )}
 
@@ -203,7 +203,7 @@ export default function Formularios() {
                     <select
                       value={responses[field.id] || ''}
                       onChange={(e) => setResponses({ ...responses, [field.id]: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg bg-slate-800 border-slate-700 text-white"
+                      className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                     >
                       <option value="">{t('select')}</option>
                       {field.options?.map((opt, i) => (
@@ -215,7 +215,7 @@ export default function Formularios() {
               ))}
 
               <div className="flex gap-3 justify-end pt-4">
-                <Button variant="outline" onClick={() => setSelectedForm(null)} className="bg-slate-800 border-slate-700 text-slate-300">
+                <Button variant="outline" onClick={() => setSelectedForm(null)} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                   {t('cancel')}
                 </Button>
                 <Button onClick={handleSubmit} disabled={submitMutation.isPending} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30">
