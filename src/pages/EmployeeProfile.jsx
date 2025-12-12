@@ -402,17 +402,40 @@ export default function EmployeeProfile() {
 
   const updateEmployeeMutation = useMutation({
     mutationFn: async (data) => {
+      // Ensure first_name and last_name are populated from full_name if needed
+      let firstName = data.first_name || employee.first_name || '';
+      let lastName = data.last_name || employee.last_name || '';
+      
+      // If full_name changed but first/last are missing, split the full_name
+      if (data.full_name && (!firstName || !lastName)) {
+        const parts = data.full_name.split(' ').filter(p => p);
+        if (parts.length >= 2) {
+          firstName = parts[0];
+          lastName = parts.slice(1).join(' ');
+        } else if (parts.length === 1) {
+          firstName = parts[0];
+          lastName = '';
+        }
+      }
+      
+      const updatePayload = {
+        ...data,
+        first_name: firstName,
+        last_name: lastName,
+        full_name: data.full_name || `${firstName} ${lastName}`.trim()
+      };
+      
       if (currentUser && employee.email === currentUser.email) {
-        await base44.auth.updateMe(data);
+        await base44.auth.updateMe(updatePayload);
       } else {
         try {
-          await base44.entities.User.update(employee.id, data);
+          await base44.entities.User.update(employee.id, updatePayload);
         } catch (error) {
           console.error('Direct update failed:', error);
           throw new Error('UPDATE_FAILED');
         }
       }
-      return data;
+      return updatePayload;
     },
     onSuccess: async (data) => {
       try {
@@ -421,7 +444,7 @@ export default function EmployeeProfile() {
 
         const directoryData = {
           employee_email: employee.email,
-          full_name: data.full_name || employee.full_name,
+          full_name: data.full_name,
           position: data.position || '',
           department: data.department || '',
           phone: data.phone || '',
