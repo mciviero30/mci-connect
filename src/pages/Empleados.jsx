@@ -613,36 +613,28 @@ export default function Empleados() {
     mutationFn: async (employee) => {
       if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
-      const appUrl = window.location.origin;
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-        employee.full_name || 'Employee';
+      // Copy email to clipboard
+      await navigator.clipboard.writeText(employee.email);
 
-      // Invite user via backend function
-      await base44.functions.invoke('inviteEmployee', { employee });
-
-      // Send welcome email
-      const emailBody = language === 'es' 
-        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nPasos para acceder:\n1. Revisa tu email para la invitación de Base44\n2. Acepta la invitación y crea tu contraseña\n3. Accede a: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
-        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nSteps to access:\n1. Check your email for the Base44 invitation\n2. Accept the invitation and create your password\n3. Access: ${appUrl}\n\nWelcome to the team!\nMCI Team`;
-
-      await base44.integrations.Core.SendEmail({
-        to: employee.email,
-        subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-        body: emailBody,
-        from_name: 'MCI Connect'
-      });
+      // Open Dashboard in new tab
+      window.open('https://dashboard.base44.com/apps/68ee5191fb756d843d0561d3/data/User', '_blank');
 
       // Update status
       await base44.entities.PendingEmployee.update(employee.id, {
         status: 'invited',
         invited_date: new Date().toISOString(),
+        last_invitation_sent: new Date().toISOString(),
         invitation_count: (employee.invitation_count || 0) + 1
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' ? 'Invitación enviada exitosamente' : 'Invitation sent successfully');
+      toast.success(
+        language === 'es' 
+          ? 'Email copiado. Ahora completa la invitación en el Dashboard (Data → User → Invite User)'
+          : 'Email copied. Now complete the invitation in Dashboard (Data → User → Invite User)'
+      );
     },
     onError: (error) => {
       toast.error(t('error') + ': ' + error.message);
@@ -656,43 +648,33 @@ export default function Empleados() {
       );
 
       const results = { success: 0, failed: 0 };
+      const emails = [];
       
       for (const employee of employeesToInvite) {
         try {
-          const appUrl = window.location.origin;
-          const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-            employee.full_name || 'Employee';
-
-          // Invite user via backend function
-          await base44.functions.invoke('inviteEmployee', { employee });
-
-          // Send email
-          const emailBody = language === 'es' 
-            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nPasos para acceder:\n1. Revisa tu email para la invitación de Base44\n2. Acepta la invitación y crea tu contraseña\n3. Accede a: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
-            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nSteps to access:\n1. Check your email for the Base44 invitation\n2. Accept the invitation and create your password\n3. Access: ${appUrl}\n\nWelcome to the team!\nMCI Team`;
-
-          await base44.integrations.Core.SendEmail({
-            to: employee.email,
-            subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-            body: emailBody,
-            from_name: 'MCI Connect'
-          });
+          emails.push(employee.email);
 
           // Update status
           await base44.entities.PendingEmployee.update(employee.id, {
             status: 'invited',
             invited_date: new Date().toISOString(),
+            last_invitation_sent: new Date().toISOString(),
             invitation_count: (employee.invitation_count || 0) + 1
           });
 
           results.success++;
         } catch (error) {
-          console.error(`Error inviting ${employee.email}:`, error);
+          console.error(`Error updating ${employee.email}:`, error);
           results.failed++;
         }
       }
 
-      return results;
+      // Copy all emails to clipboard
+      if (emails.length > 0) {
+        await navigator.clipboard.writeText(emails.join('\n'));
+      }
+
+      return { ...results, emails };
     },
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
@@ -700,17 +682,18 @@ export default function Empleados() {
       setSelectedEmployees([]);
       
       if (results.success > 0) {
+        window.open('https://dashboard.base44.com/apps/68ee5191fb756d843d0561d3/data/User', '_blank');
         toast.success(
           language === 'es' 
-            ? `${results.success} invitaciones enviadas exitosamente`
-            : `${results.success} invitations sent successfully`
+            ? `${results.success} emails copiados. Completa las invitaciones en el Dashboard`
+            : `${results.success} emails copied. Complete invitations in Dashboard`
         );
       }
       if (results.failed > 0) {
         toast.warning(
           language === 'es'
-            ? `${results.failed} invitaciones fallaron`
-            : `${results.failed} invitations failed`
+            ? `${results.failed} actualizaciones fallaron`
+            : `${results.failed} updates failed`
         );
       }
     },
