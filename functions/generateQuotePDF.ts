@@ -1,4 +1,4 @@
-// Forzar Despliegue v3.0 (Ignorar)
+// Forzar Despliegue v3.1 (Ignorar)
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import { jsPDF } from 'npm:jspdf@2.5.1';
 
