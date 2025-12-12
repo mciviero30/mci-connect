@@ -8,10 +8,16 @@ export default function InvoiceDocument({ invoice }) {
     const hasBalance = invoice.balance > 0;
 
     return (
-        <div className="bg-white p-10 print:p-8 font-sans">
-            <style jsx>{`
+        <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
+            <style jsx global>{`
+                @page {
+                    size: A4 portrait;
+                    margin: 1cm;
+                }
+
                 @media print {
-                    * {
+                    body, html {
+                        background-color: #fff !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                         color-adjust: exact !important;
