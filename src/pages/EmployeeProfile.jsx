@@ -541,18 +541,7 @@ export default function EmployeeProfile() {
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
         <PageHeader
-          title={(() => {
-            // Format display name properly
-            if (employee.first_name || employee.last_name) {
-              const first = employee.first_name || '';
-              const last = employee.last_name || '';
-              const combined = `${first} ${last}`.trim();
-              if (combined && !combined.includes('@')) {
-                return combined;
-              }
-            }
-            return getDisplayName(employee);
-          })()}
+          title={capitalizeName(employee.full_name) || getDisplayName(employee)}
           description={capitalizeName(employee.position) || 'Employee'}
           icon={User}
           showBack
