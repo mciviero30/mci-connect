@@ -202,7 +202,7 @@ const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, isInactive = 
 };
 
 // PENDING EMPLOYEE CARD
-const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, onRestore, onDelete }) => {
+const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, onRestore, onDelete, isSelected, onSelect }) => {
   const { t, language } = useLanguage();
   
   const displayName = formatDisplayName(employee);
@@ -222,9 +222,18 @@ const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, 
     : 0;
 
   return (
-    <Card className="group hover:shadow-lg transition-all">
+    <Card className={`group hover:shadow-lg transition-all ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3 mb-3">
+          {employee.status === 'pending' && employee.email && onSelect && (
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => onSelect(employee.id, e.target.checked)}
+              className="w-5 h-5 accent-blue-600 cursor-pointer mt-1"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           <div className="w-12 h-12 bg-gradient-to-br from-slate-500 to-slate-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
             {displayName[0]?.toUpperCase()}
           </div>
@@ -407,6 +416,7 @@ export default function Empleados() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
   const [showInactive, setShowInactive] = useState(false);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
 
   // Fetch data - Use EmployeeDirectory instead of User
   const { data: employees = [], isLoading } = useQuery({
@@ -673,6 +683,94 @@ export default function Empleados() {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success(language === 'es' ? 'Invitación enviada' : 'Invitation sent');
+    },
+    onError: (error) => {
+      toast.error(t('error') + ': ' + error.message);
+    }
+  });
+
+  const bulkInviteMutation = useMutation({
+    mutationFn: async (employeeIds) => {
+      const employeesToInvite = pendingEmployees.filter(e => 
+        employeeIds.includes(e.id) && e.email && e.status === 'pending'
+      );
+
+      const results = { success: 0, failed: 0 };
+      
+      for (const employee of employeesToInvite) {
+        try {
+          const appUrl = window.location.origin;
+          const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+            employee.full_name || 'Employee';
+
+          // Create user if doesn't exist
+          const existingUser = employees.find(e => e.email === employee.email);
+          if (!existingUser) {
+            try {
+              await base44.entities.User.create({
+                email: employee.email,
+                full_name: fullName,
+                first_name: employee.first_name || '',
+                last_name: employee.last_name || '',
+                role: 'user',
+                phone: employee.phone || '',
+                position: employee.position || '',
+                team_id: employee.team_id || '',
+                team_name: employee.team_name || '',
+                employment_status: 'pending_registration'
+              });
+            } catch (error) {
+              if (!error.message.includes('already exists')) throw error;
+            }
+          }
+
+          // Send email
+          const emailBody = language === 'es' 
+            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
+            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+
+          await base44.integrations.Core.SendEmail({
+            to: employee.email,
+            subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+            body: emailBody,
+            from_name: 'MCI Connect'
+          });
+
+          // Update status
+          await base44.entities.PendingEmployee.update(employee.id, {
+            status: 'invited',
+            invited_date: new Date().toISOString(),
+            invitation_count: (employee.invitation_count || 0) + 1
+          });
+
+          results.success++;
+        } catch (error) {
+          console.error(`Error inviting ${employee.email}:`, error);
+          results.failed++;
+        }
+      }
+
+      return results;
+    },
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setSelectedEmployees([]);
+      
+      if (results.success > 0) {
+        toast.success(
+          language === 'es' 
+            ? `${results.success} invitaciones enviadas exitosamente`
+            : `${results.success} invitations sent successfully`
+        );
+      }
+      if (results.failed > 0) {
+        toast.warning(
+          language === 'es'
+            ? `${results.failed} invitaciones fallaron`
+            : `${results.failed} invitations failed`
+        );
+      }
     },
     onError: (error) => {
       toast.error(t('error') + ': ' + error.message);
@@ -976,10 +1074,39 @@ export default function Empleados() {
             {/* Not yet invited */}
             {pendingOnly.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-yellow-600" />
-                  {language === 'es' ? 'Pendientes de Invitar' : 'Not Yet Invited'} ({pendingOnly.length})
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-yellow-600" />
+                    {language === 'es' ? 'Pendientes de Invitar' : 'Not Yet Invited'} ({pendingOnly.length})
+                  </h3>
+                  
+                  {selectedEmployees.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-600">
+                        {selectedEmployees.length} {language === 'es' ? 'seleccionados' : 'selected'}
+                      </span>
+                      <Button
+                        onClick={() => bulkInviteMutation.mutate(selectedEmployees)}
+                        disabled={bulkInviteMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        size="sm"
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        {bulkInviteMutation.isPending 
+                          ? (language === 'es' ? 'Enviando...' : 'Sending...') 
+                          : (language === 'es' ? 'Enviar Invitaciones' : 'Send Invitations')
+                        }
+                      </Button>
+                      <Button
+                        onClick={() => setSelectedEmployees([])}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {language === 'es' ? 'Limpiar' : 'Clear'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pendingOnly.map(employee => (
                     <PendingEmployeeCard
@@ -1001,6 +1128,14 @@ export default function Empleados() {
                       onDelete={(id) => {
                         if (window.confirm(t('confirmDeleteEmployeePermanently'))) {
                           deletePendingMutation.mutate(id);
+                        }
+                      }}
+                      isSelected={selectedEmployees.includes(employee.id)}
+                      onSelect={(id, checked) => {
+                        if (checked) {
+                          setSelectedEmployees(prev => [...prev, id]);
+                        } else {
+                          setSelectedEmployees(prev => prev.filter(empId => empId !== id));
                         }
                       }}
                     />
