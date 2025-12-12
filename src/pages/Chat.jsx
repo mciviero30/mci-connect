@@ -176,7 +176,7 @@ export default function Chat() {
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
+    queryFn: () => base44.entities.User.list(),
     initialData: [],
     staleTime: 300000,
   });
@@ -743,30 +743,37 @@ export default function Chat() {
 
         {/* New Direct Message Dialog */}
         <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
-          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white">Start Direct Message</DialogTitle>
             </DialogHeader>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {employees
-                .filter(emp => emp.email !== user?.email)
-                .map(emp => (
-                  <button
-                    key={emp.email}
-                    onClick={() => startDirectMessage(emp)}
-                    className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors"
-                  >
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold">
-                        {emp.full_name?.[0]?.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-slate-900 dark:text-white">{emp.full_name}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{emp.position || emp.email}</p>
-                    </div>
-                  </button>
-                ))}
+            <div className="space-y-2 max-h-96 overflow-y-auto p-2">
+              {employees && employees.length > 0 ? (
+                employees
+                  .filter(emp => emp.email !== user?.email && emp.employment_status !== 'deleted')
+                  .map(emp => (
+                    <button
+                      key={emp.email}
+                      onClick={() => startDirectMessage(emp)}
+                      className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors text-left border border-transparent hover:border-blue-200 dark:hover:border-blue-700"
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white font-bold">
+                          {emp.full_name?.[0]?.toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-900 dark:text-white truncate">{emp.full_name || emp.email}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{emp.position || emp.email}</p>
+                      </div>
+                    </button>
+                  ))
+              ) : (
+                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                  <Users className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                  <p>No employees available</p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
