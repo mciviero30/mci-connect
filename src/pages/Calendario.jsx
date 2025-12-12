@@ -26,12 +26,14 @@ import OccupancyStats from "../components/calendario/OccupancyStats";
 import GoogleCalendarSync from "../components/calendario/GoogleCalendarSync";
 import AvailabilityOverview from "../components/calendario/AvailabilityOverview";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
 import { useToast } from "@/components/ui/toast";
 import { DragDropContext } from '@hello-pangea/dnd';
 
 export default function Calendario() {
   const { t, language } = useLanguage();
+  const { hasFullAccess } = usePermissions();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -398,7 +400,7 @@ export default function Calendario() {
 
   const workload = calculateWorkload();
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = hasFullAccess;
   const uniqueEmployees = [...new Set(shifts.map(s => s.employee_email).filter(Boolean))];
   const uniqueJobs = [...new Set(shifts.map(s => s.job_id).filter(Boolean))];
 

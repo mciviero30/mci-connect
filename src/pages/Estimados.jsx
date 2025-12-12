@@ -16,6 +16,7 @@ import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { usePermissions } from "@/components/permissions/usePermissions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,6 +32,7 @@ import _ from "lodash";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
+  const { hasFullAccess } = usePermissions();
   const queryClient = useQueryClient();
   const toast = useToast();
   const navigate = useNavigate();
@@ -314,7 +316,7 @@ export default function Estimados() {
     return labels[status] || status;
   }
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = hasFullAccess;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">

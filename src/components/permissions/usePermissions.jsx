@@ -12,15 +12,13 @@ export const usePermissions = () => {
     if (!user) return false;
     if (user.role === 'admin') return true;
     
-    const fullAccessPositions = ['CEO', 'administrator'];
-    return fullAccessPositions.includes(user.position);
+    const fullAccessPositions = ['CEO', 'administrator', 'manager'];
+    const fullAccessDepartments = ['HR'];
+    return fullAccessPositions.includes(user.position) || fullAccessDepartments.includes(user.department);
   };
 
   const hasManagerAccess = () => {
-    if (!user) return false;
-    if (hasFullAccess()) return true;
-    
-    return user.position === 'manager' || user.department === 'HR';
+    return hasFullAccess();
   };
 
   const hasFinanceAccess = () => {
