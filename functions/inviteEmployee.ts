@@ -19,24 +19,25 @@ Deno.serve(async (req) => {
     const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
       employee.full_name || 'Employee';
 
-    // Create user with service role
-    await base44.asServiceRole.functions.invoke('createUser', {
-      email: employee.email,
-      full_name: fullName,
-      first_name: employee.first_name || '',
-      last_name: employee.last_name || '',
-      phone: employee.phone || '',
-      position: employee.position || '',
-      department: employee.department || '',
-      team_id: employee.team_id || '',
-      team_name: employee.team_name || '',
-      address: employee.address || '',
-      dob: employee.dob || '',
-      ssn_tax_id: employee.ssn_tax_id || '',
-      tshirt_size: employee.tshirt_size || '',
-      direct_manager_name: employee.direct_manager_name || '',
-      employment_status: 'pending_registration'
+    // Create/update user in EmployeeDirectory with service role
+    const directoryEntries = await base44.asServiceRole.entities.EmployeeDirectory.filter({
+      employee_email: employee.email
     });
+
+    if (directoryEntries.length === 0) {
+      await base44.asServiceRole.entities.EmployeeDirectory.create({
+        employee_email: employee.email,
+        full_name: fullName,
+        first_name: employee.first_name || '',
+        last_name: employee.last_name || '',
+        phone: employee.phone || '',
+        position: employee.position || '',
+        department: employee.department || '',
+        team_id: employee.team_id || '',
+        team_name: employee.team_name || '',
+        status: 'active'
+      });
+    }
 
     return Response.json({ 
       success: true,
