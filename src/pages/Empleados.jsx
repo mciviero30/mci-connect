@@ -617,6 +617,9 @@ export default function Empleados() {
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
         employee.full_name || 'Employee';
 
+      // Invite user via backend function
+      await base44.functions.invoke('inviteEmployee', { employee });
+
       // Send welcome email
       const emailBody = language === 'es' 
         ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nPasos para acceder:\n1. Revisa tu email para la invitación de Base44\n2. Acepta la invitación y crea tu contraseña\n3. Accede a: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
@@ -639,9 +642,7 @@ export default function Empleados() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' 
-        ? 'Email enviado. Ahora invita al usuario desde el Dashboard (Data → User → Invite User)'
-        : 'Email sent. Now invite the user from Dashboard (Data → User → Invite User)');
+      toast.success(language === 'es' ? 'Invitación enviada exitosamente' : 'Invitation sent successfully');
     },
     onError: (error) => {
       toast.error(t('error') + ': ' + error.message);
@@ -661,6 +662,9 @@ export default function Empleados() {
           const appUrl = window.location.origin;
           const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
             employee.full_name || 'Employee';
+
+          // Invite user via backend function
+          await base44.functions.invoke('inviteEmployee', { employee });
 
           // Send email
           const emailBody = language === 'es' 
@@ -698,8 +702,8 @@ export default function Empleados() {
       if (results.success > 0) {
         toast.success(
           language === 'es' 
-            ? `${results.success} emails enviados. Ahora invítalos desde el Dashboard.`
-            : `${results.success} emails sent. Now invite them from Dashboard.`
+            ? `${results.success} invitaciones enviadas exitosamente`
+            : `${results.success} invitations sent successfully`
         );
       }
       if (results.failed > 0) {
