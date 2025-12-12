@@ -171,7 +171,10 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         console.log('🔄 Auto-activating user on first login:', user.email);
         
-        // Transfer data from PendingEmployee to User
+        await base44.auth.updateMe({ 
+          employment_status: 'active' 
+        });
+        
         try {
           const pendingEmployees = await base44.entities.PendingEmployee.filter({ 
             email: user.email 
@@ -179,48 +182,13 @@ const LayoutContent = ({ children, currentPageName }) => {
           
           if (pendingEmployees.length > 0) {
             const pendingEmployee = pendingEmployees[0];
-            
-            // Build update object with all available data from PendingEmployee
-            const updateData = {
-              employment_status: 'active'
-            };
-
-            // Transfer all fields from PendingEmployee to User
-            if (pendingEmployee.first_name) updateData.first_name = pendingEmployee.first_name;
-            if (pendingEmployee.last_name) updateData.last_name = pendingEmployee.last_name;
-            if (pendingEmployee.position) updateData.position = pendingEmployee.position;
-            if (pendingEmployee.phone) updateData.phone = pendingEmployee.phone;
-            if (pendingEmployee.department) updateData.department = pendingEmployee.department;
-            if (pendingEmployee.team_id) updateData.team_id = pendingEmployee.team_id;
-            if (pendingEmployee.team_name) updateData.team_name = pendingEmployee.team_name;
-            if (pendingEmployee.address) updateData.address = pendingEmployee.address;
-            if (pendingEmployee.dob) updateData.dob = pendingEmployee.dob;
-            if (pendingEmployee.ssn_tax_id) updateData.ssn_tax_id = pendingEmployee.ssn_tax_id;
-            if (pendingEmployee.tshirt_size) updateData.tshirt_size = pendingEmployee.tshirt_size;
-            if (pendingEmployee.direct_manager_name) updateData.direct_manager_name = pendingEmployee.direct_manager_name;
-            
-            // Update User with PendingEmployee data
-            await base44.auth.updateMe(updateData);
-            
-            // Update PendingEmployee status
             await base44.entities.PendingEmployee.update(pendingEmployee.id, {
               status: 'active',
               registered_date: new Date().toISOString()
             });
-
-            console.log('✅ User data transferred from PendingEmployee');
-          } else {
-            // No pending employee found, just activate
-            await base44.auth.updateMe({ 
-              employment_status: 'active' 
-            });
           }
         } catch (pendingError) {
-          console.log('Note: PendingEmployee transfer failed:', pendingError.message);
-          // Fallback: just activate without data transfer
-          await base44.auth.updateMe({ 
-            employment_status: 'active' 
-          });
+          console.log('Note: PendingEmployee update failed (might not exist):', pendingError.message);
         }
         
         console.log('✅ User auto-activated successfully');

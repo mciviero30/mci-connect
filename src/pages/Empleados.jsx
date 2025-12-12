@@ -522,14 +522,36 @@ export default function Empleados() {
         errors: []
       };
 
-      // STEP 1: Skip user creation - users must be invited via Dashboard
-      // Count pending employees that need invitation
-      const employeesWithEmail = pendingEmployees.filter(e => e.email && e.status === 'pending');
+      // STEP 1: Create new users from pending employees
+      const employeesWithEmail = pendingEmployees.filter(e => e.email);
       const existingEmails = new Set(employees.map(e => e.email));
-      const needsInvitation = employeesWithEmail.filter(e => !existingEmails.has(e.email));
-      
-      if (needsInvitation.length > 0) {
-        results.errors.push(`${needsInvitation.length} empleados necesitan ser invitados desde el Dashboard`);
+
+      for (const pending of employeesWithEmail) {
+        if (existingEmails.has(pending.email)) continue;
+
+        const fullName = `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 
+          pending.full_name || 'Employee';
+
+        try {
+          await base44.entities.User.create({
+            email: pending.email,
+            full_name: fullName,
+            first_name: pending.first_name || '',
+            last_name: pending.last_name || '',
+            role: 'user',
+            phone: pending.phone || '',
+            position: pending.position || '',
+            department: pending.department || '',
+            team_id: pending.team_id || '',
+            team_name: pending.team_name || '',
+            employment_status: 'pending_registration'
+          });
+          results.created++;
+        } catch (error) {
+          if (!error.message.includes('already exists')) {
+            results.errors.push(`Create ${pending.email}: ${error.message}`);
+          }
+        }
       }
 
       // STEP 2: Update existing users with pending employee data
@@ -613,28 +635,54 @@ export default function Empleados() {
     mutationFn: async (employee) => {
       if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
-      // Copy email to clipboard
-      await navigator.clipboard.writeText(employee.email);
+      const appUrl = window.location.origin;
+      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+        employee.full_name || 'Employee';
 
-      // Open Dashboard in new tab
-      window.open('https://dashboard.base44.com/apps/68ee5191fb756d843d0561d3/data/User', '_blank');
+      // Create user if doesn't exist
+      const existingUser = employees.find(e => e.email === employee.email);
+      if (!existingUser) {
+        try {
+          await base44.entities.User.create({
+            email: employee.email,
+            full_name: fullName,
+            first_name: employee.first_name || '',
+            last_name: employee.last_name || '',
+            role: 'user',
+            phone: employee.phone || '',
+            position: employee.position || '',
+            team_id: employee.team_id || '',
+            team_name: employee.team_name || '',
+            employment_status: 'pending_registration'
+          });
+        } catch (error) {
+          if (!error.message.includes('already exists')) throw error;
+        }
+      }
+
+      // Send welcome email
+      const emailBody = language === 'es' 
+        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
+        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+
+      await base44.integrations.Core.SendEmail({
+        to: employee.email,
+        subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+        body: emailBody,
+        from_name: 'MCI Connect'
+      });
 
       // Update status
       await base44.entities.PendingEmployee.update(employee.id, {
         status: 'invited',
         invited_date: new Date().toISOString(),
-        last_invitation_sent: new Date().toISOString(),
         invitation_count: (employee.invitation_count || 0) + 1
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(
-        language === 'es' 
-          ? 'Email copiado. Ahora completa la invitación en el Dashboard (Data → User → Invite User)'
-          : 'Email copied. Now complete the invitation in Dashboard (Data → User → Invite User)'
-      );
+      toast.success(language === 'es' ? 'Invitación enviada' : 'Invitation sent');
     },
     onError: (error) => {
       toast.error(t('error') + ': ' + error.message);
@@ -648,33 +696,61 @@ export default function Empleados() {
       );
 
       const results = { success: 0, failed: 0 };
-      const emails = [];
       
       for (const employee of employeesToInvite) {
         try {
-          emails.push(employee.email);
+          const appUrl = window.location.origin;
+          const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+            employee.full_name || 'Employee';
+
+          // Create user if doesn't exist
+          const existingUser = employees.find(e => e.email === employee.email);
+          if (!existingUser) {
+            try {
+              await base44.entities.User.create({
+                email: employee.email,
+                full_name: fullName,
+                first_name: employee.first_name || '',
+                last_name: employee.last_name || '',
+                role: 'user',
+                phone: employee.phone || '',
+                position: employee.position || '',
+                team_id: employee.team_id || '',
+                team_name: employee.team_name || '',
+                employment_status: 'pending_registration'
+              });
+            } catch (error) {
+              if (!error.message.includes('already exists')) throw error;
+            }
+          }
+
+          // Send email
+          const emailBody = language === 'es' 
+            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
+            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+
+          await base44.integrations.Core.SendEmail({
+            to: employee.email,
+            subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+            body: emailBody,
+            from_name: 'MCI Connect'
+          });
 
           // Update status
           await base44.entities.PendingEmployee.update(employee.id, {
             status: 'invited',
             invited_date: new Date().toISOString(),
-            last_invitation_sent: new Date().toISOString(),
             invitation_count: (employee.invitation_count || 0) + 1
           });
 
           results.success++;
         } catch (error) {
-          console.error(`Error updating ${employee.email}:`, error);
+          console.error(`Error inviting ${employee.email}:`, error);
           results.failed++;
         }
       }
 
-      // Copy all emails to clipboard
-      if (emails.length > 0) {
-        await navigator.clipboard.writeText(emails.join('\n'));
-      }
-
-      return { ...results, emails };
+      return results;
     },
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
@@ -682,18 +758,17 @@ export default function Empleados() {
       setSelectedEmployees([]);
       
       if (results.success > 0) {
-        window.open('https://dashboard.base44.com/apps/68ee5191fb756d843d0561d3/data/User', '_blank');
         toast.success(
           language === 'es' 
-            ? `${results.success} emails copiados. Completa las invitaciones en el Dashboard`
-            : `${results.success} emails copied. Complete invitations in Dashboard`
+            ? `${results.success} invitaciones enviadas exitosamente`
+            : `${results.success} invitations sent successfully`
         );
       }
       if (results.failed > 0) {
         toast.warning(
           language === 'es'
-            ? `${results.failed} actualizaciones fallaron`
-            : `${results.failed} updates failed`
+            ? `${results.failed} invitaciones fallaron`
+            : `${results.failed} invitations failed`
         );
       }
     },
