@@ -408,12 +408,27 @@ export default function Empleados() {
   const [activeTab, setActiveTab] = useState('active');
   const [showInactive, setShowInactive] = useState(false);
 
-  // Fetch data
+  // Fetch data - Use EmployeeDirectory instead of User
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        return await base44.entities.User.list('full_name');
+        const directory = await base44.entities.EmployeeDirectory.list('-created_date');
+        // Map directory data to match expected employee structure
+        return directory.map(entry => ({
+          id: entry.id,
+          email: entry.employee_email,
+          full_name: entry.full_name,
+          first_name: entry.first_name || entry.full_name?.split(' ')[0] || '',
+          last_name: entry.last_name || entry.full_name?.split(' ').slice(1).join(' ') || '',
+          position: entry.position,
+          department: entry.department,
+          phone: entry.phone,
+          profile_photo_url: entry.profile_photo_url,
+          team_name: entry.team_name,
+          team_id: entry.team_id,
+          employment_status: entry.status === 'active' ? 'active' : entry.status
+        }));
       } catch (error) {
         console.error('Error loading employees:', error);
         return [];
