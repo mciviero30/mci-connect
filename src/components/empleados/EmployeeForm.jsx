@@ -282,18 +282,13 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
 
         <div>
           <Label className="text-slate-900 font-medium">Direct Manager</Label>
-          <Select value={formData.direct_manager_name} onValueChange={(value) => setFormData({ ...formData, direct_manager_name: value })}>
-            <SelectTrigger className="bg-white border-slate-200 text-slate-900">
-              <SelectValue placeholder="Select manager" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-slate-200">
-              {managers.map(mgr => (
-                <SelectItem key={mgr.id} value={mgr.full_name}>
-                  {mgr.full_name} - {mgr.position}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            value={formData.direct_manager_name}
+            onChange={(e) => setFormData({ ...formData, direct_manager_name: e.target.value })}
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
+            autoCapitalizeInput={true}
+            placeholder="e.g., Marzio Civiero"
+          />
         </div>
 
         <div>
