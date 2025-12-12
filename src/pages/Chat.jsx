@@ -176,7 +176,11 @@ export default function Chat() {
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const users = await base44.entities.User.filter({});
+      console.log('Users fetched:', users);
+      return users;
+    },
     initialData: [],
     staleTime: 300000,
   });
