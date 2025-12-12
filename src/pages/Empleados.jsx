@@ -542,8 +542,13 @@ export default function Empleados() {
             phone: pending.phone || '',
             position: pending.position || '',
             department: pending.department || '',
+            address: pending.address || '',
+            ssn_tax_id: pending.ssn_tax_id || '',
+            dob: pending.dob || '',
+            tshirt_size: pending.tshirt_size || '',
             team_id: pending.team_id || '',
             team_name: pending.team_name || '',
+            direct_manager_name: pending.direct_manager_name || '',
             employment_status: 'pending_registration'
           });
           results.created++;
@@ -568,6 +573,8 @@ export default function Empleados() {
             (pending.last_name && existingUser.last_name !== pending.last_name) ||
             (pending.phone && existingUser.phone !== pending.phone) ||
             (pending.position && existingUser.position !== pending.position) ||
+            (pending.address && existingUser.address !== pending.address) ||
+            (pending.department && existingUser.department !== pending.department) ||
             (pending.team_id && existingUser.team_id !== pending.team_id);
 
           if (needsUpdate) {
@@ -581,8 +588,14 @@ export default function Empleados() {
                 last_name: pending.last_name || existingUser.last_name || '',
                 phone: pending.phone || existingUser.phone || '',
                 position: pending.position || existingUser.position || '',
+                department: pending.department || existingUser.department || '',
+                address: pending.address || existingUser.address || '',
+                ssn_tax_id: pending.ssn_tax_id || existingUser.ssn_tax_id || '',
+                dob: pending.dob || existingUser.dob || '',
+                tshirt_size: pending.tshirt_size || existingUser.tshirt_size || '',
                 team_id: pending.team_id || existingUser.team_id || '',
-                team_name: pending.team_name || existingUser.team_name || ''
+                team_name: pending.team_name || existingUser.team_name || '',
+                direct_manager_name: pending.direct_manager_name || existingUser.direct_manager_name || ''
               });
               results.updated++;
             } catch (error) {
@@ -651,12 +664,39 @@ export default function Empleados() {
             role: 'user',
             phone: employee.phone || '',
             position: employee.position || '',
+            department: employee.department || '',
+            address: employee.address || '',
+            ssn_tax_id: employee.ssn_tax_id || '',
+            dob: employee.dob || '',
+            tshirt_size: employee.tshirt_size || '',
             team_id: employee.team_id || '',
             team_name: employee.team_name || '',
+            direct_manager_name: employee.direct_manager_name || '',
             employment_status: 'pending_registration'
           });
         } catch (error) {
           if (!error.message.includes('already exists')) throw error;
+        }
+      } else {
+        // Update existing user with pending employee data
+        try {
+          await base44.entities.User.update(existingUser.id, {
+            full_name: fullName,
+            first_name: employee.first_name || existingUser.first_name || '',
+            last_name: employee.last_name || existingUser.last_name || '',
+            phone: employee.phone || existingUser.phone || '',
+            position: employee.position || existingUser.position || '',
+            department: employee.department || existingUser.department || '',
+            address: employee.address || existingUser.address || '',
+            ssn_tax_id: employee.ssn_tax_id || existingUser.ssn_tax_id || '',
+            dob: employee.dob || existingUser.dob || '',
+            tshirt_size: employee.tshirt_size || existingUser.tshirt_size || '',
+            team_id: employee.team_id || existingUser.team_id || '',
+            team_name: employee.team_name || existingUser.team_name || '',
+            direct_manager_name: employee.direct_manager_name || existingUser.direct_manager_name || ''
+          });
+        } catch (error) {
+          console.error('Error updating existing user:', error);
         }
       }
 
@@ -715,12 +755,39 @@ export default function Empleados() {
                 role: 'user',
                 phone: employee.phone || '',
                 position: employee.position || '',
+                department: employee.department || '',
+                address: employee.address || '',
+                ssn_tax_id: employee.ssn_tax_id || '',
+                dob: employee.dob || '',
+                tshirt_size: employee.tshirt_size || '',
                 team_id: employee.team_id || '',
                 team_name: employee.team_name || '',
+                direct_manager_name: employee.direct_manager_name || '',
                 employment_status: 'pending_registration'
               });
             } catch (error) {
               if (!error.message.includes('already exists')) throw error;
+            }
+          } else {
+            // Update existing user with pending employee data
+            try {
+              await base44.entities.User.update(existingUser.id, {
+                full_name: fullName,
+                first_name: employee.first_name || existingUser.first_name || '',
+                last_name: employee.last_name || existingUser.last_name || '',
+                phone: employee.phone || existingUser.phone || '',
+                position: employee.position || existingUser.position || '',
+                department: employee.department || existingUser.department || '',
+                address: employee.address || existingUser.address || '',
+                ssn_tax_id: employee.ssn_tax_id || existingUser.ssn_tax_id || '',
+                dob: employee.dob || existingUser.dob || '',
+                tshirt_size: employee.tshirt_size || existingUser.tshirt_size || '',
+                team_id: employee.team_id || existingUser.team_id || '',
+                team_name: employee.team_name || existingUser.team_name || '',
+                direct_manager_name: employee.direct_manager_name || existingUser.direct_manager_name || ''
+              });
+            } catch (error) {
+              console.error('Error updating existing user:', error);
             }
           }
 
