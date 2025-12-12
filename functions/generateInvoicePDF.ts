@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
             doc.setLineWidth(0.1);
             doc.line(15, currentY + 1, 195, currentY + 1);
 
-            currentY += 4.5;
+            currentY += 4.0;
             itemIndex++;
         }
 
