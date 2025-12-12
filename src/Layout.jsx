@@ -391,6 +391,18 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
         { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
+      ]
+    },
+    {
+      section: 'FINANCE',
+      items: [
+        { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
+        { title: 'Customers', url: createPageUrl("Clientes"), icon: Users },
+        { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText },
+        { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck },
+        { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt },
+        { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
       ]
     },
     {
@@ -410,6 +422,8 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3 },
         { title: 'Approvals', url: createPageUrl("Horarios"), icon: Clock },
         { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
+        { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car },
+        { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote },
       ]
     },
     {
