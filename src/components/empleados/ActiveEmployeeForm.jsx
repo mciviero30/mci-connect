@@ -490,9 +490,14 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
 
         <div>
           <Label className="text-slate-900 font-medium">Position</Label>
-          <Select value={formData.position} onValueChange={(value) => setFormData({ ...formData, position: value })}>
+          <Select 
+            value={formData.position || ''} 
+            onValueChange={(value) => setFormData({ ...formData, position: value })}
+          >
             <SelectTrigger className="bg-white border-slate-200 text-slate-900">
-              <SelectValue placeholder="Select position" />
+              <SelectValue placeholder="Select position">
+                {formData.position || "Select position"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
               <SelectItem value="CEO">CEO</SelectItem>
