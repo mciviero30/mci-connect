@@ -169,7 +169,7 @@ const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, isInactive = 
                 <Eye className="w-4 h-4 mr-2" />
                 {t('viewProfile')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onEdit} className="cursor-pointer">
+              <DropdownMenuItem onClick={() => onEdit(employee)} className="cursor-pointer">
                 <Edit className="w-4 h-4 mr-2" />
                 {t('edit')}
               </DropdownMenuItem>
@@ -418,27 +418,13 @@ export default function Empleados() {
   const [showInactive, setShowInactive] = useState(false);
   const [selectedEmployees, setSelectedEmployees] = useState([]);
 
-  // Fetch data - Use EmployeeDirectory instead of User
+  // Fetch actual User data for full employee details
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        const directory = await base44.entities.EmployeeDirectory.list('-created_date');
-        // Map directory data to match expected employee structure
-        return directory.map(entry => ({
-          id: entry.id,
-          email: entry.employee_email,
-          full_name: entry.full_name,
-          first_name: entry.first_name || entry.full_name?.split(' ')[0] || '',
-          last_name: entry.last_name || entry.full_name?.split(' ').slice(1).join(' ') || '',
-          position: entry.position,
-          department: entry.department,
-          phone: entry.phone,
-          profile_photo_url: entry.profile_photo_url,
-          team_name: entry.team_name,
-          team_id: entry.team_id,
-          employment_status: entry.status === 'active' ? 'active' : entry.status
-        }));
+        const users = await base44.entities.User.list('-created_date');
+        return users;
       } catch (error) {
         console.error('Error loading employees:', error);
         return [];
