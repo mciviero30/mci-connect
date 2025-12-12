@@ -23,17 +23,7 @@ export default function Directory() {
 
   const { data: employees, isLoading, refetch } = useQuery({
     queryKey: ['employeeDirectory'],
-    queryFn: () => base44.entities.EmployeeDirectory.filter(
-      { status: 'active' },
-      'first_name',
-      'last_name',
-      'full_name',
-      'email',
-      'phone',
-      'position',
-      'department',
-      'profile_photo_url'
-    ),
+    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
     initialData: [],
     enabled: !!user,
   });
