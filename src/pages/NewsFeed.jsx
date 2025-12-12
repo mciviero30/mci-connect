@@ -24,7 +24,13 @@ export default function NewsFeed() {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const isAdmin = user?.role === 'admin';
+  
+  // Check if user can create announcements (CEO, HR, administrators, managers)
+  const canCreateAnnouncements = user?.role === 'admin' || 
+    user?.position === 'CEO' || 
+    user?.position === 'administrator' || 
+    user?.position === 'manager' || 
+    user?.department === 'HR';
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ['posts'],
@@ -137,7 +143,7 @@ export default function NewsFeed() {
           description={t('companyNews')}
           icon={Megaphone}
           actions={
-            isAdmin && !isCreating && (
+            canCreateAnnouncements && !isCreating && (
               <div className="flex gap-2">
                 <Button onClick={() => setShowAIGenerator(true)} variant="outline" size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
                   <Wand2 className="w-5 h-5 mr-2" />
