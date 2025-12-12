@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -128,7 +127,7 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
             placeholder="John"
             required
             className="bg-white border-slate-300 text-slate-900"
-            autoCapitalize="words"
+            autoCapitalizeInput={true}
           />
         </div>
 
@@ -142,7 +141,7 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
             placeholder="Doe"
             required
             className="bg-white border-slate-300 text-slate-900"
-            autoCapitalize="words"
+            autoCapitalizeInput={true}
           />
         </div>
 
@@ -157,7 +156,7 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
             placeholder={language === 'es' ? 'Gerente de Proyectos' : 'Project Manager'}
             required
             className="bg-white border-slate-300 text-slate-900"
-            autoCapitalize="words"
+            autoCapitalizeInput={true}
           />
         </div>
       </div>
@@ -200,7 +199,7 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
           placeholder="ABC Company"
           required
           className="bg-white border-slate-300 text-slate-900"
-          autoCapitalize="words"
+          autoCapitalizeInput={true}
         />
         {companyWarning && (
           <Alert className="bg-amber-50 border-amber-300">
@@ -221,7 +220,7 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             placeholder="123 Main Street"
             className="bg-white border-slate-300 text-slate-900"
-            autoCapitalize="words"
+            autoCapitalizeInput={true}
           />
         </div>
 
@@ -233,7 +232,7 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               placeholder="New York"
               className="bg-white border-slate-300 text-slate-900"
-              autoCapitalize="words"
+              autoCapitalizeInput={true}
             />
           </div>
           

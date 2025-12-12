@@ -634,6 +634,7 @@ export default function Configuracion() {
                       value={profileForm.full_name}
                       onChange={(e) => setProfileForm({...profileForm, full_name: e.target.value})}
                       className="bg-slate-50 border-slate-200"
+                      autoCapitalizeInput={true}
                     />
                   </div>
 
