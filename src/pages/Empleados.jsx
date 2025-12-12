@@ -909,31 +909,59 @@ export default function Empleados() {
               </label>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeEmployees.map(employee => (
-                <EmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onEdit={() => {
-                    setEditingEmployee(employee);
-                    setIsPendingEdit(false);
-                    setShowDialog(true);
-                  }}
-                  onViewProfile={() => {
-                    window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`);
-                  }}
-                  onDelete={() => {
-                    if (window.confirm(language === 'es'
-                      ? `¿Estás seguro de borrar a ${employee.full_name}? Esto bloqueará su acceso a la aplicación.`
-                      : `Are you sure you want to delete ${employee.full_name}? This will block their access to the app.`
-                    )) {
-                      deleteActiveMutation.mutate(employee.id);
-                    }
-                  }}
-                  isInactive={employee.employment_status === 'inactive'}
-                />
-              ))}
-            </div>
+            {/* Group employees by position */}
+            {(() => {
+              const grouped = {
+                CEO: activeEmployees.filter(e => e.position?.toLowerCase() === 'ceo'),
+                Supervisor: activeEmployees.filter(e => e.position?.toLowerCase() === 'supervisor'),
+                Foreman: activeEmployees.filter(e => e.position?.toLowerCase() === 'foreman'),
+                Manager: activeEmployees.filter(e => e.position?.toLowerCase() === 'manager'),
+                Administrator: activeEmployees.filter(e => e.position?.toLowerCase() === 'administrator'),
+                Technician: activeEmployees.filter(e => e.position?.toLowerCase() === 'technician'),
+                Other: activeEmployees.filter(e => {
+                  const pos = e.position?.toLowerCase() || '';
+                  return !['ceo', 'supervisor', 'foreman', 'manager', 'administrator', 'technician'].includes(pos);
+                })
+              };
+
+              return Object.entries(grouped).map(([position, employees]) => {
+                if (employees.length === 0) return null;
+                
+                return (
+                  <div key={position} className="mb-8">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                      {position} ({employees.length})
+                    </h3>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {employees.map(employee => (
+                        <EmployeeCard
+                          key={employee.id}
+                          employee={employee}
+                          onEdit={() => {
+                            setEditingEmployee(employee);
+                            setIsPendingEdit(false);
+                            setShowDialog(true);
+                          }}
+                          onViewProfile={() => {
+                            window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`);
+                          }}
+                          onDelete={() => {
+                            if (window.confirm(language === 'es'
+                              ? `¿Estás seguro de borrar a ${employee.full_name}? Esto bloqueará su acceso a la aplicación.`
+                              : `Are you sure you want to delete ${employee.full_name}? This will block their access to the app.`
+                            )) {
+                              deleteActiveMutation.mutate(employee.id);
+                            }
+                          }}
+                          isInactive={employee.employment_status === 'inactive'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
 
             {activeEmployees.length === 0 && (
               <div className="text-center py-16">
