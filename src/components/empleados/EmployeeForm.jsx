@@ -172,7 +172,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           <Input
             value={formData.first_name}
             onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
             autoCapitalizeInput={true}
             required
           />
@@ -183,7 +183,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           <Input
             value={formData.last_name}
             onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
             autoCapitalizeInput={true}
             required
           />
@@ -195,7 +195,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
             required={isPending}
           />
         </div>
@@ -205,7 +205,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           <Input
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
             placeholder="(000)000-0000"
             maxLength={13}
           />
@@ -214,7 +214,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         <div>
           <Label className="text-slate-900 font-medium">Position</Label>
           <Select value={formData.position} onValueChange={(value) => setFormData({ ...formData, position: value })}>
-            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
+            <SelectTrigger className="bg-white border-slate-200 text-slate-900">
               <SelectValue placeholder="Select position" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
@@ -231,7 +231,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         <div>
           <Label className="text-slate-900 font-medium">Department</Label>
           <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
+            <SelectTrigger className="bg-white border-slate-200 text-slate-900">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
@@ -253,7 +253,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           <Input
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
             autoCapitalizeInput={true}
             placeholder="Include state (GA, FL, NC) for auto team assignment"
           />
@@ -267,7 +267,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         <div>
           <Label className="text-slate-900 font-medium">Team *</Label>
           <Select value={formData.team_id} onValueChange={(value) => setFormData({ ...formData, team_id: value })}>
-            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
+            <SelectTrigger className="bg-white border-slate-200 text-slate-900">
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
@@ -283,7 +283,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         <div>
           <Label className="text-slate-900 font-medium">Direct Manager</Label>
           <Select value={formData.direct_manager_name} onValueChange={(value) => setFormData({ ...formData, direct_manager_name: value })}>
-            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
+            <SelectTrigger className="bg-white border-slate-200 text-slate-900">
               <SelectValue placeholder="Select manager" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
@@ -301,7 +301,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           <Input
             value={formData.ssn_tax_id}
             onChange={(e) => setFormData({ ...formData, ssn_tax_id: e.target.value })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
           />
         </div>
 
@@ -311,14 +311,14 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
             type="date"
             value={formData.dob}
             onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
           />
         </div>
 
         <div>
           <Label className="text-slate-900 font-medium">T-Shirt Size</Label>
           <Select value={formData.tshirt_size} onValueChange={(value) => setFormData({ ...formData, tshirt_size: value })}>
-            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
+            <SelectTrigger className="bg-white border-slate-200 text-slate-900">
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
