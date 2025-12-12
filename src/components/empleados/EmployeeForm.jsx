@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -169,56 +168,56 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto px-2">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <Label className="text-white">First Name *</Label>
+          <Label className="text-slate-900 font-medium">First Name *</Label>
           <Input
             value={formData.first_name}
             onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
             autoCapitalizeInput={true}
             required
           />
         </div>
 
         <div>
-          <Label className="text-white">Last Name *</Label>
+          <Label className="text-slate-900 font-medium">Last Name *</Label>
           <Input
             value={formData.last_name}
             onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
             autoCapitalizeInput={true}
             required
           />
         </div>
 
         <div>
-          <Label className="text-white">Email {isPending && '*'}</Label>
+          <Label className="text-slate-900 font-medium">Email {isPending && '*'}</Label>
           <Input
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
             required={isPending}
           />
         </div>
 
         <div>
-          <Label className="text-white">Phone</Label>
+          <Label className="text-slate-900 font-medium">Phone</Label>
           <Input
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
             placeholder="(000)000-0000"
             maxLength={13}
           />
         </div>
 
         <div>
-          <Label className="text-white">Position</Label>
+          <Label className="text-slate-900 font-medium">Position</Label>
           <Select value={formData.position} onValueChange={(value) => setFormData({ ...formData, position: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
               <SelectValue placeholder="Select position" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white border-slate-200">
               <SelectItem value="CEO">CEO</SelectItem>
               <SelectItem value="manager">Manager</SelectItem>
               <SelectItem value="technician">Technician</SelectItem>
@@ -230,12 +229,12 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
 
         <div>
-          <Label className="text-white">Department</Label>
+          <Label className="text-slate-900 font-medium">Department</Label>
           <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white border-slate-200">
               <SelectItem value="HR">HR</SelectItem>
               <SelectItem value="field">Field</SelectItem>
               <SelectItem value="operations">Operations</SelectItem>
@@ -250,11 +249,11 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
 
         <div className="md:col-span-2">
-          <Label className="text-white">Address</Label>
+          <Label className="text-slate-900 font-medium">Address</Label>
           <Input
             value={formData.address}
             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
             autoCapitalizeInput={true}
             placeholder="Include state (GA, FL, NC) for auto team assignment"
           />
@@ -266,12 +265,12 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
 
         <div>
-          <Label className="text-white">Team *</Label>
+          <Label className="text-slate-900 font-medium">Team *</Label>
           <Select value={formData.team_id} onValueChange={(value) => setFormData({ ...formData, team_id: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white border-slate-200">
               {teams.map(team => (
                 <SelectItem key={team.id} value={team.id}>
                   {team.team_name} - {team.location}, {team.state}
@@ -282,12 +281,12 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
 
         <div>
-          <Label className="text-white">Direct Manager</Label>
+          <Label className="text-slate-900 font-medium">Direct Manager</Label>
           <Select value={formData.direct_manager_name} onValueChange={(value) => setFormData({ ...formData, direct_manager_name: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
               <SelectValue placeholder="Select manager" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white border-slate-200">
               {managers.map(mgr => (
                 <SelectItem key={mgr.id} value={mgr.full_name}>
                   {mgr.full_name} - {mgr.position}
@@ -298,31 +297,31 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
 
         <div>
-          <Label className="text-white">SSN/Tax ID</Label>
+          <Label className="text-slate-900 font-medium">SSN/Tax ID</Label>
           <Input
             value={formData.ssn_tax_id}
             onChange={(e) => setFormData({ ...formData, ssn_tax_id: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
           />
         </div>
 
         <div>
-          <Label className="text-white">Date of Birth</Label>
+          <Label className="text-slate-900 font-medium">Date of Birth</Label>
           <Input
             type="date"
             value={formData.dob}
             onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-[#1e293b] border-slate-700 text-white placeholder:text-slate-400"
           />
         </div>
 
         <div>
-          <Label className="text-white">T-Shirt Size</Label>
+          <Label className="text-slate-900 font-medium">T-Shirt Size</Label>
           <Select value={formData.tshirt_size} onValueChange={(value) => setFormData({ ...formData, tshirt_size: value })}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-[#1e293b] border-slate-700 text-white">
               <SelectValue placeholder="Select size" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-slate-800">
+            <SelectContent className="bg-white border-slate-200">
               <SelectItem value="XS">XS</SelectItem>
               <SelectItem value="S">S</SelectItem>
               <SelectItem value="M">M</SelectItem>
@@ -335,13 +334,13 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
       </div>
 
-      <div className="flex justify-between gap-3 mt-6 pt-4 border-t border-slate-700">
+      <div className="flex justify-between gap-3 mt-6 pt-4 border-t border-slate-200">
         {employee && isPending && (
           <Button 
             type="button" 
             variant="outline" 
             onClick={handleDelete}
-            className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+            className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
             disabled={deleteMutation.isPending}
           >
             <Trash2 className="w-4 h-4 mr-2" />
@@ -350,10 +349,10 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         )}
         
         <div className="flex gap-3 ml-auto">
-          <Button type="button" variant="outline" onClick={onClose} className="bg-slate-800 border-slate-700 text-slate-300">
+          <Button type="button" variant="outline" onClick={onClose} className="bg-[#1e293b] border-[#1e293b] text-white hover:bg-slate-800">
             Cancel
           </Button>
-          <Button type="submit" className="bg-gradient-to-r from-cyan-500 to-blue-500" disabled={saveMutation.isPending}>
+          <Button type="submit" className="bg-[#06b6d4] hover:bg-[#0891b2] text-white" disabled={saveMutation.isPending}>
             {saveMutation.isPending ? 'Saving...' : employee ? 'Update' : 'Add'} Employee
           </Button>
         </div>

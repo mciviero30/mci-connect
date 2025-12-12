@@ -717,22 +717,22 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         </div>
       </div>
 
-      <div className="flex justify-between gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+      <div className="flex justify-between gap-3 mt-6 pt-4 border-t border-slate-200">
         <Button 
           type="button" 
           variant="outline" 
           onClick={handleDelete}
-          className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
         >
           <Trash2 className="w-4 h-4 mr-2" />
           Delete Employee
         </Button>
         
         <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={onClose} className="bg-slate-800 border-slate-700 text-slate-300">
+          <Button type="button" variant="outline" onClick={onClose} className="bg-[#1e293b] border-[#1e293b] text-white hover:bg-slate-800">
             Cancel
           </Button>
-          <Button type="submit" className="bg-gradient-to-r from-cyan-500 to-blue-500" disabled={updateMutation.isPending}>
+          <Button type="submit" className="bg-[#06b6d4] hover:bg-[#0891b2] text-white" disabled={updateMutation.isPending}>
             {updateMutation.isPending ? 'Updating...' : 'Update Employee'}
           </Button>
         </div>
