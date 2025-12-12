@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical } from "lucide-react";
+import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import PageHeader from "../components/shared/PageHeader";
 import CustomerForm from "../components/clientes/CustomerForm";
@@ -211,6 +211,10 @@ export default function Clientes() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                          <DropdownMenuItem onClick={() => window.location.href = createPageUrl('CustomerDetails') + `?id=${customer.id}`} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                            <Eye className="w-4 h-4 mr-2" />
+                            {t('viewDetails')}
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEdit(customer)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                             <Edit className="w-4 h-4 mr-2" />
                             {t('edit')}
