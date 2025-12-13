@@ -95,11 +95,11 @@ export default function MessageBubble({
 
   return (
     <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[65%] ${
+      <div className={`max-w-[55%] inline-block ${
         isMe 
           ? 'bg-[#3B9FF3] text-white' 
           : 'bg-white dark:bg-[#282828] text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700'
-      } rounded-xl shadow-md overflow-hidden`}>
+      } rounded-lg shadow-sm overflow-hidden`}>
         {/* Reply reference */}
         {message.reply_to_message && (
           <div className={`px-2 pt-1 pb-0.5 border-l-2 ${
