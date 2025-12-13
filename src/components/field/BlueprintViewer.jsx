@@ -397,9 +397,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   // Mouse wheel zoom - centered on cursor
-  const handleWheel = (e) => {
+  const handleWheel = useCallback((e) => {
     if (isPlacingPin) return;
     e.preventDefault();
+    e.stopPropagation();
     
     const container = containerRef.current;
     if (!container) return;
@@ -408,9 +409,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
     
-    // Calculate zoom delta
-    const delta = -e.deltaY * 0.001;
+    // Calculate zoom delta (smooth)
+    const delta = -e.deltaY * 0.002;
     const newZoom = Math.min(Math.max(zoom + delta, 0.1), 5);
+    
+    if (newZoom === zoom) return;
     
     // Adjust position to zoom towards cursor
     const zoomRatio = newZoom / zoom;
@@ -419,7 +422,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     
     setZoom(newZoom);
     setPosition({ x: newX, y: newY });
-  };
+  }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
     if (isPlacingPin) return;
@@ -705,6 +708,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onClick={handleDoubleTap}
+          tabIndex={0}
+          style={{ outline: 'none' }}
         >
           {/* Loading State */}
           {loadingState === 'loading' && (
