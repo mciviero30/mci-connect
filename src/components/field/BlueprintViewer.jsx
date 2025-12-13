@@ -825,7 +825,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   <TaskPin 
                     key={task.id}
                     task={task}
-                    onClick={() => setSelectedTask(task)}
+                    onClick={(e) => {
+                      e?.stopPropagation?.();
+                      setSelectedTask(task);
+                    }}
                     isSelected={selectedTask?.id === task.id}
                   />
                 ))}
