@@ -21,6 +21,10 @@ import JobChatMembers from "../components/chat/JobChatMembers";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
+import ChatUnreadBadge from "../components/chat/ChatUnreadBadge";
+import OnlineStatusManager from "../components/chat/OnlineStatusManager";
+import UserStatusIndicator from "../components/chat/UserStatusIndicator";
+import { sendNotification, NOTIFICATION_TYPES } from "../components/notifications/PushNotificationService";
 
 const EMOJIS = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇',
@@ -196,10 +200,40 @@ export default function Chat() {
 
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.ChatMessage.create(data),
-    onSuccess: () => {
+    onSuccess: async (newMessage) => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['chat-unread'] });
       setMessage('');
       setReplyingTo(null);
+      
+      // Get all members of current conversation
+      let recipientEmails = [];
+      if (chatMode === 'direct' && selectedDMConv) {
+        recipientEmails = selectedDMConv.participants.filter(email => email !== user.email);
+      } else if (chatMode === 'groups' && selectedCustomGroup) {
+        recipientEmails = selectedCustomGroup.members.filter(email => email !== user.email);
+      } else {
+        // For channels, get all employees (they can all see it)
+        recipientEmails = employees.map(e => e.email).filter(email => email !== user.email);
+      }
+
+      // Send push notifications to recipients
+      const groupName = chatMode === 'direct' && selectedDMConv 
+        ? selectedDMConv.other_user_name
+        : chatMode === 'groups' && selectedCustomGroup 
+        ? selectedCustomGroup.group_name 
+        : groups.find(g => g.id === selectedGroup)?.name || 'Chat';
+
+      recipientEmails.forEach(recipientEmail => {
+        sendNotification({
+          userEmail: recipientEmail,
+          type: 'chat_message',
+          title: `💬 ${user.full_name} in ${groupName}`,
+          body: message.substring(0, 100),
+          url: '/Chat',
+          priority: 'normal'
+        }).catch(err => console.error('Error sending notification:', err));
+      });
       
       // Send chat notifications to mentioned users
       const mentions = extractMentions(message);
@@ -428,7 +462,24 @@ export default function Chat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    
+    // Mark messages as read when viewing
+    if (messages && messages.length > 0 && user) {
+      const unreadMessages = messages.filter(msg => 
+        msg.sender_email !== user.email && 
+        (!msg.read_by || !msg.read_by.includes(user.email))
+      );
+      
+      unreadMessages.forEach(msg => {
+        const readBy = msg.read_by || [];
+        if (!readBy.includes(user.email)) {
+          base44.entities.ChatMessage.update(msg.id, {
+            read_by: [...readBy, user.email]
+          }).catch(err => console.error('Error marking message as read:', err));
+        }
+      });
+    }
+  }, [messages, user]);
 
   // Filter messages by search
   const filteredMessages = searchTerm 
@@ -449,6 +500,7 @@ export default function Chat() {
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+      <OnlineStatusManager userEmail={user?.email} />
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('chat')}
@@ -543,7 +595,8 @@ export default function Chat() {
                           }`}>
                             <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#3B9FF3] dark:text-blue-400'}`} />
                           </div>
-                          <span className="font-medium text-sm truncate">{group.name}</span>
+                          <span className="font-medium text-sm truncate flex-1">{group.name}</span>
+                          <ChatUnreadBadge userEmail={user?.email} groupId={group.id} />
                         </button>
                       );
                     })}
@@ -558,10 +611,10 @@ export default function Chat() {
                         const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
                         const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
                         return (
-                         <button
-                           key={group.id}
-                           onClick={() => selectCustomGroup(group)}
-                           className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
+                          <button
+                            key={group.id}
+                            onClick={() => selectCustomGroup(group)}
+                            className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
                               isActive
                                 ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -576,6 +629,7 @@ export default function Chat() {
                                 {group.members.length} members
                               </p>
                             </div>
+                            <ChatUnreadBadge userEmail={user?.email} groupId={`group_${group.id}`} />
                           </button>
                         );
                       })}
@@ -821,10 +875,18 @@ export default function Chat() {
                         })}
                         className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors text-left border border-transparent hover:border-blue-200 dark:hover:border-blue-700"
                       >
-                        <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold">
-                            {displayName[0]?.toUpperCase() || 'U'}
-                          </span>
+                        <div className="relative">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-bold">
+                              {displayName[0]?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                          <div className="absolute -bottom-0.5 -right-0.5">
+                            <UserStatusIndicator 
+                              status={emp.is_online ? 'online' : 'offline'} 
+                              size="sm"
+                            />
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-slate-900 dark:text-white truncate">{displayName}</p>
