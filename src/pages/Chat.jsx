@@ -902,11 +902,12 @@ export default function Chat() {
                     >
                       <Send className="w-5 h-5" />
                     </Button>
-                  </div>
-                </form>
-            </div>
-          </div>
-        </div>
+                    </div>
+                    </form>
+                    </div>
+                    </div>
+                    </div>
+                    </div>
 
         {/* New Direct Message Dialog */}
         <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
