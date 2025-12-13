@@ -312,13 +312,29 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     });
   };
 
-  // Filter tasks based on active filters
-  const filteredTasks = tasks.filter(task => {
-    if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
-    if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
-    if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
-    return true;
+  // Query client for mutations
+  const queryClient = useQueryClient();
+
+  // Delete task mutation
+  const deleteTaskMutation = useMutation({
+    mutationFn: (taskId) => base44.entities.Task.delete(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      setSelectedTask(null);
+    },
   });
+
+  // Filter tasks based on active filters - remove duplicates by id
+  const filteredTasks = tasks
+    .filter((task, index, self) => 
+      index === self.findIndex((t) => t.id === task.id)
+    )
+    .filter(task => {
+      if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
+      if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
+      if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
+      return true;
+    });
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -544,17 +560,33 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     // Don't handle click if clicking on a task pin
     if (e.target.closest('button')) return;
     
-    if (activeTool !== 'pin' && !isPlacingPin) return;
+    // Only handle clicks for pin tool
+    if (activeTool === 'pin' || isPlacingPin) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      
+      setPendingPinPosition({ x, y });
+      setShowCreateTask(true);
+      setIsPlacingPin(false);
+      setActiveTool('select');
+      setCursorPinPosition(null);
+    }
+  };
+
+  // Handle pin click based on active tool
+  const handlePinClick = (task, e) => {
+    e?.stopPropagation?.();
     
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    setPendingPinPosition({ x, y });
-    setShowCreateTask(true);
-    setIsPlacingPin(false);
-    setActiveTool('select');
-    setCursorPinPosition(null);
+    if (activeTool === 'eraser') {
+      // Delete task with eraser
+      if (window.confirm(`Delete task "${task.title}"?`)) {
+        deleteTaskMutation.mutate(task.id);
+      }
+    } else {
+      // Open task detail panel
+      setSelectedTask(task);
+    }
   };
 
   // Toolbar items
@@ -830,11 +862,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   <TaskPin 
                     key={task.id}
                     task={task}
-                    onClick={(e) => {
-                      e?.stopPropagation?.();
-                      setSelectedTask(task);
-                    }}
+                    onClick={(e) => handlePinClick(task, e)}
                     isSelected={selectedTask?.id === task.id}
+                    isErasing={activeTool === 'eraser'}
                   />
                 ))}
                 {/* Cursor Pin - follows mouse */}
@@ -864,6 +894,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
             <Crosshair className="w-4 h-4" />
             Tap on the plan to place pin (ESC to cancel)
+          </div>
+        )}
+        
+        {activeTool === 'eraser' && (
+          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
+            <Eraser className="w-4 h-4" />
+            Click on a pin to delete it (ESC to cancel)
           </div>
         )}
 

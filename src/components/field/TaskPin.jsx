@@ -8,7 +8,7 @@ const statusColors = {
   blocked: { bg: 'bg-red-500', border: 'border-red-300', point: 'border-t-red-500' },
 };
 
-export default function TaskPin({ task, onClick, isSelected }) {
+export default function TaskPin({ task, onClick, isSelected, isErasing }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
   if (task.pin_x === undefined || task.pin_y === undefined) return null;
@@ -29,12 +29,12 @@ export default function TaskPin({ task, onClick, isSelected }) {
       onMouseLeave={() => setShowTooltip(false)}
       className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-30 ${
         isSelected ? 'scale-125 z-40' : ''
-      }`}
+      } ${isErasing ? 'cursor-pointer hover:opacity-70' : ''}`}
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%`, pointerEvents: 'auto' }}
     >
       <div className="relative">
         {/* Compact pin with just wall number */}
-        <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
+        <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${isErasing ? 'bg-red-500' : status.bg} border-2 border-white shadow-lg flex items-center justify-center ${isErasing ? 'animate-pulse' : ''}`}>
           <span className="text-[11px] font-bold text-white">{wallNumber || '?'}</span>
         </div>
         {/* Pin point */}
