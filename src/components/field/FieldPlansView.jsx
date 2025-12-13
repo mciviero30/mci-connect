@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import BlueprintViewer from './BlueprintViewer';
-import PlanAnalyzer from './PlanAnalyzer';
-import WallTemplatesManager from './WallTemplatesManager';
-import PDFProcessor from './PDFProcessor';
+import BlueprintViewer from './BlueprintViewer.jsx';
+import PlanAnalyzer from './PlanAnalyzer.jsx';
+import WallTemplatesManager from './WallTemplatesManager.jsx';
+import PDFProcessor from './PDFProcessor.jsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
