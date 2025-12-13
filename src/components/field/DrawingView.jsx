@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import TaskPin from './TaskPin';
 import TaskDetailPanelSimple from './TaskDetailPanelSimple';
 
+const PANEL_WIDTH = 320;
+
 export default function DrawingView({ jobId, blueprintUrl }) {
   // Estado para lista de tareas
   const [tasks, setTasks] = useState([
@@ -45,11 +47,17 @@ export default function DrawingView({ jobId, blueprintUrl }) {
 
   // Obtener la tarea seleccionada
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
+  const isPanelOpen = !!selectedTask;
 
   return (
-    <div className="relative w-full h-full flex">
+    <div className="relative w-full h-full flex overflow-hidden">
       {/* Área del dibujo/blueprint */}
-      <div className="flex-1 relative bg-slate-900 overflow-hidden">
+      <div 
+        className="relative bg-slate-900 overflow-hidden transition-all duration-300"
+        style={{
+          width: isPanelOpen ? `calc(100% - ${PANEL_WIDTH}px)` : '100%'
+        }}
+      >
         {/* Imagen del blueprint */}
         <img 
           src={blueprintUrl}
