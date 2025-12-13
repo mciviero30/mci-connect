@@ -26,15 +26,17 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
       regionCanvas.height = height;
       const ctx = regionCanvas.getContext('2d');
       
-      // Draw the region
+      // Increase contrast for better OCR
+      ctx.filter = 'contrast(2) brightness(1.2)';
       ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
       
-      // OCR on the region
+      // OCR on the region with better settings
       const { data: { text } } = await Tesseract.recognize(
         regionCanvas,
         'eng',
         {
-          logger: () => {} // Silent
+          logger: () => {}, // Silent
+          tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'
         }
       );
       
@@ -49,6 +51,7 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
     // Look for patterns like IN-000, IN-001, IN-500, etc.
     const patterns = [
       /IN-\d{3}/i,
+      /IN-\d{2,4}/i,
       /[A-Z]{2}-\d{3}/i,
       /[A-Z]{1,3}-\d{2,4}/i
     ];
@@ -114,10 +117,9 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
           viewport: viewport
         }).promise;
 
-        // Extract drawing number from right side
-        // Typically the drawing number is in the bottom-right corner
-        const regionWidth = canvas.width * 0.2; // Right 20% of page
-        const regionHeight = canvas.height * 0.15; // Bottom 15% of page
+        // Extract drawing number from bottom-right corner (where IN-000 appears)
+        const regionWidth = canvas.width * 0.25; // Right 25% of page
+        const regionHeight = canvas.height * 0.2; // Bottom 20% of page
         const regionX = canvas.width - regionWidth;
         const regionY = canvas.height - regionHeight;
 
@@ -130,7 +132,8 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
         );
 
         const drawingNumber = extractDrawingNumber(ocrText);
-        const planName = drawingNumber || `Page ${pageNum}`;
+        const planName = drawingNumber || `Page ${pageNum} - Pending Confirmation`;
+        const needsConfirmation = !drawingNumber;
 
         // Convert canvas to blob and upload
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -141,7 +144,8 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
         plans.push({
           name: planName,
           file_url,
-          page_number: pageNum
+          page_number: pageNum,
+          needs_confirmation: needsConfirmation
         });
 
         const progressPercent = 20 + (pageNum / pdf.numPages) * 70;
@@ -157,7 +161,8 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
           job_id: jobId,
           name: plan.name,
           file_url: plan.file_url,
-          order: plan.page_number - 1
+          order: plan.page_number - 1,
+          needs_confirmation: plan.needs_confirmation || false
         });
       }
 
@@ -250,7 +255,9 @@ export default function PDFProcessor({ pdfFile, jobId, onComplete, onCancel }) {
                 {extractedPlans.map((plan, idx) => (
                   <div key={idx} className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
                     <CheckCircle2 className="w-3 h-3 text-green-500 flex-shrink-0" />
-                    <span>{plan.name}</span>
+                    <span className={plan.needs_confirmation ? 'text-amber-500' : ''}>
+                      {plan.name}
+                    </span>
                   </div>
                 ))}
               </div>

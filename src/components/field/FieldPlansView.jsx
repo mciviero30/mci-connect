@@ -274,9 +274,16 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#FFB800] transition-colors">
-                      {plan.name}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#FFB800] transition-colors flex-1">
+                        {plan.name}
+                      </h3>
+                      {plan.needs_confirmation && (
+                        <div className="flex-shrink-0 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+                          Pending
+                        </div>
+                      )}
+                    </div>
                     {plan.folder && (
                       <p className="text-sm text-slate-500 dark:text-slate-400">{plan.folder}</p>
                     )}
