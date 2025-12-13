@@ -26,7 +26,7 @@ export default function TaskPin({ task, onClick, isSelected, isErasing }) {
 
   return (
     <div
-      className={`absolute z-40 cursor-pointer transition-all hover:scale-110 ${
+      className={`absolute z-[99] cursor-pointer transition-all hover:scale-110 ${
         isSelected ? 'scale-125' : ''
       }`}
       style={{ 
