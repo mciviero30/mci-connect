@@ -20,25 +20,27 @@ export default function TaskPin({ task, onClick, isSelected, isErasing }) {
 
   return (
     <div
-      className={`absolute transform -translate-x-1/2 -translate-y-full ${
+      className={`task-pin-wrapper absolute transform -translate-x-1/2 -translate-y-full ${
         isSelected ? 'z-50' : 'z-30'
       }`}
       style={{ 
         left: `${task.pin_x}%`, 
-        top: `${task.pin_y}%`
+        top: `${task.pin_y}%`,
+        pointerEvents: 'auto'
+      }}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Pin wrapper clicked:', task.id, task.title);
+        if (onClick) onClick(task);
       }}
     >
       <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (onClick) onClick(task);
-        }}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         className={`transition-all hover:scale-110 ${
           isSelected ? 'scale-125' : ''
-        } ${isErasing ? 'cursor-pointer hover:opacity-70' : ''}`}
+        } ${isErasing ? 'cursor-pointer hover:opacity-70' : ''} pointer-events-none`}
       >
       <div className="relative">
         {/* Compact pin with just wall number */}
