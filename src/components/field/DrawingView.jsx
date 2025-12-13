@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TaskPin from './TaskPin';
 import TaskDetailPanelSimple from './TaskDetailPanelSimple';
 
 const PANEL_WIDTH = 320;
 
 export default function DrawingView({ jobId, blueprintUrl }) {
+  // Estado de carga del dibujo
+  const [isDrawingLoaded, setIsDrawingLoaded] = useState(false);
+
   // Estado para lista de tareas
   const [tasks, setTasks] = useState([
     {
@@ -49,6 +52,16 @@ export default function DrawingView({ jobId, blueprintUrl }) {
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
   const isPanelOpen = !!selectedTask;
 
+  // Simular carga del dibujo
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDrawingLoaded(true);
+      console.log('✅ Dibujo cargado, pines activados');
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="relative w-full h-full flex overflow-hidden">
       {/* Área del dibujo/blueprint */}
@@ -66,20 +79,22 @@ export default function DrawingView({ jobId, blueprintUrl }) {
           draggable={false}
         />
 
-        {/* Capa de pines superpuesta */}
-        <div className="absolute inset-0 pointer-events-none z-20">
-          <div className="relative w-full h-full pointer-events-auto">
-            {tasks.map((task) => (
-              <TaskPin
-                key={task.id}
-                task={task}
-                onClick={handlePinClick}
-                isSelected={selectedTaskId === task.id}
-                isErasing={false}
-              />
-            ))}
+        {/* Capa de pines superpuesta - Solo se renderiza cuando el dibujo está cargado */}
+        {isDrawingLoaded && (
+          <div className="absolute inset-0 pointer-events-none z-[100]">
+            <div className="relative w-full h-full pointer-events-auto">
+              {tasks.map((task) => (
+                <TaskPin
+                  key={task.id}
+                  task={task}
+                  onClick={handlePinClick}
+                  isSelected={selectedTaskId === task.id}
+                  isErasing={false}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Panel lateral - Solo se muestra si hay un pin seleccionado */}
