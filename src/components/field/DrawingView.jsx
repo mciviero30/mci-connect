@@ -52,15 +52,11 @@ export default function DrawingView({ jobId, blueprintUrl }) {
   const selectedTask = tasks.find(t => t.id === selectedTaskId);
   const isPanelOpen = !!selectedTask;
 
-  // Simular carga del dibujo
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsDrawingLoaded(true);
-      console.log('✅ Dibujo cargado, pines activados');
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Manejar cuando la imagen se carga
+  const handleImageLoad = () => {
+    setIsDrawingLoaded(true);
+    console.log('✅ Dibujo cargado, pines activados');
+  };
 
   return (
     <div className="relative w-full h-full flex overflow-hidden">
@@ -77,6 +73,7 @@ export default function DrawingView({ jobId, blueprintUrl }) {
           alt="Blueprint"
           className="w-full h-full object-contain z-0"
           draggable={false}
+          onLoad={handleImageLoad}
         />
 
         {/* Capa de pines superpuesta - Solo se renderiza cuando el dibujo está cargado */}
