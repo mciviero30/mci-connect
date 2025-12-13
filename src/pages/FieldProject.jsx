@@ -28,26 +28,26 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 // Import Field Components
-import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
-import FieldProjectOverview from '@/components/field/FieldProjectOverview.jsx';
-import FieldPlansView from '@/components/field/FieldPlansView.jsx';
-import FieldTasksView from '@/components/field/FieldTasksView.jsx';
-import FieldPhotosView from '@/components/field/FieldPhotosView.jsx';
-import FieldDocumentsView from '@/components/field/FieldDocumentsView.jsx';
-import FieldChatView from '@/components/field/FieldChatView.jsx';
-import FieldMembersView from '@/components/field/FieldMembersView.jsx';
-import FieldAnalyticsView from '@/components/field/FieldAnalyticsView.jsx';
-import FieldFormsView from '@/components/field/FieldFormsView.jsx';
-import FieldReportsView from '@/components/field/FieldReportsView.jsx';
-import FieldBudgetView from '@/components/field/FieldBudgetView.jsx';
-import FieldMilestonesView from '@/components/field/FieldMilestonesView.jsx';
-import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
-import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
-import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
-import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
-import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
-import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
-import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
+import QuickSearchDialog from '@/components/field/QuickSearchDialog';
+import FieldProjectOverview from '@/components/field/FieldProjectOverview';
+import FieldPlansView from '@/components/field/FieldPlansView';
+import FieldTasksView from '@/components/field/FieldTasksView';
+import FieldPhotosView from '@/components/field/FieldPhotosView';
+import FieldDocumentsView from '@/components/field/FieldDocumentsView';
+import FieldChatView from '@/components/field/FieldChatView';
+import FieldMembersView from '@/components/field/FieldMembersView';
+import FieldAnalyticsView from '@/components/field/FieldAnalyticsView';
+import FieldFormsView from '@/components/field/FieldFormsView';
+import FieldReportsView from '@/components/field/FieldReportsView';
+import FieldBudgetView from '@/components/field/FieldBudgetView';
+import FieldMilestonesView from '@/components/field/FieldMilestonesView';
+import FieldChecklistsView from '@/components/field/FieldChecklistsView';
+import ClientApprovalsView from '@/components/field/ClientApprovalsView';
+import FieldActivityLogView from '@/components/field/FieldActivityLogView';
+import QRCodeScanner from '@/components/field/QRCodeScanner';
+import FieldAIAssistant from '@/components/field/FieldAIAssistant';
+import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav';
+import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
