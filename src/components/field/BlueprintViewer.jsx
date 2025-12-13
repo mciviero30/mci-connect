@@ -14,7 +14,6 @@ import CreateTaskDialog from './CreateTaskDialog.jsx';
 import BlueprintMiniMap from './BlueprintMiniMap.jsx';
 import BlueprintFilterBar from './BlueprintFilterBar.jsx';
 import LiveCollaborators from './LiveCollaborators.jsx';
-import AITaskSuggestions from './AITaskSuggestions.jsx';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
@@ -559,15 +558,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
             <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
           </TooltipContent>
         </Tooltip>
-        </div>
-
-        {/* AI Suggestions Panel - Below toolbar */}
-        <div className="absolute left-2 top-[420px] z-40 w-72">
-        <AITaskSuggestions 
-          jobId={jobId}
-          planId={plan?.id}
-          tasks={tasks}
-        />
         </div>
 
       {/* Live Collaborators */}
