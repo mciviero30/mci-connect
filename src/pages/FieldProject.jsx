@@ -273,7 +273,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto pb-20 md:pb-0">
+      <div className="flex-1 overflow-auto pb-20 md:pb-0 h-full">
         {renderContent()}
       </div>
 
