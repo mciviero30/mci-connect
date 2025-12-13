@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, MapPin, Plus, CheckSquare, Calendar, User } from 'lucide-react';
+import { X, MapPin, Plus, CheckSquare, Calendar, User, Check, Minus, Square } from 'lucide-react';
+import { CHECKLIST_TEMPLATES, CHECKLIST_STATUS, calculateProgress } from './ChecklistTemplates';
 
 export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated }) {
   const [task, setTask] = useState({
@@ -17,9 +18,21 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     status: 'pending',
     due_date: '',
     assigned_to: '',
+    wall_type: '', // Track wall type for template
   });
   const [checklist, setChecklist] = useState([]);
   const [newCheckItem, setNewCheckItem] = useState('');
+  const [showTemplates, setShowTemplates] = useState(false);
+
+  // Load template when wall type changes
+  useEffect(() => {
+    if (task.wall_type && CHECKLIST_TEMPLATES[task.wall_type]) {
+      setChecklist(CHECKLIST_TEMPLATES[task.wall_type].items.map(item => ({
+        text: item.text,
+        status: 'pending'
+      })));
+    }
+  }, [task.wall_type]);
 
   // Fetch plan details for mini map
   const { data: plan } = useQuery({
@@ -62,9 +75,28 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   const addChecklistItem = () => {
     if (!newCheckItem.trim()) return;
-    setChecklist([...checklist, { text: newCheckItem, completed: false }]);
+    setChecklist([...checklist, { text: newCheckItem, status: 'pending' }]);
     setNewCheckItem('');
   };
+
+  const toggleChecklistStatus = (index) => {
+    const newChecklist = [...checklist];
+    const currentStatus = newChecklist[index].status || 'pending';
+    
+    // Cycle through statuses: pending -> in_progress -> completed -> not_completed -> pending
+    const statusCycle = ['pending', 'in_progress', 'completed', 'not_completed'];
+    const currentIndex = statusCycle.indexOf(currentStatus);
+    const nextIndex = (currentIndex + 1) % statusCycle.length;
+    
+    newChecklist[index].status = statusCycle[nextIndex];
+    setChecklist(newChecklist);
+  };
+
+  const removeChecklistItem = (index) => {
+    setChecklist(checklist.filter((_, i) => i !== index));
+  };
+
+  const progress = calculateProgress(checklist);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,21 +129,87 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               </div>
             </div>
 
+            {/* Wall Type Template Selector */}
+            <div className="mb-4">
+              <label className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2 block">Wall Type:</label>
+              <Select value={task.wall_type} onValueChange={(v) => setTask({...task, wall_type: v})}>
+                <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectValue placeholder="Select wall type for template..." />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="solid_walls">Solid Walls</SelectItem>
+                  <SelectItem value="glass_walls">Glass Walls</SelectItem>
+                  <SelectItem value="demountable_walls">Demountable Walls</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Checklist */}
             <div className="mb-6">
-              <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-3">Checklist:</h3>
-              <div className="space-y-2">
-                {checklist.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <CheckSquare className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm">{item.text}</span>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400">Checklist:</h3>
+                {checklist.length > 0 && (
+                  <div className="text-xs text-slate-500">
+                    {progress.percentage}% complete
                   </div>
-                ))}
-                <div className="flex gap-2">
+                )}
+              </div>
+
+              {/* Progress Bar */}
+              {checklist.length > 0 && (
+                <div className="mb-4">
+                  <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#FFB800] transition-all duration-300"
+                      style={{ width: `${progress.percentage}%` }}
+                    />
+                  </div>
+                  <div className="flex gap-4 text-xs mt-2">
+                    <span className="text-[#FFB800]">✓ {progress.completed}</span>
+                    <span className="text-green-500">⊙ {progress.inProgress}</span>
+                    <span className="text-red-500">✗ {progress.notCompleted}</span>
+                    <span className="text-slate-400">○ {progress.pending}</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                {checklist.map((item, idx) => {
+                  const statusConfig = CHECKLIST_STATUS[item.status || 'pending'];
+                  return (
+                    <div key={idx} className="flex items-center gap-2 group hover:bg-slate-50 dark:hover:bg-slate-800/50 p-1 rounded">
+                      <button
+                        onClick={() => toggleChecklistStatus(idx)}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                          item.status === 'completed' ? 'bg-[#FFB800] border-[#FFB800]' :
+                          item.status === 'in_progress' ? 'bg-green-500 border-green-500' :
+                          item.status === 'not_completed' ? 'bg-red-500 border-red-500' :
+                          'border-slate-300 dark:border-slate-600 hover:border-slate-400'
+                        }`}
+                      >
+                        {item.status === 'completed' && <Check className="w-3 h-3 text-white" />}
+                        {item.status === 'in_progress' && <Minus className="w-3 h-3 text-white" />}
+                        {item.status === 'not_completed' && <X className="w-3 h-3 text-white" />}
+                      </button>
+                      <span className={`text-sm flex-1 ${
+                        item.status === 'completed' ? 'line-through text-slate-400' : ''
+                      }`}>
+                        {item.text}
+                      </span>
+                      <button
+                        onClick={() => removeChecklistItem(idx)}
+                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 p-1"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+                <div className="flex gap-2 mt-2">
                   <Input 
                     value={newCheckItem}
                     onChange={(e) => setNewCheckItem(e.target.value)}
-                    placeholder="+ New item"
+                    placeholder="+ Add custom item"
                     className="text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                     onKeyDown={(e) => e.key === 'Enter' && addChecklistItem()}
                   />
