@@ -30,6 +30,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [cursorPinPosition, setCursorPinPosition] = useState(null);
   
   // Loading states
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -437,6 +438,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleMouseMove = (e) => {
+    // Update cursor pin position if placing pin
+    if (isPlacingPin && imageRef.current) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
+        setCursorPinPosition({ x, y });
+      } else {
+        setCursorPinPosition(null);
+      }
+    }
+    
     if (!isDragging) return;
     setPosition({
       x: e.clientX - dragStart.x,
@@ -536,6 +549,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setShowCreateTask(true);
     setIsPlacingPin(false);
     setActiveTool('select');
+    setCursorPinPosition(null);
   };
 
   // Toolbar items
@@ -563,6 +577,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const handleTaskCreated = () => {
     setPendingPinPosition(null);
     setShowCreateTask(false);
+    setCursorPinPosition(null);
   };
 
   return (
@@ -814,6 +829,15 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     isSelected={selectedTask?.id === task.id}
                   />
                 ))}
+                {/* Cursor Pin - follows mouse */}
+                {cursorPinPosition && isPlacingPin && (
+                  <div 
+                    className="absolute w-8 h-8 -ml-4 -mt-8 pointer-events-none"
+                    style={{ left: `${cursorPinPosition.x}%`, top: `${cursorPinPosition.y}%` }}
+                  >
+                    <MapPin className="w-8 h-8 text-amber-500 drop-shadow-lg" fill="currentColor" />
+                  </div>
+                )}
                 {/* Pending Pin */}
                 {pendingPinPosition && (
                   <div 
