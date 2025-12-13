@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign } from "lucide-react";
+import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign, Settings, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -412,6 +412,17 @@ export default function Chat() {
     setShowUserProfile(true);
   };
 
+  const openEditGroup = (group) => {
+    setSelectedCustomGroup(group);
+    setShowCreateGroup(true);
+  };
+
+  // Check if user can manage groups
+  const canManageGroups = user?.role === 'admin' || 
+                          user?.position === 'CEO' || 
+                          user?.department === 'HR' || 
+                          user?.position === 'manager';
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -544,25 +555,40 @@ export default function Chat() {
                         const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
                         const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
                         return (
-                          <button
-                            key={group.id}
-                            onClick={() => selectCustomGroup(group)}
-                            className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
-                              isActive
-                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <div className={`w-8 h-8 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center`}>
-                              <Users className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate">{group.group_name}</p>
-                              <p className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                                {group.members.length} members
-                              </p>
-                            </div>
-                          </button>
+                          <div key={group.id} className="relative group/item">
+                            <button
+                              onClick={() => selectCustomGroup(group)}
+                              className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
+                                isActive
+                                  ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
+                                  : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                              }`}
+                            >
+                              <div className={`w-8 h-8 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center`}>
+                                <Users className="w-4 h-4 text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-sm truncate">{group.group_name}</p>
+                                <p className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                                  {group.members.length} members
+                                </p>
+                              </div>
+                            </button>
+                            {canManageGroups && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditGroup(group);
+                                }}
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                title="Edit group"
+                              >
+                                <Settings className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         );
                       })}
                     {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
