@@ -625,7 +625,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   return (
     <TooltipProvider>
-    <div className="h-full flex relative">
+    <div className="w-full h-full flex flex-col relative">
       {/* Left Toolbar - Like Fieldwire - Always visible */}
       <div className="absolute left-2 top-16 z-50 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg w-11 py-2">
         {toolbarItems.map((item, idx) => {
@@ -708,7 +708,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       )}
 
       {/* Main Viewer */}
-      <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
+      <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900 h-full">
         {/* Top Header - Simplified */}
         <div className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 md:gap-3">
