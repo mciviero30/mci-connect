@@ -575,11 +575,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   // Handle pin click based on active tool
-  const handlePinClick = (task, e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const handlePinClick = (task) => {
+    console.log('Pin clicked:', task.id, task.title, 'Active tool:', activeTool);
     
     if (activeTool === 'eraser') {
       // Delete task with eraser
@@ -588,7 +585,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       }
     } else {
       // Open task detail panel
-      console.log('Opening task:', task.id, task.title);
       setSelectedTask(task);
     }
   };
@@ -866,7 +862,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   <TaskPin 
                     key={task.id}
                     task={task}
-                    onClick={(e) => handlePinClick(task, e)}
+                    onClick={handlePinClick}
                     isSelected={selectedTask?.id === task.id}
                     isErasing={activeTool === 'eraser'}
                   />
