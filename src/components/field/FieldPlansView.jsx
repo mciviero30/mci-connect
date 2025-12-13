@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import BlueprintViewer from './BlueprintViewer.jsx';
 import PlanAnalyzer from './PlanAnalyzer.jsx';
 import WallTemplatesManager from './WallTemplatesManager.jsx';
+import PDFProcessor from './PDFProcessor.jsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
@@ -26,6 +27,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const [newPlan, setNewPlan] = useState({ name: '', file: null, fileSize: 0 });
   const [analyzePlan, setAnalyzePlan] = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [processingPdf, setProcessingPdf] = useState(null);
   
   const queryClient = useQueryClient();
 
@@ -88,6 +90,22 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
 
     // Validate file
     if (!validateFile(file)) {
+      return;
+    }
+
+    // Check if PDF - if so, process it differently
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      setUploading(true);
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setUploading(false);
+        setShowUpload(false);
+        setProcessingPdf(file_url);
+      } catch (error) {
+        console.error('Upload error:', error);
+        setFileError('Error uploading PDF');
+        setUploading(false);
+      }
       return;
     }
 
@@ -407,6 +425,20 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
         open={showTemplates}
         onOpenChange={setShowTemplates}
       />
+
+      {/* PDF Processor */}
+      {processingPdf && (
+        <PDFProcessor
+          pdfFile={processingPdf}
+          jobId={jobId}
+          onComplete={(count) => {
+            toast.success(`${count} plans created from PDF`);
+            setProcessingPdf(null);
+            queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
+          }}
+          onCancel={() => setProcessingPdf(null)}
+        />
+      )}
     </div>
   );
 }
