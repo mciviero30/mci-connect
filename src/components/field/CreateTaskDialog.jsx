@@ -108,25 +108,24 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
             {/* Close button */}
             <button 
               onClick={() => onOpenChange(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg z-10"
             >
               <X className="w-5 h-5" />
             </button>
 
-            {/* Pin icon and inline title */}
-            <div className="flex items-start gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MapPin className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <Input 
-                  value={task.title}
-                  onChange={(e) => setTask({...task, title: e.target.value})}
-                  placeholder="Enter title"
-                  className="text-lg font-semibold bg-transparent border-none p-0 h-auto focus-visible:ring-0 placeholder:text-slate-400"
-                />
-                <p className="text-sm text-slate-500 mt-1">#{jobId?.slice(0, 8) || 'New'} | {plan?.name || 'Plan'}</p>
-              </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">New Task</h2>
+
+            {/* Title input */}
+            <div className="mb-4">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <Input 
+                value={task.title}
+                onChange={(e) => setTask({...task, title: e.target.value})}
+                placeholder="E.g., Install windows in room"
+                className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+              />
             </div>
 
             {/* Wall Type Template Selector */}
@@ -211,7 +210,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     onChange={(e) => setNewCheckItem(e.target.value)}
                     placeholder="+ Add custom item"
                     className="text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                    onKeyDown={(e) => e.key === 'Enter' && addChecklistItem()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addChecklistItem();
+                      }
+                    }}
                   />
                   <Button 
                     onClick={addChecklistItem}
@@ -227,10 +231,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
             {/* Description */}
             <div className="mb-4">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 block">Description</label>
               <Textarea 
                 value={task.description}
                 onChange={(e) => setTask({...task, description: e.target.value})}
-                placeholder="Detalles de la tarea..."
+                placeholder="Task details..."
                 className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                 rows={4}
               />
@@ -286,7 +291,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <Input 
                   value={task.assigned_to}
                   onChange={(e) => setTask({...task, assigned_to: e.target.value})}
-                  placeholder="usuario@ejemplo.com"
+                  placeholder="user@example.com"
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
               </div>
@@ -335,14 +340,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 onClick={() => onOpenChange(false)}
                 className="flex-1"
               >
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleSubmit}
                 disabled={!task.title || createTaskMutation.isPending}
-                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
               >
-                {createTaskMutation.isPending ? 'Creando...' : 'Crear Tarea'}
+                {createTaskMutation.isPending ? 'Creating...' : 'Create Task'}
               </Button>
             </div>
           </div>
