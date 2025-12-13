@@ -432,6 +432,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
+    // Don't start dragging if clicking on a pin
+    if (e.target.closest('button')) return;
     if (isPlacingPin) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
