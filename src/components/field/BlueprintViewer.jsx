@@ -396,6 +396,31 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setPosition({ x: 0, y: 0 });
   };
 
+  // Mouse wheel zoom - centered on cursor
+  const handleWheel = (e) => {
+    if (isPlacingPin) return;
+    e.preventDefault();
+    
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate zoom delta
+    const delta = -e.deltaY * 0.001;
+    const newZoom = Math.min(Math.max(zoom + delta, 0.1), 5);
+    
+    // Adjust position to zoom towards cursor
+    const zoomRatio = newZoom / zoom;
+    const newX = mouseX - (mouseX - position.x) * zoomRatio;
+    const newY = mouseY - (mouseY - position.y) * zoomRatio;
+    
+    setZoom(newZoom);
+    setPosition({ x: newX, y: newY });
+  };
+
   const handleMouseDown = (e) => {
     if (isPlacingPin) return;
     setIsDragging(true);
@@ -435,14 +460,33 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   const handleTouchMove = (e) => {
     if (e.touches.length === 2 && lastTouchDistance) {
-      // Pinch zoom
+      // Pinch zoom - centered on touch midpoint
       e.preventDefault();
+      
       const distance = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
       );
+      
       const scale = distance / lastTouchDistance;
-      setZoom(prev => Math.min(Math.max(prev * scale, 0.1), 4));
+      const newZoom = Math.min(Math.max(zoom * scale, 0.1), 5);
+      
+      // Get midpoint of touches
+      const container = containerRef.current;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const touchMidX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+        const touchMidY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+        
+        // Zoom towards touch midpoint
+        const zoomRatio = newZoom / zoom;
+        const newX = touchMidX - (touchMidX - position.x) * zoomRatio;
+        const newY = touchMidY - (touchMidY - position.y) * zoomRatio;
+        
+        setPosition({ x: newX, y: newY });
+      }
+      
+      setZoom(newZoom);
       setLastTouchDistance(distance);
     } else if (e.touches.length === 1 && isDragging && touchStart) {
       // Pan
@@ -656,6 +700,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
