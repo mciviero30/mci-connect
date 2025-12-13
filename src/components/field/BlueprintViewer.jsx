@@ -398,9 +398,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   // Mouse wheel zoom - centered on cursor
   const handleWheel = useCallback((e) => {
-    if (isPlacingPin) return;
+    // Always prevent default to stop page scroll
     e.preventDefault();
     e.stopPropagation();
+    
+    if (isPlacingPin) return;
     
     const container = containerRef.current;
     if (!container) return;
@@ -423,6 +425,20 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setZoom(newZoom);
     setPosition({ x: newX, y: newY });
   }, [zoom, position, isPlacingPin]);
+
+  // Prevent scroll on canvas container
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const preventScroll = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    container.addEventListener('wheel', preventScroll, { passive: false });
+    return () => container.removeEventListener('wheel', preventScroll);
+  }, []);
 
   const handleMouseDown = (e) => {
     if (isPlacingPin) return;
