@@ -695,36 +695,23 @@ export default function Chat() {
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1a1a]">
               <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                    <MessageSquare className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">
-                      {chatMode === 'direct' && selectedDMConv
-                        ? selectedDMConv.other_user_name
-                        : chatMode === 'groups' && selectedCustomGroup
-                        ? selectedCustomGroup.group_name
-                        : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {chatMode === 'groups' && selectedCustomGroup 
-                        ? `${selectedCustomGroup.members.length} miembros`
-                        : 'Canal de equipo'}
-                    </p>
-                  </div>
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                  <MessageSquare className="w-6 h-6 text-white" />
                 </div>
-                {chatMode === 'groups' && selectedCustomGroup && canManageGroups && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDeleteSelectedGroup}
-                    className="h-8 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                  >
-                    <Trash2 className="w-4 h-4 mr-1.5" />
-                    Eliminar
-                  </Button>
-                )}
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                    {chatMode === 'direct' && selectedDMConv
+                      ? selectedDMConv.other_user_name
+                      : chatMode === 'groups' && selectedCustomGroup
+                      ? selectedCustomGroup.group_name
+                      : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {chatMode === 'groups' && selectedCustomGroup 
+                      ? `${selectedCustomGroup.members.length} miembros`
+                      : 'Canal de equipo'}
+                  </p>
+                </div>
               </div>
                 
               <div className="flex items-center gap-2">
@@ -885,6 +872,19 @@ export default function Chat() {
                           </Tabs>
                         </PopoverContent>
                       </Popover>
+
+                      {chatMode === 'groups' && selectedCustomGroup && canManageGroups && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleDeleteSelectedGroup}
+                          className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+                          title="Eliminar grupo"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      )}
                     </div>
 
                     <MentionInput
