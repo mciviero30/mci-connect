@@ -418,7 +418,7 @@ export default function Chat() {
                           user?.department === 'HR' || 
                           user?.position === 'manager';
 
-  const handleDeleteGroup = () => {
+  const handleDeleteSelectedGroup = () => {
     if (selectedCustomGroup) {
       if (confirm('¿Estás seguro de que quieres eliminar este grupo? Esta acción no se puede deshacer.')) {
         deleteGroupMutation.mutate(selectedCustomGroup.id);
@@ -632,7 +632,7 @@ export default function Chat() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleDeleteGroup}
+                        onClick={handleDeleteSelectedGroup}
                         className="h-7 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
