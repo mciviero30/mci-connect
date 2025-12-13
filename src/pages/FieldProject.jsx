@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams } from 'react-router-dom';
-import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import { createPageUrl } from '@/utils';
 import { 
   ArrowLeft,
@@ -28,26 +27,27 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-// Import Field Components
-import FieldProjectOverview from '@/components/field/FieldProjectOverview.jsx';
-import FieldPlansView from '@/components/field/FieldPlansView.jsx';
-import FieldTasksView from '@/components/field/FieldTasksView.jsx';
-import FieldPhotosView from '@/components/field/FieldPhotosView.jsx';
-import FieldDocumentsView from '@/components/field/FieldDocumentsView.jsx';
-import FieldChatView from '@/components/field/FieldChatView.jsx';
-import FieldMembersView from '@/components/field/FieldMembersView.jsx';
-import FieldAnalyticsView from '@/components/field/FieldAnalyticsView.jsx';
-import FieldFormsView from '@/components/field/FieldFormsView.jsx';
-import FieldReportsView from '@/components/field/FieldReportsView.jsx';
-import FieldBudgetView from '@/components/field/FieldBudgetView.jsx';
-import FieldMilestonesView from '@/components/field/FieldMilestonesView.jsx';
-import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
-import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
-import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
-import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
-import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
-import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
-import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
+// Lazy load heavy components
+const QuickSearchDialog = lazy(() => import('@/components/field/QuickSearchDialog.jsx'));
+const FieldProjectOverview = lazy(() => import('@/components/field/FieldProjectOverview.jsx'));
+const FieldPlansView = lazy(() => import('@/components/field/FieldPlansView.jsx'));
+const FieldTasksView = lazy(() => import('@/components/field/FieldTasksView.jsx'));
+const FieldPhotosView = lazy(() => import('@/components/field/FieldPhotosView.jsx'));
+const FieldDocumentsView = lazy(() => import('@/components/field/FieldDocumentsView.jsx'));
+const FieldChatView = lazy(() => import('@/components/field/FieldChatView.jsx'));
+const FieldMembersView = lazy(() => import('@/components/field/FieldMembersView.jsx'));
+const FieldAnalyticsView = lazy(() => import('@/components/field/FieldAnalyticsView.jsx'));
+const FieldFormsView = lazy(() => import('@/components/field/FieldFormsView.jsx'));
+const FieldReportsView = lazy(() => import('@/components/field/FieldReportsView.jsx'));
+const FieldBudgetView = lazy(() => import('@/components/field/FieldBudgetView.jsx'));
+const FieldMilestonesView = lazy(() => import('@/components/field/FieldMilestonesView.jsx'));
+const FieldChecklistsView = lazy(() => import('@/components/field/FieldChecklistsView.jsx'));
+const ClientApprovalsView = lazy(() => import('@/components/field/ClientApprovalsView.jsx'));
+const FieldActivityLogView = lazy(() => import('@/components/field/FieldActivityLogView.jsx'));
+const QRCodeScanner = lazy(() => import('@/components/field/QRCodeScanner.jsx'));
+const FieldAIAssistant = lazy(() => import('@/components/field/FieldAIAssistant.jsx'));
+const MobileFieldNav = lazy(() => import('@/components/field/MobileFieldNav.jsx'));
+const FieldOfflineManager = lazy(() => import('@/components/field/FieldOfflineManager.jsx'));
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -82,34 +82,32 @@ export default function FieldProject() {
       return jobs[0] || null;
     },
     enabled: !!jobId,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['field-tasks', jobId],
     queryFn: async () => {
-      const data = await base44.entities.Task.filter({ job_id: jobId }, '-created_date');
-      // Cache for offline use
-      saveOfflineData('tasks', data);
-      return data;
+      return await base44.entities.Task.filter({ job_id: jobId }, '-created_date');
     },
-    enabled: !!jobId,
+    enabled: !!jobId && activeTab !== 'overview',
+    staleTime: 2 * 60 * 1000,
   });
 
   const { data: plans = [] } = useQuery({
     queryKey: ['field-plans', jobId],
     queryFn: async () => {
-      const data = await base44.entities.Plan.filter({ job_id: jobId }, 'order');
-      // Cache for offline use
-      saveOfflineData('plans', data);
-      return data;
+      return await base44.entities.Plan.filter({ job_id: jobId }, 'order');
     },
-    enabled: !!jobId,
+    enabled: !!jobId && (activeTab === 'plans' || activeTab === 'overview'),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: members = [] } = useQuery({
     queryKey: ['field-members', jobId],
     queryFn: () => base44.entities.ProjectMember.filter({ project_id: jobId }),
-    enabled: !!jobId,
+    enabled: !!jobId && activeTab === 'members',
+    staleTime: 5 * 60 * 1000,
   });
 
   const sidebarItems = [
@@ -152,44 +150,31 @@ export default function FieldProject() {
   }
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
-      case 'plans':
-        return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
-      case 'tasks':
-        return <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />;
-      case 'milestones':
-        return <FieldMilestonesView jobId={jobId} />;
-      case 'photos':
-        return <FieldPhotosView jobId={jobId} />;
-      case 'documents':
-        return <FieldDocumentsView jobId={jobId} />;
-      case 'budget':
-        return <FieldBudgetView jobId={jobId} />;
-      case 'checklists':
-        return <FieldChecklistsView jobId={jobId} />;
-      case 'approvals':
-        return <ClientApprovalsView jobId={jobId} />;
-      case 'materials':
-        return <QRCodeScanner jobId={jobId} />;
-      case 'chat':
-        return <FieldChatView jobId={jobId} />;
-      case 'members':
-        return <FieldMembersView jobId={jobId} />;
-      case 'forms':
-        return <FieldFormsView jobId={jobId} />;
-      case 'reports':
-        return <FieldReportsView jobId={jobId} />;
-      case 'activity':
-        return <FieldActivityLogView jobId={jobId} />;
-      case 'analytics':
-        return <FieldAnalyticsView jobId={jobId} tasks={tasks} />;
-      case 'ai-assistant':
-        return <FieldAIAssistant jobId={jobId} job={job} tasks={tasks} members={members} />;
-      default:
-        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
-    }
+    return (
+      <Suspense fallback={
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+        </div>
+      }>
+        {activeTab === 'overview' && <FieldProjectOverview job={job} tasks={tasks} plans={plans} />}
+        {activeTab === 'plans' && <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />}
+        {activeTab === 'tasks' && <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />}
+        {activeTab === 'milestones' && <FieldMilestonesView jobId={jobId} />}
+        {activeTab === 'photos' && <FieldPhotosView jobId={jobId} />}
+        {activeTab === 'documents' && <FieldDocumentsView jobId={jobId} />}
+        {activeTab === 'budget' && <FieldBudgetView jobId={jobId} />}
+        {activeTab === 'checklists' && <FieldChecklistsView jobId={jobId} />}
+        {activeTab === 'approvals' && <ClientApprovalsView jobId={jobId} />}
+        {activeTab === 'materials' && <QRCodeScanner jobId={jobId} />}
+        {activeTab === 'chat' && <FieldChatView jobId={jobId} />}
+        {activeTab === 'members' && <FieldMembersView jobId={jobId} />}
+        {activeTab === 'forms' && <FieldFormsView jobId={jobId} />}
+        {activeTab === 'reports' && <FieldReportsView jobId={jobId} />}
+        {activeTab === 'activity' && <FieldActivityLogView jobId={jobId} />}
+        {activeTab === 'analytics' && <FieldAnalyticsView jobId={jobId} tasks={tasks} />}
+        {activeTab === 'ai-assistant' && <FieldAIAssistant jobId={jobId} job={job} tasks={tasks} members={members} />}
+      </Suspense>
+    );
   };
 
   const handleBack = () => {
@@ -197,13 +182,22 @@ export default function FieldProject() {
   };
 
   return (
-    <FieldOfflineProvider jobId={jobId}>
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex flex-col md:flex-row">
-      {/* Quick Search Dialog */}
-      <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
-      
-      {/* Offline Status Indicator */}
-      <OfflineStatusBadge />
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+      </div>
+    }>
+      <FieldOfflineProvider jobId={jobId}>
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex flex-col md:flex-row">
+        {showQuickSearch && (
+          <Suspense fallback={null}>
+            <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
+          </Suspense>
+        )}
+        
+        <Suspense fallback={null}>
+          <OfflineStatusBadge />
+        </Suspense>
       
       {/* Mobile Header */}
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
@@ -277,14 +271,17 @@ export default function FieldProject() {
 
       {/* Mobile Bottom Navigation */}
       {isMobile && (
-        <MobileBottomNav 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          taskCount={tasks.length}
-          planCount={plans.length}
-        />
+        <Suspense fallback={null}>
+          <MobileBottomNav 
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            taskCount={tasks.length}
+            planCount={plans.length}
+          />
+        </Suspense>
       )}
     </div>
     </FieldOfflineProvider>
+    </Suspense>
   );
 }
