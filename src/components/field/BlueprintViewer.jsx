@@ -539,6 +539,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleImageClick = (e) => {
+    // Don't handle click if clicking on a task pin
+    if (e.target.closest('button')) return;
+    
     if (activeTool !== 'pin' && !isPlacingPin) return;
     
     const rect = imageRef.current.getBoundingClientRect();

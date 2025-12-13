@@ -21,15 +21,16 @@ export default function TaskPin({ task, onClick, isSelected }) {
   return (
     <button
       onClick={(e) => {
+        e.preventDefault();
         e.stopPropagation();
-        onClick();
+        onClick(e);
       }}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
-      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
-        isSelected ? 'scale-125 z-20' : ''
+      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-30 ${
+        isSelected ? 'scale-125 z-40' : ''
       }`}
-      style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
+      style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%`, pointerEvents: 'auto' }}
     >
       <div className="relative">
         {/* Compact pin with just wall number */}
