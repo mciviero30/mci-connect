@@ -6,7 +6,7 @@ const PANEL_WIDTH = 320;
 
 export default function DrawingView({ jobId, blueprintUrl }) {
   // Estado de carga del dibujo
-  const [isDrawingLoaded, setIsDrawingLoaded] = useState(false);
+  const [isDrawingLoaded, setIsDrawingLoaded] = useState(true);
 
   // Estado para lista de tareas
   const [tasks, setTasks] = useState([
