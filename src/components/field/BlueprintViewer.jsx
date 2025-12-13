@@ -269,7 +269,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
       const imageDataUrl = combinedCanvas.toDataURL('image/png');
       setPdfCanvas(imageDataUrl);
-      setZoom(0.3); // Start at 30% for large PDFs
+      setZoom(0.15); // Start at 15% to fit page
     } catch (err) {
       console.error('PDF render error:', err);
       setLoadingState('error');
