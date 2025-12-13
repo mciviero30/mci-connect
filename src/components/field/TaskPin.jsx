@@ -26,39 +26,35 @@ export default function TaskPin({ task, onClick, isSelected, isErasing }) {
 
   return (
     <div
-      className="absolute z-40"
+      className={`absolute z-40 cursor-pointer transition-all hover:scale-110 ${
+        isSelected ? 'scale-125' : ''
+      }`}
       style={{ 
         left: `${task.pin_x}%`, 
         top: `${task.pin_y}%`,
         transform: 'translate(-50%, -100%)'
       }}
+      onClick={handleClick}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
     >
-      <div
-        onClick={handleClick}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        className={`cursor-pointer transition-all hover:scale-110 ${
-          isSelected ? 'scale-125' : ''
-        }`}
-      >
-        {/* Pin Badge */}
-        <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${isErasing ? 'bg-red-500 animate-pulse' : status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
-          <span className="text-[11px] font-bold text-white">{wallNumber}</span>
-        </div>
-        
-        {/* Pin Point */}
-        <div 
-          className={`absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] ${status.point}`}
-        />
-        
-        {/* Tooltip */}
-        {(showTooltip || isSelected) && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-slate-900 rounded-lg shadow-xl whitespace-nowrap border border-slate-600">
-            <p className="text-xs font-medium text-white">{task.title}</p>
-            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-900" />
-          </div>
-        )}
+      {/* Pin Badge */}
+      <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${isErasing ? 'bg-red-500 animate-pulse' : status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
+        <span className="text-[11px] font-bold text-white">{wallNumber}</span>
       </div>
+      
+      {/* Pin Point */}
+      <div 
+        className={`absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] ${status.point}`}
+      />
+      
+      {/* Tooltip */}
+      {(showTooltip || isSelected) && (
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-slate-900 rounded-lg shadow-xl whitespace-nowrap border border-slate-600">
+          <p className="text-xs font-medium text-white">{task.title}</p>
+          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-900" />
+        </div>
+      )}
     </div>
   );
 }
