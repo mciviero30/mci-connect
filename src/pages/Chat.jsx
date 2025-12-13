@@ -251,16 +251,36 @@ export default function Chat() {
   });
 
   const createGroupMutation = useMutation({
-    mutationFn: (data) => base44.entities.ChatGroup.create(data),
-    onSuccess: (newGroup) => {
+    mutationFn: (data) => {
+      if (data.id) {
+        const { id, ...updateData } = data;
+        return base44.entities.ChatGroup.update(id, updateData);
+      }
+      return base44.entities.ChatGroup.create(data);
+    },
+    onSuccess: (group) => {
       queryClient.invalidateQueries({ queryKey: ['chatGroups'] });
       setChatMode('groups');
-      setSelectedCustomGroup(newGroup);
+      setSelectedCustomGroup(group);
       setShowCreateGroup(false);
-      toast.success('Group created successfully!');
+      toast.success(group.id ? 'Group updated successfully!' : 'Group created successfully!');
     },
     onError: () => {
-      toast.error('Failed to create group');
+      toast.error('Failed to save group');
+    }
+  });
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: (groupId) => base44.entities.ChatGroup.update(groupId, { is_active: false }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chatGroups'] });
+      setSelectedCustomGroup(null);
+      setChatMode('channels');
+      setShowCreateGroup(false);
+      toast.success('Group deleted successfully!');
+    },
+    onError: () => {
+      toast.error('Failed to delete group');
     }
   });
 
@@ -375,6 +395,10 @@ export default function Chat() {
 
   const handleCreateGroup = (groupData) => {
     createGroupMutation.mutate(groupData);
+  };
+
+  const handleDeleteGroup = (groupId) => {
+    deleteGroupMutation.mutate(groupId);
   };
 
   const selectCustomGroup = (group) => {
@@ -799,6 +823,8 @@ export default function Chat() {
           employees={employees}
           currentUser={user}
           onCreateGroup={handleCreateGroup}
+          onDeleteGroup={handleDeleteGroup}
+          editingGroup={selectedCustomGroup}
         />
 
         {/* User Profile Modal */}

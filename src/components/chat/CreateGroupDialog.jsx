@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { X, Users } from 'lucide-react';
+import { X, Users, Trash2 } from 'lucide-react';
 
 const AVATAR_COLORS = [
   { value: 'blue', class: 'from-blue-500 to-blue-600' },
@@ -16,12 +16,37 @@ const AVATAR_COLORS = [
   { value: 'teal', class: 'from-teal-500 to-teal-600' }
 ];
 
-export default function CreateGroupDialog({ open, onOpenChange, employees = [], currentUser, onCreateGroup }) {
-  const [groupName, setGroupName] = useState('');
-  const [description, setDescription] = useState('');
+export default function CreateGroupDialog({ open, onOpenChange, employees = [], currentUser, onCreateGroup, onDeleteGroup, editingGroup = null }) {
+  const [groupName, setGroupName] = useState(editingGroup?.group_name || '');
+  const [description, setDescription] = useState(editingGroup?.description || '');
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [avatarColor, setAvatarColor] = useState('blue');
+  const [avatarColor, setAvatarColor] = useState(editingGroup?.avatar_color || 'blue');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Check if user can delete (admin, CEO, HR, manager)
+  const canDelete = currentUser?.role === 'admin' || 
+                    currentUser?.position === 'CEO' || 
+                    currentUser?.department === 'HR' || 
+                    currentUser?.position === 'manager';
+
+  // Initialize selected members when editing
+  React.useEffect(() => {
+    if (editingGroup) {
+      setGroupName(editingGroup.group_name || '');
+      setDescription(editingGroup.description || '');
+      setAvatarColor(editingGroup.avatar_color || 'blue');
+      const groupMembers = employees.filter(emp => 
+        editingGroup.members?.includes(emp.email) && emp.email !== currentUser?.email
+      );
+      setSelectedMembers(groupMembers);
+    } else {
+      setGroupName('');
+      setDescription('');
+      setSelectedMembers([]);
+      setAvatarColor('blue');
+      setSearchTerm('');
+    }
+  }, [editingGroup, employees, currentUser]);
 
   const toggleMember = (employee) => {
     if (selectedMembers.find(m => m.email === employee.email)) {
@@ -44,7 +69,7 @@ export default function CreateGroupDialog({ open, onOpenChange, employees = [], 
     const memberEmails = [...selectedMembers.map(m => m.email), currentUser.email];
     const memberNames = [...selectedMembers.map(m => m.full_name), currentUser.full_name];
 
-    onCreateGroup({
+    const groupData = {
       group_name: groupName.trim(),
       description: description.trim(),
       created_by_email: currentUser.email,
@@ -53,7 +78,13 @@ export default function CreateGroupDialog({ open, onOpenChange, employees = [], 
       member_names: memberNames,
       avatar_color: avatarColor,
       is_active: true
-    });
+    };
+
+    if (editingGroup) {
+      onCreateGroup({ ...groupData, id: editingGroup.id });
+    } else {
+      onCreateGroup(groupData);
+    }
 
     // Reset form
     setGroupName('');
@@ -61,6 +92,14 @@ export default function CreateGroupDialog({ open, onOpenChange, employees = [], 
     setSelectedMembers([]);
     setAvatarColor('blue');
     setSearchTerm('');
+  };
+
+  const handleDelete = () => {
+    if (!editingGroup || !canDelete) return;
+    if (confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+      onDeleteGroup(editingGroup.id);
+      onOpenChange(false);
+    }
   };
 
   const filteredEmployees = employees
@@ -171,18 +210,32 @@ export default function CreateGroupDialog({ open, onOpenChange, employees = [], 
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleCreate}
-            disabled={!groupName.trim() || selectedMembers.length === 0}
-            className="bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white"
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Create Group
-          </Button>
+        <DialogFooter className="flex justify-between">
+          <div>
+            {editingGroup && canDelete && (
+              <Button 
+                variant="outline" 
+                onClick={handleDelete}
+                className="border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Group
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreate}
+              disabled={!groupName.trim() || selectedMembers.length === 0}
+              className="bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              {editingGroup ? 'Update Group' : 'Create Group'}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
