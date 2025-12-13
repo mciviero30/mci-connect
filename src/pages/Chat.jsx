@@ -489,6 +489,15 @@ export default function Chat() {
       )
     : messages;
 
+  const AVATAR_COLORS = [
+    { value: 'blue', class: 'from-blue-500 to-blue-600' },
+    { value: 'purple', class: 'from-purple-500 to-purple-600' },
+    { value: 'green', class: 'from-green-500 to-green-600' },
+    { value: 'orange', class: 'from-orange-500 to-orange-600' },
+    { value: 'pink', class: 'from-pink-500 to-pink-600' },
+    { value: 'teal', class: 'from-teal-500 to-teal-600' }
+  ];
+
   const groups = [
     { id: 'general', name: t('general'), icon: Users },
     ...jobs.filter(j => j.status === 'active').map(job => ({
@@ -984,12 +993,3 @@ export default function Chat() {
     </div>
   );
 }
-
-const AVATAR_COLORS = [
-  { value: 'blue', class: 'from-blue-500 to-blue-600' },
-  { value: 'purple', class: 'from-purple-500 to-purple-600' },
-  { value: 'green', class: 'from-green-500 to-green-600' },
-  { value: 'orange', class: 'from-orange-500 to-orange-600' },
-  { value: 'pink', class: 'from-pink-500 to-pink-600' },
-  { value: 'teal', class: 'from-teal-500 to-teal-600' }
-];
