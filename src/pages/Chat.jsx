@@ -23,8 +23,8 @@ import { useToast } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import ChatUnreadBadge from "../components/chat/ChatUnreadBadge";
 import OnlineStatusManager from "../components/chat/OnlineStatusManager";
-import UserStatusIndicator from "../components/chat/UserStatusIndicator";
-import { sendNotification, NOTIFICATION_TYPES } from "../components/notifications/PushNotificationService";
+import UserStatusIndicator from "../components/chat/UserStatusIndicator.jsx";
+import { sendNotification } from "../components/notifications/PushNotificationService";
 
 const EMOJIS = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇',
