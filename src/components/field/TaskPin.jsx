@@ -18,19 +18,25 @@ export default function TaskPin({ task, onClick, isSelected, isErasing }) {
   // Extract wall number from title (e.g., "Wall 019" -> "019")
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onClick) onClick(e);
+  };
+
   return (
     <button
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onClick(e);
-      }}
+      onClick={handleClick}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
-      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-30 ${
-        isSelected ? 'scale-125 z-40' : ''
+      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 ${
+        isSelected ? 'scale-125 z-50' : 'z-30'
       } ${isErasing ? 'cursor-pointer hover:opacity-70' : ''}`}
-      style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%`, pointerEvents: 'auto' }}
+      style={{ 
+        left: `${task.pin_x}%`, 
+        top: `${task.pin_y}%`, 
+        pointerEvents: 'auto'
+      }}
     >
       <div className="relative">
         {/* Compact pin with just wall number */}

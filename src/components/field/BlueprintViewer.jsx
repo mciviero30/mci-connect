@@ -448,8 +448,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
-    // Don't start dragging if clicking on a pin
-    if (e.target.closest('button')) return;
+    // Don't start dragging if clicking on a pin or if in eraser mode
+    if (e.target.closest('button') || activeTool === 'eraser') return;
     if (isPlacingPin) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -576,7 +576,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   // Handle pin click based on active tool
   const handlePinClick = (task, e) => {
-    e?.stopPropagation?.();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     if (activeTool === 'eraser') {
       // Delete task with eraser
@@ -585,6 +588,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       }
     } else {
       // Open task detail panel
+      console.log('Opening task:', task.id, task.title);
       setSelectedTask(task);
     }
   };
