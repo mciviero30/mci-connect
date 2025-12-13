@@ -8,13 +8,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import TaskPin from './TaskPin.jsx';
-import TaskDetailPanel from './TaskDetailPanel.jsx';
-import CreateTaskDialog from './CreateTaskDialog.jsx';
-import BlueprintMiniMap from './BlueprintMiniMap.jsx';
-import BlueprintFilterBar from './BlueprintFilterBar.jsx';
-import LiveCollaborators from './LiveCollaborators.jsx';
-import AILearningEngine from './AILearningEngine.jsx';
+import TaskPin from './TaskPin';
+import TaskDetailPanel from './TaskDetailPanel';
+import CreateTaskDialog from './CreateTaskDialog';
+import BlueprintMiniMap from './BlueprintMiniMap';
+import BlueprintFilterBar from './BlueprintFilterBar';
+import LiveCollaborators from './LiveCollaborators';
+import AILearningEngine from './AILearningEngine';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
