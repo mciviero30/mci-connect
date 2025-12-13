@@ -62,12 +62,12 @@ export default function DrawingView({ jobId, blueprintUrl }) {
         <img 
           src={blueprintUrl}
           alt="Blueprint"
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain z-0"
           draggable={false}
         />
 
         {/* Capa de pines superpuesta */}
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 pointer-events-none z-20">
           <div className="relative w-full h-full pointer-events-auto">
             {tasks.map((task) => (
               <TaskPin
