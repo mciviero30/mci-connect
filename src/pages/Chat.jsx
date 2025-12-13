@@ -144,7 +144,6 @@ export default function Chat() {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
   const [showJobMembers, setShowJobMembers] = useState(false);
-  const [contextMenu, setContextMenu] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
@@ -419,30 +418,13 @@ export default function Chat() {
                           user?.department === 'HR' || 
                           user?.position === 'manager';
 
-  const handleContextMenu = (e, group) => {
-    if (!canManageGroups) return;
-    e.preventDefault();
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      group: group
-    });
-  };
-
-  const handleDeleteFromContext = () => {
-    if (contextMenu?.group) {
+  const handleDeleteGroup = () => {
+    if (selectedCustomGroup) {
       if (confirm('¿Estás seguro de que quieres eliminar este grupo? Esta acción no se puede deshacer.')) {
-        deleteGroupMutation.mutate(contextMenu.group.id);
+        deleteGroupMutation.mutate(selectedCustomGroup.id);
       }
     }
-    setContextMenu(null);
   };
-
-  useEffect(() => {
-    const closeContextMenu = () => setContextMenu(null);
-    window.addEventListener('click', closeContextMenu);
-    return () => window.removeEventListener('click', closeContextMenu);
-  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -576,11 +558,10 @@ export default function Chat() {
                         const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
                         const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
                         return (
-                          <button
-                            key={group.id}
-                            onClick={() => selectCustomGroup(group)}
-                            onContextMenu={(e) => handleContextMenu(e, group)}
-                            className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
+                         <button
+                           key={group.id}
+                           onClick={() => selectCustomGroup(group)}
+                           className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
                               isActive
                                 ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -643,9 +624,22 @@ export default function Chat() {
                     : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
                 </CardTitle>
                 {chatMode === 'groups' && selectedCustomGroup && (
-                  <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
-                    {selectedCustomGroup.members.length} members
-                  </Badge>
+                  <>
+                    <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                      {selectedCustomGroup.members.length} members
+                    </Badge>
+                    {canManageGroups && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDeleteGroup}
+                        className="h-7 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Eliminar
+                      </Button>
+                    )}
+                  </>
                 )}
                 {/* Invite members button for job channels */}
                 {chatMode === 'channels' && selectedGroup !== 'general' && (
@@ -877,27 +871,6 @@ export default function Chat() {
           onClose={() => setShowJobMembers(false)}
           language={t('language') === 'es' ? 'es' : 'en'}
         />
-
-        {/* Context Menu */}
-        {contextMenu && (
-          <div
-            style={{
-              position: 'fixed',
-              top: contextMenu.y,
-              left: contextMenu.x,
-              zIndex: 9999
-            }}
-            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px]"
-          >
-            <button
-              onClick={handleDeleteFromContext}
-              className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Eliminar grupo
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
