@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign, Settings, Trash2 } from "lucide-react";
+import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -144,6 +144,7 @@ export default function Chat() {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
   const [showJobMembers, setShowJobMembers] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
@@ -412,16 +413,36 @@ export default function Chat() {
     setShowUserProfile(true);
   };
 
-  const openEditGroup = (group) => {
-    setSelectedCustomGroup(group);
-    setShowCreateGroup(true);
-  };
-
   // Check if user can manage groups
   const canManageGroups = user?.role === 'admin' || 
                           user?.position === 'CEO' || 
                           user?.department === 'HR' || 
                           user?.position === 'manager';
+
+  const handleContextMenu = (e, group) => {
+    if (!canManageGroups) return;
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      group: group
+    });
+  };
+
+  const handleDeleteFromContext = () => {
+    if (contextMenu?.group) {
+      if (confirm('¿Estás seguro de que quieres eliminar este grupo? Esta acción no se puede deshacer.')) {
+        deleteGroupMutation.mutate(contextMenu.group.id);
+      }
+    }
+    setContextMenu(null);
+  };
+
+  useEffect(() => {
+    const closeContextMenu = () => setContextMenu(null);
+    window.addEventListener('click', closeContextMenu);
+    return () => window.removeEventListener('click', closeContextMenu);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -555,40 +576,26 @@ export default function Chat() {
                         const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
                         const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
                         return (
-                          <div key={group.id} className="relative group/item">
-                            <button
-                              onClick={() => selectCustomGroup(group)}
-                              className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
-                                isActive
-                                  ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
-                                  : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-                              }`}
-                            >
-                              <div className={`w-8 h-8 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center`}>
-                                <Users className="w-4 h-4 text-white" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-sm truncate">{group.group_name}</p>
-                                <p className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
-                                  {group.members.length} members
-                                </p>
-                              </div>
-                            </button>
-                            {canManageGroups && (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEditGroup(group);
-                                }}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                title="Edit group"
-                              >
-                                <Settings className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
+                          <button
+                            key={group.id}
+                            onClick={() => selectCustomGroup(group)}
+                            onContextMenu={(e) => handleContextMenu(e, group)}
+                            className={`w-full px-3 py-2.5 rounded-lg text-left flex items-center gap-3 transition-all ${
+                              isActive
+                                ? 'bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white shadow-md'
+                                : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                            }`}
+                          >
+                            <div className={`w-8 h-8 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center`}>
+                              <Users className="w-4 h-4 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{group.group_name}</p>
+                              <p className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                                {group.members.length} members
+                              </p>
+                            </div>
+                          </button>
                         );
                       })}
                     {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
@@ -870,6 +877,27 @@ export default function Chat() {
           onClose={() => setShowJobMembers(false)}
           language={t('language') === 'es' ? 'es' : 'en'}
         />
+
+        {/* Context Menu */}
+        {contextMenu && (
+          <div
+            style={{
+              position: 'fixed',
+              top: contextMenu.y,
+              left: contextMenu.x,
+              zIndex: 9999
+            }}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px]"
+          >
+            <button
+              onClick={handleDeleteFromContext}
+              className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Eliminar grupo
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
