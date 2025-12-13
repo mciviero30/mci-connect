@@ -22,7 +22,7 @@ const RETRY_DELAY_MS = 5000;
 const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
-  const [zoom, setZoom] = useState(0.5);
+  const [zoom, setZoom] = useState(0.2);
   const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
