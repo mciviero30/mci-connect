@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import TaskPin from './TaskPin';
-import TaskDetailPanel from './TaskDetailPanel';
+import TaskDetailPanelSimple from './TaskDetailPanelSimple';
 
 export default function DrawingView({ jobId, blueprintUrl }) {
   // Estado para lista de tareas
@@ -76,14 +76,13 @@ export default function DrawingView({ jobId, blueprintUrl }) {
 
       {/* Panel lateral - Solo se muestra si hay un pin seleccionado */}
       {selectedTask && (
-        <TaskDetailPanel
+        <TaskDetailPanelSimple
           task={selectedTask}
           onClose={() => {
             console.log('❌ Cerrando panel');
             setSelectedTaskId(null);
           }}
           jobId={jobId}
-          allTasks={tasks}
         />
       )}
     </div>
