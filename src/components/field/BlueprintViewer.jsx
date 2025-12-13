@@ -14,6 +14,7 @@ import CreateTaskDialog from './CreateTaskDialog.jsx';
 import BlueprintMiniMap from './BlueprintMiniMap.jsx';
 import BlueprintFilterBar from './BlueprintFilterBar.jsx';
 import LiveCollaborators from './LiveCollaborators.jsx';
+import AILearningEngine from './AILearningEngine.jsx';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
@@ -177,7 +178,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     loadImage();
   };
 
-  // Load PDF using pdf.js CDN
+  // Load PDF using pdf.js CDN - ALL PAGES
   const loadPdfWithPdfJs = async () => {
     setLoadingState('loading');
     setLoadProgress(10);
@@ -194,7 +195,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           document.head.appendChild(script);
         });
         
-        // Wait a bit for pdfjsLib to be available
         await new Promise(resolve => setTimeout(resolve, 100));
         
         if (window.pdfjsLib) {
@@ -215,8 +215,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       setPdfTotalPages(pdf.numPages);
       setLoadProgress(60);
 
-      // Render first page
-      await renderPdfPage(pdf, 1);
+      // Render ALL pages into one canvas
+      await renderAllPdfPages(pdf);
       
       setLoadProgress(100);
       setLoadingState('success');
@@ -227,39 +227,57 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
   };
 
-  const renderPdfPage = async (pdf, pageNum) => {
+  // Render all PDF pages into single vertical canvas
+  const renderAllPdfPages = async (pdf) => {
     try {
-      const page = await pdf.getPage(pageNum);
       const scale = 1.5;
-      const viewport = page.getViewport({ scale });
+      const canvases = [];
+      
+      // Render all pages
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale });
 
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
 
-      await page.render({
-        canvasContext: context,
-        viewport: viewport
-      }).promise;
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
 
-      const imageDataUrl = canvas.toDataURL('image/png');
+        canvases.push(canvas);
+      }
+
+      // Combine all pages into one vertical canvas
+      const totalHeight = canvases.reduce((sum, c) => sum + c.height, 0);
+      const maxWidth = Math.max(...canvases.map(c => c.width));
+
+      const combinedCanvas = document.createElement('canvas');
+      combinedCanvas.width = maxWidth;
+      combinedCanvas.height = totalHeight;
+      const ctx = combinedCanvas.getContext('2d');
+
+      // Draw all pages vertically
+      let currentY = 0;
+      canvases.forEach(canvas => {
+        ctx.drawImage(canvas, 0, currentY);
+        currentY += canvas.height;
+      });
+
+      const imageDataUrl = combinedCanvas.toDataURL('image/png');
       setPdfCanvas(imageDataUrl);
-      setPdfPage(pageNum);
       setZoom(0.3); // Start at 30% for large PDFs
     } catch (err) {
       console.error('PDF render error:', err);
       setLoadingState('error');
-      setErrorMessage('Error rendering PDF page.');
+      setErrorMessage('Error rendering PDF pages.');
     }
   };
 
-  const handlePdfPageChange = async (newPage) => {
-    if (!pdfDoc || newPage < 1 || newPage > pdfTotalPages) return;
-    setLoadingState('loading');
-    await renderPdfPage(pdfDoc, newPage);
-    setLoadingState('success');
-  };
+
 
   useEffect(() => {
     loadImage();
@@ -560,6 +578,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         </Tooltip>
         </div>
 
+        {/* AI Learning Engine - Below toolbar */}
+        <div className="absolute left-2 top-[420px] z-40 w-72">
+          <AILearningEngine jobId={jobId} planId={plan?.id} />
+        </div>
+
       {/* Live Collaborators */}
       <LiveCollaborators planId={plan?.id} jobId={jobId} />
 
@@ -697,26 +720,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                         onLoad={handleImageLoad}
                         draggable={false}
                       />
-                      {/* PDF Page Controls */}
+                      {/* PDF Info Badge */}
                       {pdfTotalPages > 1 && (
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center gap-3 z-30">
-                          <button
-                            onClick={() => handlePdfPageChange(pdfPage - 1)}
-                            disabled={pdfPage <= 1}
-                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <ArrowLeft className="w-4 h-4" />
-                          </button>
-                          <span className="text-sm text-slate-600 dark:text-slate-300">
-                            Page {pdfPage} / {pdfTotalPages}
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 px-3 py-2 z-30">
+                          <span className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-green-500" />
+                            All {pdfTotalPages} pages loaded
                           </span>
-                          <button
-                            onClick={() => handlePdfPageChange(pdfPage + 1)}
-                            disabled={pdfPage >= pdfTotalPages}
-                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rotate-180"
-                          >
-                            <ArrowLeft className="w-4 h-4" />
-                          </button>
                         </div>
                       )}
                     </>
