@@ -548,7 +548,7 @@ export default function Chat() {
             {/* Sidebar Header */}
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Mensajes</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Messages</h2>
                 <div className="flex gap-1">
                   <Button
                     size="icon"
@@ -578,15 +578,15 @@ export default function Chat() {
                 <TabsList className="w-full h-10 bg-slate-100 dark:bg-slate-900 mb-3 grid grid-cols-3 p-1 rounded-xl">
                   <TabsTrigger value="channels" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <Hash className="w-3.5 h-3.5 mr-1.5" />
-                    Canales
+                    Channels
                   </TabsTrigger>
                   <TabsTrigger value="groups" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <Users className="w-3.5 h-3.5 mr-1.5" />
-                    Grupos
+                    Groups
                   </TabsTrigger>
                   <TabsTrigger value="direct" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <AtSign className="w-3.5 h-3.5 mr-1.5" />
-                    Directos
+                    Direct
                   </TabsTrigger>
                 </TabsList>
 
@@ -618,7 +618,7 @@ export default function Chat() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>{group.name}</p>
-                            {isActive && <p className="text-xs text-blue-500 dark:text-blue-500">Activo</p>}
+                            {isActive && <p className="text-xs text-blue-500 dark:text-blue-500">Active</p>}
                           </div>
                           <ChatUnreadBadge userEmail={user?.email} groupId={group.id} />
                         </button>
@@ -650,7 +650,7 @@ export default function Chat() {
                             <div className="flex-1 min-w-0">
                               <p className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
                               <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                {group.members.length} miembros
+                                {group.members.length} members
                               </p>
                             </div>
                             <ChatUnreadBadge userEmail={user?.email} groupId={`group_${group.id}`} />
@@ -708,8 +708,8 @@ export default function Chat() {
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     {chatMode === 'groups' && selectedCustomGroup 
-                      ? `${selectedCustomGroup.members.length} miembros`
-                      : 'Canal de equipo'}
+                      ? `${selectedCustomGroup.members.length} members`
+                      : 'Team channel'}
                   </p>
                 </div>
               </div>
@@ -723,13 +723,13 @@ export default function Chat() {
                     className="h-9 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
                   >
                     <UserPlus className="w-4 h-4 mr-1.5" />
-                    Invitar
+                    Invite
                   </Button>
                 )}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
                   <Input
-                    placeholder="Buscar mensajes..."
+                    placeholder="Search messages..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-64 pl-9 h-9 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg text-sm"
@@ -744,7 +744,7 @@ export default function Chat() {
               {replyingTo && (
                 <div className="px-6 py-3 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Respondiendo a {replyingTo.sender_name}</p>
+                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Replying to {replyingTo.sender_name}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400 truncate mt-0.5">{replyingTo.message}</p>
                   </div>
                   <Button
@@ -764,7 +764,7 @@ export default function Chat() {
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                       <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-3"></div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Cargando mensajes...</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Loading messages...</p>
                     </div>
                   </div>
                 )}
@@ -774,8 +774,8 @@ export default function Chat() {
                       <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-600" />
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">¡Inicia la conversación!</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No hay mensajes todavía. Sé el primero en escribir.</p>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Start the conversation!</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No messages yet. Be the first to write.</p>
                     </div>
                   </div>
                 )}
@@ -783,7 +783,7 @@ export default function Chat() {
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                       <Search className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No se encontraron mensajes con "{searchTerm}"</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No messages found with "{searchTerm}"</p>
                     </div>
                   </div>
                 )}
@@ -880,7 +880,7 @@ export default function Chat() {
                           size="icon"
                           onClick={handleDeleteSelectedGroup}
                           className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
-                          title="Eliminar grupo"
+                          title="Delete group"
                         >
                           <Trash2 className="w-5 h-5" />
                         </Button>
@@ -892,9 +892,9 @@ export default function Chat() {
                       onChange={handleTyping}
                       onSubmit={handleSend}
                       employees={employees}
-                      placeholder={replyingTo ? `Responder a ${replyingTo.sender_name}...` : 'Escribe un mensaje...'}
+                      placeholder={replyingTo ? `Reply to ${replyingTo.sender_name}...` : 'Write a message...'}
                       className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                    />
+                      />
                     <Button 
                       type="submit" 
                       disabled={!message.trim() || sendMutation.isPending} 
