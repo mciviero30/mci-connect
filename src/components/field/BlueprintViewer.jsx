@@ -396,49 +396,39 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setPosition({ x: 0, y: 0 });
   };
 
-  // Mouse wheel zoom - centered on cursor
-  const handleWheel = useCallback((e) => {
-    // Always prevent default to stop page scroll
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (isPlacingPin) return;
-    
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const rect = container.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    // Calculate zoom delta (smooth)
-    const delta = -e.deltaY * 0.002;
-    const newZoom = Math.min(Math.max(zoom + delta, 0.1), 5);
-    
-    if (newZoom === zoom) return;
-    
-    // Adjust position to zoom towards cursor
-    const zoomRatio = newZoom / zoom;
-    const newX = mouseX - (mouseX - position.x) * zoomRatio;
-    const newY = mouseY - (mouseY - position.y) * zoomRatio;
-    
-    setZoom(newZoom);
-    setPosition({ x: newX, y: newY });
-  }, [zoom, position, isPlacingPin]);
-
-  // Prevent scroll on canvas container
+  // Prevent scroll on canvas container and handle zoom
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const preventScroll = (e) => {
+    const handleWheelZoom = (e) => {
       e.preventDefault();
       e.stopPropagation();
+      
+      if (isPlacingPin) return;
+      
+      const rect = container.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      // Calculate zoom delta (smooth)
+      const delta = -e.deltaY * 0.002;
+      const newZoom = Math.min(Math.max(zoom + delta, 0.1), 5);
+      
+      if (newZoom === zoom) return;
+      
+      // Adjust position to zoom towards cursor
+      const zoomRatio = newZoom / zoom;
+      const newX = mouseX - (mouseX - position.x) * zoomRatio;
+      const newY = mouseY - (mouseY - position.y) * zoomRatio;
+      
+      setZoom(newZoom);
+      setPosition({ x: newX, y: newY });
     };
 
-    container.addEventListener('wheel', preventScroll, { passive: false });
-    return () => container.removeEventListener('wheel', preventScroll);
-  }, []);
+    container.addEventListener('wheel', handleWheelZoom, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheelZoom);
+  }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
     if (isPlacingPin) return;
@@ -719,7 +709,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
