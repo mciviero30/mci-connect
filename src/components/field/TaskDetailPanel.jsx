@@ -30,7 +30,7 @@ import TaskDependencies from './TaskDependencies.jsx';
 import TaskChecklistEditor from './TaskChecklistEditor.jsx';
 import OptimalAssigneeSuggestor from './OptimalAssigneeSuggestor.jsx';
 
-export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [], onZoomTo }) {
+export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTasks = [], onZoomTo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const [newComment, setNewComment] = useState('');
@@ -75,13 +75,17 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [], o
     },
   });
 
-  const deleteTaskMutation = useMutation({
-    mutationFn: () => base44.entities.Task.delete(task.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      onClose();
-    },
-  });
+  const handleDelete = async () => {
+    if (confirm('¿Estás seguro de que quieres eliminar esta tarea? Esta acción no se puede deshacer.')) {
+      if (onDelete) {
+        await onDelete(task.id);
+      } else {
+        await base44.entities.Task.delete(task.id);
+        queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+        onClose();
+      }
+    }
+  };
 
   const handleSave = () => {
     updateTaskMutation.mutate(editedTask);
@@ -364,7 +368,7 @@ export default function TaskDetailPanel({ task, onClose, jobId, allTasks = [], o
       <div className="p-4 border-t border-slate-700">
         <Button 
           variant="outline"
-          onClick={() => deleteTaskMutation.mutate()}
+          onClick={handleDelete}
           className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10"
         >
           <Trash2 className="w-4 h-4 mr-2" />
