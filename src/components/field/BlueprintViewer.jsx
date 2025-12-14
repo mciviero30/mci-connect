@@ -26,6 +26,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [hasDragged, setHasDragged] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
@@ -433,11 +434,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const handleMouseDown = (e) => {
     if (isPlacingPin) return;
     setIsDragging(true);
+    setHasDragged(false);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
+    setHasDragged(true);
     setPosition({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
@@ -446,6 +449,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    setTimeout(() => setHasDragged(false), 100);
   };
 
   // Touch handlers for mobile
@@ -810,7 +814,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   <TaskPin 
                     key={task.id}
                     task={task}
-                    onClick={() => setSelectedTask(task)}
+                    onClick={() => {
+                      if (!hasDragged) {
+                        setSelectedTask(task);
+                      }
+                    }}
                     isSelected={selectedTask?.id === task.id}
                   />
                 ))}
