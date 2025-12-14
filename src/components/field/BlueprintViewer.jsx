@@ -476,6 +476,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setTimeout(() => setHasDragged(false), 100);
   };
 
+  const handlePinClick = (task, e) => {
+    e.stopPropagation();
+    if (!hasDragged && !draggingPin) {
+      setSelectedTask(task);
+    }
+  };
+
   const handlePinDrag = (task, e) => {
     e.stopPropagation();
     const rect = imageRef.current?.getBoundingClientRect();
@@ -875,11 +882,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     <TaskPin 
                       key={task.id}
                       task={displayTask}
-                      onClick={() => {
-                        if (!hasDragged && !draggingPin) {
-                          setSelectedTask(task);
-                        }
-                      }}
+                      onClick={(e) => handlePinClick(task, e)}
                       onDragPin={handlePinDrag}
                       isDragging={draggingPin?.id === task.id}
                       isSelected={selectedTask?.id === task.id}
