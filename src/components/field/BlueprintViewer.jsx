@@ -25,8 +25,8 @@ const RETRY_DELAY_MS = 5000;
 const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
-  const [zoom, setZoom] = useState(0.2);
-  const [position, setPosition] = useState({ x: 60, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedTask, setSelectedTask] = useState(null);
@@ -275,7 +275,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
       const imageDataUrl = combinedCanvas.toDataURL('image/png');
       setPdfCanvas(imageDataUrl);
-      setZoom(0.15); // Start at 15% to fit page
+      setZoom(0.5);
     } catch (err) {
       console.error('PDF render error:', err);
       setLoadingState('error');
@@ -399,39 +399,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleZoomIn = () => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const rect = container.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const newZoom = Math.min(zoom + 0.15, 4);
-    const zoomRatio = newZoom / zoom;
-    
-    setZoom(newZoom);
-    setPosition({
-      x: centerX - (centerX - position.x) * zoomRatio,
-      y: centerY - (centerY - position.y) * zoomRatio
-    });
+    setZoom(prev => Math.min(prev * 1.2, 5));
   };
   
   const handleZoomOut = () => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const rect = container.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const newZoom = Math.max(zoom - 0.15, 0.1);
-    const zoomRatio = newZoom / zoom;
-    
-    setZoom(newZoom);
-    setPosition({
-      x: centerX - (centerX - position.x) * zoomRatio,
-      y: centerY - (centerY - position.y) * zoomRatio
-    });
+    setZoom(prev => Math.max(prev / 1.2, 0.1));
   };
   
   const handleReset = () => {
@@ -622,13 +594,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     // 4. Lógica de Creación de Pin
     if (activeTool === 'pin' || isPlacingPin) {
       console.log('📍 Creating new pin');
-      const rect = imageRef.current.getBoundingClientRect();
+      const rect = imageRef.current?.getBoundingClientRect();
+      if (!rect) return;
       
-      const clickX = e.clientX;
-      const clickY = e.clientY;
-      
-      const x = ((clickX - rect.left) / rect.width) * 100;
-      const y = ((clickY - rect.top) / rect.height) * 100;
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
       
       if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
         setPendingPinPosition({ x, y });
