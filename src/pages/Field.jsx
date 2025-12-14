@@ -12,6 +12,7 @@ import {
   CheckCheck,
   Briefcase,
   AlertCircle,
+  AlertTriangle,
   FolderOpen,
   Command
 } from 'lucide-react';
