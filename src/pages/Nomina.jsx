@@ -32,62 +32,118 @@ export default function Nomina() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
-  const { data: employees } = useQuery({
+  const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
-    initialData: [],
-    staleTime: 60000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.User.list();
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
-  const { data: timeEntries } = useQuery({
+  const { data: timeEntries = [] } = useQuery({
     queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list(),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.TimeEntry.list();
+      } catch (error) {
+        console.error('Error loading time entries:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
-  const { data: drivingLogs } = useQuery({
+  const { data: drivingLogs = [] } = useQuery({
     queryKey: ['drivingLogs'],
-    queryFn: () => base44.entities.DrivingLog.list(),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.DrivingLog.list();
+      } catch (error) {
+        console.error('Error loading driving logs:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
-  const { data: expenses } = useQuery({
+  const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.Expense.list();
+      } catch (error) {
+        console.error('Error loading expenses:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
-  const { data: weeklyPayrolls } = useQuery({
+  const { data: weeklyPayrolls = [] } = useQuery({
     queryKey: ['weeklyPayrolls'],
-    queryFn: () => base44.entities.WeeklyPayroll.list('-created_date'),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.WeeklyPayroll.list('-created_date');
+      } catch (error) {
+        console.error('Error loading payrolls:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
   // NEW: Prompt #60 - Query bonus configurations
-  const { data: bonusConfigurations } = useQuery({
+  const { data: bonusConfigurations = [] } = useQuery({
     queryKey: ['bonusConfigurations'],
-    queryFn: () => base44.entities.BonusConfiguration.filter({ status: 'active' }),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.BonusConfiguration.filter({ status: 'active' });
+      } catch (error) {
+        console.error('Error loading bonus configs:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   // NEW: Prompt #60 - Query jobs to check invoice status
-  const { data: jobs } = useQuery({
+  const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.Job.list();
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
-  const { data: invoices } = useQuery({
+  const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
-    initialData: [],
-    staleTime: 30000,
+    queryFn: async () => {
+      try {
+        return await base44.entities.Invoice.list();
+      } catch (error) {
+        console.error('Error loading invoices:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const activeEmployees = employees.filter((emp) => !emp.employment_status || emp.employment_status === 'active');

@@ -21,9 +21,16 @@ export default function MisHoras() {
     queryKey: ['myTimeEntries', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      return base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date');
+      try {
+        return await base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date');
+      } catch (error) {
+        console.error('Error loading time entries:', error);
+        return [];
+      }
     },
     enabled: !!user,
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
   });
 
   const openClockAlert = useMemo(() => {

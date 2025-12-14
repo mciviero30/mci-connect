@@ -17,9 +17,18 @@ import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePage
 
 const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
   const { t, language } = useLanguage();
-  const { data: jobs } = useQuery({
+  const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Job.filter({ status: 'active' });
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const [formData, setFormData] = useState(log || {
@@ -117,8 +126,18 @@ export default function Manejo() {
 
   const { data: drivingLogs = [], isLoading } = useQuery({
     queryKey: ['myMileageLogs', user?.email],
-    queryFn: () => user ? base44.entities.DrivingLog.filter({ employee_email: user.email }, '-date') : [],
+    queryFn: async () => {
+      if (!user) return [];
+      try {
+        return await base44.entities.DrivingLog.filter({ employee_email: user.email }, '-date');
+      } catch (error) {
+        console.error('Error loading driving logs:', error);
+        return [];
+      }
+    },
     enabled: !!user,
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
   });
 
   const createMutation = useMutation({
