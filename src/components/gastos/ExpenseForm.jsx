@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,14 +15,14 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 // import AIExpenseCategorizer from './AIExpenseCategorizer'; // AIExpenseCategorizer is no longer used
 
 const categories = [
-  { value: "travel", label: "Viajes", labelEn: "Travel" },
-  { value: "meals", label: "Comidas", labelEn: "Meals" },
-  { value: "transport", label: "Transporte", labelEn: "Transport" },
-  { value: "supplies", label: "Suministros", labelEn: "Supplies" },
-  { value: "client_entertainment", label: "Entretenimiento cliente", labelEn: "Client Entertainment" },
-  { value: "equipment", label: "Equipo", labelEn: "Equipment" },
-  { value: "per_diem", label: "Per Diem / Viáticos", labelEn: "Per Diem" }, // Per Diem category is still valid for display if old expenses have it
-  { value: "other", label: "Otro", labelEn: "Other" },
+  { value: "travel", label: "Travel" },
+  { value: "meals", label: "Meals" },
+  { value: "transport", label: "Transport" },
+  { value: "supplies", label: "Supplies" },
+  { value: "client_entertainment", label: "Client Entertainment" },
+  { value: "equipment", label: "Equipment" },
+  { value: "per_diem", label: "Per Diem" },
+  { value: "other", label: "Other" },
 ];
 
 export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing }) {
@@ -81,7 +80,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     },
     onError: (error) => {
       console.error("Error uploading file:", error);
-      alert(language === 'es' ? 'Error al subir el archivo.' : 'Error uploading file.');
+      alert('Error uploading file.');
     },
   });
 
@@ -100,9 +99,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     
     // NEW: Prompt #58 - Require receipt for all expenses
     if (!formData.receipt_url) {
-      alert(language === 'es' 
-        ? '⚠️ El recibo es obligatorio. Por favor sube un documento.' 
-        : '⚠️ Receipt is required. Please upload a document.');
+      alert('⚠️ Receipt is required. Please upload a document.');
       return;
     }
 
@@ -119,11 +116,11 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
 
   // NEW: Account category options (Prompt #59)
   const accountCategories = [
-    { value: 'expense_labor_cost', label: language === 'es' ? 'Gasto: Costo Laboral' : 'Expense: Labor Cost' },
-    { value: 'expense_travel_per_diem', label: language === 'es' ? 'Gasto: Viaje y Per Diem' : 'Expense: Travel & Per Diem' },
-    { value: 'expense_materials', label: language === 'es' ? 'Gasto: Materiales' : 'Expense: Materials' },
-    { value: 'expense_equipment', label: language === 'es' ? 'Gasto: Equipo' : 'Expense: Equipment' },
-    { value: 'expense_other', label: language === 'es' ? 'Gasto: Otro' : 'Expense: Other' }
+    { value: 'expense_labor_cost', label: 'Expense: Labor Cost' },
+    { value: 'expense_travel_per_diem', label: 'Expense: Travel & Per Diem' },
+    { value: 'expense_materials', label: 'Expense: Materials' },
+    { value: 'expense_equipment', label: 'Expense: Equipment' },
+    { value: 'expense_other', label: 'Expense: Other' }
   ];
   
   return (
@@ -140,7 +137,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
           <>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>{language === 'es' ? 'Monto' : 'Amount'} *</Label>
+                <Label>Amount *</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -153,7 +150,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
               </div>
 
               <div className="space-y-2">
-                <Label>{language === 'es' ? 'Fecha' : 'Date'} *</Label>
+                <Label>Date *</Label>
                 <Input
                   type="date"
                   value={formData.date}
@@ -164,11 +161,11 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             </div>
 
             <div>
-              <Label className="text-slate-700 mb-2 block">{t('description')} *</Label>
+              <Label className="text-slate-700 mb-2 block">Description *</Label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder={language === 'es' ? "Ej: Gasolina para viaje a sitio de trabajo" : "Ex: Gas for trip to job site"}
+                placeholder="Ex: Gas for trip to job site"
                 className="bg-slate-50 border-slate-200 text-slate-900"
                 required
               />
@@ -221,7 +218,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             {/* NEW: Account Category Field (Prompt #59) */}
             <div>
               <Label className="text-slate-700">
-                {language === 'es' ? 'Categoría Contable *' : 'Account Category *'}
+                Account Category *
               </Label>
               <Select 
                 value={formData.account_category} 
@@ -229,7 +226,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                 required
               >
                 <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                  <SelectValue placeholder={language === 'es' ? 'Seleccionar categoría contable...' : 'Select account category...'}/>
+                  <SelectValue placeholder="Select account category..."/>
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200">
                   {accountCategories.map(cat => (
@@ -240,14 +237,12 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                 </SelectContent>
               </Select>
               <p className="text-xs text-slate-500 mt-1">
-                {language === 'es' 
-                  ? 'Para reportes contables y análisis financiero' 
-                  : 'For accounting reports and financial analysis'}
+                For accounting reports and financial analysis
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>{language === 'es' ? 'Método de Pago' : 'Payment Method'} *</Label>
+              <Label>Payment Method *</Label>
               <RadioGroup 
                 value={formData.payment_method} 
                 onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
@@ -256,43 +251,43 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="personal" id="personal" />
                   <Label htmlFor="personal" className="font-normal cursor-pointer">
-                    {language === 'es' ? 'Dinero Personal (Reembolso)' : 'Personal Money (Reimbursement)'}
+                    Personal Money (Reimbursement)
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="company_card" id="company_card" />
                   <Label htmlFor="company_card" className="font-normal cursor-pointer">
-                    {language === 'es' ? 'Tarjeta de la Compañía' : 'Company Card'}
+                    Company Card
                   </Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label>{t('notes')}</Label>
+              <Label>Notes</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder={language === 'es' ? 'Notas adicionales sobre el gasto...' : 'Additional notes about the expense...'}
+                placeholder="Additional notes about the expense..."
                 className="h-20 bg-slate-50 border-slate-200 text-slate-900"
               />
             </div>
           </>
 
           <div className="space-y-2">
-            <Label>{language === 'es' ? 'Asociar a Trabajo' : 'Associate to Job'} *</Label>
+            <Label>Associate to Job *</Label>
             <Select
-              value={formData.job_id || ''} // Handle empty string job_id for select component
+              value={formData.job_id || ''}
               onValueChange={(value) => setFormData({ ...formData, job_id: value })}
               disabled={jobsLoading}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder={language === 'es' ? 'Seleccionar un trabajo...' : 'Select a job...'} />
+                <SelectValue placeholder="Select a job..." />
               </SelectTrigger>
               <SelectContent>
-                {jobsLoading && <SelectItem value={null} disabled>{language === 'es' ? 'Cargando trabajos...' : 'Loading jobs...'}</SelectItem>}
-                {!jobsLoading && !jobs?.length && <SelectItem value={null} disabled>{language === 'es' ? 'No hay trabajos activos' : 'No active jobs'}</SelectItem>}
+                {jobsLoading && <SelectItem value={null} disabled>Loading jobs...</SelectItem>}
+                {!jobsLoading && !jobs?.length && <SelectItem value={null} disabled>No active jobs</SelectItem>}
                 {jobs?.map(job => (
                   <SelectItem key={job.id} value={job.id}>
                     {job.name}
@@ -305,7 +300,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
           {/* Modified: Receipt upload with required indicator */}
           <div>
             <Label className="text-slate-700">
-              {t('receipt')} <span className="text-red-500">*</span>
+              Receipt <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-2">
               <Input
@@ -318,21 +313,19 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
               {uploadMutation.isPending && (
                 <p className="text-sm text-blue-600">
                   <Upload className="w-4 h-4 inline-block mr-1" />
-                  {language === 'es' ? 'Subiendo recibo...' : 'Uploading receipt...'}
+                  Uploading receipt...
                 </p>
               )}
               {formData.receipt_url && (
                 <div className="flex items-center gap-2 text-sm text-green-600">
                   <ExternalLink className="w-4 h-4" />
                   <a href={formData.receipt_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {t('view')} {t('receipt')}
+                    View Receipt
                   </a>
                 </div>
               )}
               <p className="text-xs text-amber-600">
-                {language === 'es' 
-                  ? '⚠️ Obligatorio: El recibo debe ser adjuntado antes de enviar' 
-                  : '⚠️ Required: Receipt must be attached before submitting'}
+                ⚠️ Required: Receipt must be attached before submitting
               </p>
             </div>
           </div>
@@ -345,7 +338,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             disabled={isProcessing}
           >
             <X className="w-4 h-4 mr-2" />
-            {language === 'es' ? 'Cancelar' : 'Cancel'}
+            Cancel
           </Button>
           <Button
             type="submit"
@@ -353,10 +346,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
           >
             <Save className="w-4 h-4 mr-2" />
-            {expense 
-                ? (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
-                : (language === 'es' ? 'Guardar' : 'Save')
-            }
+            {expense ? 'Save Changes' : 'Save'}
           </Button>
         </CardFooter>
       </form>

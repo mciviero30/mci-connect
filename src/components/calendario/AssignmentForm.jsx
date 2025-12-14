@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -22,7 +21,7 @@ const MultiSelectEmployees = ({ employees, selected, onSelect, isLoading }) => {
                 <Button variant="outline" className="w-full justify-start h-auto min-h-10">
                     <Users className="mr-2 h-4 w-4" />
                     <div className="flex flex-wrap gap-1">
-                        {selected.length === 0 ? "Seleccionar empleados..." : 
+                        {selected.length === 0 ? "Select employees..." : 
                          selected.map(email => {
                             const emp = employees?.find(e => e.email === email);
                             return (
@@ -41,10 +40,10 @@ const MultiSelectEmployees = ({ employees, selected, onSelect, isLoading }) => {
             </PopoverTrigger>
             <PopoverContent className="w-full p-0">
                 <Command>
-                    <CommandInput placeholder="Buscar empleado..." />
-                    <CommandEmpty>No se encontraron empleados.</CommandEmpty>
+                    <CommandInput placeholder="Search employee..." />
+                    <CommandEmpty>No employees found.</CommandEmpty>
                     <CommandGroup>
-                        {isLoading ? <p className="p-4 text-sm text-center">Cargando...</p> :
+                        {isLoading ? <p className="p-4 text-sm text-center">Loading...</p> :
                          employees?.map(employee => (
                             <CommandItem
                                 key={employee.email}
@@ -104,14 +103,12 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                     recipientName: newAssignment.employee_name,
                     type: 'assignment_new',
                     priority: 'high',
-                    title: language === 'es' ? '📅 Nueva Asignación' : '📅 New Assignment',
-                    message: language === 'es'
-                        ? `Has sido asignado a: ${newAssignment.event_title || newAssignment.job_name} el ${format(new Date(newAssignment.date), 'MMM dd, yyyy')}`
-                        : `You've been assigned to: ${newAssignment.event_title || newAssignment.job_name} on ${format(new Date(newAssignment.date), 'MMM dd, yyyy')}`,
+                    title: '📅 New Assignment',
+                    message: `You've been assigned to: ${newAssignment.event_title || newAssignment.job_name} on ${format(new Date(newAssignment.date), 'MMM dd, yyyy')}`,
                     actionUrl: '/Calendario',
                     relatedEntityType: 'assignment',
                     relatedEntityId: newAssignment.id,
-                    sendEmail: true // Send email for assignments
+                    sendEmail: true
                 });
             }
             // toast.success(t('assignmentCreated')); // Moved to handleSubmit for batch/single control
@@ -135,10 +132,8 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                     recipientName: updatedAssignment.employee_name,
                     type: 'schedule_update',
                     priority: 'medium',
-                    title: language === 'es' ? '📅 Horario Actualizado' : '📅 Schedule Updated',
-                    message: language === 'es'
-                        ? `Tu asignación ha sido actualizada: ${updatedAssignment.event_title || updatedAssignment.job_name}`
-                        : `Your assignment has been updated: ${updatedAssignment.event_title || updatedAssignment.job_name}`,
+                    title: '📅 Schedule Updated',
+                    message: `Your assignment has been updated: ${updatedAssignment.event_title || updatedAssignment.job_name}`,
                     actionUrl: '/Calendario',
                     relatedEntityType: 'assignment',
                     relatedEntityId: updatedAssignment.id
@@ -165,36 +160,36 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
         e.preventDefault();
 
         if (employeeEmails.length === 0) {
-            toast.error("Por favor, seleccione al menos un empleado.");
+            toast.error("Please select at least one employee.");
             return;
         }
         if (!jobId) {
-            toast.error("Por favor, seleccione un trabajo.");
+            toast.error("Please select a job.");
             return;
         }
         if (!startDate || !endDate) {
-            toast.error("Por favor, seleccione las fechas de inicio y fin.");
+            toast.error("Please select start and end dates.");
             return;
         }
         if (!startTime || !endTime) {
-            toast.error("Por favor, seleccione las horas de inicio y fin.");
+            toast.error("Please select start and end times.");
             return;
         }
 
         const selectedJob = jobs?.find(j => j.id === jobId);
         if (!selectedJob) {
-            toast.error("El trabajo seleccionado no es válido.");
+            toast.error("Selected job is not valid.");
             return;
         }
         
         if (existingAssignment) {
             // Handle update
             if (employeeEmails.length > 1) {
-                toast.error("Solo se puede actualizar la asignación de un empleado a la vez.");
+                toast.error("Can only update one employee's assignment at a time.");
                 return;
             }
             if (startDate !== endDate) {
-                toast.error("Solo se puede actualizar la asignación para una fecha a la vez.");
+                toast.error("Can only update assignment for one date at a time.");
                 return;
             }
 
@@ -251,7 +246,7 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
         <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
                 <div>
-                    <Label htmlFor="employee-select">Empleado(s)</Label>
+                    <Label htmlFor="employee-select">Employee(s)</Label>
                     <MultiSelectEmployees 
                         employees={employees} 
                         selected={employeeEmails} 
@@ -260,9 +255,9 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                     />
                 </div>
                 <div>
-                    <Label htmlFor="job-select">Trabajo</Label>
+                    <Label htmlFor="job-select">Job</Label>
                     <Select onValueChange={setJobId} required disabled={isProcessing} value={jobId}>
-                        <SelectTrigger id="job-select"><SelectValue placeholder={isProcessing ? "Cargando..." : "Seleccionar trabajo"}/></SelectTrigger>
+                        <SelectTrigger id="job-select"><SelectValue placeholder={isProcessing ? "Loading..." : "Select job"}/></SelectTrigger>
                         <SelectContent>
                             {jobs?.map(j => <SelectItem key={j.id} value={j.id}>{j.name}</SelectItem>)}
                         </SelectContent>
@@ -270,31 +265,31 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                 </div>
                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <Label htmlFor="start-date">Fecha de Inicio</Label>
+                        <Label htmlFor="start-date">Start Date</Label>
                         <Input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
                     </div>
                      <div>
-                        <Label htmlFor="end-date">Fecha de Fin</Label>
+                        <Label htmlFor="end-date">End Date</Label>
                         <Input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate} required />
                     </div>
                 </div>
                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <Label htmlFor="start-time">Desde</Label>
+                        <Label htmlFor="start-time">From</Label>
                         <Input type="time" id="start-time" value={startTime} onChange={e => setStartTime(e.target.value)} required />
                     </div>
                     <div>
-                        <Label htmlFor="end-time">Hasta</Label>
+                        <Label htmlFor="end-time">To</Label>
                         <Input type="time" id="end-time" value={endTime} onChange={e => setEndTime(e.target.value)} required />
                     </div>
                 </div>
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button type="button" variant="outline" onClick={onClose} disabled={isProcessing}>
-                    <X className="w-4 h-4 mr-2" /> Cancelar
+                    <X className="w-4 h-4 mr-2" /> Cancel
                 </Button>
                 <Button type="submit" disabled={isProcessing}>
-                    <Save className="w-4 h-4 mr-2" /> {isProcessing ? "Guardando..." : "Guardar Asignación"}
+                    <Save className="w-4 h-4 mr-2" /> {isProcessing ? "Saving..." : "Save Assignment"}
                 </Button>
             </div>
         </form>
