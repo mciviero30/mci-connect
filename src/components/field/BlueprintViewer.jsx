@@ -15,6 +15,8 @@ import BlueprintMiniMap from './BlueprintMiniMap';
 import BlueprintFilterBar from './BlueprintFilterBar';
 import LiveCollaborators from './LiveCollaborators';
 import AILearningEngine from './AILearningEngine';
+import BlueprintAnnotations from './BlueprintAnnotations';
+import BlueprintVersionHistory from './BlueprintVersionHistory';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
@@ -44,6 +46,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [showPins, setShowPins] = useState(true);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAnnotations, setShowAnnotations] = useState(false);
   const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -717,10 +720,20 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
               <span className="hidden md:inline ml-2">Back</span>
             </Button>
             <span className="text-slate-900 dark:text-white font-medium text-sm md:text-base truncate max-w-[150px] md:max-w-none">{plan.name}</span>
+            <BlueprintVersionHistory plan={plan} jobId={jobId} />
           </div>
           
           {/* Right side tools */}
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowAnnotations(!showAnnotations)}
+              className={showAnnotations ? 'text-[#FFB800]' : ''}
+            >
+              <Pencil className="w-4 h-4 mr-2" />
+              Annotate
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 dark:text-slate-400">
               <Search className="w-4 h-4" />
             </Button>
@@ -892,6 +905,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   </div>
                 )}
               </div>
+
+              {/* Annotations Layer */}
+              {showAnnotations && (
+                <BlueprintAnnotations
+                  planId={plan.id}
+                  jobId={jobId}
+                  zoom={zoom}
+                  position={position}
+                  imageSize={imageSize}
+                />
+              )}
             </div>
           )}
         </div>
