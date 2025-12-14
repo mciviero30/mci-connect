@@ -123,37 +123,24 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setLoadProgress(0);
     setErrorMessage('');
 
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setLoadProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 200);
-
+    // Create image element to preload
+    const img = new Image();
+    
     // Set timeout
     timeoutRef.current = setTimeout(() => {
-      clearInterval(progressInterval);
       if (loadingState === 'loading') {
         handleLoadError('timeout');
       }
     }, LOAD_TIMEOUT_MS);
 
-    // Create image element to preload
-    const img = new Image();
     img.onload = () => {
       clearTimeout(timeoutRef.current);
-      clearInterval(progressInterval);
       setLoadProgress(100);
       setLoadingState('success');
       setRetryCount(0);
     };
     img.onerror = () => {
       clearTimeout(timeoutRef.current);
-      clearInterval(progressInterval);
       handleLoadError('network');
     };
     img.src = plan.file_url;
@@ -281,7 +268,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
 
   useEffect(() => {
-    loadImage();
+    if (plan?.file_url) {
+      loadImage();
+    }
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
