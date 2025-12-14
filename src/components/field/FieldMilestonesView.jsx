@@ -77,15 +77,15 @@ export default function FieldMilestonesView({ jobId }) {
 
   const getStatusInfo = (milestone) => {
     if (milestone.status === 'completed') {
-      return { icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/20', label: 'Completado' };
+      return { icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/20', label: 'Completed' };
     }
     if (milestone.target_date && isPast(new Date(milestone.target_date))) {
-      return { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/20', label: 'Atrasado' };
+      return { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/20', label: 'Overdue' };
     }
     if (milestone.status === 'in_progress') {
-      return { icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/20', label: 'En Progreso' };
+      return { icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/20', label: 'In Progress' };
     }
-    return { icon: Flag, color: 'text-amber-400', bg: 'bg-amber-500/20', label: 'Pendiente' };
+    return { icon: Flag, color: 'text-amber-400', bg: 'bg-amber-500/20', label: 'Pending' };
   };
 
   const completedCount = milestones.filter(m => m.status === 'completed').length;
@@ -94,7 +94,7 @@ export default function FieldMilestonesView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Project Milestones</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Project Milestones</h1>
         <Button
           onClick={() => setShowCreate(true)}
           className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
@@ -173,22 +173,22 @@ export default function FieldMilestonesView({ jobId }) {
                         {milestone.target_date && (
                           <span className="text-slate-500 flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            {format(new Date(milestone.target_date), "d MMM yyyy", { locale: es })}
+                            {format(new Date(milestone.target_date), "d MMM yyyy")}
                           </span>
                         )}
                         {daysUntil !== null && milestone.status !== 'completed' && (
                           <span className={`${daysUntil < 0 ? 'text-red-400' : daysUntil < 7 ? 'text-amber-400' : 'text-slate-500'}`}>
                             {daysUntil < 0 
-                              ? `${Math.abs(daysUntil)} días de retraso`
+                              ? `${Math.abs(daysUntil)} days overdue`
                               : daysUntil === 0 
-                                ? 'Hoy'
-                                : `${daysUntil} días restantes`
+                                ? 'Today'
+                                : `${daysUntil} days remaining`
                             }
                           </span>
                         )}
                         {milestone.completed_date && (
                           <span className="text-green-400">
-                            Completado: {format(new Date(milestone.completed_date), "d MMM yyyy", { locale: es })}
+                            Completed: {format(new Date(milestone.completed_date), "d MMM yyyy")}
                           </span>
                         )}
                       </div>
@@ -225,29 +225,29 @@ export default function FieldMilestonesView({ jobId }) {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Nuevo Hito</DialogTitle>
+            <DialogTitle>New Milestone</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Nombre del Hito</Label>
+              <Label className="text-slate-300">Milestone Name</Label>
               <Input
                 value={newMilestone.name}
                 onChange={(e) => setNewMilestone({ ...newMilestone, name: e.target.value })}
-                placeholder="Ej: Finalización de estructura"
+                placeholder="e.g., Structure completion"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Descripción</Label>
+              <Label className="text-slate-300">Description</Label>
               <Textarea
                 value={newMilestone.description}
                 onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
-                placeholder="Descripción del hito..."
+                placeholder="Milestone description..."
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Fecha Objetivo</Label>
+              <Label className="text-slate-300">Target Date</Label>
               <Input
                 type="date"
                 value={newMilestone.target_date}
@@ -256,7 +256,7 @@ export default function FieldMilestonesView({ jobId }) {
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label className="text-slate-300">Notificar al cliente</Label>
+              <Label className="text-slate-300">Notify client</Label>
               <Switch
                 checked={newMilestone.notify_client}
                 onCheckedChange={(checked) => setNewMilestone({ ...newMilestone, notify_client: checked })}
@@ -264,14 +264,14 @@ export default function FieldMilestonesView({ jobId }) {
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
-                Cancelar
+                Cancel
               </Button>
               <Button
                 onClick={() => createMutation.mutate(newMilestone)}
                 disabled={!newMilestone.name || !newMilestone.target_date}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                Crear Hito
+                Create Milestone
               </Button>
             </div>
           </div>

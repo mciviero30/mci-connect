@@ -173,7 +173,7 @@ export default function FieldChatView({ jobId }) {
                               rel="noopener noreferrer"
                               className="text-amber-400 text-sm hover:underline"
                             >
-                              Ver adjunto
+                              View attachment
                             </a>
                           ))}
                         </div>

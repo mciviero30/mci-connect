@@ -134,8 +134,8 @@ export default function FieldMembersView({ jobId }) {
                 <ExternalLink className="w-5 h-5 text-green-400" />
               </div>
               <div>
-                <p className="font-medium text-white">Portal del Cliente</p>
-                <p className="text-sm text-slate-400">Comparte este enlace con tus clientes</p>
+                <p className="font-medium text-white">Client Portal</p>
+                <p className="text-sm text-slate-400">Share this link with your clients</p>
               </div>
             </div>
             <Button 
@@ -146,12 +146,12 @@ export default function FieldMembersView({ jobId }) {
               {copiedLink ? (
                 <>
                   <Check className="w-4 h-4 mr-2" />
-                  Copiado!
+                  Copied!
                 </>
               ) : (
                 <>
                   <Copy className="w-4 h-4 mr-2" />
-                  Copiar Enlace
+                  Copy Link
                 </>
               )}
             </Button>
@@ -199,7 +199,7 @@ export default function FieldMembersView({ jobId }) {
       {/* Pending Invitations */}
       {invitations.length > 0 && (
         <div className="mb-8">
-          <h3 className="text-sm font-medium text-slate-400 mb-3">Invitaciones Pendientes</h3>
+          <h3 className="text-sm font-medium text-slate-400 mb-3">Pending Invitations</h3>
           <div className="space-y-2">
             {invitations.map((inv) => (
               <div 
@@ -216,7 +216,7 @@ export default function FieldMembersView({ jobId }) {
                   </div>
                 </div>
                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                  Pendiente
+                  Pending
                 </Badge>
               </div>
             ))}
@@ -248,7 +248,7 @@ export default function FieldMembersView({ jobId }) {
                 <Badge className={roleColors[member.role]}>
                   <RoleIcon className="w-3 h-3 mr-1" />
                   {member.role === 'admin' ? 'Admin' : 
-                   member.role === 'collaborator' ? 'Colaborador' : 'Cliente'}
+                   member.role === 'collaborator' ? 'Collaborator' : 'Client'}
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -266,21 +266,21 @@ export default function FieldMembersView({ jobId }) {
                       className="text-white"
                     >
                       <Crown className="w-4 h-4 mr-2 text-purple-400" />
-                      Hacer Admin
+                      Make Admin
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => updateRoleMutation.mutate({ id: member.id, role: 'collaborator' })}
                       className="text-white"
                     >
                       <User className="w-4 h-4 mr-2 text-blue-400" />
-                      Colaborador
+                      Collaborator
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => removeMemberMutation.mutate(member.id)}
                       className="text-red-400 focus:text-red-400"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Eliminar
+                      Remove
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -341,19 +341,19 @@ export default function FieldMembersView({ jobId }) {
                   <SelectItem value="admin" className="text-white">
                     <div className="flex items-center gap-2">
                       <Crown className="w-4 h-4 text-purple-400" />
-                      Administrador
+                      Administrator
                     </div>
                   </SelectItem>
                   <SelectItem value="collaborator" className="text-white">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-blue-400" />
-                      Colaborador
+                      Collaborator
                     </div>
                   </SelectItem>
                   <SelectItem value="client" className="text-white">
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-green-400" />
-                      Cliente (solo lectura)
+                      Client (read-only)
                     </div>
                   </SelectItem>
                 </SelectContent>

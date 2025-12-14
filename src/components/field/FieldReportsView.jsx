@@ -97,7 +97,7 @@ export default function FieldReportsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Reports</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reports</h1>
         <Button 
           onClick={() => setShowCreate(true)}
           className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
@@ -142,8 +142,8 @@ export default function FieldReportsView({ jobId }) {
                     <h3 className="font-semibold text-white">{report.name}</h3>
                     <div className="flex items-center gap-3 mt-1">
                       <Badge className={typeColors[report.type]}>
-                        {report.type === 'pdf_detailed' ? 'PDF Detallado' :
-                         report.type === 'pdf_summary' ? 'PDF Resumen' : 'Excel'}
+                        {report.type === 'pdf_detailed' ? 'PDF Detailed' :
+                         report.type === 'pdf_summary' ? 'PDF Summary' : 'Excel'}
                       </Badge>
                       {report.schedule !== 'send_now' && (
                         <span className="text-xs text-slate-400 flex items-center gap-1">
@@ -161,7 +161,7 @@ export default function FieldReportsView({ jobId }) {
                     className="border-slate-700 text-slate-300 hover:bg-slate-800"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Descargar
+                    Download
                   </Button>
                   <Button 
                     variant="outline" 
@@ -169,7 +169,7 @@ export default function FieldReportsView({ jobId }) {
                     className="border-slate-700 text-slate-300 hover:bg-slate-800"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    Enviar
+                    Send
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -184,14 +184,14 @@ export default function FieldReportsView({ jobId }) {
                     <DropdownMenuContent className="bg-slate-800 border-slate-700">
                       <DropdownMenuItem className="text-white">
                         <Settings2 className="w-4 h-4 mr-2" />
-                        Configurar
+                        Configure
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => deleteReportMutation.mutate(report.id)}
                         className="text-red-400 focus:text-red-400"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Eliminar
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -206,55 +206,55 @@ export default function FieldReportsView({ jobId }) {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
           <DialogHeader>
-            <DialogTitle>Crear Reporte</DialogTitle>
+            <DialogTitle>Create Report</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4 max-h-[70vh] overflow-y-auto">
             <div>
-              <Label className="text-slate-300">Nombre del Reporte</Label>
+              <Label className="text-slate-300">Report Name</Label>
               <Input 
                 value={newReport.name}
                 onChange={(e) => setNewReport({...newReport, name: e.target.value})}
-                placeholder="Ej: Reporte Semanal de Progreso"
+                placeholder="e.g., Weekly Progress Report"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Tipo</Label>
+              <Label className="text-slate-300">Type</Label>
               <Select value={newReport.type} onValueChange={(v) => setNewReport({...newReport, type: v})}>
                 <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="pdf_detailed" className="text-white">PDF Detallado</SelectItem>
-                  <SelectItem value="pdf_summary" className="text-white">PDF Resumen</SelectItem>
+                  <SelectItem value="pdf_detailed" className="text-white">PDF Detailed</SelectItem>
+                  <SelectItem value="pdf_summary" className="text-white">PDF Summary</SelectItem>
                   <SelectItem value="excel" className="text-white">Excel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-slate-300">Programación</Label>
+              <Label className="text-slate-300">Schedule</Label>
               <Select value={newReport.schedule} onValueChange={(v) => setNewReport({...newReport, schedule: v})}>
                 <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="send_now" className="text-white">Generar Ahora</SelectItem>
-                  <SelectItem value="daily" className="text-white">Diario</SelectItem>
-                  <SelectItem value="weekly" className="text-white">Semanal</SelectItem>
-                  <SelectItem value="monthly" className="text-white">Mensual</SelectItem>
+                  <SelectItem value="send_now" className="text-white">Generate Now</SelectItem>
+                  <SelectItem value="daily" className="text-white">Daily</SelectItem>
+                  <SelectItem value="weekly" className="text-white">Weekly</SelectItem>
+                  <SelectItem value="monthly" className="text-white">Monthly</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Include Options */}
             <div>
-              <Label className="text-slate-300 mb-3 block">Incluir en el Reporte</Label>
+              <Label className="text-slate-300 mb-3 block">Include in Report</Label>
               <div className="space-y-3">
                 {[
-                  { key: 'photos', label: 'Fotos' },
+                  { key: 'photos', label: 'Photos' },
                   { key: 'checklists', label: 'Checklists' },
-                  { key: 'messages', label: 'Mensajes' },
-                  { key: 'plans', label: 'Planos' },
+                  { key: 'messages', label: 'Messages' },
+                  { key: 'plans', label: 'Plans' },
                 ].map((option) => (
                   <div key={option.key} className="flex items-center justify-between">
                     <span className="text-sm text-slate-400">{option.label}</span>
@@ -275,14 +275,14 @@ export default function FieldReportsView({ jobId }) {
 
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreateReport}
                 disabled={!newReport.name || createReportMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {createReportMutation.isPending ? 'Creando...' : 'Crear Reporte'}
+                {createReportMutation.isPending ? 'Creating...' : 'Create Report'}
               </Button>
             </div>
           </div>

@@ -24,10 +24,10 @@ import { es } from 'date-fns/locale';
 import { useWorkUnits } from './hooks/useWorkUnits';
 
 const categoryLabels = {
-  inspection: 'Inspección',
-  safety: 'Seguridad',
-  quality: 'Calidad',
-  installation: 'Instalación',
+  inspection: 'Inspection',
+  safety: 'Safety',
+  quality: 'Quality',
+  installation: 'Installation',
   general: 'General',
 };
 
@@ -197,7 +197,7 @@ export default function FieldChecklistsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Checklists & Inspections</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Checklists & Inspections</h1>
         <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
           <Plus className="w-4 h-4 mr-2" />
           New Template
@@ -271,7 +271,7 @@ export default function FieldChecklistsView({ jobId }) {
                   className="bg-green-500 hover:bg-green-600"
                 >
                   <Play className="w-3 h-3 mr-1" />
-                  Ejecutar
+                  Execute
                 </Button>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function FieldChecklistsView({ jobId }) {
       {/* Recent Submissions */}
       {submissions.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-white mb-4">Inspecciones Recientes</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">Recent Inspections</h3>
           <div className="space-y-2">
             {submissions.slice(0, 5).map(sub => (
               <div 
@@ -300,7 +300,7 @@ export default function FieldChecklistsView({ jobId }) {
                   <div>
                     <p className="font-medium text-white">{sub.name}</p>
                     <p className="text-sm text-slate-400">
-                      {sub.submitted_by_name} • {format(new Date(sub.created_date), "d MMM yyyy HH:mm", { locale: es })}
+                      {sub.submitted_by_name} • {format(new Date(sub.created_date), "d MMM yyyy HH:mm")}
                     </p>
                   </div>
                 </div>
@@ -309,8 +309,8 @@ export default function FieldChecklistsView({ jobId }) {
                   sub.status === 'failed' ? 'bg-red-500/20 text-red-400' :
                   'bg-amber-500/20 text-amber-400'
                 }>
-                  {sub.status === 'passed' ? 'Aprobado' :
-                   sub.status === 'failed' ? 'Fallido' : 'Revisar'}
+                  {sub.status === 'passed' ? 'Passed' :
+                   sub.status === 'failed' ? 'Failed' : 'Review'}
                 </Badge>
               </div>
             ))}
@@ -322,20 +322,20 @@ export default function FieldChecklistsView({ jobId }) {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Nueva Plantilla de Checklist</DialogTitle>
+            <DialogTitle>New Checklist Template</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Nombre</Label>
+              <Label className="text-slate-300">Name</Label>
               <Input
                 value={newChecklist.name}
                 onChange={(e) => setNewChecklist({ ...newChecklist, name: e.target.value })}
-                placeholder="Ej: Inspección de Seguridad Diaria"
+                placeholder="e.g., Daily Safety Inspection"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Categoría</Label>
+              <Label className="text-slate-300">Category</Label>
               <Select value={newChecklist.category} onValueChange={(v) => setNewChecklist({ ...newChecklist, category: v })}>
                 <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
@@ -348,7 +348,7 @@ export default function FieldChecklistsView({ jobId }) {
               </Select>
             </div>
             <div>
-              <Label className="text-slate-300">Descripción</Label>
+              <Label className="text-slate-300">Description</Label>
               <Textarea
                 value={newChecklist.description}
                 onChange={(e) => setNewChecklist({ ...newChecklist, description: e.target.value })}
@@ -358,7 +358,7 @@ export default function FieldChecklistsView({ jobId }) {
 
             {/* Checklist Items */}
             <div>
-              <Label className="text-slate-300 mb-2 block">Items del Checklist</Label>
+              <Label className="text-slate-300 mb-2 block">Checklist Items</Label>
               <div className="space-y-2">
                 {checklistItems.map((item, idx) => (
                   <div key={item.id} className="flex gap-2">
@@ -385,13 +385,13 @@ export default function FieldChecklistsView({ jobId }) {
                   className="border-slate-700 text-slate-300"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Añadir Item
+                  Add Item
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <Label className="text-slate-300">Requiere firma</Label>
+              <Label className="text-slate-300">Requires signature</Label>
               <Switch
                 checked={newChecklist.requires_signature}
                 onCheckedChange={(checked) => setNewChecklist({ ...newChecklist, requires_signature: checked })}
@@ -400,10 +400,10 @@ export default function FieldChecklistsView({ jobId }) {
 
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
-                Cancelar
+                Cancel
               </Button>
               <Button onClick={handleCreate} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
-                Crear Plantilla
+                Create Template
               </Button>
             </div>
           </div>
@@ -432,7 +432,7 @@ export default function FieldChecklistsView({ jobId }) {
                         {resp.item_text}
                       </p>
                       <Input
-                        placeholder="Notas..."
+                        placeholder="Notes..."
                         value={resp.notes}
                         onChange={(e) => updateResponse(resp.item_id, 'notes', e.target.value)}
                         className="mt-2 bg-slate-900 border-slate-700 text-white text-sm"
@@ -443,11 +443,11 @@ export default function FieldChecklistsView({ jobId }) {
 
                 <div className="flex justify-end gap-3 pt-4">
                   <Button variant="outline" onClick={() => setShowExecute(null)} className="border-slate-700">
-                    Cancelar
+                    Cancel
                   </Button>
                   <Button onClick={submitExecution} className="bg-green-500 hover:bg-green-600">
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Completar Inspección
+                    Complete Inspection
                   </Button>
                 </div>
               </div>

@@ -80,7 +80,7 @@ export default function FieldActivityLogView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800] flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <Activity className="w-6 h-6" />
           Project Activity
         </h1>
@@ -130,7 +130,7 @@ export default function FieldActivityLogView({ jobId }) {
               <div className="flex items-center gap-4 mb-4">
                 <div className="h-px flex-1 bg-slate-700" />
                 <span className="text-sm font-medium text-slate-400">
-                  {format(new Date(date), "EEEE, d MMMM yyyy", { locale: es })}
+                  {format(new Date(date), "EEEE, d MMMM yyyy")}
                 </span>
                 <div className="h-px flex-1 bg-slate-700" />
               </div>

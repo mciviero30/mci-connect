@@ -71,13 +71,13 @@ export default function ClientApprovalsView({ jobId }) {
   const getStatusInfo = (status) => {
     switch (status) {
       case 'approved':
-        return { icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/20', label: 'Aprobado' };
+        return { icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/20', label: 'Approved' };
       case 'rejected':
-        return { icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/20', label: 'Rechazado' };
+        return { icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/20', label: 'Rejected' };
       case 'revision_requested':
-        return { icon: MessageSquare, color: 'text-amber-400', bg: 'bg-amber-500/20', label: 'Revisión' };
+        return { icon: MessageSquare, color: 'text-amber-400', bg: 'bg-amber-500/20', label: 'Revision' };
       default:
-        return { icon: Clock, color: 'text-slate-400', bg: 'bg-slate-500/20', label: 'Pendiente' };
+        return { icon: Clock, color: 'text-slate-400', bg: 'bg-slate-500/20', label: 'Pending' };
     }
   };
 
@@ -88,7 +88,7 @@ export default function ClientApprovalsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Client Approvals</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Client Approvals</h1>
         <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
           <Plus className="w-4 h-4 mr-2" />
           Request Approval
@@ -141,7 +141,7 @@ export default function ClientApprovalsView({ jobId }) {
                       <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
                         <span>Para: {approval.client_name || approval.client_email}</span>
                         <span>•</span>
-                        <span>{format(new Date(approval.created_date), "d MMM yyyy", { locale: es })}</span>
+                        <span>{format(new Date(approval.created_date), "d MMM yyyy")}
                       </div>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ export default function ClientApprovalsView({ jobId }) {
                 {approval.client_response && (
                   <div className="mt-3 p-2 bg-slate-900/50 rounded-lg">
                     <p className="text-sm text-slate-300">
-                      <span className="text-slate-500">Respuesta: </span>
+                      <span className="text-slate-500">Response: </span>
                       {approval.client_response}
                     </p>
                   </div>
@@ -167,29 +167,29 @@ export default function ClientApprovalsView({ jobId }) {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Solicitar Aprobación</DialogTitle>
+            <DialogTitle>Request Approval</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Título</Label>
+              <Label className="text-slate-300">Title</Label>
               <Input
                 value={newApproval.title}
                 onChange={(e) => setNewApproval({ ...newApproval, title: e.target.value })}
-                placeholder="Ej: Aprobación de diseño de cocina"
+                placeholder="e.g., Kitchen design approval"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Descripción</Label>
+              <Label className="text-slate-300">Description</Label>
               <Textarea
                 value={newApproval.description}
                 onChange={(e) => setNewApproval({ ...newApproval, description: e.target.value })}
-                placeholder="Detalles de lo que necesita aprobación..."
+                placeholder="Details of what needs approval..."
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Cliente</Label>
+              <Label className="text-slate-300">Client</Label>
               {clients.length > 0 ? (
                 <select
                   value={newApproval.client_email}
@@ -203,7 +203,7 @@ export default function ClientApprovalsView({ jobId }) {
                   }}
                   className="w-full mt-1.5 bg-slate-800 border border-slate-700 text-white rounded-md p-2"
                 >
-                  <option value="">Seleccionar cliente...</option>
+                  <option value="">Select client...</option>
                   {clients.map(client => (
                     <option key={client.id} value={client.user_email}>
                       {client.user_name || client.user_email}
@@ -214,14 +214,14 @@ export default function ClientApprovalsView({ jobId }) {
                 <Input
                   value={newApproval.client_email}
                   onChange={(e) => setNewApproval({ ...newApproval, client_email: e.target.value })}
-                  placeholder="Email del cliente"
+                  placeholder="Client email"
                   className="mt-1.5 bg-slate-800 border-slate-700 text-white"
                 />
               )}
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
-                Cancelar
+                Cancel
               </Button>
               <Button
                 onClick={() => createMutation.mutate(newApproval)}
@@ -229,7 +229,7 @@ export default function ClientApprovalsView({ jobId }) {
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
                 <Send className="w-4 h-4 mr-2" />
-                Enviar Solicitud
+                Send Request
               </Button>
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function ClientApprovalsView({ jobId }) {
                       className="flex-1 bg-green-500 hover:bg-green-600"
                     >
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Aprobar
+                      Approve
                     </Button>
                     <Button
                       onClick={() => updateMutation.mutate({
@@ -267,14 +267,14 @@ export default function ClientApprovalsView({ jobId }) {
                       className="flex-1 bg-red-500 hover:bg-red-600"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      Rechazar
+                      Reject
                     </Button>
                   </div>
                 )}
 
                 {selectedApproval.responded_at && (
                   <p className="text-sm text-slate-500">
-                    Respondido: {format(new Date(selectedApproval.responded_at), "d MMM yyyy HH:mm", { locale: es })}
+                    Responded: {format(new Date(selectedApproval.responded_at), "d MMM yyyy HH:mm")}
                   </p>
                 )}
               </div>

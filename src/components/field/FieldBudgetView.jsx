@@ -19,12 +19,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const categoryLabels = {
-  labor: 'Mano de Obra',
-  materials: 'Materiales',
-  equipment: 'Equipos',
-  subcontractor: 'Subcontratistas',
-  permits: 'Permisos',
-  other: 'Otros',
+  labor: 'Labor',
+  materials: 'Materials',
+  equipment: 'Equipment',
+  subcontractor: 'Subcontractors',
+  permits: 'Permits',
+  other: 'Other',
 };
 
 const categoryColors = {
@@ -101,7 +101,7 @@ export default function FieldBudgetView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#D4C85C]">Presupuesto</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Budget</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -109,14 +109,14 @@ export default function FieldBudgetView({ jobId }) {
             className="border-slate-700 text-slate-300"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Categoría
+            Category
           </Button>
           <Button
             onClick={() => setShowAddCost(true)}
             className="bg-amber-500 hover:bg-amber-600"
           >
             <Receipt className="w-4 h-4 mr-2" />
-            Registrar Gasto
+            Record Cost
           </Button>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function FieldBudgetView({ jobId }) {
         <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">Presupuesto Total</p>
+              <p className="text-xs text-slate-400 uppercase">Total Budget</p>
               <p className="text-2xl font-bold text-white mt-1">
                 ${totalBudgeted.toLocaleString()}
               </p>
@@ -138,7 +138,7 @@ export default function FieldBudgetView({ jobId }) {
         <div className="bg-gradient-to-br from-amber-500/20 to-amber-600/20 border border-amber-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">Gastado</p>
+              <p className="text-xs text-slate-400 uppercase">Spent</p>
               <p className="text-2xl font-bold text-white mt-1">
                 ${totalSpent.toLocaleString()}
               </p>
@@ -146,7 +146,7 @@ export default function FieldBudgetView({ jobId }) {
             <TrendingUp className="w-8 h-8 text-amber-400 opacity-50" />
           </div>
           <Progress value={percentUsed} className="mt-3 h-2" />
-          <p className="text-xs text-slate-400 mt-1">{percentUsed.toFixed(1)}% utilizado</p>
+          <p className="text-xs text-slate-400 mt-1">{percentUsed.toFixed(1)}% used</p>
         </div>
 
         <div className={`bg-gradient-to-br ${
@@ -156,10 +156,10 @@ export default function FieldBudgetView({ jobId }) {
         } border rounded-xl p-5`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-400 uppercase">Restante</p>
+              <p className="text-xs text-slate-400 uppercase">Remaining</p>
               <p className={`text-2xl font-bold mt-1 ${remaining >= 0 ? 'text-white' : 'text-red-400'}`}>
                 ${Math.abs(remaining).toLocaleString()}
-                {remaining < 0 && ' (excedido)'}
+                {remaining < 0 && ' (over)'}
               </p>
             </div>
             {remaining >= 0 ? (
@@ -174,7 +174,7 @@ export default function FieldBudgetView({ jobId }) {
       {/* Budget Categories */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="font-semibold text-white mb-4">Por Categoría</h3>
+          <h3 className="font-semibold text-white mb-4">By Category</h3>
           <div className="space-y-3">
             {budgets.map(budget => {
               const spent = costsByCategory[budget.category] || 0;
@@ -209,7 +209,7 @@ export default function FieldBudgetView({ jobId }) {
 
         {/* Recent Costs */}
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="font-semibold text-white mb-4">Gastos Recientes</h3>
+          <h3 className="font-semibold text-white mb-4">Recent Costs</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {costs.slice(0, 10).map(cost => (
               <div key={cost.id} className="flex items-center justify-between p-2 bg-slate-900/50 rounded-lg">
@@ -233,7 +233,7 @@ export default function FieldBudgetView({ jobId }) {
       <Dialog open={showAddBudget} onOpenChange={setShowAddBudget}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Añadir Categoría de Presupuesto</DialogTitle>
+            <DialogTitle>Add Budget Category</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
@@ -250,16 +250,16 @@ export default function FieldBudgetView({ jobId }) {
               </Select>
             </div>
             <div>
-              <Label className="text-slate-300">Nombre (opcional)</Label>
+              <Label className="text-slate-300">Name (optional)</Label>
               <Input
                 value={newBudget.name}
                 onChange={(e) => setNewBudget({ ...newBudget, name: e.target.value })}
-                placeholder="Ej: Materiales eléctricos"
+                placeholder="e.g., Electrical materials"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Monto Presupuestado</Label>
+              <Label className="text-slate-300">Budgeted Amount</Label>
               <Input
                 type="number"
                 value={newBudget.budgeted_amount}
@@ -270,7 +270,7 @@ export default function FieldBudgetView({ jobId }) {
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowAddBudget(false)} className="border-slate-700">
-                Cancelar
+                Cancel
               </Button>
               <Button
                 onClick={() => createBudgetMutation.mutate({
@@ -278,9 +278,9 @@ export default function FieldBudgetView({ jobId }) {
                   budgeted_amount: parseFloat(newBudget.budgeted_amount) || 0,
                 })}
                 disabled={!newBudget.budgeted_amount}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600]"
               >
-                Añadir
+                Add
               </Button>
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function FieldBudgetView({ jobId }) {
       <Dialog open={showAddCost} onOpenChange={setShowAddCost}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Registrar Gasto</DialogTitle>
+            <DialogTitle>Record Cost</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
@@ -308,16 +308,16 @@ export default function FieldBudgetView({ jobId }) {
               </Select>
             </div>
             <div>
-              <Label className="text-slate-300">Descripción</Label>
+              <Label className="text-slate-300">Description</Label>
               <Input
                 value={newCost.description}
                 onChange={(e) => setNewCost({ ...newCost, description: e.target.value })}
-                placeholder="Ej: Compra de cables"
+                placeholder="e.g., Cable purchase"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Monto</Label>
+              <Label className="text-slate-300">Amount</Label>
               <Input
                 type="number"
                 value={newCost.amount}
@@ -327,17 +327,17 @@ export default function FieldBudgetView({ jobId }) {
               />
             </div>
             <div>
-              <Label className="text-slate-300">Proveedor</Label>
+              <Label className="text-slate-300">Vendor</Label>
               <Input
                 value={newCost.vendor}
                 onChange={(e) => setNewCost({ ...newCost, vendor: e.target.value })}
-                placeholder="Ej: Home Depot"
+                placeholder="e.g., Home Depot"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowAddCost(false)} className="border-slate-700">
-                Cancelar
+                Cancel
               </Button>
               <Button
                 onClick={() => createCostMutation.mutate({
@@ -345,9 +345,9 @@ export default function FieldBudgetView({ jobId }) {
                   amount: parseFloat(newCost.amount) || 0,
                 })}
                 disabled={!newCost.description || !newCost.amount}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-[#FFB800] hover:bg-[#E5A600]"
               >
-                Registrar
+                Record
               </Button>
             </div>
           </div>

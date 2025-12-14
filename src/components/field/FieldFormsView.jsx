@@ -79,10 +79,10 @@ export default function FieldFormsView({ jobId }) {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Forms</h1>
         <Button 
           onClick={() => setShowCreate(true)}
-          className="bg-gradient-to-r from-[#FFB800] to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Crear Formulario
+          Create Form
         </Button>
       </div>
 
@@ -116,14 +116,14 @@ export default function FieldFormsView({ jobId }) {
       {formTemplates.length === 0 ? (
         <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center">
           <ClipboardList className="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No hay formularios</h3>
-          <p className="text-slate-600 dark:text-slate-400 mb-4">Crea formularios de inspección, seguridad o calidad</p>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No forms</h3>
+          <p className="text-slate-600 dark:text-slate-400 mb-4">Create inspection, safety or quality forms</p>
           <Button 
             onClick={() => setShowCreate(true)}
             className="bg-[#FFB800] hover:bg-amber-600 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Crear Formulario
+            Create Form
           </Button>
         </div>
       ) : (
@@ -150,18 +150,18 @@ export default function FieldFormsView({ jobId }) {
                   <DropdownMenuContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                     <DropdownMenuItem className="text-slate-900 dark:text-white">
                       <Eye className="w-4 h-4 mr-2" />
-                      Ver Respuestas
+                      View Responses
                     </DropdownMenuItem>
                     <DropdownMenuItem className="text-slate-900 dark:text-white">
                       <Copy className="w-4 h-4 mr-2" />
-                      Duplicar
+                      Duplicate
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => deleteFormMutation.mutate(form.id)}
                       className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Eliminar
+                      Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -175,7 +175,7 @@ export default function FieldFormsView({ jobId }) {
                   {form.category}
                 </Badge>
                 <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {form.fields?.length || 0} campos
+                  {form.fields?.length || 0} fields
                 </span>
               </div>
             </div>
@@ -186,7 +186,7 @@ export default function FieldFormsView({ jobId }) {
       {/* Recent Submissions */}
       {submissions.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Respuestas Recientes</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Recent Responses</h3>
           <div className="space-y-2">
             {submissions.slice(0, 5).map((sub) => (
               <div 
@@ -196,7 +196,7 @@ export default function FieldFormsView({ jobId }) {
                 <div className="flex items-center gap-3">
                   <FileCheck className="w-5 h-5 text-green-600 dark:text-green-400" />
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">{sub.form_name || 'Formulario'}</p>
+                    <p className="font-medium text-slate-900 dark:text-white">{sub.form_name || 'Form'}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       {sub.submitted_by_name} • {format(new Date(sub.created_date), 'dd MMM yyyy HH:mm')}
                     </p>

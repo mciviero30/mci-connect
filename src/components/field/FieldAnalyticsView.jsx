@@ -84,7 +84,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800] mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Analytics</h1>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -244,7 +244,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         <div className="mt-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 text-red-400" />
           <p className="text-red-400">
-            Hay <strong>{statusCounts.blocked}</strong> tareas bloqueadas que requieren atención
+            There are <strong>{statusCounts.blocked}</strong> blocked tasks that require attention
           </p>
         </div>
       )}
