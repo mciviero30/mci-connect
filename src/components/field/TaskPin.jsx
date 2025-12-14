@@ -26,13 +26,14 @@ export default function TaskPin({ task, onClick, isSelected, isErasing, isMoving
 
   return (
     <div
-      className={`absolute z-[99] cursor-pointer transition-all hover:scale-110 ${
+      className={`absolute z-[99] transition-all hover:scale-110 task-pin-wrapper ${
         isSelected ? 'scale-125' : ''
-      }`}
+      } ${isMoving ? 'cursor-move' : 'cursor-pointer'}`}
       style={{ 
         left: `${task.pin_x}%`, 
         top: `${task.pin_y}%`,
-        transform: 'translate(-50%, -100%)'
+        transform: 'translate(-50%, -100%)',
+        pointerEvents: 'auto'
       }}
       onClick={handleClick}
       onMouseEnter={() => setShowTooltip(true)}
