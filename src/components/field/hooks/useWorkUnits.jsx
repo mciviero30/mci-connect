@@ -14,11 +14,18 @@ export function useWorkUnits(jobId, options = {}) {
   const { data: workUnits = [], isLoading, error } = useQuery({
     queryKey: ['work-units', jobId, type],
     queryFn: async () => {
-      const filter = { job_id: jobId };
-      if (type !== 'all') filter.type = type;
-      return base44.entities.WorkUnit.filter(filter, '-created_date');
+      try {
+        const filter = { job_id: jobId };
+        if (type !== 'all') filter.type = type;
+        return await base44.entities.WorkUnit.filter(filter, '-created_date');
+      } catch (err) {
+        console.error('WorkUnit query failed:', err);
+        return [];
+      }
     },
     enabled: !!jobId,
+    retry: 1,
+    staleTime: 2 * 60 * 1000,
   });
 
   // Filtered by status
