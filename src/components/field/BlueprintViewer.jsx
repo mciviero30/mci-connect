@@ -929,18 +929,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           {/* Success State - Show Image/PDF */}
           {loadingState === 'success' && (
             <div 
-              className="relative w-full h-full flex items-center justify-center"
+              className="relative"
               style={{
-                transform: `translate(${position.x}px, ${position.y}px)`,
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transformOrigin: '0 0',
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
-              <div className="relative" style={{ 
-                minWidth: '100px', 
-                minHeight: '100px',
-                transform: `scale(${zoom})`,
-                transformOrigin: 'center center'
-              }}>
+              <div className="relative" style={{ minWidth: '100px', minHeight: '100px' }}>
                 {isPdfFile(plan.file_url) ? (
                   pdfCanvas ? (
                     <>
