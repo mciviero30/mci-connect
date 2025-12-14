@@ -572,14 +572,23 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     // Only handle clicks for pin tool
     if (activeTool === 'pin' || isPlacingPin) {
       const rect = imageRef.current.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
       
-      setPendingPinPosition({ x, y });
-      setShowCreateTask(true);
-      setIsPlacingPin(false);
-      setActiveTool('select');
-      setCursorPinPosition(null);
+      // Get click position relative to the actual image (not the transformed container)
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+      
+      // Calculate position as percentage of the actual image
+      const x = ((clickX - rect.left) / rect.width) * 100;
+      const y = ((clickY - rect.top) / rect.height) * 100;
+      
+      // Ensure coordinates are within bounds
+      if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
+        setPendingPinPosition({ x, y });
+        setShowCreateTask(true);
+        setIsPlacingPin(false);
+        setActiveTool('select');
+        setCursorPinPosition(null);
+      }
     }
   };
 
@@ -906,15 +915,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                 )}
               </div>
 
-              {/* Annotations Layer */}
+              {/* Annotations Layer - Lower z-index than pins */}
               {showAnnotations && (
-                <BlueprintAnnotations
-                  planId={plan.id}
-                  jobId={jobId}
-                  zoom={zoom}
-                  position={position}
-                  imageSize={imageSize}
-                />
+                <div className="absolute inset-0" style={{ zIndex: 10 }}>
+                  <BlueprintAnnotations
+                    planId={plan.id}
+                    jobId={jobId}
+                    zoom={zoom}
+                    position={position}
+                    imageSize={imageSize}
+                  />
+                </div>
               )}
             </div>
           )}

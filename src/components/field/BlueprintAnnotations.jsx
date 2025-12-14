@@ -307,8 +307,8 @@ export default function BlueprintAnnotations({ planId, jobId, zoom, position, im
       {/* SVG Canvas for Annotations */}
       <svg
         ref={svgRef}
-        className="absolute inset-0 w-full h-full pointer-events-auto"
-        style={{ zIndex: 20 }}
+        className="absolute inset-0 w-full h-full"
+        style={{ pointerEvents: activeTool && activeTool !== 'select' ? 'auto' : 'none' }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
