@@ -65,28 +65,60 @@ export default function Calendario() {
   });
 
   // CRITICAL: Replace JobAssignment with ScheduleShift
-  const { data: shifts, isLoading } = useQuery({
+  const { data: shifts = [], isLoading } = useQuery({
     queryKey: ['scheduleShifts'],
-    queryFn: () => base44.entities.ScheduleShift.list('-date'),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.ScheduleShift.list('-date');
+      } catch (error) {
+        console.error('Error loading shifts:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
   });
 
-  const { data: jobs } = useQuery({
+  const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.Job.filter({ status: 'active' });
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
-  const { data: employees } = useQuery({
+  const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.User.list();
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const { data: timeOffRequests = [] } = useQuery({
     queryKey: ['timeOffRequests'],
-    queryFn: () => base44.entities.TimeOffRequest.filter({ status: 'approved' }),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.TimeOffRequest.filter({ status: 'approved' });
+      } catch (error) {
+        console.error('Error loading time off requests:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const createMutation = useMutation({

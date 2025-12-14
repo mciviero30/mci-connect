@@ -68,16 +68,32 @@ export default function Estimados() {
   };
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const { data: quotes, isLoading } = useQuery({
+  const { data: quotes = [], isLoading } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list('-created_date'),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.Quote.list('-created_date');
+      } catch (error) {
+        console.error('Error loading quotes:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
   });
 
-  const { data: teams } = useQuery({
+  const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.Team.list();
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const deleteMutation = useMutation({
