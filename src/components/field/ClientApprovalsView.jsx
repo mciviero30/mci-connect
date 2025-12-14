@@ -128,7 +128,7 @@ export default function ClientApprovalsView({ jobId }) {
               <div 
                 key={approval.id}
                 onClick={() => setSelectedApproval(approval)}
-                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all cursor-pointer"
+                className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 hover:border-blue-300 dark:hover:border-slate-600 transition-all cursor-pointer shadow-sm"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
@@ -136,9 +136,9 @@ export default function ClientApprovalsView({ jobId }) {
                       <StatusIcon className={`w-5 h-5 ${status.color}`} />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">{approval.title}</h3>
-                      <p className="text-sm text-slate-400 line-clamp-1">{approval.description}</p>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                      <h3 className="font-semibold text-slate-900 dark:text-white">{approval.title}</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{approval.description}</p>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-500">
                         <span>For: {approval.client_name || approval.client_email}</span>
                         <span>•</span>
                         <span>{format(new Date(approval.created_date), "d MMM yyyy")}</span>
@@ -150,9 +150,9 @@ export default function ClientApprovalsView({ jobId }) {
                   </Badge>
                 </div>
                 {approval.client_response && (
-                  <div className="mt-3 p-2 bg-slate-900/50 rounded-lg">
-                    <p className="text-sm text-slate-300">
-                      <span className="text-slate-500">Response: </span>
+                  <div className="mt-3 p-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg">
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      <span className="text-slate-500 dark:text-slate-500">Response: </span>
                       {approval.client_response}
                     </p>
                   </div>
@@ -165,31 +165,31 @@ export default function ClientApprovalsView({ jobId }) {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
             <DialogTitle>Request Approval</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Title</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Title</Label>
               <Input
                 value={newApproval.title}
                 onChange={(e) => setNewApproval({ ...newApproval, title: e.target.value })}
                 placeholder="e.g., Kitchen design approval"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Description</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Description</Label>
               <Textarea
                 value={newApproval.description}
                 onChange={(e) => setNewApproval({ ...newApproval, description: e.target.value })}
                 placeholder="Details of what needs approval..."
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Client</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Client</Label>
               {clients.length > 0 ? (
                 <select
                   value={newApproval.client_email}
@@ -201,7 +201,7 @@ export default function ClientApprovalsView({ jobId }) {
                       client_name: client?.user_name || '',
                     });
                   }}
-                  className="w-full mt-1.5 bg-slate-800 border border-slate-700 text-white rounded-md p-2"
+                  className="w-full mt-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-md p-2"
                 >
                   <option value="">Select client...</option>
                   {clients.map(client => (
@@ -215,12 +215,12 @@ export default function ClientApprovalsView({ jobId }) {
                   value={newApproval.client_email}
                   onChange={(e) => setNewApproval({ ...newApproval, client_email: e.target.value })}
                   placeholder="Client email"
-                  className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                  className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                 />
               )}
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
+              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
                 Cancel
               </Button>
               <Button
@@ -238,14 +238,14 @@ export default function ClientApprovalsView({ jobId }) {
 
       {/* Detail/Response Dialog */}
       <Dialog open={!!selectedApproval} onOpenChange={() => setSelectedApproval(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           {selectedApproval && (
             <>
               <DialogHeader>
                 <DialogTitle>{selectedApproval.title}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
-                <p className="text-slate-300">{selectedApproval.description}</p>
+                <p className="text-slate-700 dark:text-slate-300">{selectedApproval.description}</p>
                 
                 {selectedApproval.status === 'pending' && user?.email === selectedApproval.client_email && (
                   <div className="flex gap-2">

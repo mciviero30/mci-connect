@@ -145,29 +145,29 @@ export default function FieldMilestonesView({ jobId }) {
               >
                 {/* Timeline line */}
                 {idx !== milestones.length - 1 && (
-                  <div className="absolute left-[11px] top-8 bottom-0 w-0.5 bg-slate-700" />
+                  <div className="absolute left-[11px] top-8 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
                 )}
                 
                 {/* Timeline dot */}
-                <div className={`absolute left-0 top-1 w-6 h-6 rounded-full ${status.bg} flex items-center justify-center`}>
+                <div className={`absolute left-0 top-1 w-6 h-6 rounded-full ${status.bg} flex items-center justify-center border-2 border-white dark:border-slate-900`}>
                   <StatusIcon className={`w-3 h-3 ${status.color}`} />
                 </div>
 
                 {/* Content */}
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
+                <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 hover:border-blue-300 dark:hover:border-slate-600 transition-all shadow-sm">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-white">{milestone.name}</h3>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">{milestone.name}</h3>
                         <Badge className={`${status.bg} ${status.color} border-0`}>
                           {status.label}
                         </Badge>
                         {milestone.notify_client && (
-                          <Bell className="w-3 h-3 text-slate-500" title="Notifica al cliente" />
+                          <Bell className="w-3 h-3 text-slate-500" title="Notify client" />
                         )}
                       </div>
                       {milestone.description && (
-                        <p className="text-sm text-slate-400 mb-2">{milestone.description}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{milestone.description}</p>
                       )}
                       <div className="flex items-center gap-4 text-sm">
                         {milestone.target_date && (
@@ -223,47 +223,47 @@ export default function FieldMilestonesView({ jobId }) {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
             <DialogTitle>New Milestone</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Milestone Name</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Milestone Name</Label>
               <Input
                 value={newMilestone.name}
                 onChange={(e) => setNewMilestone({ ...newMilestone, name: e.target.value })}
                 placeholder="e.g., Structure completion"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Description</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Description</Label>
               <Textarea
                 value={newMilestone.description}
                 onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
                 placeholder="Milestone description..."
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Target Date</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Target Date</Label>
               <Input
                 type="date"
                 value={newMilestone.target_date}
                 onChange={(e) => setNewMilestone({ ...newMilestone, target_date: e.target.value })}
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label className="text-slate-300">Notify client</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Notify client</Label>
               <Switch
                 checked={newMilestone.notify_client}
                 onCheckedChange={(checked) => setNewMilestone({ ...newMilestone, notify_client: checked })}
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
+              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
                 Cancel
               </Button>
               <Button

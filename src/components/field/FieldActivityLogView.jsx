@@ -128,11 +128,11 @@ export default function FieldActivityLogView({ jobId }) {
           {Object.entries(groupedActivities).map(([date, dayActivities]) => (
             <div key={date}>
               <div className="flex items-center gap-4 mb-4">
-                <div className="h-px flex-1 bg-slate-700" />
-                <span className="text-sm font-medium text-slate-400">
-                  {format(new Date(date), "EEEE, d MMMM yyyy")}
-                </span>
-                <div className="h-px flex-1 bg-slate-700" />
+              <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                {format(new Date(date), "EEEE, d MMMM yyyy")}
+              </span>
+              <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
               </div>
 
               <div className="space-y-2">
@@ -144,13 +144,13 @@ export default function FieldActivityLogView({ jobId }) {
                   return (
                     <div 
                       key={activity.id}
-                      className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all"
+                      className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl hover:border-blue-300 dark:hover:border-slate-600 transition-all"
                     >
                       <div className={`p-2 rounded-lg ${colorClass.split(' ')[1]}`}>
                         <ActionIcon className={`w-4 h-4 ${colorClass.split(' ')[0]}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white">{activity.description}</p>
+                        <p className="text-sm text-slate-900 dark:text-white">{activity.description}</p>
                         <div className="flex items-center gap-3 mt-1">
                           <div className="flex items-center gap-1 text-xs text-slate-500">
                             <EntityIcon className="w-3 h-3" />

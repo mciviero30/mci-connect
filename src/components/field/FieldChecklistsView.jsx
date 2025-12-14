@@ -240,7 +240,7 @@ export default function FieldChecklistsView({ jobId }) {
           {templates.map(template => (
             <div 
               key={template.id}
-              className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all"
+              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 hover:border-blue-300 dark:hover:border-slate-600 transition-all shadow-sm"
             >
               <div className="flex items-start justify-between mb-3">
                 <Badge className={categoryColors[template.category]}>
@@ -257,12 +257,12 @@ export default function FieldChecklistsView({ jobId }) {
                   </Button>
                 </div>
               </div>
-              <h3 className="font-semibold text-white mb-1">{template.title || template.name}</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{template.title || template.name}</h3>
               {template.description && (
-                <p className="text-sm text-slate-400 mb-3 line-clamp-2">{template.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{template.description}</p>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 dark:text-slate-500">
                   {(template.checklist_items || template.items)?.length || 0} items
                 </span>
                 <Button
@@ -282,12 +282,12 @@ export default function FieldChecklistsView({ jobId }) {
       {/* Recent Submissions */}
       {submissions.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-white mb-4">Recent Inspections</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Recent Inspections</h3>
           <div className="space-y-2">
             {submissions.slice(0, 5).map(sub => (
               <div 
                 key={sub.id}
-                className="flex items-center justify-between p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl"
+                className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm"
               >
                 <div className="flex items-center gap-3">
                   {sub.status === 'passed' ? (
@@ -298,8 +298,8 @@ export default function FieldChecklistsView({ jobId }) {
                     <AlertCircle className="w-5 h-5 text-amber-400" />
                   )}
                   <div>
-                    <p className="font-medium text-white">{sub.name}</p>
-                    <p className="text-sm text-slate-400">
+                    <p className="font-medium text-slate-900 dark:text-white">{sub.name}</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
                       {sub.submitted_by_name} • {format(new Date(sub.created_date), "d MMM yyyy HH:mm")}
                     </p>
                   </div>
@@ -320,45 +320,45 @@ export default function FieldChecklistsView({ jobId }) {
 
       {/* Create Template Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Checklist Template</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Name</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Name</Label>
               <Input
                 value={newChecklist.name}
                 onChange={(e) => setNewChecklist({ ...newChecklist, name: e.target.value })}
                 placeholder="e.g., Daily Safety Inspection"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Category</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Category</Label>
               <Select value={newChecklist.category} onValueChange={(v) => setNewChecklist({ ...newChecklist, category: v })}>
-                <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   {Object.entries(categoryLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key} className="text-white">{label}</SelectItem>
+                    <SelectItem key={key} value={key} className="text-slate-900 dark:text-white">{label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-slate-300">Description</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Description</Label>
               <Textarea
                 value={newChecklist.description}
                 onChange={(e) => setNewChecklist({ ...newChecklist, description: e.target.value })}
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
 
             {/* Checklist Items */}
             <div>
-              <Label className="text-slate-300 mb-2 block">Checklist Items</Label>
+              <Label className="text-slate-700 dark:text-slate-300 mb-2 block">Checklist Items</Label>
               <div className="space-y-2">
                 {checklistItems.map((item, idx) => (
                   <div key={item.id} className="flex gap-2">
@@ -366,7 +366,7 @@ export default function FieldChecklistsView({ jobId }) {
                       value={item.text}
                       onChange={(e) => updateItem(item.id, 'text', e.target.value)}
                       placeholder={`Item ${idx + 1}`}
-                      className="flex-1 bg-slate-800 border-slate-700 text-white"
+                      className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
                     />
                     <Button
                       variant="ghost"
@@ -382,7 +382,7 @@ export default function FieldChecklistsView({ jobId }) {
                   variant="outline"
                   size="sm"
                   onClick={addItem}
-                  className="border-slate-700 text-slate-300"
+                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Item
@@ -391,7 +391,7 @@ export default function FieldChecklistsView({ jobId }) {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label className="text-slate-300">Requires signature</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Requires signature</Label>
               <Switch
                 checked={newChecklist.requires_signature}
                 onCheckedChange={(checked) => setNewChecklist({ ...newChecklist, requires_signature: checked })}
@@ -399,7 +399,7 @@ export default function FieldChecklistsView({ jobId }) {
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700">
+              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
                 Cancel
               </Button>
               <Button onClick={handleCreate} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
@@ -412,7 +412,7 @@ export default function FieldChecklistsView({ jobId }) {
 
       {/* Execute Checklist Dialog */}
       <Dialog open={!!showExecute} onOpenChange={() => setShowExecute(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-lg max-h-[90vh] overflow-y-auto">
           {showExecute && (
             <>
               <DialogHeader>
@@ -420,7 +420,7 @@ export default function FieldChecklistsView({ jobId }) {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 {executionResponses.map((resp, idx) => (
-                  <div key={resp.item_id} className="flex items-start gap-3 p-3 bg-slate-800/50 rounded-lg">
+                  <div key={resp.item_id} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/30 rounded-lg">
                     <input
                       type="checkbox"
                       checked={resp.completed}
@@ -428,21 +428,21 @@ export default function FieldChecklistsView({ jobId }) {
                       className="mt-1 rounded border-slate-600"
                     />
                     <div className="flex-1">
-                      <p className={`text-sm ${resp.completed ? 'text-slate-500 line-through' : 'text-white'}`}>
+                      <p className={`text-sm ${resp.completed ? 'text-slate-500 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-white'}`}>
                         {resp.item_text}
                       </p>
                       <Input
                         placeholder="Notes..."
                         value={resp.notes}
                         onChange={(e) => updateResponse(resp.item_id, 'notes', e.target.value)}
-                        className="mt-2 bg-slate-900 border-slate-700 text-white text-sm"
+                        className="mt-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm"
                       />
                     </div>
                   </div>
                 ))}
 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowExecute(null)} className="border-slate-700">
+                  <Button variant="outline" onClick={() => setShowExecute(null)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
                     Cancel
                   </Button>
                   <Button onClick={submitExecution} className="bg-green-500 hover:bg-green-600">
