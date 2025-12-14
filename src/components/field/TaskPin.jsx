@@ -9,8 +9,6 @@ const statusColors = {
 };
 
 export default function TaskPin({ task, onClick, isSelected, onDragPin, isDragging }) {
-  const [showTooltip, setShowTooltip] = useState(false);
-  
   if (task.pin_x === undefined || task.pin_y === undefined) return null;
 
   const status = statusColors[task.status] || statusColors.pending;
@@ -32,8 +30,6 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
         onClick();
       }}
       onMouseDown={handleMouseDown}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
       className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
         isSelected ? 'scale-125 z-20' : ''
       } ${isDragging ? 'cursor-move' : 'cursor-pointer'}`}
@@ -51,13 +47,6 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
             border-r-[5px] border-r-transparent 
             border-t-[6px] ${status.point}`}
         />
-        {/* Tooltip on hover - minimal */}
-        {(showTooltip || isSelected) && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-slate-800 rounded-lg shadow-xl whitespace-nowrap z-30 border border-slate-600">
-            <p className="text-xs font-medium text-white">Wall {wallNumber}</p>
-            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-800" />
-          </div>
-        )}
       </div>
     </button>
   );
