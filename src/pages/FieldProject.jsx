@@ -75,7 +75,7 @@ export default function FieldProject() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const { data: job, isLoading } = useQuery({
+  const { data: job, isLoading, error } = useQuery({
     queryKey: ['field-job', jobId],
     queryFn: async () => {
       const jobs = await base44.entities.Job.filter({ id: jobId });
@@ -83,6 +83,7 @@ export default function FieldProject() {
     },
     enabled: !!jobId,
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   const { data: tasks = [] } = useQuery({
@@ -140,13 +141,13 @@ export default function FieldProject() {
     );
   }
 
-  if (!job) {
+  if (error || !job) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-400 mb-4">Project not found</p>
+          <p className="text-slate-400 mb-4">{error ? 'Error loading project' : 'Project not found'}</p>
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-amber-500 hover:bg-amber-600">Back</Button>
+            <Button className="bg-amber-500 hover:bg-amber-600">Back to Projects</Button>
           </Link>
         </div>
       </div>
