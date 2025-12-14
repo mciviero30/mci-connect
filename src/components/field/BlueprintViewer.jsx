@@ -599,18 +599,22 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'filter', icon: Search, label: 'Filters (F)', action: () => setShowFilters(prev => !prev) },
   ];
 
-  const handleTaskCreated = (newTaskId) => {
+  const handleTaskCreated = async (newTaskId) => {
     setPendingPinPosition(null);
     setShowCreateTask(false);
     
-    // Open the newly created task after a brief delay to allow query to refresh
+    // Refresh tasks and open the newly created one
     if (newTaskId) {
-      setTimeout(() => {
-        const newTask = tasks.find(t => t.id === newTaskId);
+      await queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      
+      setTimeout(async () => {
+        // Fetch fresh tasks
+        const freshTasks = await base44.entities.Task.filter({ job_id: jobId });
+        const newTask = freshTasks.find(t => t.id === newTaskId);
         if (newTask) {
           setSelectedTask(newTask);
         }
-      }, 500);
+      }, 800);
     }
   };
 
