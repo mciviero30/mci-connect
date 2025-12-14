@@ -563,17 +563,20 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleImageClick = (e) => {
+    console.log('🖱️ Image clicked, activeTool:', activeTool, 'movingPin:', !!movingPin);
+    
     // Check if clicking on a pin (button or its children)
     const clickedElement = e.target;
     const isPin = clickedElement.closest('.task-pin-wrapper');
     
     if (isPin) {
-      // Let pin handle its own click
+      console.log('📍 Clicked on pin - let pin handler take care of it');
       return;
     }
 
     // Handle moving pin to new location
     if (activeTool === 'move_pin' && movingPin) {
+      console.log('🎯 Placing pin at new location');
       handleMovePinToLocation(e);
       return;
     }
@@ -982,6 +985,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     zoom={zoom}
                     position={position}
                     imageSize={imageSize}
+                    blueprintActiveTool={activeTool}
                   />
                 </div>
               )}

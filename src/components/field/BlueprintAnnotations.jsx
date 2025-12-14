@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 const COLORS = ['#FFB800', '#EF4444', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#000000', '#FFFFFF'];
 
-export default function BlueprintAnnotations({ planId, jobId, zoom, position, imageSize }) {
+export default function BlueprintAnnotations({ planId, jobId, zoom, position, imageSize, blueprintActiveTool }) {
   const [activeTool, setActiveTool] = useState(null);
   const [drawing, setDrawing] = useState(false);
   const [currentAnnotation, setCurrentAnnotation] = useState(null);
@@ -308,7 +308,10 @@ export default function BlueprintAnnotations({ planId, jobId, zoom, position, im
       <svg
         ref={svgRef}
         className="absolute inset-0 w-full h-full"
-        style={{ pointerEvents: activeTool && activeTool !== 'select' ? 'auto' : 'none' }}
+        style={{ 
+          pointerEvents: (activeTool && activeTool !== 'select') ? 'auto' : 'none',
+          zIndex: (blueprintActiveTool === 'move_pin' || blueprintActiveTool === 'eraser') ? -1 : 20 
+        }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
