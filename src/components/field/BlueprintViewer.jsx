@@ -476,8 +476,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setTimeout(() => setHasDragged(false), 100);
   };
 
-  const handlePinClick = (task, e) => {
-    e.stopPropagation();
+  const handlePinClick = (task) => {
     if (!hasDragged && !draggingPin) {
       setSelectedTask(task);
     }
@@ -882,7 +881,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     <TaskPin 
                       key={task.id}
                       task={displayTask}
-                      onClick={(e) => handlePinClick(task, e)}
+                      onClick={() => handlePinClick(task)}
                       onDragPin={handlePinDrag}
                       isDragging={draggingPin?.id === task.id}
                       isSelected={selectedTask?.id === task.id}
