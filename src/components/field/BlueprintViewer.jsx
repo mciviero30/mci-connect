@@ -36,19 +36,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [cursorPinPosition, setCursorPinPosition] = useState(null);
   
   // Loading states
-  const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [loadingState, setLoadingState] = useState('loading');
   const [loadProgress, setLoadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   
   // Toolbar state
-  const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser | move_pin
+  const [activeTool, setActiveTool] = useState('select');
   const [showPins, setShowPins] = useState(true);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [showAnnotations, setShowAnnotations] = useState(false);
-  const [movingPin, setMovingPin] = useState(null);
   const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -363,7 +362,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           setActiveTool('select');
           setIsPlacingPin(false);
           setSelectedTask(null);
-          setMovingPin(null);
           break;
         case 'f':
           setShowFilters(prev => !prev);
@@ -477,8 +475,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
-    // Don't start dragging if clicking on a pin or if in eraser/move_pin mode
-    if (e.target.closest('button') || activeTool === 'eraser' || activeTool === 'move_pin') return;
+    if (e.target.closest('button') || activeTool === 'eraser') return;
     if (isPlacingPin) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -586,42 +583,27 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleMapAction = (e) => {
-    console.log('🖱️ Map action, activeTool:', activeTool, 'movingPin:', !!movingPin);
-    
-    // 1. 🎯 PRIORIDAD MÁXIMA: Movimiento de Pin
-    if (activeTool === 'move_pin' && movingPin) {
-      console.log('🎯 Placing pin at new location - PRIORITY');
-      handleMovePinToLocation(e);
-      return; // Detiene toda otra lógica
-    }
-    
-    // 2. Verificar si se hizo clic en un pin existente
     const clickedElement = e.target;
     const isPin = clickedElement.closest('.task-pin-wrapper');
     
-    if (isPin) {
-      console.log('📍 Clicked on pin - let pin handler take care of it');
-      return;
-    }
+    if (isPin) return;
     
-    // 3. Manejar Doble Clic (Zoom)
+    // Double click zoom
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      console.log('🔍 Double click detected - zooming');
       if (zoom < 2) {
         setZoom(prev => Math.min(prev * 2, 4));
       } else {
         setZoom(1);
         setPosition({ x: 0, y: 0 });
       }
-      lastTapRef.current = 0; // Reset para evitar triple click
+      lastTapRef.current = 0;
       return;
     }
     lastTapRef.current = now;
     
-    // 4. Lógica de Creación de Pin
+    // Place pin
     if (activeTool === 'pin' || isPlacingPin) {
-      console.log('📍 Creating new pin');
       const rect = imageRef.current?.getBoundingClientRect();
       if (!rect) return;
       
@@ -638,66 +620,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
   };
 
-  // Handle pin click based on active tool
   const handlePinClick = (task) => {
-    console.log('🎯 Pin clicked:', task.id, task.title, 'Active tool:', activeTool);
-    
     if (activeTool === 'eraser') {
-      // Delete task with eraser
       if (window.confirm(`Delete task "${task.title}"?`)) {
         deleteTaskMutation.mutate(task.id);
       }
-    } else if (activeTool === 'move_pin') {
-      // Start moving the pin
-      console.log('📍 Setting movingPin:', task);
-      setMovingPin(task);
-      toast.info(`Click on the blueprint to move "${task.title}"`);
     } else {
-      // Open task detail panel
       setSelectedTask(task);
     }
-  };
-
-  // Update task pin position mutation
-  const updateTaskPositionMutation = useMutation({
-    mutationFn: ({ taskId, x, y }) => base44.entities.Task.update(taskId, { pin_x: x, pin_y: y }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      toast.success('Pin moved successfully');
-    },
-  });
-
-  // Handle moving pin to new location
-  const handleMovePinToLocation = (e) => {
-    if (!movingPin) {
-      console.log('❌ No movingPin set');
-      return;
-    }
-    
-    console.log('🎯 Moving pin to new location');
-    const rect = imageRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-
-    console.log('📍 New position:', { x, y });
-
-    // Ensure coordinates are within bounds
-    if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
-      updateTaskPositionMutation.mutate({
-        taskId: movingPin.id,
-        x,
-        y
-      });
-      toast.success(`Pin moved successfully!`);
-    } else {
-      toast.error('Invalid position - click inside the blueprint');
-    }
-
-    // Reset states
-    setMovingPin(null);
-    setActiveTool('select');
   };
 
   // Toolbar items
@@ -708,7 +638,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'zoomOut', icon: ZoomOut, label: 'Zoom Out', action: handleZoomOut },
     { id: 'divider2', type: 'divider' },
     { id: 'pin', icon: MapPin, label: 'Add Pin', tool: true },
-    { id: 'move_pin', icon: Move, label: 'Move Pin', tool: true },
     { id: 'link', icon: Link2, label: 'Add Link', tool: true },
     { id: 'pencil', icon: Pencil, label: 'Draw', tool: true },
     { id: 'text', icon: Type, label: 'Add Text', tool: true },
@@ -985,9 +914,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     key={task.id}
                     task={task}
                     onClick={handlePinClick}
-                    isSelected={selectedTask?.id === task.id || movingPin?.id === task.id}
+                    isSelected={selectedTask?.id === task.id}
                     isErasing={activeTool === 'eraser'}
-                    isMoving={activeTool === 'move_pin'}
                   />
                 ))}
                 {/* Cursor Pin - follows mouse */}
@@ -1038,20 +966,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
             <Eraser className="w-4 h-4" />
             Click on a pin to delete it (ESC to cancel)
-          </div>
-        )}
-
-        {activeTool === 'move_pin' && !movingPin && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
-            <Move className="w-4 h-4" />
-            Click on a pin to start moving it (ESC to cancel)
-          </div>
-        )}
-
-        {activeTool === 'move_pin' && movingPin && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
-            <Move className="w-4 h-4" />
-            Click on the blueprint to place pin at new location
           </div>
         )}
 
