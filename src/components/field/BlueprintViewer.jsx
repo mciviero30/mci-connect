@@ -286,13 +286,15 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
 
   useEffect(() => {
-    loadImage();
+    if (plan?.file_url) {
+      loadImage();
+    }
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [plan?.file_url]);
+  }, [plan?.file_url, retryCount]);
 
   // Track container size for mini map
   useEffect(() => {
