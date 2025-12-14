@@ -139,9 +139,9 @@ export default function ClientApprovalsView({ jobId }) {
                       <h3 className="font-semibold text-white">{approval.title}</h3>
                       <p className="text-sm text-slate-400 line-clamp-1">{approval.description}</p>
                       <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                        <span>Para: {approval.client_name || approval.client_email}</span>
+                        <span>For: {approval.client_name || approval.client_email}</span>
                         <span>•</span>
-                        <span>{format(new Date(approval.created_date), "d MMM yyyy")}
+                        <span>{format(new Date(approval.created_date), "d MMM yyyy")}</span>
                       </div>
                     </div>
                   </div>
