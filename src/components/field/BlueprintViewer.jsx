@@ -379,22 +379,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Double-tap/click to zoom
-  const lastTapRef = useRef(0);
-  const handleDoubleTap = useCallback((e) => {
-    const now = Date.now();
-    if (now - lastTapRef.current < 300) {
-      // Double tap detected - zoom in at tap location
-      if (zoom < 2) {
-        setZoom(prev => Math.min(prev * 2, 4));
-      } else {
-        setZoom(1);
-        setPosition({ x: 0, y: 0 });
-      }
-    }
-    lastTapRef.current = now;
-  }, [zoom]);
-
   // Navigate from mini map
   const handleMiniMapNavigate = (newPosition) => {
     setPosition(newPosition);
@@ -418,6 +402,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
   };
+
+  // Double-tap/click reference
+  const lastTapRef = useRef(0);
 
   // Prevent scroll on canvas container and handle zoom
   useEffect(() => {
@@ -562,17 +549,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
   };
 
-  const handleImageClick = (e) => {
-    console.log('🖱️ Image clicked, activeTool:', activeTool, 'movingPin:', !!movingPin);
+  const handleMapAction = (e) => {
+    console.log('🖱️ Map action, activeTool:', activeTool, 'movingPin:', !!movingPin);
     
-    // 🎯 PRIORIDAD MÁXIMA: Si estamos moviendo un pin, colocarlo ANTES de cualquier otra verificación
+    // 1. 🎯 PRIORIDAD MÁXIMA: Movimiento de Pin
     if (activeTool === 'move_pin' && movingPin) {
       console.log('🎯 Placing pin at new location - PRIORITY');
       handleMovePinToLocation(e);
       return; // Detiene toda otra lógica
     }
     
-    // Check if clicking on a pin (button or its children)
+    // 2. Verificar si se hizo clic en un pin existente
     const clickedElement = e.target;
     const isPin = clickedElement.closest('.task-pin-wrapper');
     
@@ -581,19 +568,32 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       return;
     }
     
-    // Only handle clicks for pin tool
+    // 3. Manejar Doble Clic (Zoom)
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      console.log('🔍 Double click detected - zooming');
+      if (zoom < 2) {
+        setZoom(prev => Math.min(prev * 2, 4));
+      } else {
+        setZoom(1);
+        setPosition({ x: 0, y: 0 });
+      }
+      lastTapRef.current = 0; // Reset para evitar triple click
+      return;
+    }
+    lastTapRef.current = now;
+    
+    // 4. Lógica de Creación de Pin
     if (activeTool === 'pin' || isPlacingPin) {
+      console.log('📍 Creating new pin');
       const rect = imageRef.current.getBoundingClientRect();
       
-      // Get click position relative to the actual image (not the transformed container)
       const clickX = e.clientX;
       const clickY = e.clientY;
       
-      // Calculate position as percentage of the actual image
       const x = ((clickX - rect.left) / rect.width) * 100;
       const y = ((clickY - rect.top) / rect.height) * 100;
       
-      // Ensure coordinates are within bounds
       if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
         setPendingPinPosition({ x, y });
         setShowCreateTask(true);
@@ -852,7 +852,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={handleDoubleTap}
           tabIndex={0}
           style={{ outline: 'none' }}
         >
@@ -911,7 +910,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                         src={pdfCanvas}
                         alt={plan.name}
                         style={{ maxWidth: 'none', maxHeight: 'none' }}
-                        onClick={handleImageClick}
+                        onClick={handleMapAction}
                         onLoad={handleImageLoad}
                         draggable={false}
                       />
@@ -936,7 +935,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     src={plan.file_url}
                     alt={plan.name}
                     className="max-w-none"
-                    onClick={handleImageClick}
+                    onClick={handleMapAction}
                     onLoad={handleImageLoad}
                     draggable={false}
                     onError={() => {
