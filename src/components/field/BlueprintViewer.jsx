@@ -396,8 +396,42 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setSelectedTask(task);
   };
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.15, 4));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.15, 0.1));
+  const handleZoomIn = () => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const newZoom = Math.min(zoom + 0.15, 4);
+    const zoomRatio = newZoom / zoom;
+    
+    setZoom(newZoom);
+    setPosition({
+      x: centerX - (centerX - position.x) * zoomRatio,
+      y: centerY - (centerY - position.y) * zoomRatio
+    });
+  };
+  
+  const handleZoomOut = () => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const newZoom = Math.max(zoom - 0.15, 0.1);
+    const zoomRatio = newZoom / zoom;
+    
+    setZoom(newZoom);
+    setPosition({
+      x: centerX - (centerX - position.x) * zoomRatio,
+      y: centerY - (centerY - position.y) * zoomRatio
+    });
+  };
+  
   const handleReset = () => {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
