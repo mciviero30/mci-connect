@@ -852,6 +852,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onClick={handleMapAction}
           tabIndex={0}
           style={{ outline: 'none' }}
         >
