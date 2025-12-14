@@ -42,11 +42,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [isRetrying, setIsRetrying] = useState(false);
   
   // Toolbar state
-  const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser
+  const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser | move_pin
   const [showPins, setShowPins] = useState(true);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [showAnnotations, setShowAnnotations] = useState(false);
+  const [movingPin, setMovingPin] = useState(null);
+  const [isDraggingPin, setIsDraggingPin] = useState(false);
   const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -568,6 +570,12 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       // Let pin handle its own click
       return;
     }
+
+    // Handle moving pin to new location
+    if (activeTool === 'move_pin' && movingPin) {
+      handleMovePinToLocation(e);
+      return;
+    }
     
     // Only handle clicks for pin tool
     if (activeTool === 'pin' || isPlacingPin) {
@@ -601,10 +609,48 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       if (window.confirm(`Delete task "${task.title}"?`)) {
         deleteTaskMutation.mutate(task.id);
       }
+    } else if (activeTool === 'move_pin') {
+      // Start moving the pin
+      setMovingPin(task);
+      setIsDraggingPin(true);
     } else {
       // Open task detail panel
       setSelectedTask(task);
     }
+  };
+
+  // Update task pin position mutation
+  const updateTaskPositionMutation = useMutation({
+    mutationFn: ({ taskId, x, y }) => base44.entities.Task.update(taskId, { pin_x: x, pin_y: y }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      toast.success('Pin moved successfully');
+    },
+  });
+
+  // Handle moving pin to new location
+  const handleMovePinToLocation = (e) => {
+    if (!movingPin || !isDraggingPin) return;
+    
+    const rect = imageRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    // Ensure coordinates are within bounds
+    if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
+      updateTaskPositionMutation.mutate({
+        taskId: movingPin.id,
+        x,
+        y
+      });
+    }
+
+    // Reset states
+    setMovingPin(null);
+    setIsDraggingPin(false);
+    setActiveTool('select');
   };
 
   // Toolbar items
@@ -615,6 +661,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'zoomOut', icon: ZoomOut, label: 'Zoom Out', action: handleZoomOut },
     { id: 'divider2', type: 'divider' },
     { id: 'pin', icon: MapPin, label: 'Add Pin', tool: true },
+    { id: 'move_pin', icon: Move, label: 'Move Pin', tool: true },
     { id: 'link', icon: Link2, label: 'Add Link', tool: true },
     { id: 'pencil', icon: Pencil, label: 'Draw', tool: true },
     { id: 'text', icon: Type, label: 'Add Text', tool: true },
@@ -891,8 +938,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     key={task.id}
                     task={task}
                     onClick={handlePinClick}
-                    isSelected={selectedTask?.id === task.id}
+                    isSelected={selectedTask?.id === task.id || movingPin?.id === task.id}
                     isErasing={activeTool === 'eraser'}
+                    isMoving={activeTool === 'move_pin'}
                   />
                 ))}
                 {/* Cursor Pin - follows mouse */}
@@ -942,6 +990,20 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
             <Eraser className="w-4 h-4" />
             Click on a pin to delete it (ESC to cancel)
+          </div>
+        )}
+
+        {activeTool === 'move_pin' && !movingPin && (
+          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
+            <Move className="w-4 h-4" />
+            Click on a pin to start moving it (ESC to cancel)
+          </div>
+        )}
+
+        {activeTool === 'move_pin' && movingPin && (
+          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
+            <Move className="w-4 h-4" />
+            Click on the blueprint to place pin at new location
           </div>
         )}
 

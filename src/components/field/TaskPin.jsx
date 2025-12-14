@@ -7,7 +7,7 @@ const statusColors = {
   blocked: { bg: 'bg-red-500', point: 'border-t-red-500' },
 };
 
-export default function TaskPin({ task, onClick, isSelected, isErasing }) {
+export default function TaskPin({ task, onClick, isSelected, isErasing, isMoving }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
   if (!task || task.pin_x === undefined || task.pin_y === undefined) return null;
@@ -39,7 +39,7 @@ export default function TaskPin({ task, onClick, isSelected, isErasing }) {
       onMouseLeave={() => setShowTooltip(false)}
     >
       {/* Pin Badge */}
-      <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${isErasing ? 'bg-red-500 animate-pulse' : status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
+      <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${isErasing ? 'bg-red-500 animate-pulse' : isMoving ? 'bg-blue-500 animate-bounce' : status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
         <span className="text-[11px] font-bold text-white">{wallNumber}</span>
       </div>
       
