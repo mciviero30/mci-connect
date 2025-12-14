@@ -128,7 +128,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
       <CardHeader className="border-b border-slate-200">
         <CardTitle className="flex items-center gap-2 text-slate-900">
           <Receipt className="w-5 h-5 text-[#3B9FF3]" />
-          {expense ? t('edit') : t('new_expense')}
+          {expense ? 'Edit Expense' : 'New Expense'}
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -187,28 +187,20 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
 
             <div>
               <Label className="text-slate-700 mb-2 block">
-                {t('category')} *
-                {/* Removed AI-related badge */}
-                {/* {formData.ai_analyzed && formData.ai_confidence > 0 && (
-                  <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-300 text-xs">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    AI {formData.ai_confidence}%
-                    {formData.user_corrected_ai && (language === 'es' ? ' (Corregido)' : ' (Corrected)')}
-                  </Badge>
-                )} */}
+                Category *
               </Label>
               <Select 
                 value={formData.category} 
-                onValueChange={(value) => setFormData({...formData, category: value})} // Changed from handleManualCategoryChange
+                onValueChange={(value) => setFormData({...formData, category: value})}
                 required
               >
                 <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
-                  <SelectValue placeholder={t('category')} />
+                  <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200">
-                  {categories.filter(c => c.value !== 'per_diem').map(cat => ( // Still filter per_diem from regular expenses
+                  {categories.filter(c => c.value !== 'per_diem').map(cat => (
                     <SelectItem key={cat.value} value={cat.value} className="text-slate-900 hover:bg-slate-100">
-                      {t(cat.value)}
+                      {cat.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
