@@ -934,6 +934,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           jobId={jobId}
           allTasks={tasks}
           onZoomTo={handleZoomToTask}
+          planImageUrl={pdfCanvas || plan.file_url}
         />
       )}
 

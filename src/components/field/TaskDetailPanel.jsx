@@ -25,12 +25,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
-import TaskTimeTracker from './TaskTimeTracker.jsx';
 import TaskDependencies from './TaskDependencies.jsx';
 import TaskChecklistEditor from './TaskChecklistEditor.jsx';
 import OptimalAssigneeSuggestor from './OptimalAssigneeSuggestor.jsx';
 
-export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTasks = [], onZoomTo }) {
+export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTasks = [], onZoomTo, planImageUrl }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const [newComment, setNewComment] = useState('');
@@ -165,6 +164,25 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
           <h4 className="text-lg font-semibold text-white">{task.title}</h4>
         )}
 
+        {/* Mini Map - Location Preview */}
+        {task.pin_x && task.pin_y && planImageUrl && (
+          <div>
+            <label className="text-xs text-slate-400 uppercase mb-1 block">Ubicación</label>
+            <div className="relative w-full h-32 rounded-lg overflow-hidden border border-slate-700 bg-slate-900">
+              <img 
+                src={planImageUrl}
+                alt="Plan preview"
+                className="w-full h-full object-cover"
+              />
+              {/* Pin indicator */}
+              <div 
+                className="absolute w-3 h-3 bg-amber-500 border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Status */}
         <div>
           <label className="text-xs text-slate-400 uppercase mb-1 block">Estado</label>
@@ -180,9 +198,6 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
             </SelectContent>
           </Select>
         </div>
-
-        {/* Time Tracker */}
-        <TaskTimeTracker taskId={task.id} jobId={jobId} />
 
         {/* Dependencies */}
         <TaskDependencies taskId={task.id} jobId={jobId} allTasks={allTasks} />
