@@ -82,8 +82,32 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
     const [startTime, setStartTime] = useState(existingAssignment ? existingAssignment.start_time : '07:00');
     const [endTime, setEndTime] = useState(existingAssignment ? existingAssignment.end_time : '15:00');
 
-    const { data: employees, isLoading: loadingEmployees } = useQuery({ queryKey: ['employees'], queryFn: () => base44.entities.User.list() });
-    const { data: jobs, isLoading: loadingJobs } = useQuery({ queryKey: ['activeJobs'], queryFn: () => base44.entities.Job.filter({ status: 'active' }) });
+    const { data: employees = [], isLoading: loadingEmployees } = useQuery({ 
+        queryKey: ['employees'], 
+        queryFn: async () => {
+            try {
+                return await base44.entities.User.list();
+            } catch (error) {
+                console.error('Error loading employees:', error);
+                return [];
+            }
+        },
+        staleTime: 5 * 60 * 1000,
+        retry: 1,
+    });
+    const { data: jobs = [], isLoading: loadingJobs } = useQuery({ 
+        queryKey: ['activeJobs'], 
+        queryFn: async () => {
+            try {
+                return await base44.entities.Job.filter({ status: 'active' });
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                return [];
+            }
+        },
+        staleTime: 5 * 60 * 1000,
+        retry: 1,
+    });
 
     const { data: currentUser } = useQuery({
         queryKey: ['currentUser'],

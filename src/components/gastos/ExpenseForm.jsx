@@ -26,10 +26,18 @@ const categories = [
 ];
 
 export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing }) {
-  const { t, language } = useLanguage();
-  const { data: jobs, isLoading: jobsLoading } = useQuery({
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Job.filter({ status: 'active' });
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   // Remove past expenses query as AIExpenseCategorizer is removed
