@@ -45,23 +45,47 @@ export default function Trabajos() {
   const [teamFilter, setTeamFilter] = useState('all');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const { data: jobs, isLoading } = useQuery({
+  const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list('-created_date'),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.Job.list('-created_date');
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list('team_name'),
-    initialData: []
+    queryFn: async () => {
+      try {
+        return await base44.entities.Team.list('team_name');
+      } catch (error) {
+        console.error('Error loading teams:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   // Fetch all time entries for validation
   const { data: allTimeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date', 1000), // Assuming 1000 is a sufficient limit for validation
-    initialData: []
+    queryFn: async () => {
+      try {
+        return await base44.entities.TimeEntry.list('-date', 1000);
+      } catch (error) {
+        console.error('Error loading time entries:', error);
+        return [];
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const createMutation = useMutation({

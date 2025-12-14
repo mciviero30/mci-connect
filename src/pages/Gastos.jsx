@@ -42,10 +42,19 @@ export default function Gastos() {
     staleTime: 30000, // Cache for 30 seconds
   });
 
-  const { data: expenses, isLoading } = useQuery({
+  const { data: expenses = [], isLoading } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date'),
-    initialData: [],
+    queryFn: async () => {
+      try {
+        const expenseData = await base44.entities.Expense.list('-date');
+        return expenseData || [];
+      } catch (error) {
+        console.error('Error loading expenses:', error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: 2,
   });
 
   const createExpenseMutation = useMutation({
