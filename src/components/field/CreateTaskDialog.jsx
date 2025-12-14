@@ -20,11 +20,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     assigned_to: '',
   });
 
-  const queryClient = useQueryClient();
-
   const createTaskMutation = useMutation({
     mutationFn: (data) => base44.entities.Task.create(data),
-    onSuccess: () => {
+    onSuccess: (newTask) => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
       setTask({
         title: '',
@@ -35,7 +33,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         due_date: '',
         assigned_to: '',
       });
-      onCreated?.();
+      onCreated?.(newTask?.id);
     },
   });
 
