@@ -148,6 +148,7 @@ export default function Gastos() {
           isAdmin={user?.role === 'admin'} 
           loading={isLoading}
           showActions={true}
+          showEmployeeName={true}
           onApprove={handleApprove}
           onReject={handleReject}
         />

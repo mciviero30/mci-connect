@@ -179,10 +179,17 @@ export default function Dashboard() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
+    queryFn: async () => {
+      try {
+        return await base44.entities.Job.filter({ status: 'active' }, 'name');
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
+    },
     enabled: !!user,
-    staleTime: 300000, // 5 minutes
-    cacheTime: 600000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -212,47 +219,77 @@ export default function Dashboard() {
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
-    enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
-    staleTime: 1800000, // 30 minutes - employee list rarely changes
-    cacheTime: 3600000, // 1 hour
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.User.list('full_name');
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        return [];
+      }
+    },
+    enabled: (needsAdminData || widgets.some(w => w.type === 'birthdays-today')) && !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const { data: allTimeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200),
-    enabled: isAdmin && widgets.some(w => w.type === 'total-hours'),
-    staleTime: 900000, // 15 minutes
-    cacheTime: 1800000,
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200);
+      } catch (error) {
+        console.error('Error loading time entries:', error);
+        return [];
+      }
+    },
+    enabled: isAdmin && widgets.some(w => w.type === 'total-hours') && !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const { data: allExpenses = [] } = useQuery({
     queryKey: ['allExpenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 200),
-    enabled: isAdmin && needsExpenseData,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000,
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.Expense.list('-date', 200);
+      } catch (error) {
+        console.error('Error loading expenses:', error);
+        return [];
+      }
+    },
+    enabled: isAdmin && needsExpenseData && !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const { data: recognitions = [] } = useQuery({
     queryKey: ['recentRecognitions'],
-    queryFn: () => base44.entities.Recognition.list('-date', 5),
-    enabled: needsRecognitionData,
-    staleTime: 900000, // 15 minutes - recognitions don't change frequently
-    cacheTime: 1800000,
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.Recognition.list('-date', 5);
+      } catch (error) {
+        console.error('Error loading recognitions:', error);
+        return [];
+      }
+    },
+    enabled: needsRecognitionData && !!user,
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 
   const { data: pendingTimeEntries = [] } = useQuery({
     queryKey: ['pendingTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100),
-    enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets'),
-    staleTime: 300000, // 5 minutes - pending items need more frequent updates
-    cacheTime: 600000,
-    initialData: [],
+    queryFn: async () => {
+      try {
+        return await base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100);
+      } catch (error) {
+        console.error('Error loading pending time entries:', error);
+        return [];
+      }
+    },
+    enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets') && !!user,
+    staleTime: 2 * 60 * 1000,
+    retry: 1,
   });
 
   // CALCULATIONS - Heavily memoized for optimal performance
