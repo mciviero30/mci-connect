@@ -76,7 +76,7 @@ export default function FieldFormsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Formularios</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Forms</h1>
         <Button 
           onClick={() => setShowCreate(true)}
           className="bg-gradient-to-r from-[#FFB800] to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
@@ -95,7 +95,7 @@ export default function FieldFormsView({ jobId }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{formTemplates.length}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Plantillas</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Templates</p>
             </div>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function FieldFormsView({ jobId }) {
             </div>
             <div>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{submissions.length}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Respuestas</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Responses</p>
             </div>
           </div>
         </div>
@@ -215,51 +215,51 @@ export default function FieldFormsView({ jobId }) {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white">Crear Formulario</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">Create Form</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-700 dark:text-slate-300">Nombre</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Name</Label>
               <Input 
                 value={newForm.name}
                 onChange={(e) => setNewForm({...newForm, name: e.target.value})}
-                placeholder="Ej: Inspección de Seguridad"
+                placeholder="e.g., Safety Inspection"
                 className="mt-1.5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-700 dark:text-slate-300">Descripción</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Description</Label>
               <Textarea 
                 value={newForm.description}
                 onChange={(e) => setNewForm({...newForm, description: e.target.value})}
-                placeholder="Descripción del formulario..."
+                placeholder="Form description..."
                 className="mt-1.5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-700 dark:text-slate-300">Categoría</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Category</Label>
               <Select value={newForm.category} onValueChange={(v) => setNewForm({...newForm, category: v})}>
                 <SelectTrigger className="mt-1.5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectItem value="inspection" className="text-slate-900 dark:text-white">Inspección</SelectItem>
-                  <SelectItem value="safety" className="text-slate-900 dark:text-white">Seguridad</SelectItem>
-                  <SelectItem value="quality" className="text-slate-900 dark:text-white">Calidad</SelectItem>
-                  <SelectItem value="custom" className="text-slate-900 dark:text-white">Personalizado</SelectItem>
+                  <SelectItem value="inspection" className="text-slate-900 dark:text-white">Inspection</SelectItem>
+                  <SelectItem value="safety" className="text-slate-900 dark:text-white">Safety</SelectItem>
+                  <SelectItem value="quality" className="text-slate-900 dark:text-white">Quality</SelectItem>
+                  <SelectItem value="custom" className="text-slate-900 dark:text-white">Custom</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreate(false)} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreateForm}
                 disabled={!newForm.name || createFormMutation.isPending}
                 className="bg-[#FFB800] hover:bg-amber-600 text-white"
               >
-                {createFormMutation.isPending ? 'Creando...' : 'Crear Formulario'}
+                {createFormMutation.isPending ? 'Creating...' : 'Create Form'}
               </Button>
             </div>
           </div>

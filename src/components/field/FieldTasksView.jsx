@@ -84,7 +84,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
     <div className="p-6 flex flex-col h-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Tasks</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Tasks</h1>
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />

@@ -71,7 +71,7 @@ export default function FieldPhotosView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Photos</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Photos</h1>
         <div className="flex gap-2">
           {/* Mobile: Camera capture button */}
           <Button 
@@ -157,11 +157,11 @@ export default function FieldPhotosView({ jobId }) {
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Subir Foto</DialogTitle>
+            <DialogTitle>Upload Photo</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Imagen</Label>
+              <Label className="text-slate-300">Image</Label>
               <div className="mt-1.5">
                 {newPhoto.file_url ? (
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-800">
@@ -177,7 +177,7 @@ export default function FieldPhotosView({ jobId }) {
                   <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-amber-500/50 transition-colors">
                     <Upload className="w-8 h-8 text-slate-500 mb-2" />
                     <span className="text-sm text-slate-400">
-                      {uploading ? 'Subiendo...' : 'Click para subir imagen'}
+                      {uploading ? 'Uploading...' : 'Click to upload image'}
                     </span>
                     <input 
                       type="file" 
@@ -191,33 +191,33 @@ export default function FieldPhotosView({ jobId }) {
               </div>
             </div>
             <div>
-              <Label className="text-slate-300">Descripción</Label>
+              <Label className="text-slate-300">Description</Label>
               <Textarea 
                 value={newPhoto.caption}
                 onChange={(e) => setNewPhoto({...newPhoto, caption: e.target.value})}
-                placeholder="Descripción de la foto..."
+                placeholder="Photo description..."
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Ubicación</Label>
+              <Label className="text-slate-300">Location</Label>
               <Input 
                 value={newPhoto.location}
                 onChange={(e) => setNewPhoto({...newPhoto, location: e.target.value})}
-                placeholder="Ej: Sala principal"
+                placeholder="e.g., Main hall"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreatePhoto}
                 disabled={!newPhoto.file_url || createPhotoMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {createPhotoMutation.isPending ? 'Guardando...' : 'Guardar Foto'}
+                {createPhotoMutation.isPending ? 'Saving...' : 'Save Photo'}
               </Button>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function FieldPhotosView({ jobId }) {
                   <a href={selectedPhoto.file_url} target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" size="sm" className="border-slate-700 text-slate-300">
                       <Download className="w-4 h-4 mr-2" />
-                      Descargar
+                      Download
                     </Button>
                   </a>
                   <Button 
@@ -260,7 +260,7 @@ export default function FieldPhotosView({ jobId }) {
                     className="border-red-500/50 text-red-400 hover:bg-red-500/10"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Eliminar
+                    Delete
                   </Button>
                 </div>
               </div>

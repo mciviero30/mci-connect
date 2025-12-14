@@ -137,7 +137,7 @@ export default function FieldDocumentsView({ jobId }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Documents</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Documents</h1>
           {currentFolder && (
             <button 
               onClick={() => setCurrentFolder(null)}
@@ -201,7 +201,7 @@ export default function FieldDocumentsView({ jobId }) {
         </div>
       ) : currentDocs.length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-slate-400 mb-3">Archivos</h3>
+          <h3 className="text-sm font-medium text-slate-400 mb-3">Files</h3>
           <div className="space-y-2">
             {currentDocs.map((doc) => {
               const FileIcon = getFileIcon(doc);
@@ -251,7 +251,7 @@ export default function FieldDocumentsView({ jobId }) {
                           className="text-red-400 focus:text-red-400"
                         >
                           <Trash2 className="w-4 h-4 mr-2" />
-                          Eliminar
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -267,11 +267,11 @@ export default function FieldDocumentsView({ jobId }) {
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Subir Documento</DialogTitle>
+            <DialogTitle>Upload Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Archivo</Label>
+              <Label className="text-slate-300">File</Label>
               <div className="mt-1.5">
                 {newDoc.file_url ? (
                   <div className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg">
@@ -282,7 +282,7 @@ export default function FieldDocumentsView({ jobId }) {
                   <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-amber-500/50 transition-colors">
                     <Upload className="w-8 h-8 text-slate-500 mb-2" />
                     <span className="text-sm text-slate-400">
-                      {uploading ? 'Subiendo...' : 'Click para subir archivo'}
+                      {uploading ? 'Uploading...' : 'Click to upload file'}
                     </span>
                     <input 
                       type="file"
@@ -295,24 +295,24 @@ export default function FieldDocumentsView({ jobId }) {
               </div>
             </div>
             <div>
-              <Label className="text-slate-300">Nombre</Label>
+              <Label className="text-slate-300">Name</Label>
               <Input 
                 value={newDoc.name}
                 onChange={(e) => setNewDoc({...newDoc, name: e.target.value})}
-                placeholder="Nombre del documento"
+                placeholder="Document name"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreateDocument}
                 disabled={!newDoc.file_url || !newDoc.name || createDocMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {createDocMutation.isPending ? 'Guardando...' : 'Guardar'}
+                {createDocMutation.isPending ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </div>
@@ -323,28 +323,28 @@ export default function FieldDocumentsView({ jobId }) {
       <Dialog open={showNewFolder} onOpenChange={setShowNewFolder}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Nueva Carpeta</DialogTitle>
+            <DialogTitle>New Folder</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Nombre de la Carpeta</Label>
+              <Label className="text-slate-300">Folder Name</Label>
               <Input 
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
-                placeholder="Ej: Especificaciones"
+                placeholder="e.g., Specifications"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowNewFolder(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleCreateFolder}
                 disabled={!newFolderName || createFolderMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {createFolderMutation.isPending ? 'Creando...' : 'Crear Carpeta'}
+                {createFolderMutation.isPending ? 'Creating...' : 'Create Folder'}
               </Button>
             </div>
           </div>

@@ -50,7 +50,7 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-[#D4C85C] mb-6">Project Overview</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Project Overview</h1>
 
       {/* Progress Bar */}
       <div className="mb-6">

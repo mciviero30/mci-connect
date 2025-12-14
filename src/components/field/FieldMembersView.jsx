@@ -115,7 +115,7 @@ export default function FieldMembersView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Project Team</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Project Team</h1>
         <Button 
           onClick={() => setShowInvite(true)}
           className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
@@ -309,7 +309,7 @@ export default function FieldMembersView({ jobId }) {
       <Dialog open={showInvite} onOpenChange={setShowInvite}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Invitar Miembro</DialogTitle>
+            <DialogTitle>Invite Member</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
@@ -318,21 +318,21 @@ export default function FieldMembersView({ jobId }) {
                 type="email"
                 value={inviteData.email}
                 onChange={(e) => setInviteData({...inviteData, email: e.target.value})}
-                placeholder="usuario@ejemplo.com"
+                placeholder="user@example.com"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Nombre (opcional)</Label>
+              <Label className="text-slate-300">Name (optional)</Label>
               <Input 
                 value={inviteData.name}
                 onChange={(e) => setInviteData({...inviteData, name: e.target.value})}
-                placeholder="Juan García"
+                placeholder="John Doe"
                 className="mt-1.5 bg-slate-800 border-slate-700 text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Rol</Label>
+              <Label className="text-slate-300">Role</Label>
               <Select value={inviteData.role} onValueChange={(v) => setInviteData({...inviteData, role: v})}>
                 <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
@@ -361,14 +361,14 @@ export default function FieldMembersView({ jobId }) {
             </div>
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowInvite(false)} className="border-slate-700 text-slate-300">
-                Cancelar
+                Cancel
               </Button>
               <Button 
                 onClick={handleInvite}
                 disabled={!inviteData.email || inviteMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {inviteMutation.isPending ? 'Enviando...' : 'Enviar Invitación'}
+                {inviteMutation.isPending ? 'Sending...' : 'Send Invitation'}
               </Button>
             </div>
           </div>

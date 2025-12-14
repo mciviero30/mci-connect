@@ -17,7 +17,7 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
   return (
-    <div
+    <button
       onClick={(e) => {
         e.stopPropagation();
         if (onClick) onClick();
@@ -46,6 +46,6 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
             border-t-[6px] ${status.point}`}
         />
       </div>
-    </div>
+    </button>
   );
 }
