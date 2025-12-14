@@ -762,7 +762,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         {/* Canvas - Touch enabled */}
         <div 
           ref={containerRef}
-          className={`flex-1 overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 overflow-hidden touch-none h-full ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
