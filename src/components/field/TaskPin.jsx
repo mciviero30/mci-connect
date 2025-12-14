@@ -8,7 +8,7 @@ const statusColors = {
   blocked: { bg: 'bg-red-500', border: 'border-red-300', point: 'border-t-red-500' },
 };
 
-export default function TaskPin({ task, onClick, isSelected }) {
+export default function TaskPin({ task, onClick, isSelected, onDragPin, isDragging }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
   if (task.pin_x === undefined || task.pin_y === undefined) return null;
@@ -18,17 +18,25 @@ export default function TaskPin({ task, onClick, isSelected }) {
   // Extract wall number from title (e.g., "Wall 019" -> "019")
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
+  const handleMouseDown = (e) => {
+    if (onDragPin) {
+      e.stopPropagation();
+      onDragPin(task, e);
+    }
+  };
+
   return (
     <button
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
+      onMouseDown={handleMouseDown}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
       className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
         isSelected ? 'scale-125 z-20' : ''
-      }`}
+      } ${isDragging ? 'cursor-move' : 'cursor-pointer'}`}
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
       <div className="relative">

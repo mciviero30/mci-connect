@@ -22,6 +22,7 @@ const RETRY_DELAY_MS = 5000;
 const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
+  const queryClient = useQueryClient();
   const [zoom, setZoom] = useState(0.2);
   const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -31,6 +32,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [draggingPin, setDraggingPin] = useState(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
   // Loading states
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -421,13 +424,30 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
-    if (isPlacingPin) return;
+    if (isPlacingPin || draggingPin) return;
     setIsDragging(true);
     setHasDragged(false);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
   const handleMouseMove = (e) => {
+    if (draggingPin) {
+      // Moving a pin
+      const rect = imageRef.current?.getBoundingClientRect();
+      if (rect) {
+        const x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+        const y = ((e.clientY - rect.top - dragOffset.y) / rect.height) * 100;
+        
+        // Update pin position visually
+        setDraggingPin({
+          ...draggingPin,
+          pin_x: Math.max(0, Math.min(100, x)),
+          pin_y: Math.max(0, Math.min(100, y))
+        });
+      }
+      return;
+    }
+    
     if (!isDragging) return;
     setHasDragged(true);
     setPosition({
@@ -436,9 +456,35 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     });
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = async () => {
+    if (draggingPin) {
+      // Save the new pin position
+      try {
+        await base44.entities.Task.update(draggingPin.id, {
+          pin_x: draggingPin.pin_x,
+          pin_y: draggingPin.pin_y
+        });
+        queryClient.invalidateQueries({ queryKey: ['field-tasks'] });
+      } catch (error) {
+        console.error('Error updating pin position:', error);
+      }
+      setDraggingPin(null);
+      return;
+    }
+    
     setIsDragging(false);
     setTimeout(() => setHasDragged(false), 100);
+  };
+
+  const handlePinDrag = (task, e) => {
+    e.stopPropagation();
+    const rect = imageRef.current?.getBoundingClientRect();
+    if (rect) {
+      const offsetX = e.clientX - rect.left - (task.pin_x / 100) * rect.width;
+      const offsetY = e.clientY - rect.top - (task.pin_y / 100) * rect.height;
+      setDragOffset({ x: offsetX, y: offsetY });
+      setDraggingPin(task);
+    }
   };
 
   // Touch handlers for mobile
@@ -553,9 +599,29 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'filter', icon: Search, label: 'Filters (F)', action: () => setShowFilters(prev => !prev) },
   ];
 
-  const handleTaskCreated = () => {
+  const handleTaskCreated = (newTaskId) => {
     setPendingPinPosition(null);
     setShowCreateTask(false);
+    
+    // Open the newly created task after a brief delay to allow query to refresh
+    if (newTaskId) {
+      setTimeout(() => {
+        const newTask = tasks.find(t => t.id === newTaskId);
+        if (newTask) {
+          setSelectedTask(newTask);
+        }
+      }, 500);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await base44.entities.Task.delete(taskId);
+      queryClient.invalidateQueries({ queryKey: ['field-tasks'] });
+      setSelectedTask(null);
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
   };
 
   return (
@@ -799,18 +865,23 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   />
                 )}
                 {/* Task Pins - works for both images and PDF canvas */}
-                {showPins && filteredTasks.map((task) => (
-                  <TaskPin 
-                    key={task.id}
-                    task={task}
-                    onClick={() => {
-                      if (!hasDragged) {
-                        setSelectedTask(task);
-                      }
-                    }}
-                    isSelected={selectedTask?.id === task.id}
-                  />
-                ))}
+                {showPins && filteredTasks.map((task) => {
+                  const displayTask = draggingPin?.id === task.id ? draggingPin : task;
+                  return (
+                    <TaskPin 
+                      key={task.id}
+                      task={displayTask}
+                      onClick={() => {
+                        if (!hasDragged && !draggingPin) {
+                          setSelectedTask(task);
+                        }
+                      }}
+                      onDragPin={handlePinDrag}
+                      isDragging={draggingPin?.id === task.id}
+                      isSelected={selectedTask?.id === task.id}
+                    />
+                  );
+                })}
                 {/* Pending Pin */}
                 {pendingPinPosition && (
                   <div 
@@ -855,6 +926,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         <TaskDetailPanel 
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
+          onDelete={handleDeleteTask}
           jobId={jobId}
           allTasks={tasks}
           onZoomTo={handleZoomToTask}
