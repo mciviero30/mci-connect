@@ -399,11 +399,39 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleZoomIn = () => {
-    setZoom(prev => Math.min(prev * 1.2, 5));
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const newZoom = Math.min(zoom * 1.3, 5);
+    const zoomRatio = newZoom / zoom;
+    
+    setZoom(newZoom);
+    setPosition({
+      x: centerX - (centerX - position.x) * zoomRatio,
+      y: centerY - (centerY - position.y) * zoomRatio
+    });
   };
   
   const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev / 1.2, 0.1));
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const newZoom = Math.max(zoom / 1.3, 0.1);
+    const zoomRatio = newZoom / zoom;
+    
+    setZoom(newZoom);
+    setPosition({
+      x: centerX - (centerX - position.x) * zoomRatio,
+      y: centerY - (centerY - position.y) * zoomRatio
+    });
   };
   
   const handleReset = () => {
@@ -901,14 +929,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           {/* Success State - Show Image/PDF */}
           {loadingState === 'success' && (
             <div 
-              className="relative w-full h-full flex items-start justify-start pl-16 pt-4"
+              className="relative w-full h-full flex items-center justify-center"
               style={{
-                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-                transformOrigin: 'top left',
+                transform: `translate(${position.x}px, ${position.y}px)`,
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
-              <div className="relative" style={{ minWidth: '100px', minHeight: '100px' }}>
+              <div className="relative" style={{ 
+                minWidth: '100px', 
+                minHeight: '100px',
+                transform: `scale(${zoom})`,
+                transformOrigin: 'center center'
+              }}>
                 {isPdfFile(plan.file_url) ? (
                   pdfCanvas ? (
                     <>
@@ -916,7 +948,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                         ref={imageRef}
                         src={pdfCanvas}
                         alt={plan.name}
-                        style={{ maxWidth: 'none', maxHeight: 'none' }}
+                        style={{ maxWidth: 'none', maxHeight: 'none', display: 'block' }}
                         onClick={handleMapAction}
                         onLoad={handleImageLoad}
                         draggable={false}
@@ -941,7 +973,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     ref={imageRef}
                     src={plan.file_url}
                     alt={plan.name}
-                    className="max-w-none"
+                    style={{ maxWidth: 'none', maxHeight: 'none', display: 'block' }}
                     onClick={handleMapAction}
                     onLoad={handleImageLoad}
                     draggable={false}
