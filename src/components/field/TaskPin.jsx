@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { MapPin } from 'lucide-react';
 
 const statusColors = {
-  pending: { bg: 'bg-amber-500', border: 'border-amber-300', point: 'border-t-amber-500' },
-  in_progress: { bg: 'bg-blue-500', border: 'border-blue-300', point: 'border-t-blue-500' },
-  completed: { bg: 'bg-green-500', border: 'border-green-300', point: 'border-t-green-500' },
-  blocked: { bg: 'bg-red-500', border: 'border-red-300', point: 'border-t-red-500' },
+  pending: { bg: 'bg-amber-500', border: 'border-amber-300', point: 'border-t-amber-500', text: 'text-white' },
+  in_progress: { bg: 'bg-blue-500', border: 'border-blue-300', point: 'border-t-blue-500', text: 'text-white' },
+  completed: { bg: 'bg-green-500', border: 'border-green-300', point: 'border-t-green-500', text: 'text-white' },
+  blocked: { bg: 'bg-red-500', border: 'border-red-300', point: 'border-t-red-500', text: 'text-white' },
 };
 
 export default function TaskPin({ task, onClick, isSelected, onDragPin, isDragging }) {
