@@ -43,33 +43,19 @@ const getTeamIdByState = (state, teams) => {
 export default function EmployeeForm({ employee, onClose, isPending = false }) {
   const queryClient = useQueryClient();
   
-  const { data: teams = [] } = useQuery({
+  const { data: teams } = useQuery({
     queryKey: ['teams'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Team.list('team_name');
-      } catch (error) {
-        console.error('Error loading teams:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Team.list('team_name'),
+    initialData: [],
   });
 
-  const { data: managers = [] } = useQuery({
+  const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
-      try {
-        const users = await base44.entities.User.list();
-        return users.filter(u => ['CEO', 'manager', 'supervisor'].includes(u.position));
-      } catch (error) {
-        console.error('Error loading managers:', error);
-        return [];
-      }
+      const users = await base44.entities.User.list();
+      return users.filter(u => ['CEO', 'manager', 'supervisor'].includes(u.position));
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    initialData: [],
   });
 
   // Parse employee name correctly

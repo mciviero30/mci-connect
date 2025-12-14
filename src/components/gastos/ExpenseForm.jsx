@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,29 +16,21 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 // import AIExpenseCategorizer from './AIExpenseCategorizer'; // AIExpenseCategorizer is no longer used
 
 const categories = [
-  { value: "travel", label: "Travel" },
-  { value: "meals", label: "Meals" },
-  { value: "transport", label: "Transport" },
-  { value: "supplies", label: "Supplies" },
-  { value: "client_entertainment", label: "Client Entertainment" },
-  { value: "equipment", label: "Equipment" },
-  { value: "per_diem", label: "Per Diem" },
-  { value: "other", label: "Other" },
+  { value: "travel", label: "Viajes", labelEn: "Travel" },
+  { value: "meals", label: "Comidas", labelEn: "Meals" },
+  { value: "transport", label: "Transporte", labelEn: "Transport" },
+  { value: "supplies", label: "Suministros", labelEn: "Supplies" },
+  { value: "client_entertainment", label: "Entretenimiento cliente", labelEn: "Client Entertainment" },
+  { value: "equipment", label: "Equipo", labelEn: "Equipment" },
+  { value: "per_diem", label: "Per Diem / Viáticos", labelEn: "Per Diem" }, // Per Diem category is still valid for display if old expenses have it
+  { value: "other", label: "Otro", labelEn: "Other" },
 ];
 
 export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing }) {
-  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
+  const { t, language } = useLanguage();
+  const { data: jobs, isLoading: jobsLoading } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Job.filter({ status: 'active' });
-      } catch (error) {
-        console.error('Error loading jobs:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
   });
 
   // Remove past expenses query as AIExpenseCategorizer is removed
@@ -88,7 +81,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     },
     onError: (error) => {
       console.error("Error uploading file:", error);
-      alert('Error uploading file.');
+      alert(language === 'es' ? 'Error al subir el archivo.' : 'Error uploading file.');
     },
   });
 
@@ -107,7 +100,9 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     
     // NEW: Prompt #58 - Require receipt for all expenses
     if (!formData.receipt_url) {
-      alert('⚠️ Receipt is required. Please upload a document.');
+      alert(language === 'es' 
+        ? '⚠️ El recibo es obligatorio. Por favor sube un documento.' 
+        : '⚠️ Receipt is required. Please upload a document.');
       return;
     }
 
@@ -124,11 +119,11 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
 
   // NEW: Account category options (Prompt #59)
   const accountCategories = [
-    { value: 'expense_labor_cost', label: 'Expense: Labor Cost' },
-    { value: 'expense_travel_per_diem', label: 'Expense: Travel & Per Diem' },
-    { value: 'expense_materials', label: 'Expense: Materials' },
-    { value: 'expense_equipment', label: 'Expense: Equipment' },
-    { value: 'expense_other', label: 'Expense: Other' }
+    { value: 'expense_labor_cost', label: language === 'es' ? 'Gasto: Costo Laboral' : 'Expense: Labor Cost' },
+    { value: 'expense_travel_per_diem', label: language === 'es' ? 'Gasto: Viaje y Per Diem' : 'Expense: Travel & Per Diem' },
+    { value: 'expense_materials', label: language === 'es' ? 'Gasto: Materiales' : 'Expense: Materials' },
+    { value: 'expense_equipment', label: language === 'es' ? 'Gasto: Equipo' : 'Expense: Equipment' },
+    { value: 'expense_other', label: language === 'es' ? 'Gasto: Otro' : 'Expense: Other' }
   ];
   
   return (
@@ -136,7 +131,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
       <CardHeader className="border-b border-slate-200">
         <CardTitle className="flex items-center gap-2 text-slate-900">
           <Receipt className="w-5 h-5 text-[#3B9FF3]" />
-          {expense ? 'Edit Expense' : 'New Expense'}
+          {expense ? t('edit') : t('new_expense')}
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -145,7 +140,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
           <>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Amount *</Label>
+                <Label>{language === 'es' ? 'Monto' : 'Amount'} *</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -158,7 +153,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
               </div>
 
               <div className="space-y-2">
-                <Label>Date *</Label>
+                <Label>{language === 'es' ? 'Fecha' : 'Date'} *</Label>
                 <Input
                   type="date"
                   value={formData.date}
@@ -169,11 +164,11 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             </div>
 
             <div>
-              <Label className="text-slate-700 mb-2 block">Description *</Label>
+              <Label className="text-slate-700 mb-2 block">{t('description')} *</Label>
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Ex: Gas for trip to job site"
+                placeholder={language === 'es' ? "Ej: Gasolina para viaje a sitio de trabajo" : "Ex: Gas for trip to job site"}
                 className="bg-slate-50 border-slate-200 text-slate-900"
                 required
               />
@@ -195,20 +190,28 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
 
             <div>
               <Label className="text-slate-700 mb-2 block">
-                Category *
+                {t('category')} *
+                {/* Removed AI-related badge */}
+                {/* {formData.ai_analyzed && formData.ai_confidence > 0 && (
+                  <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    AI {formData.ai_confidence}%
+                    {formData.user_corrected_ai && (language === 'es' ? ' (Corregido)' : ' (Corrected)')}
+                  </Badge>
+                )} */}
               </Label>
               <Select 
                 value={formData.category} 
-                onValueChange={(value) => setFormData({...formData, category: value})}
+                onValueChange={(value) => setFormData({...formData, category: value})} // Changed from handleManualCategoryChange
                 required
               >
                 <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder={t('category')} />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200">
-                  {categories.filter(c => c.value !== 'per_diem').map(cat => (
+                  {categories.filter(c => c.value !== 'per_diem').map(cat => ( // Still filter per_diem from regular expenses
                     <SelectItem key={cat.value} value={cat.value} className="text-slate-900 hover:bg-slate-100">
-                      {cat.label}
+                      {t(cat.value)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -218,7 +221,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             {/* NEW: Account Category Field (Prompt #59) */}
             <div>
               <Label className="text-slate-700">
-                Account Category *
+                {language === 'es' ? 'Categoría Contable *' : 'Account Category *'}
               </Label>
               <Select 
                 value={formData.account_category} 
@@ -226,7 +229,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                 required
               >
                 <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                  <SelectValue placeholder="Select account category..."/>
+                  <SelectValue placeholder={language === 'es' ? 'Seleccionar categoría contable...' : 'Select account category...'}/>
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200">
                   {accountCategories.map(cat => (
@@ -237,12 +240,14 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                 </SelectContent>
               </Select>
               <p className="text-xs text-slate-500 mt-1">
-                For accounting reports and financial analysis
+                {language === 'es' 
+                  ? 'Para reportes contables y análisis financiero' 
+                  : 'For accounting reports and financial analysis'}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label>Payment Method *</Label>
+              <Label>{language === 'es' ? 'Método de Pago' : 'Payment Method'} *</Label>
               <RadioGroup 
                 value={formData.payment_method} 
                 onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
@@ -251,43 +256,43 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="personal" id="personal" />
                   <Label htmlFor="personal" className="font-normal cursor-pointer">
-                    Personal Money (Reimbursement)
+                    {language === 'es' ? 'Dinero Personal (Reembolso)' : 'Personal Money (Reimbursement)'}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="company_card" id="company_card" />
                   <Label htmlFor="company_card" className="font-normal cursor-pointer">
-                    Company Card
+                    {language === 'es' ? 'Tarjeta de la Compañía' : 'Company Card'}
                   </Label>
                 </div>
               </RadioGroup>
             </div>
 
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>{t('notes')}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Additional notes about the expense..."
+                placeholder={language === 'es' ? 'Notas adicionales sobre el gasto...' : 'Additional notes about the expense...'}
                 className="h-20 bg-slate-50 border-slate-200 text-slate-900"
               />
             </div>
           </>
 
           <div className="space-y-2">
-            <Label>Associate to Job *</Label>
+            <Label>{language === 'es' ? 'Asociar a Trabajo' : 'Associate to Job'} *</Label>
             <Select
-              value={formData.job_id || ''}
+              value={formData.job_id || ''} // Handle empty string job_id for select component
               onValueChange={(value) => setFormData({ ...formData, job_id: value })}
               disabled={jobsLoading}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a job..." />
+                <SelectValue placeholder={language === 'es' ? 'Seleccionar un trabajo...' : 'Select a job...'} />
               </SelectTrigger>
               <SelectContent>
-                {jobsLoading && <SelectItem value={null} disabled>Loading jobs...</SelectItem>}
-                {!jobsLoading && !jobs?.length && <SelectItem value={null} disabled>No active jobs</SelectItem>}
+                {jobsLoading && <SelectItem value={null} disabled>{language === 'es' ? 'Cargando trabajos...' : 'Loading jobs...'}</SelectItem>}
+                {!jobsLoading && !jobs?.length && <SelectItem value={null} disabled>{language === 'es' ? 'No hay trabajos activos' : 'No active jobs'}</SelectItem>}
                 {jobs?.map(job => (
                   <SelectItem key={job.id} value={job.id}>
                     {job.name}
@@ -300,7 +305,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
           {/* Modified: Receipt upload with required indicator */}
           <div>
             <Label className="text-slate-700">
-              Receipt <span className="text-red-500">*</span>
+              {t('receipt')} <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-2">
               <Input
@@ -313,19 +318,21 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
               {uploadMutation.isPending && (
                 <p className="text-sm text-blue-600">
                   <Upload className="w-4 h-4 inline-block mr-1" />
-                  Uploading receipt...
+                  {language === 'es' ? 'Subiendo recibo...' : 'Uploading receipt...'}
                 </p>
               )}
               {formData.receipt_url && (
                 <div className="flex items-center gap-2 text-sm text-green-600">
                   <ExternalLink className="w-4 h-4" />
                   <a href={formData.receipt_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    View Receipt
+                    {t('view')} {t('receipt')}
                   </a>
                 </div>
               )}
               <p className="text-xs text-amber-600">
-                ⚠️ Required: Receipt must be attached before submitting
+                {language === 'es' 
+                  ? '⚠️ Obligatorio: El recibo debe ser adjuntado antes de enviar' 
+                  : '⚠️ Required: Receipt must be attached before submitting'}
               </p>
             </div>
           </div>
@@ -338,7 +345,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             disabled={isProcessing}
           >
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {language === 'es' ? 'Cancelar' : 'Cancel'}
           </Button>
           <Button
             type="submit"
@@ -346,7 +353,10 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
           >
             <Save className="w-4 h-4 mr-2" />
-            {expense ? 'Save Changes' : 'Save'}
+            {expense 
+                ? (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
+                : (language === 'es' ? 'Guardar' : 'Save')
+            }
           </Button>
         </CardFooter>
       </form>

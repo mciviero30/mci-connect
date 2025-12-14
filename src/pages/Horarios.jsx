@@ -12,19 +12,10 @@ export default function Horarios() {
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const isAdmin = user?.role === 'admin';
 
-  const { data: timeEntries = [], isLoading } = useQuery({
+  const { data: timeEntries, isLoading } = useQuery({
     queryKey: ['timeEntries'],
-    queryFn: async () => {
-      try {
-        const entries = await base44.entities.TimeEntry.list('-date');
-        return entries || [];
-      } catch (error) {
-        console.error('Error loading time entries:', error);
-        return [];
-      }
-    },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
+    queryFn: () => base44.entities.TimeEntry.list('-date'),
+    initialData: [],
   });
 
   const pendingEntries = timeEntries.filter(e => e.status === 'pending');

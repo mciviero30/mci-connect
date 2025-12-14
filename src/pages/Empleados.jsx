@@ -424,29 +424,28 @@ export default function Empleados() {
     queryFn: async () => {
       try {
         const users = await base44.entities.User.list('-created_date');
-        return users || [];
+        return users;
       } catch (error) {
         console.error('Error loading employees:', error);
         return [];
       }
     },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
+    staleTime: 60000,
+    retry: 1
   });
 
   const { data: pendingEmployees = [], isLoading: isPendingLoading } = useQuery({
     queryKey: ['pendingEmployees'],
     queryFn: async () => {
       try {
-        const pending = await base44.entities.PendingEmployee.list('-created_date');
-        return pending || [];
+        return await base44.entities.PendingEmployee.list('-created_date');
       } catch (error) {
         console.error('Error loading pending employees:', error);
         return [];
       }
     },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
+    staleTime: 60000,
+    retry: 1
   });
 
   // ============================================

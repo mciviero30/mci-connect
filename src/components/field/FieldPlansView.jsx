@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import BlueprintViewer from './BlueprintViewer';
-import PlanAnalyzer from './PlanAnalyzer';
-import WallTemplatesManager from './WallTemplatesManager';
-import PDFProcessor from './PDFProcessor';
+import BlueprintViewer from './BlueprintViewer.jsx';
+import PlanAnalyzer from './PlanAnalyzer.jsx';
+import WallTemplatesManager from './WallTemplatesManager.jsx';
+import PDFProcessor from './PDFProcessor.jsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 
@@ -172,12 +172,9 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
 
   return (
     <div className="p-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Plans</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{plans.length} plan{plans.length !== 1 ? 's' : ''} available</p>
-        </div>
-        <div className="flex gap-2 w-full md:w-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Plans</h1>
+        <div className="flex gap-2">
           <Button 
             variant="outline"
             onClick={() => setShowTemplates(true)}

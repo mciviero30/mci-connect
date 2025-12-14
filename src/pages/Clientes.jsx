@@ -27,18 +27,10 @@ export default function Clientes() {
   const toast = useToast();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const { data: customers = [], isLoading } = useQuery({
+  const { data: customers, isLoading } = useQuery({
     queryKey: ['customers'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Customer.list();
-      } catch (error) {
-        console.error('Error loading customers:', error);
-        return [];
-      }
-    },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
+    queryFn: () => base44.entities.Customer.list(),
+    initialData: [],
   });
 
   const createMutation = useMutation({

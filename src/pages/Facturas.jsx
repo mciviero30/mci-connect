@@ -38,32 +38,16 @@ export default function Facturas() {
   const [statusFilter, setStatusFilter] = useState("all");
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const { data: invoices = [], isLoading } = useQuery({
+  const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Invoice.list('-created_date');
-      } catch (error) {
-        console.error('Error loading invoices:', error);
-        return [];
-      }
-    },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
+    queryFn: () => base44.entities.Invoice.list('-created_date'),
+    initialData: [],
   });
 
-  const { data: teams = [] } = useQuery({
+  const { data: teams } = useQuery({
     queryKey: ['teams'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Team.list();
-      } catch (error) {
-        console.error('Error loading teams:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Team.list(),
+    initialData: [],
   });
 
   const deleteMutation = useMutation({

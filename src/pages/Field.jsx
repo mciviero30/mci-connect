@@ -12,7 +12,6 @@ import {
   CheckCheck,
   Briefcase,
   AlertCircle,
-  AlertTriangle,
   FolderOpen,
   Command
 } from 'lucide-react';
@@ -54,13 +53,11 @@ export default function Field() {
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['field-jobs'],
     queryFn: () => base44.entities.Job.list('-created_date'),
-    staleTime: 2 * 60 * 1000,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['field-tasks'],
     queryFn: () => base44.entities.Task.list('-created_date'),
-    staleTime: 2 * 60 * 1000,
   });
 
   const createJobMutation = useMutation({

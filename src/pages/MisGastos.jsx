@@ -23,16 +23,9 @@ export default function MisGastos() {
     queryKey: ['myExpenses', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      try {
-        return await base44.entities.Expense.filter({ employee_email: user.email }, '-date');
-      } catch (error) {
-        console.error('Error loading expenses:', error);
-        return [];
-      }
+      return base44.entities.Expense.filter({ employee_email: user.email }, '-date');
     },
     enabled: !!user,
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
   });
 
   const createMutation = useMutation({

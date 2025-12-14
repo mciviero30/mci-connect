@@ -151,75 +151,51 @@ export default function Chat() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', selectedGroup, selectedDMConv?.id, selectedCustomGroup?.id],
-    queryFn: async () => {
-      try {
-        if (chatMode === 'direct' && selectedDMConv) {
-          return await base44.entities.ChatMessage.filter({ 
-            group_id: `dm_${selectedDMConv.id}` 
-          }, 'created_date');
-        }
-        if (chatMode === 'groups' && selectedCustomGroup) {
-          return await base44.entities.ChatMessage.filter({ 
-            group_id: `group_${selectedCustomGroup.id}` 
-          }, 'created_date');
-        }
-        return await base44.entities.ChatMessage.filter({ group_id: selectedGroup }, 'created_date');
-      } catch (error) {
-        console.error('Error loading messages:', error);
-        return [];
+    queryFn: () => {
+      if (chatMode === 'direct' && selectedDMConv) {
+        return base44.entities.ChatMessage.filter({ 
+          group_id: `dm_${selectedDMConv.id}` 
+        }, 'created_date');
       }
+      if (chatMode === 'groups' && selectedCustomGroup) {
+        return base44.entities.ChatMessage.filter({ 
+          group_id: `group_${selectedCustomGroup.id}` 
+        }, 'created_date');
+      }
+      return base44.entities.ChatMessage.filter({ group_id: selectedGroup }, 'created_date');
     },
-    refetchInterval: 3000,
+    initialData: [],
+    refetchInterval: 2000,
     staleTime: 1000,
-    retry: 1,
   });
 
-  const { data: jobs = [] } = useQuery({
+  const { data: jobs } = useQuery({
     queryKey: ['jobs'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Job.list();
-      } catch (error) {
-        console.error('Error loading jobs:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Job.list(),
+    initialData: [],
+    staleTime: 60000,
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      try {
-        const users = await base44.entities.EmployeeDirectory.filter({ 
-          status: 'active' 
-        });
-        return users || [];
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        return [];
-      }
+      const users = await base44.entities.EmployeeDirectory.filter({ 
+        status: 'active' 
+      });
+      console.log('Active employees fetched:', users);
+      return users;
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    initialData: [],
+    staleTime: 300000,
   });
 
   const { data: customGroups = [] } = useQuery({
     queryKey: ['chatGroups'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.ChatGroup.list('-created_date');
-      } catch (error) {
-        console.error('Error loading groups:', error);
-        return [];
-      }
-    },
-    refetchInterval: 10000,
-    staleTime: 5000,
-    retry: 1,
+    queryFn: () => base44.entities.ChatGroup.list('-created_date'),
+    initialData: [],
+    refetchInterval: 5000,
   });
 
   const sendMutation = useMutation({

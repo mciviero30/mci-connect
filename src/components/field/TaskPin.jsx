@@ -1,61 +1,56 @@
 import React, { useState } from 'react';
+import { MapPin } from 'lucide-react';
 
 const statusColors = {
-  pending: { bg: 'bg-amber-500', point: 'border-t-amber-500' },
-  in_progress: { bg: 'bg-blue-500', point: 'border-t-blue-500' },
-  completed: { bg: 'bg-green-500', point: 'border-t-green-500' },
-  blocked: { bg: 'bg-red-500', point: 'border-t-red-500' },
+  pending: { bg: 'bg-amber-500', border: 'border-amber-300', point: 'border-t-amber-500' },
+  in_progress: { bg: 'bg-blue-500', border: 'border-blue-300', point: 'border-t-blue-500' },
+  completed: { bg: 'bg-green-500', border: 'border-green-300', point: 'border-t-green-500' },
+  blocked: { bg: 'bg-red-500', border: 'border-red-300', point: 'border-t-red-500' },
 };
 
-export default function TaskPin({ task, onClick, isSelected, isErasing, isMoving }) {
+export default function TaskPin({ task, onClick, isSelected }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
-  if (!task || task.pin_x === undefined || task.pin_y === undefined) return null;
+  if (task.pin_x === undefined || task.pin_y === undefined) return null;
 
   const status = statusColors[task.status] || statusColors.pending;
-  const wallNumber = task.title?.match(/\d+/)?.[0] || '?';
-
-  const handleClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('🎯 Pin clicked!', task.id, task.title);
-    if (onClick) {
-      onClick(task);
-    }
-  };
+  
+  // Extract wall number from title (e.g., "Wall 019" -> "019")
+  const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
   return (
-    <div
-      className={`absolute z-[99] transition-all hover:scale-110 task-pin-wrapper ${
-        isSelected ? 'scale-125' : ''
-      } ${isMoving ? 'cursor-move' : 'cursor-pointer'}`}
-      style={{ 
-        left: `${task.pin_x}%`, 
-        top: `${task.pin_y}%`,
-        transform: 'translate(-50%, -100%)',
-        pointerEvents: 'auto'
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
       }}
-      onClick={handleClick}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
+      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
+        isSelected ? 'scale-125 z-20' : ''
+      }`}
+      style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
-      {/* Pin Badge */}
-      <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${isErasing ? 'bg-red-500 animate-pulse' : isMoving ? 'bg-blue-500 animate-bounce' : status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
-        <span className="text-[11px] font-bold text-white">{wallNumber}</span>
-      </div>
-      
-      {/* Pin Point */}
-      <div 
-        className={`absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] ${status.point}`}
-      />
-      
-      {/* Tooltip */}
-      {(showTooltip || isSelected) && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-slate-900 rounded-lg shadow-xl whitespace-nowrap border border-slate-600">
-          <p className="text-xs font-medium text-white">{task.title}</p>
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-900" />
+      <div className="relative">
+        {/* Compact pin with just wall number */}
+        <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
+          <span className="text-[11px] font-bold text-white">{wallNumber || '?'}</span>
         </div>
-      )}
-    </div>
+        {/* Pin point */}
+        <div 
+          className={`absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 
+            border-l-[5px] border-l-transparent 
+            border-r-[5px] border-r-transparent 
+            border-t-[6px] ${status.point}`}
+        />
+        {/* Tooltip on hover - minimal */}
+        {(showTooltip || isSelected) && (
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-slate-800 rounded-lg shadow-xl whitespace-nowrap z-30 border border-slate-600">
+            <p className="text-xs font-medium text-white">Wall {wallNumber}</p>
+            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-4 border-t-slate-800" />
+          </div>
+        )}
+      </div>
+    </button>
   );
 }

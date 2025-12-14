@@ -15,30 +15,14 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Customer.filter({ status: 'active' }, 'company');
-      } catch (error) {
-        console.error('Error loading customers:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Customer.filter({ status: 'active' }, 'company'),
+    initialData: []
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Team.filter({ status: 'active' }, 'team_name');
-      } catch (error) {
-        console.error('Error loading teams:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Team.filter({ status: 'active' }, 'team_name'),
+    initialData: []
   });
 
   const [formData, setFormData] = useState({

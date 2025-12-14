@@ -20,7 +20,7 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
   const { workUnits, stats: workUnitStats, isLoading } = useWorkUnits(job?.id);
   
   // Use WorkUnits if available, fallback to legacy tasks
-  const tasks = (workUnits && workUnits.length > 0) ? workUnits : (legacyTasks || []);
+  const tasks = workUnits.length > 0 ? workUnits : (legacyTasks || []);
   // Use workUnitStats if available, otherwise calculate
   const pendingTasks = workUnitStats?.pending ?? tasks.filter(t => t.status === 'pending').length;
   const inProgressTasks = workUnitStats?.in_progress ?? tasks.filter(t => t.status === 'in_progress').length;

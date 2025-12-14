@@ -72,14 +72,13 @@ export default function Dashboard() {
   const [widgets, setWidgets] = useState([]);
   const [showKudosDialog, setShowKudosDialog] = useState(false);
 
-  const { data: user, isLoading: userLoading, error: userError } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     staleTime: Infinity,
     cacheTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    retry: 2,
   });
 
   const isAdmin = user?.role === 'admin';
@@ -179,17 +178,10 @@ export default function Dashboard() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Job.filter({ status: 'active' }, 'name');
-      } catch (error) {
-        console.error('Error loading jobs:', error);
-        return [];
-      }
-    },
+    queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    staleTime: 300000, // 5 minutes
+    cacheTime: 600000, // 10 minutes
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -219,77 +211,47 @@ export default function Dashboard() {
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.User.list('full_name');
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        return [];
-      }
-    },
-    enabled: (needsAdminData || widgets.some(w => w.type === 'birthdays-today')) && !!user,
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.User.list('full_name'),
+    enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
+    staleTime: 1800000, // 30 minutes - employee list rarely changes
+    cacheTime: 3600000, // 1 hour
+    initialData: [],
   });
 
   const { data: allTimeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200);
-      } catch (error) {
-        console.error('Error loading time entries:', error);
-        return [];
-      }
-    },
-    enabled: isAdmin && widgets.some(w => w.type === 'total-hours') && !!user,
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200),
+    enabled: isAdmin && widgets.some(w => w.type === 'total-hours'),
+    staleTime: 900000, // 15 minutes
+    cacheTime: 1800000,
+    initialData: [],
   });
 
   const { data: allExpenses = [] } = useQuery({
     queryKey: ['allExpenses'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Expense.list('-date', 200);
-      } catch (error) {
-        console.error('Error loading expenses:', error);
-        return [];
-      }
-    },
-    enabled: isAdmin && needsExpenseData && !!user,
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Expense.list('-date', 200),
+    enabled: isAdmin && needsExpenseData,
+    staleTime: 600000, // 10 minutes
+    cacheTime: 900000,
+    initialData: [],
   });
 
   const { data: recognitions = [] } = useQuery({
     queryKey: ['recentRecognitions'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Recognition.list('-date', 5);
-      } catch (error) {
-        console.error('Error loading recognitions:', error);
-        return [];
-      }
-    },
-    enabled: needsRecognitionData && !!user,
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Recognition.list('-date', 5),
+    enabled: needsRecognitionData,
+    staleTime: 900000, // 15 minutes - recognitions don't change frequently
+    cacheTime: 1800000,
+    initialData: [],
   });
 
   const { data: pendingTimeEntries = [] } = useQuery({
     queryKey: ['pendingTimeEntries'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100);
-      } catch (error) {
-        console.error('Error loading pending time entries:', error);
-        return [];
-      }
-    },
-    enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets') && !!user,
-    staleTime: 2 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100),
+    enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets'),
+    staleTime: 300000, // 5 minutes - pending items need more frequent updates
+    cacheTime: 600000,
+    initialData: [],
   });
 
   // CALCULATIONS - Heavily memoized for optimal performance
@@ -638,20 +600,6 @@ export default function Dashboard() {
           <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
           <p className="text-slate-900 dark:text-white font-medium">Loading dashboard...</p>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparing your personalized widgets</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (userError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-slate-900 dark:text-white font-medium mb-2">Error loading dashboard</p>
-          <Button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700">
-            Retry
-          </Button>
         </div>
       </div>
     );

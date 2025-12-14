@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams } from 'react-router-dom';
+import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import { createPageUrl } from '@/utils';
 import { 
   ArrowLeft,
@@ -28,26 +29,25 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 // Import Field Components
-import QuickSearchDialog from '@/components/field/QuickSearchDialog';
-import FieldProjectOverview from '@/components/field/FieldProjectOverview';
-import FieldPlansView from '@/components/field/FieldPlansView';
-import FieldTasksView from '@/components/field/FieldTasksView';
-import FieldPhotosView from '@/components/field/FieldPhotosView';
-import FieldDocumentsView from '@/components/field/FieldDocumentsView';
-import FieldChatView from '@/components/field/FieldChatView';
-import FieldMembersView from '@/components/field/FieldMembersView';
-import FieldAnalyticsView from '@/components/field/FieldAnalyticsView';
-import FieldFormsView from '@/components/field/FieldFormsView';
-import FieldReportsView from '@/components/field/FieldReportsView';
-import FieldBudgetView from '@/components/field/FieldBudgetView';
-import FieldMilestonesView from '@/components/field/FieldMilestonesView';
-import FieldChecklistsView from '@/components/field/FieldChecklistsView';
-import ClientApprovalsView from '@/components/field/ClientApprovalsView';
-import FieldActivityLogView from '@/components/field/FieldActivityLogView';
-import QRCodeScanner from '@/components/field/QRCodeScanner';
-import FieldAIAssistant from '@/components/field/FieldAIAssistant';
-import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav';
-import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager';
+import FieldProjectOverview from '@/components/field/FieldProjectOverview.jsx';
+import FieldPlansView from '@/components/field/FieldPlansView.jsx';
+import FieldTasksView from '@/components/field/FieldTasksView.jsx';
+import FieldPhotosView from '@/components/field/FieldPhotosView.jsx';
+import FieldDocumentsView from '@/components/field/FieldDocumentsView.jsx';
+import FieldChatView from '@/components/field/FieldChatView.jsx';
+import FieldMembersView from '@/components/field/FieldMembersView.jsx';
+import FieldAnalyticsView from '@/components/field/FieldAnalyticsView.jsx';
+import FieldFormsView from '@/components/field/FieldFormsView.jsx';
+import FieldReportsView from '@/components/field/FieldReportsView.jsx';
+import FieldBudgetView from '@/components/field/FieldBudgetView.jsx';
+import FieldMilestonesView from '@/components/field/FieldMilestonesView.jsx';
+import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
+import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
+import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
+import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
+import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
+import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
+import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -75,44 +75,41 @@ export default function FieldProject() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const { data: job, isLoading, error } = useQuery({
+  const { data: job, isLoading } = useQuery({
     queryKey: ['field-job', jobId],
     queryFn: async () => {
       const jobs = await base44.entities.Job.filter({ id: jobId });
       return jobs[0] || null;
     },
     enabled: !!jobId,
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['field-tasks', jobId],
     queryFn: async () => {
       const data = await base44.entities.Task.filter({ job_id: jobId }, '-created_date');
+      // Cache for offline use
       saveOfflineData('tasks', data);
       return data;
     },
     enabled: !!jobId,
-    staleTime: 2 * 60 * 1000,
   });
 
   const { data: plans = [] } = useQuery({
     queryKey: ['field-plans', jobId],
     queryFn: async () => {
       const data = await base44.entities.Plan.filter({ job_id: jobId }, 'order');
+      // Cache for offline use
       saveOfflineData('plans', data);
       return data;
     },
     enabled: !!jobId,
-    staleTime: 5 * 60 * 1000,
   });
 
   const { data: members = [] } = useQuery({
     queryKey: ['field-members', jobId],
     queryFn: () => base44.entities.ProjectMember.filter({ project_id: jobId }),
     enabled: !!jobId,
-    staleTime: 5 * 60 * 1000,
   });
 
   const sidebarItems = [
@@ -141,13 +138,13 @@ export default function FieldProject() {
     );
   }
 
-  if (error || !job) {
+  if (!job) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-400 mb-4">{error ? 'Error loading project' : 'Project not found'}</p>
+          <p className="text-slate-400 mb-4">Project not found</p>
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-amber-500 hover:bg-amber-600">Back to Projects</Button>
+            <Button className="bg-amber-500 hover:bg-amber-600">Back</Button>
           </Link>
         </div>
       </div>
@@ -274,7 +271,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto pb-20 md:pb-0 h-full">
+      <div className="flex-1 overflow-auto pb-20 md:pb-0">
         {renderContent()}
       </div>
 

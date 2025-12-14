@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -32,31 +33,15 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.User.list('full_name');
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.User.list('full_name'),
+    initialData: [],
   });
 
   // Fetch jobs for validation
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Job.list();
-      } catch (error) {
-        console.error('Error loading jobs:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.Job.list(),
+    initialData: []
   });
 
   // approveMutation and rejectMutation hooks are removed as their logic is handled by onApproveEntry/onRejectEntry props

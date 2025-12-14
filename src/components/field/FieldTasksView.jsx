@@ -13,7 +13,7 @@ import { useWorkUnits } from './hooks/useWorkUnits';
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided
   const { workUnits, updateMutation: workUnitUpdate } = useWorkUnits(jobId, { type: 'task' });
-  const tasks = (legacyTasks && legacyTasks.length > 0) ? legacyTasks : (workUnits || []);
+  const tasks = legacyTasks?.length > 0 ? legacyTasks : workUnits;
   const [view, setView] = useState('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

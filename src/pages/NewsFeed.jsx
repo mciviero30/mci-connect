@@ -32,32 +32,16 @@ export default function NewsFeed() {
     user?.position === 'manager' || 
     user?.department === 'HR';
 
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts, isLoading } = useQuery({
     queryKey: ['posts'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.Post.list('-created_date');
-      } catch (error) {
-        console.error('Error loading posts:', error);
-        return [];
-      }
-    },
-    staleTime: 2 * 60 * 1000,
-    retry: 2,
+    queryFn: () => base44.entities.Post.list('-created_date'),
+    initialData: [],
   });
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.User.list();
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        return [];
-      }
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
+    queryFn: () => base44.entities.User.list(),
+    initialData: []
   });
 
   // Get birthday celebrations

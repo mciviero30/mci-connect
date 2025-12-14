@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
   MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2
@@ -9,15 +8,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import TaskPin from './TaskPin';
-import TaskDetailPanel from './TaskDetailPanel';
-import CreateTaskDialog from './CreateTaskDialog';
-import BlueprintMiniMap from './BlueprintMiniMap';
-import BlueprintFilterBar from './BlueprintFilterBar';
-import LiveCollaborators from './LiveCollaborators';
-import AILearningEngine from './AILearningEngine';
-import BlueprintAnnotations from './BlueprintAnnotations';
-import BlueprintVersionHistory from './BlueprintVersionHistory';
+import TaskPin from './TaskPin.jsx';
+import TaskDetailPanel from './TaskDetailPanel.jsx';
+import CreateTaskDialog from './CreateTaskDialog.jsx';
+import BlueprintMiniMap from './BlueprintMiniMap.jsx';
+import BlueprintFilterBar from './BlueprintFilterBar.jsx';
+import LiveCollaborators from './LiveCollaborators.jsx';
+import AILearningEngine from './AILearningEngine.jsx';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
@@ -25,8 +22,8 @@ const RETRY_DELAY_MS = 5000;
 const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
-  const [zoom, setZoom] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(0.2);
+  const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [selectedTask, setSelectedTask] = useState(null);
@@ -36,18 +33,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [cursorPinPosition, setCursorPinPosition] = useState(null);
   
   // Loading states
-  const [loadingState, setLoadingState] = useState('loading');
+  const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
   const [loadProgress, setLoadProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   
   // Toolbar state
-  const [activeTool, setActiveTool] = useState('select');
+  const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser
   const [showPins, setShowPins] = useState(true);
   const [showMiniMap, setShowMiniMap] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [showAnnotations, setShowAnnotations] = useState(false);
   const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -274,7 +270,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
       const imageDataUrl = combinedCanvas.toDataURL('image/png');
       setPdfCanvas(imageDataUrl);
-      setZoom(0.5);
+      setZoom(0.15); // Start at 15% to fit page
     } catch (err) {
       console.error('PDF render error:', err);
       setLoadingState('error');
@@ -285,15 +281,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
 
   useEffect(() => {
-    if (plan?.file_url) {
-      loadImage();
-    }
+    loadImage();
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [plan?.file_url, retryCount]);
+  }, [plan?.file_url]);
 
   // Track container size for mini map
   useEffect(() => {
@@ -318,29 +312,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     });
   };
 
-  // Query client for mutations
-  const queryClient = useQueryClient();
-
-  // Delete task mutation
-  const deleteTaskMutation = useMutation({
-    mutationFn: (taskId) => base44.entities.Task.delete(taskId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      setSelectedTask(null);
-    },
+  // Filter tasks based on active filters
+  const filteredTasks = tasks.filter(task => {
+    if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
+    if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
+    if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
+    return true;
   });
-
-  // Filter tasks based on active filters - remove duplicates by id
-  const filteredTasks = tasks
-    .filter((task, index, self) => 
-      index === self.findIndex((t) => t.id === task.id)
-    )
-    .filter(task => {
-      if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
-      if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
-      if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
-      return true;
-    });
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -379,6 +357,22 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Double-tap/click to zoom
+  const lastTapRef = useRef(0);
+  const handleDoubleTap = useCallback((e) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      // Double tap detected - zoom in at tap location
+      if (zoom < 2) {
+        setZoom(prev => Math.min(prev * 2, 4));
+      } else {
+        setZoom(1);
+        setPosition({ x: 0, y: 0 });
+      }
+    }
+    lastTapRef.current = now;
+  }, [zoom]);
+
   // Navigate from mini map
   const handleMiniMapNavigate = (newPosition) => {
     setPosition(newPosition);
@@ -396,49 +390,12 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setSelectedTask(task);
   };
 
-  const handleZoomIn = () => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const rect = container.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const newZoom = Math.min(zoom * 1.3, 5);
-    const zoomRatio = newZoom / zoom;
-    
-    setZoom(newZoom);
-    setPosition({
-      x: centerX - (centerX - position.x) * zoomRatio,
-      y: centerY - (centerY - position.y) * zoomRatio
-    });
-  };
-  
-  const handleZoomOut = () => {
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const rect = container.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const newZoom = Math.max(zoom / 1.3, 0.1);
-    const zoomRatio = newZoom / zoom;
-    
-    setZoom(newZoom);
-    setPosition({
-      x: centerX - (centerX - position.x) * zoomRatio,
-      y: centerY - (centerY - position.y) * zoomRatio
-    });
-  };
-  
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.15, 4));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.15, 0.1));
   const handleReset = () => {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
   };
-
-  // Double-tap/click reference
-  const lastTapRef = useRef(0);
 
   // Prevent scroll on canvas container and handle zoom
   useEffect(() => {
@@ -475,7 +432,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
-    if (e.target.closest('button') || activeTool === 'eraser') return;
     if (isPlacingPin) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -582,52 +538,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
   };
 
-  const handleMapAction = (e) => {
-    const clickedElement = e.target;
-    const isPin = clickedElement.closest('.task-pin-wrapper');
+  const handleImageClick = (e) => {
+    if (activeTool !== 'pin' && !isPlacingPin) return;
     
-    if (isPin) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
     
-    // Double click zoom
-    const now = Date.now();
-    if (now - lastTapRef.current < 300) {
-      if (zoom < 2) {
-        setZoom(prev => Math.min(prev * 2, 4));
-      } else {
-        setZoom(1);
-        setPosition({ x: 0, y: 0 });
-      }
-      lastTapRef.current = 0;
-      return;
-    }
-    lastTapRef.current = now;
-    
-    // Place pin
-    if (activeTool === 'pin' || isPlacingPin) {
-      const rect = imageRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      
-      if (x >= 0 && x <= 100 && y >= 0 && y <= 100) {
-        setPendingPinPosition({ x, y });
-        setShowCreateTask(true);
-        setIsPlacingPin(false);
-        setActiveTool('select');
-        setCursorPinPosition(null);
-      }
-    }
-  };
-
-  const handlePinClick = (task) => {
-    if (activeTool === 'eraser') {
-      if (window.confirm(`Delete task "${task.title}"?`)) {
-        deleteTaskMutation.mutate(task.id);
-      }
-    } else {
-      setSelectedTask(task);
-    }
+    setPendingPinPosition({ x, y });
+    setShowCreateTask(true);
+    setIsPlacingPin(false);
+    setActiveTool('select');
+    setCursorPinPosition(null);
   };
 
   // Toolbar items
@@ -660,7 +582,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
   return (
     <TooltipProvider>
-    <div className="w-full h-full flex flex-col relative">
+    <div className="h-full flex relative">
       {/* Left Toolbar - Like Fieldwire - Always visible */}
       <div className="absolute left-2 top-16 z-50 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg w-11 py-2">
         {toolbarItems.map((item, idx) => {
@@ -743,7 +665,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       )}
 
       {/* Main Viewer */}
-      <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900 h-full">
+      <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
         {/* Top Header - Simplified */}
         <div className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-2 md:gap-3">
@@ -752,20 +674,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
               <span className="hidden md:inline ml-2">Back</span>
             </Button>
             <span className="text-slate-900 dark:text-white font-medium text-sm md:text-base truncate max-w-[150px] md:max-w-none">{plan.name}</span>
-            <BlueprintVersionHistory plan={plan} jobId={jobId} />
           </div>
           
           {/* Right side tools */}
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowAnnotations(!showAnnotations)}
-              className={showAnnotations ? 'text-[#FFB800]' : ''}
-            >
-              <Pencil className="w-4 h-4 mr-2" />
-              Annotate
-            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 dark:text-slate-400">
               <Search className="w-4 h-4" />
             </Button>
@@ -807,7 +719,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         {/* Canvas - Touch enabled */}
         <div 
           ref={containerRef}
-          className={`flex-1 overflow-hidden touch-none h-full ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -815,7 +727,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onClick={handleMapAction}
+          onClick={handleDoubleTap}
           tabIndex={0}
           style={{ outline: 'none' }}
         >
@@ -858,10 +770,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           {/* Success State - Show Image/PDF */}
           {loadingState === 'success' && (
             <div 
-              className="relative"
+              className="relative w-full h-full flex items-start justify-start pl-16 pt-4"
               style={{
                 transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-                transformOrigin: '0 0',
+                transformOrigin: 'top left',
                 transition: isDragging ? 'none' : 'transform 0.1s ease-out',
               }}
             >
@@ -873,8 +785,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                         ref={imageRef}
                         src={pdfCanvas}
                         alt={plan.name}
-                        style={{ maxWidth: 'none', maxHeight: 'none', display: 'block' }}
-                        onClick={handleMapAction}
+                        style={{ maxWidth: 'none', maxHeight: 'none' }}
+                        onClick={handleImageClick}
                         onLoad={handleImageLoad}
                         draggable={false}
                       />
@@ -898,8 +810,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     ref={imageRef}
                     src={plan.file_url}
                     alt={plan.name}
-                    style={{ maxWidth: 'none', maxHeight: 'none', display: 'block' }}
-                    onClick={handleMapAction}
+                    className="max-w-none"
+                    onClick={handleImageClick}
                     onLoad={handleImageLoad}
                     draggable={false}
                     onError={() => {
@@ -913,9 +825,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   <TaskPin 
                     key={task.id}
                     task={task}
-                    onClick={handlePinClick}
+                    onClick={() => setSelectedTask(task)}
                     isSelected={selectedTask?.id === task.id}
-                    isErasing={activeTool === 'eraser'}
                   />
                 ))}
                 {/* Cursor Pin - follows mouse */}
@@ -937,20 +848,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   </div>
                 )}
               </div>
-
-              {/* Annotations Layer - Lower z-index than pins */}
-              {showAnnotations && (
-                <div className="absolute inset-0" style={{ zIndex: 10 }}>
-                  <BlueprintAnnotations
-                    planId={plan.id}
-                    jobId={jobId}
-                    zoom={zoom}
-                    position={position}
-                    imageSize={imageSize}
-                    blueprintActiveTool={activeTool}
-                  />
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -959,13 +856,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
             <Crosshair className="w-4 h-4" />
             Tap on the plan to place pin (ESC to cancel)
-          </div>
-        )}
-        
-        {activeTool === 'eraser' && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
-            <Eraser className="w-4 h-4" />
-            Click on a pin to delete it (ESC to cancel)
           </div>
         )}
 
