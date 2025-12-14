@@ -46,6 +46,6 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
             border-t-[6px] ${status.point}`}
         />
       </div>
-    </button>
+    </div>
   );
 }
