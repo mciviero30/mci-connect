@@ -27,7 +27,7 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
     <button
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        onClick(e);
       }}
       onMouseDown={handleMouseDown}
       className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
