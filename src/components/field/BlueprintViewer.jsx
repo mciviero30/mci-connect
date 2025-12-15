@@ -28,6 +28,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasDragged, setHasDragged] = useState(false);
+  const [dragDistance, setDragDistance] = useState(0);
   const [selectedTask, setSelectedTask] = useState(null);
   const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
@@ -427,9 +428,12 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   }, [zoom, position, isPlacingPin]);
 
   const handleMouseDown = (e) => {
+    // Don't start canvas drag if clicking on a pin
+    if (e.target.closest('button')) return;
     if (isPlacingPin || draggingPin) return;
     setIsDragging(true);
     setHasDragged(false);
+    setDragDistance(0);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
@@ -464,11 +468,19 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
     
     if (!isDragging) return;
-    setHasDragged(true);
-    setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
+    
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    const distance = Math.sqrt(Math.pow(newX - position.x, 2) + Math.pow(newY - position.y, 2));
+    
+    setDragDistance(distance);
+    
+    // Only consider it "dragged" if moved more than 5 pixels
+    if (distance > 5) {
+      setHasDragged(true);
+    }
+    
+    setPosition({ x: newX, y: newY });
   };
 
   const handleMouseUp = async () => {
@@ -488,11 +500,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
     
     setIsDragging(false);
-    setTimeout(() => setHasDragged(false), 100);
+    // Reset hasDragged after a short delay to allow click handlers to check it
+    setTimeout(() => {
+      setHasDragged(false);
+      setDragDistance(0);
+    }, 50);
   };
 
-  const handlePinClick = (task) => {
-    if (!hasDragged && !draggingPin) {
+  const handlePinClick = (task, e) => {
+    // Always open task detail when clicking a pin, unless we're dragging
+    if (!draggingPin && dragDistance < 5) {
+      e?.stopPropagation();
       setSelectedTask(task);
     }
   };
@@ -903,7 +921,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     <TaskPin 
                       key={task.id}
                       task={displayTask}
-                      onClick={() => handlePinClick(task)}
+                      onClick={(e) => handlePinClick(task, e)}
                       onDragPin={handlePinDrag}
                       isDragging={draggingPin?.id === task.id}
                       isSelected={selectedTask?.id === task.id}
