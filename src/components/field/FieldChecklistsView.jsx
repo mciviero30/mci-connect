@@ -109,29 +109,36 @@ export default function FieldChecklistsView({ jobId }) {
   // Merge legacy templates with WorkUnit checklists
   const templates = checklists.length > 0 ? checklists.filter(c => c.is_template) : legacyTemplates;
 
-  // Create default templates if none exist
-  const createDefaultTemplates = async () => {
-    for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
-      const exists = templates.some(t => t.category === key || t.title === template.name);
-      if (!exists) {
-        await base44.entities.WorkUnit.create({
-          job_id: jobId,
-          type: 'checklist',
-          is_template: true,
-          title: template.name,
-          description: template.description,
-          category: template.category,
-          checklist_items: template.items.map(item => ({
-            id: item.id,
-            text: item.text,
-            checked: false,
-            required: item.required
-          })),
-        });
+  // Auto-create default templates on mount if none exist
+  React.useEffect(() => {
+    const createDefaultTemplates = async () => {
+      if (templates.length === 0 && jobId) {
+        for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
+          try {
+            await base44.entities.WorkUnit.create({
+              job_id: jobId,
+              type: 'checklist',
+              is_template: true,
+              title: template.name,
+              description: template.description,
+              category: template.category,
+              checklist_items: template.items.map(item => ({
+                id: item.id,
+                text: item.text,
+                checked: false,
+                required: item.required
+              })),
+            });
+          } catch (error) {
+            console.error('Error creating default template:', error);
+          }
+        }
+        queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       }
-    }
-    queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
-  };
+    };
+
+    createDefaultTemplates();
+  }, [jobId, templates.length]);
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => {
@@ -217,24 +224,9 @@ export default function FieldChecklistsView({ jobId }) {
       {/* Templates Grid */}
       {templates.length === 0 ? (
         <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
-          <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No checklist templates</h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">
-            Create templates like "Glass Wall" or "Solid Wall" to use when creating tasks on blueprints
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button 
-              onClick={createDefaultTemplates} 
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Add Default Templates
-            </Button>
-            <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Custom Template
-            </Button>
-          </div>
+          <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4 animate-pulse" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Loading templates...</h3>
+          <p className="text-slate-500 dark:text-slate-400">Creating default checklists</p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
