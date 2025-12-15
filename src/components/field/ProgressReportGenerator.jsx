@@ -1,11 +1,16 @@
 import { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
 
+const MCI_YELLOW = '#FFB800';
+const MCI_DARK = '#1a1a1a';
+const MCI_GRAY = '#64748b';
+const MCI_LIGHT_GRAY = '#f8fafc';
+
 export async function generateProgressReportPDF(report, job, tasks, photos, plans, user, taskComments = {}) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
+  const margin = 20;
   const contentWidth = pageWidth - 2 * margin;
 
   // Filter tasks by category based on report type
