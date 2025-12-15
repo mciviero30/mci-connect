@@ -922,7 +922,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                   >
                     <div className="relative">
                       <div className="min-w-[28px] h-6 px-1.5 rounded-md bg-amber-500 border-2 border-white shadow-lg flex items-center justify-center opacity-70">
-                        <span className="text-[11px] font-bold text-white">?</span>
+                        <span className="text-sm">🚧</span>
                       </div>
                       {/* Pin point */}
                       <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-amber-500" />
