@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
 
-export async function generateProgressReportPDF(report, job, tasks, photos, plans, user) {
+export async function generateProgressReportPDF(report, job, tasks, photos, plans, user, taskComments = {}) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -146,7 +146,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     yPos += 10;
 
     // Checklist
-    if (task.checklist_items && task.checklist_items.length > 0) {
+    const checklist = task.checklist || task.checklist_items || [];
+    if (checklist.length > 0) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.text('Checklist', margin, yPos);
@@ -154,10 +155,13 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
-      task.checklist_items.forEach((item) => {
-        const checkbox = item.checked ? '☑' : '☐';
+      checklist.forEach((item) => {
+        // Handle different status formats
+        const isCompleted = item.status === 'completed' || item.checked === true;
+        const isInProgress = item.status === 'in_progress';
+        const checkbox = isCompleted ? '☑' : (isInProgress ? '◐' : '☐');
         const itemText = `${checkbox} ${item.text}`;
-        const assignee = item.checked && task.assigned_to_name ? ` (@${task.assigned_to_name.split(' ')[0]} - ${format(new Date(item.completed_date || task.updated_date), 'MM-dd-yyyy')})` : '';
+        const assignee = isCompleted && (task.assignee_name || task.assigned_to_name) ? ` (@${(task.assignee_name || task.assigned_to_name).split(' ')[0]})` : '';
         
         if (yPos > pageHeight - 30) {
           addFooter();
@@ -172,7 +176,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     }
 
     // Task messages/comments
-    if (task.comments && task.comments.length > 0) {
+    const comments = taskComments[task.id] || task.comments || [];
+    if (comments.length > 0) {
       if (yPos > pageHeight - 40) {
         addFooter();
         doc.addPage();
@@ -181,13 +186,13 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text('Task messages (time in EST)', margin, yPos);
+      doc.text('Activity', margin, yPos);
       yPos += 6;
 
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
-      task.comments.slice(0, 5).forEach((comment) => {
-        const commentText = `${comment.author_name || 'User'} - ${comment.content}`;
+      comments.slice(0, 5).forEach((comment) => {
+        const commentText = `${comment.author_name || 'User'} - ${comment.comment || comment.content}`;
         const date = format(new Date(comment.created_date), 'dd MMM hh:mm a');
         
         if (yPos > pageHeight - 30) {
@@ -202,9 +207,44 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       yPos += 5;
     }
 
+    // Location mini-map
+    if (task.pin_x && task.pin_y && task.blueprint_id) {
+      const plan = plans.find(p => p.id === task.blueprint_id);
+      if (plan && plan.file_url) {
+        if (yPos > pageHeight - 50) {
+          addFooter();
+          doc.addPage();
+          yPos = margin;
+        }
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Location on Plan', margin, yPos);
+        yPos += 6;
+
+        try {
+          const miniMapSize = 60;
+          doc.addImage(plan.file_url, 'JPEG', margin, yPos, miniMapSize, miniMapSize);
+          
+          // Draw pin indicator
+          const pinX = margin + (task.pin_x / 100) * miniMapSize;
+          const pinY = yPos + (task.pin_y / 100) * miniMapSize;
+          doc.setFillColor(255, 184, 0); // Amber color
+          doc.circle(pinX, pinY, 2, 'F');
+          
+          yPos += miniMapSize + 8;
+        } catch (error) {
+          console.warn('Could not add location map:', error);
+          yPos += 5;
+        }
+      }
+    }
+
     // Photos
-    const taskPhotos = photos.filter(p => p.task_id === task.id);
-    if (taskPhotos.length > 0 && report.include_options?.photos) {
+    const taskPhotos = task.photo_urls 
+      ? task.photo_urls.map((url, idx) => ({ url, id: `${task.id}-${idx}` }))
+      : photos.filter(p => p.task_id === task.id);
+    if (taskPhotos.length > 0 && report.include_options?.photos !== false) {
       if (yPos > pageHeight - 40) {
         addFooter();
         doc.addPage();
