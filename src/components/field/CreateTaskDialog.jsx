@@ -313,7 +313,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       onChange={(e) => setNewChecklistItem(e.target.value)}
                       placeholder="New item"
                       className="flex-1 h-8 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddChecklistItem();
+                        }
+                      }}
                       autoFocus
                     />
                     <Button
