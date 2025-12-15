@@ -40,7 +40,7 @@ import FieldAnalyticsView from '@/components/field/FieldAnalyticsView.jsx';
 import FieldFormsView from '@/components/field/FieldFormsView.jsx';
 import FieldReportsView from '@/components/field/FieldReportsView.jsx';
 import FieldBudgetView from '@/components/field/FieldBudgetView.jsx';
-import FieldMilestonesView from '@/components/field/FieldMilestonesView.jsx';
+
 import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
 import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
 import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
@@ -116,7 +116,6 @@ export default function FieldProject() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
-    { id: 'milestones', label: 'Milestones', icon: Flag },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
@@ -159,8 +158,6 @@ export default function FieldProject() {
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
       case 'tasks':
         return <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />;
-      case 'milestones':
-        return <FieldMilestonesView jobId={jobId} />;
       case 'photos':
         return <FieldPhotosView jobId={jobId} />;
       case 'documents':
