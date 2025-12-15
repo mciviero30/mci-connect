@@ -74,8 +74,31 @@ export default function FieldChecklistsView({ jobId }) {
     queryFn: () => base44.entities.ChecklistTemplate.filter({ job_id: jobId }),
   });
 
-  // Merge legacy templates with WorkUnit checklists
-  const templates = checklists.length > 0 ? checklists.filter(c => c.is_template) : legacyTemplates;
+  // Also fetch tasks with checklists (from CreateTaskDialog)
+  const { data: tasksWithChecklists = [] } = useQuery({
+    queryKey: ['tasks-with-checklists', jobId],
+    queryFn: async () => {
+      const tasks = await base44.entities.Task.filter({ job_id: jobId });
+      return tasks.filter(t => t.checklist && t.checklist.length > 0);
+    },
+  });
+
+  // Merge all sources: WorkUnit checklists, legacy templates, and tasks with checklists
+  const allTemplates = [
+    ...checklists.filter(c => c.is_template),
+    ...legacyTemplates,
+    ...tasksWithChecklists.map(t => ({
+      id: t.id,
+      title: t.title,
+      name: t.title,
+      category: 'installation',
+      checklist_items: t.checklist,
+      items: t.checklist,
+      description: t.description || ''
+    }))
+  ];
+  
+  const templates = allTemplates.length > 0 ? allTemplates : [];
   const submissions = checklists.filter(c => c.status === 'completed' && !c.is_template);
 
   const createTemplateMutation = useMutation({
