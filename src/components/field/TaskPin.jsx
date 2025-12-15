@@ -11,40 +11,26 @@ const statusColors = {
 export default function TaskPin({ task, onClick, isSelected, onDragPin, isDragging }) {
   if (task.pin_x === undefined || task.pin_y === undefined) return null;
 
-  const [mouseDownPos, setMouseDownPos] = useState(null);
-
   const status = statusColors[task.status] || statusColors.pending;
   
   // Extract wall number from title (e.g., "Wall 019" -> "019")
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
-  const handleMouseDown = (e) => {
-    e.stopPropagation();
-    setMouseDownPos({ x: e.clientX, y: e.clientY });
-    if (onDragPin) {
-      onDragPin(task, e);
-    }
-  };
-
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    // Only trigger click if mouse didn't move much (not a drag)
-    if (mouseDownPos) {
-      const distance = Math.sqrt(
-        Math.pow(e.clientX - mouseDownPos.x, 2) + 
-        Math.pow(e.clientY - mouseDownPos.y, 2)
-      );
-      
-      if (distance < 5) {
-        if (onClick) onClick(e);
-      }
-    } else {
-      if (onClick) onClick(e);
+    console.log('TaskPin clicked:', task.title);
+    if (onClick) {
+      onClick(e);
     }
-    
-    setMouseDownPos(null);
+  };
+
+  const handleMouseDown = (e) => {
+    e.stopPropagation();
+    // Only start drag mode if we have a drag handler
+    if (onDragPin && e.shiftKey) {
+      onDragPin(task, e);
+    }
   };
 
   return (

@@ -508,9 +508,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handlePinClick = (task, e) => {
-    console.log('Pin clicked:', task.title, 'dragDistance:', dragDistance, 'draggingPin:', draggingPin);
-    e?.preventDefault();
-    e?.stopPropagation();
+    console.log('BlueprintViewer - Pin clicked:', task.title);
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setSelectedTask(task);
   };
 
