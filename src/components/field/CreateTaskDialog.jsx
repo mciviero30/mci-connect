@@ -7,8 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus, Loader2 } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import Tesseract from 'tesseract.js';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -62,6 +63,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const [showNewItemInput, setShowNewItemInput] = useState(false);
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [detectingWallNumber, setDetectingWallNumber] = useState(false);
 
   // Fetch current user
   const { data: currentUser } = useQuery({
@@ -82,6 +84,82 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     queryFn: () => base44.entities.Plan.filter({ id: blueprintId }).then(plans => plans[0]),
     enabled: !!blueprintId,
   });
+
+  // Fetch all tasks for this job to find the last wall number
+  const { data: allJobTasks = [] } = useQuery({
+    queryKey: ['field-tasks-for-wall-detection', jobId],
+    queryFn: () => base44.entities.Task.filter({ job_id: jobId }, '-created_date'),
+    enabled: !!jobId && open,
+  });
+
+  // Function to detect wall number from image using OCR
+  const detectWallNumber = async (imageUrl, x, y) => {
+    try {
+      setDetectingWallNumber(true);
+      
+      // Create a canvas to capture area around pin
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Capture 300x300px area around pin
+      const captureSize = 300;
+      const captureX = Math.max(0, (x / 100) * img.width - captureSize / 2);
+      const captureY = Math.max(0, (y / 100) * img.height - captureSize / 2);
+      
+      canvas.width = captureSize;
+      canvas.height = captureSize;
+      ctx.drawImage(img, captureX, captureY, captureSize, captureSize, 0, 0, captureSize, captureSize);
+      
+      // Convert to blob for Tesseract
+      const imageData = canvas.toDataURL('image/png');
+      
+      // Run OCR
+      const result = await Tesseract.recognize(imageData, 'eng', {
+        logger: () => {} // Silent
+      });
+      
+      // Extract 3-digit numbers from OCR text
+      const numbers = result.data.text.match(/\b\d{3}\b/g);
+      if (numbers && numbers.length > 0) {
+        return numbers[0]; // Return first 3-digit number found
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('OCR detection error:', error);
+      return null;
+    } finally {
+      setDetectingWallNumber(false);
+    }
+  };
+
+  // Function to get next wall number based on last task
+  const getNextWallNumber = () => {
+    if (!allJobTasks || allJobTasks.length === 0) return '';
+    
+    // Find tasks with "Wall XXX" pattern
+    const wallNumbers = allJobTasks
+      .map(t => t.title?.match(/wall\s*(\d{3})/i)?.[1])
+      .filter(Boolean)
+      .map(n => parseInt(n, 10))
+      .sort((a, b) => b - a); // Descending
+    
+    if (wallNumbers.length > 0) {
+      const lastNumber = wallNumbers[0];
+      const nextNumber = String(lastNumber + 1).padStart(3, '0');
+      return `Wall ${nextNumber}`;
+    }
+    
+    return '';
+  };
 
   const createTaskMutation = useMutation({
     mutationFn: (data) => base44.entities.Task.create(data),
@@ -124,19 +202,32 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   // Auto-create task when dialog opens (only for new tasks)
   React.useEffect(() => {
-    if (open && !task.id && pinPosition && !existingTask) {
-      const autoTitle = `Wall ${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`;
+    if (open && !task.id && pinPosition && !existingTask && planImageUrl) {
+      const autoCreateTask = async () => {
+        // Try OCR detection first
+        const detectedNumber = await detectWallNumber(planImageUrl, pinPosition.x, pinPosition.y);
+        
+        let autoTitle = '';
+        if (detectedNumber) {
+          autoTitle = `Wall ${detectedNumber}`;
+        } else {
+          // If OCR fails, use incremental logic
+          autoTitle = getNextWallNumber();
+        }
+        
+        createTaskMutation.mutate({
+          title: autoTitle,
+          job_id: jobId,
+          blueprint_id: blueprintId,
+          pin_x: pinPosition?.x,
+          pin_y: pinPosition?.y,
+          status: 'in_progress',
+          priority: 'high',
+          category: 'general',
+        });
+      };
       
-      createTaskMutation.mutate({
-        title: autoTitle,
-        job_id: jobId,
-        blueprint_id: blueprintId,
-        pin_x: pinPosition?.x,
-        pin_y: pinPosition?.y,
-        status: 'in_progress',
-        priority: 'high',
-        category: 'general',
-      });
+      autoCreateTask();
     }
   }, [open, pinPosition, existingTask]);
 
@@ -293,12 +384,19 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <div className="w-8 h-8 bg-[#FFB800] rounded-lg flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold">📋</span>
                 </div>
-                <Input 
-                  value={task.title}
-                  onChange={(e) => setTask({...task, title: e.target.value})}
-                  placeholder="Enter title"
-                  className="text-xl font-semibold border-none bg-transparent p-0 h-auto focus-visible:ring-0 text-slate-900 dark:text-white"
-                />
+                {detectingWallNumber ? (
+                  <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Detecting wall number...</span>
+                  </div>
+                ) : (
+                  <Input 
+                    value={task.title}
+                    onChange={(e) => setTask({...task, title: e.target.value})}
+                    placeholder="Enter wall number"
+                    className="text-xl font-semibold border-none bg-transparent p-0 h-auto focus-visible:ring-0 text-slate-900 dark:text-white"
+                  />
+                )}
               </div>
             </div>
 
