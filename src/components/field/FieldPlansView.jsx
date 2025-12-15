@@ -225,7 +225,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                         deletePlanMutation.mutate(plan.id);
                       }
                     }}
-                    className="p-2 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+                    className="p-2 rounded-lg bg-red-600/90 hover:bg-red-600 text-white transition-colors"
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4" />
