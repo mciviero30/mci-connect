@@ -274,16 +274,55 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
             <div className="flex-1 overflow-y-auto p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white">Checklist:</h3>
-                <Select onValueChange={handleTemplateSelect}>
-                  <SelectTrigger className="w-48 h-8 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <SelectValue placeholder="+ Add checklist" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <SelectItem value="glass_wall" className="text-slate-900 dark:text-white text-xs">Glass Wall Installation</SelectItem>
-                    <SelectItem value="solid_wall" className="text-slate-900 dark:text-white text-xs">Solid Wall Installation</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select onValueChange={handleTemplateSelect}>
+                    <SelectTrigger className="w-48 h-8 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <SelectValue placeholder="+ Add checklist" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <SelectItem value="glass_wall" className="text-slate-900 dark:text-white text-xs">Glass Wall Installation</SelectItem>
+                      <SelectItem value="solid_wall" className="text-slate-900 dark:text-white text-xs">Solid Wall Installation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowNewItemInput(!showNewItemInput)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
+
+              {/* Add New Checklist Item Input */}
+              {showNewItemInput && (
+                <div className="flex gap-2 mb-3">
+                  <Input 
+                    value={newChecklistItem}
+                    onChange={(e) => setNewChecklistItem(e.target.value)}
+                    placeholder="New item"
+                    className="flex-1 h-8 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddChecklistItem();
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddChecklistItem}
+                    className="h-8 px-3"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
 
               {task.checklist.length > 0 ? (
                 <div className="space-y-2">
@@ -304,49 +343,59 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <p className="text-sm text-slate-400 dark:text-slate-500">No checklist items yet. Select a template above.</p>
               )}
 
-              {/* Add New Checklist Item */}
-              <div className="flex gap-2 mt-3">
-                {showNewItemInput ? (
-                  <>
-                    <Input 
-                      value={newChecklistItem}
-                      onChange={(e) => setNewChecklistItem(e.target.value)}
-                      placeholder="New item"
-                      className="flex-1 h-8 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddChecklistItem();
-                        }
-                      }}
-                      autoFocus
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAddChecklistItem}
-                      className="h-8 px-3"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </>
-                ) : (
+              {/* Message Input - Moved to checklist area */}
+              <div className="mt-4">
+                <Textarea 
+                  value={task.description}
+                  onChange={(e) => setTask({...task, description: e.target.value})}
+                  placeholder="Enter message here..."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none mb-2"
+                  rows={2}
+                />
+                {/* Photo buttons */}
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                  />
                   <Button
                     type="button"
-                    variant="ghost"
                     size="sm"
-                    onClick={() => setShowNewItemInput(true)}
-                    className="h-8 w-8 p-0"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
                   >
-                    <Plus className="w-4 h-4" />
+                    <ImageIcon className="w-4 h-4 mr-2" />
+                    {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
                   </Button>
-                )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    id="camera-input"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => document.getElementById('camera-input')?.click()}
+                    disabled={uploadingPhoto}
+                    className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    Take Photo
+                  </Button>
+                </div>
               </div>
 
-              {/* Photos Grid - no labels */}
+              {/* Photos Grid */}
               {task.photo_urls.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-6">
+                <div className="grid grid-cols-3 gap-2 mt-4">
                   {task.photo_urls.map((url, idx) => (
                     <div key={idx} className="relative group">
                       <img
@@ -364,57 +413,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   ))}
                 </div>
               )}
-            </div>
-
-            {/* Bottom Message Input */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-              <Textarea 
-                value={task.description}
-                onChange={(e) => setTask({...task, description: e.target.value})}
-                placeholder="Enter message here..."
-                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none mb-2"
-                rows={2}
-              />
-              {/* Photo buttons below */}
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingPhoto}
-                  className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
-                >
-                  <ImageIcon className="w-4 h-4 mr-2" />
-                  {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
-                </Button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                  id="camera-input"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => document.getElementById('camera-input')?.click()}
-                  disabled={uploadingPhoto}
-                  className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Take Photo
-                </Button>
               </div>
-            </div>
           </div>
 
           {/* Right Column - Task Attributes */}
