@@ -1025,6 +1025,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         blueprintId={plan.id}
         pinPosition={pendingPinPosition}
         onCreated={handleTaskCreated}
+        planImageUrl={pdfCanvas || plan.file_url}
       />
     </div>
     </TooltipProvider>
