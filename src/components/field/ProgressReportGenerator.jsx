@@ -433,25 +433,34 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       yPos += 5;
     }
 
-    // Location mini-map
+    // Location section
     if (task.pin_x && task.pin_y && task.blueprint_id) {
       const plan = plans.find(p => p.id === task.blueprint_id);
       if (plan && plan.file_url) {
-        if (yPos > pageHeight - 50) {
+        if (yPos > pageHeight - 40) {
           addFooter();
           doc.addPage();
-          yPos = margin;
+          addHeader();
+          yPos = 28;
         }
 
-        doc.setFontSize(10);
+        // Section header
+        doc.setFillColor(255, 184, 0);
+        doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text('Location on Plan', margin, yPos);
-        yPos += 6;
-
-        doc.setFontSize(8);
-        doc.setTextColor(100);
-        doc.text(`Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% on ${plan.name}`, margin, yPos);
+        doc.setTextColor(26, 26, 26);
+        doc.text('Location on Plan', margin + 2, yPos + 2);
         yPos += 8;
+
+        // Location info box
+        doc.setFillColor(254, 243, 199);
+        doc.roundedRect(margin, yPos, contentWidth, 10, 1.5, 1.5, 'F');
+        doc.setFontSize(9);
+        doc.setTextColor(120, 53, 15);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`📍 Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}%  •  Plan: ${plan.name}`, margin + 3, yPos + 6);
+        yPos += 15;
       }
     }
 
