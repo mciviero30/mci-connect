@@ -419,7 +419,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               )}
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-6">
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>
@@ -525,7 +525,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 overflow-hidden">
-                    <div className="relative w-full h-40 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
+                    <div className="relative w-full h-32 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
                       <img
                         src={planImageUrl || plan?.file_url}
                         alt="Blueprint location"
