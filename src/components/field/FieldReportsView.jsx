@@ -28,6 +28,7 @@ export default function FieldReportsView({ jobId }) {
   const [newReport, setNewReport] = useState({
     name: '',
     description: '',
+    report_type: 'daily_report',
     type: 'pdf_detailed',
     recipients: [],
     schedule: 'send_now',
@@ -41,10 +42,24 @@ export default function FieldReportsView({ jobId }) {
 
   const queryClient = useQueryClient();
 
+  const { data: job } = useQuery({
+    queryKey: ['job', jobId],
+    queryFn: () => base44.entities.Job.filter({ id: jobId }).then(jobs => jobs[0]),
+    enabled: !!jobId,
+  });
+
   const { data: reports = [] } = useQuery({
     queryKey: ['field-reports', jobId],
     queryFn: () => base44.entities.Report.filter({ job_id: jobId }, '-created_date'),
   });
+
+  // Set job name automatically when dialog opens
+  React.useEffect(() => {
+    if (showCreate && job && !newReport.name) {
+      const jobName = job.name || job.job_name_field || 'Project Report';
+      setNewReport(prev => ({ ...prev, name: jobName }));
+    }
+  }, [showCreate, job]);
 
   const createReportMutation = useMutation({
     mutationFn: (data) => base44.entities.Report.create(data),
@@ -54,6 +69,7 @@ export default function FieldReportsView({ jobId }) {
       setNewReport({
         name: '',
         description: '',
+        report_type: 'daily_report',
         type: 'pdf_detailed',
         recipients: [],
         schedule: 'send_now',
@@ -219,7 +235,21 @@ export default function FieldReportsView({ jobId }) {
               />
             </div>
             <div>
-              <Label className="text-slate-700 dark:text-slate-300">Type</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Report Type</Label>
+              <Select value={newReport.report_type} onValueChange={(v) => setNewReport({...newReport, report_type: v})}>
+                <SelectTrigger className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="daily_report" className="text-slate-900 dark:text-white">Daily Report</SelectItem>
+                  <SelectItem value="punch_report" className="text-slate-900 dark:text-white">Punch Report</SelectItem>
+                  <SelectItem value="rfi_report" className="text-slate-900 dark:text-white">RFI Report</SelectItem>
+                  <SelectItem value="change_order_report" className="text-slate-900 dark:text-white">Change of Order Report</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300">Format</Label>
               <Select value={newReport.type} onValueChange={(v) => setNewReport({...newReport, type: v})}>
                 <SelectTrigger className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
