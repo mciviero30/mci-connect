@@ -50,7 +50,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     title: '',
     description: '',
     priority: 'high',
-    category: 'general',
+    category: 'installation',
     status: 'in_progress',
     due_date: '',
     assigned_to: '',
@@ -177,7 +177,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         title: '',
         description: '',
         priority: 'high',
-        category: 'general',
+        category: 'installation',
         status: 'in_progress',
         due_date: '',
         assigned_to: '',
@@ -231,7 +231,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
           pin_y: pinPosition?.y,
           status: 'in_progress',
           priority: 'high',
-          category: 'general',
+          category: 'installation',
         });
       };
       
@@ -247,7 +247,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         title: existingTask.title || '',
         description: existingTask.description || '',
         priority: existingTask.priority || 'high',
-        category: existingTask.category || 'general',
+        category: existingTask.category || 'installation',
         status: existingTask.status || 'in_progress',
         due_date: existingTask.due_date || '',
         assigned_to: existingTask.assigned_to || '',
@@ -683,12 +683,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <SelectItem value="general">General</SelectItem>
-                    <SelectItem value="change_order">Change Order</SelectItem>
                     <SelectItem value="installation">Installation</SelectItem>
+                    <SelectItem value="change_order">Change Order</SelectItem>
                     <SelectItem value="rfi">RFI</SelectItem>
-                    <SelectItem value="inspection">Inspection</SelectItem>
-                    <SelectItem value="issue">Issue</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
