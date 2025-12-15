@@ -414,7 +414,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   onClick={handleSave}
                   disabled={updateTaskMutation.isPending}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
                 >
                   {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
                 </Button>
