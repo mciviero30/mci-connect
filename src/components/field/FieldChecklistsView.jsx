@@ -24,32 +24,26 @@ import { es } from 'date-fns/locale';
 import { useWorkUnits } from './hooks/useWorkUnits';
 
 const categoryLabels = {
-  inspection: 'Inspection',
-  safety: 'Safety',
-  quality: 'Quality',
-  installation: 'Installation',
-  general: 'General',
+  glass_wall: 'Glass Wall',
+  solid_wall: 'Solid Wall',
+  door: 'Door Installation',
+  custom: 'Custom',
 };
 
 const categoryColors = {
-  inspection: 'bg-blue-500/20 text-blue-400',
-  safety: 'bg-red-500/20 text-red-400',
-  quality: 'bg-green-500/20 text-green-400',
-  installation: 'bg-purple-500/20 text-purple-400',
-  general: 'bg-slate-500/20 text-slate-400',
+  glass_wall: 'bg-blue-500/20 text-blue-400',
+  solid_wall: 'bg-amber-500/20 text-amber-400',
+  door: 'bg-green-500/20 text-green-400',
+  custom: 'bg-slate-500/20 text-slate-400',
 };
 
 export default function FieldChecklistsView({ jobId }) {
   const [showCreate, setShowCreate] = useState(false);
-  const [showExecute, setShowExecute] = useState(null);
   const [checklistItems, setChecklistItems] = useState([{ id: '1', text: '', required: false }]);
-  const [executionResponses, setExecutionResponses] = useState([]);
   const [newChecklist, setNewChecklist] = useState({
     name: '',
     description: '',
-    category: 'inspection',
-    requires_signature: false,
-    requires_photo: false,
+    category: 'glass_wall',
   });
 
   const queryClient = useQueryClient();
@@ -76,7 +70,6 @@ export default function FieldChecklistsView({ jobId }) {
 
   // Merge legacy templates with WorkUnit checklists
   const templates = checklists.length > 0 ? checklists.filter(c => c.is_template) : legacyTemplates;
-  const submissions = checklists.filter(c => c.status === 'completed' && !c.is_template);
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => {
@@ -92,28 +85,12 @@ export default function FieldChecklistsView({ jobId }) {
       queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       queryClient.invalidateQueries({ queryKey: ['checklist-templates', jobId] });
       setShowCreate(false);
-      setNewChecklist({ name: '', description: '', category: 'inspection', requires_signature: false, requires_photo: false });
+      setNewChecklist({ name: '', description: '', category: 'glass_wall' });
       setChecklistItems([{ id: '1', text: '', required: false }]);
     },
   });
 
-  const submitInspectionMutation = useMutation({
-    mutationFn: (data) => {
-      // Create completed WorkUnit from template
-      return base44.entities.WorkUnit.create({
-        ...data,
-        job_id: jobId,
-        type: 'checklist',
-        status: 'completed',
-        completed_date: new Date().toISOString()
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
-      setShowExecute(null);
-      setExecutionResponses([]);
-    },
-  });
+
 
   const deleteTemplateMutation = useMutation({
     mutationFn: (id) => base44.entities.WorkUnit.delete(id).catch(() => 
@@ -158,165 +135,90 @@ export default function FieldChecklistsView({ jobId }) {
     });
   };
 
-  const startExecution = (template) => {
-    setShowExecute(template);
-    const items = template.checklist_items || template.items || [];
-    setExecutionResponses(items.map(item => ({
-      item_id: item.id,
-      item_text: item.text,
-      completed: item.checked || false,
-      notes: '',
-    })));
-  };
 
-  const updateResponse = (itemId, field, value) => {
-    setExecutionResponses(executionResponses.map(resp =>
-      resp.item_id === itemId ? { ...resp, [field]: value } : resp
-    ));
-  };
-
-  const submitExecution = () => {
-    const allCompleted = executionResponses.every(r => r.completed);
-
-    submitInspectionMutation.mutate({
-      title: showExecute.title || showExecute.name,
-      description: `Completed by ${user?.full_name}`,
-      category: showExecute.category || 'inspection',
-      checklist_items: executionResponses.map(r => ({
-        id: r.item_id,
-        text: r.item_text,
-        checked: r.completed,
-        notes: r.notes,
-        checked_by: r.completed ? user?.email : null,
-        checked_at: r.completed ? new Date().toISOString() : null
-      })),
-      completed_by: user?.email,
-    });
-  };
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Checklists & Inspections</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Task Checklist Templates</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Create reusable checklists for tasks on blueprints
+          </p>
+        </div>
         <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
           <Plus className="w-4 h-4 mr-2" />
           New Template
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 shadow-sm">
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{templates.length}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Templates</p>
-        </div>
-        <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {submissions.filter(s => s.status === 'passed').length}
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Passed</p>
-        </div>
-        <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-4">
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {submissions.filter(s => s.status === 'needs_attention').length}
-          </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Need Attention</p>
-        </div>
-      </div>
-
       {/* Templates Grid */}
       {templates.length === 0 ? (
         <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
           <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No templates</h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">Create reusable checklists</p>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No checklist templates</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">
+            Create templates like "Glass Wall" or "Solid Wall" to use when creating tasks on blueprints
+          </p>
           <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
             <Plus className="w-4 h-4 mr-2" />
             Create Template
           </Button>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map(template => (
             <div 
               key={template.id}
-              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 hover:border-blue-300 dark:hover:border-slate-600 transition-all shadow-sm"
+              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 hover:border-[#FFB800]/50 dark:hover:border-[#FFB800]/30 transition-all shadow-sm"
             >
               <div className="flex items-start justify-between mb-3">
                 <Badge className={categoryColors[template.category]}>
-                  {categoryLabels[template.category]}
+                  {categoryLabels[template.category] || template.category}
                 </Badge>
-                <div className="flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => deleteTemplateMutation.mutate(template.id)}
-                    className="h-7 w-7 text-slate-400 hover:text-red-400"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => deleteTemplateMutation.mutate(template.id)}
+                  className="h-7 w-7 text-slate-400 hover:text-red-400"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{template.title || template.name}</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">{template.title || template.name}</h3>
               {template.description && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{template.description}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{template.description}</p>
               )}
-              <div className="flex items-center justify-between">
+              
+              {/* Checklist Preview */}
+              <div className="mb-4 space-y-1">
+                {(template.checklist_items || template.items || []).slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
+                    <span className="text-slate-400">•</span>
+                    <span className="line-clamp-1">{item.text}</span>
+                  </div>
+                ))}
+                {(template.checklist_items || template.items || []).length > 3 && (
+                  <p className="text-xs text-slate-400 pl-4">
+                    +{(template.checklist_items || template.items || []).length - 3} more
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-700/50">
                 <span className="text-xs text-slate-500 dark:text-slate-500">
                   {(template.checklist_items || template.items)?.length || 0} items
                 </span>
-                <Button
-                  size="sm"
-                  onClick={() => startExecution(template)}
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  <Play className="w-3 h-3 mr-1" />
-                  Execute
-                </Button>
+                <span className="text-xs text-[#FFB800]">
+                  Use in Tasks
+                </span>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Recent Submissions */}
-      {submissions.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Recent Inspections</h3>
-          <div className="space-y-2">
-            {submissions.slice(0, 5).map(sub => (
-              <div 
-                key={sub.id}
-                className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-sm"
-              >
-                <div className="flex items-center gap-3">
-                  {sub.status === 'passed' ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-400" />
-                  ) : sub.status === 'failed' ? (
-                    <XCircle className="w-5 h-5 text-red-400" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-amber-400" />
-                  )}
-                  <div>
-                    <p className="font-medium text-slate-900 dark:text-white">{sub.name}</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {sub.submitted_by_name} • {format(new Date(sub.created_date), "d MMM yyyy HH:mm")}
-                    </p>
-                  </div>
-                </div>
-                <Badge className={
-                  sub.status === 'passed' ? 'bg-green-500/20 text-green-400' :
-                  sub.status === 'failed' ? 'bg-red-500/20 text-red-400' :
-                  'bg-amber-500/20 text-amber-400'
-                }>
-                  {sub.status === 'passed' ? 'Passed' :
-                   sub.status === 'failed' ? 'Failed' : 'Review'}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Create Template Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
@@ -390,14 +292,6 @@ export default function FieldChecklistsView({ jobId }) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label className="text-slate-700 dark:text-slate-300">Requires signature</Label>
-              <Switch
-                checked={newChecklist.requires_signature}
-                onCheckedChange={(checked) => setNewChecklist({ ...newChecklist, requires_signature: checked })}
-              />
-            </div>
-
             <div className="flex justify-end gap-3 pt-4">
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
                 Cancel
@@ -410,51 +304,7 @@ export default function FieldChecklistsView({ jobId }) {
         </DialogContent>
       </Dialog>
 
-      {/* Execute Checklist Dialog */}
-      <Dialog open={!!showExecute} onOpenChange={() => setShowExecute(null)}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-lg max-h-[90vh] overflow-y-auto">
-          {showExecute && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{showExecute.name}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                {executionResponses.map((resp, idx) => (
-                  <div key={resp.item_id} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/30 rounded-lg">
-                    <input
-                      type="checkbox"
-                      checked={resp.completed}
-                      onChange={(e) => updateResponse(resp.item_id, 'completed', e.target.checked)}
-                      className="mt-1 rounded border-slate-600"
-                    />
-                    <div className="flex-1">
-                      <p className={`text-sm ${resp.completed ? 'text-slate-500 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-white'}`}>
-                        {resp.item_text}
-                      </p>
-                      <Input
-                        placeholder="Notes..."
-                        value={resp.notes}
-                        onChange={(e) => updateResponse(resp.item_id, 'notes', e.target.value)}
-                        className="mt-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm"
-                      />
-                    </div>
-                  </div>
-                ))}
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="outline" onClick={() => setShowExecute(null)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
-                    Cancel
-                  </Button>
-                  <Button onClick={submitExecution} className="bg-green-500 hover:bg-green-600">
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Complete Inspection
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
