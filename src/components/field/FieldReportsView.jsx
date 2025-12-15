@@ -175,6 +175,8 @@ export default function FieldReportsView({ jobId }) {
   const handleCreateReport = () => {
     if (!newReport.name) return;
     
+    console.log('Creating report with type:', newReport.report_type);
+    
     if (editingReport) {
       // Update existing report
       updateReportMutation.mutate({
@@ -186,11 +188,21 @@ export default function FieldReportsView({ jobId }) {
       const existingReports = reports.filter(r => r.report_type === newReport.report_type);
       const reportNumber = String(existingReports.length + 1).padStart(3, '0');
       
-      createReportMutation.mutate({
+      const reportData = {
         job_id: jobId,
         report_number: reportNumber,
-        ...newReport,
-      });
+        name: newReport.name,
+        description: newReport.description,
+        report_type: newReport.report_type,
+        type: newReport.type,
+        recipients: newReport.recipients,
+        schedule: newReport.schedule,
+        include_options: newReport.include_options,
+      };
+      
+      console.log('Report data being sent:', reportData);
+      
+      createReportMutation.mutate(reportData);
     }
   };
 
@@ -241,7 +253,23 @@ export default function FieldReportsView({ jobId }) {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reports</h1>
         <Button 
-          onClick={() => setShowCreate(true)}
+          onClick={() => {
+            setNewReport({
+              name: '',
+              description: '',
+              report_type: 'progress_report',
+              type: 'pdf_detailed',
+              recipients: [],
+              schedule: 'send_now',
+              include_options: {
+                photos: true,
+                tasks: true,
+                messages: true,
+                plans: true,
+              },
+            });
+            setShowCreate(true);
+          }}
           className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -286,7 +314,8 @@ export default function FieldReportsView({ jobId }) {
                       {report.report_type === 'progress_report' ? 'Progress Report' :
                        report.report_type === 'punch_report' ? 'Punch Report' :
                        report.report_type === 'rfi_report' ? 'RFI Report' :
-                       'Change Order Report'} #{report.report_number || '001'}
+                       report.report_type === 'change_order_report' ? 'Change Order Report' :
+                       'Progress Report'} #{report.report_number || '001'}
                     </p>
                     <div className="flex items-center gap-3 mt-1">
                       <Badge className={typeColors[report.type]}>
