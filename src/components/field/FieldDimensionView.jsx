@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
-import BlueprintViewer from './BlueprintViewer';
+import DimensionBlueprintViewer from './DimensionBlueprintViewer';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
@@ -153,27 +153,11 @@ export default function FieldDimensionView({ jobId }) {
 
   if (selectedDimension) {
     return (
-      <div className="h-full">
-        <div className="flex items-center justify-between mb-4 px-4 pt-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-            {selectedDimension.name}
-          </h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedDimension(null)}
-            className="border-slate-300 dark:border-slate-600"
-          >
-            Back to List
-          </Button>
-        </div>
-        <BlueprintViewer
-          blueprint={selectedDimension}
-          tasks={tasks}
-          jobId={jobId}
-          onBack={() => setSelectedDimension(null)}
-        />
-      </div>
+      <DimensionBlueprintViewer
+        dimension={selectedDimension}
+        jobId={jobId}
+        onBack={() => setSelectedDimension(null)}
+      />
     );
   }
 
