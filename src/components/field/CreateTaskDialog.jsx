@@ -1,13 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus } from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -151,13 +152,17 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const handleSave = () => {
     if (!task.id) return;
     
+    const dataToSave = {
+      ...task,
+      checklist: task.checklist.length > 0 ? task.checklist : undefined,
+      photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
+      manpower: task.manpower || undefined,
+      cost: task.cost ? parseFloat(task.cost) || undefined : undefined,
+    };
+    
     updateTaskMutation.mutate({
       id: task.id,
-      data: {
-        ...task,
-        checklist: task.checklist.length > 0 ? task.checklist : undefined,
-        photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
-      }
+      data: dataToSave
     });
   };
 
@@ -242,6 +247,10 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
+        <VisuallyHidden>
+          <DialogTitle>Task Details</DialogTitle>
+          <DialogDescription>Edit task information and checklist</DialogDescription>
+        </VisuallyHidden>
         {/* Two Column Layout */}
         <div className="flex h-full">
           {/* Left Column - Task Details */}
@@ -419,7 +428,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               )}
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-32" style={{ maxHeight: 'calc(90vh - 140px)' }}>
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>
