@@ -37,6 +37,44 @@ const categoryColors = {
   custom: 'bg-slate-500/20 text-slate-400',
 };
 
+// Predefined checklist templates
+const DEFAULT_TEMPLATES = {
+  glass_wall: {
+    name: 'Glass Wall Installation',
+    description: 'Standard checklist for glass wall installation',
+    category: 'glass_wall',
+    items: [
+      { id: '1', text: 'Verify measurements and dimensions', required: true },
+      { id: '2', text: 'Check glass panels for damage', required: true },
+      { id: '3', text: 'Install base track', required: true },
+      { id: '4', text: 'Install vertical posts', required: true },
+      { id: '5', text: 'Install glass panels', required: true },
+      { id: '6', text: 'Install door hardware', required: true },
+      { id: '7', text: 'Check alignment and level', required: true },
+      { id: '8', text: 'Apply sealant', required: true },
+      { id: '9', text: 'Clean glass surfaces', required: true },
+      { id: '10', text: 'Final inspection', required: true },
+    ],
+  },
+  solid_wall: {
+    name: 'Solid Wall Installation',
+    description: 'Standard checklist for solid wall installation',
+    category: 'solid_wall',
+    items: [
+      { id: '1', text: 'Verify measurements and layout', required: true },
+      { id: '2', text: 'Check framing materials', required: true },
+      { id: '3', text: 'Install top and bottom tracks', required: true },
+      { id: '4', text: 'Install vertical studs', required: true },
+      { id: '5', text: 'Install electrical boxes if needed', required: true },
+      { id: '6', text: 'Install drywall sheets', required: true },
+      { id: '7', text: 'Apply joint compound and tape', required: true },
+      { id: '8', text: 'Sand and finish surface', required: true },
+      { id: '9', text: 'Prime and paint', required: true },
+      { id: '10', text: 'Final inspection', required: true },
+    ],
+  },
+};
+
 export default function FieldChecklistsView({ jobId }) {
   const [showCreate, setShowCreate] = useState(false);
   const [checklistItems, setChecklistItems] = useState([{ id: '1', text: '', required: false }]);
@@ -70,6 +108,30 @@ export default function FieldChecklistsView({ jobId }) {
 
   // Merge legacy templates with WorkUnit checklists
   const templates = checklists.length > 0 ? checklists.filter(c => c.is_template) : legacyTemplates;
+
+  // Create default templates if none exist
+  const createDefaultTemplates = async () => {
+    for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
+      const exists = templates.some(t => t.category === key || t.title === template.name);
+      if (!exists) {
+        await base44.entities.WorkUnit.create({
+          job_id: jobId,
+          type: 'checklist',
+          is_template: true,
+          title: template.name,
+          description: template.description,
+          category: template.category,
+          checklist_items: template.items.map(item => ({
+            id: item.id,
+            text: item.text,
+            checked: false,
+            required: item.required
+          })),
+        });
+      }
+    }
+    queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+  };
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => {
@@ -160,10 +222,19 @@ export default function FieldChecklistsView({ jobId }) {
           <p className="text-slate-500 dark:text-slate-400 mb-4">
             Create templates like "Glass Wall" or "Solid Wall" to use when creating tasks on blueprints
           </p>
-          <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Template
-          </Button>
+          <div className="flex gap-3 justify-center">
+            <Button 
+              onClick={createDefaultTemplates} 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Add Default Templates
+            </Button>
+            <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Custom Template
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
