@@ -186,7 +186,7 @@ export default function FieldReportsView({ jobId }) {
     } else {
       // Calculate next report number for new report
       const existingReports = reports.filter(r => r.report_type === newReport.report_type);
-      const reportNumber = String(existingReports.length + 1).padStart(3, '0');
+      const reportNumber = String(existingReports.length + 1);
       
       const reportData = {
         job_id: jobId,
@@ -238,7 +238,7 @@ export default function FieldReportsView({ jobId }) {
         change_order_report: 'ChangeOrder',
       }[report.report_type] || 'Progress';
       
-      const fileName = `${job.name || 'Project'}_${reportTypeLabel}_${report.report_number || '001'}.pdf`;
+      const fileName = `${job.name || 'Project'}_${reportTypeLabel}_${report.report_number || '1'}.pdf`;
       pdf.save(fileName);
       toast.success('Report downloaded successfully');
     } catch (error) {
@@ -328,7 +328,7 @@ export default function FieldReportsView({ jobId }) {
                        report.report_type === 'punch_report' ? 'Punch Report' :
                        report.report_type === 'rfi_report' ? 'RFI Report' :
                        report.report_type === 'change_order_report' ? 'Change Order Report' :
-                       'Progress Report'} #{report.report_number || '001'}
+                       'Progress Report'} #{report.report_number || '1'}
                     </p>
                     <div className="flex items-center gap-3 mt-1">
                       <Badge className={typeColors[report.type]}>
