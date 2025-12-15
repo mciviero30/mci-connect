@@ -378,34 +378,57 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       yPos += 8;
     }
 
-    // Task messages/comments
+    // Activity/Comments section
     const comments = taskComments[task.id] || task.comments || [];
     if (comments.length > 0) {
-      if (yPos > pageHeight - 40) {
+      if (yPos > pageHeight - 50) {
         addFooter();
         doc.addPage();
-        yPos = margin;
+        addHeader();
+        yPos = 28;
       }
 
-      doc.setFontSize(10);
+      // Section header
+      doc.setFillColor(255, 184, 0);
+      doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text('Activity', margin, yPos);
-      yPos += 6;
+      doc.setTextColor(26, 26, 26);
+      doc.text('Activity', margin + 2, yPos + 2);
+      yPos += 8;
 
+      // Comments
       doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      comments.slice(0, 5).forEach((comment) => {
-        const commentText = `${comment.author_name || 'User'} - ${comment.comment || comment.content}`;
-        const date = format(new Date(comment.created_date), 'dd MMM hh:mm a');
-        
-        if (yPos > pageHeight - 30) {
+      comments.slice(0, 5).forEach((comment, idx) => {
+        if (yPos > pageHeight - 35) {
           addFooter();
           doc.addPage();
-          yPos = margin;
+          addHeader();
+          yPos = 28;
         }
 
-        doc.text(`${commentText} (${date})`, margin + 2, yPos);
-        yPos += 5;
+        // Comment box
+        doc.setFillColor(248, 250, 252);
+        const commentHeight = 12;
+        doc.roundedRect(margin, yPos - 3, contentWidth, commentHeight, 1.5, 1.5, 'F');
+        
+        // Author and date
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(51, 65, 85);
+        doc.text(comment.author_name || 'User', margin + 3, yPos + 2);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 116, 139);
+        const date = format(new Date(comment.created_date), 'MMM dd, hh:mm a');
+        doc.text(date, margin + 3, yPos + 6);
+        
+        // Comment text
+        doc.setTextColor(71, 85, 105);
+        const commentText = comment.comment || comment.content;
+        const wrappedText = doc.splitTextToSize(commentText, contentWidth - 50);
+        doc.text(wrappedText[0], margin + 40, yPos + 4);
+        
+        yPos += commentHeight + 3;
       });
       yPos += 5;
     }
