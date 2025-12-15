@@ -638,13 +638,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       <img
                         src={planImageUrl || plan?.file_url}
                         alt="Location preview"
-                        className="absolute"
+                        className="absolute w-full h-full"
                         style={{
-                          width: '500%',
-                          height: '500%',
-                          left: `calc(50% - ${(pinPosition?.x || existingTask?.pin_x) * 5}%)`,
-                          top: `calc(50% - ${(pinPosition?.y || existingTask?.pin_y) * 5}%)`,
-                          objectFit: 'contain'
+                          objectFit: 'cover',
+                          objectPosition: `${pinPosition?.x || existingTask?.pin_x}% ${pinPosition?.y || existingTask?.pin_y}%`,
+                          transform: 'scale(3.5)'
                         }}
                       />
                       {/* Pin marker in center */}
