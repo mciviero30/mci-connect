@@ -499,7 +499,62 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       doc.setTextColor(100, 116, 139);
       doc.setFont('helvetica', 'normal');
       doc.text(`${taskPhotos.length} photo${taskPhotos.length > 1 ? 's' : ''} attached to this task`, margin, yPos);
-      yPos += 8;
+      yPos += 10;
+
+      // Render photo thumbnails
+      const photoSize = 55;
+      const photosPerRow = 3;
+      const photoSpacing = 5;
+      let photoX = margin;
+      let photoY = yPos;
+      let photoCount = 0;
+
+      for (const photo of taskPhotos.slice(0, 9)) {
+        if (yPos > pageHeight - photoSize - 25) {
+          addFooter();
+          doc.addPage();
+          addHeader();
+          yPos = 28;
+          photoY = yPos;
+          photoX = margin;
+          photoCount = 0;
+        }
+
+        try {
+          // Draw photo border
+          doc.setDrawColor(226, 232, 240);
+          doc.setLineWidth(0.5);
+          doc.rect(photoX, photoY, photoSize, photoSize);
+          
+          // Add photo to PDF
+          const photoUrl = photo.url || photo.file_url;
+          if (photoUrl) {
+            try {
+              doc.addImage(photoUrl, 'JPEG', photoX + 1, photoY + 1, photoSize - 2, photoSize - 2);
+            } catch (imgError) {
+              // If image fails, show placeholder
+              doc.setFontSize(8);
+              doc.setTextColor(148, 163, 184);
+              doc.text('Photo', photoX + photoSize / 2, photoY + photoSize / 2, { align: 'center' });
+            }
+          }
+        } catch (err) {
+          console.warn('Error adding photo:', err);
+        }
+
+        photoCount++;
+        photoX += photoSize + photoSpacing;
+
+        if (photoCount % photosPerRow === 0) {
+          photoX = margin;
+          photoY += photoSize + photoSpacing;
+          yPos = photoY;
+        }
+      }
+
+      if (photoCount % photosPerRow !== 0) {
+        yPos = photoY + photoSize + photoSpacing;
+      }
     }
 
     addFooter();
