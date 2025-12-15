@@ -199,25 +199,34 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setFontSize(9);
   doc.setTextColor(203, 213, 225);
 
-  // Green - Completed
-  doc.setDrawColor(34, 197, 94);
-  doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(0.5);
-  doc.circle(margin + 8, metaY + 11, 2, 'FD');
+  // Green - Completed (checkmark)
+  doc.setTextColor(34, 197, 94);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('✓', margin + 7, metaY + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(203, 213, 225);
   doc.text('Completed', margin + 13, metaY + 13);
 
-  // Yellow - In Progress
-  doc.setDrawColor(251, 191, 36);
-  doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(0.5);
-  doc.circle(margin + 45, metaY + 11, 2, 'FD');
+  // Yellow - In Progress (dash)
+  doc.setTextColor(251, 191, 36);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('−', margin + 44, metaY + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(203, 213, 225);
   doc.text('In Progress', margin + 50, metaY + 13);
 
-  // Red - Pending
-  doc.setDrawColor(239, 68, 68);
-  doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(0.5);
-  doc.circle(margin + 85, metaY + 11, 2, 'FD');
+  // Red - Pending (X)
+  doc.setTextColor(239, 68, 68);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('✕', margin + 84, metaY + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(203, 213, 225);
   doc.text('Pending', margin + 90, metaY + 13);
 
   metaY += 25;
@@ -398,19 +407,21 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         const isCompleted = item.status === 'completed' || item.checked === true;
         const isInProgress = item.status === 'in_progress';
         
-        // Checkbox icon - all with white fill and colored border
-        doc.setFillColor(255, 255, 255);
-        doc.setLineWidth(0.5);
+        // Checkbox icon with symbols
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
         if (isCompleted) {
-          doc.setDrawColor(34, 197, 94);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
+          doc.setTextColor(34, 197, 94);
+          doc.text('✓', margin + 1.5, yPos);
         } else if (isInProgress) {
-          doc.setDrawColor(251, 191, 36);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
+          doc.setTextColor(251, 191, 36);
+          doc.text('−', margin + 1.5, yPos);
         } else {
-          doc.setDrawColor(239, 68, 68);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
+          doc.setTextColor(239, 68, 68);
+          doc.text('✕', margin + 1.5, yPos);
         }
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
 
         // Item text
         doc.setTextColor(isCompleted ? 100 : 51, 65, 85);
