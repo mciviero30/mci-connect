@@ -461,7 +461,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         doc.setFontSize(9);
         doc.setTextColor(120, 53, 15);
         doc.setFont('helvetica', 'normal');
-        doc.text(`📍 Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}%  •  Plan: ${plan.name}`, margin + 3, yPos + 6);
+        doc.text(`Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}%  -  Plan: ${plan.name}`, margin + 3, yPos + 6);
         yPos += 15;
       }
     }
