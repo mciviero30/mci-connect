@@ -485,7 +485,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     <div 
                       key={idx} 
                       className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded"
-                      onClick={() => toggleChecklistItemStatus(idx)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleChecklistItemStatus(idx);
+                      }}
                     >
                       <div className="w-5 h-5 flex items-center justify-center">
                         {getChecklistIcon(item.status)}
