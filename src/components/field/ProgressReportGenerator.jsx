@@ -303,34 +303,79 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
     yPos += 25;
 
-    // Checklist
+    // Checklist section
     const checklist = task.checklist || task.checklist_items || [];
     if (checklist.length > 0) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Checklist', margin, yPos);
-      yPos += 6;
+      if (yPos > pageHeight - 60) {
+        addFooter();
+        doc.addPage();
+        addHeader();
+        yPos = 28;
+      }
 
-      doc.setFontSize(8);
+      // Section header
+      doc.setFillColor(255, 184, 0);
+      doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(26, 26, 26);
+      doc.text('Checklist', margin + 2, yPos + 2);
+      yPos += 8;
+
+      // Checklist items
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      checklist.forEach((item) => {
+      checklist.forEach((item, idx) => {
+        if (yPos > pageHeight - 35) {
+          addFooter();
+          doc.addPage();
+          addHeader();
+          yPos = 28;
+        }
+
+        // Alternate row background
+        if (idx % 2 === 0) {
+          doc.setFillColor(249, 250, 251);
+          doc.rect(margin, yPos - 4, contentWidth, 6, 'F');
+        }
+
         // Handle different status formats
         const isCompleted = item.status === 'completed' || item.checked === true;
         const isInProgress = item.status === 'in_progress';
-        const checkbox = isCompleted ? '☑' : (isInProgress ? '◐' : '☐');
-        const itemText = `${checkbox} ${item.text}`;
-        const assignee = isCompleted && (task.assignee_name || task.assigned_to_name) ? ` (@${(task.assignee_name || task.assigned_to_name).split(' ')[0]})` : '';
         
-        if (yPos > pageHeight - 30) {
-          addFooter();
-          doc.addPage();
-          yPos = margin;
+        // Checkbox icon
+        if (isCompleted) {
+          doc.setFillColor(34, 197, 94);
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'F');
+          doc.setTextColor(34, 197, 94);
+          doc.text('✓', margin + 0.8, yPos + 1);
+        } else if (isInProgress) {
+          doc.setDrawColor(251, 191, 36);
+          doc.setLineWidth(0.5);
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'D');
+          doc.setTextColor(251, 191, 36);
+          doc.text('◐', margin + 0.5, yPos + 1);
+        } else {
+          doc.setDrawColor(203, 213, 225);
+          doc.setLineWidth(0.5);
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'D');
         }
 
-        doc.text(itemText + assignee, margin + 2, yPos);
-        yPos += 5;
+        // Item text
+        doc.setTextColor(isCompleted ? 100 : 51, 65, 85);
+        doc.text(item.text, margin + 6, yPos);
+        
+        // Assignee badge
+        if (isCompleted && (task.assignee_name || task.assigned_to_name)) {
+          const assigneeName = (task.assignee_name || task.assigned_to_name).split(' ')[0];
+          doc.setFontSize(7);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`@${assigneeName}`, pageWidth - margin - 20, yPos);
+        }
+        
+        yPos += 6;
       });
-      yPos += 5;
+      yPos += 8;
     }
 
     // Task messages/comments
