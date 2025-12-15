@@ -756,20 +756,20 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="backdrop-blur-xl px-6 py-4 md:hidden flex-shrink-0 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+          <header className="backdrop-blur-xl px-4 py-3 md:hidden flex-shrink-0 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
+              <SidebarTrigger className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0">
                 <Menu className="w-5 h-5 text-slate-900 dark:text-white" />
               </SidebarTrigger>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
                   alt="MCI Connect"
-                  className="w-6 h-6"
+                  className="w-6 h-6 flex-shrink-0"
                 />
-                <div>
-                  <h1 className="text-lg font-bold leading-none text-slate-900 dark:text-white">MCI Connect</h1>
-                  {isAdmin && <p className="text-[10px] text-blue-600 dark:text-blue-400 leading-none">Management System</p>}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white truncate">MCI Connect</h1>
+                  {isAdmin && <p className="text-[9px] text-blue-600 dark:text-blue-400 leading-tight">Management System</p>}
                 </div>
               </div>
             </div>
@@ -785,11 +785,13 @@ const LayoutContent = ({ children, currentPageName }) => {
                 transition={{ duration: 0.2 }}
                 className="h-full w-full"
               >
-                {children}
+                <div className="h-full w-full max-w-screen-2xl mx-auto px-safe">
+                  {children}
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
-          
+
           <AIAssistant currentPage={currentPageName} />
         </main>
       </div>

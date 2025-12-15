@@ -85,6 +85,20 @@
     --radius: 0.5rem;
   }
 
+  /* Safe area insets for mobile devices */
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   .dark {
     /* Dark Mode Colors - Minimalist Dark with High Contrast */
     --background: 0 0% 9%;
