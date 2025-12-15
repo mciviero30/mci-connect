@@ -34,6 +34,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [draggingPin, setDraggingPin] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [cursorPosition, setCursorPosition] = useState(null);
   
   // Loading states
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -332,6 +333,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           setActiveTool('select');
           setIsPlacingPin(false);
           setSelectedTask(null);
+          setPendingPinPosition(null);
+          setCursorPosition(null);
           break;
         case 'f':
           setShowFilters(prev => !prev);
@@ -431,6 +434,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleMouseMove = (e) => {
+    // Update cursor position for pin preview
+    if (isPlacingPin || activeTool === 'pin') {
+      const rect = imageRef.current?.getBoundingClientRect();
+      if (rect) {
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        setCursorPosition({ x, y });
+      }
+    } else {
+      setCursorPosition(null);
+    }
+
     if (draggingPin) {
       // Moving a pin
       const rect = imageRef.current?.getBoundingClientRect();
@@ -571,9 +586,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleImageClick = (e) => {
+    // Don't place pin if we just finished dragging the view
+    if (hasDragged) return;
+    
     if (activeTool !== 'pin' && !isPlacingPin) return;
     
-    const rect = imageRef.current.getBoundingClientRect();
+    const rect = imageRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
@@ -581,6 +601,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     setShowCreateTask(true);
     setIsPlacingPin(false);
     setActiveTool('select');
+    setCursorPosition(null);
   };
 
   // Toolbar items
@@ -608,6 +629,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const handleTaskCreated = async (newTaskId) => {
     setPendingPinPosition(null);
     setShowCreateTask(false);
+    setCursorPosition(null);
     
     // Refresh tasks and open the newly created one
     if (newTaskId) {
@@ -888,13 +910,41 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                     />
                   );
                 })}
-                {/* Pending Pin */}
+                {/* Cursor Pin Preview - shows where pin will be placed */}
+                {(isPlacingPin || activeTool === 'pin') && cursorPosition && !pendingPinPosition && (
+                  <div 
+                    className="absolute pointer-events-none"
+                    style={{ 
+                      left: `${cursorPosition.x}%`, 
+                      top: `${cursorPosition.y}%`,
+                      transform: 'translate(-50%, -100%)'
+                    }}
+                  >
+                    <div className="relative">
+                      <div className="min-w-[28px] h-6 px-1.5 rounded-md bg-amber-500 border-2 border-white shadow-lg flex items-center justify-center opacity-70">
+                        <span className="text-[11px] font-bold text-white">?</span>
+                      </div>
+                      {/* Pin point */}
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-amber-500" />
+                    </div>
+                  </div>
+                )}
+                {/* Pending Pin - after click, before task creation */}
                 {pendingPinPosition && (
                   <div 
-                    className="absolute w-6 h-6 -ml-3 -mt-6 animate-bounce"
-                    style={{ left: `${pendingPinPosition.x}%`, top: `${pendingPinPosition.y}%` }}
+                    className="absolute animate-bounce pointer-events-none"
+                    style={{ 
+                      left: `${pendingPinPosition.x}%`, 
+                      top: `${pendingPinPosition.y}%`,
+                      transform: 'translate(-50%, -100%)'
+                    }}
                   >
-                    <div className="w-full h-full bg-amber-500 rounded-full border-2 border-white shadow-lg" />
+                    <div className="relative">
+                      <div className="min-w-[28px] h-6 px-1.5 rounded-md bg-green-500 border-2 border-white shadow-lg flex items-center justify-center">
+                        <span className="text-[11px] font-bold text-white">✓</span>
+                      </div>
+                      <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-green-500" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -943,7 +993,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       {/* Create Task Dialog */}
       <CreateTaskDialog 
         open={showCreateTask}
-        onOpenChange={setShowCreateTask}
+        onOpenChange={(open) => {
+          setShowCreateTask(open);
+          if (!open) {
+            setPendingPinPosition(null);
+            setCursorPosition(null);
+          }
+        }}
         jobId={jobId}
         blueprintId={plan.id}
         pinPosition={pendingPinPosition}
