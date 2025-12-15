@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus, Loader2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus, Loader2, Trash2 } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Tesseract from 'tesseract.js';
 
@@ -200,6 +200,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     },
   });
 
+  const deleteTaskMutation = useMutation({
+    mutationFn: (id) => base44.entities.Task.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      onOpenChange(false);
+    },
+  });
+
   // Auto-create task when dialog opens (only for new tasks)
   React.useEffect(() => {
     if (open && !task.id && pinPosition && !existingTask && planImageUrl) {
@@ -365,6 +373,13 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       comment: newComment.trim(),
       author_name: currentUser.full_name,
     });
+  };
+
+  const handleDeleteTask = () => {
+    if (!task.id) return;
+    if (confirm('Are you sure you want to delete this task?')) {
+      deleteTaskMutation.mutate(task.id);
+    }
   };
 
   return (
@@ -614,19 +629,21 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
           <div className="w-80 flex flex-col bg-slate-50 dark:bg-slate-800/50">
             <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="font-semibold text-slate-900 dark:text-white">Task Attributes</h3>
-              {task.id && (
-                <Button 
-                  onClick={handleSave}
-                  disabled={updateTaskMutation.isPending}
-                  size="sm"
-                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white px-6"
-                >
-                  {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {task.id && (
+                  <Button 
+                    onClick={handleSave}
+                    disabled={updateTaskMutation.isPending}
+                    size="sm"
+                    className="bg-[#FFB800] hover:bg-[#E5A600] text-white px-6"
+                  >
+                    {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
+                  </Button>
+                )}
+              </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-32" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: 'calc(90vh - 200px)' }}>
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>
