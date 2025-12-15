@@ -72,6 +72,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: (newTask) => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      onCreated?.(newTask?.id);
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
       setTask({
         title: '',
         description: '',
@@ -88,21 +96,48 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       setShowNewItemInput(false);
       setNewChecklistItem('');
       onOpenChange(false);
-      onCreated?.(newTask?.id);
     },
   });
 
-  const handleSubmit = () => {
-    if (!task.title) return;
+  // Auto-create task when dialog opens
+  React.useEffect(() => {
+    if (open && !task.id && pinPosition) {
+      const autoTitle = `Wall ${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`;
+      
+      createTaskMutation.mutate({
+        title: autoTitle,
+        job_id: jobId,
+        blueprint_id: blueprintId,
+        pin_x: pinPosition?.x,
+        pin_y: pinPosition?.y,
+        status: 'in_progress',
+        priority: 'high',
+        category: 'general',
+      });
+    }
+  }, [open, pinPosition]);
+
+  // Update task data when mutation succeeds
+  React.useEffect(() => {
+    if (createTaskMutation.data) {
+      setTask({
+        ...createTaskMutation.data,
+        checklist: [],
+        photo_urls: [],
+      });
+    }
+  }, [createTaskMutation.data]);
+
+  const handleSave = () => {
+    if (!task.id) return;
     
-    createTaskMutation.mutate({
-      ...task,
-      job_id: jobId,
-      blueprint_id: blueprintId,
-      pin_x: pinPosition?.x,
-      pin_y: pinPosition?.y,
-      checklist: task.checklist.length > 0 ? task.checklist : undefined,
-      photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
+    updateTaskMutation.mutate({
+      id: task.id,
+      data: {
+        ...task,
+        checklist: task.checklist.length > 0 ? task.checklist : undefined,
+        photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
+      }
     });
   };
 
@@ -299,22 +334,13 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
             {/* Bottom Message Input */}
             <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex gap-2 mb-2">
-                <Textarea 
-                  value={task.description}
-                  onChange={(e) => setTask({...task, description: e.target.value})}
-                  placeholder="Enter message here..."
-                  className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none"
-                  rows={2}
-                />
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={!task.title || createTaskMutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-                >
-                  {createTaskMutation.isPending ? 'Creating...' : 'Create'}
-                </Button>
-              </div>
+              <Textarea 
+                value={task.description}
+                onChange={(e) => setTask({...task, description: e.target.value})}
+                placeholder="Enter message here..."
+                className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none mb-2"
+                rows={2}
+              />
               {/* Photo buttons below */}
               <div className="flex gap-2">
                 <input
@@ -361,8 +387,18 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
           {/* Right Column - Task Attributes */}
           <div className="w-80 flex flex-col bg-slate-50 dark:bg-slate-800/50">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="font-semibold text-slate-900 dark:text-white">Task Attributes</h3>
+              {task.id && (
+                <Button 
+                  onClick={handleSave}
+                  disabled={updateTaskMutation.isPending}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
+                </Button>
+              )}
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
