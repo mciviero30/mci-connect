@@ -258,32 +258,50 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     doc.text(`${(task.category || 'Installation').charAt(0).toUpperCase() + (task.category || 'Installation').slice(1)}`, margin + 75, yPos + 5);
     yPos += 12;
 
+    // Info box with gray background
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(margin, yPos, contentWidth, 20, 2, 2, 'F');
+    
+    let infoY = yPos + 6;
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    doc.setFont('helvetica', 'bold');
+    
     // Plan reference
     if (task.blueprint_id) {
       const plan = plans.find(p => p.id === task.blueprint_id);
       if (plan) {
-        doc.setFontSize(8);
-        doc.setTextColor(80);
-        doc.text(`Plan: ${plan.name}`, margin, yPos);
-        yPos += 6;
+        doc.text('Plan:', margin + 3, infoY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(plan.name, margin + 15, infoY);
+        infoY += 5;
       }
     }
 
+    // Dates
+    doc.setFont('helvetica', 'bold');
+    doc.text('Created:', margin + 3, infoY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(format(new Date(task.created_date), 'MMM dd, yyyy'), margin + 18, infoY);
+    
+    if (task.status === 'completed' && task.updated_date) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Completed:', margin + 65, infoY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(format(new Date(task.updated_date), 'MMM dd, yyyy'), margin + 85, infoY);
+    }
+    
+    infoY += 5;
+
     // Tags
     if (task.tags && task.tags.length > 0) {
-      doc.setFontSize(8);
-      doc.text(`Tags: ${task.tags.map(t => `#${t}`).join(', ')}`, margin, yPos);
-      yPos += 6;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Tags:', margin + 3, infoY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(task.tags.map(t => `#${t}`).join(', '), margin + 15, infoY);
     }
 
-    // Dates
-    doc.setFontSize(8);
-    let dateStr = `Created ${format(new Date(task.created_date), 'MM-dd-yyyy')}`;
-    if (task.status === 'completed' && task.updated_date) {
-      dateStr += ` | Completed ${format(new Date(task.updated_date), 'MM-dd-yyyy')}`;
-    }
-    doc.text(dateStr, margin, yPos);
-    yPos += 10;
+    yPos += 25;
 
     // Checklist
     const checklist = task.checklist || task.checklist_items || [];
