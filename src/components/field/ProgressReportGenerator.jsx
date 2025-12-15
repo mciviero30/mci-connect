@@ -185,6 +185,41 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     metaY += 8 * lines.length;
   }
 
+  // Checklist Legend
+  metaY += 10;
+  doc.setFillColor(255, 184, 0, 0.1);
+  doc.roundedRect(margin, metaY - 5, contentWidth, 30, 3, 3, 'F');
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 184, 0);
+  doc.text('Checklist Status Legend', margin + 5, metaY + 3);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(203, 213, 225);
+
+  // Green - Completed
+  doc.setDrawColor(34, 197, 94);
+  doc.setFillColor(255, 255, 255);
+  doc.setLineWidth(1);
+  doc.circle(margin + 8, metaY + 11, 2, 'FD');
+  doc.text('Completed', margin + 13, metaY + 13);
+
+  // Yellow - In Progress
+  doc.setDrawColor(251, 191, 36);
+  doc.setFillColor(255, 255, 255);
+  doc.circle(margin + 45, metaY + 11, 2, 'FD');
+  doc.text('In Progress', margin + 50, metaY + 13);
+
+  // Red - Pending
+  doc.setDrawColor(239, 68, 68);
+  doc.setFillColor(255, 255, 255);
+  doc.circle(margin + 85, metaY + 11, 2, 'FD');
+  doc.text('Pending', margin + 90, metaY + 13);
+
+  metaY += 25;
+
   // Recipients section
   if (report.recipients && report.recipients.length > 0) {
     metaY += 10;
@@ -347,20 +382,18 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         const isCompleted = item.status === 'completed' || item.checked === true;
         const isInProgress = item.status === 'in_progress';
         
-        // Checkbox icon
+        // Checkbox icon - all with white fill and colored border
+        doc.setFillColor(255, 255, 255);
+        doc.setLineWidth(1);
         if (isCompleted) {
-          doc.setFillColor(34, 197, 94);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'F');
+          doc.setDrawColor(34, 197, 94);
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
         } else if (isInProgress) {
           doc.setDrawColor(251, 191, 36);
-          doc.setFillColor(251, 191, 36);
-          doc.setLineWidth(0.5);
-          doc.circle(margin + 2, yPos - 1.5, 1.5);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'S');
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
         } else {
-          doc.setDrawColor(203, 213, 225);
-          doc.setLineWidth(0.5);
-          doc.circle(margin + 2, yPos - 1.5, 1.5);
+          doc.setDrawColor(239, 68, 68);
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
         }
 
         // Item text
