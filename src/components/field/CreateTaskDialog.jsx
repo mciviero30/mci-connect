@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useRef } from 'react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Camera, Image as ImageIcon, X } from 'lucide-react';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -40,8 +41,9 @@ const CHECKLIST_TEMPLATES = {
   ],
 };
 
-export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated }) {
+export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated, planImageUrl }) {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
   const [task, setTask] = useState({
     title: '',
     description: '',
@@ -51,6 +53,15 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     due_date: '',
     assigned_to: '',
     checklist: [],
+    photo_urls: [],
+  });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Fetch plan details if blueprintId is provided
+  const { data: plan } = useQuery({
+    queryKey: ['plan', blueprintId],
+    queryFn: () => base44.entities.Plan.filter({ id: blueprintId }).then(plans => plans[0]),
+    enabled: !!blueprintId,
   });
 
   const createTaskMutation = useMutation({
@@ -66,6 +77,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         due_date: '',
         assigned_to: '',
         checklist: [],
+        photo_urls: [],
       });
       onOpenChange(false);
       onCreated?.(newTask?.id);
@@ -82,7 +94,37 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       pin_x: pinPosition?.x,
       pin_y: pinPosition?.y,
       checklist: task.checklist.length > 0 ? task.checklist : undefined,
+      photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
     });
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingPhoto(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploadedUrls.push(file_url);
+      }
+      setTask(prev => ({
+        ...prev,
+        photo_urls: [...prev.photo_urls, ...uploadedUrls]
+      }));
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = (index) => {
+    setTask(prev => ({
+      ...prev,
+      photo_urls: prev.photo_urls.filter((_, i) => i !== index)
+    }));
   };
 
   const handleTemplateSelect = (templateKey) => {
@@ -143,6 +185,76 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               ) : (
                 <p className="text-sm text-slate-400 dark:text-slate-500">No checklist items yet. Select a template above.</p>
               )}
+
+              {/* Photos Section */}
+              <div className="mt-8">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Photos</h3>
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                      className="text-xs h-8"
+                    >
+                      <ImageIcon className="w-3 h-3 mr-1" />
+                      {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                    </Button>
+                    {/* Mobile camera input */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                      id="camera-input"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('camera-input')?.click()}
+                      disabled={uploadingPhoto}
+                      className="text-xs h-8"
+                    >
+                      <Camera className="w-3 h-3 mr-1" />
+                      Take Photo
+                    </Button>
+                  </div>
+                </div>
+
+                {task.photo_urls.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {task.photo_urls.map((url, idx) => (
+                      <div key={idx} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Photo ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                        />
+                        <button
+                          onClick={() => handleRemovePhoto(idx)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400 dark:text-slate-500">No photos added yet.</p>
+                )}
+              </div>
             </div>
 
             {/* Bottom Message Input */}
@@ -243,14 +355,29 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 />
               </div>
 
-              {/* Blueprint thumbnail (if available) */}
-              {blueprintId && (
+              {/* Location with Blueprint Preview */}
+              {pinPosition && (planImageUrl || plan?.file_url) && (
                 <div>
                   <label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Location</label>
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2">
-                    <div className="aspect-video bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center">
-                      <span className="text-xs text-slate-400">Blueprint Pin</span>
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 overflow-hidden">
+                    <div className="relative w-full h-32 bg-slate-100 dark:bg-slate-800 rounded">
+                      <img
+                        src={planImageUrl || plan?.file_url}
+                        alt="Blueprint location"
+                        className="w-full h-full object-contain"
+                      />
+                      {/* Pin marker overlay */}
+                      <div 
+                        className="absolute w-3 h-3 bg-[#FFB800] border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2"
+                        style={{
+                          left: `${pinPosition.x}%`,
+                          top: `${pinPosition.y}%`
+                        }}
+                      />
                     </div>
+                    {plan?.name && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-center">{plan.name}</p>
+                    )}
                   </div>
                 </div>
               )}
