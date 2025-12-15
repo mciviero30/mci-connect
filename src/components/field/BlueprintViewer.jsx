@@ -635,17 +635,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'zoomOut', icon: ZoomOut, label: 'Zoom Out', action: handleZoomOut },
     { id: 'divider2', type: 'divider' },
     { id: 'pin', icon: MapPin, label: 'Add Pin', tool: true },
-    { id: 'link', icon: Link2, label: 'Add Link', tool: true },
-    { id: 'pencil', icon: Pencil, label: 'Draw', tool: true },
-    { id: 'text', icon: Type, label: 'Add Text', tool: true },
-    { id: 'eraser', icon: Eraser, label: 'Eraser', tool: true },
     { id: 'divider3', type: 'divider' },
-    { id: 'print', icon: Printer, label: 'Print', action: () => window.print() },
-    { id: 'divider4', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
-    { id: 'undo', icon: Undo2, label: 'Undo', action: () => {} },
-    { id: 'divider5', type: 'divider' },
-    { id: 'minimap', icon: Square, label: 'Mini Map (M)', action: () => setShowMiniMap(prev => !prev) },
+    { id: 'divider4', type: 'divider' },
     { id: 'filter', icon: Search, label: 'Filters (F)', action: () => setShowFilters(prev => !prev) },
   ];
 
@@ -973,17 +965,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           </div>
         )}
 
-        {/* Mini Map */}
-        {showMiniMap && loadingState === 'success' && (
-          <BlueprintMiniMap 
-            imageUrl={pdfCanvas || plan.file_url}
-            viewportPosition={position}
-            zoom={zoom}
-            containerSize={containerSize}
-            imageSize={imageSize}
-            onNavigate={handleMiniMapNavigate}
-          />
-        )}
+
 
         {/* Keyboard Shortcuts Hint */}
         <div className="absolute bottom-4 left-20 text-[10px] text-slate-400 dark:text-slate-500 hidden md:block">
