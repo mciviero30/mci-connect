@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Image as ImageIcon, X } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus } from 'lucide-react';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -54,8 +54,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     assigned_to: '',
     checklist: [],
     photo_urls: [],
+    manpower: '',
+    cost: '',
   });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [newChecklistItem, setNewChecklistItem] = useState('');
 
   // Fetch plan details if blueprintId is provided
   const { data: plan } = useQuery({
@@ -78,6 +81,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         assigned_to: '',
         checklist: [],
         photo_urls: [],
+        manpower: '',
+        cost: '',
       });
       onOpenChange(false);
       onCreated?.(newTask?.id);
@@ -125,6 +130,19 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       ...prev,
       photo_urls: prev.photo_urls.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleAddChecklistItem = () => {
+    if (!newChecklistItem.trim()) return;
+    setTask(prev => ({
+      ...prev,
+      checklist: [...prev.checklist, { 
+        id: Date.now(), 
+        text: newChecklistItem.trim(), 
+        completed: false 
+      }]
+    }));
+    setNewChecklistItem('');
   };
 
   const handleTemplateSelect = (templateKey) => {
@@ -186,93 +204,107 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <p className="text-sm text-slate-400 dark:text-slate-500">No checklist items yet. Select a template above.</p>
               )}
 
-              {/* Photos Section */}
-              <div className="mt-8">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-900 dark:text-white">Photos</h3>
-                  <div className="flex gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingPhoto}
-                      className="text-xs h-8"
-                    >
-                      <ImageIcon className="w-3 h-3 mr-1" />
-                      {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
-                    </Button>
-                    {/* Mobile camera input */}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                      id="camera-input"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => document.getElementById('camera-input')?.click()}
-                      disabled={uploadingPhoto}
-                      className="text-xs h-8"
-                    >
-                      <Camera className="w-3 h-3 mr-1" />
-                      Take Photo
-                    </Button>
-                  </div>
-                </div>
-
-                {task.photo_urls.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {task.photo_urls.map((url, idx) => (
-                      <div key={idx} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Photo ${idx + 1}`}
-                          className="w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-                        />
-                        <button
-                          onClick={() => handleRemovePhoto(idx)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-slate-400 dark:text-slate-500">No photos added yet.</p>
-                )}
+              {/* Add New Checklist Item */}
+              <div className="flex gap-2 mt-3">
+                <Input 
+                  value={newChecklistItem}
+                  onChange={(e) => setNewChecklistItem(e.target.value)}
+                  placeholder="+ New item"
+                  className="flex-1 h-8 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddChecklistItem}
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
+
+              {/* Photos Grid - no labels */}
+              {task.photo_urls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-6">
+                  {task.photo_urls.map((url, idx) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Photo ${idx + 1}`}
+                        className="w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                      />
+                      <button
+                        onClick={() => handleRemovePhoto(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Bottom Message Input */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex gap-2">
-              <Textarea 
-                value={task.description}
-                onChange={(e) => setTask({...task, description: e.target.value})}
-                placeholder="Enter message here..."
-                className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none"
-                rows={2}
-              />
-              <Button 
-                onClick={handleSubmit}
-                disabled={!task.title || createTaskMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
-              >
-                {createTaskMutation.isPending ? 'Creating...' : 'Create'}
-              </Button>
+            <div className="p-4 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex gap-2 mb-2">
+                <Textarea 
+                  value={task.description}
+                  onChange={(e) => setTask({...task, description: e.target.value})}
+                  placeholder="Enter message here..."
+                  className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none"
+                  rows={2}
+                />
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={!task.title || createTaskMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                >
+                  {createTaskMutation.isPending ? 'Creating...' : 'Create'}
+                </Button>
+              </div>
+              {/* Photo buttons below */}
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="text-xs h-8"
+                >
+                  <ImageIcon className="w-3 h-3 mr-1" />
+                  {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                </Button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                  id="camera-input"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById('camera-input')?.click()}
+                  disabled={uploadingPhoto}
+                  className="text-xs h-8"
+                >
+                  <Camera className="w-3 h-3 mr-1" />
+                  Take Photo
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -351,6 +383,34 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   type="date"
                   value={task.due_date}
                   onChange={(e) => setTask({...task, due_date: e.target.value})}
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              {/* Manpower */}
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                  <Users className="w-3 h-3" />
+                  Manpower
+                </label>
+                <Input 
+                  value={task.manpower}
+                  onChange={(e) => setTask({...task, manpower: e.target.value})}
+                  placeholder="e.g., 2 workers"
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              {/* Cost */}
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1">
+                  <DollarSign className="w-3 h-3" />
+                  Cost
+                </label>
+                <Input 
+                  value={task.cost}
+                  onChange={(e) => setTask({...task, cost: e.target.value})}
+                  placeholder="e.g., $500"
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
               </div>
