@@ -199,33 +199,28 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setFontSize(9);
   doc.setTextColor(203, 213, 225);
 
-  // Green - Completed (checkmark)
-  doc.setTextColor(34, 197, 94);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('✓', margin + 6, metaY + 13);
+  // Green - Completed (checkmark drawn)
+  doc.setDrawColor(34, 197, 94);
+  doc.setLineWidth(1);
+  doc.line(margin + 6, metaY + 11, margin + 7, metaY + 12.5);
+  doc.line(margin + 7, metaY + 12.5, margin + 10, metaY + 9);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(203, 213, 225);
   doc.text('Completed', margin + 13, metaY + 13);
 
-  // Yellow - In Progress (dash)
-  doc.setTextColor(251, 191, 36);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('−', margin + 44, metaY + 13);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  // Yellow - In Progress (dash drawn)
+  doc.setDrawColor(251, 191, 36);
+  doc.setLineWidth(1);
+  doc.line(margin + 44, metaY + 11, margin + 48, metaY + 11);
   doc.setTextColor(203, 213, 225);
   doc.text('In Progress', margin + 50, metaY + 13);
 
-  // Red - Pending (X)
-  doc.setTextColor(239, 68, 68);
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.text('✕', margin + 84, metaY + 13);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  // Red - Pending (X drawn)
+  doc.setDrawColor(239, 68, 68);
+  doc.setLineWidth(1);
+  doc.line(margin + 83, metaY + 10, margin + 86, metaY + 13);
+  doc.line(margin + 86, metaY + 10, margin + 83, metaY + 13);
   doc.setTextColor(203, 213, 225);
   doc.text('Pending', margin + 90, metaY + 13);
 
@@ -428,18 +423,22 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         const isCompleted = item.status === 'completed' || item.checked === true;
         const isInProgress = item.status === 'in_progress';
         
-        // Checkbox icon with symbols
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
+        // Checkbox icon drawn with lines
+        doc.setLineWidth(0.8);
         if (isCompleted) {
-          doc.setTextColor(34, 197, 94);
-          doc.text('✓', margin + 1.2, yPos);
+          // Green checkmark
+          doc.setDrawColor(34, 197, 94);
+          doc.line(margin + 1.5, yPos - 1, margin + 2.5, yPos);
+          doc.line(margin + 2.5, yPos, margin + 4.5, yPos - 2.5);
         } else if (isInProgress) {
-          doc.setTextColor(251, 191, 36);
-          doc.text('−', margin + 1.2, yPos);
+          // Yellow dash
+          doc.setDrawColor(251, 191, 36);
+          doc.line(margin + 1.5, yPos - 1, margin + 4, yPos - 1);
         } else {
-          doc.setTextColor(239, 68, 68);
-          doc.text('✕', margin + 1.2, yPos);
+          // Red X
+          doc.setDrawColor(239, 68, 68);
+          doc.line(margin + 1.5, yPos - 2, margin + 4, yPos);
+          doc.line(margin + 4, yPos - 2, margin + 1.5, yPos);
         }
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
