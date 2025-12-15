@@ -241,7 +241,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[85vh] p-0 overflow-hidden">
+      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
         {/* Two Column Layout */}
         <div className="flex h-full">
           {/* Left Column - Task Details */}
@@ -419,7 +419,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               )}
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-6">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>
@@ -525,7 +525,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 overflow-hidden">
-                    <div className="relative w-full h-28 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
+                    <div className="relative w-full h-24 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
                       <div 
                         className="absolute inset-0"
                         style={{
