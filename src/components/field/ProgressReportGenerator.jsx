@@ -84,58 +84,133 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   };
 
   // ============== COVER PAGE ==============
-  doc.setFillColor(100, 100, 110);
+  // Dark gradient background
+  doc.setFillColor(26, 26, 26);
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  
+  // Yellow accent bar
+  doc.setFillColor(255, 184, 0);
+  doc.rect(0, 0, pageWidth, 12, 'F');
 
-  // Job name
-  doc.setFontSize(24);
-  doc.setTextColor(255);
+  // MCI FIELD logo
+  doc.setFontSize(16);
+  doc.setTextColor(255, 184, 0);
   doc.setFont('helvetica', 'bold');
-  doc.text(job.name || job.job_name_field || 'Project', margin, 40);
+  doc.text('MCI FIELD', margin, 35);
+  
+  // Project management system subtitle
+  doc.setFontSize(9);
+  doc.setTextColor(148, 163, 184);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Construction Project Management', margin, 42);
+
+  // Yellow divider line
+  doc.setDrawColor(255, 184, 0);
+  doc.setLineWidth(2);
+  doc.line(margin, 48, pageWidth - margin, 48);
+
+  // Job name (large)
+  doc.setFontSize(28);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  const jobName = job.name || job.job_name_field || 'Project';
+  doc.text(jobName, margin, 70);
 
   // Report type
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(20);
+  doc.setTextColor(255, 184, 0);
+  doc.setFont('helvetica', 'bold');
   const reportTypeLabel = {
     progress_report: 'Progress Report',
     punch_report: 'Punch Report',
     rfi_report: 'RFI Report',
-    change_order_report: 'Change of Order Report',
+    change_order_report: 'Change Order Report',
   }[report.report_type] || 'Progress Report';
-  doc.text(reportTypeLabel, margin, 55);
+  doc.text(reportTypeLabel, margin, 90);
 
-  // Report number
-  doc.setFontSize(14);
-  doc.text(`#${report.report_number || '001'}`, margin, 65);
-
-  // Metadata
+  // Report number badge
+  doc.setFillColor(255, 184, 0);
+  doc.roundedRect(margin, 95, 30, 10, 2, 2, 'F');
   doc.setFontSize(10);
-  doc.text(`Created: ${format(new Date(report.created_date || new Date()), 'MM-dd-yyyy')}`, margin, 80);
-  doc.text(`Creator: ${user?.full_name || 'MCI Team'}`, margin, 87);
+  doc.setTextColor(26, 26, 26);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`#${report.report_number || '001'}`, margin + 15, 102, { align: 'center' });
+
+  // Metadata section
+  doc.setFontSize(10);
+  doc.setTextColor(203, 213, 225);
+  doc.setFont('helvetica', 'normal');
+  let metaY = 120;
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Created:', margin, metaY);
+  doc.setFont('helvetica', 'normal');
+  doc.text(format(new Date(report.created_date || new Date()), 'MMMM dd, yyyy'), margin + 30, metaY);
+  metaY += 8;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Creator:', margin, metaY);
+  doc.setFont('helvetica', 'normal');
+  doc.text(user?.full_name || 'MCI Team', margin + 30, metaY);
+  metaY += 8;
   
   if (job.status) {
-    doc.text(`Status: ${job.status}`, margin, 94);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Status:', margin, metaY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(job.status.charAt(0).toUpperCase() + job.status.slice(1), margin + 30, metaY);
+    metaY += 8;
   }
 
   if (job.start_date_field || job.created_date) {
-    const startDate = format(new Date(job.start_date_field || job.created_date), 'MM-dd-yyyy');
-    const endDate = format(new Date(), 'MM-dd-yyyy');
-    doc.text(`Dates: ${startDate} - ${endDate}`, margin, 101);
+    const startDate = format(new Date(job.start_date_field || job.created_date), 'MMM dd, yyyy');
+    const endDate = format(new Date(), 'MMM dd, yyyy');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Period:', margin, metaY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${startDate} - ${endDate}`, margin + 30, metaY);
+    metaY += 8;
   }
 
-  // Recipients
+  if (job.address) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Location:', margin, metaY);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(job.address, contentWidth - 35);
+    doc.text(lines, margin + 30, metaY);
+    metaY += 8 * lines.length;
+  }
+
+  // Recipients section
   if (report.recipients && report.recipients.length > 0) {
+    metaY += 10;
+    doc.setFillColor(255, 184, 0, 0.1);
+    doc.roundedRect(margin, metaY - 5, contentWidth, 8 + report.recipients.length * 6, 3, 3, 'F');
+    
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('Recipients', margin, 115);
+    doc.setTextColor(255, 184, 0);
+    doc.text('Recipients', margin + 5, metaY + 3);
+    
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
+    doc.setTextColor(203, 213, 225);
     report.recipients.forEach((email, i) => {
-      doc.text(email, margin, 122 + i * 6);
+      doc.text(`• ${email}`, margin + 5, metaY + 10 + i * 6);
     });
   }
 
-  addFooter();
+  // Footer on cover
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text(
+    'Generated by MCI Field Construction Management System',
+    pageWidth / 2,
+    pageHeight - 15,
+    { align: 'center' }
+  );
+  
+  pageNumber++;
 
   // ============== TASK PAGES ==============
   for (let i = 0; i < sortedTasks.length; i++) {
