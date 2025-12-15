@@ -56,7 +56,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       rfi_report: 'RFI Report',
       change_order_report: 'Change Order Report',
     }[report.report_type] || 'Progress Report';
-    doc.text(`${reportTypeLabel} #${report.report_number || '001'}`, pageWidth - margin, 14, { align: 'right' });
+    doc.text(`${reportTypeLabel} #${report.report_number || '1'}`, pageWidth - margin, 14, { align: 'right' });
   };
 
   // Helper: Add footer
@@ -134,7 +134,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setFontSize(10);
   doc.setTextColor(26, 26, 26);
   doc.setFont('helvetica', 'bold');
-  doc.text(`#${report.report_number || '001'}`, margin + 15, 102, { align: 'center' });
+  doc.text(`#${report.report_number || '1'}`, margin + 15, 102, { align: 'center' });
 
   // Metadata section
   doc.setFontSize(10);
@@ -202,19 +202,21 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   // Green - Completed
   doc.setDrawColor(34, 197, 94);
   doc.setFillColor(255, 255, 255);
-  doc.setLineWidth(1);
+  doc.setLineWidth(0.5);
   doc.circle(margin + 8, metaY + 11, 2, 'FD');
   doc.text('Completed', margin + 13, metaY + 13);
 
   // Yellow - In Progress
   doc.setDrawColor(251, 191, 36);
   doc.setFillColor(255, 255, 255);
+  doc.setLineWidth(0.5);
   doc.circle(margin + 45, metaY + 11, 2, 'FD');
   doc.text('In Progress', margin + 50, metaY + 13);
 
   // Red - Pending
   doc.setDrawColor(239, 68, 68);
   doc.setFillColor(255, 255, 255);
+  doc.setLineWidth(0.5);
   doc.circle(margin + 85, metaY + 11, 2, 'FD');
   doc.text('Pending', margin + 90, metaY + 13);
 
@@ -270,6 +272,22 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     doc.setFont('helvetica', 'bold');
     const taskTitle = task.title || `Wall ${task.wall_number || String(i + 1).padStart(3, '0')}`;
     doc.text(taskTitle, margin + 5, yPos);
+
+    // Location on Plan - top right
+    if (task.pin_x && task.pin_y && task.blueprint_id) {
+      const plan = plans.find(p => p.id === task.blueprint_id);
+      if (plan) {
+        doc.setFillColor(254, 243, 199);
+        const locationWidth = 80;
+        const locationX = pageWidth - margin - locationWidth;
+        doc.roundedRect(locationX, yPos - 8, locationWidth, 10, 1.5, 1.5, 'F');
+        doc.setFontSize(8);
+        doc.setTextColor(120, 53, 15);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% - ${plan.name}`, locationX + 3, yPos - 2);
+      }
+    }
+
     yPos += 10;
 
     // Status badges
@@ -279,7 +297,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       'completed': { bg: [220, 252, 231], text: [22, 101, 52] },
       'blocked': { bg: [254, 226, 226], text: [185, 28, 28] }
     };
-    
+
     const statusColor = statusColors[task.status] || statusColors['pending'];
     doc.setFillColor(...statusColor.bg);
     doc.roundedRect(margin, yPos, 28, 7, 1.5, 1.5, 'F');
@@ -287,14 +305,12 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     doc.setTextColor(...statusColor.text);
     doc.setFont('helvetica', 'bold');
     doc.text((task.status || 'pending').toUpperCase(), margin + 14, yPos + 4.5, { align: 'center' });
-    
-    // Assignee and category
+
+    // Category only (removed assignee)
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
     doc.setFont('helvetica', 'normal');
-    doc.text(`${task.assignee_name || task.assigned_to_name || 'Unassigned'}`, margin + 32, yPos + 5);
-    doc.text(`•`, margin + 70, yPos + 5);
-    doc.text(`${(task.category || 'Installation').charAt(0).toUpperCase() + (task.category || 'Installation').slice(1)}`, margin + 75, yPos + 5);
+    doc.text(`${(task.category || 'Installation').charAt(0).toUpperCase() + (task.category || 'Installation').slice(1)}`, margin + 32, yPos + 5);
     yPos += 12;
 
     // Info box with gray background
@@ -384,7 +400,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         
         // Checkbox icon - all with white fill and colored border
         doc.setFillColor(255, 255, 255);
-        doc.setLineWidth(1);
+        doc.setLineWidth(0.5);
         if (isCompleted) {
           doc.setDrawColor(34, 197, 94);
           doc.circle(margin + 2, yPos - 1.5, 1.5, 'FD');
