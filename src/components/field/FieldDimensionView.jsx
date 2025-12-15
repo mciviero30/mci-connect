@@ -80,7 +80,16 @@ export default function FieldDimensionView({ jobId }) {
 
   const validateFile = (file) => {
     if (!file) return { valid: false, error: 'No file selected' };
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    
+    // More flexible type checking
+    const fileName = file.name.toLowerCase();
+    const isValidType = ALLOWED_TYPES.includes(file.type) || 
+                       fileName.endsWith('.pdf') || 
+                       fileName.endsWith('.jpg') || 
+                       fileName.endsWith('.jpeg') || 
+                       fileName.endsWith('.png');
+    
+    if (!isValidType) {
       return { valid: false, error: 'Invalid file type. Only PDF, JPG, and PNG are allowed.' };
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -91,14 +100,19 @@ export default function FieldDimensionView({ jobId }) {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
+    console.log('File selected:', file);
     if (file) {
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
       const validation = validateFile(file);
+      console.log('Validation result:', validation);
       if (!validation.valid) {
         toast.error(validation.error);
         e.target.value = '';
         return;
       }
       setNewDimension({ ...newDimension, file });
+      console.log('File set successfully');
     }
   };
 
