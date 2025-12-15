@@ -62,6 +62,7 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
     mutationFn: (data) => base44.entities.Task.update(task.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       setIsEditing(false);
     },
   });
@@ -81,6 +82,7 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
       } else {
         await base44.entities.Task.delete(task.id);
         queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+        queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
         onClose();
       }
     }

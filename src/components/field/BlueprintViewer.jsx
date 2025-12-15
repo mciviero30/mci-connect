@@ -494,7 +494,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
           pin_x: draggingPin.pin_x,
           pin_y: draggingPin.pin_y
         });
-        queryClient.invalidateQueries({ queryKey: ['field-tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+        queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       } catch (error) {
         console.error('Error updating pin position:', error);
       }
@@ -652,13 +653,15 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
     if (newTaskId) {
       await queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      await queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
     }
   };
 
   const handleDeleteTask = async (taskId) => {
     try {
       await base44.entities.Task.delete(taskId);
-      queryClient.invalidateQueries({ queryKey: ['field-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       setSelectedTask(null);
     } catch (error) {
       console.error('Error deleting task:', error);

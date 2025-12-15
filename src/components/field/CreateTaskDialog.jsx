@@ -165,6 +165,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: (newTask) => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       onCreated?.(newTask?.id);
     },
   });
@@ -173,6 +174,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       setTask({
         title: '',
         description: '',
@@ -204,6 +206,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     mutationFn: (id) => base44.entities.Task.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
       onOpenChange(false);
     },
   });
