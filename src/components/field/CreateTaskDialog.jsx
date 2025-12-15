@@ -373,13 +373,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 />
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingPhoto}
-                  className="text-xs h-8"
+                  className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
                 >
-                  <ImageIcon className="w-3 h-3 mr-1" />
+                  <ImageIcon className="w-4 h-4 mr-2" />
                   {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
                 </Button>
                 <input
@@ -392,13 +391,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 />
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
                   onClick={() => document.getElementById('camera-input')?.click()}
                   disabled={uploadingPhoto}
-                  className="text-xs h-8"
+                  className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
                 >
-                  <Camera className="w-3 h-3 mr-1" />
+                  <Camera className="w-4 h-4 mr-2" />
                   Take Photo
                 </Button>
               </div>
@@ -523,11 +521,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               </div>
 
               {/* Location with Blueprint Preview */}
-              {pinPosition && (planImageUrl || plan?.file_url) && (
+              {(pinPosition || existingTask?.pin_x) && (planImageUrl || plan?.file_url) && (
                 <div>
-                  <label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Location</label>
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 overflow-hidden">
-                    <div className="relative w-full h-32 bg-slate-100 dark:bg-slate-800 rounded">
+                  <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 overflow-hidden">
+                    <div className="relative w-full h-40 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
                       <img
                         src={planImageUrl || plan?.file_url}
                         alt="Blueprint location"
@@ -535,15 +533,22 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       />
                       {/* Pin marker overlay */}
                       <div 
-                        className="absolute w-3 h-3 bg-[#FFB800] border-2 border-white rounded-full shadow-lg transform -translate-x-1/2 -translate-y-1/2"
+                        className="absolute transform -translate-x-1/2 -translate-y-full"
                         style={{
-                          left: `${pinPosition.x}%`,
-                          top: `${pinPosition.y}%`
+                          left: `${pinPosition?.x || existingTask?.pin_x}%`,
+                          top: `${pinPosition?.y || existingTask?.pin_y}%`
                         }}
-                      />
+                      >
+                        <div className="relative">
+                          <div className="w-6 h-6 bg-[#FFB800] border-2 border-white rounded-md shadow-lg flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">📍</span>
+                          </div>
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-[#FFB800]" />
+                        </div>
+                      </div>
                     </div>
                     {plan?.name && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-center">{plan.name}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 text-center font-medium">{plan.name}</p>
                     )}
                   </div>
                 </div>
