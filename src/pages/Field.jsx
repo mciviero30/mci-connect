@@ -13,15 +13,18 @@ import {
   Briefcase,
   AlertCircle,
   FolderOpen,
-  Command
+  Command,
+  ClipboardList
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
+import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 
 export default function Field() {
@@ -30,6 +33,7 @@ export default function Field() {
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', description: '', address: '' });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [activeTab, setActiveTab] = useState('projects');
   
   const queryClient = useQueryClient();
 
@@ -162,8 +166,22 @@ export default function Field() {
           />
         </div>
 
-        {/* Projects Section */}
-        <div className="mb-6">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+            <TabsTrigger value="projects" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+              <Briefcase className="w-4 h-4 mr-2" />
+              Projects
+            </TabsTrigger>
+            <TabsTrigger value="checklists" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+              <ClipboardList className="w-4 h-4 mr-2" />
+              Checklists
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="projects" className="mt-6">
+            {/* Projects Section */}
+            <div className="mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">My Projects</h2>
             <div className="flex items-center gap-3">
@@ -213,10 +231,16 @@ export default function Field() {
               ))}
             </div>
           ) : (
-            <EmptyState onCreateProject={() => setShowNewProject(true)} />
+          <EmptyState onCreateProject={() => setShowNewProject(true)} />
           )}
-        </div>
-      </div>
+          </div>
+          </TabsContent>
+
+          <TabsContent value="checklists" className="mt-6">
+          <GlobalChecklistsManager />
+          </TabsContent>
+          </Tabs>
+          </div>
 
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
