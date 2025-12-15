@@ -334,19 +334,26 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   };
 
   const toggleChecklistItemStatus = (index) => {
-    setTask(prev => {
-      const newChecklist = [...prev.checklist];
-      const currentStatus = newChecklist[index].status;
-      // Cycle: not_started -> in_progress -> completed -> not_started
-      if (currentStatus === 'not_started') {
-        newChecklist[index].status = 'in_progress';
-      } else if (currentStatus === 'in_progress') {
-        newChecklist[index].status = 'completed';
-      } else {
-        newChecklist[index].status = 'not_started';
-      }
-      return { ...prev, checklist: newChecklist };
-    });
+    const newChecklist = [...task.checklist];
+    const currentStatus = newChecklist[index].status;
+    // Cycle: not_started -> in_progress -> completed -> not_started
+    if (currentStatus === 'not_started') {
+      newChecklist[index].status = 'in_progress';
+    } else if (currentStatus === 'in_progress') {
+      newChecklist[index].status = 'completed';
+    } else {
+      newChecklist[index].status = 'not_started';
+    }
+    
+    setTask(prev => ({ ...prev, checklist: newChecklist }));
+    
+    // Auto-save checklist changes if editing existing task
+    if (task.id) {
+      updateTaskMutation.mutate({
+        id: task.id,
+        data: { checklist: newChecklist }
+      });
+    }
   };
 
   const getChecklistIcon = (status) => {
