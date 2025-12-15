@@ -23,6 +23,21 @@ const CHECKLIST_TEMPLATES = {
     { id: 10, text: 'Install door and adjustment', completed: false },
     { id: 11, text: 'Clean', completed: false },
   ],
+  solid_wall: [
+    { id: 1, text: 'Staging Product', completed: false },
+    { id: 2, text: 'Check Demension/Layout', completed: false },
+    { id: 3, text: 'Base track', completed: false },
+    { id: 4, text: 'Ceiling Track / SW Cornice Rail', completed: false },
+    { id: 5, text: 'Studs', completed: false },
+    { id: 6, text: 'Horizontal', completed: false },
+    { id: 7, text: 'Power', completed: false },
+    { id: 8, text: 'Level/Plumb', completed: false },
+    { id: 9, text: 'Floor Base/ Foam', completed: false },
+    { id: 10, text: 'Support Post', completed: false },
+    { id: 11, text: 'Cladding', completed: false },
+    { id: 12, text: 'Outlet Cover plates', completed: false },
+    { id: 13, text: 'Clean', completed: false },
+  ],
 };
 
 export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated }) {
@@ -170,6 +185,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                 <SelectItem value="glass_wall" className="text-slate-900 dark:text-white">Glass Wall Installation</SelectItem>
+                <SelectItem value="solid_wall" className="text-slate-900 dark:text-white">Solid Wall Installation</SelectItem>
               </SelectContent>
             </Select>
             {task.checklist.length > 0 && (
