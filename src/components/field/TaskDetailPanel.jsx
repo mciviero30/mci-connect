@@ -116,7 +116,6 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
     pending: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     in_progress: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     completed: 'bg-green-500/20 text-green-400 border-green-500/30',
-    blocked: 'bg-red-500/20 text-red-400 border-red-500/30',
   };
 
   return (
@@ -194,7 +193,6 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
               <SelectItem value="pending" className="text-slate-900 dark:text-white">Pending</SelectItem>
               <SelectItem value="in_progress" className="text-slate-900 dark:text-white">In Progress</SelectItem>
               <SelectItem value="completed" className="text-slate-900 dark:text-white">Completed</SelectItem>
-              <SelectItem value="blocked" className="text-slate-900 dark:text-white">Blocked</SelectItem>
             </SelectContent>
           </Select>
         </div>
