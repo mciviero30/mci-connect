@@ -273,6 +273,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     <Plus className="w-4 h-4" />
                   </Button>
                 )}
+              </div>
 
               {/* Photos Grid - no labels */}
               {task.photo_urls.length > 0 && (
