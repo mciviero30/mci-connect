@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import ProjectProgressBar from './ProjectProgressBar.jsx';
 import OverdueTasksAlert from './OverdueTasksAlert.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
+import JobProgress from './JobProgress';
 
 export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, onTaskClick }) {
   // Use unified WorkUnit hook
@@ -52,9 +53,9 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
     <div className="p-6">
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Project Overview</h1>
 
-      {/* Progress Bar */}
+      {/* Work Progress */}
       <div className="mb-6">
-        <ProjectProgressBar tasks={tasks} />
+        <JobProgress tasks={tasks} />
       </div>
 
       {/* Overdue/Urgent Alerts */}
