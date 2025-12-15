@@ -635,16 +635,19 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 overflow-hidden">
                     <div className="relative w-full h-32 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
-                      <img
-                        src={planImageUrl || plan?.file_url}
-                        alt="Location preview"
-                        className="absolute w-full h-full"
+                      <div 
+                        className="absolute inset-0"
                         style={{
-                          objectFit: 'cover',
-                          objectPosition: `${pinPosition?.x || existingTask?.pin_x}% ${pinPosition?.y || existingTask?.pin_y}%`,
-                          transform: 'scale(3.5)'
+                          transform: `translate(${50 - (pinPosition?.x || existingTask?.pin_x)}%, ${50 - (pinPosition?.y || existingTask?.pin_y)}%) scale(2.5)`,
+                          transformOrigin: 'center center'
                         }}
-                      />
+                      >
+                        <img
+                          src={planImageUrl || plan?.file_url}
+                          alt="Location preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
                       {/* Pin marker in center */}
                       <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full pointer-events-none z-10">
                         <div className="relative">
