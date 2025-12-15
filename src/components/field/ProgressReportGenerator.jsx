@@ -291,14 +291,12 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
           // Add plan image
           doc.addImage(plan.file_url, 'JPEG', mapX, mapY, mapWidth, mapHeight);
           
-          // Draw yellow pin on the location
+          // Draw pin emoji on the location
           const pinX = mapX + (task.pin_x / 100) * mapWidth;
           const pinY = mapY + (task.pin_y / 100) * mapHeight;
           
-          doc.setFillColor(255, 184, 0);
-          doc.setDrawColor(26, 26, 26);
-          doc.setLineWidth(1);
-          doc.circle(pinX, pinY, 2.5, 'FD');
+          doc.setFontSize(8);
+          doc.text('📍', pinX - 1, pinY + 1);
           
           // Location label below map
           doc.setFillColor(254, 243, 199);
