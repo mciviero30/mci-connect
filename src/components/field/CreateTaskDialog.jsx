@@ -194,6 +194,15 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     },
   });
 
+  // Mutación para actualizaciones parciales (no cierra el diálogo)
+  const partialUpdateMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+    },
+  });
+
   const createCommentMutation = useMutation({
     mutationFn: (commentData) => base44.entities.TaskComment.create(commentData),
     onSuccess: () => {
@@ -349,7 +358,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     
     // Auto-save checklist changes if editing existing task
     if (task.id) {
-      updateTaskMutation.mutate({
+      partialUpdateMutation.mutate({
         id: task.id,
         data: { checklist: newChecklist }
       });
