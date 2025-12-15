@@ -222,21 +222,10 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         doc.text('Location on Plan', margin, yPos);
         yPos += 6;
 
-        try {
-          const miniMapSize = 60;
-          doc.addImage(plan.file_url, 'JPEG', margin, yPos, miniMapSize, miniMapSize);
-          
-          // Draw pin indicator
-          const pinX = margin + (task.pin_x / 100) * miniMapSize;
-          const pinY = yPos + (task.pin_y / 100) * miniMapSize;
-          doc.setFillColor(255, 184, 0); // Amber color
-          doc.circle(pinX, pinY, 2, 'F');
-          
-          yPos += miniMapSize + 8;
-        } catch (error) {
-          console.warn('Could not add location map:', error);
-          yPos += 5;
-        }
+        doc.setFontSize(8);
+        doc.setTextColor(100);
+        doc.text(`Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% on ${plan.name}`, margin, yPos);
+        yPos += 8;
       }
     }
 
@@ -261,39 +250,10 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       let photoCount = 0;
       let rowYPos = yPos;
 
-      for (let j = 0; j < Math.min(taskPhotos.length, 9); j++) {
-        const photo = taskPhotos[j];
-        const col = photoCount % photosPerRow;
-        const row = Math.floor(photoCount / photosPerRow);
-        
-        const xPos = margin + col * (photoSize + 5);
-        const currentYPos = rowYPos + row * (photoSize + 8);
-
-        if (currentYPos + photoSize > pageHeight - 30) {
-          addFooter();
-          doc.addPage();
-          rowYPos = margin;
-          photoCount = 0;
-        }
-
-        try {
-          if (photo.url) {
-            doc.addImage(photo.url, 'JPEG', xPos, rowYPos + row * (photoSize + 8), photoSize, photoSize);
-          }
-          
-          // Photo number
-          doc.setFontSize(7);
-          doc.setTextColor(100);
-          doc.text(`${j + 1}`, xPos + photoSize / 2, rowYPos + row * (photoSize + 8) + photoSize + 4, { align: 'center' });
-        } catch (error) {
-          console.warn('Could not add image:', error);
-          doc.setFillColor(240);
-          doc.rect(xPos, rowYPos + row * (photoSize + 8), photoSize, photoSize, 'F');
-          doc.setFontSize(8);
-          doc.text('Image', xPos + photoSize / 2, rowYPos + row * (photoSize + 8) + photoSize / 2, { align: 'center' });
-        }
-
-        photoCount++;
+      if (taskPhotos.length > 0) {
+        doc.setTextColor(100);
+        doc.text(`${taskPhotos.length} photo${taskPhotos.length > 1 ? 's' : ''} attached`, margin, yPos);
+        yPos += 8;
       }
 
       yPos = rowYPos + Math.ceil(Math.min(taskPhotos.length, 9) / photosPerRow) * (photoSize + 8) + 5;
