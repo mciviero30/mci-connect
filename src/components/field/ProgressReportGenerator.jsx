@@ -201,9 +201,9 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
   // Green - Completed (checkmark)
   doc.setTextColor(34, 197, 94);
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('✓', margin + 7, metaY + 12);
+  doc.text('✓', margin + 6, metaY + 13);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(203, 213, 225);
@@ -211,9 +211,9 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
   // Yellow - In Progress (dash)
   doc.setTextColor(251, 191, 36);
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('−', margin + 44, metaY + 12);
+  doc.text('−', margin + 44, metaY + 13);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(203, 213, 225);
@@ -221,9 +221,9 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
   // Red - Pending (X)
   doc.setTextColor(239, 68, 68);
-  doc.setFontSize(9);
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('✕', margin + 84, metaY + 12);
+  doc.text('✕', margin + 84, metaY + 13);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(203, 213, 225);
@@ -282,18 +282,39 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     const taskTitle = task.title || `Wall ${task.wall_number || String(i + 1).padStart(3, '0')}`;
     doc.text(taskTitle, margin + 5, yPos);
 
-    // Location on Plan - top right
+    // Location map - top right
     if (task.pin_x && task.pin_y && task.blueprint_id) {
       const plan = plans.find(p => p.id === task.blueprint_id);
-      if (plan) {
-        doc.setFillColor(254, 243, 199);
-        const locationWidth = 80;
-        const locationX = pageWidth - margin - locationWidth;
-        doc.roundedRect(locationX, yPos - 8, locationWidth, 10, 1.5, 1.5, 'F');
-        doc.setFontSize(8);
-        doc.setTextColor(120, 53, 15);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% - ${plan.name}`, locationX + 3, yPos - 2);
+      if (plan && plan.file_url) {
+        try {
+          // Map dimensions
+          const mapWidth = 70;
+          const mapHeight = 35;
+          const mapX = pageWidth - margin - mapWidth;
+          const mapY = yPos - 10;
+          
+          // Add plan image
+          doc.addImage(plan.file_url, 'JPEG', mapX, mapY, mapWidth, mapHeight);
+          
+          // Draw yellow pin on the location
+          const pinX = mapX + (task.pin_x / 100) * mapWidth;
+          const pinY = mapY + (task.pin_y / 100) * mapHeight;
+          
+          doc.setFillColor(255, 184, 0);
+          doc.setDrawColor(26, 26, 26);
+          doc.setLineWidth(1);
+          doc.circle(pinX, pinY, 2.5, 'FD');
+          
+          // Location label below map
+          doc.setFillColor(254, 243, 199);
+          doc.roundedRect(mapX, mapY + mapHeight + 1, mapWidth, 6, 1, 1, 'F');
+          doc.setFontSize(7);
+          doc.setTextColor(120, 53, 15);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% - ${plan.name}`, mapX + mapWidth / 2, mapY + mapHeight + 4.5, { align: 'center' });
+        } catch (err) {
+          console.warn('Error adding location map:', err);
+        }
       }
     }
 
@@ -408,17 +429,17 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         const isInProgress = item.status === 'in_progress';
         
         // Checkbox icon with symbols
-        doc.setFontSize(8);
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         if (isCompleted) {
           doc.setTextColor(34, 197, 94);
-          doc.text('✓', margin + 1.5, yPos);
+          doc.text('✓', margin + 1.2, yPos);
         } else if (isInProgress) {
           doc.setTextColor(251, 191, 36);
-          doc.text('−', margin + 1.5, yPos);
+          doc.text('−', margin + 1.2, yPos);
         } else {
           doc.setTextColor(239, 68, 68);
-          doc.text('✕', margin + 1.5, yPos);
+          doc.text('✕', margin + 1.2, yPos);
         }
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
@@ -493,69 +514,6 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         yPos += commentHeight + 3;
       });
       yPos += 5;
-    }
-
-    // Location with map section
-    if (task.pin_x && task.pin_y && task.blueprint_id) {
-      const plan = plans.find(p => p.id === task.blueprint_id);
-      if (plan && plan.file_url) {
-        if (yPos > pageHeight - 90) {
-          addFooter();
-          doc.addPage();
-          addHeader();
-          yPos = 28;
-        }
-
-        // Section header
-        doc.setFillColor(255, 184, 0);
-        doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(26, 26, 26);
-        doc.text('Location', margin + 2, yPos + 2);
-        yPos += 10;
-
-        try {
-          // Calculate map dimensions (maintain aspect ratio)
-          const maxMapWidth = contentWidth;
-          const maxMapHeight = 70;
-          
-          // Add plan image
-          const mapX = margin;
-          const mapY = yPos;
-          doc.addImage(plan.file_url, 'JPEG', mapX, mapY, maxMapWidth, maxMapHeight);
-          
-          // Draw pin on the location
-          const pinX = mapX + (task.pin_x / 100) * maxMapWidth;
-          const pinY = mapY + (task.pin_y / 100) * maxMapHeight;
-          
-          // Yellow pin with border
-          doc.setFillColor(255, 184, 0);
-          doc.setDrawColor(26, 26, 26);
-          doc.setLineWidth(1);
-          doc.circle(pinX, pinY, 3, 'FD');
-          
-          // Add plan name label below map
-          yPos += maxMapHeight + 5;
-          doc.setFillColor(254, 243, 199);
-          doc.roundedRect(margin, yPos, contentWidth, 8, 1.5, 1.5, 'F');
-          doc.setFontSize(9);
-          doc.setTextColor(120, 53, 15);
-          doc.setFont('helvetica', 'normal');
-          doc.text(plan.name, margin + 3, yPos + 5);
-          yPos += 13;
-        } catch (err) {
-          console.warn('Error adding map image:', err);
-          // Fallback to text only
-          doc.setFillColor(254, 243, 199);
-          doc.roundedRect(margin, yPos, contentWidth, 10, 1.5, 1.5, 'F');
-          doc.setFontSize(9);
-          doc.setTextColor(120, 53, 15);
-          doc.setFont('helvetica', 'normal');
-          doc.text(`Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% - ${plan.name}`, margin + 3, yPos + 6);
-          yPos += 15;
-        }
-      }
     }
 
     // Photos section
