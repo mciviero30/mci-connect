@@ -634,22 +634,18 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                    <div className="relative w-full" style={{ paddingBottom: '83.33%' }}>
-                      <div className="absolute inset-0 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <img
-                          src={planImageUrl || plan?.file_url}
-                          alt="Location"
-                          className="absolute"
-                          style={{
-                            width: '300%',
-                            height: '300%',
-                            left: `calc(50% - ${(pinPosition?.x || existingTask?.pin_x) * 3}%)`,
-                            top: `calc(50% - ${(pinPosition?.y || existingTask?.pin_y) * 3}%)`,
-                            objectFit: 'none'
-                          }}
-                        />
+                    <div className="relative w-full bg-slate-100 dark:bg-slate-800" style={{ height: '200px' }}>
+                      <div 
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: `url(${planImageUrl || plan?.file_url})`,
+                          backgroundSize: '400%',
+                          backgroundPosition: `${pinPosition?.x || existingTask?.pin_x}% ${pinPosition?.y || existingTask?.pin_y}%`,
+                          backgroundRepeat: 'no-repeat'
+                        }}
+                      >
                         {/* Pin in center */}
-                        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full z-10">
+                        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full">
                           <div className="relative">
                             <div className="w-7 h-7 bg-[#FFB800] border-2 border-white rounded-md shadow-xl flex items-center justify-center">
                               <span className="text-sm">📍</span>
