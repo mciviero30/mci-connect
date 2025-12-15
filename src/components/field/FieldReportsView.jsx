@@ -209,13 +209,26 @@ export default function FieldReportsView({ jobId }) {
   const handleDownloadReport = async (report) => {
     setDownloadingReport(report.id);
     try {
+      // Fetch comments for all tasks
+      const taskCommentsMap = {};
+      for (const task of allTasks) {
+        try {
+          const comments = await base44.entities.TaskComment.filter({ task_id: task.id }, '-created_date');
+          taskCommentsMap[task.id] = comments;
+        } catch (err) {
+          console.warn(`Could not fetch comments for task ${task.id}:`, err);
+          taskCommentsMap[task.id] = [];
+        }
+      }
+
       const pdf = await generateProgressReportPDF(
         report,
         job,
         allTasks,
         photos,
         plans,
-        user
+        user,
+        taskCommentsMap
       );
       
       const reportTypeLabel = {
