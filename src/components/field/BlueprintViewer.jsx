@@ -508,11 +508,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handlePinClick = (task, e) => {
-    // Always open task detail when clicking a pin, unless we're dragging
-    if (!draggingPin && dragDistance < 5) {
-      e?.stopPropagation();
-      setSelectedTask(task);
-    }
+    console.log('Pin clicked:', task.title, 'dragDistance:', dragDistance, 'draggingPin:', draggingPin);
+    e?.preventDefault();
+    e?.stopPropagation();
+    setSelectedTask(task);
   };
 
   const handlePinDrag = (task, e) => {

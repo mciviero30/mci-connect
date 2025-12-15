@@ -27,6 +27,7 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
   };
 
   const handleClick = (e) => {
+    e.preventDefault();
     e.stopPropagation();
     
     // Only trigger click if mouse didn't move much (not a drag)
@@ -36,11 +37,11 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
         Math.pow(e.clientY - mouseDownPos.y, 2)
       );
       
-      if (distance < 5 && onClick) {
-        onClick(e);
+      if (distance < 5) {
+        if (onClick) onClick(e);
       }
-    } else if (onClick) {
-      onClick(e);
+    } else {
+      if (onClick) onClick(e);
     }
     
     setMouseDownPos(null);
