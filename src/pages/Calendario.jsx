@@ -406,7 +406,7 @@ export default function Calendario() {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+      <div className="p-2 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
         <div className="max-w-7xl mx-auto">
           <PageHeader
             title={t('calendar')}
@@ -417,23 +417,23 @@ export default function Calendario() {
           />
 
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
-          <div className="grid md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-6">
             <Card 
               className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-lg border-0 cursor-pointer hover:shadow-xl transition-shadow dark:from-blue-600 dark:to-blue-700"
               onClick={() => setEventTypeFilter('all')}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-2 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-blue-50">
+                    <p className="text-xs md:text-sm font-medium text-blue-50">
                       {language === 'es' ? 'Total Turnos' : 'Total Shifts'}
                     </p>
-                    <p className="text-3xl font-bold text-white mt-1">{workload.totalEvents}</p>
-                    <p className="text-xs text-blue-100 mt-1">
+                    <p className="text-xl md:text-3xl font-bold text-white mt-0.5 md:mt-1">{workload.totalEvents}</p>
+                    <p className="text-[10px] md:text-xs text-blue-100 mt-0.5 md:mt-1 hidden md:block">
                       {language === 'es' ? 'Click para mostrar todos' : 'Click to show all'}
                     </p>
                   </div>
-                  <CalendarIcon className="w-8 h-8 text-white/60" />
+                  <CalendarIcon className="w-6 h-6 md:w-8 md:h-8 text-white/60" />
                 </div>
               </CardContent>
             </Card>
@@ -442,18 +442,18 @@ export default function Calendario() {
               className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl hover:border-purple-400 dark:hover:border-purple-500 transition-all"
               onClick={() => setEventTypeFilter('job_work')}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-2 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Trabajo' : 'Job Work'}
                     </p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{workload.jobWork}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mt-0.5 md:mt-1">{workload.jobWork}</p>
+                    <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1 hidden md:block">
                       {language === 'es' ? 'Click para filtrar' : 'Click to filter'}
                     </p>
                   </div>
-                  <Briefcase className="w-8 h-8 text-purple-500" />
+                  <Briefcase className="w-6 h-6 md:w-8 md:h-8 text-purple-500" />
                 </div>
               </CardContent>
             </Card>
@@ -462,40 +462,40 @@ export default function Calendario() {
               className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl hover:border-blue-400 dark:hover:border-blue-500 transition-all"
               onClick={() => setEventTypeFilter('appointment')}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-2 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Citas' : 'Appointments'}
                     </p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{workload.appointments}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mt-0.5 md:mt-1">{workload.appointments}</p>
+                    <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1 hidden md:block">
                       {language === 'es' ? 'Click para filtrar' : 'Click to filter'}
                     </p>
                   </div>
-                  <CalendarClock className="w-8 h-8 text-blue-500" />
+                  <CalendarClock className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
-              <CardContent className="p-4">
+            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
+              <CardContent className="p-2 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Horas Totales' : 'Total Hours'}
                     </p>
-                    <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                    <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mt-0.5 md:mt-1">{workload.totalEstimatedHours.toFixed(1)}h</p>
                   </div>
-                  <Clock className="w-8 h-8 text-green-500" />
+                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-green-500" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
-            <CardContent className="p-6">
-              <div className="grid md:grid-cols-4 gap-4">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-3 md:mb-6">
+            <CardContent className="p-3 md:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
                 <div className="space-y-2">
                   <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
                     {language === 'es' ? 'Tipo de Turno' : 'Shift Type'}
@@ -598,37 +598,37 @@ export default function Calendario() {
             </CardContent>
           </Card>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handlePrevious} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                <ChevronLeft className="w-4 h-4" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 mb-3 md:mb-6">
+            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto">
+              <Button variant="outline" size="sm" onClick={handlePrevious} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 h-8">
+                <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
               </Button>
-              <Button variant="outline" onClick={handleToday} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
+              <Button variant="outline" size="sm" onClick={handleToday} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 h-8 text-xs md:text-sm">
                 {t('today')}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleNext} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">
-                <ChevronRight className="w-4 h-4" />
+              <Button variant="outline" size="sm" onClick={handleNext} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 h-8">
+                <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
               </Button>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white ml-4">{getDateRange()}</h2>
+              <h2 className="text-sm md:text-xl font-bold text-slate-900 dark:text-white ml-1 md:ml-4 truncate">{getDateRange()}</h2>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto justify-end">
               <Tabs value={view} onValueChange={setView}>
-                <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-8">
+                  <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Día' : 'Day'}
                   </TabsTrigger>
-                  <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                  <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Semana' : 'Week'}
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
+                  <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Mes' : 'Month'}
                   </TabsTrigger>
-                  <TabsTrigger value="agenda" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                    <List className="w-4 h-4" />
+                  <TabsTrigger value="agenda" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 h-7 px-2">
+                    <List className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
-                  <TabsTrigger value="resource" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">
-                    <Grid3X3 className="w-4 h-4" />
+                  <TabsTrigger value="resource" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 h-7 px-2 hidden md:flex">
+                    <Grid3X3 className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
