@@ -61,6 +61,20 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showNewItemInput, setShowNewItemInput] = useState(false);
   const [newChecklistItem, setNewChecklistItem] = useState('');
+  const [newComment, setNewComment] = useState('');
+
+  // Fetch current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch task comments
+  const { data: comments = [] } = useQuery({
+    queryKey: ['task-comments', task.id],
+    queryFn: () => base44.entities.TaskComment.filter({ task_id: task.id }, '-created_date'),
+    enabled: !!task.id,
+  });
 
   // Fetch plan details if blueprintId is provided
   const { data: plan } = useQuery({
@@ -97,6 +111,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       setShowNewItemInput(false);
       setNewChecklistItem('');
       onOpenChange(false);
+    },
+  });
+
+  const createCommentMutation = useMutation({
+    mutationFn: (commentData) => base44.entities.TaskComment.create(commentData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['task-comments', task.id] });
+      setNewComment('');
     },
   });
 
@@ -244,6 +266,16 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     }
   };
 
+  const handleAddComment = () => {
+    if (!newComment.trim() || !task.id || !currentUser) return;
+    
+    createCommentMutation.mutate({
+      task_id: task.id,
+      comment: newComment.trim(),
+      author_name: currentUser.full_name,
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
@@ -343,17 +375,81 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <p className="text-sm text-slate-400 dark:text-slate-500">No checklist items yet. Select a template above.</p>
               )}
 
-              {/* Message Input - Moved to checklist area */}
-              <div className="mt-4">
-                <Textarea 
-                  value={task.description}
-                  onChange={(e) => setTask({...task, description: e.target.value})}
-                  placeholder="Enter message here..."
-                  className="w-full bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white resize-none mb-2"
-                  rows={2}
-                />
+              {/* Activity Section */}
+              <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
+                <h3 className="font-semibold text-slate-900 dark:text-white mb-3">Activity:</h3>
+                
+                {/* Comments List */}
+                <div className="space-y-3 mb-4 max-h-[300px] overflow-y-auto">
+                  {comments.length > 0 ? (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        {/* Avatar */}
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                          {comment.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        {/* Comment Content */}
+                        <div className="flex-1">
+                          <div className="flex items-baseline gap-2">
+                            <span className="font-semibold text-sm text-slate-900 dark:text-white">
+                              {comment.author_name || 'Unknown'}
+                            </span>
+                            <span className="text-xs text-slate-400 dark:text-slate-500">
+                              {new Date(comment.created_date).toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                            {comment.comment}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">
+                      No comments yet
+                    </p>
+                  )}
+                </div>
+
+                {/* Comment Input */}
+                <div className="flex gap-2 items-end">
+                  <Input
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Enter message here..."
+                    className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAddComment();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim() || createCommentMutation.isPending}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4"
+                  >
+                    ✓
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-slate-600 dark:text-slate-400"
+                  >
+                    ✗
+                  </Button>
+                </div>
+
                 {/* Photo buttons */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-2">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -391,28 +487,28 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     Take Photo
                   </Button>
                 </div>
-              </div>
 
-              {/* Photos Grid */}
-              {task.photo_urls.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  {task.photo_urls.map((url, idx) => (
-                    <div key={idx} className="relative group">
-                      <img
-                        src={url}
-                        alt={`Photo ${idx + 1}`}
-                        className="w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-                      />
-                      <button
-                        onClick={() => handleRemovePhoto(idx)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {/* Photos Grid */}
+                {task.photo_urls.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    {task.photo_urls.map((url, idx) => (
+                      <div key={idx} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Photo ${idx + 1}`}
+                          className="w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
+                        />
+                        <button
+                          onClick={() => handleRemovePhoto(idx)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               </div>
           </div>
 
