@@ -634,27 +634,24 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                    <div className="relative w-full h-[200px] bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                      <img
-                        src={planImageUrl || plan?.file_url}
-                        alt="Plan location"
-                        className="absolute"
+                    <div className="relative w-full bg-slate-100 dark:bg-slate-800" style={{ height: '200px' }}>
+                      <div 
+                        className="absolute inset-0"
                         style={{
-                          width: '400%',
-                          height: '400%',
-                          left: '50%',
-                          top: '50%',
-                          transform: `translate(calc(-50% - ${(pinPosition?.x || existingTask?.pin_x) - 50}% * 4), calc(-50% - ${(pinPosition?.y || existingTask?.pin_y) - 50}% * 4))`,
-                          objectFit: 'none',
+                          backgroundImage: `url(${planImageUrl || plan?.file_url})`,
+                          backgroundSize: '400%',
+                          backgroundPosition: `${pinPosition?.x || existingTask?.pin_x}% ${pinPosition?.y || existingTask?.pin_y}%`,
+                          backgroundRepeat: 'no-repeat'
                         }}
-                      />
-                      {/* Pin in center */}
-                      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full z-10">
-                        <div className="relative">
-                          <div className="w-7 h-7 bg-[#FFB800] border-2 border-white rounded-md shadow-xl flex items-center justify-center">
-                            <span className="text-sm">📍</span>
+                      >
+                        {/* Pin in center */}
+                        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full">
+                          <div className="relative">
+                            <div className="w-7 h-7 bg-[#FFB800] border-2 border-white rounded-md shadow-xl flex items-center justify-center">
+                              <span className="text-sm">📍</span>
+                            </div>
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#FFB800]" />
                           </div>
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#FFB800]" />
                         </div>
                       </div>
                     </div>
