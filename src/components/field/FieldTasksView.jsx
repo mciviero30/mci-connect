@@ -19,7 +19,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [showCreateTask, setShowCreateTask] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -157,7 +157,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                         key={task.id}
                         draggable
                         onDragStart={(e) => handleDragStart(e, task)}
-                        onClick={() => setSelectedTask(task)}
+                        onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
                         className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-2 cursor-pointer hover:border-[#FFB800]/50 transition-all flex items-center gap-2"
                       >
                         <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
@@ -202,7 +202,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                 return (
                   <tr 
                     key={task.id}
-                    onClick={() => setSelectedTask(task)}
+                    onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
                     className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
                   >
                     <td className="p-4">
@@ -241,25 +241,17 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
         </div>
       )}
 
-      {/* Create Task Dialog */}
+      {/* Create/Edit Task Dialog */}
       <CreateTaskDialog 
         open={showCreateTask}
-        onOpenChange={setShowCreateTask}
+        onOpenChange={(open) => {
+          setShowCreateTask(open);
+          if (!open) setEditingTask(null);
+        }}
         jobId={jobId}
-        onCreated={() => setShowCreateTask(false)}
+        onCreated={() => { setShowCreateTask(false); setEditingTask(null); }}
+        existingTask={editingTask}
       />
-
-      {/* Task Detail Sidebar */}
-      {selectedTask && (
-        <div className="fixed inset-y-0 right-0 z-50">
-          <TaskDetailPanel 
-            task={selectedTask}
-            onClose={() => setSelectedTask(null)}
-            jobId={jobId}
-            allTasks={tasks}
-          />
-        </div>
-      )}
     </div>
   );
 }
