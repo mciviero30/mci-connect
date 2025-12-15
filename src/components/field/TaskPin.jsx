@@ -16,28 +16,55 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
   // Extract wall number from title (e.g., "Wall 019" -> "019")
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
+  const [dragStartPos, setDragStartPos] = React.useState(null);
+  const [hasMoved, setHasMoved] = React.useState(false);
+
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onClick) {
+    // Only trigger onClick if we didn't drag
+    if (!hasMoved && onClick) {
       onClick(e);
     }
+    setHasMoved(false);
   };
 
   const handleMouseDown = (e) => {
     e.stopPropagation();
-    if (onDragPin && e.shiftKey) {
+    e.preventDefault();
+    setDragStartPos({ x: e.clientX, y: e.clientY });
+    setHasMoved(false);
+    if (onDragPin) {
       onDragPin(task, e);
     }
+  };
+
+  const handleMouseMove = (e) => {
+    if (dragStartPos) {
+      const distance = Math.sqrt(
+        Math.pow(e.clientX - dragStartPos.x, 2) + 
+        Math.pow(e.clientY - dragStartPos.y, 2)
+      );
+      if (distance > 5) {
+        setHasMoved(true);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragStartPos(null);
   };
 
   return (
     <button
       onClick={handleClick}
       onMouseDown={handleMouseDown}
-      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 cursor-pointer ${
-        isSelected ? 'scale-125 z-20' : ''
-      } ${isDragging ? 'cursor-move' : ''}`}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
+        isDragging ? 'cursor-move scale-110' : 'cursor-pointer'
+      } ${isSelected ? 'scale-125 z-20' : ''}`}
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
       <div className="relative">
