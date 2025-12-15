@@ -28,13 +28,13 @@ export default function FieldReportsView({ jobId }) {
   const [newReport, setNewReport] = useState({
     name: '',
     description: '',
-    report_type: 'daily_report',
+    report_type: 'progress_report',
     type: 'pdf_detailed',
     recipients: [],
     schedule: 'send_now',
     include_options: {
       photos: true,
-      checklists: true,
+      tasks: true,
       messages: true,
       plans: true,
     },
@@ -69,13 +69,13 @@ export default function FieldReportsView({ jobId }) {
       setNewReport({
         name: '',
         description: '',
-        report_type: 'daily_report',
+        report_type: 'progress_report',
         type: 'pdf_detailed',
         recipients: [],
         schedule: 'send_now',
         include_options: {
           photos: true,
-          checklists: true,
+          tasks: true,
           messages: true,
           plans: true,
         },
@@ -241,7 +241,7 @@ export default function FieldReportsView({ jobId }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectItem value="daily_report" className="text-slate-900 dark:text-white">Daily Report</SelectItem>
+                  <SelectItem value="progress_report" className="text-slate-900 dark:text-white">Progress Report</SelectItem>
                   <SelectItem value="punch_report" className="text-slate-900 dark:text-white">Punch Report</SelectItem>
                   <SelectItem value="rfi_report" className="text-slate-900 dark:text-white">RFI Report</SelectItem>
                   <SelectItem value="change_order_report" className="text-slate-900 dark:text-white">Change of Order Report</SelectItem>
@@ -282,7 +282,7 @@ export default function FieldReportsView({ jobId }) {
               <div className="space-y-3">
                 {[
                   { key: 'photos', label: 'Photos' },
-                  { key: 'checklists', label: 'Checklists' },
+                  { key: 'tasks', label: 'Tasks' },
                   { key: 'messages', label: 'Messages' },
                   { key: 'plans', label: 'Plans' },
                 ].map((option) => (
