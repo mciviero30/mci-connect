@@ -98,71 +98,68 @@ export default function FieldDimensionView({ jobId }) {
     return { valid: true };
   };
 
-  const handleFileChange = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
-    console.log('File selected:', file);
-    if (file) {
-      console.log('File type:', file.type);
-      console.log('File size:', file.size);
-      const validation = validateFile(file);
-      console.log('Validation result:', validation);
-      if (!validation.valid) {
-        toast.error(validation.error);
-        e.target.value = '';
-        return;
-      }
-      setNewDimension({ ...newDimension, file });
-      console.log('File set successfully');
-    }
-  };
+    if (!file) return;
 
-  const handleUpload = async () => {
-    if (!newDimension.name || !newDimension.file) {
-      toast.error('Please provide a name and select a file');
+    console.log('File selected:', file.name, file.type, file.size);
+
+    // Validate file
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
       return;
     }
 
     setUploading(true);
     setUploadProgress(0);
 
-    try {
-      console.log('Starting upload...', newDimension.file.name);
-      
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => Math.min(prev + 10, 90));
-      }, 200);
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => Math.min(prev + 10, 90));
+    }, 300);
 
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: newDimension.file });
-      
-      console.log('File uploaded:', file_url);
+    try {
+      console.log('Uploading file...');
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
       
       clearInterval(progressInterval);
       setUploadProgress(100);
-
-      const dimensionData = {
-        name: newDimension.name,
-        description: newDimension.description,
-        file_url,
-        type: 'dimension',
-      };
-
-      // Only add job_id if it exists
-      if (jobId) {
-        dimensionData.job_id = jobId;
-      }
-
-      console.log('Creating dimension with data:', dimensionData);
-      await createDimensionMutation.mutateAsync(dimensionData);
-      console.log('Dimension created successfully');
-
-      setUploadProgress(0);
+      
+      console.log('File uploaded:', file_url);
+      
+      setNewDimension({ 
+        ...newDimension, 
+        file: file_url,
+        name: newDimension.name || file.name.split('.')[0]
+      });
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload file: ' + error.message);
-    } finally {
-      setUploading(false);
+      clearInterval(progressInterval);
+      toast.error('Error uploading file');
     }
+    setUploading(false);
+  };
+
+  const handleCreateDimension = async () => {
+    if (!newDimension.file || !newDimension.name) {
+      toast.error('Please provide a name and upload a file');
+      return;
+    }
+
+    const dimensionData = {
+      name: newDimension.name,
+      description: newDimension.description,
+      file_url: newDimension.file,
+      type: 'dimension',
+    };
+
+    if (jobId) {
+      dimensionData.job_id = jobId;
+    }
+
+    console.log('Creating dimension:', dimensionData);
+    await createDimensionMutation.mutateAsync(dimensionData);
   };
 
   const handleDelete = async (dimension) => {
@@ -305,59 +302,88 @@ export default function FieldDimensionView({ jobId }) {
               />
             </div>
             <div>
-              <Label>File (PDF, JPG, PNG - Max 50MB)</Label>
-              <Input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
-                className="mt-1.5 bg-white dark:bg-slate-800"
-              />
-              {newDimension.file && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                  Selected: {newDimension.file.name} ({(newDimension.file.size / 1024 / 1024).toFixed(2)} MB)
-                </p>
-              )}
-            </div>
-
-            {uploading && (
-              <div className="space-y-2">
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                  <div
-                    className="bg-[#FFB800] h-2 rounded-full transition-all"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400 text-center">
-                  Uploading... {uploadProgress}%
-                </p>
+              <Label>File</Label>
+              <div className="mt-1.5">
+                {newDimension.file ? (
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+                    {newDimension.file.toLowerCase().endsWith('.pdf') ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-4xl mb-2">📄</div>
+                          <p className="text-slate-700 dark:text-white text-sm">{newDimension.name || 'PDF uploaded'}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <img 
+                        src={newDimension.file} 
+                        alt="Preview" 
+                        className="w-full h-full object-contain"
+                      />
+                    )}
+                    <button 
+                      onClick={() => setNewDimension({ ...newDimension, file: null })}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-full hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer hover:border-[#FFB800]">
+                    {uploading ? (
+                      <div className="flex flex-col items-center w-full px-8">
+                        <Loader2 className="w-8 h-8 text-[#FFB800] animate-spin mb-2" />
+                        <span className="text-sm text-slate-600 dark:text-slate-400 mb-2">Uploading...</span>
+                        {uploadProgress > 0 && (
+                          <div className="w-full">
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                              <div
+                                className="bg-[#FFB800] h-2 rounded-full transition-all"
+                                style={{ width: `${uploadProgress}%` }}
+                              />
+                            </div>
+                            <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-1">
+                              {Math.round(uploadProgress)}%
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Click to upload</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-500 mt-1">PDF, JPG, PNG - Max 50MB</span>
+                      </>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*,.pdf"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </label>
+                )}
               </div>
-            )}
+            </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <Button
                 variant="outline"
-                onClick={() => setShowUpload(false)}
-                disabled={uploading}
+                onClick={() => {
+                  setShowUpload(false);
+                  setNewDimension({ name: '', description: '', file: null });
+                }}
+                disabled={createDimensionMutation.isPending}
                 className="border-slate-300 dark:border-slate-700"
               >
                 Cancel
               </Button>
               <Button
-                onClick={handleUpload}
-                disabled={!newDimension.name || !newDimension.file || uploading}
+                onClick={handleCreateDimension}
+                disabled={!newDimension.name || !newDimension.file || createDimensionMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {uploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                  </>
-                )}
+                {createDimensionMutation.isPending ? 'Saving...' : 'Save Drawing'}
               </Button>
             </div>
           </div>
