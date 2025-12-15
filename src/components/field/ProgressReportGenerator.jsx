@@ -216,23 +216,47 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   for (let i = 0; i < sortedTasks.length; i++) {
     const task = sortedTasks[i];
     doc.addPage();
-    let yPos = margin;
+    
+    // Add header
+    addHeader();
+    
+    let yPos = 28;
 
-    // Task header
-    doc.setFontSize(14);
-    doc.setTextColor(0);
+    // Task header with yellow accent
+    doc.setFillColor(255, 184, 0);
+    doc.rect(margin - 5, yPos - 8, 5, 14, 'F');
+    
+    doc.setFontSize(16);
+    doc.setTextColor(26, 26, 26);
     doc.setFont('helvetica', 'bold');
     const taskTitle = task.title || `Wall ${task.wall_number || String(i + 1).padStart(3, '0')}`;
-    doc.text(taskTitle, margin, yPos);
-    yPos += 8;
+    doc.text(taskTitle, margin + 5, yPos);
+    yPos += 10;
 
-    // Status line
+    // Status badges
+    const statusColors = {
+      'pending': { bg: [241, 245, 249], text: [100, 116, 139] },
+      'in_progress': { bg: [254, 243, 199], text: [180, 83, 9] },
+      'completed': { bg: [220, 252, 231], text: [22, 101, 52] },
+      'blocked': { bg: [254, 226, 226], text: [185, 28, 28] }
+    };
+    
+    const statusColor = statusColors[task.status] || statusColors['pending'];
+    doc.setFillColor(...statusColor.bg);
+    doc.roundedRect(margin, yPos, 28, 7, 1.5, 1.5, 'F');
+    doc.setFontSize(8);
+    doc.setTextColor(...statusColor.text);
+    doc.setFont('helvetica', 'bold');
+    doc.text((task.status || 'pending').toUpperCase(), margin + 14, yPos + 4.5, { align: 'center' });
+    
+    // Assignee and category
     doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100);
-    const statusText = `${task.status || 'Pending'} | ${task.assigned_to_name || 'Unassigned'} | ${task.category || 'Installation'}`;
-    doc.text(statusText, margin, yPos);
-    yPos += 7;
+    doc.text(`${task.assignee_name || task.assigned_to_name || 'Unassigned'}`, margin + 32, yPos + 5);
+    doc.text(`•`, margin + 70, yPos + 5);
+    doc.text(`${(task.category || 'Installation').charAt(0).toUpperCase() + (task.category || 'Installation').slice(1)}`, margin + 75, yPos + 5);
+    yPos += 12;
 
     // Plan reference
     if (task.blueprint_id) {
