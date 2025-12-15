@@ -14,10 +14,12 @@ import {
   AlertCircle,
   FolderOpen,
   Command,
-  ClipboardList
+  ClipboardList,
+  FileText
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
+import FieldDimensionView from '@/components/field/FieldDimensionView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -173,6 +175,10 @@ export default function Field() {
               <Briefcase className="w-4 h-4 mr-2" />
               Projects
             </TabsTrigger>
+            <TabsTrigger value="dimensions" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+              <FileText className="w-4 h-4 mr-2" />
+              Field Dimensions
+            </TabsTrigger>
             <TabsTrigger value="checklists" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
               <ClipboardList className="w-4 h-4 mr-2" />
               Checklists
@@ -234,6 +240,10 @@ export default function Field() {
           <EmptyState onCreateProject={() => setShowNewProject(true)} />
           )}
           </div>
+          </TabsContent>
+
+          <TabsContent value="dimensions" className="mt-6">
+            <FieldDimensionView jobId={null} />
           </TabsContent>
 
           <TabsContent value="checklists" className="mt-6">

@@ -34,15 +34,26 @@ export default function FieldDimensionView({ jobId }) {
   // Fetch dimensions (using Plan entity with type='dimension')
   const { data: dimensions = [], isLoading } = useQuery({
     queryKey: ['field-dimensions', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, type: 'dimension' }, '-created_date'),
-    enabled: !!jobId,
+    queryFn: () => {
+      if (jobId) {
+        return base44.entities.Plan.filter({ job_id: jobId, type: 'dimension' }, '-created_date');
+      } else {
+        // Fetch all dimensions when no jobId (global view)
+        return base44.entities.Plan.filter({ type: 'dimension' }, '-created_date');
+      }
+    },
   });
 
   // Fetch tasks for annotations
   const { data: tasks = [] } = useQuery({
     queryKey: ['dimension-tasks', jobId],
-    queryFn: () => base44.entities.Task.filter({ job_id: jobId }),
-    enabled: !!jobId,
+    queryFn: () => {
+      if (jobId) {
+        return base44.entities.Task.filter({ job_id: jobId });
+      } else {
+        return base44.entities.Task.list();
+      }
+    },
   });
 
   const createDimensionMutation = useMutation({
@@ -111,13 +122,19 @@ export default function FieldDimensionView({ jobId }) {
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      await createDimensionMutation.mutateAsync({
-        job_id: jobId,
+      const dimensionData = {
         name: newDimension.name,
         description: newDimension.description,
         file_url,
         type: 'dimension',
-      });
+      };
+
+      // Only add job_id if it exists
+      if (jobId) {
+        dimensionData.job_id = jobId;
+      }
+
+      await createDimensionMutation.mutateAsync(dimensionData);
 
       setUploadProgress(0);
     } catch (error) {
