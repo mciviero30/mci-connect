@@ -603,8 +603,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   };
 
   const handleImageClick = (e) => {
+    // Don't handle if clicking on a pin button
+    if (e.target.closest('button')) return;
+    
     // Don't place pin if we just finished dragging the view
-    if (hasDragged) return;
+    if (hasDragged || dragDistance > 5) return;
     
     if (activeTool !== 'pin' && !isPlacingPin) return;
     
