@@ -94,7 +94,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.setFont('helvetica', 'bold');
-    const taskTitle = `#${i + 1} - ${task.title || `Wall ${task.wall_number || i + 1}`}`;
+    const taskTitle = task.title || `Wall ${task.wall_number || String(i + 1).padStart(3, '0')}`;
     doc.text(taskTitle, margin, yPos);
     yPos += 8;
 

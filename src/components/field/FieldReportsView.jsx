@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 
 export default function FieldReportsView({ jobId }) {
   const [showCreate, setShowCreate] = useState(false);
+  const [editingReport, setEditingReport] = useState(null);
   const [downloadingReport, setDownloadingReport] = useState(null);
   const [newReport, setNewReport] = useState({
     name: '',
@@ -89,19 +90,64 @@ export default function FieldReportsView({ jobId }) {
   // Merge tasks and work units
   const allTasks = [...tasks, ...workUnits.filter(wu => wu.type === 'task')];
 
-  // Set job name automatically when dialog opens
+  // Set job name automatically when dialog opens or editing
   React.useEffect(() => {
-    if (showCreate && job && !newReport.name) {
+    if (showCreate && !editingReport && job && !newReport.name) {
       const jobName = job.name || job.job_name_field || 'Project Report';
       setNewReport(prev => ({ ...prev, name: jobName }));
     }
-  }, [showCreate, job]);
+  }, [showCreate, job, editingReport]);
+
+  // Load report data when editing
+  React.useEffect(() => {
+    if (editingReport) {
+      setNewReport({
+        name: editingReport.name,
+        description: editingReport.description || '',
+        report_type: editingReport.report_type,
+        type: editingReport.type,
+        recipients: editingReport.recipients || [],
+        schedule: editingReport.schedule || 'send_now',
+        include_options: editingReport.include_options || {
+          photos: true,
+          tasks: true,
+          messages: true,
+          plans: true,
+        },
+      });
+      setShowCreate(true);
+    }
+  }, [editingReport]);
 
   const createReportMutation = useMutation({
     mutationFn: (data) => base44.entities.Report.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-reports', jobId] });
       setShowCreate(false);
+      setEditingReport(null);
+      setNewReport({
+        name: '',
+        description: '',
+        report_type: 'progress_report',
+        type: 'pdf_detailed',
+        recipients: [],
+        schedule: 'send_now',
+        include_options: {
+          photos: true,
+          tasks: true,
+          messages: true,
+          plans: true,
+        },
+      });
+    },
+  });
+
+  const updateReportMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Report.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-reports', jobId] });
+      setShowCreate(false);
+      setEditingReport(null);
       setNewReport({
         name: '',
         description: '',
@@ -129,15 +175,23 @@ export default function FieldReportsView({ jobId }) {
   const handleCreateReport = () => {
     if (!newReport.name) return;
     
-    // Calculate next report number
-    const existingReports = reports.filter(r => r.report_type === newReport.report_type);
-    const reportNumber = String(existingReports.length + 1).padStart(3, '0');
-    
-    createReportMutation.mutate({
-      job_id: jobId,
-      report_number: reportNumber,
-      ...newReport,
-    });
+    if (editingReport) {
+      // Update existing report
+      updateReportMutation.mutate({
+        id: editingReport.id,
+        data: newReport,
+      });
+    } else {
+      // Calculate next report number for new report
+      const existingReports = reports.filter(r => r.report_type === newReport.report_type);
+      const reportNumber = String(existingReports.length + 1).padStart(3, '0');
+      
+      createReportMutation.mutate({
+        job_id: jobId,
+        report_number: reportNumber,
+        ...newReport,
+      });
+    }
   };
 
   const handleDownloadReport = async (report) => {
@@ -282,9 +336,12 @@ export default function FieldReportsView({ jobId }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                      <DropdownMenuItem className="text-slate-900 dark:text-white">
+                      <DropdownMenuItem 
+                        onClick={() => setEditingReport(report)}
+                        className="text-slate-900 dark:text-white"
+                      >
                         <Settings2 className="w-4 h-4 mr-2" />
-                        Configure
+                        Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => deleteReportMutation.mutate(report.id)}
@@ -302,11 +359,16 @@ export default function FieldReportsView({ jobId }) {
         </div>
       )}
 
-      {/* Create Report Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      {/* Create/Edit Report Dialog */}
+      <Dialog open={showCreate} onOpenChange={(open) => {
+        setShowCreate(open);
+        if (!open) setEditingReport(null);
+      }}>
         <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white">Create Report</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">
+              {editingReport ? 'Edit Report' : 'Create Report'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4 max-h-[70vh] overflow-y-auto">
             <div>
@@ -388,15 +450,20 @@ export default function FieldReportsView({ jobId }) {
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+              <Button variant="outline" onClick={() => {
+                setShowCreate(false);
+                setEditingReport(null);
+              }} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 Cancel
               </Button>
               <Button 
                 onClick={handleCreateReport}
-                disabled={!newReport.name || createReportMutation.isPending}
+                disabled={!newReport.name || createReportMutation.isPending || updateReportMutation.isPending}
                 className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
               >
-                {createReportMutation.isPending ? 'Creating...' : 'Create Report'}
+                {createReportMutation.isPending || updateReportMutation.isPending ? 
+                  (editingReport ? 'Updating...' : 'Creating...') : 
+                  (editingReport ? 'Update Report' : 'Create Report')}
               </Button>
             </div>
           </div>
