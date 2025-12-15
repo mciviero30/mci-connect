@@ -3,7 +3,7 @@ import { MapPin } from 'lucide-react';
 
 const statusColors = {
   pending: { bg: 'bg-amber-500', border: 'border-amber-300', point: 'border-t-amber-500', text: 'text-white' },
-  in_progress: { bg: 'bg-blue-500', border: 'border-blue-300', point: 'border-t-blue-500', text: 'text-white' },
+  in_progress: { bg: 'bg-[#FFB800]', border: 'border-[#FFB800]', point: 'border-t-[#FFB800]', text: 'text-white' },
   completed: { bg: 'bg-green-500', border: 'border-green-300', point: 'border-t-green-500', text: 'text-white' },
   blocked: { bg: 'bg-red-500', border: 'border-red-300', point: 'border-t-red-500', text: 'text-white' },
 };
