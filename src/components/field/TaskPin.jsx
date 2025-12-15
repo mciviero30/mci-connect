@@ -66,18 +66,9 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
       } ${isSelected ? 'scale-125 z-20' : ''}`}
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
-      <div className="relative">
-        {/* Compact pin with just wall number */}
-        <div className={`min-w-[28px] h-6 px-1.5 rounded-md ${status.bg} border-2 border-white shadow-lg flex items-center justify-center`}>
-          <span className="text-[11px] font-bold text-white">{wallNumber || '?'}</span>
-        </div>
-        {/* Pin point */}
-        <div 
-          className={`absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 
-            border-l-[5px] border-l-transparent 
-            border-r-[5px] border-r-transparent 
-            border-t-[6px] ${status.point}`}
-        />
+      <div className="relative flex items-center justify-center">
+        {/* Pin emoji */}
+        <span className="text-2xl leading-none">📍</span>
       </div>
     </button>
   );
