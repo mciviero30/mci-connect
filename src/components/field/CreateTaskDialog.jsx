@@ -7,37 +7,37 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus } from 'lucide-react';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
   glass_wall: [
-    { id: 1, text: 'Staging product', completed: false },
-    { id: 2, text: 'Check Dimension', completed: false },
-    { id: 3, text: 'Cut Horizontal', completed: false },
-    { id: 4, text: 'Built Glass Extrusion frame', completed: false },
-    { id: 5, text: 'Properly attach extrusion to the building', completed: false },
-    { id: 6, text: 'Check for plumb', completed: false },
-    { id: 7, text: 'Install glass', completed: false },
-    { id: 8, text: 'Install covers', completed: false },
-    { id: 9, text: 'Install doors hardware (sliding, Pivot, Hinge)', completed: false },
-    { id: 10, text: 'Install door and adjustment', completed: false },
-    { id: 11, text: 'Clean', completed: false },
+    { id: 1, text: 'Staging product', status: 'not_started' },
+    { id: 2, text: 'Check Dimension', status: 'not_started' },
+    { id: 3, text: 'Cut Horizontal', status: 'not_started' },
+    { id: 4, text: 'Built Glass Extrusion frame', status: 'not_started' },
+    { id: 5, text: 'Properly attach extrusion to the building', status: 'not_started' },
+    { id: 6, text: 'Check for plumb', status: 'not_started' },
+    { id: 7, text: 'Install glass', status: 'not_started' },
+    { id: 8, text: 'Install covers', status: 'not_started' },
+    { id: 9, text: 'Install doors hardware (sliding, Pivot, Hinge)', status: 'not_started' },
+    { id: 10, text: 'Install door and adjustment', status: 'not_started' },
+    { id: 11, text: 'Clean', status: 'not_started' },
   ],
   solid_wall: [
-    { id: 1, text: 'Staging Product', completed: false },
-    { id: 2, text: 'Check Demension/Layout', completed: false },
-    { id: 3, text: 'Base track', completed: false },
-    { id: 4, text: 'Ceiling Track / SW Cornice Rail', completed: false },
-    { id: 5, text: 'Studs', completed: false },
-    { id: 6, text: 'Horizontal', completed: false },
-    { id: 7, text: 'Power', completed: false },
-    { id: 8, text: 'Level/Plumb', completed: false },
-    { id: 9, text: 'Floor Base/ Foam', completed: false },
-    { id: 10, text: 'Support Post', completed: false },
-    { id: 11, text: 'Cladding', completed: false },
-    { id: 12, text: 'Outlet Cover plates', completed: false },
-    { id: 13, text: 'Clean', completed: false },
+    { id: 1, text: 'Staging Product', status: 'not_started' },
+    { id: 2, text: 'Check Demension/Layout', status: 'not_started' },
+    { id: 3, text: 'Base track', status: 'not_started' },
+    { id: 4, text: 'Ceiling Track / SW Cornice Rail', status: 'not_started' },
+    { id: 5, text: 'Studs', status: 'not_started' },
+    { id: 6, text: 'Horizontal', status: 'not_started' },
+    { id: 7, text: 'Power', status: 'not_started' },
+    { id: 8, text: 'Level/Plumb', status: 'not_started' },
+    { id: 9, text: 'Floor Base/ Foam', status: 'not_started' },
+    { id: 10, text: 'Support Post', status: 'not_started' },
+    { id: 11, text: 'Cladding', status: 'not_started' },
+    { id: 12, text: 'Outlet Cover plates', status: 'not_started' },
+    { id: 13, text: 'Clean', status: 'not_started' },
   ],
 };
 
@@ -47,9 +47,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const [task, setTask] = useState({
     title: '',
     description: '',
-    priority: 'medium',
+    priority: 'high',
     category: 'general',
-    status: 'pending',
+    status: 'in_progress',
     due_date: '',
     assigned_to: '',
     checklist: [],
@@ -58,6 +58,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     cost: '',
   });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showNewItemInput, setShowNewItemInput] = useState(false);
   const [newChecklistItem, setNewChecklistItem] = useState('');
 
   // Fetch plan details if blueprintId is provided
@@ -74,9 +75,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       setTask({
         title: '',
         description: '',
-        priority: 'medium',
+        priority: 'high',
         category: 'general',
-        status: 'pending',
+        status: 'in_progress',
         due_date: '',
         assigned_to: '',
         checklist: [],
@@ -84,6 +85,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         manpower: '',
         cost: '',
       });
+      setShowNewItemInput(false);
+      setNewChecklistItem('');
       onOpenChange(false);
       onCreated?.(newTask?.id);
     },
@@ -139,10 +142,37 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       checklist: [...prev.checklist, { 
         id: Date.now(), 
         text: newChecklistItem.trim(), 
-        completed: false 
+        status: 'not_started'
       }]
     }));
     setNewChecklistItem('');
+    setShowNewItemInput(false);
+  };
+
+  const toggleChecklistItemStatus = (index) => {
+    setTask(prev => {
+      const newChecklist = [...prev.checklist];
+      const currentStatus = newChecklist[index].status;
+      // Cycle: not_started -> in_progress -> completed -> not_started
+      if (currentStatus === 'not_started') {
+        newChecklist[index].status = 'in_progress';
+      } else if (currentStatus === 'in_progress') {
+        newChecklist[index].status = 'completed';
+      } else {
+        newChecklist[index].status = 'not_started';
+      }
+      return { ...prev, checklist: newChecklist };
+    });
+  };
+
+  const getChecklistIcon = (status) => {
+    if (status === 'completed') {
+      return <Check className="w-4 h-4 text-green-500" />;
+    } else if (status === 'in_progress') {
+      return <Minus className="w-4 h-4 text-[#FFB800]" />;
+    } else {
+      return <X className="w-4 h-4 text-red-500" />;
+    }
   };
 
   const handleTemplateSelect = (templateKey) => {
@@ -194,8 +224,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {task.checklist.length > 0 ? (
                 <div className="space-y-2">
                   {task.checklist.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                      <div className="w-4 h-4 border-2 border-slate-300 dark:border-slate-600 rounded"></div>
+                    <div 
+                      key={idx} 
+                      className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded"
+                      onClick={() => toggleChecklistItemStatus(idx)}
+                    >
+                      <div className="w-5 h-5 flex items-center justify-center">
+                        {getChecklistIcon(item.status)}
+                      </div>
                       <span>{item.text}</span>
                     </div>
                   ))}
@@ -206,23 +242,37 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
               {/* Add New Checklist Item */}
               <div className="flex gap-2 mt-3">
-                <Input 
-                  value={newChecklistItem}
-                  onChange={(e) => setNewChecklistItem(e.target.value)}
-                  placeholder="+ New item"
-                  className="flex-1 h-8 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddChecklistItem}
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
+                {showNewItemInput ? (
+                  <>
+                    <Input 
+                      value={newChecklistItem}
+                      onChange={(e) => setNewChecklistItem(e.target.value)}
+                      placeholder="New item"
+                      className="flex-1 h-8 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                      onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddChecklistItem}
+                      className="h-8 px-3"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowNewItemInput(true)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                )}
 
               {/* Photos Grid - no labels */}
               {task.photo_urls.length > 0 && (
@@ -323,8 +373,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="blocked">Blocked</SelectItem>
                   </SelectContent>
