@@ -303,7 +303,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
             </div>
 
             {/* Checklist Section */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6" style={{ maxHeight: 'calc(90vh - 80px)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white">Checklist:</h3>
                 <div className="flex items-center gap-2">
