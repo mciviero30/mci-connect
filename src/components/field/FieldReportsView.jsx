@@ -10,7 +10,8 @@ import {
   Trash2,
   Send,
   Settings2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,9 +23,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
+import { generateProgressReportPDF } from './ProgressReportGenerator';
+import { toast } from 'sonner';
 
 export default function FieldReportsView({ jobId }) {
   const [showCreate, setShowCreate] = useState(false);
+  const [downloadingReport, setDownloadingReport] = useState(null);
   const [newReport, setNewReport] = useState({
     name: '',
     description: '',
@@ -42,6 +46,11 @@ export default function FieldReportsView({ jobId }) {
 
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: job } = useQuery({
     queryKey: ['job', jobId],
     queryFn: () => base44.entities.Job.filter({ id: jobId }).then(jobs => jobs[0]),
@@ -52,6 +61,33 @@ export default function FieldReportsView({ jobId }) {
     queryKey: ['field-reports', jobId],
     queryFn: () => base44.entities.Report.filter({ job_id: jobId }, '-created_date'),
   });
+
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['field-tasks', jobId],
+    queryFn: () => base44.entities.Task.filter({ job_id: jobId }),
+    enabled: !!jobId,
+  });
+
+  const { data: workUnits = [] } = useQuery({
+    queryKey: ['work-units', jobId],
+    queryFn: () => base44.entities.WorkUnit.filter({ job_id: jobId }),
+    enabled: !!jobId,
+  });
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['field-plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }),
+    enabled: !!jobId,
+  });
+
+  const { data: photos = [] } = useQuery({
+    queryKey: ['field-photos', jobId],
+    queryFn: () => base44.entities.Photo.filter({ job_id: jobId }),
+    enabled: !!jobId,
+  });
+
+  // Merge tasks and work units
+  const allTasks = [...tasks, ...workUnits.filter(wu => wu.type === 'task')];
 
   // Set job name automatically when dialog opens
   React.useEffect(() => {
@@ -92,10 +128,46 @@ export default function FieldReportsView({ jobId }) {
 
   const handleCreateReport = () => {
     if (!newReport.name) return;
+    
+    // Calculate next report number
+    const existingReports = reports.filter(r => r.report_type === newReport.report_type);
+    const reportNumber = String(existingReports.length + 1).padStart(3, '0');
+    
     createReportMutation.mutate({
       job_id: jobId,
+      report_number: reportNumber,
       ...newReport,
     });
+  };
+
+  const handleDownloadReport = async (report) => {
+    setDownloadingReport(report.id);
+    try {
+      const pdf = await generateProgressReportPDF(
+        report,
+        job,
+        allTasks,
+        photos,
+        plans,
+        user
+      );
+      
+      const reportTypeLabel = {
+        progress_report: 'Progress',
+        punch_report: 'Punch',
+        rfi_report: 'RFI',
+        change_order_report: 'ChangeOrder',
+      }[report.report_type] || 'Progress';
+      
+      const fileName = `${job.name || 'Project'}_${reportTypeLabel}_${report.report_number || '001'}.pdf`;
+      pdf.save(fileName);
+      toast.success('Report downloaded successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate report');
+    } finally {
+      setDownloadingReport(null);
+    }
   };
 
   const typeColors = {
@@ -144,18 +216,24 @@ export default function FieldReportsView({ jobId }) {
             return (
               <div 
                 key={report.id}
-                className="flex items-center justify-between p-5 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all group"
+                className="flex items-center justify-between p-5 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl hover:border-[#FFB800]/50 transition-all group shadow-sm"
               >
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-lg ${
-                    report.type === 'excel' ? 'bg-green-500/20' : 'bg-red-500/20'
+                    report.type === 'excel' ? 'bg-green-500/20' : 'bg-blue-500/20'
                   }`}>
                     <TypeIcon className={`w-6 h-6 ${
-                      report.type === 'excel' ? 'text-green-400' : 'text-red-400'
+                      report.type === 'excel' ? 'text-green-400' : 'text-blue-400'
                     }`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">{report.name}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">{report.name}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      {report.report_type === 'progress_report' ? 'Progress Report' :
+                       report.report_type === 'punch_report' ? 'Punch Report' :
+                       report.report_type === 'rfi_report' ? 'RFI Report' :
+                       'Change Order Report'} #{report.report_number || '001'}
+                    </p>
                     <div className="flex items-center gap-3 mt-1">
                       <Badge className={typeColors[report.type]}>
                         {report.type === 'pdf_detailed' ? 'PDF Detailed' :
@@ -174,9 +252,15 @@ export default function FieldReportsView({ jobId }) {
                   <Button 
                     variant="outline" 
                     size="sm"
+                    onClick={() => handleDownloadReport(report)}
+                    disabled={downloadingReport === report.id}
                     className="border-slate-700 text-slate-300 hover:bg-slate-800"
                   >
-                    <Download className="w-4 h-4 mr-2" />
+                    {downloadingReport === report.id ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
                     Download
                   </Button>
                   <Button 
@@ -197,14 +281,14 @@ export default function FieldReportsView({ jobId }) {
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-slate-800 border-slate-700">
-                      <DropdownMenuItem className="text-white">
+                    <DropdownMenuContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                      <DropdownMenuItem className="text-slate-900 dark:text-white">
                         <Settings2 className="w-4 h-4 mr-2" />
                         Configure
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => deleteReportMutation.mutate(report.id)}
-                        className="text-red-400 focus:text-red-400"
+                        className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete
