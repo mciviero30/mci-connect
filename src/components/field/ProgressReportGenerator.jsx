@@ -484,7 +484,70 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       yPos += 5;
     }
 
-    // Photos section (Location moved to header)
+    // Location with map section
+    if (task.pin_x && task.pin_y && task.blueprint_id) {
+      const plan = plans.find(p => p.id === task.blueprint_id);
+      if (plan && plan.file_url) {
+        if (yPos > pageHeight - 90) {
+          addFooter();
+          doc.addPage();
+          addHeader();
+          yPos = 28;
+        }
+
+        // Section header
+        doc.setFillColor(255, 184, 0);
+        doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(26, 26, 26);
+        doc.text('Location', margin + 2, yPos + 2);
+        yPos += 10;
+
+        try {
+          // Calculate map dimensions (maintain aspect ratio)
+          const maxMapWidth = contentWidth;
+          const maxMapHeight = 70;
+          
+          // Add plan image
+          const mapX = margin;
+          const mapY = yPos;
+          doc.addImage(plan.file_url, 'JPEG', mapX, mapY, maxMapWidth, maxMapHeight);
+          
+          // Draw pin on the location
+          const pinX = mapX + (task.pin_x / 100) * maxMapWidth;
+          const pinY = mapY + (task.pin_y / 100) * maxMapHeight;
+          
+          // Yellow pin with border
+          doc.setFillColor(255, 184, 0);
+          doc.setDrawColor(26, 26, 26);
+          doc.setLineWidth(1);
+          doc.circle(pinX, pinY, 3, 'FD');
+          
+          // Add plan name label below map
+          yPos += maxMapHeight + 5;
+          doc.setFillColor(254, 243, 199);
+          doc.roundedRect(margin, yPos, contentWidth, 8, 1.5, 1.5, 'F');
+          doc.setFontSize(9);
+          doc.setTextColor(120, 53, 15);
+          doc.setFont('helvetica', 'normal');
+          doc.text(plan.name, margin + 3, yPos + 5);
+          yPos += 13;
+        } catch (err) {
+          console.warn('Error adding map image:', err);
+          // Fallback to text only
+          doc.setFillColor(254, 243, 199);
+          doc.roundedRect(margin, yPos, contentWidth, 10, 1.5, 1.5, 'F');
+          doc.setFontSize(9);
+          doc.setTextColor(120, 53, 15);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`Position: ${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% - ${plan.name}`, margin + 3, yPos + 6);
+          yPos += 15;
+        }
+      }
+    }
+
+    // Photos section
     const taskPhotos = task.photo_urls 
       ? task.photo_urls.map((url, idx) => ({ url, id: `${task.id}-${idx}` }))
       : photos.filter(p => p.task_id === task.id);
