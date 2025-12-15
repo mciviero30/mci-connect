@@ -56,7 +56,6 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
     { id: 'pending', label: 'Pending', color: 'amber' },
     { id: 'in_progress', label: 'In Progress', color: 'blue' },
     { id: 'completed', label: 'Completed', color: 'green' },
-    { id: 'blocked', label: 'Blocked', color: 'red' },
   ];
 
   const handleDragStart = (e, task) => {
@@ -104,7 +103,6 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
               <SelectItem value="pending" className="text-slate-900 dark:text-white">Pending</SelectItem>
               <SelectItem value="in_progress" className="text-slate-900 dark:text-white">In Progress</SelectItem>
               <SelectItem value="completed" className="text-slate-900 dark:text-white">Completed</SelectItem>
-              <SelectItem value="blocked" className="text-slate-900 dark:text-white">Blocked</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
@@ -222,7 +220,6 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                       <Badge className={`${
                         task.status === 'completed' ? 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400' :
                         task.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
-                        task.status === 'blocked' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' :
                         'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
                       }`}>
                         {task.status}
