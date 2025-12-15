@@ -629,32 +629,38 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 />
               </div>
 
-              {/* Location with Blueprint Preview - Zoomed to pin area */}
+              {/* Location Preview - Screenshot area */}
               {(pinPosition || existingTask?.pin_x) && (planImageUrl || plan?.file_url) && (
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 overflow-hidden">
-                    <div 
-                      className="relative w-full h-32 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden"
-                      style={{
-                        backgroundImage: `url(${planImageUrl || plan?.file_url})`,
-                        backgroundSize: '350%',
-                        backgroundPosition: `${pinPosition?.x || existingTask?.pin_x}% ${pinPosition?.y || existingTask?.pin_y}%`,
-                        backgroundRepeat: 'no-repeat'
-                      }}
-                    >
-                      {/* Pin marker in center */}
-                      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full pointer-events-none z-10">
-                        <div className="relative">
-                          <div className="w-8 h-8 bg-[#FFB800] border-2 border-white rounded-md shadow-xl flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">📍</span>
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                    <div className="relative w-full" style={{ paddingBottom: '83.33%' }}>
+                      <div className="absolute inset-0 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                        <img
+                          src={planImageUrl || plan?.file_url}
+                          alt="Location"
+                          className="absolute"
+                          style={{
+                            width: '300%',
+                            height: '300%',
+                            left: `calc(50% - ${(pinPosition?.x || existingTask?.pin_x) * 3}%)`,
+                            top: `calc(50% - ${(pinPosition?.y || existingTask?.pin_y) * 3}%)`,
+                            objectFit: 'none'
+                          }}
+                        />
+                        {/* Pin in center */}
+                        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full z-10">
+                          <div className="relative">
+                            <div className="w-7 h-7 bg-[#FFB800] border-2 border-white rounded-md shadow-xl flex items-center justify-center">
+                              <span className="text-sm">📍</span>
+                            </div>
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#FFB800]" />
                           </div>
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-[#FFB800]" />
                         </div>
                       </div>
                     </div>
                     {plan?.name && (
-                      <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1.5 text-center font-medium truncate px-1">{plan.name}</p>
+                      <p className="text-[10px] text-slate-600 dark:text-slate-400 py-1.5 text-center font-medium truncate px-2 border-t border-slate-200 dark:border-slate-700">{plan.name}</p>
                     )}
                   </div>
                 </div>
