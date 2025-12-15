@@ -120,7 +120,7 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
   };
 
   return (
-    <div className="w-96 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-xl">
+    <div className="w-96 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-xl fixed right-0 top-0 z-50">
       {/* Header */}
       <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
         <h3 className="font-semibold text-slate-900 dark:text-white">Task Details</h3>
