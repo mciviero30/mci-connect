@@ -112,12 +112,16 @@ export default function FieldDimensionView({ jobId }) {
     setUploadProgress(0);
 
     try {
+      console.log('Starting upload...', newDimension.file.name);
+      
       // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => Math.min(prev + 10, 90));
       }, 200);
 
       const { file_url } = await base44.integrations.Core.UploadFile({ file: newDimension.file });
+      
+      console.log('File uploaded:', file_url);
       
       clearInterval(progressInterval);
       setUploadProgress(100);
@@ -134,12 +138,14 @@ export default function FieldDimensionView({ jobId }) {
         dimensionData.job_id = jobId;
       }
 
+      console.log('Creating dimension with data:', dimensionData);
       await createDimensionMutation.mutateAsync(dimensionData);
+      console.log('Dimension created successfully');
 
       setUploadProgress(0);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload file');
+      toast.error('Failed to upload file: ' + error.message);
     } finally {
       setUploading(false);
     }
