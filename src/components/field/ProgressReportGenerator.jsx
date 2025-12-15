@@ -8,8 +8,20 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   const margin = 15;
   const contentWidth = pageWidth - 2 * margin;
 
+  // Filter tasks by category based on report type
+  const categoryMap = {
+    'progress_report': 'installation',
+    'change_order_report': 'change_order',
+    'rfi_report': 'rfi'
+  };
+  
+  const targetCategory = categoryMap[report.report_type];
+  const filteredTasks = targetCategory 
+    ? tasks.filter(task => task.category === targetCategory)
+    : tasks;
+
   // Sort tasks by wall number
-  const sortedTasks = [...tasks].sort((a, b) => {
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
     const aNum = parseInt(a.wall_number || a.title?.match(/\d+/)?.[0] || '0');
     const bNum = parseInt(b.wall_number || b.title?.match(/\d+/)?.[0] || '0');
     return aNum - bNum;
