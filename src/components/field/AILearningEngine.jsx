@@ -5,7 +5,7 @@ import { Brain, TrendingUp, CheckCircle2, Sparkles, ChevronDown, ChevronUp } fro
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function AILearningEngine({ jobId, planId }) {
+export default function AILearningEngine({ jobId, planId, onNewPattern }) {
   const [learningStats, setLearningStats] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const queryClient = useQueryClient();
@@ -77,6 +77,11 @@ export default function AILearningEngine({ jobId, planId }) {
           times_seen: 1,
           last_learned_date: new Date().toISOString()
         });
+        
+        // Notify parent that a new pattern was learned
+        if (onNewPattern) {
+          onNewPattern();
+        }
       }
     });
 

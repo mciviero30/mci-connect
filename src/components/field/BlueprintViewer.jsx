@@ -3,7 +3,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
-  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2
+  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -37,6 +37,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [draggingPin, setDraggingPin] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [cursorPosition, setCursorPosition] = useState(null);
+  const [showAILearning, setShowAILearning] = useState(false);
+  const [hasNewAIPatterns, setHasNewAIPatterns] = useState(false);
   
   // Loading states
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -638,6 +640,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'divider3', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'divider4', type: 'divider' },
+    { id: 'ai', icon: Brain, label: 'AI Learning', action: () => setShowAILearning(prev => !prev), badge: hasNewAIPatterns },
     { id: 'filter', icon: Search, label: 'Filters (F)', action: () => setShowFilters(prev => !prev) },
   ];
 
@@ -687,15 +690,21 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                       }
                     } else if (item.action) {
                       item.action();
+                      if (item.id === 'ai') {
+                        setHasNewAIPatterns(false);
+                      }
                     }
                   }}
-                  className={`mx-1 p-2 rounded-lg transition-all ${
+                  className={`mx-1 p-2 rounded-lg transition-all relative ${
                     isActive 
                       ? 'bg-[#FFB800] text-white' 
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
+                  {item.badge && (
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  )}
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">
@@ -728,10 +737,16 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         </Tooltip>
         </div>
 
-        {/* AI Learning Engine - Below toolbar */}
-        <div className="absolute left-2 top-[420px] z-40 w-72">
-          <AILearningEngine jobId={jobId} planId={plan?.id} />
-        </div>
+        {/* AI Learning Engine - Dropdown panel */}
+        {showAILearning && (
+          <div className="absolute left-14 top-16 z-40 w-80">
+            <AILearningEngine 
+              jobId={jobId} 
+              planId={plan?.id}
+              onNewPattern={() => setHasNewAIPatterns(true)}
+            />
+          </div>
+        )}
 
       {/* Live Collaborators */}
       <LiveCollaborators planId={plan?.id} jobId={jobId} />
