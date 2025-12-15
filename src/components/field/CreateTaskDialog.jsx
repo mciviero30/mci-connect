@@ -241,7 +241,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[85vh] p-0 overflow-hidden">
         {/* Two Column Layout */}
         <div className="flex h-full">
           {/* Left Column - Task Details */}
@@ -412,7 +412,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   onClick={handleSave}
                   disabled={updateTaskMutation.isPending}
                   size="sm"
-                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white px-6"
                 >
                   {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
                 </Button>
@@ -520,35 +520,34 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 />
               </div>
 
-              {/* Location with Blueprint Preview */}
+              {/* Location with Blueprint Preview - Zoomed to pin area */}
               {(pinPosition || existingTask?.pin_x) && (planImageUrl || plan?.file_url) && (
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 overflow-hidden">
-                    <div className="relative w-full h-32 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
-                      <img
-                        src={planImageUrl || plan?.file_url}
-                        alt="Blueprint location"
-                        className="w-full h-full object-contain"
-                      />
-                      {/* Pin marker overlay */}
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 overflow-hidden">
+                    <div className="relative w-full h-28 bg-slate-50 dark:bg-slate-800 rounded overflow-hidden">
                       <div 
-                        className="absolute transform -translate-x-1/2 -translate-y-full"
+                        className="absolute inset-0"
                         style={{
-                          left: `${pinPosition?.x || existingTask?.pin_x}%`,
-                          top: `${pinPosition?.y || existingTask?.pin_y}%`
+                          backgroundImage: `url(${planImageUrl || plan?.file_url})`,
+                          backgroundSize: '200%',
+                          backgroundPosition: `${pinPosition?.x || existingTask?.pin_x}% ${pinPosition?.y || existingTask?.pin_y}%`,
+                          backgroundRepeat: 'no-repeat'
                         }}
                       >
-                        <div className="relative">
-                          <div className="w-6 h-6 bg-[#FFB800] border-2 border-white rounded-md shadow-lg flex items-center justify-center">
-                            <span className="text-white text-xs font-bold">📍</span>
+                        {/* Pin marker in center */}
+                        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full">
+                          <div className="relative">
+                            <div className="w-7 h-7 bg-[#FFB800] border-2 border-white rounded-md shadow-xl flex items-center justify-center">
+                              <span className="text-white text-sm font-bold">📍</span>
+                            </div>
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] border-t-[#FFB800]" />
                           </div>
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-[#FFB800]" />
                         </div>
                       </div>
                     </div>
                     {plan?.name && (
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 text-center font-medium">{plan.name}</p>
+                      <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1.5 text-center font-medium truncate px-1">{plan.name}</p>
                     )}
                   </div>
                 </div>
