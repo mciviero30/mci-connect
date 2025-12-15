@@ -464,34 +464,40 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       }
     }
 
-    // Photos
+    // Photos section
     const taskPhotos = task.photo_urls 
       ? task.photo_urls.map((url, idx) => ({ url, id: `${task.id}-${idx}` }))
       : photos.filter(p => p.task_id === task.id);
     if (taskPhotos.length > 0 && report.include_options?.photos !== false) {
-      if (yPos > pageHeight - 40) {
+      if (yPos > pageHeight - 35) {
         addFooter();
         doc.addPage();
-        yPos = margin;
+        addHeader();
+        yPos = 28;
       }
 
-      doc.setFontSize(10);
+      // Section header
+      doc.setFillColor(255, 184, 0);
+      doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text('Photos', margin, yPos);
+      doc.setTextColor(26, 26, 26);
+      doc.text('Photos', margin + 2, yPos + 2);
+      
+      // Photo count badge
+      doc.setFillColor(241, 245, 249);
+      doc.roundedRect(margin + 25, yPos - 3, 20, 8, 1.5, 1.5, 'F');
+      doc.setFontSize(9);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`${taskPhotos.length}`, margin + 35, yPos + 2, { align: 'center' });
+      yPos += 10;
+
+      // Photo count text
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${taskPhotos.length} photo${taskPhotos.length > 1 ? 's' : ''} attached to this task`, margin, yPos);
       yPos += 8;
-
-      const photoSize = 50;
-      const photosPerRow = 3;
-      let photoCount = 0;
-      let rowYPos = yPos;
-
-      if (taskPhotos.length > 0) {
-        doc.setTextColor(100);
-        doc.text(`${taskPhotos.length} photo${taskPhotos.length > 1 ? 's' : ''} attached`, margin, yPos);
-        yPos += 8;
-      }
-
-      yPos = rowYPos + Math.ceil(Math.min(taskPhotos.length, 9) / photosPerRow) * (photoSize + 8) + 5;
     }
 
     addFooter();
