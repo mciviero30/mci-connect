@@ -41,7 +41,7 @@ const CHECKLIST_TEMPLATES = {
   ],
 };
 
-export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated, planImageUrl }) {
+export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated, planImageUrl, existingTask }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [task, setTask] = useState({
@@ -99,9 +99,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     },
   });
 
-  // Auto-create task when dialog opens
+  // Auto-create task when dialog opens (only for new tasks)
   React.useEffect(() => {
-    if (open && !task.id && pinPosition) {
+    if (open && !task.id && pinPosition && !existingTask) {
       const autoTitle = `Wall ${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`;
       
       createTaskMutation.mutate({
@@ -115,9 +115,29 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         category: 'general',
       });
     }
-  }, [open, pinPosition]);
+  }, [open, pinPosition, existingTask]);
 
-  // Update task data when mutation succeeds
+  // Load existing task data
+  React.useEffect(() => {
+    if (existingTask) {
+      setTask({
+        id: existingTask.id,
+        title: existingTask.title || '',
+        description: existingTask.description || '',
+        priority: existingTask.priority || 'high',
+        category: existingTask.category || 'general',
+        status: existingTask.status || 'in_progress',
+        due_date: existingTask.due_date || '',
+        assigned_to: existingTask.assigned_to || '',
+        checklist: existingTask.checklist || [],
+        photo_urls: existingTask.photo_urls || [],
+        manpower: existingTask.manpower || '',
+        cost: existingTask.cost || '',
+      });
+    }
+  }, [existingTask]);
+
+  // Update task data when mutation succeeds (for new tasks)
   React.useEffect(() => {
     if (createTaskMutation.data) {
       setTask({

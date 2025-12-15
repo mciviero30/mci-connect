@@ -33,6 +33,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
   const [draggingPin, setDraggingPin] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [cursorPosition, setCursorPosition] = useState(null);
@@ -512,7 +513,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setSelectedTask(task);
+    setEditingTask(task);
+    setShowCreateTask(true);
   }, []);
 
   const handlePinDrag = (task, e) => {
@@ -650,20 +652,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const handleTaskCreated = async (newTaskId) => {
     setPendingPinPosition(null);
     setShowCreateTask(false);
+    setEditingTask(null);
     setCursorPosition(null);
-    
-    // Refresh tasks and open the newly created one
+
     if (newTaskId) {
       await queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      
-      setTimeout(async () => {
-        // Fetch fresh tasks
-        const freshTasks = await base44.entities.Task.filter({ job_id: jobId });
-        const newTask = freshTasks.find(t => t.id === newTaskId);
-        if (newTask) {
-          setSelectedTask(newTask);
-        }
-      }, 800);
     }
   };
 
@@ -998,34 +991,25 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         </div>
       </div>
 
-      {/* Task Detail Panel */}
-      {selectedTask && (
-        <TaskDetailPanel 
-          task={selectedTask}
-          onClose={() => setSelectedTask(null)}
-          onDelete={handleDeleteTask}
-          jobId={jobId}
-          allTasks={tasks}
-          onZoomTo={handleZoomToTask}
-          planImageUrl={pdfCanvas || plan.file_url}
-        />
-      )}
 
-      {/* Create Task Dialog */}
+
+      {/* Create/Edit Task Dialog */}
       <CreateTaskDialog 
         open={showCreateTask}
         onOpenChange={(open) => {
           setShowCreateTask(open);
           if (!open) {
             setPendingPinPosition(null);
+            setEditingTask(null);
             setCursorPosition(null);
           }
         }}
         jobId={jobId}
         blueprintId={plan.id}
-        pinPosition={pendingPinPosition}
+        pinPosition={pendingPinPosition || (editingTask ? { x: editingTask.pin_x, y: editingTask.pin_y } : null)}
         onCreated={handleTaskCreated}
         planImageUrl={pdfCanvas || plan.file_url}
+        existingTask={editingTask}
       />
     </div>
     </TooltipProvider>
