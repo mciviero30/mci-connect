@@ -307,50 +307,50 @@ export default function FieldMembersView({ jobId }) {
 
       {/* Invite Dialog */}
       <Dialog open={showInvite} onOpenChange={setShowInvite}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
-            <DialogTitle>Invite Member</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">Invite Member</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Email</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Email</Label>
               <Input 
                 type="email"
                 value={inviteData.email}
                 onChange={(e) => setInviteData({...inviteData, email: e.target.value})}
                 placeholder="user@example.com"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Name (optional)</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Name (optional)</Label>
               <Input 
                 value={inviteData.name}
                 onChange={(e) => setInviteData({...inviteData, name: e.target.value})}
                 placeholder="John Doe"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Role</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Role</Label>
               <Select value={inviteData.role} onValueChange={(v) => setInviteData({...inviteData, role: v})}>
-                <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="admin" className="text-white">
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="admin" className="text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2">
                       <Crown className="w-4 h-4 text-purple-400" />
                       Administrator
                     </div>
                   </SelectItem>
-                  <SelectItem value="collaborator" className="text-white">
+                  <SelectItem value="collaborator" className="text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-blue-400" />
                       Collaborator
                     </div>
                   </SelectItem>
-                  <SelectItem value="client" className="text-white">
+                  <SelectItem value="client" className="text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-green-400" />
                       Client (read-only)
@@ -360,7 +360,7 @@ export default function FieldMembersView({ jobId }) {
               </Select>
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowInvite(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowInvite(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 Cancel
               </Button>
               <Button 

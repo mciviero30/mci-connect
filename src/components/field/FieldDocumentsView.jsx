@@ -265,23 +265,23 @@ export default function FieldDocumentsView({ jobId }) {
 
       {/* Upload Dialog */}
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
-            <DialogTitle>Upload Document</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">Upload Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">File</Label>
+              <Label className="text-slate-700 dark:text-slate-300">File</Label>
               <div className="mt-1.5">
                 {newDoc.file_url ? (
-                  <div className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg">
-                    <FileText className="w-8 h-8 text-amber-400" />
-                    <span className="text-white">{newDoc.name}</span>
+                  <div className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                    <FileText className="w-8 h-8 text-[#FFB800]" />
+                    <span className="text-slate-900 dark:text-white">{newDoc.name}</span>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-amber-500/50 transition-colors">
-                    <Upload className="w-8 h-8 text-slate-500 mb-2" />
-                    <span className="text-sm text-slate-400">
+                  <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer hover:border-[#FFB800] transition-colors">
+                    <Upload className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
                       {uploading ? 'Uploading...' : 'Click to upload file'}
                     </span>
                     <input 
@@ -295,16 +295,16 @@ export default function FieldDocumentsView({ jobId }) {
               </div>
             </div>
             <div>
-              <Label className="text-slate-300">Name</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Name</Label>
               <Input 
                 value={newDoc.name}
                 onChange={(e) => setNewDoc({...newDoc, name: e.target.value})}
                 placeholder="Document name"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 Cancel
               </Button>
               <Button 
@@ -321,22 +321,22 @@ export default function FieldDocumentsView({ jobId }) {
 
       {/* New Folder Dialog */}
       <Dialog open={showNewFolder} onOpenChange={setShowNewFolder}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
-            <DialogTitle>New Folder</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">New Folder</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-300">Folder Name</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Folder Name</Label>
               <Input 
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="e.g., Specifications"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowNewFolder(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowNewFolder(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 Cancel
               </Button>
               <Button 

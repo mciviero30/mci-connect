@@ -204,51 +204,51 @@ export default function FieldReportsView({ jobId }) {
 
       {/* Create Report Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Report</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">Create Report</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4 max-h-[70vh] overflow-y-auto">
             <div>
-              <Label className="text-slate-300">Report Name</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Report Name</Label>
               <Input 
                 value={newReport.name}
                 onChange={(e) => setNewReport({...newReport, name: e.target.value})}
                 placeholder="e.g., Weekly Progress Report"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label className="text-slate-300">Type</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Type</Label>
               <Select value={newReport.type} onValueChange={(v) => setNewReport({...newReport, type: v})}>
-                <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="pdf_detailed" className="text-white">PDF Detailed</SelectItem>
-                  <SelectItem value="pdf_summary" className="text-white">PDF Summary</SelectItem>
-                  <SelectItem value="excel" className="text-white">Excel</SelectItem>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="pdf_detailed" className="text-slate-900 dark:text-white">PDF Detailed</SelectItem>
+                  <SelectItem value="pdf_summary" className="text-slate-900 dark:text-white">PDF Summary</SelectItem>
+                  <SelectItem value="excel" className="text-slate-900 dark:text-white">Excel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-slate-300">Schedule</Label>
+              <Label className="text-slate-700 dark:text-slate-300">Schedule</Label>
               <Select value={newReport.schedule} onValueChange={(v) => setNewReport({...newReport, schedule: v})}>
-                <SelectTrigger className="mt-1.5 bg-slate-800 border-slate-700 text-white">
+                <SelectTrigger className="mt-1.5 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="send_now" className="text-white">Generate Now</SelectItem>
-                  <SelectItem value="daily" className="text-white">Daily</SelectItem>
-                  <SelectItem value="weekly" className="text-white">Weekly</SelectItem>
-                  <SelectItem value="monthly" className="text-white">Monthly</SelectItem>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="send_now" className="text-slate-900 dark:text-white">Generate Now</SelectItem>
+                  <SelectItem value="daily" className="text-slate-900 dark:text-white">Daily</SelectItem>
+                  <SelectItem value="weekly" className="text-slate-900 dark:text-white">Weekly</SelectItem>
+                  <SelectItem value="monthly" className="text-slate-900 dark:text-white">Monthly</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {/* Include Options */}
             <div>
-              <Label className="text-slate-300 mb-3 block">Include in Report</Label>
+              <Label className="text-slate-700 dark:text-slate-300 mb-3 block">Include in Report</Label>
               <div className="space-y-3">
                 {[
                   { key: 'photos', label: 'Photos' },
@@ -257,7 +257,7 @@ export default function FieldReportsView({ jobId }) {
                   { key: 'plans', label: 'Plans' },
                 ].map((option) => (
                   <div key={option.key} className="flex items-center justify-between">
-                    <span className="text-sm text-slate-400">{option.label}</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{option.label}</span>
                     <Switch 
                       checked={newReport.include_options[option.key]}
                       onCheckedChange={(checked) => setNewReport({
@@ -274,7 +274,7 @@ export default function FieldReportsView({ jobId }) {
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                 Cancel
               </Button>
               <Button 
