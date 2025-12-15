@@ -151,7 +151,11 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setFont('helvetica', 'bold');
   doc.text('Creator:', margin, metaY);
   doc.setFont('helvetica', 'normal');
-  doc.text(user?.full_name || 'MCI Team', margin + 30, metaY);
+  const creatorName = user?.full_name || 'MCI Team';
+  const capitalizedName = creatorName.split(' ').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  ).join(' ');
+  doc.text(capitalizedName, margin + 30, metaY);
   metaY += 8;
   
   if (job.status) {
