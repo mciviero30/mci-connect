@@ -34,15 +34,51 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
   let pageNumber = 1;
 
+  // Helper: Add header with logo
+  const addHeader = () => {
+    // Yellow stripe at top
+    doc.setFillColor(255, 184, 0);
+    doc.rect(0, 0, pageWidth, 8, 'F');
+    
+    // MCI Field logo text
+    doc.setFontSize(10);
+    doc.setTextColor(26, 26, 26);
+    doc.setFont('helvetica', 'bold');
+    doc.text('MCI FIELD', margin, 14);
+    
+    // Report number on right
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    const reportTypeLabel = {
+      progress_report: 'Progress Report',
+      punch_report: 'Punch Report',
+      rfi_report: 'RFI Report',
+      change_order_report: 'Change Order Report',
+    }[report.report_type] || 'Progress Report';
+    doc.text(`${reportTypeLabel} #${report.report_number || '001'}`, pageWidth - margin, 14, { align: 'right' });
+  };
+
   // Helper: Add footer
   const addFooter = () => {
+    // Footer line
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+    
     doc.setFontSize(8);
-    doc.setTextColor(150);
+    doc.setTextColor(148, 163, 184);
+    doc.setFont('helvetica', 'normal');
     doc.text(
-      `Progress Report pg. ${pageNumber} Created with MCI Field on ${format(new Date(), 'MM-dd-yyyy')}`,
-      pageWidth / 2,
-      pageHeight - 10,
-      { align: 'center' }
+      `${job.name || 'Project'} | Created with MCI Field on ${format(new Date(), 'MM-dd-yyyy')}`,
+      margin,
+      pageHeight - 12
+    );
+    doc.text(
+      `Page ${pageNumber}`,
+      pageWidth - margin,
+      pageHeight - 12,
+      { align: 'right' }
     );
     pageNumber++;
   };
