@@ -351,18 +351,16 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         if (isCompleted) {
           doc.setFillColor(34, 197, 94);
           doc.circle(margin + 2, yPos - 1.5, 1.5, 'F');
-          doc.setTextColor(34, 197, 94);
-          doc.text('✓', margin + 0.8, yPos + 1);
         } else if (isInProgress) {
           doc.setDrawColor(251, 191, 36);
+          doc.setFillColor(251, 191, 36);
           doc.setLineWidth(0.5);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'D');
-          doc.setTextColor(251, 191, 36);
-          doc.text('◐', margin + 0.5, yPos + 1);
+          doc.circle(margin + 2, yPos - 1.5, 1.5);
+          doc.circle(margin + 2, yPos - 1.5, 1.5, 'S');
         } else {
           doc.setDrawColor(203, 213, 225);
           doc.setLineWidth(0.5);
-          doc.circle(margin + 2, yPos - 1.5, 1.5, 'D');
+          doc.circle(margin + 2, yPos - 1.5, 1.5);
         }
 
         // Item text
