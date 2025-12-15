@@ -8,6 +8,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+// Predefined checklist templates
+const CHECKLIST_TEMPLATES = {
+  glass_wall: [
+    { id: 1, text: 'Staging product', completed: false },
+    { id: 2, text: 'Check Dimension', completed: false },
+    { id: 3, text: 'Cut Horizontal', completed: false },
+    { id: 4, text: 'Built Glass Extrusion frame', completed: false },
+    { id: 5, text: 'Properly attach extrusion to the building', completed: false },
+    { id: 6, text: 'Check for plumb', completed: false },
+    { id: 7, text: 'Install glass', completed: false },
+    { id: 8, text: 'Install covers', completed: false },
+    { id: 9, text: 'Install doors hardware (sliding, Pivot, Hinge)', completed: false },
+    { id: 10, text: 'Install door and adjustment', completed: false },
+    { id: 11, text: 'Clean', completed: false },
+  ],
+};
+
 export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated }) {
   const queryClient = useQueryClient();
   const [task, setTask] = useState({
@@ -18,6 +35,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     status: 'pending',
     due_date: '',
     assigned_to: '',
+    checklist: [],
   });
 
   const createTaskMutation = useMutation({
@@ -32,6 +50,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         status: 'pending',
         due_date: '',
         assigned_to: '',
+        checklist: [],
       });
       onCreated?.(newTask?.id);
     },
@@ -46,7 +65,17 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       blueprint_id: blueprintId,
       pin_x: pinPosition?.x,
       pin_y: pinPosition?.y,
+      checklist: task.checklist.length > 0 ? task.checklist : undefined,
     });
+  };
+
+  const handleTemplateSelect = (templateKey) => {
+    if (templateKey && CHECKLIST_TEMPLATES[templateKey]) {
+      setTask(prev => ({
+        ...prev,
+        checklist: CHECKLIST_TEMPLATES[templateKey]
+      }));
+    }
   };
 
   return (
@@ -130,6 +159,22 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               placeholder="user@example.com"
               className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
             />
+          </div>
+
+          {/* Checklist Template Selector */}
+          <div>
+            <Label className="text-slate-700 dark:text-slate-300">Checklist Template (Optional)</Label>
+            <Select onValueChange={handleTemplateSelect}>
+              <SelectTrigger className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                <SelectValue placeholder="Select a template..." />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <SelectItem value="glass_wall" className="text-slate-900 dark:text-white">Glass Wall Installation</SelectItem>
+              </SelectContent>
+            </Select>
+            {task.checklist.length > 0 && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">✓ {task.checklist.length} items added to checklist</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
