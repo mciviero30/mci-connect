@@ -507,17 +507,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }, 50);
   };
 
-  const handlePinClick = (task, e) => {
-    console.log('🟢 BlueprintViewer handlePinClick called for:', task.title);
-    console.log('🟢 Current selectedTask:', selectedTask?.title);
+  const handlePinClick = useCallback((task, e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    console.log('🟢 Setting selectedTask to:', task.title);
     setSelectedTask(task);
-    console.log('🟢 selectedTask should now be set');
-  };
+  }, []);
 
   const handlePinDrag = (task, e) => {
     e.stopPropagation();
@@ -924,15 +920,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
                 {/* Task Pins - works for both images and PDF canvas */}
                 {showPins && filteredTasks.map((task) => {
                   const displayTask = draggingPin?.id === task.id ? draggingPin : task;
-                  console.log('📍 Rendering TaskPin for:', task.title, 'with onClick handler');
                   return (
                     <TaskPin 
                       key={task.id}
                       task={displayTask}
-                      onClick={(e) => {
-                        console.log('📍 onClick callback triggered in map for:', task.title);
-                        handlePinClick(task, e);
-                      }}
+                      onClick={(e) => handlePinClick(task, e)}
                       onDragPin={handlePinDrag}
                       isDragging={draggingPin?.id === task.id}
                       isSelected={selectedTask?.id === task.id}
@@ -1008,20 +1000,16 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
       {/* Task Detail Panel */}
       {selectedTask && (
-        <>
-          {console.log('✅ Rendering TaskDetailPanel for:', selectedTask.title)}
-          <TaskDetailPanel 
-            task={selectedTask}
-            onClose={() => setSelectedTask(null)}
-            onDelete={handleDeleteTask}
-            jobId={jobId}
-            allTasks={tasks}
-            onZoomTo={handleZoomToTask}
-            planImageUrl={pdfCanvas || plan.file_url}
-          />
-        </>
+        <TaskDetailPanel 
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onDelete={handleDeleteTask}
+          jobId={jobId}
+          allTasks={tasks}
+          onZoomTo={handleZoomToTask}
+          planImageUrl={pdfCanvas || plan.file_url}
+        />
       )}
-      {!selectedTask && console.log('❌ No selectedTask, TaskDetailPanel not rendered')}
 
       {/* Create Task Dialog */}
       <CreateTaskDialog 

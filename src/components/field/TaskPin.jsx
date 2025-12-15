@@ -17,22 +17,15 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
 
   const handleClick = (e) => {
-    console.log('🔵 TaskPin handleClick triggered for:', task.title);
-    console.log('🔵 onClick function exists?', !!onClick);
     e.preventDefault();
     e.stopPropagation();
     if (onClick) {
-      console.log('🔵 Calling onClick...');
       onClick(e);
-    } else {
-      console.log('🔴 No onClick function provided!');
     }
   };
 
   const handleMouseDown = (e) => {
-    console.log('🟡 TaskPin handleMouseDown for:', task.title);
     e.stopPropagation();
-    // Only start drag mode if we have a drag handler
     if (onDragPin && e.shiftKey) {
       onDragPin(task, e);
     }
