@@ -1020,7 +1020,6 @@ export default function Empleados() {
                       key={employee.id}
                       employee={employee}
                       onInvite={(emp) => inviteMutation.mutate(emp)}
-                      onResend={resendInviteMutation.mutate}
                       onEdit={(emp) => {
                         setEditingEmployee(emp);
                         setIsPendingEdit(true);
@@ -1064,7 +1063,6 @@ export default function Empleados() {
                       key={employee.id}
                       employee={employee}
                       onInvite={(emp) => inviteMutation.mutate(emp)}
-                      onResend={resendInviteMutation.mutate}
                       onEdit={(emp) => {
                         setEditingEmployee(emp);
                         setIsPendingEdit(true);
