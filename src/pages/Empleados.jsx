@@ -497,62 +497,25 @@ export default function Empleados() {
   });
 
   // ============================================
-  // CENTRALIZED MANUAL SYNC - ONLY way to sync
-  // Executes sequentially: 1) Create new users, 2) Update existing users
+  // MANUAL SYNC - Updates existing users only
+  // DOES NOT create new users (they auto-create on first login)
   // ============================================
   const manualSyncMutation = useMutation({
     mutationFn: async () => {
       const results = {
-        created: 0,
         updated: 0,
+        synced: 0,
         errors: []
       };
 
-      // STEP 1: Create new users from pending employees
-      const employeesWithEmail = pendingEmployees.filter(e => e.email);
-      const existingEmails = new Set(employees.map(e => e.email));
-
-      for (const pending of employeesWithEmail) {
-        if (existingEmails.has(pending.email)) continue;
-
-        const fullName = `${pending.first_name || ''} ${pending.last_name || ''}`.trim() || 
-          pending.full_name || 'Employee';
-
-        try {
-          await base44.entities.User.create({
-            email: pending.email,
-            full_name: fullName,
-            first_name: pending.first_name || '',
-            last_name: pending.last_name || '',
-            role: 'user',
-            phone: pending.phone || '',
-            position: pending.position || '',
-            department: pending.department || '',
-            address: pending.address || '',
-            ssn_tax_id: pending.ssn_tax_id || '',
-            dob: pending.dob || '',
-            tshirt_size: pending.tshirt_size || '',
-            team_id: pending.team_id || '',
-            team_name: pending.team_name || '',
-            direct_manager_name: pending.direct_manager_name || '',
-            employment_status: 'pending_registration'
-          });
-          results.created++;
-        } catch (error) {
-          if (!error.message.includes('already exists')) {
-            results.errors.push(`Create ${pending.email}: ${error.message}`);
-          }
-        }
-      }
-
-      // STEP 2: Update existing users with pending employee data
+      // Only update existing users with pending employee data
       const invitedOrActive = pendingEmployees.filter(e => 
         e.email && (e.status === 'invited' || e.status === 'active')
       );
 
       for (const pending of invitedOrActive) {
         const existingUser = employees.find(e => e.email === pending.email);
-        
+
         if (existingUser) {
           const needsUpdate = 
             (pending.first_name && existingUser.first_name !== pending.first_name) || 
@@ -585,16 +548,20 @@ export default function Empleados() {
               });
               results.updated++;
             } catch (error) {
-              results.errors.push(`Update ${pending.email}: ${error.message}`);
+              results.errors.push(`${pending.email}: ${error.message}`);
             }
           }
-          
-          // Update pending employee status
+
+          // Mark pending employee as synced
           if (pending.status !== 'active') {
             try {
-              await base44.entities.PendingEmployee.update(pending.id, { status: 'active' });
+              await base44.entities.PendingEmployee.update(pending.id, { 
+                status: 'active',
+                registered_date: existingUser.created_date
+              });
+              results.synced++;
             } catch (error) {
-              results.errors.push(`Update pending ${pending.email}: ${error.message}`);
+              results.errors.push(`Sync ${pending.email}: ${error.message}`);
             }
           }
         }
@@ -605,73 +572,67 @@ export default function Empleados() {
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      
-      const totalChanges = results.created + results.updated;
-      
-      if (totalChanges > 0) {
+
+      if (results.updated > 0 || results.synced > 0) {
         toast.success(language === 'es' 
-          ? `Sincronización completa: ${results.created} creados, ${results.updated} actualizados`
-          : `Sync complete: ${results.created} created, ${results.updated} updated`
+          ? `Sincronización: ${results.updated} actualizados, ${results.synced} sincronizados`
+          : `Sync: ${results.updated} updated, ${results.synced} synced`
         );
       } else {
-        toast.info(language === 'es' ? 'Todo sincronizado - sin cambios' : 'All synced - no changes');
+        toast.info(language === 'es' ? 'Todo sincronizado' : 'All synced');
       }
 
       if (results.errors.length > 0) {
-        console.warn('Sync errors:', results.errors);
+        console.error('Sync errors:', results.errors);
       }
     },
     onError: (error) => {
+      console.error('Sync error:', error);
       toast.error(language === 'es' 
-        ? 'Error de sincronización: ' + error.message
-        : 'Sync error: ' + error.message
+        ? 'Error: ' + error.message
+        : 'Error: ' + error.message
       );
     }
   });
 
   // PENDING EMPLOYEE MUTATIONS
-  const inviteMutation = useMutation({
-    mutationFn: async (employee) => {
-      if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
+    const inviteMutation = useMutation({
+      mutationFn: async (employee) => {
+        if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
-      const appUrl = window.location.origin;
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-        employee.full_name || 'Employee';
+        const appUrl = window.location.origin;
+        const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
+          employee.full_name || 'Employee';
 
-      console.log('🔄 Starting invitation for:', employee.email);
+        // Send welcome email
+        const emailBody = language === 'es' 
+          ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\nCuando inicies sesión por primera vez, tu cuenta será creada automáticamente.\n\n¡Bienvenido al equipo!\nMCI Team`
+          : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nYour account will be automatically created when you first log in.\n\nWelcome to the team!\nMCI Team`;
 
-      // Send welcome email
-      console.log('📧 Sending welcome email...');
-      const emailBody = language === 'es' 
-        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\nCuando accedas por primera vez, tu cuenta será creada automáticamente.\n\n¡Bienvenido al equipo!\nMCI Team`
-        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nYour account will be automatically created when you first log in.\n\nWelcome to the team!\nMCI Team`;
+        await base44.integrations.Core.SendEmail({
+          to: employee.email,
+          subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+          body: emailBody,
+          from_name: 'MCI Connect'
+        });
 
-      await base44.integrations.Core.SendEmail({
-        to: employee.email,
-        subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-        body: emailBody,
-        from_name: 'MCI Connect'
-      });
-      console.log('✅ Email sent successfully');
-
-      // Update status
-      console.log('🔄 Updating pending employee status...');
-      await base44.entities.PendingEmployee.update(employee.id, {
-        status: 'invited',
-        invited_date: new Date().toISOString(),
-        invitation_count: (employee.invitation_count || 0) + 1
-      });
-      console.log('✅ Invitation complete!');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast.success(language === 'es' ? '✅ Invitación enviada - El usuario se creará al primer login' : '✅ Invitation sent - User will be created on first login');
-    },
-    onError: (error) => {
-      console.error('❌ Invitation failed:', error);
-      toast.error((language === 'es' ? '❌ Error: ' : '❌ Error: ') + error.message);
-    }
-  });
+        // Update status
+        await base44.entities.PendingEmployee.update(employee.id, {
+          status: 'invited',
+          invited_date: new Date().toISOString(),
+          last_invitation_sent: new Date().toISOString(),
+          invitation_count: (employee.invitation_count || 0) + 1
+        });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+        toast.success(language === 'es' ? '✅ Invitación enviada exitosamente' : '✅ Invitation sent successfully');
+      },
+      onError: (error) => {
+        console.error('Invitation error:', error);
+        toast.error((language === 'es' ? 'Error al enviar invitación: ' : 'Error sending invitation: ') + error.message);
+      }
+    });
 
   const bulkInviteMutation = useMutation({
     mutationFn: async (employeeIds) => {
@@ -679,66 +640,18 @@ export default function Empleados() {
         employeeIds.includes(e.id) && e.email && e.status === 'pending'
       );
 
-      const results = { success: 0, failed: 0 };
-      
+      const results = { success: 0, failed: 0, errors: [] };
+      const appUrl = window.location.origin;
+
       for (const employee of employeesToInvite) {
         try {
-          const appUrl = window.location.origin;
           const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
             employee.full_name || 'Employee';
 
-          // Create user if doesn't exist
-          const existingUser = employees.find(e => e.email === employee.email);
-          if (!existingUser) {
-            try {
-              await base44.entities.User.create({
-                email: employee.email,
-                full_name: fullName,
-                first_name: employee.first_name || '',
-                last_name: employee.last_name || '',
-                role: 'user',
-                phone: employee.phone || '',
-                position: employee.position || '',
-                department: employee.department || '',
-                address: employee.address || '',
-                ssn_tax_id: employee.ssn_tax_id || '',
-                dob: employee.dob || '',
-                tshirt_size: employee.tshirt_size || '',
-                team_id: employee.team_id || '',
-                team_name: employee.team_name || '',
-                direct_manager_name: employee.direct_manager_name || '',
-                employment_status: 'pending_registration'
-              });
-            } catch (error) {
-              if (!error.message.includes('already exists')) throw error;
-            }
-          } else {
-            // Update existing user with pending employee data
-            try {
-              await base44.entities.User.update(existingUser.id, {
-                full_name: fullName,
-                first_name: employee.first_name || existingUser.first_name || '',
-                last_name: employee.last_name || existingUser.last_name || '',
-                phone: employee.phone || existingUser.phone || '',
-                position: employee.position || existingUser.position || '',
-                department: employee.department || existingUser.department || '',
-                address: employee.address || existingUser.address || '',
-                ssn_tax_id: employee.ssn_tax_id || existingUser.ssn_tax_id || '',
-                dob: employee.dob || existingUser.dob || '',
-                tshirt_size: employee.tshirt_size || existingUser.tshirt_size || '',
-                team_id: employee.team_id || existingUser.team_id || '',
-                team_name: employee.team_name || existingUser.team_name || '',
-                direct_manager_name: employee.direct_manager_name || existingUser.direct_manager_name || ''
-              });
-            } catch (error) {
-              console.error('Error updating existing user:', error);
-            }
-          }
-
           // Send email
           const emailBody = language === 'es' 
-            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
-            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\nCuando inicies sesión por primera vez, tu cuenta será creada automáticamente.\n\n¡Bienvenido al equipo!\nMCI Team`
+            : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nYour account will be automatically created when you first log in.\n\nWelcome to the team!\nMCI Team`;
 
           await base44.integrations.Core.SendEmail({
             to: employee.email,
@@ -751,6 +664,7 @@ export default function Empleados() {
           await base44.entities.PendingEmployee.update(employee.id, {
             status: 'invited',
             invited_date: new Date().toISOString(),
+            last_invitation_sent: new Date().toISOString(),
             invitation_count: (employee.invitation_count || 0) + 1
           });
 
@@ -758,6 +672,7 @@ export default function Empleados() {
         } catch (error) {
           console.error(`Error inviting ${employee.email}:`, error);
           results.failed++;
+          results.errors.push(`${employee.email}: ${error.message}`);
         }
       }
 
@@ -765,9 +680,8 @@ export default function Empleados() {
     },
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
       setSelectedEmployees([]);
-      
+
       if (results.success > 0) {
         toast.success(
           language === 'es' 
@@ -776,7 +690,8 @@ export default function Empleados() {
         );
       }
       if (results.failed > 0) {
-        toast.warning(
+        console.error('Bulk invite errors:', results.errors);
+        toast.error(
           language === 'es'
             ? `${results.failed} invitaciones fallaron`
             : `${results.failed} invitations failed`
@@ -797,8 +712,8 @@ export default function Empleados() {
         employee.full_name || 'Employee';
 
       const emailBody = language === 'es'
-        ? `Hola ${employee.first_name || fullName},\n\nRecordatorio: Tienes acceso pendiente a MCI Connect.\n\nAccede: ${appUrl}\nEmail: ${employee.email}\n\nSaludos,\nMCI Team`
-        : `Hi ${employee.first_name || fullName},\n\nReminder: You have pending access to MCI Connect.\n\nAccess: ${appUrl}\nEmail: ${employee.email}\n\nBest regards,\nMCI Team`;
+        ? `Hola ${employee.first_name || fullName},\n\nRecordatorio: Tienes acceso pendiente a MCI Connect.\n\nAccede aquí: ${appUrl}\nEmail: ${employee.email}\n\nCuando inicies sesión por primera vez, tu cuenta será creada automáticamente.\n\nSaludos,\nMCI Team`
+        : `Hi ${employee.first_name || fullName},\n\nReminder: You have pending access to MCI Connect.\n\nAccess here: ${appUrl}\nEmail: ${employee.email}\n\nYour account will be automatically created when you first log in.\n\nBest regards,\nMCI Team`;
 
       await base44.integrations.Core.SendEmail({
         to: employee.email,
@@ -808,6 +723,7 @@ export default function Empleados() {
       });
 
       await base44.entities.PendingEmployee.update(employee.id, {
+        last_invitation_sent: new Date().toISOString(),
         invitation_count: (employee.invitation_count || 0) + 1
       });
     },
@@ -816,6 +732,7 @@ export default function Empleados() {
       toast.success(language === 'es' ? 'Recordatorio enviado' : 'Reminder sent');
     },
     onError: (error) => {
+      console.error('Resend error:', error);
       toast.error(t('error') + ': ' + error.message);
     }
   });
