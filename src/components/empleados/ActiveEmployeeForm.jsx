@@ -151,13 +151,15 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
   const updateMutation = useMutation({
     mutationFn: async (data) => {
       const selectedTeam = teams.find(t => t.id === data.team_id);
-      const full_name = `${data.first_name} ${data.last_name}`.trim();
+      const full_name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
       
-      // Protect admin-only fields - only allow if currentUser is admin
+      if (!full_name) {
+        throw new Error('First name and last name are required');
+      }
+      
       const isCurrentUserAdmin = currentUser?.role === 'admin';
       
       const updateData = {
-        // Basic fields (anyone can update)
         first_name: data.first_name,
         last_name: data.last_name,
         full_name,
@@ -165,22 +167,17 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         address: data.address,
         dob: data.dob,
         tshirt_size: data.tshirt_size,
-        
-        // Team fields
         team_id: data.team_id,
         team_name: selectedTeam?.team_name || '',
         team_role: data.team_role,
-        
-        // Department and position
         department: data.department,
         position: data.position,
         direct_manager_name: data.direct_manager_name,
         
-        // Only include admin-protected fields if user is admin
         ...(isCurrentUserAdmin && {
-          hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
-          hourly_rate_overtime: data.hourly_rate_overtime ? parseFloat(data.hourly_rate_overtime) : null,
-          per_diem_amount: data.per_diem_amount ? parseFloat(data.per_diem_amount) : null,
+          hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
+          hourly_rate_overtime: data.hourly_rate_overtime ? parseFloat(data.hourly_rate_overtime) : (parseFloat(data.hourly_rate || 25) * 1.5),
+          per_diem_amount: data.per_diem_amount ? parseFloat(data.per_diem_amount) : 50,
           pay_frequency: data.pay_frequency,
           hire_date: data.hire_date,
           ssn_tax_id: data.ssn_tax_id,
@@ -188,19 +185,17 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         })
       };
 
-      // Try to update current user if it's the logged-in user
       if (currentUser && employee.email === currentUser.email) {
         await base44.auth.updateMe(updateData);
       } else {
-        // Try direct update for other users
         try {
           await base44.entities.User.update(employee.id, updateData);
         } catch (error) {
+          console.error('Direct update failed:', error);
           throw new Error('PERMISSION_DENIED');
         }
       }
 
-      // Sync to directory for display consistency
       const existingDirectory = await base44.entities.EmployeeDirectory.list();
       const directoryEntry = existingDirectory.find(d => d.employee_email === employee.email);
       
@@ -228,10 +223,11 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
       onClose();
-      alert('✅ Employee updated successfully and synced to directory!');
+      alert('✅ Employee updated successfully!');
       setTimeout(() => window.location.reload(), 300);
     },
     onError: (error) => {
+      console.error('Update employee error:', error);
       if (error.message === 'PERMISSION_DENIED') {
         setShowManualInstructions(true);
       } else {

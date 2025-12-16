@@ -10,7 +10,9 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 export default function Horarios() {
   const { t, language } = useLanguage();
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || 
+    ['CEO', 'administrator', 'manager'].includes(user?.position) ||
+    user?.department === 'HR';
 
   const { data: timeEntries, isLoading } = useQuery({
     queryKey: ['timeEntries'],

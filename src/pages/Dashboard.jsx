@@ -81,7 +81,9 @@ export default function Dashboard() {
     refetchOnWindowFocus: false,
   });
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || 
+    ['CEO', 'administrator', 'manager'].includes(user?.position) ||
+    user?.department === 'HR';
 
   // Load dashboard preferences
   const { data: dashboardPrefs, isLoading: prefsLoading } = useQuery({
