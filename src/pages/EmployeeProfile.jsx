@@ -69,10 +69,11 @@ export default function EmployeeProfile() {
     team_name: ''
   });
 
-  const { data: teams = [] } = useQuery({
+  const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
-    initialData: []
+    initialData: [],
+    staleTime: 60000
   });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
