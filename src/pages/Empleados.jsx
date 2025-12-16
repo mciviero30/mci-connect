@@ -640,65 +640,11 @@ export default function Empleados() {
 
       console.log('🔄 Starting invitation for:', employee.email);
 
-      // Create user if doesn't exist
-      const existingUser = employees.find(e => e.email === employee.email);
-      if (!existingUser) {
-        try {
-          console.log('➕ Creating new user...');
-          await base44.entities.User.create({
-            email: employee.email,
-            full_name: fullName,
-            first_name: employee.first_name || '',
-            last_name: employee.last_name || '',
-            role: 'user',
-            phone: employee.phone || '',
-            position: employee.position || '',
-            department: employee.department || '',
-            address: employee.address || '',
-            ssn_tax_id: employee.ssn_tax_id || '',
-            dob: employee.dob || '',
-            tshirt_size: employee.tshirt_size || '',
-            team_id: employee.team_id || '',
-            team_name: employee.team_name || '',
-            direct_manager_name: employee.direct_manager_name || '',
-            employment_status: 'pending_registration'
-          });
-          console.log('✅ User created successfully');
-        } catch (error) {
-          console.error('❌ Error creating user:', error);
-          if (!error.message.includes('already exists')) throw error;
-        }
-      } else {
-        // Update existing user with pending employee data
-        try {
-          console.log('🔄 Updating existing user...');
-          await base44.entities.User.update(existingUser.id, {
-            full_name: fullName,
-            first_name: employee.first_name || existingUser.first_name || '',
-            last_name: employee.last_name || existingUser.last_name || '',
-            phone: employee.phone || existingUser.phone || '',
-            position: employee.position || existingUser.position || '',
-            department: employee.department || existingUser.department || '',
-            address: employee.address || existingUser.address || '',
-            ssn_tax_id: employee.ssn_tax_id || existingUser.ssn_tax_id || '',
-            dob: employee.dob || existingUser.dob || '',
-            tshirt_size: employee.tshirt_size || existingUser.tshirt_size || '',
-            team_id: employee.team_id || existingUser.team_id || '',
-            team_name: employee.team_name || existingUser.team_name || '',
-            direct_manager_name: employee.direct_manager_name || existingUser.direct_manager_name || ''
-          });
-          console.log('✅ User updated successfully');
-        } catch (error) {
-          console.error('❌ Error updating existing user:', error);
-          throw new Error('Failed to update user data: ' + error.message);
-        }
-      }
-
       // Send welcome email
       console.log('📧 Sending welcome email...');
       const emailBody = language === 'es' 
-        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
-        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
+        ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\nCuando accedas por primera vez, tu cuenta será creada automáticamente.\n\n¡Bienvenido al equipo!\nMCI Team`
+        : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nYour account will be automatically created when you first log in.\n\nWelcome to the team!\nMCI Team`;
 
       await base44.integrations.Core.SendEmail({
         to: employee.email,
@@ -719,12 +665,11 @@ export default function Empleados() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' ? '✅ Invitación enviada exitosamente' : '✅ Invitation sent successfully');
+      toast.success(language === 'es' ? '✅ Invitación enviada - El usuario se creará al primer login' : '✅ Invitation sent - User will be created on first login');
     },
     onError: (error) => {
       console.error('❌ Invitation failed:', error);
-      toast.error((language === 'es' ? '❌ Error al enviar invitación: ' : '❌ Invitation failed: ') + error.message);
+      toast.error((language === 'es' ? '❌ Error: ' : '❌ Error: ') + error.message);
     }
   });
 
