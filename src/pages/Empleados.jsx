@@ -1135,6 +1135,7 @@ export default function Empleados() {
                     <PendingEmployeeCard
                       key={employee.id}
                       employee={employee}
+                      onInvite={(emp) => inviteMutation.mutate(emp)}
                       onEdit={(emp) => {
                         setEditingEmployee(emp);
                         setIsPendingEdit(true);
