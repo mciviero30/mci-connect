@@ -603,22 +603,13 @@ export default function Empleados() {
         const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
           employee.full_name || 'Employee';
 
-        const response = await base44.functions.invoke('sendInvitation', {
-          email: employee.email,
-          fullName: fullName,
-          firstName: employee.first_name || '',
-          lastName: employee.last_name || '',
-          position: employee.position || 'technician',
-          department: employee.department || 'operations',
-          teamId: employee.team_id || '',
-          teamName: employee.team_name || '',
-          language: language
-        });
+        // Copy email to clipboard
+        navigator.clipboard.writeText(employee.email);
 
-        if (!response.data.success) {
-          throw new Error(response.data.error || 'Failed to send invitation');
-        }
+        // Open Dashboard in new tab
+        window.open('https://app.base44.com/dashboard', '_blank');
 
+        // Mark as invited locally
         await base44.entities.PendingEmployee.update(employee.id, {
           status: 'invited',
           invited_date: new Date().toISOString(),
@@ -631,11 +622,16 @@ export default function Empleados() {
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
         queryClient.invalidateQueries({ queryKey: ['employees'] });
-        toast.success(language === 'es' ? '✅ Invitación enviada exitosamente a ' + data.email : '✅ Invitation sent successfully to ' + data.email);
+
+        const message = language === 'es' 
+          ? `📋 Email copiado: ${data.email}\n\n1️⃣ Haz clic en "Invite User"\n2️⃣ Pega el email\n3️⃣ Selecciona rol "User"\n4️⃣ Envía invitación`
+          : `📋 Email copied: ${data.email}\n\n1️⃣ Click "Invite User"\n2️⃣ Paste email\n3️⃣ Select role "User"\n4️⃣ Send invitation`;
+
+        toast.success(message, { duration: 8000 });
       },
       onError: (error) => {
         console.error('Invitation error:', error);
-        toast.error((language === 'es' ? 'Error al enviar invitación: ' : 'Error sending invitation: ') + error.message);
+        toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
       }
     });
 

@@ -15,45 +15,38 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Check if user already exists
+    // Check if user already exists in the system
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email });
     
-    if (existingUsers.length === 0) {
-      // Create placeholder user so we can send them emails
-      await base44.asServiceRole.entities.User.create({
-        email: email,
-        full_name: fullName || 'New Employee',
-        first_name: firstName || '',
-        last_name: lastName || '',
-        position: position || 'technician',
-        department: department || 'operations',
-        team_id: teamId || '',
-        team_name: teamName || '',
-        employment_status: 'pending_registration',
-        role: 'user',
-        hourly_rate: 25,
-        hourly_rate_overtime: 37.5,
-        per_diem_amount: 50
+    if (existingUsers.length > 0) {
+      // User exists - send welcome email directly
+      const appUrl = req.headers.get('origin') || 'https://your-app.base44.com';
+
+      const emailBody = language === 'es'
+        ? `Hola ${firstName || fullName},\n\n¡Bienvenido a MCI Connect!\n\nYa tienes acceso a nuestra plataforma de gestión.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${email}\n\n¡Bienvenido al equipo!\nMCI Team`
+        : `Hello ${firstName || fullName},\n\nWelcome to MCI Connect!\n\nYou now have access to our management platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${email}\n\nWelcome to the team!\nMCI Team`;
+
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: email,
+        subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+        body: emailBody,
+        from_name: 'MCI Connect'
+      });
+
+      return Response.json({ 
+        success: true,
+        message: 'Welcome email sent',
+        userExists: true
+      });
+    } else {
+      // User doesn't exist yet - must be invited through Dashboard first
+      return Response.json({ 
+        success: false,
+        requiresDashboardInvite: true,
+        message: 'User must be invited through Base44 Dashboard first',
+        dashboardUrl: 'https://app.base44.com/dashboard'
       });
     }
-
-    const appUrl = req.headers.get('origin') || 'https://your-app.base44.com';
-
-    const emailBody = language === 'es'
-      ? `Hola ${firstName || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma de gestión.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${email}\n\nInicia sesión para comenzar.\n\n¡Bienvenido al equipo!\nMCI Team`
-      : `Hello ${firstName || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our management platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${email}\n\nLog in to get started.\n\nWelcome to the team!\nMCI Team`;
-
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: email,
-      subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-      body: emailBody,
-      from_name: 'MCI Connect'
-    });
-
-    return Response.json({ 
-      success: true,
-      message: 'Invitation sent successfully'
-    });
 
   } catch (error) {
     console.error('Error sending invitation:', error);
