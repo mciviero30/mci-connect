@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       ? (language === 'es' ? 'Recordatorio: Tu invitación a MCI Connect' : 'Reminder: Your MCI Connect Invitation')
       : (language === 'es' ? 'Bienvenido a MCI Connect: Tu Plataforma Integral de Gestión Empresarial' : 'Welcome to MCI Connect: Your Comprehensive Business Management Platform');
 
-    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png';
+    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/a8f5dbf43_Screenshot2025-12-16at11832AM.png';
 
     const htmlBody = language === 'es'
           ? `
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
                 Nos complace darle la bienvenida al equipo. Ha sido invitado a unirse a <strong>MCI Connect</strong>, nuestra plataforma integral diseñada para optimizar la gestión empresarial y sus actividades diarias.
               </p>
               
-              <h2 style="color: #1e3a8a; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
+              <h2 style="color: #2563EB; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #2563EB; padding-bottom: 10px;">
                 Características Clave de MCI Connect
               </h2>
               
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
                 </tr>
               </table>
 
-              <h2 style="color: #1e3a8a; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
+              <h2 style="color: #2563EB; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #2563EB; padding-bottom: 10px;">
                 Pasos para Comenzar
               </h2>
               
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0;">
                 Atentamente,
               </p>
-              <p style="color: #1e3a8a; font-size: 15px; font-weight: 600; margin: 5px 0 0 0;">
+              <p style="color: #2563EB; font-size: 15px; font-weight: 600; margin: 5px 0 0 0;">
                 El Equipo MCI
               </p>
             </td>
@@ -206,7 +206,7 @@ Deno.serve(async (req) => {
                 We are delighted to welcome you to the team. You have been invited to join <strong>MCI Connect</strong>, our comprehensive platform designed to streamline your business management and daily activities.
               </p>
               
-              <h2 style="color: #1e3a8a; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
+              <h2 style="color: #2563EB; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #2563EB; padding-bottom: 10px;">
                 Key Features of MCI Connect
               </h2>
               
@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
                 </tr>
               </table>
 
-              <h2 style="color: #1e3a8a; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
+              <h2 style="color: #2563EB; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #2563EB; padding-bottom: 10px;">
                 Steps to Get Started
               </h2>
               
@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
               <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0;">
                 Sincerely,
               </p>
-              <p style="color: #1e3a8a; font-size: 15px; font-weight: 600; margin: 5px 0 0 0;">
+              <p style="color: #2563EB; font-size: 15px; font-weight: 600; margin: 5px 0 0 0;">
                 The MCI Team
               </p>
             </td>
