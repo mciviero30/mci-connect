@@ -64,7 +64,15 @@ export default function EmployeeProfile() {
     department: '',
     dob: '',
     ssn_tax_id: '',
-    hire_date: ''
+    hire_date: '',
+    team_id: '',
+    team_name: ''
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    initialData: []
   });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
@@ -503,7 +511,9 @@ export default function EmployeeProfile() {
         department: employee.department || '',
         dob: employee.dob ? format(new Date(employee.dob), 'yyyy-MM-dd') : '',
         ssn_tax_id: employee.ssn_tax_id || '',
-        hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : ''
+        hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : '',
+        team_id: employee.team_id || '',
+        team_name: employee.team_name || ''
       });
     }
   }, [employee]);
@@ -548,6 +558,17 @@ export default function EmployeeProfile() {
     );
   }
 
+  // Build proper display name from first_name + last_name
+  const displayName = (() => {
+    if (employee.first_name && employee.last_name) {
+      return `${employee.first_name} ${employee.last_name}`.trim();
+    }
+    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
+      return employee.full_name;
+    }
+    return getDisplayName(employee);
+  })();
+
   const needsNameCorrection =
     (employee.first_name && employee.first_name !== capitalizeName(employee.first_name)) ||
     (employee.last_name && employee.last_name !== capitalizeName(employee.last_name)) ||
@@ -571,8 +592,22 @@ export default function EmployeeProfile() {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
+  // Build proper display name from first_name + last_name
+  const displayName = (() => {
+    if (employee.first_name && employee.last_name) {
+      return `${employee.first_name} ${employee.last_name}`.trim();
+    }
+    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
+      return employee.full_name;
+    }
+    return getDisplayName(employee);
+  })();
+
+  return (
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="max-w-7xl mx-auto">
         <PageHeader
-          title={capitalizeName(employee.full_name) || getDisplayName(employee)}
+          title={displayName}
           description={capitalizeName(employee.position) || 'Employee'}
           icon={User}
           showBack
@@ -1091,6 +1126,28 @@ export default function EmployeeProfile() {
                   <option value="sales">Sales</option>
                   <option value="marketing">Marketing</option>
                   <option value="hr">HR</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="team" className="text-gray-900">Team</Label>
+                <select
+                  id="team"
+                  value={editForm.team_id}
+                  onChange={(e) => {
+                    const selectedTeam = teams.find(t => t.id === e.target.value);
+                    setEditForm({
+                      ...editForm,
+                      team_id: e.target.value,
+                      team_name: selectedTeam?.name || ''
+                    });
+                  }}
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select Team</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
                 </select>
               </div>
 
