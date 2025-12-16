@@ -24,7 +24,8 @@ import {
   AlertCircle,
   CheckCircle2,
   RefreshCw,
-  UserX
+  UserX,
+  FileText
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -814,6 +815,30 @@ export default function Empleados() {
             </div>
             
             <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await base44.functions.invoke('exportEmployeesToPDF');
+                    const blob = new Blob([response.data], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `employees_backup_${new Date().toISOString().split('T')[0]}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    a.remove();
+                  } catch (error) {
+                    alert('Error exporting PDF: ' + error.message);
+                  }
+                }}
+                variant="outline"
+                className="border-slate-300 hover:bg-slate-50"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Export PDF
+              </Button>
+              
               <Button
                 onClick={() => manualSyncMutation.mutate()}
                 variant="outline"
