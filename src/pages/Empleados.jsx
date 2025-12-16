@@ -600,15 +600,18 @@ export default function Empleados() {
       mutationFn: async (employee) => {
         if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
-        const appUrl = window.location.origin;
         const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
           employee.full_name || 'Employee';
 
-        const inviteMessage = language === 'es'
-          ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nAccede aquí: ${appUrl}\nEmail: ${employee.email}\n\nTu cuenta se creará automáticamente al iniciar sesión.\n\n¡Bienvenido al equipo!\nMCI Team`
-          : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nAccess here: ${appUrl}\nEmail: ${employee.email}\n\nYour account will be created automatically when you log in.\n\nWelcome to the team!\nMCI Team`;
+        const response = await base44.functions.invoke('sendInvitation', {
+          email: employee.email,
+          fullName: fullName,
+          language: language
+        });
 
-        await navigator.clipboard.writeText(inviteMessage);
+        if (!response.data.success) {
+          throw new Error(response.data.error || 'Failed to send invitation');
+        }
 
         await base44.entities.PendingEmployee.update(employee.id, {
           status: 'invited',
@@ -617,19 +620,15 @@ export default function Empleados() {
           invitation_count: (employee.invitation_count || 0) + 1
         });
 
-        return { fullName, email: employee.email, message: inviteMessage };
+        return { fullName, email: employee.email };
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-        alert(
-          language === 'es'
-            ? `✅ Invitación preparada para ${data.fullName}\n\n📋 Mensaje copiado al portapapeles\n\nEnvía este mensaje por WhatsApp, SMS o email a:\n${data.email}`
-            : `✅ Invitation prepared for ${data.fullName}\n\n📋 Message copied to clipboard\n\nSend this message via WhatsApp, SMS, or email to:\n${data.email}`
-        );
+        toast.success(language === 'es' ? '✅ Invitación enviada exitosamente a ' + data.email : '✅ Invitation sent successfully to ' + data.email);
       },
       onError: (error) => {
         console.error('Invitation error:', error);
-        toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
+        toast.error((language === 'es' ? 'Error al enviar invitación: ' : 'Error sending invitation: ') + error.message);
       }
     });
 
@@ -639,19 +638,22 @@ export default function Empleados() {
         employeeIds.includes(e.id) && e.email && e.status === 'pending'
       );
 
-      const results = { success: 0, failed: 0, messages: [] };
-      const appUrl = window.location.origin;
+      const results = { success: 0, failed: 0, errors: [] };
 
       for (const employee of employeesToInvite) {
         try {
           const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
             employee.full_name || 'Employee';
 
-          const inviteMessage = language === 'es'
-            ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nAccede: ${appUrl}\nEmail: ${employee.email}\n\nTu cuenta se creará al iniciar sesión.\n\n¡Bienvenido!\nMCI Team`
-            : `Hi ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nAccess: ${appUrl}\nEmail: ${employee.email}\n\nYour account will be created when you log in.\n\nWelcome!\nMCI Team`;
+          const response = await base44.functions.invoke('sendInvitation', {
+            email: employee.email,
+            fullName: fullName,
+            language: language
+          });
 
-          results.messages.push(`${fullName} (${employee.email}):\n${inviteMessage}\n\n---\n\n`);
+          if (!response.data.success) {
+            throw new Error(response.data.error);
+          }
 
           await base44.entities.PendingEmployee.update(employee.id, {
             status: 'invited',
@@ -664,6 +666,7 @@ export default function Empleados() {
         } catch (error) {
           console.error(`Error inviting ${employee.email}:`, error);
           results.failed++;
+          results.errors.push(`${employee.email}: ${error.message}`);
         }
       }
 
@@ -674,13 +677,18 @@ export default function Empleados() {
       setSelectedEmployees([]);
 
       if (results.success > 0) {
-        const allMessages = results.messages.join('');
-        navigator.clipboard.writeText(allMessages);
-        
-        alert(
+        toast.success(
+          language === 'es' 
+            ? `✅ ${results.success} invitaciones enviadas por email`
+            : `✅ ${results.success} invitations sent via email`
+        );
+      }
+      if (results.failed > 0) {
+        console.error('Bulk invite errors:', results.errors);
+        toast.error(
           language === 'es'
-            ? `✅ ${results.success} invitaciones preparadas\n\n📋 Mensajes copiados al portapapeles\n\nEnvía estos mensajes por WhatsApp/SMS/Email a cada empleado`
-            : `✅ ${results.success} invitations prepared\n\n📋 Messages copied to clipboard\n\nSend these messages via WhatsApp/SMS/Email to each employee`
+            ? `❌ ${results.failed} invitaciones fallaron`
+            : `❌ ${results.failed} invitations failed`
         );
       }
     },
@@ -693,15 +701,18 @@ export default function Empleados() {
     mutationFn: async (employee) => {
       if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
-      const appUrl = window.location.origin;
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
         employee.full_name || 'Employee';
 
-      const reminderMessage = language === 'es'
-        ? `Hola ${employee.first_name || fullName},\n\nRecordatorio: Tienes acceso a MCI Connect.\n\nAccede: ${appUrl}\nEmail: ${employee.email}\n\nTu cuenta se creará al iniciar sesión.\n\nSaludos,\nMCI Team`
-        : `Hi ${employee.first_name || fullName},\n\nReminder: You have access to MCI Connect.\n\nAccess: ${appUrl}\nEmail: ${employee.email}\n\nYour account will be created when you log in.\n\nBest regards,\nMCI Team`;
+      const response = await base44.functions.invoke('sendInvitation', {
+        email: employee.email,
+        fullName: fullName,
+        language: language
+      });
 
-      await navigator.clipboard.writeText(reminderMessage);
+      if (!response.data.success) {
+        throw new Error(response.data.error);
+      }
 
       await base44.entities.PendingEmployee.update(employee.id, {
         last_invitation_sent: new Date().toISOString(),
@@ -712,11 +723,7 @@ export default function Empleados() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      alert(
-        language === 'es'
-          ? `✅ Recordatorio preparado para ${data.fullName}\n\n📋 Mensaje copiado al portapapeles\n\nEnvíalo por WhatsApp/SMS/Email a: ${data.email}`
-          : `✅ Reminder prepared for ${data.fullName}\n\n📋 Message copied to clipboard\n\nSend it via WhatsApp/SMS/Email to: ${data.email}`
-      );
+      toast.success(language === 'es' ? '✅ Recordatorio enviado a ' + data.email : '✅ Reminder sent to ' + data.email);
     },
     onError: (error) => {
       console.error('Resend error:', error);
