@@ -603,17 +603,12 @@ export default function Empleados() {
         const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
           employee.full_name || 'Employee';
 
-        const appUrl = window.location.origin;
-
-        // Send email invitation
-        const emailBody = language === 'es'
-          ? `Hola ${fullName},\n\nHas sido invitado a unirte a MCI Connect, nuestro sistema de gestión.\n\nPara comenzar:\n1. Revisa tu bandeja de entrada en ${employee.email}\n2. Busca el email de invitación de Base44\n3. Haz clic en "Aceptar Invitación"\n4. Crea tu contraseña y completa tu perfil\n\nLink de la aplicación: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
-          : `Hi ${fullName},\n\nYou've been invited to join MCI Connect, our management system.\n\nTo get started:\n1. Check your inbox at ${employee.email}\n2. Look for the Base44 invitation email\n3. Click "Accept Invitation"\n4. Create your password and complete your profile\n\nApp link: ${appUrl}\n\nWelcome to the team!\nMCI Team`;
-
-        await base44.integrations.Core.SendEmail({
+        // Send email via SendGrid
+        await base44.functions.invoke('sendInvitationEmail', {
           to: employee.email,
-          subject: language === 'es' ? 'Invitación a MCI Connect' : 'MCI Connect Invitation',
-          body: emailBody
+          fullName,
+          language,
+          isReminder: false
         });
 
         // Copy email for Dashboard invite
@@ -723,17 +718,12 @@ export default function Empleados() {
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
         employee.full_name || 'Employee';
 
-      const appUrl = window.location.origin;
-
-      // Send reminder email
-      const emailBody = language === 'es'
-        ? `Hola ${fullName},\n\nEste es un recordatorio sobre tu invitación a MCI Connect.\n\nPara acceder:\n1. Revisa tu bandeja de entrada en ${employee.email}\n2. Busca el email de Base44\n3. Haz clic en "Aceptar Invitación"\n4. Crea tu contraseña\n\nLink de la aplicación: ${appUrl}\n\n¡Te esperamos!\nMCI Team`
-        : `Hi ${fullName},\n\nThis is a reminder about your MCI Connect invitation.\n\nTo access:\n1. Check your inbox at ${employee.email}\n2. Look for Base44 email\n3. Click "Accept Invitation"\n4. Create your password\n\nApp link: ${appUrl}\n\nWe're waiting for you!\nMCI Team`;
-
-      await base44.integrations.Core.SendEmail({
+      // Send reminder email via SendGrid
+      await base44.functions.invoke('sendInvitationEmail', {
         to: employee.email,
-        subject: language === 'es' ? 'Recordatorio - MCI Connect' : 'Reminder - MCI Connect',
-        body: emailBody
+        fullName,
+        language,
+        isReminder: true
       });
 
       // Copy email and open Dashboard for resend
