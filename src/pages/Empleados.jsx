@@ -638,10 +638,13 @@ export default function Empleados() {
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
         employee.full_name || 'Employee';
 
+      console.log('🔄 Starting invitation for:', employee.email);
+
       // Create user if doesn't exist
       const existingUser = employees.find(e => e.email === employee.email);
       if (!existingUser) {
         try {
+          console.log('➕ Creating new user...');
           await base44.entities.User.create({
             email: employee.email,
             full_name: fullName,
@@ -660,12 +663,15 @@ export default function Empleados() {
             direct_manager_name: employee.direct_manager_name || '',
             employment_status: 'pending_registration'
           });
+          console.log('✅ User created successfully');
         } catch (error) {
+          console.error('❌ Error creating user:', error);
           if (!error.message.includes('already exists')) throw error;
         }
       } else {
         // Update existing user with pending employee data
         try {
+          console.log('🔄 Updating existing user...');
           await base44.entities.User.update(existingUser.id, {
             full_name: fullName,
             first_name: employee.first_name || existingUser.first_name || '',
@@ -681,12 +687,15 @@ export default function Empleados() {
             team_name: employee.team_name || existingUser.team_name || '',
             direct_manager_name: employee.direct_manager_name || existingUser.direct_manager_name || ''
           });
+          console.log('✅ User updated successfully');
         } catch (error) {
-          console.error('Error updating existing user:', error);
+          console.error('❌ Error updating existing user:', error);
+          throw new Error('Failed to update user data: ' + error.message);
         }
       }
 
       // Send welcome email
+      console.log('📧 Sending welcome email...');
       const emailBody = language === 'es' 
         ? `Hola ${employee.first_name || fullName},\n\n¡Bienvenido a MCI Connect!\n\nHas sido invitado a unirte a nuestra plataforma.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${employee.email}\n\n¡Bienvenido al equipo!\nMCI Team`
         : `Hello ${employee.first_name || fullName},\n\nWelcome to MCI Connect!\n\nYou've been invited to join our platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${employee.email}\n\nWelcome to the team!\nMCI Team`;
@@ -697,21 +706,25 @@ export default function Empleados() {
         body: emailBody,
         from_name: 'MCI Connect'
       });
+      console.log('✅ Email sent successfully');
 
       // Update status
+      console.log('🔄 Updating pending employee status...');
       await base44.entities.PendingEmployee.update(employee.id, {
         status: 'invited',
         invited_date: new Date().toISOString(),
         invitation_count: (employee.invitation_count || 0) + 1
       });
+      console.log('✅ Invitation complete!');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' ? 'Invitación enviada' : 'Invitation sent');
+      toast.success(language === 'es' ? '✅ Invitación enviada exitosamente' : '✅ Invitation sent successfully');
     },
     onError: (error) => {
-      toast.error(t('error') + ': ' + error.message);
+      console.error('❌ Invitation failed:', error);
+      toast.error((language === 'es' ? '❌ Error al enviar invitación: ' : '❌ Invitation failed: ') + error.message);
     }
   });
 
