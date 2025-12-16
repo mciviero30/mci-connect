@@ -165,65 +165,18 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   useEffect(() => {
     if (!user) return;
-    if (user.employment_status !== 'pending_registration') return;
+    if (user.employment_status !== 'invited') return;
 
     const autoActivateUser = async () => {
       try {
-        console.log('🔄 Auto-activating user on first login:', user.email);
+        console.log('🔄 Auto-activating invited user:', user.email);
         
-        // Find pending employee data
-        try {
-          const pendingEmployees = await base44.entities.PendingEmployee.filter({ 
-            email: user.email 
-          });
-          
-          if (pendingEmployees.length > 0) {
-            const pending = pendingEmployees[0];
-            
-            // Copy ALL data from PendingEmployee to User
-            const updateData = {
-              employment_status: 'active',
-              first_name: pending.first_name || user.first_name || '',
-              last_name: pending.last_name || user.last_name || '',
-              full_name: pending.first_name && pending.last_name 
-                ? `${pending.first_name} ${pending.last_name}`.trim()
-                : (pending.full_name || user.full_name || user.email.split('@')[0]),
-              phone: pending.phone || user.phone || '',
-              position: pending.position || user.position || '',
-              department: pending.department || user.department || '',
-              address: pending.address || user.address || '',
-              ssn_tax_id: pending.ssn_tax_id || user.ssn_tax_id || '',
-              dob: pending.dob || user.dob || '',
-              tshirt_size: pending.tshirt_size || user.tshirt_size || '',
-              team_id: pending.team_id || user.team_id || '',
-              team_name: pending.team_name || user.team_name || '',
-              direct_manager_name: pending.direct_manager_name || user.direct_manager_name || '',
-              hire_date: pending.hire_date || user.hire_date || new Date().toISOString().split('T')[0]
-            };
-            
-            await base44.auth.updateMe(updateData);
-            
-            // Update PendingEmployee status
-            await base44.entities.PendingEmployee.update(pending.id, {
-              status: 'active',
-              registered_date: new Date().toISOString()
-            });
-            
-            console.log('✅ User auto-activated with full profile data');
-          } else {
-            // No pending employee found, just activate
-            await base44.auth.updateMe({ 
-              employment_status: 'active' 
-            });
-            console.log('✅ User auto-activated (no pending profile found)');
-          }
-        } catch (pendingError) {
-          console.log('Note: PendingEmployee sync failed:', pendingError.message);
-          // Still activate the user even if sync fails
-          await base44.auth.updateMe({ 
-            employment_status: 'active' 
-          });
-        }
+        await base44.auth.updateMe({ 
+          employment_status: 'active',
+          hire_date: user.hire_date || new Date().toISOString().split('T')[0]
+        });
+        
+        console.log('✅ User activated successfully');
         
         setTimeout(() => {
           window.location.reload();
