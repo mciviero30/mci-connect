@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Phone, Edit, Building2, Eye, Trash2, RotateCcw, FileText, UserX } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Users, Plus, Search, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
+import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 
 const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, onInvite }) => {
   const { t, language } = useLanguage();
@@ -314,11 +313,48 @@ export default function Empleados() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
 
+  // Lazy load employees with pagination
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
+
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('-created_date'),
-    staleTime: 30000
+    staleTime: 30000,
+    select: (data) => data // Full data, we'll paginate in UI
   });
+
+  // Lazy load onboarding tasks only when needed
+  const { data: onboardingTasks = [] } = useQuery({
+    queryKey: ['onboardingTasks'],
+    queryFn: () => base44.entities.OnboardingTask.filter({ is_master_template: false }),
+    staleTime: 60000,
+    enabled: employees.length > 0
+  });
+
+  // Calculate onboarding progress for each employee (memoized)
+  const employeeProgress = useMemo(() => {
+    const progressMap = {};
+    
+    employees.forEach(emp => {
+      const empTasks = onboardingTasks.filter(t => t.employee_email === emp.email);
+      const completed = empTasks.filter(t => t.status === 'completed').length;
+      const total = empTasks.length;
+      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      
+      progressMap[emp.id] = {
+        percentage,
+        completed,
+        total,
+        tasks: empTasks
+      };
+    });
+    
+    return progressMap;
+  }, [employees, onboardingTasks]);
+
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
   const inviteMutation = useMutation({
     mutationFn: async (employee) => {
@@ -365,6 +401,18 @@ export default function Empleados() {
   const activeEmployees = filterEmployees(employees.filter(e => e.employment_status === 'active' || !e.employment_status));
   const invitedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'invited'));
   const deletedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'deleted'));
+
+  // Paginate current tab employees
+  const paginateEmployees = (empList) => {
+    const start = (page - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return empList.slice(start, end);
+  };
+
+  const handleViewOnboarding = (employee) => {
+    setSelectedEmployee(employee);
+    setShowOnboardingModal(true);
+  };
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -437,21 +485,39 @@ export default function Empleados() {
           </TabsList>
 
           <TabsContent value="active">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeEmployees.map(employee => (
-                <EmployeeCard
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginateEmployees(activeEmployees).map(employee => (
+                <ModernEmployeeCard
                   key={employee.id}
                   employee={employee}
-                  onEdit={() => { setEditingEmployee(employee); setShowDialog(true); }}
-                  onViewProfile={() => window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`)}
-                  onDelete={() => {
-                    if (confirm('Delete this employee? This will block their access.')) {
-                      deleteMutation.mutate(employee.id);
-                    }
-                  }}
+                  onboardingProgress={employeeProgress[employee.id]}
+                  onViewDetails={handleViewOnboarding}
                 />
               ))}
             </div>
+
+            {/* Pagination */}
+            {activeEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-4 text-sm text-slate-600">
+                  Page {page} of {Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(activeEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="invited">
@@ -460,40 +526,73 @@ export default function Empleados() {
                 ℹ️ Invited employees need to accept invitation from Dashboard to activate their account.
               </AlertDescription>
             </Alert>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {invitedEmployees.map(employee => (
-                <EmployeeCard
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginateEmployees(invitedEmployees).map(employee => (
+                <ModernEmployeeCard
                   key={employee.id}
                   employee={employee}
-                  onEdit={() => { setEditingEmployee(employee); setShowDialog(true); }}
-                  onViewProfile={() => window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`)}
-                  onInvite={() => inviteMutation.mutate(employee)}
-                  onDelete={() => {
-                    if (confirm('Delete this employee?')) {
-                      deleteMutation.mutate(employee.id);
-                    }
-                  }}
+                  onboardingProgress={employeeProgress[employee.id]}
+                  onViewDetails={handleViewOnboarding}
                 />
               ))}
             </div>
+
+            {invitedEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-4 text-sm text-slate-600">
+                  Page {page} of {Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="deleted">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {deletedEmployees.map(employee => (
-                <EmployeeCard
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginateEmployees(deletedEmployees).map(employee => (
+                <ModernEmployeeCard
                   key={employee.id}
                   employee={employee}
-                  onEdit={() => { setEditingEmployee(employee); setShowDialog(true); }}
-                  onViewProfile={() => window.location.href = createPageUrl(`EmployeeProfile?id=${employee.id}`)}
-                  onDelete={() => {
-                    if (confirm('Restore this employee?')) {
-                      restoreMutation.mutate(employee.id);
-                    }
-                  }}
+                  onboardingProgress={employeeProgress[employee.id]}
+                  onViewDetails={handleViewOnboarding}
                 />
               ))}
             </div>
+
+            {deletedEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-4 text-sm text-slate-600">
+                  Page {page} of {Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
@@ -505,7 +604,18 @@ export default function Empleados() {
             <EmployeeFormDialog employee={editingEmployee} onClose={() => { setShowDialog(false); setEditingEmployee(null); }} />
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
-  );
-}
+
+        {/* Onboarding Details Modal */}
+        <OnboardingDetailsModal
+          employee={selectedEmployee}
+          tasks={selectedEmployee ? (employeeProgress[selectedEmployee.id]?.tasks || []) : []}
+          isOpen={showOnboardingModal}
+          onClose={() => {
+            setShowOnboardingModal(false);
+            setSelectedEmployee(null);
+          }}
+        />
+        </div>
+        </div>
+        );
+        }
