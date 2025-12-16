@@ -38,38 +38,38 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
   const progressPercentage = onboardingProgress?.percentage || 0;
 
   return (
-    <Card className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-300">
-      <div className="p-8">
-        {/* Header Section */}
+    <Card className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+      <div className="p-6">
+        {/* Header Section - Avatar + Name + Manage Profile Button */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-start gap-4 flex-1">
             {employee.profile_photo_url ? (
               <img
                 src={employee.profile_photo_url}
                 alt={displayName}
-                className="w-24 h-24 rounded-full object-cover border-4 border-blue-500/20 shadow-lg"
+                className="w-20 h-20 rounded-full object-cover shadow-md"
               />
             ) : (
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-4xl shadow-lg">
+              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-3xl shadow-md">
                 {displayName[0]?.toUpperCase()}
               </div>
             )}
 
-            <div className="flex-1 min-w-0 pt-1">
-              <h3 className="text-2xl font-bold text-slate-900 mb-1">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-2xl font-bold text-slate-900 leading-tight">
                 {displayName}
               </h3>
-              <p className="text-slate-600 text-lg">
+              <p className="text-slate-600 text-lg mt-1">
                 {formatPosition(employee.position)}
               </p>
             </div>
           </div>
 
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
-            className="border-slate-300 text-slate-700 hover:bg-slate-100 flex items-center gap-2 px-4 py-2 h-auto"
+            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-2 px-3 py-2"
           >
             <IdCard className="w-4 h-4" />
             Manage Profile
@@ -77,8 +77,8 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         </div>
 
         {/* Onboarding Progress */}
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-slate-700 mb-2">
+        <div className="mb-5">
+          <p className="text-sm font-medium text-slate-700 mb-2">
             Onboarding Complete: {progressPercentage}%
           </p>
           <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -89,42 +89,46 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
           </div>
         </div>
 
-        {/* Status Badges */}
-        <div className="flex flex-wrap gap-3 mb-6">
-          <Badge className="bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+        {/* Status Badges - Row 1 */}
+        <div className="flex gap-2 mb-3">
+          <Badge className="bg-green-500 text-white px-4 py-1.5 rounded-full text-sm font-medium">
             Active
           </Badge>
-          <Badge className="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+          <Badge className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm font-medium">
             Full-Time
           </Badge>
+        </div>
+
+        {/* Team Badge - Row 2 */}
+        <div className="mb-5">
           <Badge 
             variant="outline" 
-            className="border-2 border-blue-500 text-blue-700 bg-white px-4 py-2 rounded-full text-sm font-medium"
+            className="border-2 border-blue-500 text-blue-700 bg-white px-4 py-1.5 rounded-full text-sm font-medium"
           >
             {teamLocation}
           </Badge>
         </div>
 
-        {/* Contact Info */}
-        <div className="space-y-3 mb-6">
+        {/* Contact Info - Two Columns */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
           {employee.email && (
-            <div className="flex items-center gap-3 text-slate-600">
+            <div className="flex items-center gap-2 text-slate-600">
               <Mail className="w-5 h-5 text-slate-400 flex-shrink-0" />
               <span className="text-sm truncate">{employee.email}</span>
             </div>
           )}
           {employee.phone && (
-            <div className="flex items-center gap-3 text-slate-600">
+            <div className="flex items-center gap-2 text-slate-600">
               <Phone className="w-5 h-5 text-slate-400 flex-shrink-0" />
               <span className="text-sm">{employee.phone}</span>
             </div>
           )}
         </div>
 
-        {/* View Details Button */}
+        {/* Add New Button */}
         <Button
           onClick={() => onViewDetails(employee)}
-          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
         >
           Add New
           <Plus className="w-5 h-5" />
