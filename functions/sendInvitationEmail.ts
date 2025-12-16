@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { to, fullName, language = 'es', isReminder = false } = await req.json();
+    const { to, fullName, language = 'es' } = await req.json();
 
     if (!to) {
       return Response.json({ error: 'Email is required' }, { status: 400 });

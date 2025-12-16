@@ -202,7 +202,7 @@ const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, isInactive = 
 };
 
 // PENDING EMPLOYEE CARD
-const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, onRestore, onDelete, isSelected, onSelect }) => {
+const PendingEmployeeCard = ({ employee, onInvite, onEdit, onArchive, onRestore, onDelete, isSelected, onSelect }) => {
   const { t, language } = useLanguage();
   
   const displayName = formatDisplayName(employee);
@@ -274,17 +274,10 @@ const PendingEmployeeCard = ({ employee, onInvite, onResend, onEdit, onArchive, 
                 {t('edit')}
               </DropdownMenuItem>
               
-              {employee.status === 'pending' && employee.email && (
+              {employee.email && (
                 <DropdownMenuItem onClick={() => onInvite(employee)} className="cursor-pointer">
                   <UserPlus className="w-4 h-4 mr-2" />
                   {t('sendInvitation')}
-                </DropdownMenuItem>
-              )}
-              
-              {employee.status === 'invited' && employee.email && (
-                <DropdownMenuItem onClick={() => onResend(employee)} className="cursor-pointer">
-                  <Mail className="w-4 h-4 mr-2" />
-                  {t('resendInvitation')}
                 </DropdownMenuItem>
               )}
               
@@ -607,8 +600,7 @@ export default function Empleados() {
         await base44.functions.invoke('sendInvitationEmail', {
           to: employee.email,
           fullName,
-          language,
-          isReminder: false
+          language
         });
 
         // Copy email for Dashboard invite (with fallback)
@@ -721,57 +713,7 @@ export default function Empleados() {
     }
   });
 
-  const resendInviteMutation = useMutation({
-    mutationFn: async (employee) => {
-      if (!employee.email) throw new Error(t('cannotInviteWithoutEmail'));
 
-      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
-        employee.full_name || 'Employee';
-
-      // Send reminder email via SendGrid
-      await base44.functions.invoke('sendInvitationEmail', {
-        to: employee.email,
-        fullName,
-        language,
-        isReminder: true
-      });
-
-      // Copy email and open Dashboard for resend (with fallback)
-      try {
-        await navigator.clipboard.writeText(employee.email);
-      } catch (err) {
-        // Fallback: create temporary input
-        const input = document.createElement('input');
-        input.value = employee.email;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-      }
-      window.open('https://app.base44.com/dashboard', '_blank');
-
-      await base44.entities.PendingEmployee.update(employee.id, {
-        last_invitation_sent: new Date().toISOString(),
-        invitation_count: (employee.invitation_count || 0) + 1
-      });
-
-      return { fullName, email: employee.email };
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(
-        language === 'es' 
-          ? `✅ Email de recordatorio enviado a ${data.fullName}. Reenvía desde Dashboard → "Pending Invitations"`
-          : `✅ Reminder email sent to ${data.fullName}. Resend from Dashboard → "Pending Invitations"`,
-        { duration: 8000 }
-      );
-    },
-    onError: (error) => {
-      console.error('Resend error:', error);
-      toast.error(t('error') + ': ' + error.message);
-    }
-  });
 
   const archivePendingMutation = useMutation({
     mutationFn: (id) => base44.entities.PendingEmployee.update(id, { status: 'archived' }),
