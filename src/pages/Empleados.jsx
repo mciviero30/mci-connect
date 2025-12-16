@@ -606,6 +606,12 @@ export default function Empleados() {
         const response = await base44.functions.invoke('sendInvitation', {
           email: employee.email,
           fullName: fullName,
+          firstName: employee.first_name || '',
+          lastName: employee.last_name || '',
+          position: employee.position || 'technician',
+          department: employee.department || 'operations',
+          teamId: employee.team_id || '',
+          teamName: employee.team_name || '',
           language: language
         });
 
@@ -624,6 +630,7 @@ export default function Empleados() {
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+        queryClient.invalidateQueries({ queryKey: ['employees'] });
         toast.success(language === 'es' ? '✅ Invitación enviada exitosamente a ' + data.email : '✅ Invitation sent successfully to ' + data.email);
       },
       onError: (error) => {
@@ -648,6 +655,12 @@ export default function Empleados() {
           const response = await base44.functions.invoke('sendInvitation', {
             email: employee.email,
             fullName: fullName,
+            firstName: employee.first_name || '',
+            lastName: employee.last_name || '',
+            position: employee.position || 'technician',
+            department: employee.department || 'operations',
+            teamId: employee.team_id || '',
+            teamName: employee.team_name || '',
             language: language
           });
 
@@ -674,6 +687,7 @@ export default function Empleados() {
     },
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
       setSelectedEmployees([]);
 
       if (results.success > 0) {
@@ -707,6 +721,12 @@ export default function Empleados() {
       const response = await base44.functions.invoke('sendInvitation', {
         email: employee.email,
         fullName: fullName,
+        firstName: employee.first_name || '',
+        lastName: employee.last_name || '',
+        position: employee.position || 'technician',
+        department: employee.department || 'operations',
+        teamId: employee.team_id || '',
+        teamName: employee.team_name || '',
         language: language
       });
 
@@ -723,6 +743,7 @@ export default function Empleados() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success(language === 'es' ? '✅ Recordatorio enviado a ' + data.email : '✅ Reminder sent to ' + data.email);
     },
     onError: (error) => {
