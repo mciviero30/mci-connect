@@ -1137,12 +1137,22 @@ export default function EmployeeProfile() {
                     });
                   }}
                   className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={teamsLoading}
                 >
                   <option value="">Select Team</option>
-                  {teams.map(team => (
-                    <option key={team.id} value={team.id}>{team.name}</option>
-                  ))}
+                  {teamsLoading ? (
+                    <option disabled>Loading teams...</option>
+                  ) : teams.length === 0 ? (
+                    <option disabled>No teams available</option>
+                  ) : (
+                    teams.map(team => (
+                      <option key={team.id} value={team.id}>{team.name}</option>
+                    ))
+                  )}
                 </select>
+                {!teamsLoading && teams.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">{teams.length} teams available</p>
+                )}
               </div>
 
               <div>
