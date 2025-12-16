@@ -603,13 +603,14 @@ export default function Empleados() {
         const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
           employee.full_name || 'Employee';
 
-        // Copy email to clipboard
-        navigator.clipboard.writeText(employee.email);
+        const appUrl = window.location.origin;
 
-        // Open Dashboard in new tab
-        window.open('https://app.base44.com/dashboard', '_blank');
+        const message = language === 'es'
+          ? `Hola ${employee.first_name || fullName}!\n\nBienvenido a MCI Connect. Accede aquí:\n${appUrl}\n\nEmail: ${employee.email}\n\nSaludos,\nMCI Team`
+          : `Hi ${employee.first_name || fullName}!\n\nWelcome to MCI Connect. Access here:\n${appUrl}\n\nEmail: ${employee.email}\n\nBest regards,\nMCI Team`;
 
-        // Mark as invited locally
+        await navigator.clipboard.writeText(message);
+
         await base44.entities.PendingEmployee.update(employee.id, {
           status: 'invited',
           invited_date: new Date().toISOString(),
@@ -617,17 +618,18 @@ export default function Empleados() {
           invitation_count: (employee.invitation_count || 0) + 1
         });
 
-        return { fullName, email: employee.email };
+        return { fullName, email: employee.email, phone: employee.phone };
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
         queryClient.invalidateQueries({ queryKey: ['employees'] });
 
-        const message = language === 'es' 
-          ? `📋 Email copiado: ${data.email}\n\n1️⃣ Haz clic en "Invite User"\n2️⃣ Pega el email\n3️⃣ Selecciona rol "User"\n4️⃣ Envía invitación`
-          : `📋 Email copied: ${data.email}\n\n1️⃣ Click "Invite User"\n2️⃣ Paste email\n3️⃣ Select role "User"\n4️⃣ Send invitation`;
-
-        toast.success(message, { duration: 8000 });
+        toast.success(
+          language === 'es' 
+            ? `✅ Mensaje copiado para ${data.fullName}. Pégalo en WhatsApp/SMS`
+            : `✅ Message copied for ${data.fullName}. Paste in WhatsApp/SMS`,
+          { duration: 5000 }
+        );
       },
       onError: (error) => {
         console.error('Invitation error:', error);
@@ -642,27 +644,12 @@ export default function Empleados() {
       );
 
       const results = { success: 0, failed: 0, errors: [] };
+      const appUrl = window.location.origin;
 
       for (const employee of employeesToInvite) {
         try {
           const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
             employee.full_name || 'Employee';
-
-          const response = await base44.functions.invoke('sendInvitation', {
-            email: employee.email,
-            fullName: fullName,
-            firstName: employee.first_name || '',
-            lastName: employee.last_name || '',
-            position: employee.position || 'technician',
-            department: employee.department || 'operations',
-            teamId: employee.team_id || '',
-            teamName: employee.team_name || '',
-            language: language
-          });
-
-          if (!response.data.success) {
-            throw new Error(response.data.error);
-          }
 
           await base44.entities.PendingEmployee.update(employee.id, {
             status: 'invited',
@@ -679,6 +666,16 @@ export default function Empleados() {
         }
       }
 
+      // Copy bulk message
+      const messages = employeesToInvite.map(e => {
+        const name = e.first_name || `${e.first_name || ''} ${e.last_name || ''}`.trim() || e.full_name;
+        return language === 'es'
+          ? `${name} - ${appUrl} (Email: ${e.email})`
+          : `${name} - ${appUrl} (Email: ${e.email})`;
+      }).join('\n\n');
+
+      await navigator.clipboard.writeText(messages);
+
       return results;
     },
     onSuccess: (results) => {
@@ -689,8 +686,9 @@ export default function Empleados() {
       if (results.success > 0) {
         toast.success(
           language === 'es' 
-            ? `✅ ${results.success} invitaciones enviadas por email`
-            : `✅ ${results.success} invitations sent via email`
+            ? `✅ ${results.success} mensajes copiados. Pégalos en WhatsApp/SMS`
+            : `✅ ${results.success} messages copied. Paste in WhatsApp/SMS`,
+          { duration: 5000 }
         );
       }
       if (results.failed > 0) {
@@ -714,21 +712,13 @@ export default function Empleados() {
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
         employee.full_name || 'Employee';
 
-      const response = await base44.functions.invoke('sendInvitation', {
-        email: employee.email,
-        fullName: fullName,
-        firstName: employee.first_name || '',
-        lastName: employee.last_name || '',
-        position: employee.position || 'technician',
-        department: employee.department || 'operations',
-        teamId: employee.team_id || '',
-        teamName: employee.team_name || '',
-        language: language
-      });
+      const appUrl = window.location.origin;
 
-      if (!response.data.success) {
-        throw new Error(response.data.error);
-      }
+      const message = language === 'es'
+        ? `Recordatorio ${employee.first_name || fullName}!\n\nAccede a MCI Connect:\n${appUrl}\n\nEmail: ${employee.email}\n\nSaludos,\nMCI Team`
+        : `Reminder ${employee.first_name || fullName}!\n\nAccess MCI Connect:\n${appUrl}\n\nEmail: ${employee.email}\n\nBest regards,\nMCI Team`;
+
+      await navigator.clipboard.writeText(message);
 
       await base44.entities.PendingEmployee.update(employee.id, {
         last_invitation_sent: new Date().toISOString(),
@@ -740,7 +730,12 @@ export default function Empleados() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(language === 'es' ? '✅ Recordatorio enviado a ' + data.email : '✅ Reminder sent to ' + data.email);
+      toast.success(
+        language === 'es' 
+          ? `✅ Recordatorio copiado para ${data.fullName}. Pégalo en WhatsApp/SMS`
+          : `✅ Reminder copied for ${data.fullName}. Paste in WhatsApp/SMS`,
+        { duration: 5000 }
+      );
     },
     onError: (error) => {
       console.error('Resend error:', error);
