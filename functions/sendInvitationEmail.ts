@@ -23,10 +23,16 @@ Deno.serve(async (req) => {
     }
 
     const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/9476c84db_Screenshot2025-12-16at22005AM.png';
-    
-    // Get app URL from environment or construct it
-    const appUrl = Deno.env.get('APP_URL') || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3';
-    const setupPasswordUrl = `${appUrl}/#/SetupPassword?email=${encodeURIComponent(to)}`;
+
+    // Send password reset to allow user to set password
+    const appUrl = Deno.env.get('APP_URL') || 'https://mci-connect.base44.app';
+
+    // Trigger Base44 password reset email
+    await base44.asServiceRole.auth.resetPasswordForEmail(to, {
+      redirectTo: appUrl
+    });
+
+    const setupPasswordUrl = `${appUrl}`;
 
     const htmlBody = language === 'es'
       ? `
