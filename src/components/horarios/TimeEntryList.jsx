@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
@@ -72,29 +71,45 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     }
   });
 
-  const handleApprove = async (entry) => {
-    if (window.confirm(language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?')) {
-      await onApproveEntry(entry);
+  const approveMutation = useMutation({
+    mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { status: 'approved' }),
+    onSuccess: async (_, entry) => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
+      toast.success(t('approved'));
       
-      // Send notification to employee
       try {
         await notifyTimesheetStatus(entry, 'approved', null);
       } catch (error) {
-        console.error('Failed to send notification:', error);
+        console.error('Notification failed:', error);
       }
     }
-  };
+  });
 
-  const handleReject = async (entry) => {
-    if (window.confirm(language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?')) {
-      await onRejectEntry(entry);
+  const rejectMutation = useMutation({
+    mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { status: 'rejected' }),
+    onSuccess: async (_, entry) => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
+      toast.success(t('rejected'));
       
-      // Send notification to employee
       try {
         await notifyTimesheetStatus(entry, 'rejected', null);
       } catch (error) {
-        console.error('Failed to send notification:', error);
+        console.error('Notification failed:', error);
       }
+    }
+  });
+
+  const handleApprove = (entry) => {
+    if (window.confirm(language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?')) {
+      approveMutation.mutate(entry);
+    }
+  };
+
+  const handleReject = (entry) => {
+    if (window.confirm(language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?')) {
+      rejectMutation.mutate(entry);
     }
   };
 

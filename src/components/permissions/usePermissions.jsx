@@ -14,7 +14,11 @@ export const usePermissions = () => {
     
     const fullAccessPositions = ['CEO', 'administrator', 'manager'];
     const fullAccessDepartments = ['HR'];
-    return fullAccessPositions.includes(user.position) || fullAccessDepartments.includes(user.department);
+    
+    const hasPosition = user.position && fullAccessPositions.includes(user.position);
+    const hasDepartment = user.department && fullAccessDepartments.includes(user.department);
+    
+    return hasPosition || hasDepartment;
   };
 
   const hasManagerAccess = () => {

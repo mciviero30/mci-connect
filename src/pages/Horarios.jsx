@@ -43,7 +43,11 @@ export default function Horarios() {
           <StatsCard title={language === 'es' ? 'Horas Aprobadas' : 'Approved Hours'} value={`${totalApprovedHours.toFixed(1)}h`} icon={Clock} color="from-[#3B9FF3] to-[#2A8FE3]" loading={isLoading} />
         </div>
 
-        <TimeEntryList timeEntries={timeEntries} isAdmin={isAdmin} loading={isLoading} />
+        <TimeEntryList 
+          timeEntries={timeEntries} 
+          isAdmin={isAdmin} 
+          loading={isLoading}
+        />
       </div>
     </div>
   );

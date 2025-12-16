@@ -26,7 +26,9 @@ export default function TimeTracking() {
     queryFn: () => base44.auth.me(),
   });
 
-  const isManager = user?.position === 'manager' || user?.position === 'CEO' || user?.position === 'supervisor' || user?.role === 'admin';
+  const isManager = user?.role === 'admin' || 
+    ['manager', 'CEO', 'supervisor', 'administrator'].includes(user?.position) ||
+    user?.department === 'HR';
 
   // Get today's active time entry
   const { data: todayEntry } = useQuery({
@@ -59,6 +61,10 @@ export default function TimeTracking() {
   // Clock In
   const clockInMutation = useMutation({
     mutationFn: async (jobId) => {
+      if (!user?.email || !user?.full_name) {
+        throw new Error('User data not available');
+      }
+      
       const now = new Date();
       return await base44.entities.TimeEntry.create({
         employee_email: user.email,
@@ -66,31 +72,48 @@ export default function TimeTracking() {
         date: format(now, 'yyyy-MM-dd'),
         check_in: format(now, 'HH:mm:ss'),
         job_id: jobId || '',
+        job_name: '',
         breaks: [],
-        status: 'pending'
+        total_break_minutes: 0,
+        status: 'pending',
+        geofence_validated: false,
+        requires_location_review: false,
+        exceeds_max_hours: false
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
+      queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
       toast.success(language === 'es' ? '¡Entrada registrada!' : 'Clocked in!');
     },
+    onError: (error) => {
+      toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
+    }
   });
 
   // Clock Out
   const clockOutMutation = useMutation({
     mutationFn: async () => {
+      if (!todayEntry) {
+        throw new Error('No active time entry found');
+      }
+      
       const now = new Date();
       const checkIn = new Date(`${todayEntry.date}T${todayEntry.check_in}`);
       const checkOut = now;
       
       const totalMinutes = differenceInMinutes(checkOut, checkIn);
       const breakMinutes = todayEntry.total_break_minutes || 0;
-      const workedMinutes = totalMinutes - breakMinutes;
+      const workedMinutes = Math.max(0, totalMinutes - breakMinutes);
       const hours = workedMinutes / 60;
+      
+      const exceeds_max_hours = hours > 14;
 
       return await base44.entities.TimeEntry.update(todayEntry.id, {
         check_out: format(now, 'HH:mm:ss'),
-        hours_worked: Number(hours.toFixed(2))
+        hours_worked: Number(hours.toFixed(2)),
+        exceeds_max_hours,
+        hour_type: hours > 8 ? 'overtime' : 'normal'
       });
     },
     onSuccess: () => {
@@ -98,6 +121,9 @@ export default function TimeTracking() {
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
       toast.success(language === 'es' ? '¡Salida registrada!' : 'Clocked out!');
     },
+    onError: (error) => {
+      toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
+    }
   });
 
   // Start Break
