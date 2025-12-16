@@ -611,8 +611,18 @@ export default function Empleados() {
           isReminder: false
         });
 
-        // Copy email for Dashboard invite
-        await navigator.clipboard.writeText(employee.email);
+        // Copy email for Dashboard invite (with fallback)
+        try {
+          await navigator.clipboard.writeText(employee.email);
+        } catch (err) {
+          // Fallback: create temporary input
+          const input = document.createElement('input');
+          input.value = employee.email;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+        }
 
         // Open Dashboard
         window.open('https://app.base44.com/dashboard', '_blank');
@@ -726,8 +736,18 @@ export default function Empleados() {
         isReminder: true
       });
 
-      // Copy email and open Dashboard for resend
-      await navigator.clipboard.writeText(employee.email);
+      // Copy email and open Dashboard for resend (with fallback)
+      try {
+        await navigator.clipboard.writeText(employee.email);
+      } catch (err) {
+        // Fallback: create temporary input
+        const input = document.createElement('input');
+        input.value = employee.email;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
       window.open('https://app.base44.com/dashboard', '_blank');
 
       await base44.entities.PendingEmployee.update(employee.id, {
