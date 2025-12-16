@@ -24,9 +24,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'SendGrid not configured' }, { status: 500 });
     }
 
-    const subject = isReminder
-      ? (language === 'es' ? 'Recordatorio: Tu invitación a MCI Connect' : 'Reminder: Your MCI Connect Invitation')
-      : (language === 'es' ? 'Bienvenido a MCI Connect: Tu Plataforma Integral de Gestión Empresarial' : 'Welcome to MCI Connect: Your Comprehensive Business Management Platform');
+    const subject = language === 'es' 
+      ? 'Bienvenido a MCI Connect: Tu Plataforma Integral de Gestión Empresarial' 
+      : 'Welcome to MCI Connect: Your Comprehensive Business Management Platform';
 
     const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/fe0bea5ff_Screenshot2025-12-16at12102AM.png';
 
