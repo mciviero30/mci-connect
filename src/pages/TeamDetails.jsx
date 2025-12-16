@@ -56,7 +56,7 @@ export default function TeamDetails() {
   );
 
   return (
-    <div className="p-4 md:p-8 min-h-screen">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={team.team_name}
@@ -65,7 +65,7 @@ export default function TeamDetails() {
           showBack={true}
           actions={
             team.is_headquarters && (
-              <Badge className="bg-amber-500/20 border-amber-500 text-amber-400 text-lg px-4 py-2">
+              <Badge className="bg-amber-100 border-amber-200 text-amber-700 text-sm px-3 py-1">
                 Headquarters
               </Badge>
             )
@@ -73,18 +73,18 @@ export default function TeamDetails() {
         />
 
         {team.description && (
-          <Card className="glass-card shadow-xl mb-6">
+          <Card className="bg-white shadow-md border-slate-200 mb-6">
             <CardContent className="p-6">
-              <p className="text-slate-300 text-lg">{team.description}</p>
+              <p className="text-slate-700 text-base">{team.description}</p>
             </CardContent>
           </Card>
         )}
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="glass-card shadow-xl">
-            <CardHeader className="border-b border-slate-800">
-              <CardTitle className="flex items-center gap-2 text-slate-200">
-                <Users className="w-5 h-5 text-[#3B9FF3]" />
+          <Card className="bg-white shadow-md border-slate-200">
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
+                <Users className="w-5 h-5 text-blue-600" />
                 Team Members ({teamEmployees.length})
               </CardTitle>
             </CardHeader>
@@ -93,32 +93,32 @@ export default function TeamDetails() {
                 <div className="space-y-4">
                   {teamEmployees.map(emp => (
                     <Link key={emp.id} to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
-                      <div className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-all border border-slate-700 hover:border-[#3B9FF3]/30">
+                      <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all border border-slate-200 hover:border-blue-300">
                         {emp.profile_photo_url ? (
-                          <img src={emp.profile_photo_url} alt={emp.full_name} className="w-14 h-14 rounded-full object-cover border-2 border-[#3B9FF3]/30" />
+                          <img src={emp.profile_photo_url} alt={emp.full_name} className="w-14 h-14 rounded-full object-cover border-2 border-blue-500/30" />
                         ) : (
-                          <div className="w-14 h-14 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                          <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                             {emp.full_name?.[0]?.toUpperCase()}
                           </div>
                         )}
                         <div className="flex-1">
-                          <h3 className="font-bold text-white">{emp.full_name}</h3>
-                          <p className="text-sm text-cyan-400">{emp.position || 'No position'}</p>
+                          <h3 className="font-bold text-slate-900">{emp.full_name}</h3>
+                          <p className="text-sm text-blue-600">{emp.position || 'No position'}</p>
                           {emp.email && (
-                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                               <Mail className="w-3 h-3" />
                               <span>{emp.email}</span>
                             </div>
                           )}
                           {emp.phone && (
-                            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
                               <Phone className="w-3 h-3" />
                               <span>{emp.phone}</span>
                             </div>
                           )}
                         </div>
                         {emp.department && (
-                          <Badge variant="outline" className="border-slate-600 text-slate-400">
+                          <Badge variant="outline" className="border-blue-200 text-blue-700">
                             {emp.department}
                           </Badge>
                         )}
@@ -132,10 +132,10 @@ export default function TeamDetails() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card shadow-xl">
-            <CardHeader className="border-b border-slate-800">
-              <CardTitle className="flex items-center gap-2 text-slate-200">
-                <Briefcase className="w-5 h-5 text-[#3B9FF3]" />
+          <Card className="bg-white shadow-md border-slate-200">
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
+                <Briefcase className="w-5 h-5 text-blue-600" />
                 Active Jobs ({teamJobs.length})
               </CardTitle>
             </CardHeader>
@@ -144,16 +144,16 @@ export default function TeamDetails() {
                 <div className="space-y-4">
                   {teamJobs.map(job => (
                     <Link key={job.id} to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                      <div className="p-4 bg-slate-800/50 rounded-xl hover:bg-slate-800 transition-all border border-slate-700 hover:border-[#3B9FF3]/30">
-                        <h3 className="font-bold text-white text-lg mb-2">{job.name}</h3>
+                      <div className="p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all border border-slate-200 hover:border-blue-300">
+                        <h3 className="font-bold text-slate-900 text-base mb-2">{job.name}</h3>
                         {job.address && (
-                          <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
+                          <div className="flex items-center gap-2 text-sm text-slate-600 mb-2">
                             <MapPin className="w-4 h-4" />
                             <span>{job.address}</span>
                           </div>
                         )}
                         {job.contract_amount && (
-                          <div className="flex items-center gap-2 text-sm font-semibold text-[#3B9FF3]">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-blue-600">
                             <DollarSign className="w-4 h-4" />
                             <span>${job.contract_amount.toLocaleString('en-US')}</span>
                           </div>

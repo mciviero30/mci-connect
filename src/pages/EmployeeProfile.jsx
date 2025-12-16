@@ -71,9 +71,14 @@ export default function EmployeeProfile() {
 
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: async () => {
+      const allTeams = await base44.entities.Team.list();
+      console.log('🔍 Teams loaded:', allTeams);
+      return allTeams;
+    },
     initialData: [],
-    staleTime: 60000
+    staleTime: 60000,
+    refetchOnMount: true
   });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
