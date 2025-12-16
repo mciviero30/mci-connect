@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
       ? (language === 'es' ? 'Recordatorio: Tu invitación a MCI Connect' : 'Reminder: Your MCI Connect Invitation')
       : (language === 'es' ? 'Bienvenido a MCI Connect: Tu Plataforma Integral de Gestión Empresarial' : 'Welcome to MCI Connect: Your Comprehensive Business Management Platform');
 
-    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/a8f5dbf43_Screenshot2025-12-16at11832AM.png';
+    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/fe0bea5ff_Screenshot2025-12-16at12102AM.png';
 
     const htmlBody = language === 'es'
           ? `
@@ -45,8 +45,8 @@ Deno.serve(async (req) => {
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); padding: 40px 30px; text-align: center;">
-              <img src="${logoUrl}" alt="MCI" style="max-width: 280px; height: auto; display: block; margin: 0 auto;">
+            <td style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); padding: 30px;">
+              <img src="${logoUrl}" alt="MCI" style="max-width: 200px; height: auto; display: block;">
             </td>
           </tr>
           <!-- Content -->
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #374151; font-size: 14px; line-height: 1.6;">
-                    • <strong>MCI Field:</strong> Fotos de proyectos, planos y tareas en campo.
+                    • <strong style="color: #F59E0B;">MCI Field:</strong> Fotos de proyectos, planos y tareas en campo.
                   </td>
                 </tr>
                 <tr>
@@ -191,8 +191,8 @@ Deno.serve(async (req) => {
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); padding: 40px 30px; text-align: center;">
-              <img src="${logoUrl}" alt="MCI" style="max-width: 280px; height: auto; display: block; margin: 0 auto;">
+            <td style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); padding: 30px;">
+              <img src="${logoUrl}" alt="MCI" style="max-width: 200px; height: auto; display: block;">
             </td>
           </tr>
           <!-- Content -->
@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #374151; font-size: 14px; line-height: 1.6;">
-                    • <strong>MCI Field:</strong> Project photos, blueprints, and field tasks.
+                    • <strong style="color: #F59E0B;">MCI Field:</strong> Project photos, blueprints, and field tasks.
                   </td>
                 </tr>
                 <tr>
