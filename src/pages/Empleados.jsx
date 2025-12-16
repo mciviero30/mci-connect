@@ -16,7 +16,28 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 
 const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, onInvite }) => {
   const { t, language } = useLanguage();
-  const displayName = employee.full_name || employee.email?.split('@')[0] || 'Unknown';
+  
+  // Build display name properly from first_name + last_name
+  const displayName = (() => {
+    if (employee.first_name && employee.last_name) {
+      return `${employee.first_name} ${employee.last_name}`.trim();
+    }
+    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
+      return employee.full_name;
+    }
+    // Fallback: capitalize email username
+    if (employee.email) {
+      const emailName = employee.email.split('@')[0];
+      if (emailName.includes('.')) {
+        return emailName.split('.').map(part => 
+          part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+        ).join(' ');
+      }
+      return emailName.charAt(0).toUpperCase() + emailName.slice(1).toLowerCase();
+    }
+    return 'Unknown';
+  })();
+  
   const isInvited = employee.employment_status === 'invited';
   const isDeleted = employee.employment_status === 'deleted';
 
@@ -113,12 +134,20 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      const fullName = data.first_name && data.last_name 
-        ? `${data.first_name} ${data.last_name}`.trim()
+      // Capitalize first and last names
+      const firstName = data.first_name ? 
+        data.first_name.charAt(0).toUpperCase() + data.first_name.slice(1).toLowerCase() : '';
+      const lastName = data.last_name ? 
+        data.last_name.charAt(0).toUpperCase() + data.last_name.slice(1).toLowerCase() : '';
+      
+      const fullName = firstName && lastName 
+        ? `${firstName} ${lastName}`.trim()
         : data.full_name || data.email.split('@')[0];
 
       const payload = {
         ...data,
+        first_name: firstName,
+        last_name: lastName,
         full_name: fullName,
         hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
         employment_status: employee ? employee.employment_status : 'invited',
