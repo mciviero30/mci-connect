@@ -115,10 +115,20 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
   const saveMutation = useMutation({
     mutationFn: (data) => {
       const selectedTeam = teams.find(t => t.id === data.team_id);
+      const fullName = `${data.first_name || ''} ${data.last_name || ''}`.trim();
+      
+      if (!fullName) {
+        throw new Error('First name and last name are required');
+      }
+      
+      if (isPending && !data.email) {
+        throw new Error('Email is required for pending employees');
+      }
+      
       const dataWithTeam = {
         ...data,
         team_name: selectedTeam?.team_name || '',
-        full_name: `${data.first_name} ${data.last_name}`.trim()
+        full_name: fullName
       };
 
       if (isPending) {
@@ -137,6 +147,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
       onClose();
     },
     onError: (error) => {
+      console.error('Save employee error:', error);
       alert(`❌ Error: ${error.message}`);
     }
   });
