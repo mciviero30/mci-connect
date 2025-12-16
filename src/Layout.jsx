@@ -188,6 +188,16 @@ const LayoutContent = ({ children, currentPageName }) => {
     autoActivateUser();
   }, [user?.id, user?.employment_status]);
 
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (!user) return;
+    if (user.employment_status !== 'active') return;
+    if (user.onboarding_completed) return;
+    if (currentPageName === 'Onboarding') return;
+
+    window.location.href = createPageUrl('Onboarding');
+  }, [user?.id, user?.onboarding_completed, currentPageName]);
+
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
     queryFn: async () => {
