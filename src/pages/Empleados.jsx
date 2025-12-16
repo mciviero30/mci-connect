@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, FileText } from "lucide-react";
+import { Users, Plus, Search, FileText, Mail, UserX } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,103 +13,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 
-const EmployeeCard = ({ employee, onEdit, onViewProfile, onDelete, onInvite }) => {
-  const { t, language } = useLanguage();
-  
-  // Build display name properly from first_name + last_name
-  const displayName = (() => {
-    if (employee.first_name && employee.last_name) {
-      return `${employee.first_name} ${employee.last_name}`.trim();
-    }
-    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
-      return employee.full_name;
-    }
-    // Fallback: capitalize email username
-    if (employee.email) {
-      const emailName = employee.email.split('@')[0];
-      if (emailName.includes('.')) {
-        return emailName.split('.').map(part => 
-          part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-        ).join(' ');
-      }
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1).toLowerCase();
-    }
-    return 'Unknown';
-  })();
-  
-  const isInvited = employee.employment_status === 'invited';
-  const isDeleted = employee.employment_status === 'deleted';
 
-  return (
-    <Card className={`hover:shadow-lg transition-all ${isDeleted ? 'opacity-60 bg-red-50' : 'bg-white'}`}>
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          {employee.profile_photo_url ? (
-            <img src={employee.profile_photo_url} alt={displayName} className="w-12 h-12 rounded-full object-cover border-2 border-blue-500/30" />
-          ) : (
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {displayName[0]?.toUpperCase()}
-            </div>
-          )}
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-sm truncate text-slate-900">{displayName}</h3>
-              {isInvited && <Badge className="bg-yellow-100 text-yellow-800 text-xs">Invited</Badge>}
-              {isDeleted && <Badge className="bg-red-100 text-red-800 text-xs">Deleted</Badge>}
-            </div>
-            
-            {employee.position && <p className="text-xs text-slate-600 truncate">{employee.position}</p>}
-            {employee.team_name && (
-              <div className="flex items-center gap-1 mt-1">
-                <Building2 className="w-3 h-3 text-purple-600" />
-                <span className="text-xs text-purple-600">{employee.team_name}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <Button variant="ghost" size="icon" onClick={onViewProfile} className="h-8 w-8">
-              <Eye className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => onEdit(employee)} className="h-8 w-8">
-              <Edit className="w-4 h-4" />
-            </Button>
-            {isInvited && (
-              <Button variant="ghost" size="icon" onClick={() => onInvite(employee)} className="h-8 w-8 text-blue-600">
-                <Mail className="w-4 h-4" />
-              </Button>
-            )}
-            {!isDeleted ? (
-              <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8 text-red-600">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8 text-green-600">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-3 text-xs text-slate-500">
-          {employee.email && (
-            <div className="flex items-center gap-1 truncate">
-              <Mail className="w-3 h-3" />
-              <span className="truncate">{employee.email}</span>
-            </div>
-          )}
-          {employee.phone && (
-            <div className="flex items-center gap-1">
-              <Phone className="w-3 h-3" />
-              <span>{employee.phone}</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 const EmployeeFormDialog = ({ employee, onClose }) => {
   const { t, language } = useLanguage();
