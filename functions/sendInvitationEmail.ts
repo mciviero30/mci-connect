@@ -190,7 +190,7 @@ Deno.serve(async (req) => {
             <td style="padding: 40px;">
               <p style="color: #1f2937; font-size: 18px; margin: 0 0 20px 0;">Hola <strong>${fullName}</strong>,</p>
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                ¡Nos emociona tenerte en el equipo! Has sido invitado a <strong>MCI Connect</strong>, nuestra plataforma integral de gestión empresarial.
+                MCI te ha invitado a unirte a <strong>MCI Connect</strong>. ¡Nos emociona tenerte a bordo!
               </p>
               
               <div style="background-color: #eff6ff; border-left: 4px solid #2563EB; padding: 20px; margin: 30px 0; border-radius: 8px;">
@@ -271,7 +271,7 @@ Deno.serve(async (req) => {
             <td style="padding: 40px;">
               <p style="color: #1f2937; font-size: 18px; margin: 0 0 20px 0;">Hi <strong>${fullName}</strong>,</p>
               <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                We're excited to have you on the team! You've been invited to <strong>MCI Connect</strong>, our comprehensive business management platform.
+                MCI has invited you to join <strong>MCI Connect</strong>. We're excited to have you on board!
               </p>
               
               <div style="background-color: #eff6ff; border-left: 4px solid #2563EB; padding: 20px; margin: 30px 0; border-radius: 8px;">
