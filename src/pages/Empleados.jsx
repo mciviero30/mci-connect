@@ -603,10 +603,23 @@ export default function Empleados() {
         const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
           employee.full_name || 'Employee';
 
-        // Step 1: Copy email for Dashboard invite
+        const appUrl = window.location.origin;
+
+        // Send email invitation
+        const emailBody = language === 'es'
+          ? `Hola ${fullName},\n\nHas sido invitado a unirte a MCI Connect, nuestro sistema de gestión.\n\nPara comenzar:\n1. Revisa tu bandeja de entrada en ${employee.email}\n2. Busca el email de invitación de Base44\n3. Haz clic en "Aceptar Invitación"\n4. Crea tu contraseña y completa tu perfil\n\nLink de la aplicación: ${appUrl}\n\n¡Bienvenido al equipo!\nMCI Team`
+          : `Hi ${fullName},\n\nYou've been invited to join MCI Connect, our management system.\n\nTo get started:\n1. Check your inbox at ${employee.email}\n2. Look for the Base44 invitation email\n3. Click "Accept Invitation"\n4. Create your password and complete your profile\n\nApp link: ${appUrl}\n\nWelcome to the team!\nMCI Team`;
+
+        await base44.integrations.Core.SendEmail({
+          to: employee.email,
+          subject: language === 'es' ? 'Invitación a MCI Connect' : 'MCI Connect Invitation',
+          body: emailBody
+        });
+
+        // Copy email for Dashboard invite
         await navigator.clipboard.writeText(employee.email);
 
-        // Step 2: Open Dashboard
+        // Open Dashboard
         window.open('https://app.base44.com/dashboard', '_blank');
 
         await base44.entities.PendingEmployee.update(employee.id, {
@@ -622,26 +635,10 @@ export default function Empleados() {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
         queryClient.invalidateQueries({ queryKey: ['employees'] });
 
-        const appUrl = window.location.origin;
-        const message = language === 'es'
-          ? `Hola ${data.fullName}! Bienvenido a MCI Connect.\n\nLink: ${appUrl}\nEmail: ${data.email}\n\nSaludos, MCI Team`
-          : `Hi ${data.fullName}! Welcome to MCI Connect.\n\nLink: ${appUrl}\nEmail: ${data.email}\n\nRegards, MCI Team`;
-
-        // Copy WhatsApp message after 3 seconds
-        setTimeout(() => {
-          navigator.clipboard.writeText(message);
-          toast.success(
-            language === 'es' 
-              ? `✅ Mensaje copiado. Pégalo en WhatsApp para ${data.fullName}`
-              : `✅ Message copied. Paste in WhatsApp for ${data.fullName}`,
-            { duration: 5000 }
-          );
-        }, 3000);
-
         toast.success(
           language === 'es' 
-            ? `📧 Email copiado: ${data.email}. Invita desde Dashboard → "Invite User"`
-            : `📧 Email copied: ${data.email}. Invite from Dashboard → "Invite User"`,
+            ? `✅ Email enviado a ${data.fullName}. Ahora invita desde Dashboard → "Invite User"`
+            : `✅ Email sent to ${data.fullName}. Now invite from Dashboard → "Invite User"`,
           { duration: 8000 }
         );
       },
