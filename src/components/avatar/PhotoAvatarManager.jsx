@@ -18,7 +18,10 @@ const STYLE_PRESETS = [
 
 export default function PhotoAvatarManager({ open, onOpenChange }) {
   const queryClient = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
   
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [generatingAvatar, setGeneratingAvatar] = useState(false);

@@ -31,7 +31,10 @@ export default function AIAssistant({ currentPage, pageContext = {} }) {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

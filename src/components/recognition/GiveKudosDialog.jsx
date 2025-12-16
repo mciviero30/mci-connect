@@ -35,6 +35,7 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
   const { data: employees = [] } = useQuery({

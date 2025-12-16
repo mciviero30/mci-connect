@@ -13,7 +13,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function TimeOffRequestDialog({ open, onOpenChange }) {
   const queryClient = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
   
   const [formData, setFormData] = useState({
     time_off_type: 'unpaid',
