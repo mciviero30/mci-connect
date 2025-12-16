@@ -26,12 +26,6 @@ Deno.serve(async (req) => {
 
     // Send password reset to allow user to set password
     const appUrl = Deno.env.get('APP_URL') || 'https://mci-connect.base44.app';
-
-    // Trigger Base44 password reset email
-    await base44.asServiceRole.auth.resetPasswordForEmail(to, {
-      redirectTo: appUrl
-    });
-
     const setupPasswordUrl = `${appUrl}`;
 
     const htmlBody = language === 'es'
