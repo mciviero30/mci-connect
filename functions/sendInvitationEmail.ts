@@ -23,6 +23,10 @@ Deno.serve(async (req) => {
     }
 
     const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/9476c84db_Screenshot2025-12-16at22005AM.png';
+    
+    // Get app URL from environment or construct it
+    const appUrl = Deno.env.get('APP_URL') || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3';
+    const setupPasswordUrl = `${appUrl}/#/SetupPassword?email=${encodeURIComponent(to)}`;
 
     const htmlBody = language === 'es'
       ? `
@@ -117,6 +121,13 @@ Deno.serve(async (req) => {
               <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #1E40AF; border-top: 2px solid #1E40AF; padding-top: 15px; display: inline-block;">
                 El Equipo MCI
               </p>
+
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 40px 0 20px 0;">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background-color: #1E40AF; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);">
+                  Únete a MCI Connect Ahora
+                </a>
+              </div>
 
             </td>
           </tr>
@@ -229,6 +240,13 @@ Deno.serve(async (req) => {
               <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #1E40AF; border-top: 2px solid #1E40AF; padding-top: 15px; display: inline-block;">
                 The MCI Team
               </p>
+
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 40px 0 20px 0;">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background-color: #1E40AF; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);">
+                  Join MCI Connect Now
+                </a>
+              </div>
 
             </td>
           </tr>
