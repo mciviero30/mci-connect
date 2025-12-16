@@ -501,8 +501,15 @@ export default function EmployeeProfile() {
 
   React.useEffect(() => {
     if (employee) {
+      // Build proper full name from first_name + last_name
+      const properFullName = employee.first_name && employee.last_name
+        ? `${employee.first_name} ${employee.last_name}`.trim()
+        : (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')
+          ? employee.full_name
+          : '');
+
       setEditForm({
-        full_name: employee.full_name || '',
+        full_name: properFullName,
         position: employee.position || '',
         phone: employee.phone || '',
         address: employee.address || '',
