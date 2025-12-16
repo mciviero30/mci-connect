@@ -840,19 +840,20 @@ export default function Empleados() {
     true
   );
 
-  const archivedList = filterEmployees(
-    [
-      ...pendingEmployees.filter(e => e.status === 'archived'),
-      ...employees.filter(e => e.employment_status === 'archived' || e.employment_status === 'deleted')
-    ],
-    true
-  );
-
   // Sub-categories for tabs
   const pendingOnly = pendingList.filter(e => e.status === 'pending');
   const invitedOnly = pendingList.filter(e => e.status === 'invited');
   const deletedUsers = employees.filter(e => e.employment_status === 'deleted');
   const archivedPending = pendingEmployees.filter(e => e.status === 'archived');
+  
+  // Archived list - only count items that actually exist and can be displayed
+  const archivedList = filterEmployees(
+    [
+      ...archivedPending,
+      ...deletedUsers
+    ],
+    true
+  );
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
