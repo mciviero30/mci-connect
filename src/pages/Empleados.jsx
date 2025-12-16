@@ -603,13 +603,11 @@ export default function Empleados() {
         const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || 
           employee.full_name || 'Employee';
 
-        const appUrl = window.location.origin;
+        // Step 1: Copy email for Dashboard invite
+        await navigator.clipboard.writeText(employee.email);
 
-        const message = language === 'es'
-          ? `Hola ${employee.first_name || fullName}!\n\nBienvenido a MCI Connect. Accede aquí:\n${appUrl}\n\nEmail: ${employee.email}\n\nSaludos,\nMCI Team`
-          : `Hi ${employee.first_name || fullName}!\n\nWelcome to MCI Connect. Access here:\n${appUrl}\n\nEmail: ${employee.email}\n\nBest regards,\nMCI Team`;
-
-        await navigator.clipboard.writeText(message);
+        // Step 2: Open Dashboard
+        window.open('https://app.base44.com/dashboard', '_blank');
 
         await base44.entities.PendingEmployee.update(employee.id, {
           status: 'invited',
@@ -618,17 +616,33 @@ export default function Empleados() {
           invitation_count: (employee.invitation_count || 0) + 1
         });
 
-        return { fullName, email: employee.email, phone: employee.phone };
+        return { fullName, email: employee.email };
       },
       onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
         queryClient.invalidateQueries({ queryKey: ['employees'] });
 
+        const appUrl = window.location.origin;
+        const message = language === 'es'
+          ? `Hola ${data.fullName}! Bienvenido a MCI Connect.\n\nLink: ${appUrl}\nEmail: ${data.email}\n\nSaludos, MCI Team`
+          : `Hi ${data.fullName}! Welcome to MCI Connect.\n\nLink: ${appUrl}\nEmail: ${data.email}\n\nRegards, MCI Team`;
+
+        // Copy WhatsApp message after 3 seconds
+        setTimeout(() => {
+          navigator.clipboard.writeText(message);
+          toast.success(
+            language === 'es' 
+              ? `✅ Mensaje copiado. Pégalo en WhatsApp para ${data.fullName}`
+              : `✅ Message copied. Paste in WhatsApp for ${data.fullName}`,
+            { duration: 5000 }
+          );
+        }, 3000);
+
         toast.success(
           language === 'es' 
-            ? `✅ Mensaje copiado para ${data.fullName}. Pégalo en WhatsApp/SMS`
-            : `✅ Message copied for ${data.fullName}. Paste in WhatsApp/SMS`,
-          { duration: 5000 }
+            ? `📧 Email copiado: ${data.email}. Invita desde Dashboard → "Invite User"`
+            : `📧 Email copied: ${data.email}. Invite from Dashboard → "Invite User"`,
+          { duration: 8000 }
         );
       },
       onError: (error) => {
