@@ -45,8 +45,8 @@ Deno.serve(async (req) => {
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); padding: 30px;">
-              <img src="${logoUrl}" alt="MCI" style="max-width: 200px; height: auto; display: block;">
+            <td style="background: #000000; padding: 30px; text-align: left;">
+              <img src="${logoUrl}" alt="MCI" style="max-width: 250px; height: auto; display: block;">
             </td>
           </tr>
           <!-- Content -->
@@ -191,8 +191,8 @@ Deno.serve(async (req) => {
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%); padding: 30px;">
-              <img src="${logoUrl}" alt="MCI" style="max-width: 200px; height: auto; display: block;">
+            <td style="background: #000000; padding: 30px; text-align: left;">
+              <img src="${logoUrl}" alt="MCI" style="max-width: 250px; height: auto; display: block;">
             </td>
           </tr>
           <!-- Content -->
