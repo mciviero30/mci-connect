@@ -725,11 +725,20 @@ export default function Empleados() {
 
       const appUrl = window.location.origin;
 
-      const message = language === 'es'
-        ? `Recordatorio ${employee.first_name || fullName}!\n\nAccede a MCI Connect:\n${appUrl}\n\nEmail: ${employee.email}\n\nSaludos,\nMCI Team`
-        : `Reminder ${employee.first_name || fullName}!\n\nAccess MCI Connect:\n${appUrl}\n\nEmail: ${employee.email}\n\nBest regards,\nMCI Team`;
+      // Send reminder email
+      const emailBody = language === 'es'
+        ? `Hola ${fullName},\n\nEste es un recordatorio sobre tu invitación a MCI Connect.\n\nPara acceder:\n1. Revisa tu bandeja de entrada en ${employee.email}\n2. Busca el email de Base44\n3. Haz clic en "Aceptar Invitación"\n4. Crea tu contraseña\n\nLink de la aplicación: ${appUrl}\n\n¡Te esperamos!\nMCI Team`
+        : `Hi ${fullName},\n\nThis is a reminder about your MCI Connect invitation.\n\nTo access:\n1. Check your inbox at ${employee.email}\n2. Look for Base44 email\n3. Click "Accept Invitation"\n4. Create your password\n\nApp link: ${appUrl}\n\nWe're waiting for you!\nMCI Team`;
 
-      await navigator.clipboard.writeText(message);
+      await base44.integrations.Core.SendEmail({
+        to: employee.email,
+        subject: language === 'es' ? 'Recordatorio - MCI Connect' : 'Reminder - MCI Connect',
+        body: emailBody
+      });
+
+      // Copy email and open Dashboard for resend
+      await navigator.clipboard.writeText(employee.email);
+      window.open('https://app.base44.com/dashboard', '_blank');
 
       await base44.entities.PendingEmployee.update(employee.id, {
         last_invitation_sent: new Date().toISOString(),
@@ -743,9 +752,9 @@ export default function Empleados() {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success(
         language === 'es' 
-          ? `✅ Recordatorio copiado para ${data.fullName}. Pégalo en WhatsApp/SMS`
-          : `✅ Reminder copied for ${data.fullName}. Paste in WhatsApp/SMS`,
-        { duration: 5000 }
+          ? `✅ Email de recordatorio enviado a ${data.fullName}. Reenvía desde Dashboard → "Pending Invitations"`
+          : `✅ Reminder email sent to ${data.fullName}. Resend from Dashboard → "Pending Invitations"`,
+        { duration: 8000 }
       );
     },
     onError: (error) => {
