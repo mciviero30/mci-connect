@@ -28,7 +28,8 @@ Deno.serve(async (req) => {
       ? 'Bienvenido a MCI Connect: Tu Plataforma Integral de Gestión Empresarial' 
       : 'Welcome to MCI Connect: Your Comprehensive Business Management Platform';
 
-    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d7bf652da_Screenshot2025-12-16at14303AM.png';
+    const timestamp = Date.now();
+    const logoUrl = `https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d7bf652da_Screenshot2025-12-16at14303AM.png?v=${timestamp}`;
 
     const htmlBody = language === 'es'
           ? `
