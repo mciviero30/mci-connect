@@ -46,7 +46,9 @@ Deno.serve(async (req) => {
           <!-- Header -->
           <tr>
             <td style="background: #000000; padding: 30px; text-align: left;">
-              <img src="${logoUrl}" alt="MCI" style="max-width: 250px; height: auto; display: block;">
+              <div style="font-size: 32px; font-weight: bold; color: #ffffff; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;">
+                MCI
+              </div>
             </td>
           </tr>
           <!-- Content -->
@@ -192,7 +194,9 @@ Deno.serve(async (req) => {
           <!-- Header -->
           <tr>
             <td style="background: #000000; padding: 30px; text-align: left;">
-              <img src="${logoUrl}" alt="MCI" style="max-width: 250px; height: auto; display: block;">
+              <div style="font-size: 32px; font-weight: bold; color: #ffffff; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;">
+                MCI
+              </div>
             </td>
           </tr>
           <!-- Content -->
