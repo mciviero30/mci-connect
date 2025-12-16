@@ -418,11 +418,19 @@ export default function EmployeeProfile() {
         }
       }
       
+      // Auto-capitalize names
+      firstName = capitalizeName(firstName);
+      lastName = capitalizeName(lastName);
+      const fullName = capitalizeName(data.full_name || `${firstName} ${lastName}`.trim());
+      
       const updatePayload = {
         ...data,
         first_name: firstName,
         last_name: lastName,
-        full_name: data.full_name || `${firstName} ${lastName}`.trim()
+        full_name: fullName,
+        position: data.position ? capitalizeName(data.position) : data.position,
+        department: data.department ? capitalizeName(data.department) : data.department,
+        address: data.address ? capitalizeName(data.address) : data.address
       };
       
       if (currentUser && employee.email === currentUser.email) {
@@ -570,20 +578,6 @@ export default function EmployeeProfile() {
           showBack
           actions={
             <div className="flex gap-3 flex-wrap">
-              {needsNameCorrection && (
-                <Button
-                  onClick={() => {
-                    if (window.confirm(`¿Corregir capitalización del nombre?\n\nActual: ${employee.full_name}\nCorregido: ${getDisplayName(employee)}`)) {
-                      fixNameMutation.mutate();
-                    }
-                  }}
-                  disabled={fixNameMutation.isPending}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                >
-                  {fixNameMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  🔧 Corregir Nombre
-                </Button>
-              )}
               <Button
                 variant="outline"
                 onClick={() => setShowEditDialog(true)}
@@ -604,24 +598,7 @@ export default function EmployeeProfile() {
           }
         />
 
-        {needsNameCorrection && (
-          <Alert className="mb-6 bg-amber-50 border-amber-200">
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
-            <AlertDescription className="text-amber-800">
-              <strong>Nombre requiere corrección de capitalización</strong>
-              <div className="mt-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-red-500 text-white">ACTUAL</Badge>
-                  <span>{employee.full_name || `${employee.first_name} ${employee.last_name}`}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge className="bg-green-500 text-white">CORREGIDO</Badge>
-                  <span>{getDisplayName(employee)}</span>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
+
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="shadow-md border border-gray-200 bg-white text-gray-900">
