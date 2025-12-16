@@ -592,20 +592,6 @@ export default function EmployeeProfile() {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto">
-  // Build proper display name from first_name + last_name
-  const displayName = (() => {
-    if (employee.first_name && employee.last_name) {
-      return `${employee.first_name} ${employee.last_name}`.trim();
-    }
-    if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
-      return employee.full_name;
-    }
-    return getDisplayName(employee);
-  })();
-
-  return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <div className="max-w-7xl mx-auto">
         <PageHeader
           title={displayName}
           description={capitalizeName(employee.position) || 'Employee'}
