@@ -83,6 +83,47 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221 83% 53%;
     --radius: 0.5rem;
+    
+    /* Soft Color System - Applied Globally */
+    --soft-blue-from: 214 100% 97%;
+    --soft-blue-to: 214 95% 93%;
+    --soft-blue-border: 214 90% 85%;
+    --soft-blue-text: 217 91% 20%;
+    
+    --soft-green-from: 142 76% 96%;
+    --soft-green-to: 142 70% 92%;
+    --soft-green-border: 142 65% 80%;
+    --soft-green-text: 142 70% 20%;
+    
+    --soft-red-from: 0 86% 97%;
+    --soft-red-to: 0 80% 93%;
+    --soft-red-border: 0 75% 85%;
+    --soft-red-text: 0 70% 25%;
+    
+    --soft-amber-from: 38 92% 96%;
+    --soft-amber-to: 38 87% 92%;
+    --soft-amber-border: 38 82% 80%;
+    --soft-amber-text: 38 85% 25%;
+    
+    --soft-purple-from: 270 95% 97%;
+    --soft-purple-to: 270 90% 93%;
+    --soft-purple-border: 270 85% 82%;
+    --soft-purple-text: 270 70% 25%;
+    
+    --soft-slate-from: 215 25% 96%;
+    --soft-slate-to: 215 20% 92%;
+    --soft-slate-border: 215 15% 80%;
+    --soft-slate-text: 215 25% 20%;
+    
+    --soft-cyan-from: 190 95% 96%;
+    --soft-cyan-to: 190 90% 92%;
+    --soft-cyan-border: 190 85% 80%;
+    --soft-cyan-text: 190 70% 20%;
+    
+    --soft-pink-from: 330 100% 97%;
+    --soft-pink-to: 330 95% 93%;
+    --soft-pink-border: 330 90% 85%;
+    --soft-pink-text: 330 70% 25%;
   }
 
   /* Safe area insets for mobile devices */
@@ -120,6 +161,47 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 217 91% 60%;
+    
+    /* Soft Color System - Dark Mode */
+    --soft-blue-from: 217 50% 15%;
+    --soft-blue-to: 217 45% 12%;
+    --soft-blue-border: 217 60% 35%;
+    --soft-blue-text: 214 100% 85%;
+    
+    --soft-green-from: 142 40% 15%;
+    --soft-green-to: 142 35% 12%;
+    --soft-green-border: 142 50% 35%;
+    --soft-green-text: 142 76% 85%;
+    
+    --soft-red-from: 0 45% 15%;
+    --soft-red-to: 0 40% 12%;
+    --soft-red-border: 0 55% 35%;
+    --soft-red-text: 0 86% 85%;
+    
+    --soft-amber-from: 38 50% 15%;
+    --soft-amber-to: 38 45% 12%;
+    --soft-amber-border: 38 60% 35%;
+    --soft-amber-text: 38 92% 85%;
+    
+    --soft-purple-from: 270 45% 15%;
+    --soft-purple-to: 270 40% 12%;
+    --soft-purple-border: 270 55% 35%;
+    --soft-purple-text: 270 95% 85%;
+    
+    --soft-slate-from: 215 15% 18%;
+    --soft-slate-to: 215 12% 14%;
+    --soft-slate-border: 215 20% 40%;
+    --soft-slate-text: 215 25% 85%;
+    
+    --soft-cyan-from: 190 45% 15%;
+    --soft-cyan-to: 190 40% 12%;
+    --soft-cyan-border: 190 55% 35%;
+    --soft-cyan-text: 190 95% 85%;
+    
+    --soft-pink-from: 330 50% 15%;
+    --soft-pink-to: 330 45% 12%;
+    --soft-pink-border: 330 60% 35%;
+    --soft-pink-text: 330 100% 85%;
   }
 }
 
@@ -129,6 +211,154 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ============================================ */
+/* SISTEMA DE COLORES SUAVES - GLOBAL          */
+/* ============================================ */
+
+@layer utilities {
+  /* Soft Blue */
+  .soft-blue-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-blue-from)), hsl(var(--soft-blue-to)));
+    border: 2px solid hsl(var(--soft-blue-border));
+    color: hsl(var(--soft-blue-text));
+  }
+  
+  .soft-blue-bg {
+    background: hsl(var(--soft-blue-from));
+    border-color: hsl(var(--soft-blue-border));
+    color: hsl(var(--soft-blue-text));
+  }
+  
+  /* Soft Green */
+  .soft-green-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-green-from)), hsl(var(--soft-green-to)));
+    border: 2px solid hsl(var(--soft-green-border));
+    color: hsl(var(--soft-green-text));
+  }
+  
+  .soft-green-bg {
+    background: hsl(var(--soft-green-from));
+    border-color: hsl(var(--soft-green-border));
+    color: hsl(var(--soft-green-text));
+  }
+  
+  /* Soft Red */
+  .soft-red-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-red-from)), hsl(var(--soft-red-to)));
+    border: 2px solid hsl(var(--soft-red-border));
+    color: hsl(var(--soft-red-text));
+  }
+  
+  .soft-red-bg {
+    background: hsl(var(--soft-red-from));
+    border-color: hsl(var(--soft-red-border));
+    color: hsl(var(--soft-red-text));
+  }
+  
+  /* Soft Amber */
+  .soft-amber-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-amber-from)), hsl(var(--soft-amber-to)));
+    border: 2px solid hsl(var(--soft-amber-border));
+    color: hsl(var(--soft-amber-text));
+  }
+  
+  .soft-amber-bg {
+    background: hsl(var(--soft-amber-from));
+    border-color: hsl(var(--soft-amber-border));
+    color: hsl(var(--soft-amber-text));
+  }
+  
+  /* Soft Purple */
+  .soft-purple-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-purple-from)), hsl(var(--soft-purple-to)));
+    border: 2px solid hsl(var(--soft-purple-border));
+    color: hsl(var(--soft-purple-text));
+  }
+  
+  .soft-purple-bg {
+    background: hsl(var(--soft-purple-from));
+    border-color: hsl(var(--soft-purple-border));
+    color: hsl(var(--soft-purple-text));
+  }
+  
+  /* Soft Slate */
+  .soft-slate-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-slate-from)), hsl(var(--soft-slate-to)));
+    border: 2px solid hsl(var(--soft-slate-border));
+    color: hsl(var(--soft-slate-text));
+  }
+  
+  .soft-slate-bg {
+    background: hsl(var(--soft-slate-from));
+    border-color: hsl(var(--soft-slate-border));
+    color: hsl(var(--soft-slate-text));
+  }
+  
+  /* Soft Cyan */
+  .soft-cyan-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-cyan-from)), hsl(var(--soft-cyan-to)));
+    border: 2px solid hsl(var(--soft-cyan-border));
+    color: hsl(var(--soft-cyan-text));
+  }
+  
+  .soft-cyan-bg {
+    background: hsl(var(--soft-cyan-from));
+    border-color: hsl(var(--soft-cyan-border));
+    color: hsl(var(--soft-cyan-text));
+  }
+  
+  /* Soft Pink */
+  .soft-pink-gradient {
+    background: linear-gradient(to bottom right, hsl(var(--soft-pink-from)), hsl(var(--soft-pink-to)));
+    border: 2px solid hsl(var(--soft-pink-border));
+    color: hsl(var(--soft-pink-text));
+  }
+  
+  .soft-pink-bg {
+    background: hsl(var(--soft-pink-from));
+    border-color: hsl(var(--soft-pink-border));
+    color: hsl(var(--soft-pink-text));
+  }
+  
+  /* Badges Soft */
+  .badge-soft-blue {
+    @apply soft-blue-gradient px-2.5 py-0.5 rounded-full text-[10px] font-bold;
+  }
+  
+  .badge-soft-green {
+    @apply soft-green-gradient px-2.5 py-0.5 rounded-full text-[10px] font-bold;
+  }
+  
+  .badge-soft-red {
+    @apply soft-red-gradient px-2.5 py-0.5 rounded-full text-[10px] font-bold;
+  }
+  
+  .badge-soft-amber {
+    @apply soft-amber-gradient px-2.5 py-0.5 rounded-full text-[10px] font-bold;
+  }
+  
+  .badge-soft-purple {
+    @apply soft-purple-gradient px-2.5 py-0.5 rounded-full text-[10px] font-bold;
+  }
+  
+  .badge-soft-slate {
+    @apply soft-slate-gradient px-2.5 py-0.5 rounded-full text-[10px] font-bold;
+  }
+  
+  /* Buttons Soft */
+  .btn-soft-blue {
+    @apply soft-blue-gradient hover:opacity-90 transition-opacity shadow-lg;
+  }
+  
+  .btn-soft-green {
+    @apply soft-green-gradient hover:opacity-90 transition-opacity shadow-lg;
+  }
+  
+  .btn-soft-red {
+    @apply soft-red-gradient hover:opacity-90 transition-opacity shadow-lg;
   }
 }
 
