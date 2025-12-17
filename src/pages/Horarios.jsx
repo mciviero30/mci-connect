@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
-import StatsCard from "../components/shared/StatsCard";
+import { Card, CardContent } from "@/components/ui/card";
 import TimeEntryList from "../components/horarios/TimeEntryList";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
