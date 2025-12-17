@@ -13,7 +13,7 @@ export default function QuickActions({ user, certifications = [] }) {
   const quickActions = [
     {
       title: 'Clock-In / Out',
-      subtitle: t('track_your_work_hours') || 'Gate & time control actions',
+      subtitle: 'Track your work hours',
       icon: Clock,
       url: createPageUrl('TimeTracking'),
       gradient: 'soft-blue-gradient',
@@ -21,7 +21,7 @@ export default function QuickActions({ user, certifications = [] }) {
     },
     {
       title: 'My Field',
-      subtitle: t('field_work') || 'Active & Assigned editors',
+      subtitle: 'Active jobs & field work',
       icon: MapPin,
       url: createPageUrl('Field'),
       gradient: 'soft-green-gradient',
@@ -29,7 +29,7 @@ export default function QuickActions({ user, certifications = [] }) {
     },
     {
       title: 'My QR Pass',
-      subtitle: t('digital_credentials') || 'Sative at-fato el ections',
+      subtitle: 'Digital credentials & certifications',
       icon: ShieldCheck,
       url: createPageUrl('MyProfile'),
       gradient: 'soft-amber-gradient',
@@ -94,12 +94,12 @@ export default function QuickActions({ user, certifications = [] }) {
                   <QrCode className="w-10 h-10 text-slate-700 dark:text-slate-300" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Certifications</h3>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Certifications & QR Pass</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                    {user?.full_name} • Credentials ctins conliet
+                    {user?.full_name} • Digital Credentials
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                    ID 265s 80 • Enderaldunlusoter de dmetions
+                    Scan QR code to verify credentials
                   </p>
                   
                   <div className="flex flex-wrap gap-2">
