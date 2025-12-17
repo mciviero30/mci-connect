@@ -28,6 +28,7 @@ import QuoteStats from "@/components/quotes/QuoteStats";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
 import AIEstimateInput from "@/components/quotes/AIEstimateInput";
 import QuoteDocument from "@/components/documentos/QuoteDocument";
+import QuoteToInvoiceConverter from "@/components/financial/QuoteToInvoiceConverter";
 import _ from "lodash";
 
 export default function Estimados() {
@@ -42,6 +43,8 @@ export default function Estimados() {
   const [activeTab, setActiveTab] = useState("list");
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [showAIInput, setShowAIInput] = useState(false);
+  const [showQuickConvert, setShowQuickConvert] = useState(false);
+  const [convertingQuote, setConvertingQuote] = useState(null);
 
   // Advanced filter states
   const [dateFrom, setDateFrom] = useState("");
@@ -483,9 +486,8 @@ export default function Estimados() {
                       <Button
                         size="sm"
                         onClick={() => {
-                          if (window.confirm(language === 'es' ? '¿Convertir a factura?' : 'Convert to invoice?')) {
-                            convertToInvoiceMutation.mutate(selectedQuote);
-                          }
+                          setConvertingQuote(selectedQuote);
+                          setShowQuickConvert(true);
                         }}
                         className="bg-gradient-to-r from-green-500 to-green-600 text-white"
                       >
@@ -530,6 +532,16 @@ export default function Estimados() {
           )}
         </div>
       </div>
+
+      {/* Quick Convert to Invoice Dialog */}
+      <QuoteToInvoiceConverter
+        quote={convertingQuote}
+        open={showQuickConvert}
+        onOpenChange={(open) => {
+          setShowQuickConvert(open);
+          if (!open) setConvertingQuote(null);
+        }}
+      />
     </div>
   );
 }

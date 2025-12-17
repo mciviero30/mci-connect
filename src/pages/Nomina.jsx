@@ -13,11 +13,15 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EmployeePayrollDetail from "../components/nomina/EmployeePayrollDetail";
 import DateRangeFilter from "../components/reportes/DateRangeFilter";
+import AutoPayrollCalculator from "../components/payroll/AutoPayrollCalculator";
+import PaystubGenerator from "../components/payroll/PaystubGenerator";
 
 export default function Nomina() {
   const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [showPaystub, setShowPaystub] = useState(false);
+  const [paystubEmployee, setPaystubEmployee] = useState(null);
   
   // NEW: Date range state (default to current month)
   const [dateRange, setDateRange] = useState(() => {
@@ -444,13 +448,27 @@ export default function Nomina() {
                         </div>
                       </div>
 
-                      <Button
-                        onClick={() => setSelectedEmployee(employee)}
-                        className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30"
-                      >
-                        <Edit className="w-4 h-4 mr-2" />
-                        {t('viewDetails')}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => setSelectedEmployee(employee)}
+                          className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          {t('viewDetails')}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setPaystubEmployee({ ...employee, ...getEmployeePayroll(employee) });
+                            setShowPaystub(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-700 hover:bg-green-50"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Paystub
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -478,6 +496,17 @@ export default function Nomina() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Paystub Generator Dialog */}
+      {paystubEmployee && (
+        <PaystubGenerator
+          open={showPaystub}
+          onOpenChange={setShowPaystub}
+          payrollData={paystubEmployee}
+          weekStart={format(weekStart, 'yyyy-MM-dd')}
+          weekEnd={format(weekEnd, 'yyyy-MM-dd')}
+        />
+      )}
     </div>
   );
 }
