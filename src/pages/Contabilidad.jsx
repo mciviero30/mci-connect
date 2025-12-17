@@ -126,7 +126,7 @@ export default function Contabilidad() {
           description={`${t('period')}: ${format(monthStart, 'MMMM yyyy')}`}
           icon={DollarSign}
           actions={
-            <Button onClick={() => setFormOpen(true)} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg">
+            <Button onClick={() => setFormOpen(true)} size="lg" className="soft-blue-gradient shadow-lg">
               <Plus className="w-5 h-5 mr-2" />
               {t('newTransaction')}
             </Button>

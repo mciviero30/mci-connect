@@ -189,9 +189,9 @@ export default function MileageApproval() {
   const totalApprovedAmount = approvedLogs.reduce((sum, d) => sum + (d.total_amount || 0), 0);
 
   const statusConfig = {
-    pending: { label: language === 'es' ? 'Pendiente' : 'Pending', color: "bg-amber-100 text-amber-700 border-amber-300" },
-    approved: { label: language === 'es' ? 'Aprobado' : 'Approved', color: "bg-green-100 text-green-700 border-green-300" },
-    rejected: { label: language === 'es' ? 'Rechazado' : 'Rejected', color: "bg-red-100 text-red-700 border-red-300" }
+    pending: { label: language === 'es' ? 'Pendiente' : 'Pending', color: "badge-soft-amber" },
+    approved: { label: language === 'es' ? 'Aprobado' : 'Approved', color: "badge-soft-green" },
+    rejected: { label: language === 'es' ? 'Rechazado' : 'Rejected', color: "badge-soft-red" }
   };
 
   return (
@@ -204,7 +204,7 @@ export default function MileageApproval() {
           actions={
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
+              className="soft-blue-gradient shadow-lg"
             >
               <Plus className="w-5 h-5 mr-2" />
               {language === 'es' ? 'Nueva Milla' : 'New Mileage'}
@@ -213,50 +213,50 @@ export default function MileageApproval() {
         />
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+          <Card className="soft-amber-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
-                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{pendingLogs.length}</p>
+                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+                  <p className="text-3xl font-bold">{pendingLogs.length}</p>
                 </div>
-                <Car className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
+                <Car className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+          <Card className="soft-blue-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
-                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{totalPendingMiles.toFixed(0)} mi</p>
+                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
+                  <p className="text-3xl font-bold">{totalPendingMiles.toFixed(0)} mi</p>
                 </div>
-                <MapPin className="w-10 h-10 text-blue-600 dark:text-blue-400 opacity-50" />
+                <MapPin className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+          <Card className="soft-pink-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-1">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
-                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">${totalPendingAmount.toFixed(2)}</p>
+                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
+                  <p className="text-2xl font-bold">${totalPendingAmount.toFixed(2)}</p>
                 </div>
-                <Car className="w-10 h-10 text-orange-600 dark:text-orange-400 opacity-50" />
+                <Car className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+          <Card className="soft-green-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">${totalApprovedAmount.toFixed(2)}</p>
+                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
+                  <p className="text-2xl font-bold">${totalApprovedAmount.toFixed(2)}</p>
                 </div>
-                <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
+                <CheckCircle className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
@@ -404,7 +404,7 @@ export default function MileageApproval() {
               <Button
                 onClick={handleSelectEmployee}
                 disabled={!selectedEmployee}
-                className="w-full bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                className="w-full soft-blue-gradient"
               >
                 {t('next')}
               </Button>
@@ -547,7 +547,7 @@ export default function MileageApproval() {
                 <Button
                   type="submit"
                   disabled={createMileageMutation.isPending || !mileageFormData.job_id || (!parseFloat(mileageFormData.miles) && !parseFloat(mileageFormData.hours))}
-                  className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                  className="soft-blue-gradient"
                 >
                   {createMileageMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : t('save')}
                 </Button>
@@ -598,7 +598,7 @@ export default function MileageApproval() {
             <Button
               onClick={handleReject}
               disabled={!rejectDialog.notes.trim() || rejectMutation.isPending}
-              className="bg-red-500 hover:bg-red-600 text-white"
+              className="soft-red-gradient"
             >
               {language === 'es' ? 'Rechazar' : 'Reject'}
             </Button>
