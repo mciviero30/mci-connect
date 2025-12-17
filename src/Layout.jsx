@@ -430,50 +430,51 @@ const LayoutContent = ({ children, currentPageName }) => {
   ];
 
   const employeeNavigation = [
-        {
-          section: 'GENERAL',
-          items: [
-            { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
-            { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
-            { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
-            { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
-            { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
-            { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
-            { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
-          ]
-        },
     {
-      section: 'MY TIME & PAY',
+      section: 'HOME',
+      icon: LayoutDashboard,
+      items: [
+        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
+        { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+      ]
+    },
+    {
+      section: 'FIELD WORK',
+      icon: MapPin,
+      items: [
+        { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
+        { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
+        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+      ]
+    },
+    {
+      section: 'TIME & PAY',
+      icon: Clock,
       items: [
         { title: 'My Hours', url: createPageUrl("MisHoras"), icon: Clock },
-        { title: 'Driving', url: createPageUrl("HorasManejo"), icon: Clock },
         { title: 'Mileage', url: createPageUrl("Manejo"), icon: Car },
+        { title: 'Driving', url: createPageUrl("HorasManejo"), icon: Clock },
         { title: 'My Expenses', url: createPageUrl("MisGastos"), icon: Receipt },
         { title: 'Per Diem', url: createPageUrl("PerDiem"), icon: Banknote },
         { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
       ]
     },
     {
-      section: 'MY PERFORMANCE',
-      items: [
-        { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target },
-                      { title: 'My Goals', url: createPageUrl("Goals"), icon: Target },
-                      { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
-                      { title: 'AI Assistant', url: createPageUrl("AIAssistantPersonal"), icon: Brain },
-      ]
-    },
-    {
-      section: 'RESOURCES',
+      section: 'MY GROWTH',
+      icon: Target,
       items: [
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target },
+        { title: 'My Goals', url: createPageUrl("Goals"), icon: Target },
+        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
-        { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
-        { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
-        { title: 'Activity Feed', url: createPageUrl("ActivityFeed"), icon: Zap },
       ]
     }
-    ];
+  ];
 
   if (isLoading) {
     return (
@@ -626,8 +627,8 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
         `}</style>
 
-        <Sidebar className="border-none">
-          <SidebarHeader className="p-4 flex-shrink-0 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700">
+        <Sidebar className="border-none shadow-xl">
+          <SidebarHeader className="p-4 flex-shrink-0 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/20 p-0.5">
                                     <img
@@ -757,9 +758,14 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="backdrop-blur-xl px-3 py-2 md:hidden flex-shrink-0 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-700">
+          <motion.header 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="backdrop-blur-xl px-3 py-2 md:hidden flex-shrink-0 bg-white/95 dark:bg-[#1a1a1a]/95 border-b border-slate-200 dark:border-slate-700 shadow-sm"
+          >
             <div className="flex items-center gap-2 max-w-screen-xl mx-auto">
-              <SidebarTrigger className="p-1.5 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0">
+              <SidebarTrigger className="p-1.5 rounded-lg transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
                 <Menu className="w-4 h-4 text-slate-900 dark:text-white" />
               </SidebarTrigger>
               <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -774,16 +780,16 @@ const LayoutContent = ({ children, currentPageName }) => {
                 </div>
               </div>
             </div>
-          </header>
+          </motion.header>
 
-          <div className="flex-1 overflow-y-auto bg-[#FAFAFA] dark:bg-[#181818]" data-scrollable="true">
+          <div className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#181818]" data-scrollable="true">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="h-full w-full"
               >
                 <div className="h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0">
