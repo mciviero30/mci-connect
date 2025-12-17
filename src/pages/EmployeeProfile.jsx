@@ -602,6 +602,14 @@ export default function EmployeeProfile() {
     }
   });
 
+  const formatPosition = (position) => {
+    if (!position) return '';
+    if (position.toUpperCase() === 'CEO') return 'Chief Executive Officer';
+    return position.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+  };
+
   React.useEffect(() => {
     if (employee) {
       // Build proper full name from first_name + last_name
@@ -613,7 +621,7 @@ export default function EmployeeProfile() {
 
       setEditForm({
         full_name: properFullName,
-        position: employee.position || '',
+        position: formatPosition(employee.position) || '',
         phone: employee.phone || '',
         address: employee.address || '',
         hourly_rate: employee.hourly_rate !== null && employee.hourly_rate !== undefined ? String(employee.hourly_rate) : '',
