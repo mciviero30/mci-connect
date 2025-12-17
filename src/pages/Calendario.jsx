@@ -417,68 +417,68 @@ export default function Calendario() {
           />
 
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-2">
             <Card 
-              className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-md border-0 cursor-pointer hover:shadow-lg transition-shadow dark:from-blue-600 dark:to-blue-700"
+              className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-sm border-0 cursor-pointer hover:shadow-md transition-shadow dark:from-blue-600 dark:to-blue-700"
               onClick={() => setEventTypeFilter('all')}
             >
-              <CardContent className="p-2">
+              <CardContent className="p-1.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[9px] md:text-[10px] font-medium text-blue-50">
+                    <p className="text-[8px] md:text-[9px] font-medium text-blue-50">
                       {language === 'es' ? 'Total Turnos' : 'Total Shifts'}
                     </p>
-                    <p className="text-base md:text-xl font-bold text-white">{workload.totalEvents}</p>
+                    <p className="text-sm md:text-lg font-bold text-white">{workload.totalEvents}</p>
                   </div>
-                  <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 text-white/60" />
+                  <CalendarIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/60" />
                 </div>
               </CardContent>
             </Card>
 
             <Card 
-              className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-md border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg hover:border-purple-400 dark:hover:border-purple-500 transition-all"
+              className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-purple-400 dark:hover:border-purple-500 transition-all"
               onClick={() => setEventTypeFilter('job_work')}
             >
-              <CardContent className="p-2">
+              <CardContent className="p-1.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[9px] md:text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-[8px] md:text-[9px] font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Trabajo' : 'Job Work'}
                     </p>
-                    <p className="text-base md:text-xl font-bold text-slate-900 dark:text-white">{workload.jobWork}</p>
+                    <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.jobWork}</p>
                   </div>
-                  <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+                  <Briefcase className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card 
-              className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-md border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-500 transition-all"
+              className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-blue-400 dark:hover:border-blue-500 transition-all"
               onClick={() => setEventTypeFilter('appointment')}
             >
-              <CardContent className="p-2">
+              <CardContent className="p-1.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[9px] md:text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-[8px] md:text-[9px] font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Citas' : 'Appointments'}
                     </p>
-                    <p className="text-base md:text-xl font-bold text-slate-900 dark:text-white">{workload.appointments}</p>
+                    <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.appointments}</p>
                   </div>
-                  <CalendarClock className="w-4 h-4 md:w-5 md:h-5 text-blue-500" />
+                  <CalendarClock className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-md border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
-              <CardContent className="p-2">
+            <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-sm border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
+              <CardContent className="p-1.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[9px] md:text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-[8px] md:text-[9px] font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Horas Totales' : 'Total Hours'}
                     </p>
-                    <p className="text-base md:text-xl font-bold text-slate-900 dark:text-white">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                    <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.totalEstimatedHours.toFixed(1)}h</p>
                   </div>
-                  <Clock className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+                  <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
                 </div>
               </CardContent>
             </Card>
