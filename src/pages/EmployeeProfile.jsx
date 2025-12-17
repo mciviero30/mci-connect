@@ -19,10 +19,11 @@ import {
   AlertTriangle,
   Loader2,
   TrendingUp,
-  FileText, // Added icon
-  Upload, // Added icon
-  AlertCircle, // Added icon
-  CheckCircle // Added icon
+  FileText,
+  Upload,
+  AlertCircle,
+  CheckCircle,
+  Shield
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
