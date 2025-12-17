@@ -491,7 +491,7 @@ export default function Dashboard() {
                     <p className="font-bold text-slate-900 dark:text-white">{getDisplayName(emp)}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{emp.position}</p>
                   </div>
-                  <Badge className="bg-pink-500 text-white">¡Felicidades!</Badge>
+                  <Badge className="soft-pink-gradient">¡Felicidades!</Badge>
                 </div>
               </Link>
             )}
@@ -510,7 +510,7 @@ export default function Dashboard() {
                   <p className="font-bold text-slate-900 dark:text-white text-sm">{rec.title}</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400">{rec.employee_name}</p>
                 </div>
-                <Badge className="bg-amber-500 text-white">+{rec.points} pts</Badge>
+                <Badge className="soft-amber-gradient">+{rec.points} pts</Badge>
               </div>
             )}
           />
@@ -647,7 +647,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-md self-start lg:self-center whitespace-nowrap">
+            <Badge className="soft-purple-gradient shadow-md self-start lg:self-center whitespace-nowrap">
               MCI Connect • Customizable Dashboard
             </Badge>
           </div>
@@ -668,7 +668,7 @@ export default function Dashboard() {
                 <Button
                   onClick={handleSaveLayout}
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                  className="soft-green-gradient shadow-lg"
                   disabled={savePreferencesMutation.isPending}
                 >
                   <Save className="w-4 h-4 mr-1" />
@@ -680,7 +680,7 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setShowKudosDialog(true)}
                   size="sm"
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                  className="soft-purple-gradient shadow-lg"
                 >
                   <Award className="w-4 h-4 mr-1" />
                   Give Kudos
@@ -697,7 +697,7 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setIsEditMode(true)}
                   size="sm"
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
+                  className="soft-blue-gradient shadow-lg"
                 >
                   <SettingsIcon className="w-4 h-4 mr-1" />
                   Customize
@@ -756,7 +756,7 @@ export default function Dashboard() {
           <div className="text-center mt-8">
             <Button
               onClick={() => setShowTimeOffDialog(true)}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/30"
+              className="soft-blue-gradient shadow-lg"
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               {t('requestTimeOff')}

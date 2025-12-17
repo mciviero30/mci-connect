@@ -187,7 +187,7 @@ export default function Facturas() {
           actions={
             isAdmin && (
               <Link to={createPageUrl("CrearFactura")}>
-                <Button size="lg" className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg">
+                <Button size="lg" className="soft-green-gradient shadow-lg">
                   <Plus className="w-5 h-5 mr-2" />
                   {t('newInvoice')}
                 </Button>
@@ -343,7 +343,7 @@ export default function Facturas() {
               </p>
               {isAdmin && invoices.length === 0 && (
                 <Link to={createPageUrl("CrearFactura")}>
-                  <Button className="bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg">
+                  <Button className="soft-green-gradient shadow-lg">
                     <Plus className="w-4 h-4 mr-2" />
                     {t('newInvoice')}
                   </Button>
@@ -395,7 +395,7 @@ export default function Facturas() {
                 <Button
                   onClick={handleRegisterPayment}
                   disabled={registerPaymentMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white"
+                  className="flex-1 soft-green-gradient"
                 >
                   <DollarSign className="w-4 h-4 mr-2" />
                   {registerPaymentMutation.isPending ? (language === 'es' ? 'Procesando...' : 'Processing...') : (language === 'es' ? 'Registrar' : 'Register')}

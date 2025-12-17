@@ -108,10 +108,10 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className="bg-[#00C48C] hover:bg-[#00C48C] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+          <Badge className="badge-soft-green h-[22px] flex items-center">
             Active
           </Badge>
-          <Badge className="bg-[#1E6FE8] hover:bg-[#1E6FE8] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+          <Badge className="badge-soft-blue h-[22px] flex items-center">
             Full-Time
           </Badge>
           <Badge 

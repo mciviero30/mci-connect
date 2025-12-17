@@ -166,7 +166,7 @@ export default function Estimados() {
                 <Button
                   onClick={() => setShowAIWizard(true)}
                   size="lg"
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg"
+                  className="soft-purple-gradient shadow-lg"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'IA' : 'AI'}
@@ -175,7 +175,7 @@ export default function Estimados() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white border-none"
+                    className="soft-cyan-gradient shadow-lg border-none"
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     {t('newQuote')}
@@ -325,13 +325,13 @@ export default function Estimados() {
                 <div className="flex justify-center gap-4">
                   <Button
                     onClick={() => setShowAIWizard(true)}
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
+                    className="soft-purple-gradient shadow-lg"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {language === 'es' ? 'Crear con IA' : 'Create with AI'}
                   </Button>
                   <Link to={createPageUrl("CrearEstimado")}>
-                    <Button className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                    <Button className="soft-cyan-gradient shadow-lg">
                       <Plus className="w-4 h-4 mr-2" />
                       {t('newQuote')}
                     </Button>
