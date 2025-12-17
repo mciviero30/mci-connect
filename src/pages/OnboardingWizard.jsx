@@ -40,8 +40,14 @@ export default function OnboardingWizard() {
       // Update user data with personal paperwork
       if (variables.formType === 'personal_paperwork') {
         await base44.auth.updateMe({
+          legal_full_name: variables.formData.legal_full_name,
           ssn_tax_id: variables.formData.ssn_or_itin,
           dob: variables.formData.date_of_birth,
+          drivers_license_url: variables.formData.drivers_license_url,
+          social_security_card_url: variables.formData.social_security_card_url,
+          bank_name: variables.formData.bank_name,
+          routing_number: variables.formData.routing_number,
+          account_number: variables.formData.account_number,
           emergency_contact_name: variables.formData.emergency_contact_name,
           emergency_contact_phone: variables.formData.emergency_contact_phone,
           emergency_contact_relationship: variables.formData.emergency_contact_relationship,
@@ -53,10 +59,11 @@ export default function OnboardingWizard() {
       if (currentStep < 3) {
         setCurrentStep(currentStep + 1);
       } else {
-        // Reload page to show dashboard
+        // ✅ ONBOARDING COMPLETE - Redirect to dashboard
+        console.log('✅ All 3 forms completed. Unlocking MCI Connect...');
         setTimeout(() => {
           window.location.href = '/';
-        }, 1000);
+        }, 1500);
       }
     }
   });
@@ -73,7 +80,7 @@ export default function OnboardingWizard() {
   }, [onboardingForms]);
 
   const completedSteps = onboardingForms.length;
-  const progressPercentage = (completedSteps / 3) * 100;
+  const progressPercentage = Math.round((completedSteps / 3) * 100); // Exact 33.3% per step
 
   const handleFormSubmit = (formType, formData) => {
     createFormMutation.mutate({ formType, formData });
@@ -84,8 +91,18 @@ export default function OnboardingWizard() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+              alt="MCI Connect"
+              className="w-20 h-20 rounded-xl"
+            />
+          </div>
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Welcome to MCI Connect</h1>
-          <p className="text-lg text-slate-600">Complete your onboarding to access the dashboard</p>
+          <p className="text-lg text-slate-600">Complete 3 mandatory forms to unlock your dashboard</p>
+          <div className="inline-block mt-3 px-4 py-2 bg-red-100 border border-red-300 rounded-lg">
+            <p className="text-sm font-bold text-red-700">🔒 Access Restricted: {3 - completedSteps} form(s) remaining</p>
+          </div>
         </div>
 
         {/* Progress Steps */}
@@ -149,9 +166,14 @@ export default function OnboardingWizard() {
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
-          <p className="text-center text-sm text-slate-600 mt-2">
-            {completedSteps} of 3 steps completed ({Math.round(progressPercentage)}%)
-          </p>
+          <div className="text-center mt-3">
+            <p className="text-lg font-bold text-slate-900">
+              {completedSteps} of 3 Forms Completed
+            </p>
+            <p className="text-sm text-slate-600">
+              {progressPercentage}% Complete • {completedSteps === 0 ? '3 forms remaining' : completedSteps === 1 ? '2 forms remaining' : completedSteps === 2 ? '1 form remaining' : '✅ All forms submitted'}
+            </p>
+          </div>
         </Card>
 
         {/* Form Content */}

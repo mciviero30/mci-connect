@@ -163,26 +163,36 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
 
-  // Check onboarding completion
+  // CRITICAL: Onboarding Blocker - Block ALL access until 3 forms completed
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms', user?.email],
     queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user?.email }),
     enabled: !!user?.email && !isClientOnly && user?.employment_status !== 'deleted',
-    initialData: []
+    initialData: [],
+    staleTime: 0, // Always check fresh data for onboarding
+    refetchOnMount: true
   });
 
-  const onboardingCompleted = user?.onboarding_completed || onboardingForms.length >= 3;
+  const onboardingCompleted = onboardingForms.length >= 3;
   const isOnboardingPage = currentPageName === 'OnboardingWizard';
+  
+  // Determine if user should be blocked
+  const shouldBlockForOnboarding = user && 
+    !isClientOnly && 
+    user.role !== 'admin' && 
+    user.employment_status !== 'deleted' &&
+    !onboardingCompleted;
 
-  // Redirect to onboarding if not completed
+  // HARD REDIRECT: Block access to dashboard until onboarding is complete
   useEffect(() => {
-    if (!user || isClientOnly || user.role === 'admin' || user.employment_status === 'deleted') return;
+    if (!user) return;
     if (isOnboardingPage) return;
     
-    if (!onboardingCompleted && onboardingForms.length < 3) {
+    if (shouldBlockForOnboarding) {
+      console.log('🚫 ONBOARDING REQUIRED: Redirecting to wizard');
       window.location.href = createPageUrl('OnboardingWizard');
     }
-  }, [user, onboardingCompleted, isOnboardingPage, onboardingForms, isClientOnly]);
+  }, [user, shouldBlockForOnboarding, isOnboardingPage]);
 
   useEffect(() => {
     if (!user) return;
