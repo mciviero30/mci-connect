@@ -299,13 +299,13 @@ export default function Nomina() {
 
 
 
-        <div className="grid md:grid-cols-6 gap-6 mb-8"> {/* Changed from 5 to 6 columns */}
+        <div className="grid md:grid-cols-6 gap-6 mb-8">
           <StatsCard
             title={t('totalWorkPay')}
             value={`$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             subtitle={`${totals.normalHours.toFixed(1)}h normal + ${totals.overtimeHours.toFixed(1)}h OT`}
             icon={Briefcase}
-            color="from-[#3B9FF3] to-[#2A8FE3]"
+            color="blue"
           />
 
           <StatsCard
@@ -313,37 +313,36 @@ export default function Nomina() {
             value={`$${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             subtitle={`${totals.drivingHours.toFixed(1)}h driving`}
             icon={Car}
-            color="from-green-500 to-emerald-500"
+            color="green"
           />
 
           <StatsCard
             title={t('perDiem')}
             value={`$${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             icon={DollarSign}
-            color="from-amber-500 to-orange-500"
+            color="amber"
           />
 
           <StatsCard
             title={t('totalReimbursements')}
             value={`$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             icon={Download}
-            color="from-purple-500 to-pink-500"
+            color="purple"
           />
 
-          {/* NEW: Prompt #60 - Bonus stat card */}
           <StatsCard
             title={language === 'es' ? 'Bonos' : 'Bonuses'}
             value={`$${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             subtitle={language === 'es' ? 'De trabajos completados' : 'From completed jobs'}
             icon={Gift}
-            color="from-rose-500 to-fuchsia-500"
+            color="red"
           />
 
           <StatsCard
             title={t('totalPayroll')}
             value={`$${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             icon={Banknote}
-            color="from-[#3B9FF3] to-[#2A8FE3]"
+            color="blue"
           />
         </div>
 
