@@ -228,12 +228,13 @@ export default function Empleados() {
     select: (data) => data // Full data, we'll paginate in UI
   });
 
-  // Lazy load onboarding tasks only when needed
-  const { data: onboardingTasks = [] } = useQuery({
-    queryKey: ['onboardingTasks'],
-    queryFn: () => base44.entities.OnboardingTask.filter({ is_master_template: false }),
+  // Lazy load onboarding forms for progress calculation
+  const { data: onboardingForms = [] } = useQuery({
+    queryKey: ['onboardingForms'],
+    queryFn: () => base44.entities.OnboardingForm.list(),
     staleTime: 60000,
-    enabled: employees.length > 0
+    enabled: employees.length > 0,
+    initialData: []
   });
 
   // Calculate onboarding progress for each employee (memoized)
@@ -241,21 +242,21 @@ export default function Empleados() {
     const progressMap = {};
     
     employees.forEach(emp => {
-      const empTasks = onboardingTasks.filter(t => t.employee_email === emp.email);
-      const completed = empTasks.filter(t => t.status === 'completed').length;
-      const total = empTasks.length;
-      const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+      const empForms = onboardingForms.filter(f => f.employee_email === emp.email && f.status === 'completed');
+      const completed = empForms.length;
+      const total = 3; // 3 mandatory forms
+      const percentage = Math.round((completed / total) * 100);
       
       progressMap[emp.id] = {
         percentage,
         completed,
         total,
-        tasks: empTasks
+        forms: empForms
       };
     });
     
     return progressMap;
-  }, [employees, onboardingTasks]);
+  }, [employees, onboardingForms]);
 
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);

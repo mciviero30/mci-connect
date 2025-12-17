@@ -163,6 +163,27 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
 
+  // Check onboarding completion
+  const { data: onboardingForms = [] } = useQuery({
+    queryKey: ['onboardingForms', user?.email],
+    queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user?.email }),
+    enabled: !!user?.email && !isClientOnly && user?.employment_status !== 'deleted',
+    initialData: []
+  });
+
+  const onboardingCompleted = user?.onboarding_completed || onboardingForms.length >= 3;
+  const isOnboardingPage = currentPageName === 'OnboardingWizard';
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (!user || isClientOnly || user.role === 'admin' || user.employment_status === 'deleted') return;
+    if (isOnboardingPage) return;
+    
+    if (!onboardingCompleted && onboardingForms.length < 3) {
+      window.location.href = createPageUrl('OnboardingWizard');
+    }
+  }, [user, onboardingCompleted, isOnboardingPage, onboardingForms, isClientOnly]);
+
   useEffect(() => {
     if (!user) return;
     if (user.employment_status !== 'invited') return;

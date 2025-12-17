@@ -2,12 +2,26 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, IdCard, Plus } from "lucide-react";
+import { Mail, Phone, IdCard, Plus, Shield, AlertTriangle } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 
 export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails }) {
   const navigate = useNavigate();
+
+  // Lazy load certifications only when needed
+  const { data: certifications = [] } = useQuery({
+    queryKey: ['certifications', employee.email],
+    queryFn: () => base44.entities.Certification.filter({ employee_email: employee.email }),
+    initialData: [],
+    staleTime: 300000, // 5 minutes
+    enabled: false // Only fetch when component is visible
+  });
+
+  const hasOSHA30 = certifications.some(c => c.certification_type === 'osha_30' && c.status === 'active');
+  const hasExpiredCerts = certifications.some(c => c.status === 'expired');
 
   const displayName = (() => {
     if (employee.first_name && employee.last_name) {
@@ -63,15 +77,27 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
-            className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0"
-          >
-            <IdCard className="w-3 h-3" />
-            <span className="text-[10px] font-medium">Manage Profile</span>
-          </Button>
+          <div className="flex items-center gap-1">
+            {hasOSHA30 && (
+              <div className="bg-green-100 p-1 rounded-full" title="OSHA 30 Certified">
+                <Shield className="w-3 h-3 text-green-600" />
+              </div>
+            )}
+            {hasExpiredCerts && (
+              <div className="bg-red-100 p-1 rounded-full" title="Expired Certifications">
+                <AlertTriangle className="w-3 h-3 text-red-600" />
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
+              className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0"
+            >
+              <IdCard className="w-3 h-3" />
+              <span className="text-[10px] font-medium">Manage Profile</span>
+            </Button>
+          </div>
         </div>
 
         {/* Onboarding Progress */}

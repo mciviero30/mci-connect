@@ -210,11 +210,31 @@ export default function EmployeeProfile() {
     enabled: !!employee
   });
 
+  // Certifications for Certification Vault
+  const { data: employeeCertifications = [] } = useQuery({
+    queryKey: ['employeeCertifications', employee?.email],
+    queryFn: () => base44.entities.Certification.filter({ employee_email: employee.email }),
+    initialData: [],
+    enabled: !!employee
+  });
+
   const [showDocumentDialog, setShowDocumentDialog] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [documentForm, setDocumentForm] = useState({
     document_type: 'contract',
     document_name: '',
+    expiration_date: '',
+    notes: ''
+  });
+
+  // Certification vault state
+  const [showCertificationDialog, setShowCertificationDialog] = useState(false);
+  const [uploadingCertification, setUploadingCertification] = useState(false);
+  const [certificationForm, setCertificationForm] = useState({
+    certification_type: 'osha_30',
+    certificate_front_url: '',
+    certificate_back_url: '',
+    issue_date: '',
     expiration_date: '',
     notes: ''
   });
@@ -293,6 +313,82 @@ export default function EmployeeProfile() {
       alert('✅ Document deleted successfully!');
     }
   });
+
+  // Certification mutations
+  const createCertificationMutation = useMutation({
+    mutationFn: (data) => base44.entities.Certification.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employeeCertifications'] });
+      queryClient.invalidateQueries({ queryKey: ['certifications'] });
+      setShowCertificationDialog(false);
+      setCertificationForm({
+        certification_type: 'osha_30',
+        certificate_front_url: '',
+        certificate_back_url: '',
+        issue_date: '',
+        expiration_date: '',
+        notes: ''
+      });
+      alert('✅ Certification uploaded successfully!');
+    }
+  });
+
+  const deleteCertificationMutation = useMutation({
+    mutationFn: (id) => base44.entities.Certification.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employeeCertifications'] });
+      queryClient.invalidateQueries({ queryKey: ['certifications'] });
+      alert('✅ Certification deleted successfully!');
+    }
+  });
+
+  const handleCertificationUpload = async (e, field) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingCertification(true);
+    try {
+      const file_url = await uploadDocumentMutation.mutateAsync(file);
+      setCertificationForm({...certificationForm, [field]: file_url});
+    } catch (error) {
+      alert('❌ Error uploading file: ' + error.message);
+    } finally {
+      setUploadingCertification(false);
+    }
+  };
+
+  const handleCertificationSubmit = () => {
+    if (!certificationForm.certificate_front_url) {
+      alert('Please upload at least the front of the certificate');
+      return;
+    }
+
+    const certData = {
+      employee_email: employee.email,
+      employee_name: employee.full_name,
+      certification_type: certificationForm.certification_type,
+      certificate_front_url: certificationForm.certificate_front_url,
+      certificate_back_url: certificationForm.certificate_back_url || null,
+      issue_date: certificationForm.issue_date || null,
+      expiration_date: certificationForm.expiration_date || null,
+      notes: certificationForm.notes,
+      status: 'active'
+    };
+
+    // Check if expiring soon or expired
+    if (certificationForm.expiration_date) {
+      const expiryDate = new Date(certificationForm.expiration_date);
+      const today = new Date();
+      const daysUntilExpiry = differenceInDays(expiryDate, today);
+      if (daysUntilExpiry <= 60 && daysUntilExpiry > 0) {
+        certData.status = 'expiring_soon';
+      } else if (daysUntilExpiry <= 0) {
+        certData.status = 'expired';
+      }
+    }
+
+    createCertificationMutation.mutate(certData);
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -824,11 +920,14 @@ export default function EmployeeProfile() {
             <CardContent>
               <Tabs defaultValue="time">
                 <TabsList className="bg-gray-100 border border-gray-200 text-gray-700">
+                  <TabsTrigger value="certifications">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Certifications ({employeeCertifications.length})
+                  </TabsTrigger>
                   <TabsTrigger value="time">Time Entries ({timeEntries.length})</TabsTrigger>
                   <TabsTrigger value="expenses">Expenses ({expenses.length})</TabsTrigger>
                   <TabsTrigger value="driving">Driving ({drivingLogs.length})</TabsTrigger>
                   <TabsTrigger value="assignments">Assignments ({assignments.length})</TabsTrigger>
-                  {/* NEW: Prompt #63 - Documents Tab */}
                   <TabsTrigger value="documents">
                     <FileText className="w-4 h-4 mr-2" />
                     Documents ({employeeDocuments.length})
@@ -946,6 +1045,121 @@ export default function EmployeeProfile() {
                 </TabsContent>
 
                 {/* NEW: Prompt #63 - Documents Tab Content */}
+                {/* Certification Vault Tab */}
+                <TabsContent value="certifications" className="space-y-4 mt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Certification Vault</h3>
+                    <Button
+                      onClick={() => setShowCertificationDialog(true)}
+                      className="bg-[#3B9FF3] hover:bg-blue-600 text-white"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Add Certification
+                    </Button>
+                  </div>
+
+                  {employeeCertifications.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No certifications on file</p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4">
+                      {employeeCertifications.map(cert => {
+                        const isExpiringSoon = cert.status === 'expiring_soon';
+                        const isExpired = cert.status === 'expired';
+
+                        return (
+                          <div key={cert.id} className={`p-4 rounded-lg border ${
+                            isExpired ? 'bg-red-50 border-red-300' :
+                            isExpiringSoon ? 'bg-amber-50 border-amber-300' :
+                            'bg-green-50 border-green-300'
+                          }`}>
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Shield className="w-5 h-5 text-[#3B9FF3]" />
+                                  <h4 className="font-semibold text-gray-900">
+                                    {cert.certification_type.replace(/_/g, ' ').toUpperCase()}
+                                  </h4>
+                                  {isExpired && (
+                                    <Badge className="bg-red-100 text-red-700">
+                                      <AlertCircle className="w-3 h-3 mr-1" />
+                                      Expired
+                                    </Badge>
+                                  )}
+                                  {isExpiringSoon && (
+                                    <Badge className="bg-amber-100 text-amber-700">
+                                      <AlertCircle className="w-3 h-3 mr-1" />
+                                      Expiring Soon
+                                    </Badge>
+                                  )}
+                                  {cert.status === 'active' && (
+                                    <Badge className="bg-green-100 text-green-700">
+                                      <CheckCircle className="w-3 h-3 mr-1" />
+                                      Active
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="space-y-1 text-sm text-gray-600">
+                                  {cert.issue_date && (
+                                    <p><strong>Issued:</strong> {format(new Date(cert.issue_date), 'MMM dd, yyyy')}</p>
+                                  )}
+                                  {cert.expiration_date && (
+                                    <p>
+                                      <strong>Expires:</strong> {format(new Date(cert.expiration_date), 'MMM dd, yyyy')}
+                                      {isExpiringSoon && (
+                                        <span className="ml-2 text-amber-600 font-semibold">
+                                          ({differenceInDays(new Date(cert.expiration_date), new Date())} days remaining)
+                                        </span>
+                                      )}
+                                    </p>
+                                  )}
+                                  {cert.notes && <p><strong>Notes:</strong> {cert.notes}</p>}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {cert.certificate_front_url && (
+                                  <a
+                                    href={cert.certificate_front_url}
+                                    download
+                                    className="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+                                    title="Download Front"
+                                  >
+                                    Front ↓
+                                  </a>
+                                )}
+                                {cert.certificate_back_url && (
+                                  <a
+                                    href={cert.certificate_back_url}
+                                    download
+                                    className="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+                                    title="Download Back"
+                                  >
+                                    Back ↓
+                                  </a>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (window.confirm('Delete this certification?')) {
+                                      deleteCertificationMutation.mutate(cert.id);
+                                    }
+                                  }}
+                                  className="bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </TabsContent>
+
                 <TabsContent value="documents" className="space-y-4 mt-4">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Employee Documents</h3>
@@ -1267,6 +1481,124 @@ export default function EmployeeProfile() {
                 </Button>
               </DialogFooter>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Certification Upload Dialog */}
+        <Dialog open={showCertificationDialog} onOpenChange={setShowCertificationDialog}>
+          <DialogContent className="bg-white text-gray-900 border-gray-200 max-w-xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Add Certification</DialogTitle>
+              <DialogDescription className="text-gray-600">
+                Upload a certification for {employee?.full_name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="cert_type" className="text-gray-900">Certification Type *</Label>
+                <select
+                  id="cert_type"
+                  value={certificationForm.certification_type}
+                  onChange={(e) => setCertificationForm({...certificationForm, certification_type: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2"
+                  required
+                >
+                  <option value="osha_10">OSHA 10</option>
+                  <option value="osha_30">OSHA 30</option>
+                  <option value="forklift">Forklift Certification</option>
+                  <option value="scissor_lift">Scissor Lift Certification</option>
+                  <option value="fall_protection">Fall Protection Training</option>
+                  <option value="scaffolding">Scaffolding Certification</option>
+                  <option value="first_aid">First Aid Certification</option>
+                  <option value="cpr">CPR Certification</option>
+                </select>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-900">Certificate Front *</Label>
+                  <Input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => handleCertificationUpload(e, 'certificate_front_url')}
+                    disabled={uploadingCertification}
+                    className="bg-gray-50"
+                  />
+                  {certificationForm.certificate_front_url && (
+                    <p className="text-sm text-green-600 mt-1">✓ Front uploaded</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-gray-900">Certificate Back (Optional)</Label>
+                  <Input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => handleCertificationUpload(e, 'certificate_back_url')}
+                    disabled={uploadingCertification}
+                    className="bg-gray-50"
+                  />
+                  {certificationForm.certificate_back_url && (
+                    <p className="text-sm text-green-600 mt-1">✓ Back uploaded</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-900">Issue Date</Label>
+                  <Input
+                    type="date"
+                    value={certificationForm.issue_date}
+                    onChange={(e) => setCertificationForm({...certificationForm, issue_date: e.target.value})}
+                    className="bg-gray-50"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-gray-900">Expiration Date</Label>
+                  <Input
+                    type="date"
+                    value={certificationForm.expiration_date}
+                    onChange={(e) => setCertificationForm({...certificationForm, expiration_date: e.target.value})}
+                    className="bg-gray-50"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-gray-900">Notes</Label>
+                <Input
+                  value={certificationForm.notes}
+                  onChange={(e) => setCertificationForm({...certificationForm, notes: e.target.value})}
+                  placeholder="Additional notes..."
+                  className="bg-gray-50"
+                />
+              </div>
+
+              {uploadingCertification && (
+                <p className="text-sm text-blue-600">Uploading file...</p>
+              )}
+            </div>
+
+            <DialogFooter className="mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowCertificationDialog(false)}
+                className="bg-gray-100 border-gray-200"
+                disabled={uploadingCertification || createCertificationMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCertificationSubmit}
+                disabled={uploadingCertification || createCertificationMutation.isPending || !certificationForm.certificate_front_url}
+                className="bg-[#3B9FF3] hover:bg-blue-600"
+              >
+                {createCertificationMutation.isPending ? 'Saving...' : 'Save Certification'}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
