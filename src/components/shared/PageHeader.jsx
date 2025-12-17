@@ -32,11 +32,11 @@ export default function PageHeader({
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               {Icon && (
-                <div className="p-3 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg shadow-blue-600/20">
+                <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl shadow-indigo-500/30">
                   <Icon className="w-6 h-6 text-white" />
                 </div>
               )}
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{title}</h1>
+              <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{title}</h1>
               {appBadge && (
                 <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/30">
                   {appBadge}

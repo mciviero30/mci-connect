@@ -478,10 +478,10 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="font-medium text-slate-900 dark:text-white">{t('loading')}...</p>
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="font-semibold text-slate-900 dark:text-slate-100">{t('loading')}...</p>
         </div>
       </div>
     );
@@ -489,14 +489,14 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (error && !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
-        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-[#282828] backdrop-blur-xl border border-slate-200 dark:border-slate-700">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20 p-1">
-                            <Building2 className="w-10 h-10 text-white" />
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-500/30 p-1">
+            <Building2 className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">MCI Connect</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">MCI Connect</h1>
           <p className="text-slate-600 dark:text-slate-400 mb-4">{t('error')}</p>
-          <Button onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20">
+          <Button onClick={() => window.location.reload()} className="soft-blue-gradient text-white shadow-lg">
             {t('reload')}
           </Button>
         </div>
@@ -506,17 +506,17 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   if (user && user.employment_status === 'deleted') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
-        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-[#282828] backdrop-blur-xl border border-red-200 dark:border-red-900/30">
-          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-red-500/20">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 shadow-2xl">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-red-500/30">
             <UserX className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Access Denied</h1>
           <p className="text-red-600 dark:text-red-400 mb-4">Your account has been deactivated.</p>
           <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
             Please contact your administrator if you believe this is an error.
           </p>
-          <Button onClick={() => base44.auth.logout()} className="bg-red-500 hover:bg-red-600 text-white">
+          <Button onClick={() => base44.auth.logout()} className="soft-red-gradient text-white shadow-lg">
             {t('logout')}
           </Button>
         </div>
@@ -645,21 +645,20 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
         `}</style>
 
-        <Sidebar className="border-none shadow-xl">
-          <SidebarHeader className="p-4 flex-shrink-0 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/50">
+        <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
+          <SidebarHeader className="p-4 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-800/30">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/20 p-0.5">
-                                    <img
-                                      src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                                      alt="MCI Connect"
-                                      className="w-full h-full rounded-md"
-                                    />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/30 p-0.5">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                  alt="MCI Connect"
+                  className="w-full h-full rounded-xl object-cover"
+                />
               </div>
               <div className="flex-1">
-                <h2 className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">MCI Connect</h2>
-                <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                  {language === 'es' ? 'Sistema de Gestión' : 'Management System'}
-                </p>
+                <h2 className="font-black text-xl tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  MCI Connect
+                </h2>
               </div>
             </div>
           </SidebarHeader>
@@ -720,55 +719,55 @@ const LayoutContent = ({ children, currentPageName }) => {
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="p-4 flex-shrink-0 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700">
+          <SidebarFooter className="p-4 flex-shrink-0 border-t border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800/50">
             <div className="mb-3 px-2 flex items-center gap-2">
               <Select value={language} onValueChange={changeLanguage}>
-                <SelectTrigger className="h-9 flex-1 backdrop-blur-sm bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800">
+                <SelectTrigger className="h-9 flex-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl">
                   <Languages className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                  <SelectItem value="en" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800">🇺🇸 English</SelectItem>
-                  <SelectItem value="es" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800">🇪🇸 Español</SelectItem>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl">
+                  <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">🇺🇸 English</SelectItem>
+                  <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">🇪🇸 Español</SelectItem>
                 </SelectContent>
               </Select>
               <ThemeToggle />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl p-3 backdrop-blur-sm border bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between rounded-2xl p-3 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
                     src={profileImage}
                     alt={user.full_name}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-400/50"
+                    className="w-11 h-11 rounded-full object-cover ring-2 ring-indigo-500/30 shadow-md"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center border-2 border-blue-400/30">
-                    <span className="text-white font-bold text-sm">
+                  <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center ring-2 ring-indigo-400/30 shadow-lg">
+                    <span className="text-white font-bold text-base">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate text-slate-900 dark:text-white">
+                  <p className="font-bold text-sm truncate text-slate-900 dark:text-slate-100">
                     {user?.full_name || 'User'}
                   </p>
-                  <p className="text-xs truncate text-blue-600 dark:text-blue-400">
+                  <p className="text-xs truncate text-indigo-600 dark:text-indigo-400 font-medium">
                     {user?.role === 'admin' ? t('admin') : t('user')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Link to={createPageUrl("Configuracion")} className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800" title={t('settings')}>
-                  <Settings className="w-4 h-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300" />
+                <Link to={createPageUrl("Configuracion")} className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')}>
+                  <Settings className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 </Link>
                 <button
                   onClick={() => base44.auth.logout()}
-                  className="p-2 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="p-2 rounded-xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-110"
                   title={t('logout')}
                 >
-                  <LogOut className="w-4 h-4 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300" />
+                  <LogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
                 </button>
               </div>
             </div>
@@ -780,22 +779,23 @@ const LayoutContent = ({ children, currentPageName }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="backdrop-blur-xl px-3 py-2 md:hidden flex-shrink-0 bg-white/95 dark:bg-[#1a1a1a]/95 border-b border-slate-200 dark:border-slate-700 shadow-sm"
+            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-white/98 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
           >
-            <div className="flex items-center gap-2 max-w-screen-xl mx-auto">
-              <SidebarTrigger className="p-1.5 rounded-lg transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
-                <Menu className="w-4 h-4 text-slate-900 dark:text-white" />
+            <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
+              <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
+                <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
-              <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
-                  alt="MCI Connect"
-                  className="w-5 h-5 flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-sm font-bold leading-tight text-slate-900 dark:text-white truncate">MCI Connect</h1>
-                  {isAdmin && <p className="text-[8px] text-blue-600 dark:text-blue-400 leading-tight">Management System</p>}
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 flex-shrink-0">
+                  <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                    alt="MCI Connect"
+                    className="w-full h-full rounded-lg object-cover"
+                  />
                 </div>
+                <h1 className="text-base font-black leading-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate">
+                  MCI Connect
+                </h1>
               </div>
             </div>
           </motion.header>

@@ -610,10 +610,10 @@ export default function Dashboard() {
 
   if (userLoading || prefsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#181818]">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 dark:text-blue-400 mx-auto mb-4" />
-          <p className="text-slate-900 dark:text-white font-medium">Loading dashboard...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-4" />
+          <p className="text-slate-900 dark:text-slate-100 font-semibold">Loading dashboard...</p>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparing your personalized widgets</p>
         </div>
       </div>
@@ -621,7 +621,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F8FAFC] dark:bg-slate-900">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
