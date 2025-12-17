@@ -203,8 +203,8 @@ export default function AssignmentDialog({
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              {isAppointment && <CalendarIcon className="w-6 h-6 text-[#3B9FF3]" />}
-              {isJobWork && <Briefcase className="w-6 h-6 text-purple-500" />}
+              {isAppointment && <CalendarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
+              {isJobWork && <Briefcase className="w-6 h-6 text-purple-600 dark:text-purple-400" />}
               {shift 
                 ? (isAppointment ? 'Edit Appointment' : 'Edit Job Shift')
                 : (isAppointment ? 'New Appointment' : 'New Job Shift')}
@@ -219,7 +219,7 @@ export default function AssignmentDialog({
                     onCopyShift?.(shift);
                     onOpenChange(false);
                   }}
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/10"
                   title="Copy shift"
                 >
                   <Copy className="w-5 h-5" />
@@ -229,7 +229,7 @@ export default function AssignmentDialog({
                   variant="ghost"
                   size="icon"
                   onClick={handleDelete}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/10"
                 >
                   <Trash2 className="w-5 h-5" />
                 </Button>
@@ -310,7 +310,7 @@ export default function AssignmentDialog({
           {selectedJob && (
             <Card className="p-4 bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
               <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#3B9FF3]" />
+                <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Job Details
               </h3>
               <div className="space-y-2 text-sm">
@@ -411,33 +411,46 @@ export default function AssignmentDialog({
 
           {/* Custom Color Picker */}
           <div className="flex items-center gap-3">
-            <Label className="text-slate-900 dark:text-white text-xs flex-shrink-0">Shift Color</Label>
+            <Label className="text-slate-900 dark:text-white text-sm flex-shrink-0">Shift Color</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className={`w-8 h-8 rounded-full ${customColor ? `bg-${customColor}-500` : 'bg-slate-300 dark:bg-slate-600'} hover:scale-110 transition-transform border-2 border-slate-400 dark:border-slate-500`}
+                  className={`w-10 h-10 rounded-lg ${
+                    customColor === 'blue' ? 'soft-blue-gradient' :
+                    customColor === 'green' ? 'soft-green-gradient' :
+                    customColor === 'purple' ? 'soft-purple-gradient' :
+                    customColor === 'amber' ? 'soft-amber-gradient' :
+                    customColor === 'red' ? 'soft-red-gradient' :
+                    customColor === 'pink' ? 'soft-pink-gradient' :
+                    customColor === 'cyan' ? 'soft-cyan-gradient' :
+                    customColor === 'slate' ? 'soft-slate-gradient' :
+                    'bg-slate-200 dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600'
+                  } hover:scale-105 transition-transform shadow-sm`}
                   title="Select color"
                 />
               </PopoverTrigger>
-              <PopoverContent className="w-56 p-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
+              <PopoverContent className="w-64 p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 font-medium">Choose a color for this shift:</p>
                 <div className="grid grid-cols-4 gap-2">
                   {[
-                    { name: 'blue', class: 'soft-blue-gradient' },
-                    { name: 'green', class: 'soft-green-gradient' },
-                    { name: 'purple', class: 'soft-purple-gradient' },
-                    { name: 'amber', class: 'soft-amber-gradient' },
-                    { name: 'red', class: 'soft-red-gradient' },
-                    { name: 'pink', class: 'soft-pink-gradient' },
-                    { name: 'cyan', class: 'soft-cyan-gradient' },
-                    { name: 'slate', class: 'soft-slate-gradient' }
+                    { name: 'blue', class: 'soft-blue-gradient', label: 'Blue' },
+                    { name: 'green', class: 'soft-green-gradient', label: 'Green' },
+                    { name: 'purple', class: 'soft-purple-gradient', label: 'Purple' },
+                    { name: 'amber', class: 'soft-amber-gradient', label: 'Amber' },
+                    { name: 'red', class: 'soft-red-gradient', label: 'Red' },
+                    { name: 'pink', class: 'soft-pink-gradient', label: 'Pink' },
+                    { name: 'cyan', class: 'soft-cyan-gradient', label: 'Cyan' },
+                    { name: 'slate', class: 'soft-slate-gradient', label: 'Gray' }
                   ].map((color) => (
                     <button
                       key={color.name}
                       type="button"
                       onClick={() => setCustomColor(color.name)}
-                      className={`h-8 rounded-lg ${color.class} hover:scale-105 transition-transform ${customColor === color.name ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
-                      title={color.name}
+                      className={`h-12 rounded-lg ${color.class} hover:scale-105 transition-all shadow-sm ${
+                        customColor === color.name ? 'ring-2 ring-offset-2 ring-blue-500 scale-105' : ''
+                      }`}
+                      title={color.label}
                     />
                   ))}
                 </div>
@@ -445,18 +458,21 @@ export default function AssignmentDialog({
                   <button
                     type="button"
                     onClick={() => setCustomColor('')}
-                    className="w-full mt-2 text-[10px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+                    className="w-full mt-3 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium"
                   >
-                    Clear
+                    Clear Selection
                   </button>
                 )}
               </PopoverContent>
             </Popover>
+            {customColor && (
+              <span className="text-xs text-slate-600 dark:text-slate-400 capitalize">{customColor}</span>
+            )}
           </div>
 
           {/* Delete Options Modal */}
           {showDeleteOptions && shift && (
-            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="mb-4 p-4 soft-red-bg rounded-lg">
               <p className="text-sm text-red-700 dark:text-red-300 mb-3 font-medium">
                 ¿Qué deseas eliminar? / What do you want to delete?
               </p>
@@ -466,7 +482,7 @@ export default function AssignmentDialog({
                   variant="outline"
                   onClick={handleDeleteSingle}
                   disabled={isProcessing}
-                  className="justify-start border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30"
+                  className="justify-start soft-red-bg hover:opacity-90"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Solo este turno / Only this shift
@@ -500,10 +516,10 @@ export default function AssignmentDialog({
             {shift && !showDeleteOptions ? (
               <Button 
                 type="button" 
-                variant="destructive" 
+                variant="outline"
                 onClick={handleDelete} 
                 disabled={isProcessing}
-                className="bg-red-500 hover:bg-red-600 text-white"
+                className="soft-red-bg hover:opacity-90"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete
@@ -512,7 +528,7 @@ export default function AssignmentDialog({
               <div />
             )}
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="soft-slate-bg hover:opacity-90">
                 <X className="w-4 h-4 mr-2" />
                 Cancel
               </Button>
