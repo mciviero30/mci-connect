@@ -570,54 +570,72 @@ const LayoutContent = ({ children, currentPageName }) => {
         </>
       )}
         
-      <div className="min-h-screen flex w-full bg-[#FAFAFA] dark:bg-[#181818]">
+      <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
         <style>{`
           /* ============================================ */
-          /* GLOBAL THEME SYSTEM - PROFESSIONAL COLORS   */
+          /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
           /* ============================================ */
-          
-          /* Professional Blue Primary */
+
+          /* Soft Primary Colors */
           :root {
-            --color-primary: #2563EB;
-            --color-primary-hover: #1D4ED8;
-            --color-primary-light: #60A5FA;
+            --color-primary: #6366F1;
+            --color-primary-hover: #4F46E5;
+            --color-primary-light: #A5B4FC;
           }
-          
-          /* Custom scrollbars */
+
+          /* Glassmorphism Effects */
+          .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+          }
+
+          .dark .glass-effect {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+          }
+
+          /* Smooth Transitions */
+          * {
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          /* Custom scrollbars - Soft */
           .sidebar-scroll-content::-webkit-scrollbar {
             width: 6px;
           }
-          
+
           .sidebar-scroll-content::-webkit-scrollbar-track {
-            background: rgba(37, 99, 235, 0.05);
+            background: rgba(99, 102, 241, 0.05);
             border-radius: 3px;
           }
-          
+
           .sidebar-scroll-content::-webkit-scrollbar-thumb {
-            background: rgba(37, 99, 235, 0.3);
+            background: rgba(99, 102, 241, 0.2);
             border-radius: 3px;
           }
-          
+
           .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(37, 99, 235, 0.5);
+            background: rgba(99, 102, 241, 0.4);
           }
 
           *::-webkit-scrollbar {
             width: 8px;
             height: 8px;
           }
-          
+
           *::-webkit-scrollbar-track {
-            background: rgba(37, 99, 235, 0.05);
+            background: rgba(99, 102, 241, 0.05);
           }
-          
+
           *::-webkit-scrollbar-thumb {
-            background: rgba(37, 99, 235, 0.2);
+            background: rgba(99, 102, 241, 0.15);
             border-radius: 4px;
           }
-          
+
           *::-webkit-scrollbar-thumb:hover {
-            background: rgba(37, 99, 235, 0.4);
+            background: rgba(99, 102, 241, 0.3);
           }
 
           @media (max-width: 1024px) {
@@ -648,7 +666,7 @@ const LayoutContent = ({ children, currentPageName }) => {
 
           <SidebarContent 
             ref={sidebarContentRef} 
-            className="p-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth"
+            className="p-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50"
             data-scrollable="true"
           >
             {navigation.map((section, idx) => (

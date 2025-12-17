@@ -46,6 +46,7 @@ import WidgetLibrary from "../components/dashboard/WidgetLibrary";
 import RecognitionFeed from "../components/recognition/RecognitionFeed";
 import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget";
 import GiveKudosDialog from "../components/recognition/GiveKudosDialog";
+import QuickActions from "../components/dashboard/QuickActions";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -244,6 +245,18 @@ export default function Dashboard() {
     enabled: needsRecognitionData,
     staleTime: 900000, // 15 minutes - recognitions don't change frequently
     cacheTime: 1800000,
+    initialData: [],
+  });
+
+  const { data: certifications = [] } = useQuery({
+    queryKey: ['myCertifications', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      return base44.entities.Certification.filter({ employee_email: user.email }, '-expiration_date');
+    },
+    enabled: !!user?.email && !isAdmin,
+    staleTime: 1800000, // 30 minutes
+    cacheTime: 3600000,
     initialData: [],
   });
 
@@ -706,6 +719,13 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Quick Actions for Employees - Mobile-First */}
+        {!isAdmin && (
+          <div className="mb-8">
+            <QuickActions user={user} certifications={certifications} />
+          </div>
+        )}
 
         {/* Live Clock for Employees */}
         {!isAdmin && (

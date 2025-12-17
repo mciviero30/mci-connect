@@ -42,26 +42,16 @@ import TestingChecklist from './pages/TestingChecklist';
 import Items from './pages/Items';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
 import BudgetForecasting from './pages/BudgetForecasting';
-import DocumentosAI from './pages/DocumentosAI';
 import CashFlowReport from './pages/CashFlowReport';
 import Configuracion from './pages/Configuracion';
-import AIExpensesAudit from './pages/AIExpensesAudit';
 import CompanyInfo from './pages/CompanyInfo';
-import AIInvoiceGenerator from './pages/AIInvoiceGenerator';
 import NotificationSettings from './pages/NotificationSettings';
 import Recognitions from './pages/Recognitions';
-import FinancialDashboard from './pages/FinancialDashboard';
-import AnalyticsDashboard from './pages/AnalyticsDashboard';
-import JobsAdvanced from './pages/JobsAdvanced';
-import HRAdvancedDashboard from './pages/HRAdvancedDashboard';
-import AIAutomationDashboard from './pages/AIAutomationDashboard';
 import MiScorecard from './pages/MiScorecard';
 import MisProyectos from './pages/MisProyectos';
-import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import RoleManagement from './pages/RoleManagement';
 import NotificationCenter from './pages/NotificationCenter';
 import ReportingHub from './pages/ReportingHub';
-import ActivityFeed from './pages/ActivityFeed';
 import Goals from './pages/Goals';
 import TeamGoals from './pages/TeamGoals';
 import TimeTracking from './pages/TimeTracking';
@@ -126,26 +116,16 @@ export const PAGES = {
     "Items": Items,
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
     "BudgetForecasting": BudgetForecasting,
-    "DocumentosAI": DocumentosAI,
     "CashFlowReport": CashFlowReport,
     "Configuracion": Configuracion,
-    "AIExpensesAudit": AIExpensesAudit,
     "CompanyInfo": CompanyInfo,
-    "AIInvoiceGenerator": AIInvoiceGenerator,
     "NotificationSettings": NotificationSettings,
     "Recognitions": Recognitions,
-    "FinancialDashboard": FinancialDashboard,
-    "AnalyticsDashboard": AnalyticsDashboard,
-    "JobsAdvanced": JobsAdvanced,
-    "HRAdvancedDashboard": HRAdvancedDashboard,
-    "AIAutomationDashboard": AIAutomationDashboard,
     "MiScorecard": MiScorecard,
     "MisProyectos": MisProyectos,
-    "AIAssistantPersonal": AIAssistantPersonal,
     "RoleManagement": RoleManagement,
     "NotificationCenter": NotificationCenter,
     "ReportingHub": ReportingHub,
-    "ActivityFeed": ActivityFeed,
     "Goals": Goals,
     "TeamGoals": TeamGoals,
     "TimeTracking": TimeTracking,
