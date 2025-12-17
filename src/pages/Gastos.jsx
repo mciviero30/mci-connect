@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import AIExpenseAnalyzer from "../components/gastos/AIExpenseAnalyzer";
+import SmartExpenseApproval from "../components/gastos/SmartExpenseApproval";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Gastos() {
@@ -141,6 +142,9 @@ export default function Gastos() {
           showActions={true}
           onApprove={handleApprove}
           onReject={handleReject}
+          renderSmartApproval={(expense) => (
+            <SmartExpenseApproval expense={expense} onAction={() => {}} />
+          )}
         />
 
         {/* Select Employee Dialog */}
