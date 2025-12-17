@@ -97,18 +97,8 @@ export default function ModernCustomerCard({ customer, onViewDetails }) {
         </div>
       </div>
 
-      {/* Add New Button - Full Width at Bottom */}
-      <div 
-        className="bg-gradient-to-r from-[#1E6FE8] to-[#0052CC] h-[40px] cursor-pointer hover:from-[#1557C0] hover:to-[#003d99] transition-all flex items-center justify-center" 
-        onClick={() => onViewDetails(customer)}
-      >
-        <div className="flex items-center justify-center gap-1.5">
-          <span className="text-white font-bold text-[12px]">Add New</span>
-          <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-            <Plus className="w-3 h-3 text-[#1E6FE8]" />
-          </div>
-        </div>
-      </div>
+      {/* Bottom Border Line */}
+      <div className="h-[3px] bg-gradient-to-r from-[#1E6FE8] to-[#0052CC]" />
     </Card>
   );
 }
