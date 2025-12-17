@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -315,7 +314,7 @@ export const translations = {
     track_your_expenses_and_receipts: "Track your expenses and receipts",
     new_expense: "New Expense",
     expense_created_pending_approval: "Expense created! Pending approval.",
-    per_diem: "Per Diem",
+    perDiem: "Per-Diem",
     request_per_diem_for_work_days: "Request per diem for your work days",
     request_per_diem: "Request Per Diem",
     per_diem_information: "Per Diem Information",
@@ -941,7 +940,7 @@ export const translations = {
     track_your_expenses_and_receipts: "Registra tus gastos y recibos",
     new_expense: "Nuevo Gasto",
     expense_created_pending_approval: "¡Gasto creado! Pendiente de aprobación.",
-    per_diem: "Per Diem",
+    perDiem: "Per-Diem",
     request_per_diem_for_work_days: "Solicita per diem para tus días de trabajo",
     request_per_diem: "Solicitar Per Diem",
     per_diem_information: "Información de Per Diem",
