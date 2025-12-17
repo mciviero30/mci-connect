@@ -32,12 +32,12 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
   const daysOverdue = getDaysOverdue(invoice);
 
   const statusColors = {
-    draft: "bg-[#94A3B8] hover:bg-[#94A3B8] text-white",
-    sent: "bg-[#1E6FE8] hover:bg-[#1E6FE8] text-white",
-    paid: "bg-[#00C48C] hover:bg-[#00C48C] text-white",
-    partial: "bg-[#F59E0B] hover:bg-[#F59E0B] text-white",
-    overdue: "bg-[#EF4444] hover:bg-[#EF4444] text-white",
-    cancelled: "bg-[#94A3B8] hover:bg-[#94A3B8] text-white"
+    draft: "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-900 border-2 border-slate-200",
+    sent: "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-900 border-2 border-blue-200",
+    paid: "bg-gradient-to-r from-green-50 to-green-100 text-green-900 border-2 border-green-200",
+    partial: "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-900 border-2 border-amber-200",
+    overdue: "bg-gradient-to-r from-red-50 to-red-100 text-red-900 border-2 border-red-200",
+    cancelled: "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-900 border-2 border-slate-200"
   };
 
   const statusLabels = {

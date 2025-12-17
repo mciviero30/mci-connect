@@ -18,11 +18,11 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
   };
 
   const statusColors = {
-    draft: "bg-[#94A3B8] hover:bg-[#94A3B8] text-white",
-    sent: "bg-[#1E6FE8] hover:bg-[#1E6FE8] text-white",
-    approved: "bg-[#00C48C] hover:bg-[#00C48C] text-white",
-    rejected: "bg-[#EF4444] hover:bg-[#EF4444] text-white",
-    converted_to_invoice: "bg-[#8B5CF6] hover:bg-[#8B5CF6] text-white"
+    draft: "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-900 border-2 border-slate-200",
+    sent: "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-900 border-2 border-blue-200",
+    approved: "bg-gradient-to-r from-green-50 to-green-100 text-green-900 border-2 border-green-200",
+    rejected: "bg-gradient-to-r from-red-50 to-red-100 text-red-900 border-2 border-red-200",
+    converted_to_invoice: "bg-gradient-to-r from-purple-50 to-purple-100 text-purple-900 border-2 border-purple-200"
   };
 
   const statusLabels = {
