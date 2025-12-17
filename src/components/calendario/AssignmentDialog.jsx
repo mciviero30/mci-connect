@@ -412,24 +412,48 @@ export default function AssignmentDialog({
           {/* Custom Color Picker */}
           <div>
             <Label className="text-slate-900 dark:text-white mb-2 block">Custom Shift Color (Optional)</Label>
-            <div className="flex flex-wrap gap-2">
-              {['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'slate'].map(color => (
-                <button
-                  key={color}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
                   type="button"
-                  onClick={() => setCustomColor(color === customColor ? '' : color)}
-                  className={`w-8 h-8 rounded-full bg-${color}-500 hover:scale-110 transition-transform ${customColor === color ? 'ring-4 ring-offset-2 ring-blue-400' : 'ring-2 ring-slate-300'}`}
-                  title={color}
-                />
-              ))}
-            </div>
-            {customColor && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                Selected: <span className="font-semibold capitalize">{customColor}</span>
-                {' • '}
-                <button type="button" onClick={() => setCustomColor('')} className="text-blue-600 hover:underline">Clear</button>
-              </p>
-            )}
+                  variant="outline" 
+                  className="w-full justify-start bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-10"
+                >
+                  {customColor ? (
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-full bg-${customColor}-500`} />
+                      <span className="capitalize">{customColor}</span>
+                    </div>
+                  ) : (
+                    <span className="text-slate-500">Select color...</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                <div className="grid grid-cols-6 gap-2">
+                  {['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'slate'].map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setCustomColor(color)}
+                      className={`w-8 h-8 rounded-full bg-${color}-500 hover:scale-110 transition-transform ${customColor === color ? 'ring-2 ring-blue-400' : ''}`}
+                      title={color}
+                    />
+                  ))}
+                </div>
+                {customColor && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCustomColor('')}
+                    className="w-full mt-2 text-xs text-slate-500 hover:text-slate-700"
+                  >
+                    Clear color
+                  </Button>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Delete Options Modal */}
