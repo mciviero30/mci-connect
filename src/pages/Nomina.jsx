@@ -318,7 +318,7 @@ export default function Nomina() {
                 <Car className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
               </div>
               <p className="text-3xl font-bold text-green-900 dark:text-green-100">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs text-green-700 dark:text-green-300 mt-1">{totals.drivingHours.toFixed(1)}h</p>
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">{totals.drivingHours.toFixed(1)}h driving</p>
             </CardContent>
           </Card>
 
