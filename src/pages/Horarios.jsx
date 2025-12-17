@@ -39,50 +39,50 @@ export default function Horarios() {
         />
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+          <Card className="soft-amber-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">{t('pending')}</p>
-                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{pendingEntries.length}</p>
+                  <p className="text-sm font-medium mb-1">{t('pending')}</p>
+                  <p className="text-3xl font-bold">{pendingEntries.length}</p>
                 </div>
-                <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
+                <Clock className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+          <Card className="soft-pink-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-1">{language === 'es' ? 'Horas Pendientes' : 'Pending Hours'}</p>
-                  <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">{totalPendingHours.toFixed(1)}h</p>
+                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Horas Pendientes' : 'Pending Hours'}</p>
+                  <p className="text-3xl font-bold">{totalPendingHours.toFixed(1)}h</p>
                 </div>
-                <Clock className="w-10 h-10 text-orange-600 dark:text-orange-400 opacity-50" />
+                <Clock className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+          <Card className="soft-green-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">{t('approved')}</p>
-                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{approvedEntries.length}</p>
+                  <p className="text-sm font-medium mb-1">{t('approved')}</p>
+                  <p className="text-3xl font-bold">{approvedEntries.length}</p>
                 </div>
-                <Clock className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
+                <Clock className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
+          <Card className="soft-cyan-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">{language === 'es' ? 'Horas Aprobadas' : 'Approved Hours'}</p>
-                  <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{totalApprovedHours.toFixed(1)}h</p>
+                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Horas Aprobadas' : 'Approved Hours'}</p>
+                  <p className="text-3xl font-bold">{totalApprovedHours.toFixed(1)}h</p>
                 </div>
-                <Clock className="w-10 h-10 text-emerald-600 dark:text-emerald-400 opacity-50" />
+                <Clock className="w-10 h-10 opacity-50" />
               </div>
             </CardContent>
           </Card>
