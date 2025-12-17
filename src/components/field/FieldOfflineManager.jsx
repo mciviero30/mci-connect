@@ -215,9 +215,18 @@ export function FieldOfflineProvider({ children, jobId }) {
       
       for (const action of pending) {
         try {
-          // Execute the pending action
-          // This would integrate with your actual API
-          console.log('Syncing action:', action);
+          // Execute the pending action via Base44 API
+          if (action.type === 'createTask') {
+            await base44.entities.Task.create(action.data);
+          } else if (action.type === 'updateTask') {
+            await base44.entities.Task.update(action.taskId, action.data);
+          } else if (action.type === 'deleteTask') {
+            await base44.entities.Task.delete(action.taskId);
+          } else if (action.type === 'createPhoto') {
+            await base44.entities.Photo.create(action.data);
+          }
+          
+          console.log('✓ Synced action:', action.type);
           syncedIds.push(action.id);
         } catch (err) {
           console.error('Failed to sync action:', err);

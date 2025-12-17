@@ -16,7 +16,7 @@ import OverdueTasksAlert from './OverdueTasksAlert.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import JobProgress from './JobProgress';
 
-export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, onTaskClick }) {
+export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, onTaskClick, onOpenDailyReport }) {
   // Use unified WorkUnit hook
   const { workUnits, stats: workUnitStats, isLoading } = useWorkUnits(job?.id);
   
@@ -51,7 +51,15 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Project Overview</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Project Overview</h1>
+        {onOpenDailyReport && (
+          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <FileCheck className="w-4 h-4 mr-2" />
+            Daily Report
+          </Button>
+        )}
+      </div>
 
       {/* Work Progress */}
       <div className="mb-6">
