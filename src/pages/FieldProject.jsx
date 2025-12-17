@@ -49,6 +49,8 @@ import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
 import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
+import DailyReportGenerator from '@/components/field/DailyReportGenerator.js';
+import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.js';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -56,6 +58,7 @@ export default function FieldProject() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showDailyReport, setShowDailyReport] = useState(false);
 
   // Handle resize
   useEffect(() => {
@@ -117,8 +120,9 @@ export default function FieldProject() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
-    { id: 'dimensions', label: 'Dimensions', icon: FileText },
+    { id: 'dimensions', label: 'Site Dims', icon: FileText },
     { id: 'photos', label: 'Photos', icon: Camera },
+    { id: 'before-after', label: 'Before/After', icon: Camera },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
@@ -155,7 +159,7 @@ export default function FieldProject() {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
+        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
       case 'plans':
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
       case 'tasks':
@@ -164,6 +168,8 @@ export default function FieldProject() {
         return <FieldDimensionView jobId={jobId} />;
       case 'photos':
         return <FieldPhotosView jobId={jobId} />;
+      case 'before-after':
+        return <BeforeAfterPhotos jobId={jobId} />;
       case 'documents':
         return <FieldDocumentsView jobId={jobId} />;
       case 'budget':
@@ -189,7 +195,7 @@ export default function FieldProject() {
       case 'ai-assistant':
         return <FieldAIAssistant jobId={jobId} job={job} tasks={tasks} members={members} />;
       default:
-        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} />;
+        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
     }
   };
 
@@ -285,6 +291,14 @@ export default function FieldProject() {
           planCount={plans.length}
         />
       )}
+
+      {/* Daily Report Dialog */}
+      <DailyReportGenerator 
+        open={showDailyReport}
+        onOpenChange={setShowDailyReport}
+        jobId={jobId}
+        jobName={job?.name || job?.job_name_field}
+      />
     </div>
     </FieldOfflineProvider>
   );

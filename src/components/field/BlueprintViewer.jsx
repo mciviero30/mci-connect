@@ -23,7 +23,7 @@ const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const queryClient = useQueryClient();
-  const [zoom, setZoom] = useState(0.2);
+  const [zoom, setZoom] = useState(0.3); // Optimized initial zoom
   const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -223,10 +223,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     }
   };
 
-  // Render all PDF pages into single vertical canvas
+  // Render all PDF pages into single vertical canvas - OPTIMIZED
   const renderAllPdfPages = async (pdf) => {
     try {
-      const scale = 1.5;
+      const scale = 2.0; // Higher quality for blueprints
       const canvases = [];
       
       // Render all pages
@@ -263,9 +263,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         currentY += canvas.height;
       });
 
-      const imageDataUrl = combinedCanvas.toDataURL('image/png');
+      // Use JPEG for better performance with large PDFs
+      const imageDataUrl = combinedCanvas.toDataURL('image/jpeg', 0.92);
       setPdfCanvas(imageDataUrl);
-      setZoom(0.15); // Start at 15% to fit page
+      setZoom(0.25); // Optimized start zoom
     } catch (err) {
       console.error('PDF render error:', err);
       setLoadingState('error');
