@@ -1261,173 +1261,195 @@ export default function EmployeeProfile() {
         </div>
 
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="bg-white text-gray-900 border-gray-200 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="bg-white text-gray-900 border-gray-200 max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-xl">Edit Employee</DialogTitle>
+              <DialogTitle className="text-2xl font-bold">Edit Employee</DialogTitle>
               <DialogDescription className="text-gray-600">
                 Update employee information
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="full_name" className="text-gray-900">Full Name</Label>
-                <Input
-                  id="full_name"
-                  value={editForm.full_name}
-                  onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                  autoCapitalizeInput={true}
-                />
+            <div className="space-y-6">
+              {/* Personal Information Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200">Personal Information</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="full_name" className="text-gray-900 font-medium">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      value={editForm.full_name}
+                      onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      autoCapitalizeInput={true}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="position" className="text-gray-900 font-medium">Position</Label>
+                    <Input
+                      id="position"
+                      value={editForm.position}
+                      onChange={(e) => setEditForm({...editForm, position: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      autoCapitalizeInput={true}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="dob" className="text-gray-900 font-medium">Date of Birth</Label>
+                    <Input
+                      id="dob"
+                      type="date"
+                      value={editForm.dob}
+                      onChange={(e) => setEditForm({...editForm, dob: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="ssn_tax_id" className="text-gray-900 font-medium">SSN/Tax ID</Label>
+                    <Input
+                      id="ssn_tax_id"
+                      value={editForm.ssn_tax_id}
+                      onChange={(e) => setEditForm({...editForm, ssn_tax_id: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="position" className="text-gray-900">Position</Label>
-                <Input
-                  id="position"
-                  value={editForm.position}
-                  onChange={(e) => setEditForm({...editForm, position: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                  autoCapitalizeInput={true}
-                />
+              {/* Contact Information Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200">Contact Information</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone" className="text-gray-900 font-medium">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label htmlFor="address" className="text-gray-900 font-medium">Address</Label>
+                    <Input
+                      id="address"
+                      value={editForm.address}
+                      onChange={(e) => setEditForm({...editForm, address: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      autoCapitalizeInput={true}
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="phone" className="text-gray-900">Phone</Label>
-                <Input
-                  id="phone"
-                  value={editForm.phone}
-                  onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
-              </div>
+              {/* Employment Details Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200">Employment Details</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="department" className="text-gray-900 font-medium">Department</Label>
+                    <select
+                      id="department"
+                      value={editForm.department}
+                      onChange={(e) => setEditForm({...editForm, department: e.target.value})}
+                      className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Department</option>
+                      <option value="operations">Operations</option>
+                      <option value="administration">Administration</option>
+                      <option value="it">IT</option>
+                      <option value="sales">Sales</option>
+                      <option value="marketing">Marketing</option>
+                      <option value="hr">HR</option>
+                    </select>
+                  </div>
 
-              <div>
-                <Label htmlFor="address" className="text-gray-900">Address</Label>
-                <Input
-                  id="address"
-                  value={editForm.address}
-                  onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                  autoCapitalizeInput={true}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="team" className="text-gray-900 font-medium">Team</Label>
+                    <select
+                      id="team"
+                      value={editForm.team_id}
+                      onChange={(e) => {
+                        const selectedTeam = teams.find(t => t.id === e.target.value);
+                        setEditForm({
+                          ...editForm,
+                          team_id: e.target.value,
+                          team_name: selectedTeam?.team_name || ''
+                        });
+                      }}
+                      className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={teamsLoading}
+                    >
+                      <option value="">Select Team</option>
+                      {teamsLoading ? (
+                        <option disabled>Loading teams...</option>
+                      ) : teams.length === 0 ? (
+                        <option disabled>No teams available</option>
+                      ) : (
+                        teams.map(team => (
+                          <option key={team.id} value={team.id}>{team.team_name}</option>
+                        ))
+                      )}
+                    </select>
+                    {!teamsLoading && teams.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">{teams.length} teams available</p>
+                    )}
+                  </div>
 
-              <div>
-                <Label htmlFor="hourly_rate" className="text-gray-900">Hourly Rate ($)</Label>
-                <Input
-                  id="hourly_rate"
-                  type="number"
-                  step="0.01"
-                  value={editForm.hourly_rate}
-                  onChange={(e) => setEditForm({...editForm, hourly_rate: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="hire_date" className="text-gray-900 font-medium">Hire Date</Label>
+                    <Input
+                      id="hire_date"
+                      type="date"
+                      value={editForm.hire_date}
+                      onChange={(e) => setEditForm({...editForm, hire_date: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="department" className="text-gray-900">Department</Label>
-                <select
-                  id="department"
-                  value={editForm.department}
-                  onChange={(e) => setEditForm({...editForm, department: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Department</option>
-                  <option value="operations">Operations</option>
-                  <option value="administration">Administration</option>
-                  <option value="it">IT</option>
-                  <option value="sales">Sales</option>
-                  <option value="marketing">Marketing</option>
-                  <option value="hr">HR</option>
-                </select>
-              </div>
+                  <div>
+                    <Label htmlFor="hourly_rate" className="text-gray-900 font-medium">Hourly Rate ($)</Label>
+                    <Input
+                      id="hourly_rate"
+                      type="number"
+                      step="0.01"
+                      value={editForm.hourly_rate}
+                      onChange={(e) => setEditForm({...editForm, hourly_rate: e.target.value})}
+                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="team" className="text-gray-900">Team</Label>
-                <select
-                  id="team"
-                  value={editForm.team_id}
-                  onChange={(e) => {
-                    const selectedTeam = teams.find(t => t.id === e.target.value);
-                    setEditForm({
-                      ...editForm,
-                      team_id: e.target.value,
-                      team_name: selectedTeam?.name || ''
-                    });
-                  }}
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  disabled={teamsLoading}
-                >
-                  <option value="">Select Team</option>
-                  {teamsLoading ? (
-                    <option disabled>Loading teams...</option>
-                  ) : teams.length === 0 ? (
-                    <option disabled>No teams available</option>
-                  ) : (
-                    teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.name}</option>
-                    ))
-                  )}
-                </select>
-                {!teamsLoading && teams.length > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">{teams.length} teams available</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="tshirt_size" className="text-gray-900">T-Shirt Size</Label>
-                <select
-                  id="tshirt_size"
-                  value={editForm.tshirt_size}
-                  onChange={(e) => setEditForm({...editForm, tshirt_size: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Select Size</option>
-                  <option value="S">S</option>
-                  <option value="M">M</option>
-                  <option value="L">L</option>
-                  <option value="XL">XL</option>
-                  <option value="XXL">XXL</option>
-                  <option value="XXXL">XXXL</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="dob" className="text-gray-900">Date of Birth</Label>
-                <Input
-                  id="dob"
-                  type="date"
-                  value={editForm.dob}
-                  onChange={(e) => setEditForm({...editForm, dob: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="ssn_tax_id" className="text-gray-900">SSN/Tax ID</Label>
-                <Input
-                  id="ssn_tax_id"
-                  value={editForm.ssn_tax_id}
-                  onChange={(e) => setEditForm({...editForm, ssn_tax_id: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="hire_date" className="text-gray-900">Hire Date</Label>
-                <Input
-                  id="hire_date"
-                  type="date"
-                  value={editForm.hire_date}
-                  onChange={(e) => setEditForm({...editForm, hire_date: e.target.value})}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                  <div>
+                    <Label htmlFor="tshirt_size" className="text-gray-900 font-medium">T-Shirt Size</Label>
+                    <select
+                      id="tshirt_size"
+                      value={editForm.tshirt_size}
+                      onChange={(e) => setEditForm({...editForm, tshirt_size: e.target.value})}
+                      className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Size</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="XXL">XXL</option>
+                      <option value="XXXL">XXXL</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => setShowEditDialog(false)} className="bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200">
+            <DialogFooter className="mt-6 flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowEditDialog(false)} 
+                className="bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200 flex-1"
+              >
                 Cancel
               </Button>
               <Button
@@ -1439,9 +1461,16 @@ export default function EmployeeProfile() {
                   updateEmployeeMutation.mutate(submitData);
                 }}
                 disabled={updateEmployeeMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex-1"
               >
-                {updateEmployeeMutation.isPending ? 'Saving...' : 'Save Changes'}
+                {updateEmployeeMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
