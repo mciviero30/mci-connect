@@ -50,26 +50,18 @@ export default function ModernJobCard({ job }) {
       <div className="p-4 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-start gap-2.5 flex-1 min-w-0">
-            <div className={`w-12 h-12 bg-gradient-to-br from-${colorIndicator}-500 to-${colorIndicator}-600 rounded-full flex items-center justify-center flex-shrink-0`}>
-              <span className="text-white font-bold text-lg">
-                {job.name?.[0]?.toUpperCase() || 'J'}
-              </span>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5 line-clamp-2">
-                {job.name}
-              </h3>
-              {job.customer_name && (
-                <div className="flex items-center gap-1 mt-1">
-                  <Users className="w-3 h-3 text-[#666666]" />
-                  <p className="text-[11px] text-[#666666] leading-tight truncate">
-                    {job.customer_name}
-                  </p>
-                </div>
-              )}
-            </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5 line-clamp-2">
+              {job.name}
+            </h3>
+            {job.customer_name && (
+              <div className="flex items-center gap-1 mt-1">
+                <Users className="w-3 h-3 text-[#666666]" />
+                <p className="text-[11px] text-[#666666] leading-tight truncate">
+                  {job.customer_name}
+                </p>
+              </div>
+            )}
           </div>
 
           <Button
