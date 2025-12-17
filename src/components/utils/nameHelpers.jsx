@@ -165,3 +165,20 @@ export const getFirstLastName = (employee) => {
   
   return { first: '', last: '' };
 };
+
+/**
+ * Format position title without abbreviations
+ * CEO -> Chief Executive Officer, etc.
+ */
+export function formatPosition(position) {
+  if (!position) return 'Employee';
+  if (position.toUpperCase() === 'CEO') return 'Chief Executive Officer';
+  if (position.toUpperCase() === 'CFO') return 'Chief Financial Officer';
+  if (position.toUpperCase() === 'CTO') return 'Chief Technology Officer';
+  if (position.toUpperCase() === 'COO') return 'Chief Operating Officer';
+  if (position.toUpperCase() === 'CMO') return 'Chief Marketing Officer';
+  if (position.toUpperCase() === 'HR') return 'Human Resources';
+  return position.split(' ').map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  ).join(' ');
+}
