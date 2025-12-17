@@ -42,7 +42,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer";
-import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
+import { getDisplayName, capitalizeName, formatPosition } from "@/components/utils/nameHelpers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function EmployeeProfile() {
@@ -434,8 +434,8 @@ export default function EmployeeProfile() {
         needsUpdate = true;
       }
 
-      if (employee.position && employee.position !== capitalizeName(employee.position)) {
-        updates.position = capitalizeName(employee.position);
+      if (employee.position && employee.position !== formatPosition(employee.position)) {
+        updates.position = formatPosition(employee.position);
         needsUpdate = true;
       }
 
@@ -539,7 +539,7 @@ export default function EmployeeProfile() {
         first_name: firstName,
         last_name: lastName,
         full_name: fullName,
-        position: data.position ? capitalizeName(data.position) : data.position,
+        position: data.position ? formatPosition(data.position) : data.position,
         department: data.department ? capitalizeName(data.department) : data.department,
         address: data.address ? capitalizeName(data.address) : data.address
       };
@@ -601,14 +601,6 @@ export default function EmployeeProfile() {
       setShowEditDialog(false);
     }
   });
-
-  const formatPosition = (position) => {
-    if (!position) return '';
-    if (position.toUpperCase() === 'CEO') return 'Chief Executive Officer';
-    return position.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
-  };
 
   React.useEffect(() => {
     if (employee) {
@@ -691,7 +683,7 @@ export default function EmployeeProfile() {
     (employee.first_name && employee.first_name !== capitalizeName(employee.first_name)) ||
     (employee.last_name && employee.last_name !== capitalizeName(employee.last_name)) ||
     (employee.full_name !== getDisplayName(employee)) ||
-    (employee.position && employee.position !== capitalizeName(employee.position)) ||
+    (employee.position && employee.position !== formatPosition(employee.position)) ||
     (employee.department && employee.department !== capitalizeName(employee.department)) ||
     (employee.address && employee.address !== capitalizeName(employee.address));
 
@@ -859,7 +851,7 @@ export default function EmployeeProfile() {
                 {employee.position && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <Briefcase className="w-4 h-4 text-gray-500" />
-                    <span>{capitalizeName(employee.position)}</span>
+                    <span>{formatPosition(employee.position)}</span>
                   </div>
                 )}
 

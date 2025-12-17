@@ -7,6 +7,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { formatPosition } from "@/components/utils/nameHelpers";
 
 export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails }) {
   const navigate = useNavigate();
@@ -34,14 +35,6 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
       p.charAt(0).toUpperCase() + p.slice(1)
     ).join(' ');
   })();
-
-  const formatPosition = (position) => {
-    if (!position) return 'Employee';
-    if (position.toUpperCase() === 'CEO') return 'Chief Executive Officer';
-    return position.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
-  };
 
   const teamLocation = employee.team_name 
     ? `Team: ${employee.team_name}`
