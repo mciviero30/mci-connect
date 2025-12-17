@@ -349,7 +349,7 @@ export default function TimeOffRequests() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Time-Off Requests"
@@ -357,39 +357,39 @@ export default function TimeOffRequests() {
           icon={CalendarClock}
         />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg border-0 hover:shadow-xl transition-all">
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">Pending</p>
-                  <p className="text-3xl font-bold text-white">{pending.length}</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">Pending</p>
+                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{pending.length}</p>
                 </div>
-                <Clock className="w-8 h-8 text-white/80" />
+                <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">Approved</p>
-                  <p className="text-3xl font-bold text-white">{approved.length}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Approved</p>
+                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{approved.length}</p>
                 </div>
-                <Check className="w-8 h-8 text-white/80" />
+                <Check className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">Rejected</p>
-                  <p className="text-3xl font-bold text-white">{rejected.length}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Rejected</p>
+                  <p className="text-3xl font-bold text-red-900 dark:text-red-100">{rejected.length}</p>
                 </div>
-                <X className="w-8 h-8 text-white/80" />
+                <X className="w-10 h-10 text-red-600 dark:text-red-400 opacity-50" />
               </div>
             </CardContent>
           </Card>

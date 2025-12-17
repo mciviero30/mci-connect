@@ -180,7 +180,7 @@ export default function TimeTracking() {
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#181818] p-6">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -195,7 +195,7 @@ export default function MileageApproval() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="min-h-screen p-4 md:p-8 bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Aprobación de Millas' : 'Mileage Approval'}
@@ -212,59 +212,51 @@ export default function MileageApproval() {
           }
         />
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg border-0 hover:shadow-xl transition-all">
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
-                  <p className="text-3xl font-bold text-white">{pendingLogs.length}</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{pendingLogs.length}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-2xl">
-                  <Car className="w-6 h-6 text-white" />
-                </div>
+                <Car className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
-                  <p className="text-3xl font-bold text-white">{totalPendingMiles.toFixed(0)} mi</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
+                  <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{totalPendingMiles.toFixed(0)} mi</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-2xl">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
+                <MapPin className="w-10 h-10 text-blue-600 dark:text-blue-400 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
-                  <p className="text-3xl font-bold text-white">${totalPendingAmount.toFixed(2)}</p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-1">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
+                  <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">${totalPendingAmount.toFixed(2)}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-2xl">
-                  <Car className="w-6 h-6 text-white" />
-                </div>
+                <Car className="w-10 h-10 text-orange-600 dark:text-orange-400 opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 shadow-lg border-0 hover:shadow-xl transition-all">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-white/90">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
-                  <p className="text-3xl font-bold text-white">${totalApprovedAmount.toFixed(2)}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">${totalApprovedAmount.toFixed(2)}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-2xl">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
+                <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
               </div>
             </CardContent>
           </Card>

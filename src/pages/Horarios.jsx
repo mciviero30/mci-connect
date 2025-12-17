@@ -28,7 +28,7 @@ export default function Horarios() {
   const totalApprovedHours = approvedEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="min-h-screen p-4 md:p-8 bg-[#FAFAFA] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Revisión de Fichajes' : 'Timesheet Review'}
@@ -38,11 +38,54 @@ export default function Horarios() {
           icon={Clock}
         />
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <StatsCard title={t('pending')} value={pendingEntries.length} icon={Clock} color="from-amber-500 to-amber-600" loading={isLoading} />
-          <StatsCard title={language === 'es' ? 'Horas Pendientes' : 'Pending Hours'} value={`${totalPendingHours.toFixed(1)}h`} icon={Clock} color="from-amber-500 to-amber-600" loading={isLoading} />
-          <StatsCard title={t('approved')} value={approvedEntries.length} icon={Clock} color="from-[#3B9FF3] to-[#2A8FE3]" loading={isLoading} />
-          <StatsCard title={language === 'es' ? 'Horas Aprobadas' : 'Approved Hours'} value={`${totalApprovedHours.toFixed(1)}h`} icon={Clock} color="from-[#3B9FF3] to-[#2A8FE3]" loading={isLoading} />
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">{t('pending')}</p>
+                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{pendingEntries.length}</p>
+                </div>
+                <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-orange-600 dark:text-orange-400 font-medium mb-1">{language === 'es' ? 'Horas Pendientes' : 'Pending Hours'}</p>
+                  <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">{totalPendingHours.toFixed(1)}h</p>
+                </div>
+                <Clock className="w-10 h-10 text-orange-600 dark:text-orange-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">{t('approved')}</p>
+                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{approvedEntries.length}</p>
+                </div>
+                <Clock className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">{language === 'es' ? 'Horas Aprobadas' : 'Approved Hours'}</p>
+                  <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{totalApprovedHours.toFixed(1)}h</p>
+                </div>
+                <Clock className="w-10 h-10 text-emerald-600 dark:text-emerald-400 opacity-50" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <TimeEntryList 
