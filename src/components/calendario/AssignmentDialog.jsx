@@ -35,6 +35,7 @@ export default function AssignmentDialog({
   const [startTime, setStartTime] = useState('07:00');
   const [endTime, setEndTime] = useState('15:00');
   const [notes, setNotes] = useState('');
+  const [customColor, setCustomColor] = useState('');
 
   useEffect(() => {
     if (shift) {
@@ -46,6 +47,7 @@ export default function AssignmentDialog({
       setStartTime(shift.start_time || '07:00');
       setEndTime(shift.end_time || '15:00');
       setNotes(shift.notes || '');
+      setCustomColor(shift.custom_color || '');
     } else if (selectedDate) {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       setSelectedEmployees([]);
@@ -65,6 +67,7 @@ export default function AssignmentDialog({
       setStartTime('07:00');
       setEndTime('15:00');
       setNotes('');
+      setCustomColor('');
     }
   }, [shift, selectedDate, selectedTime]);
 
@@ -107,6 +110,7 @@ export default function AssignmentDialog({
         end_time: endTime,
         notes: notes,
         color: selectedJob?.color || '',
+        custom_color: customColor,
         status: shift.status || 'scheduled'
       };
       
@@ -134,6 +138,7 @@ export default function AssignmentDialog({
           end_time: endTime,
           notes: notes,
           color: selectedJob?.color || '',
+          custom_color: customColor,
           status: 'scheduled'
         });
       } else {
@@ -151,6 +156,7 @@ export default function AssignmentDialog({
             end_time: endTime,
             notes: notes,
             color: selectedJob?.color || '',
+            custom_color: customColor,
             status: 'scheduled'
           });
         }
@@ -401,6 +407,29 @@ export default function AssignmentDialog({
               placeholder="Additional information..."
               className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-24"
             />
+          </div>
+
+          {/* Custom Color Picker */}
+          <div>
+            <Label className="text-slate-900 dark:text-white mb-2 block">Custom Shift Color (Optional)</Label>
+            <div className="flex flex-wrap gap-2">
+              {['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'slate'].map(color => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setCustomColor(color === customColor ? '' : color)}
+                  className={`w-8 h-8 rounded-full bg-${color}-500 hover:scale-110 transition-transform ${customColor === color ? 'ring-4 ring-offset-2 ring-blue-400' : 'ring-2 ring-slate-300'}`}
+                  title={color}
+                />
+              ))}
+            </div>
+            {customColor && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                Selected: <span className="font-semibold capitalize">{customColor}</span>
+                {' • '}
+                <button type="button" onClick={() => setCustomColor('')} className="text-blue-600 hover:underline">Clear</button>
+              </p>
+            )}
           </div>
 
           {/* Delete Options Modal */}

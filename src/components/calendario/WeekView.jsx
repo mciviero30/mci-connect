@@ -21,6 +21,8 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
   });
 
   const getShiftColor = (shift) => {
+    // Priority: custom_color > time_off > appointment > job color > default
+    if (shift.custom_color) return shift.custom_color;
     if (shift.shift_type === 'time_off') return 'orange';
     if (shift.shift_type === 'appointment' && !shift.job_id) return 'blue';
     if (!shift.job_id) return 'slate';
