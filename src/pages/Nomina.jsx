@@ -282,7 +282,7 @@ export default function Nomina() {
                 <Download className="w-4 h-4 mr-2" />
                 {t('export')}
               </Button>
-              <Button onClick={handlePrint} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE2] text-white shadow-lg shadow-blue-500/30">
+              <Button onClick={handlePrint} className="soft-blue-gradient shadow-lg">
                 <Download className="w-4 h-4 mr-2" />
                 {t('printPayroll')}
               </Button>
@@ -300,66 +300,66 @@ export default function Nomina() {
 
 
         <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+          <Card className="soft-blue-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{t('totalWorkPay')}</p>
-                <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-400 opacity-50" />
+                <p className="text-sm font-medium">{t('totalWorkPay')}</p>
+                <Briefcase className="w-10 h-10 opacity-50" />
               </div>
-              <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">{totals.normalHours.toFixed(1)}h + {totals.overtimeHours.toFixed(1)}h OT</p>
+              <p className="text-3xl font-bold">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs mt-1 opacity-70">{totals.normalHours.toFixed(1)}h + {totals.overtimeHours.toFixed(1)}h OT</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+          <Card className="soft-green-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm text-green-600 dark:text-green-400 font-medium">{t('totalDrivingPay')}</p>
-                <Car className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
+                <p className="text-sm font-medium">{t('totalDrivingPay')}</p>
+                <Car className="w-10 h-10 opacity-50" />
               </div>
-              <p className="text-3xl font-bold text-green-900 dark:text-green-100">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs text-green-700 dark:text-green-300 mt-1">{totals.drivingHours.toFixed(1)}h driving</p>
+              <p className="text-3xl font-bold">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs mt-1 opacity-70">{totals.drivingHours.toFixed(1)}h driving</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+          <Card className="soft-amber-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">{t('perDiem')}</p>
-                <DollarSign className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
+                <p className="text-sm font-medium">{t('perDiem')}</p>
+                <DollarSign className="w-10 h-10 opacity-50" />
               </div>
-              <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-bold">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+          <Card className="soft-purple-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{t('totalReimbursements')}</p>
-                <Download className="w-10 h-10 text-purple-600 dark:text-purple-400 opacity-50" />
+                <p className="text-sm font-medium">{t('totalReimbursements')}</p>
+                <Download className="w-10 h-10 opacity-50" />
               </div>
-              <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-bold">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
+          <Card className="soft-pink-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm text-red-600 dark:text-red-400 font-medium">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
-                <Gift className="w-10 h-10 text-red-600 dark:text-red-400 opacity-50" />
+                <p className="text-sm font-medium">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
+                <Gift className="w-10 h-10 opacity-50" />
               </div>
-              <p className="text-3xl font-bold text-red-900 dark:text-red-100">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs text-red-700 dark:text-red-300 mt-1">{language === 'es' ? 'Trabajos completados' : 'Completed jobs'}</p>
+              <p className="text-3xl font-bold">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs mt-1 opacity-70">{language === 'es' ? 'Trabajos completados' : 'Completed jobs'}</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
+          <Card className="soft-cyan-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{t('totalPayroll')}</p>
-                <Banknote className="w-10 h-10 text-indigo-600 dark:text-indigo-400 opacity-50" />
+                <p className="text-sm font-medium">{t('totalPayroll')}</p>
+                <Banknote className="w-10 h-10 opacity-50" />
               </div>
-              <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-bold">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
         </div>
@@ -410,19 +410,19 @@ export default function Nomina() {
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{employee.position || t('employee')} • ${hourlyRate}/hr (OT: ${overtimeRate}/hr)</p>
                         <div className="flex gap-3 mt-3 flex-wrap">
-                          <Badge className="bg-blue-100 border-blue-300 text-blue-800">
+                          <Badge className="badge-soft-blue">
                             {normalHours.toFixed(1)}h {language === 'es' ? 'normal' : 'normal'}
                           </Badge>
                           {overtimeHours > 0 && (
-                            <Badge className="bg-amber-100 border-amber-300 text-amber-800">
+                            <Badge className="badge-soft-amber">
                               {overtimeHours.toFixed(1)}h OT
                             </Badge>
                           )}
-                          <Badge className="bg-green-100 border-green-300 text-green-800">
+                          <Badge className="badge-soft-green">
                             {drivingHours.toFixed(1)}h {language === 'es' ? 'manejo' : 'driving'}
                           </Badge>
                           {perDiemAmount > 0 && (
-                            <Badge className="bg-purple-100 border-purple-300 text-purple-800">
+                            <Badge className="badge-soft-purple">
                               ${perDiemAmount.toFixed(2)} Per Diem ({workDaysCount}d)
                             </Badge>
                           )}
@@ -464,7 +464,7 @@ export default function Nomina() {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => setSelectedEmployee(employee)}
-                          className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30"
+                          className="soft-blue-gradient shadow-lg"
                         >
                           <Edit className="w-4 h-4 mr-2" />
                           {t('viewDetails')}
@@ -476,7 +476,7 @@ export default function Nomina() {
                           }}
                           variant="outline"
                           size="sm"
-                          className="border-green-300 text-green-700 hover:bg-green-50"
+                          className="soft-green-bg"
                         >
                           <FileText className="w-4 h-4 mr-2" />
                           Paystub

@@ -228,7 +228,7 @@ export default function TimeTracking() {
                 size="lg"
                 onClick={() => clockInMutation.mutate()}
                 disabled={clockInMutation.isPending}
-                className="w-full h-16 text-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-700 text-green-900 dark:text-green-100 hover:from-green-100 hover:to-green-200 dark:hover:from-green-900/30 dark:hover:to-green-800/30"
+                className="w-full h-16 text-lg soft-green-gradient shadow-lg"
               >
                 <Play className="w-6 h-6 mr-2" />
                 {language === 'es' ? 'Registrar Entrada' : 'Clock In'}
@@ -261,7 +261,7 @@ export default function TimeTracking() {
                       <Button
                         onClick={() => clockOutMutation.mutate()}
                         disabled={clockOutMutation.isPending}
-                        className="flex-1 bg-red-600 hover:bg-red-700"
+                        className="flex-1 soft-red-gradient"
                       >
                         <Square className="w-4 h-4 mr-2" />
                         {language === 'es' ? 'Registrar Salida' : 'Clock Out'}
@@ -271,7 +271,7 @@ export default function TimeTracking() {
                     <Button
                       onClick={() => endBreakMutation.mutate()}
                       disabled={endBreakMutation.isPending}
-                      className="w-full bg-orange-600 hover:bg-orange-700"
+                      className="w-full soft-amber-gradient"
                     >
                       <Coffee className="w-4 h-4 mr-2" />
                       {language === 'es' ? 'Terminar Pausa' : 'End Break'}

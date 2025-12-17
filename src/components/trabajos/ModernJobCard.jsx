@@ -30,10 +30,10 @@ export default function ModernJobCard({ job }) {
   };
 
   const statusColors = {
-    active: "bg-gradient-to-r from-green-50 to-green-100 text-green-900 border-2 border-green-200",
-    completed: "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-900 border-2 border-blue-200",
-    archived: "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-900 border-2 border-slate-200",
-    on_hold: "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-900 border-2 border-amber-200"
+    active: "soft-green-gradient",
+    completed: "soft-blue-gradient",
+    archived: "soft-slate-gradient",
+    on_hold: "soft-amber-gradient"
   };
 
   const statusLabels = {
