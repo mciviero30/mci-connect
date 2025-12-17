@@ -37,11 +37,11 @@ export default function StatsCard({
               )}
             </div>
             {Icon && (
-              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
                 <Icon className="w-6 h-6 text-white" />
               </div>
             )}
-          </div>
+            </div>
           {trend && (
             <div className="flex items-center gap-1 mt-3">
               {trend > 0 ? (
@@ -113,7 +113,7 @@ export default function StatsCard({
             )}
           </div>
           {Icon && (
-            <div className={`${theme.icon} backdrop-blur-sm p-3 rounded-xl`}>
+            <div className={`${theme.icon} backdrop-blur-sm p-3 rounded-2xl`}>
               <Icon className={`w-6 h-6 ${theme.iconColor}`} />
             </div>
           )}
