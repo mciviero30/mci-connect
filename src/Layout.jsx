@@ -367,6 +367,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'RESOURCES',
       items: [
+        { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
@@ -482,6 +483,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     {
       section: 'RESOURCES',
       items: [
+        { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },

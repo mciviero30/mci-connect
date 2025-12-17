@@ -75,6 +75,7 @@ import CustomerDetails from './pages/CustomerDetails';
 import WelcomeMessage from './pages/WelcomeMessage';
 import SetupPassword from './pages/SetupPassword';
 import OnboardingWizard from './pages/OnboardingWizard';
+import ComplianceHub from './pages/ComplianceHub';
 import __Layout from './Layout.jsx';
 
 
@@ -156,6 +157,7 @@ export const PAGES = {
     "WelcomeMessage": WelcomeMessage,
     "SetupPassword": SetupPassword,
     "OnboardingWizard": OnboardingWizard,
+    "ComplianceHub": ComplianceHub,
 }
 
 export const pagesConfig = {
