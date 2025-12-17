@@ -290,32 +290,29 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   const adminNavigation = [
     {
-      section: 'EXECUTIVE',
+      section: 'STRATEGY',
+      icon: Target,
       items: [
         { title: 'Control Tower', url: createPageUrl("ExecutiveControlTower"), icon: Shield },
-      ]
-    },
-    {
-      section: 'GENERAL',
-      items: [
+        { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
+        { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
-        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
-        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
-        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
-        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
       ]
     },
     {
-        section: 'JOBS & PROJECTS',
-        items: [
-          { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
-                          { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
-          { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
-          { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
-        ]
-      },
+      section: 'OPERATIONS',
+      icon: Briefcase,
+      items: [
+        { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+        { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
+        { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
+        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+        { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+      ]
+    },
     {
       section: 'FINANCE',
+      icon: DollarSign,
       items: [
         { title: 'Accounting', url: createPageUrl("Contabilidad"), icon: DollarSign },
         { title: 'Customers', url: createPageUrl("Clientes"), icon: Users },
@@ -323,76 +320,48 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck },
         { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt },
         { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
+        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
       ]
     },
     {
-                section: 'PEOPLE',
-                items: [
-                  { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
-                  { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
-                  { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award },
-                  { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
-                  { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target },
-                                { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users },
-                  { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
-                ]
-              },
+      section: 'WORKFORCE',
+      icon: Users,
+      items: [
+        { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
+        { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
+        { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+        { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award },
+        { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target },
+        { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users },
+        { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
+        { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
+      ]
+    },
     {
       section: 'TIME & PAYROLL',
+      icon: Clock,
       items: [
         { title: 'Time Tracking', url: createPageUrl("TimeTracking"), icon: Clock },
-                      { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3 },
         { title: 'Approvals', url: createPageUrl("Horarios"), icon: Clock },
-        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
         { title: 'Mileage', url: createPageUrl("MileageApproval"), icon: Car },
+        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
         { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote },
+        { title: 'Payroll Auto-Flow', url: createPageUrl('PayrollAutoFlow'), icon: Zap },
+        { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3 },
       ]
     },
     {
-      section: 'DASHBOARDS & INSIGHTS',
-      items: [
-        { title: 'Financial Dashboard', url: createPageUrl('FinancialDashboard'), icon: DollarSign },
-                      { title: 'Payroll Auto-Flow', url: createPageUrl('PayrollAutoFlow'), icon: Zap },
-                      { title: 'Analytics Dashboard', url: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
-                      { title: 'Jobs Advanced', url: createPageUrl('JobsAdvanced'), icon: Target },
-                      { title: 'HR Advanced', url: createPageUrl('HRAdvancedDashboard'), icon: Shield },
-                      { title: 'AI Automation', url: createPageUrl('AIAutomationDashboard'), icon: Brain },
-      ]
-    },
-    {
-      section: 'REPORTS & AI',
-      items: [
-        { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
-        { title: 'Reports', url: createPageUrl("Reportes"), icon: BarChart3 },
-        { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
-        { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
-                      { title: 'AI Invoice Gen', url: createPageUrl("AIInvoiceGenerator"), icon: Sparkles },
-                      { title: 'AI Documents', url: createPageUrl("DocumentosAI"), icon: Sparkles },
-                      { title: 'AI Expenses', url: createPageUrl('AIExpensesAudit'), icon: Sparkles },
-      ]
-    },
-    {
-      section: 'RESOURCES',
+      section: 'COMPLIANCE',
+      icon: Shield,
       items: [
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
-      ]
-    },
-    {
-      section: 'COMPLIANCE & SAFETY',
-      items: [
-        { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
-      ]
-    },
-    {
-      section: 'ADMIN',
-      items: [
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
-        { title: 'Clean Data', url: createPageUrl("AdminCleanup"), icon: Trash2 },
-        { title: 'Testing', url: createPageUrl("TestingChecklist"), icon: ClipboardList },
       ]
     }
   ];
@@ -682,8 +651,9 @@ const LayoutContent = ({ children, currentPageName }) => {
             data-scrollable="true"
           >
             {navigation.map((section, idx) => (
-              <SidebarGroup key={idx} className="mb-4">
-                <SidebarGroupLabel className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider px-3 py-2 mb-1">
+              <SidebarGroup key={idx} className="mb-6">
+                <SidebarGroupLabel className="text-[11px] font-extrabold soft-blue-gradient rounded-xl px-3 py-2.5 mb-2 flex items-center gap-2 shadow-sm">
+                  {section.icon && <section.icon className="w-4 h-4" />}
                   {section.section}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -696,15 +666,15 @@ const LayoutContent = ({ children, currentPageName }) => {
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton
                             asChild
-                            className={`transition-all duration-300 rounded-xl mb-0.5 border-none ${
+                            className={`transition-all duration-300 rounded-xl mb-1 border-none ${
                               isActive
-                                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                                ? 'soft-blue-gradient shadow-sm'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
-                            <Link to={item.url} className="flex items-center gap-3 px-3 py-2 relative group">
+                            <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
                               <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${
-                                isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'
+                                isActive ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400'
                               }`} />
                               <span className="font-medium text-sm">
                                 {item.title}
@@ -718,7 +688,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                                 <span className="text-xs">{item.badge}</span>
                               )}
                               {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 dark:bg-blue-400 rounded-r-full shadow-sm" />
                               )}
                             </Link>
                           </SidebarMenuButton>
