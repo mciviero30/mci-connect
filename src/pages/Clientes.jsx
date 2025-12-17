@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
+import ModernCustomerCard from "@/components/clientes/ModernCustomerCard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -176,87 +177,14 @@ export default function Clientes() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedCustomers.map(customer => {
-            const displayName = getCustomerDisplayName(customer);
-            
-            return (
-              <Card key={customer.id} className="bg-slate-50 dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all duration-300 border-slate-200 dark:border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      {/* CRITICAL: Line 1 - Contact Full Name (FIXED) */}
-                      <h3 className="font-bold text-xl text-slate-900 dark:text-white mb-1 break-words">
-                        {displayName}
-                        {customer.title && (
-                          <span className="text-sm font-normal text-slate-600 dark:text-slate-400 ml-2">
-                            ({customer.title})
-                          </span>
-                        )}
-                      </h3>
-                      
-                      {/* CRITICAL: Line 2 - Company Name (SEPARATE FROM NAME) */}
-                      {customer.company && (
-                        <div className="flex items-center gap-2 text-sm text-[#3B9FF3] dark:text-blue-400 mt-1">
-                          <Building2 className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate">{customer.company}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {isAdmin && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 flex-shrink-0">
-                            <MoreVertical className="w-5 h-5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                          <DropdownMenuItem onClick={() => window.location.href = createPageUrl('CustomerDetails') + `?id=${customer.id}`} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                            <Eye className="w-4 h-4 mr-2" />
-                            {t('viewDetails')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEdit(customer)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                            <Edit className="w-4 h-4 mr-2" />
-                            {t('edit')}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(customer)} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            {t('delete')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    {customer.email && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <Mail className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
-                        <span className="truncate">{customer.email}</span>
-                      </div>
-                    )}
-                    {customer.phone && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <Phone className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
-                        <span>{customer.phone}</span>
-                      </div>
-                    )}
-                    {customer.address && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0" />
-                        <span className="truncate">
-                          {customer.address}
-                          {customer.city && `, ${customer.city}`}
-                          {customer.state && `, ${customer.state}`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedCustomers.map(customer => (
+            <ModernCustomerCard
+              key={customer.id}
+              customer={customer}
+              onViewDetails={isAdmin ? handleEdit : () => {}}
+            />
+          ))}
         </div>
 
         {sortedCustomers.length === 0 && !isLoading && (

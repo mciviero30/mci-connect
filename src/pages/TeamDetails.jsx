@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 
 export default function TeamDetails() {
   const navigate = useNavigate();
@@ -90,40 +91,14 @@ export default function TeamDetails() {
             </CardHeader>
             <CardContent className="p-6">
               {teamEmployees.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {teamEmployees.map(emp => (
-                    <Link key={emp.id} to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
-                      <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all border border-slate-200 hover:border-blue-300">
-                        {emp.profile_photo_url ? (
-                          <img src={emp.profile_photo_url} alt={emp.full_name} className="w-14 h-14 rounded-full object-cover border-2 border-blue-500/30" />
-                        ) : (
-                          <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {emp.full_name?.[0]?.toUpperCase()}
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <h3 className="font-bold text-slate-900">{emp.full_name}</h3>
-                          <p className="text-sm text-blue-600">{emp.position || 'No position'}</p>
-                          {emp.email && (
-                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                              <Mail className="w-3 h-3" />
-                              <span>{emp.email}</span>
-                            </div>
-                          )}
-                          {emp.phone && (
-                            <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
-                              <Phone className="w-3 h-3" />
-                              <span>{emp.phone}</span>
-                            </div>
-                          )}
-                        </div>
-                        {emp.department && (
-                          <Badge variant="outline" className="border-blue-200 text-blue-700">
-                            {emp.department}
-                          </Badge>
-                        )}
-                      </div>
-                    </Link>
+                    <ModernEmployeeCard
+                      key={emp.id}
+                      employee={emp}
+                      onboardingProgress={{ percentage: 100, completed: 0, total: 0 }}
+                      onViewDetails={() => navigate(createPageUrl(`EmployeeProfile?id=${emp.id}`))}
+                    />
                   ))}
                 </div>
               ) : (

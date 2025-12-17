@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ModernTeamCard from "@/components/teams/ModernTeamCard";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -210,131 +211,17 @@ export default function Teams() {
           }
         />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {teams.map(team => {
             const stats = getTeamStats(team.id, team.team_name);
-            const maxHeadcount = team.maximum_headcount || 10;
-            const isAtCapacity = stats.employees >= maxHeadcount;
-            const capacityPercentage = (stats.employees / maxHeadcount) * 100;
-
+            
             return (
-              <Card key={team.id} className="bg-white dark:bg-[#282828] shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200 dark:border-slate-700">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <Link to={createPageUrl(`TeamDetails?id=${team.id}`)} className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Building2 className="w-6 h-6 text-[#3B9FF3] dark:text-blue-400" />
-                        <CardTitle className="text-xl text-slate-900 dark:text-white">{team.team_name}</CardTitle>
-                        {team.is_headquarters && (
-                          <Badge className="bg-amber-100 border-amber-300 text-amber-700">HQ</Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <MapPin className="w-4 h-4" />
-                        <span>{team.location}, {team.state}</span>
-                      </div>
-                    </Link>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                          <MoreVertical className="w-5 h-5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                        <DropdownMenuItem onClick={() => handleEdit(team)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit Team
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDelete(team)} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete Team
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  <Link to={createPageUrl(`TeamDetails?id=${team.id}`)}>
-                    <Badge className={
-                      team.status === 'active'
-                        ? 'bg-green-100 border-green-300 text-green-700 mb-4'
-                        : 'bg-slate-200 border-slate-300 text-slate-600 mb-4'
-                    }>
-                      {team.status}
-                    </Badge>
-
-                    {team.description && (
-                      <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{team.description}</p>
-                    )}
-
-                    {/* INTERACTIVE CAPACITY INDICATOR */}
-                    <div 
-                      className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleQuickCapacityEdit(team, stats.employees);
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">Team Capacity</span>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-sm font-bold ${
-                            isAtCapacity ? 'text-red-600 dark:text-red-400' :
-                            capacityPercentage > 80 ? 'text-amber-600 dark:text-amber-400' :
-                            'text-green-600 dark:text-green-400'
-                          }`}>
-                            {stats.employees}/{maxHeadcount}
-                          </span>
-                          <Edit className="w-3 h-3 text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                        </div>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
-                        <div
-                          className={`h-2.5 rounded-full transition-all duration-300 ${
-                            isAtCapacity ? 'bg-red-500' :
-                            capacityPercentage > 80 ? 'bg-amber-500' :
-                            'bg-green-500'
-                          }`}
-                          style={{ width: `${Math.min(100, capacityPercentage)}%` }}
-                        />
-                      </div>
-                      {isAtCapacity && (
-                        <p className="text-xs text-red-600 mt-2 flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" />
-                          <span>Team at full capacity</span>
-                        </p>
-                      )}
-                      {capacityPercentage > 80 && !isAtCapacity && (
-                        <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" />
-                          <span>Nearing capacity</span>
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white dark:bg-[#1e1e1e] rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Users className="w-4 h-4 text-[#3B9FF3] dark:text-blue-400" />
-                          <span className="text-xs text-slate-600 dark:text-slate-400">Employees</span>
-                        </div>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.employees}</p>
-                      </div>
-
-                      <div className="bg-white dark:bg-[#1e1e1e] rounded-lg p-3 border border-slate-200 dark:border-slate-700">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Briefcase className="w-4 h-4 text-[#3B9FF3] dark:text-blue-400" />
-                          <span className="text-xs text-slate-600 dark:text-slate-400">Active Jobs</span>
-                        </div>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.jobs}</p>
-                      </div>
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
+              <ModernTeamCard
+                key={team.id}
+                team={team}
+                stats={stats}
+                onViewDetails={handleEdit}
+              />
             );
           })}
         </div>
