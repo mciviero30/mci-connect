@@ -375,6 +375,12 @@ const LayoutContent = ({ children, currentPageName }) => {
       ]
     },
     {
+      section: 'COMPLIANCE & SAFETY',
+      items: [
+        { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
+      ]
+    },
+    {
       section: 'ADMIN',
       items: [
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },

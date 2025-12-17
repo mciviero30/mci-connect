@@ -13,10 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const CERT_TYPES = [
   { value: 'OSHA 10', label: 'OSHA 10', color: 'bg-orange-500' },
   { value: 'OSHA 30', label: 'OSHA 30', color: 'bg-red-500' },
-  { value: 'Forklift', label: 'Forklift Certification', color: 'bg-blue-500' },
+  { value: 'Forklift', label: 'Forklift', color: 'bg-blue-500' },
   { value: 'Fall Protection', label: 'Fall Protection', color: 'bg-purple-500' },
   { value: 'CPR', label: 'CPR / First Aid', color: 'bg-green-500' },
-  { value: 'Drug Test', label: 'Drug Test Certificate', color: 'bg-pink-500' }
+  { value: 'Drug Test', label: 'Drug Test', color: 'bg-pink-500' }
 ];
 
 export default function WorkforceVaultTab({ isAdmin, user }) {

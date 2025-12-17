@@ -44,6 +44,7 @@ import { Label } from "@/components/ui/label";
 import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer";
 import { getDisplayName, capitalizeName, formatPosition } from "@/components/utils/nameHelpers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import EmployeeQRCode from "@/components/compliance/EmployeeQRCode";
 
 export default function EmployeeProfile() {
   const navigate = useNavigate();
@@ -898,7 +899,9 @@ export default function EmployeeProfile() {
             </CardContent>
           </Card>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            <EmployeeQRCode employee={employee} />
+            
             <AIPerformanceAnalyzer
               employee={employee}
               timeEntries={timeEntries}
