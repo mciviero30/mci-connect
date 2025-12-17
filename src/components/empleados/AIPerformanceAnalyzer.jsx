@@ -520,7 +520,7 @@ Response in JSON format.`;
                   <Sparkles className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Re-analizar' : 'Re-analyze'}
                 </Button>
-              </div>
+              </motion.div>
             ) : null}
           </CardContent>
         )}
