@@ -25,8 +25,8 @@ export default function ModernCustomerCard({ customer, onViewDetails }) {
   const companyName = customer.company || 'No Company';
 
   return (
-    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full">
-      <div className="p-4">
+    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-2.5">
@@ -81,7 +81,7 @@ export default function ModernCustomerCard({ customer, onViewDetails }) {
         </div>
 
         {/* Contact Info */}
-        <div className="space-y-1.5 mb-0">
+        <div className="space-y-1.5 mb-0 mt-auto">
           {customer.email && (
             <div className="flex items-center gap-1.5 text-[#666666]">
               <Mail className="w-[13px] h-[13px] text-slate-400 flex-shrink-0" strokeWidth={1.5} />

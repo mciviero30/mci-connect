@@ -50,8 +50,8 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
   const progressPercentage = onboardingProgress?.percentage || 0;
 
   return (
-    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full">
-      <div className="p-4">
+    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-2.5">
@@ -130,7 +130,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         </div>
 
         {/* Contact Info */}
-        <div className="space-y-1.5 mb-0">
+        <div className="space-y-1.5 mb-0 mt-auto">
           {employee.email && (
             <div className="flex items-center gap-1.5 text-[#666666]">
               <Mail className="w-[13px] h-[13px] text-slate-400 flex-shrink-0" strokeWidth={1.5} />
@@ -146,18 +146,8 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         </div>
       </div>
 
-      {/* Add New Button - Full Width at Bottom */}
-      <div 
-        className="bg-gradient-to-r from-[#1E6FE8] to-[#0052CC] h-[40px] cursor-pointer hover:from-[#1557C0] hover:to-[#003d99] transition-all flex items-center justify-center" 
-        onClick={() => onViewDetails(employee)}
-      >
-        <div className="flex items-center justify-center gap-1.5">
-          <span className="text-white font-bold text-[12px]">Add New</span>
-          <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center flex-shrink-0">
-            <Plus className="w-3 h-3 text-[#1E6FE8]" />
-          </div>
-        </div>
-      </div>
+      {/* Gradient Line at Bottom */}
+      <div className="h-[3px] bg-gradient-to-r from-[#1E6FE8] to-[#0052CC]" />
     </Card>
   );
 }
