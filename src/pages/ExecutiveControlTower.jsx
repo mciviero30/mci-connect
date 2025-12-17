@@ -148,47 +148,55 @@ export default function ExecutiveControlTower() {
 
         {/* Top Row - Key Metrics */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-[#1E6FE8] to-[#0052CC] text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-700 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <Users className="w-8 h-8 opacity-80" />
-                <span className="text-3xl font-bold">{activeTimeEntries.length}</span>
+                <div className="p-3 bg-blue-600 dark:bg-blue-500 rounded-2xl shadow-lg">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-3xl font-bold text-blue-900 dark:text-blue-100">{activeTimeEntries.length}</span>
               </div>
-              <p className="text-sm opacity-90">Active Workers</p>
-              <p className="text-xs opacity-70 mt-1">Clocked in now</p>
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100 opacity-80">Active Workers</p>
+              <p className="text-xs text-blue-900 dark:text-blue-100 opacity-70 mt-1">Clocked in now</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-[#00C48C] to-[#00A875] text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-700 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <Shield className="w-8 h-8 opacity-80" />
-                <span className="text-3xl font-bold">{overallCompliance}%</span>
+                <div className="p-3 bg-green-600 dark:bg-green-500 rounded-2xl shadow-lg">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-3xl font-bold text-green-900 dark:text-green-100">{overallCompliance}%</span>
               </div>
-              <p className="text-sm opacity-90">Compliance Rate</p>
-              <p className="text-xs opacity-70 mt-1">Onboarding + Certs</p>
+              <p className="text-sm font-medium text-green-900 dark:text-green-100 opacity-80">Compliance Rate</p>
+              <p className="text-xs text-green-900 dark:text-green-100 opacity-70 mt-1">Onboarding + Certs</p>
             </CardContent>
           </Card>
 
-          <Card className={`bg-gradient-to-br ${monthBalance >= 0 ? 'from-[#00C48C] to-[#00A875]' : 'from-[#EF4444] to-[#DC2626]'} text-white border-0 shadow-xl`}>
+          <Card className={`bg-gradient-to-br ${monthBalance >= 0 ? 'from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-700' : 'from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-2 border-red-200 dark:border-red-700'} shadow-lg`}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <DollarSign className="w-8 h-8 opacity-80" />
-                <span className="text-3xl font-bold">${(monthBalance / 1000).toFixed(1)}k</span>
+                <div className={`p-3 ${monthBalance >= 0 ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500'} rounded-2xl shadow-lg`}>
+                  <DollarSign className="w-6 h-6 text-white" />
+                </div>
+                <span className={`text-3xl font-bold ${monthBalance >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'}`}>${(monthBalance / 1000).toFixed(1)}k</span>
               </div>
-              <p className="text-sm opacity-90">Monthly Balance</p>
-              <p className="text-xs opacity-70 mt-1">Income - Expenses</p>
+              <p className={`text-sm font-medium ${monthBalance >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'} opacity-80`}>Monthly Balance</p>
+              <p className={`text-xs ${monthBalance >= 0 ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'} opacity-70 mt-1`}>Income - Expenses</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-[#EF4444] to-[#DC2626] text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-2 border-red-200 dark:border-red-700 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <Bell className="w-8 h-8 opacity-80" />
-                <span className="text-3xl font-bold">{needsAttention.length}</span>
+                <div className="p-3 bg-red-600 dark:bg-red-500 rounded-2xl shadow-lg">
+                  <Bell className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-3xl font-bold text-red-900 dark:text-red-100">{needsAttention.length}</span>
               </div>
-              <p className="text-sm opacity-90">Needs Attention</p>
-              <p className="text-xs opacity-70 mt-1">Action items</p>
+              <p className="text-sm font-medium text-red-900 dark:text-red-100 opacity-80">Needs Attention</p>
+              <p className="text-xs text-red-900 dark:text-red-100 opacity-70 mt-1">Action items</p>
             </CardContent>
           </Card>
         </div>
