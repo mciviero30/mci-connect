@@ -508,13 +508,13 @@ export default function Chat() {
   ];
 
   return (
-    <div className="p-0 min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-[#0a0a0a] dark:via-[#111] dark:to-[#0a0a0a]">
+    <div className="p-0 md:p-4 min-h-screen bg-slate-50 dark:bg-[#0a0a0a]">
       <OnlineStatusManager userEmail={user?.email} />
-      <div className="max-w-[1800px] mx-auto h-screen flex flex-col">
+      <div className="max-w-[1600px] mx-auto h-screen md:h-[calc(100vh-2rem)] flex flex-col">
         {/* Header - mobile/tablet */}
-        <div className="md:hidden px-4 py-3 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 flex items-center justify-between sticky top-0 z-10">
+        <div className="md:hidden px-4 py-3 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -542,24 +542,19 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Container */}
-        <div className="flex-1 flex overflow-hidden bg-white dark:bg-[#0f0f0f] m-0 md:m-4 md:rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-800/50">
+        <div className="flex-1 flex overflow-hidden bg-white dark:bg-[#0a0a0a] md:rounded-2xl md:shadow-2xl md:border md:border-slate-200 dark:md:border-slate-800">
           {/* Sidebar */}
-          <div className="hidden md:flex md:w-80 lg:w-96 flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#151515] border-r border-slate-200/80 dark:border-slate-800/50">
+          <div className="hidden md:flex md:w-80 lg:w-96 flex-col bg-white dark:bg-[#1a1a1a] border-r border-slate-200 dark:border-slate-800">
             {/* Sidebar Header */}
-            <div className="px-5 py-5 border-b border-slate-200/80 dark:border-slate-800/50">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Messages</h2>
-                </div>
-                <div className="flex gap-1.5">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Messages</h2>
+                <div className="flex gap-1">
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => setShowCreateGroup(true)}
-                    className="h-9 w-9 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                    className="h-9 w-9 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     title="Create group chat"
                   >
                     <Users className="w-4 h-4" />
@@ -568,7 +563,7 @@ export default function Chat() {
                     size="icon"
                     variant="ghost"
                     onClick={() => setShowNewDM(true)}
-                    className="h-9 w-9 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                    className="h-9 w-9 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     title="Start direct message"
                   >
                     <UserPlus className="w-4 h-4" />
@@ -578,25 +573,25 @@ export default function Chat() {
             </div>
 
             {/* Sidebar Content */}
-            <div className="flex-1 overflow-y-auto px-4 py-3">
+            <div className="flex-1 overflow-y-auto px-3 py-2">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full h-11 bg-slate-100/80 dark:bg-slate-900/50 mb-4 grid grid-cols-3 p-1.5 rounded-2xl shadow-inner">
-                  <TabsTrigger value="channels" className="text-xs font-semibold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/10 text-slate-600 dark:text-slate-400 transition-all">
+                <TabsList className="w-full h-10 bg-slate-100 dark:bg-slate-900 mb-3 grid grid-cols-3 p-1 rounded-xl">
+                  <TabsTrigger value="channels" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <Hash className="w-3.5 h-3.5 mr-1.5" />
                     Channels
                   </TabsTrigger>
-                  <TabsTrigger value="groups" className="text-xs font-semibold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/10 text-slate-600 dark:text-slate-400 transition-all">
+                  <TabsTrigger value="groups" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <Users className="w-3.5 h-3.5 mr-1.5" />
                     Groups
                   </TabsTrigger>
-                  <TabsTrigger value="direct" className="text-xs font-semibold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/10 text-slate-600 dark:text-slate-400 transition-all">
+                  <TabsTrigger value="direct" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <AtSign className="w-3.5 h-3.5 mr-1.5" />
                     Direct
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="channels" className="mt-0">
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {groups.map(group => {
                       const Icon = group.icon;
                       const isActive = chatMode === 'channels' && selectedGroup === group.id;
@@ -608,25 +603,22 @@ export default function Chat() {
                             setSelectedDMConv(null);
                             setSelectedCustomGroup(null);
                           }}
-                          className={`w-full px-3 py-3 rounded-2xl text-left flex items-center gap-3 transition-all duration-200 group relative overflow-hidden ${
+                          className={`w-full px-3 py-3 rounded-xl text-left flex items-center gap-3 transition-all group ${
                             isActive
-                              ? 'bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/20 shadow-md'
-                              : 'hover:bg-slate-50/80 dark:hover:bg-slate-900/30 hover:shadow-sm'
+                              ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400'
+                              : 'hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300'
                           }`}
                         >
-                          {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-blue-600 rounded-r-full" />}
-                          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                             isActive 
-                              ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/40 scale-105' 
-                              : 'bg-slate-100/80 dark:bg-slate-800/50 group-hover:bg-slate-200 dark:group-hover:bg-slate-700/50 group-hover:scale-105'
+                              ? 'bg-blue-500 shadow-lg shadow-blue-500/30' 
+                              : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
                           }`}>
                             <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>{group.name}</p>
-                            <p className={`text-xs truncate ${isActive ? 'text-blue-500/70 dark:text-blue-400/70' : 'text-slate-500 dark:text-slate-400'}`}>
-                              {isActive ? 'Active now' : 'Channel'}
-                            </p>
+                            <p className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>{group.name}</p>
+                            {isActive && <p className="text-xs text-blue-500 dark:text-blue-500">Active</p>}
                           </div>
                           <ChatUnreadBadge userEmail={user?.email} groupId={group.id} />
                         </button>
@@ -698,12 +690,12 @@ export default function Chat() {
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-slate-50/30 dark:from-[#0f0f0f] dark:to-[#0a0a0a]">
+          <div className="flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
             {/* Chat Header */}
-            <div className="px-6 py-4 border-b border-slate-200/80 dark:border-slate-800/50 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1a1a]">
               <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -714,11 +706,10 @@ export default function Chat() {
                       ? selectedCustomGroup.group_name
                       : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {chatMode === 'groups' && selectedCustomGroup 
                       ? `${selectedCustomGroup.members.length} members`
                       : 'Team channel'}
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                   </p>
                 </div>
               </div>
@@ -729,7 +720,7 @@ export default function Chat() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowJobMembers(true)}
-                    className="h-10 px-4 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/30 transition-all"
+                    className="h-9 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
                   >
                     <UserPlus className="w-4 h-4 mr-1.5" />
                     Invite
@@ -741,7 +732,7 @@ export default function Chat() {
                     placeholder="Search messages..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-72 pl-10 h-10 bg-slate-50/80 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 rounded-xl text-sm placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-sm"
+                    className="w-64 pl-9 h-9 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg text-sm"
                   />
                 </div>
               </div>
@@ -768,7 +759,7 @@ export default function Chat() {
               )}
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-3 bg-gradient-to-b from-slate-50/50 to-white dark:from-[#0a0a0a] dark:to-[#0f0f0f]">
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2 bg-slate-50 dark:bg-[#0a0a0a]">
                 {isLoading && (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
@@ -814,9 +805,9 @@ export default function Chat() {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSend} className="px-6 py-4 border-t border-slate-200/80 dark:border-slate-800/50 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
+              <form onSubmit={handleSend} className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1a1a]">
                   <div className="flex gap-3 items-end">
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1">
                       <input
                         type="file"
                         accept="image/*"
@@ -830,7 +821,7 @@ export default function Chat() {
                         size="icon"
                         onClick={() => document.getElementById('image-upload').click()}
                         disabled={uploadingImage}
-                        className="h-11 w-11 rounded-2xl bg-slate-100/80 dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-blue-950/30 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm hover:shadow-md"
+                        className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                         title="Upload image"
                       >
                         <Image className="w-5 h-5" />
@@ -848,7 +839,7 @@ export default function Chat() {
                         size="icon"
                         onClick={() => document.getElementById('file-upload').click()}
                         disabled={uploadingFile}
-                        className="h-11 w-11 rounded-2xl bg-slate-100/80 dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-blue-950/30 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm hover:shadow-md"
+                        className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                         title="Upload file"
                       >
                         <Paperclip className="w-5 h-5" />
@@ -860,7 +851,7 @@ export default function Chat() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="h-11 w-11 rounded-2xl bg-slate-100/80 dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-blue-950/30 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm hover:shadow-md"
+                            className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                             title="Emojis & GIFs"
                           >
                             <Smile className="w-5 h-5" />
@@ -888,7 +879,7 @@ export default function Chat() {
                           variant="ghost"
                           size="icon"
                           onClick={handleDeleteSelectedGroup}
-                          className="h-11 w-11 rounded-2xl bg-red-50/80 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 transition-all shadow-sm hover:shadow-md"
+                          className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
                           title="Delete group"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -901,13 +892,13 @@ export default function Chat() {
                       onChange={handleTyping}
                       onSubmit={handleSend}
                       employees={employees}
-                      placeholder={replyingTo ? `Reply to ${replyingTo.sender_name}...` : 'Type your message...'}
-                      className="h-12 bg-slate-50/80 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm focus:shadow-md transition-all px-5"
+                      placeholder={replyingTo ? `Reply to ${replyingTo.sender_name}...` : 'Write a message...'}
+                      className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
                       />
                     <Button 
                       type="submit" 
                       disabled={!message.trim() || sendMutation.isPending} 
-                      className="h-12 px-7 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/40 rounded-2xl font-semibold hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-11 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30 rounded-xl font-medium"
                     >
                       <Send className="w-5 h-5" />
                     </Button>
