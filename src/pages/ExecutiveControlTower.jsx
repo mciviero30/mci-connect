@@ -18,6 +18,25 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// Team locations
+const teamLocations = [
+  { name: 'Atlanta', coordinates: [33.7490, -84.3880], color: '#1E6FE8' },
+  { name: 'Charlotte', coordinates: [35.2271, -80.8431], color: '#00C48C' },
+  { name: 'Orlando', coordinates: [28.5383, -81.3792], color: '#F59E0B' }
+];
+
+// Custom team marker icon
+const createTeamIcon = (color) => {
+  return L.divIcon({
+    className: 'custom-team-marker',
+    html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    </div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+};
+
 export default function ExecutiveControlTower() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -196,6 +215,24 @@ export default function ExecutiveControlTower() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; OpenStreetMap contributors'
                   />
+                  
+                  {/* Team location markers */}
+                  {teamLocations.map((team) => (
+                    <Marker
+                      key={team.name}
+                      position={team.coordinates}
+                      icon={createTeamIcon(team.color)}
+                    >
+                      <Popup>
+                        <div className="text-sm">
+                          <p className="font-bold">{team.name} Office</p>
+                          <p className="text-xs text-slate-600">Team Base Location</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                  
+                  {/* Active workers markers */}
                   {activeTimeEntries.map((entry) => {
                     if (!entry.check_in_latitude || !entry.check_in_longitude) return null;
                     
