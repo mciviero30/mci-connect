@@ -352,6 +352,7 @@ const LayoutContent = ({ children, currentPageName }) => {
       section: 'DASHBOARDS & INSIGHTS',
       items: [
         { title: 'Financial Dashboard', url: createPageUrl('FinancialDashboard'), icon: DollarSign },
+                      { title: 'Payroll Auto-Flow', url: createPageUrl('PayrollAutoFlow'), icon: Zap },
                       { title: 'Analytics Dashboard', url: createPageUrl('AnalyticsDashboard'), icon: BarChart3 },
                       { title: 'Jobs Advanced', url: createPageUrl('JobsAdvanced'), icon: Target },
                       { title: 'HR Advanced', url: createPageUrl('HRAdvancedDashboard'), icon: Shield },
