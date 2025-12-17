@@ -13,6 +13,7 @@ import { es } from 'date-fns/locale';
 import ReportFilters from '../components/reportes/ReportFilters';
 import ExportButtons, { exportToCSV, exportToPDF } from '../components/reportes/ExportButtons';
 import { useToast } from '@/components/ui/toast';
+import CashFlowForecast from '../components/financial/CashFlowForecast';
 
 export default function FinancialDashboard() {
   const { t, language } = useLanguage();
@@ -458,49 +459,8 @@ export default function FinancialDashboard() {
           </Card>
         </div>
 
-        {/* CASH FLOW FORECAST */}
-        <Card className="mb-8 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-              <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              {language === 'es' ? 'Pronóstico de Flujo de Caja (12 meses)' : 'Cash Flow Forecast (12 months)'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={cashFlowForecast}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="income" 
-                  stroke="#22c55e" 
-                  strokeWidth={2}
-                  name={language === 'es' ? 'Ingresos' : 'Income'}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  name={language === 'es' ? 'Gastos' : 'Expenses'}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="netCashFlow" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  name={language === 'es' ? 'Flujo Neto' : 'Net Cash Flow'}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* AI-POWERED CASH FLOW FORECAST */}
+        <CashFlowForecast days={30} />
 
         {/* PROFIT MARGIN TREND */}
         <Card className="mb-8 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
