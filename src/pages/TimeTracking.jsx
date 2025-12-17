@@ -228,7 +228,7 @@ export default function TimeTracking() {
                 size="lg"
                 onClick={() => clockInMutation.mutate()}
                 disabled={clockInMutation.isPending}
-                className="w-full h-16 text-lg bg-green-600 hover:bg-green-700"
+                className="w-full h-16 text-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-2 border-green-200 dark:border-green-700 text-green-900 dark:text-green-100 hover:from-green-100 hover:to-green-200 dark:hover:from-green-900/30 dark:hover:to-green-800/30"
               >
                 <Play className="w-6 h-6 mr-2" />
                 {language === 'es' ? 'Registrar Entrada' : 'Clock In'}
