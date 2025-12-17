@@ -90,7 +90,16 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                       return (
                         <div key={shift.id} className="w-full">
                           <div
-                            className={`px-1.5 py-0.5 rounded text-[9px] leading-tight ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-sm relative group/shift`}
+                            className={`px-1.5 py-0.5 rounded text-[9px] leading-tight ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-opacity ${
+                              color === 'blue' ? 'soft-blue-gradient' :
+                              color === 'green' ? 'soft-green-gradient' :
+                              color === 'purple' ? 'soft-purple-gradient' :
+                              color === 'orange' ? 'soft-amber-gradient' :
+                              color === 'pink' ? 'soft-pink-gradient' :
+                              color === 'cyan' ? 'soft-cyan-gradient' :
+                              color === 'red' ? 'soft-red-gradient' :
+                              'soft-slate-gradient'
+                            } shadow-sm relative group/shift`}
                             onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
                           >
                             {isAdmin && onCopyShift && (
@@ -114,12 +123,12 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                             )}
                             
                             {shift.status === 'confirmed' && (
-                              <Badge className="absolute top-0.5 right-0.5 bg-green-600 text-white text-[7px] px-0.5 py-0">
+                              <Badge className="absolute top-0.5 right-0.5 badge-soft-green text-[7px] px-0.5 py-0">
                                 <CheckCircle className="w-2 h-2" />
                               </Badge>
                             )}
                             {shift.status === 'rejected' && (
-                              <Badge className="absolute top-0.5 right-0.5 bg-red-600 text-white text-[7px] px-0.5 py-0">
+                              <Badge className="absolute top-0.5 right-0.5 badge-soft-red text-[7px] px-0.5 py-0">
                                 <XCircle className="w-2 h-2" />
                               </Badge>
                             )}
@@ -130,7 +139,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1 h-5 text-[8px] bg-green-50 border-green-300 text-green-700 hover:bg-green-100 px-1"
+                                className="flex-1 h-5 text-[8px] soft-green-bg px-1"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onConfirmShift(shift.id);
@@ -142,7 +151,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1 h-5 text-[8px] bg-red-50 border-red-300 text-red-700 hover:bg-red-100 px-1"
+                                className="flex-1 h-5 text-[8px] soft-red-bg px-1"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onRejectShift(shift.id);

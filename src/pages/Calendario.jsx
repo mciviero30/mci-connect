@@ -606,19 +606,19 @@ export default function Calendario() {
             <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto justify-end">
               <Tabs value={view} onValueChange={setView}>
                 <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-8">
-                  <TabsTrigger value="day" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
+                  <TabsTrigger value="day" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Día' : 'Day'}
                   </TabsTrigger>
-                  <TabsTrigger value="week" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
+                  <TabsTrigger value="week" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Semana' : 'Week'}
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
+                  <TabsTrigger value="month" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Mes' : 'Month'}
                   </TabsTrigger>
-                  <TabsTrigger value="agenda" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 h-7 px-2">
+                  <TabsTrigger value="agenda" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 h-7 px-2">
                     <List className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
-                  <TabsTrigger value="resource" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300 h-7 px-2 hidden md:flex">
+                  <TabsTrigger value="resource" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 h-7 px-2 hidden md:flex">
                     <Grid3X3 className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
                 </TabsList>

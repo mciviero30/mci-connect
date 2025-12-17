@@ -90,7 +90,16 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
                 return (
                   <div key={shift.id}>
                     <div
-                      className={`absolute top-1 bottom-1 rounded-lg px-2 py-1 ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} transition-opacity bg-${color}-500 text-white shadow-lg overflow-hidden`}
+                      className={`absolute top-1 bottom-1 rounded-lg px-2 py-1 ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-opacity ${
+                        color === 'blue' ? 'soft-blue-gradient' :
+                        color === 'green' ? 'soft-green-gradient' :
+                        color === 'purple' ? 'soft-purple-gradient' :
+                        color === 'orange' ? 'soft-amber-gradient' :
+                        color === 'pink' ? 'soft-pink-gradient' :
+                        color === 'cyan' ? 'soft-cyan-gradient' :
+                        color === 'red' ? 'soft-red-gradient' :
+                        'soft-slate-gradient'
+                      } shadow-lg overflow-hidden`}
                       style={{ left: `${startPercent}%`, width: `${widthPercent}%` }}
                       onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
                     >
@@ -101,12 +110,12 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
                       <div className="text-[10px] opacity-90">{shift.start_time}</div>
                       
                       {shift.status === 'confirmed' && (
-                        <Badge className="absolute top-1 right-1 bg-green-600 text-white text-[8px] px-1 py-0">
+                        <Badge className="absolute top-1 right-1 badge-soft-green text-[8px] px-1 py-0">
                           <CheckCircle className="w-2 h-2" />
                         </Badge>
                       )}
                       {shift.status === 'rejected' && (
-                        <Badge className="absolute top-1 right-1 bg-red-600 text-white text-[8px] px-1 py-0">
+                        <Badge className="absolute top-1 right-1 badge-soft-red text-[8px] px-1 py-0">
                           <XCircle className="w-2 h-2" />
                         </Badge>
                       )}
@@ -117,7 +126,7 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-6 text-[10px] bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+                          className="h-6 text-[10px] soft-green-bg"
                           onClick={(e) => {
                             e.stopPropagation();
                             onConfirmShift(shift.id);
@@ -129,7 +138,7 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-6 text-[10px] bg-red-50 border-red-300 text-red-700 hover:bg-red-100"
+                          className="h-6 text-[10px] soft-red-bg"
                           onClick={(e) => {
                             e.stopPropagation();
                             onRejectShift(shift.id);

@@ -91,7 +91,16 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
                     return (
                       <div key={shift.id} className="space-y-1">
                         <div
-                          className={`text-[10px] p-1 rounded truncate ${isAdmin || myShift ? 'cursor-pointer hover:opacity-80' : 'cursor-default'} bg-${color}-500 text-white shadow-sm relative`}
+                          className={`text-[10px] p-1 rounded truncate ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} ${
+                            color === 'blue' ? 'soft-blue-gradient' :
+                            color === 'green' ? 'soft-green-gradient' :
+                            color === 'purple' ? 'soft-purple-gradient' :
+                            color === 'orange' ? 'soft-amber-gradient' :
+                            color === 'pink' ? 'soft-pink-gradient' :
+                            color === 'cyan' ? 'soft-cyan-gradient' :
+                            color === 'red' ? 'soft-red-gradient' :
+                            'soft-slate-gradient'
+                          } shadow-sm relative`}
                           onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
                         >
                           {shift.start_time} {getEventLabel(shift).split(' ')[0]}
@@ -109,7 +118,7 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
                             <Button
                               size="sm"
                               variant="outline"
-                              className="flex-1 h-5 text-[8px] bg-green-50 border-green-300 text-green-700 hover:bg-green-100 px-1"
+                              className="flex-1 h-5 text-[8px] soft-green-bg px-1"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onConfirmShift(shift.id);
@@ -120,7 +129,7 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
                             <Button
                               size="sm"
                               variant="outline"
-                              className="flex-1 h-5 text-[8px] bg-red-50 border-red-300 text-red-700 hover:bg-red-100 px-1"
+                              className="flex-1 h-5 text-[8px] soft-red-bg px-1"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 onRejectShift(shift.id);
