@@ -302,76 +302,64 @@ export default function Nomina() {
         <div className="grid md:grid-cols-6 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">{t('totalWorkPay')}</p>
-                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">{totals.normalHours.toFixed(1)}h normal + {totals.overtimeHours.toFixed(1)}h OT</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">{t('totalWorkPay')}</p>
                 <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-400 opacity-50" />
               </div>
+              <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">{totals.normalHours.toFixed(1)}h + {totals.overtimeHours.toFixed(1)}h OT</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">{t('totalDrivingPay')}</p>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                  <p className="text-xs text-green-700 dark:text-green-300 mt-1">{totals.drivingHours.toFixed(1)}h driving</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm text-green-600 dark:text-green-400 font-medium">{t('totalDrivingPay')}</p>
                 <Car className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
               </div>
+              <p className="text-3xl font-bold text-green-900 dark:text-green-100">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">{totals.drivingHours.toFixed(1)}h</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">{t('perDiem')}</p>
-                  <p className="text-2xl font-bold text-amber-900 dark:text-amber-100">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">{t('perDiem')}</p>
                 <DollarSign className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
               </div>
+              <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-1">{t('totalReimbursements')}</p>
-                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{t('totalReimbursements')}</p>
                 <Download className="w-10 h-10 text-purple-600 dark:text-purple-400 opacity-50" />
               </div>
+              <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
-                  <p className="text-2xl font-bold text-red-900 dark:text-red-100">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                  <p className="text-xs text-red-700 dark:text-red-300 mt-1">{language === 'es' ? 'De trabajos completados' : 'From completed jobs'}</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
                 <Gift className="w-10 h-10 text-red-600 dark:text-red-400 opacity-50" />
               </div>
+              <p className="text-3xl font-bold text-red-900 dark:text-red-100">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs text-red-700 dark:text-red-300 mt-1">{language === 'es' ? 'Trabajos completados' : 'Completed jobs'}</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium mb-1">{t('totalPayroll')}</p>
-                  <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-                </div>
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{t('totalPayroll')}</p>
                 <Banknote className="w-10 h-10 text-indigo-600 dark:text-indigo-400 opacity-50" />
               </div>
+              <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
         </div>
