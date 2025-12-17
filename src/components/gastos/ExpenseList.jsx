@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +11,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { notifyExpenseStatus } from '../notifications/notificationHelpers'; // NEW IMPORT
 
-export default function ExpenseList({ expenses, onApprove, onReject, showEmployeeName = false, isAdmin = false, loading, showActions = true }) { // MODIFIED PROPS
+export default function ExpenseList({ expenses, onApprove, onReject, showEmployeeName = false, isAdmin = false, loading, showActions = true, renderSmartApproval = null }) {
   const { t } = useLanguage();
   const [rejectDialog, setRejectDialog] = useState({ open: false, expense: null });
   const [rejectNotes, setRejectNotes] = useState('');
@@ -218,25 +217,27 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       {showActions && (
                         <TableCell className="text-right">
                           {expense.status === 'pending' && (
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleApprove(expense)} // MODIFIED: calls new handleApprove
-                                className="bg-green-600 hover:bg-green-700 text-white"
-                              >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                {t('approve')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => setRejectDialog({ open: true, expense })}
-                                variant="outline"
-                                className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
-                              >
-                                <XCircle className="w-4 h-4 mr-1" />
-                                {t('reject')}
-                              </Button>
-                            </div>
+                            renderSmartApproval ? renderSmartApproval(expense) : (
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleApprove(expense)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  {t('approve')}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setRejectDialog({ open: true, expense })}
+                                  variant="outline"
+                                  className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  {t('reject')}
+                                </Button>
+                              </div>
+                            )
                           )}
                         </TableCell>
                       )}

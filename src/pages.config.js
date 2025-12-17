@@ -77,6 +77,7 @@ import SetupPassword from './pages/SetupPassword';
 import OnboardingWizard from './pages/OnboardingWizard';
 import ComplianceHub from './pages/ComplianceHub';
 import ExecutiveControlTower from './pages/ExecutiveControlTower';
+import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import __Layout from './Layout.jsx';
 
 
@@ -160,6 +161,7 @@ export const PAGES = {
     "OnboardingWizard": OnboardingWizard,
     "ComplianceHub": ComplianceHub,
     "ExecutiveControlTower": ExecutiveControlTower,
+    "PayrollAutoFlow": PayrollAutoFlow,
 }
 
 export const pagesConfig = {
