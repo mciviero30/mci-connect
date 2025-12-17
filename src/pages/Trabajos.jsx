@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AIJobWizard from "../components/trabajos/AIJobWizard";
+import ModernJobCard from "../components/trabajos/ModernJobCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -345,154 +346,9 @@ export default function Trabajos() {
         </Card>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredJobs.map(job => {
-            // Calculate profit margin
-            const contractAmount = job.contract_amount || 0;
-            const estimatedCost = job.estimated_cost || 0;
-            const profitMargin = contractAmount > 0
-              ? ((contractAmount - estimatedCost) / contractAmount * 100)
-              : 0;
-
-            return (
-              <Card key={job.id} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group border-slate-200 dark:border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-3 h-3 rounded-full bg-${job.color || 'slate'}-500`}></div>
-                        <h3 className="font-bold text-xl text-slate-900 dark:text-white">{job.name}</h3>
-                      </div>
-
-                      {/* Customer Name (from Prompt #46) */}
-                      {job.customer_name && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-2">
-                          <Users className="w-3 h-3" />
-                          <span className="font-medium">{job.customer_name}</span>
-                        </div>
-                      )}
-
-                      {/* Status and Team Badges */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge className={
-                          job.status === 'active' ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                          job.status === 'completed' ? 'bg-green-50 border-green-200 text-green-700' :
-                          'bg-slate-100 border-slate-200 text-slate-600'
-                        }>
-                          {job.status === 'active' ? t('active') : job.status === 'completed' ? t('completed') : t('archived')}
-                        </Badge>
-
-                        {job.team_name && (
-                          <Badge className="bg-purple-50 border-purple-200 text-purple-700">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            {job.team_name}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-slate-600 dark:text-slate-400 hover:text-[#3B9FF3] hover:bg-blue-50 dark:hover:bg-slate-700"
-                          title={t('viewDetails')}
-                        >
-                          <Eye className="w-5 h-5" />
-                        </Button>
-                      </Link>
-
-                      {isAdmin && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                              <MoreVertical className="w-5 h-5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                            <DropdownMenuItem onClick={() => handleEdit(job)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                              <Edit className="w-4 h-4 mr-2" />
-                              {t('edit')}
-                            </DropdownMenuItem>
-                            {job.status !== 'archived' && (
-                              <DropdownMenuItem onClick={() => archiveMutation.mutate(job.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                                <Archive className="w-4 h-4 mr-2" />
-                                {t('archive')}
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem onClick={() => deleteMutation.mutate(job.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 focus:bg-red-50 dark:focus:bg-red-900/20">
-                              <Trash2 className="w-4 h-4 mr-2 text-red-500" />
-                              <span className="text-red-500">{t('delete')}</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </div>
-
-                  <Link to={createPageUrl(`JobDetails?id=${job.id}`)}>
-                    {job.description && (
-                      <p className="text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{job.description}</p>
-                    )}
-
-                    {/* Address with structured fields */}
-                    {(job.address || job.city) && (
-                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-3">
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">
-                          {job.address}
-                          {job.city && `, ${job.city}`}
-                          {job.state && `, ${job.state}`}
-                          {job.zip && ` ${job.zip}`}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Financial KPIs Section (Prompt #46) */}
-                    {job.contract_amount && (
-                      <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="space-y-2">
-                          {/* Contract Amount */}
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-slate-600 dark:text-slate-400">
-                              {language === 'es' ? 'Valor Contratado' : 'Contract Value'}
-                            </span>
-                            <span className="text-sm font-bold text-[#3B9FF3] dark:text-blue-400">
-                              {formatCurrency(contractAmount)}
-                            </span>
-                          </div>
-
-                          {/* Estimated Cost */}
-                          {estimatedCost > 0 && (
-                            <>
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-slate-600 dark:text-slate-400">
-                                  {language === 'es' ? 'Costo Estimado' : 'Estimated Cost'}
-                                </span>
-                                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                                  {formatCurrency(estimatedCost)}
-                                </span>
-                              </div>
-
-                              {/* Profit Margin */}
-                              <div className="flex items-center justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
-                                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                                  {language === 'es' ? 'Margen de Ganancia' : 'Profit Margin'}
-                                </span>
-                                <span className={`text-sm font-bold ${getProfitMarginColor(profitMargin)}`}>
-                                  {profitMargin.toFixed(1)}%
-                                </span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </Link>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {filteredJobs.map(job => (
+            <ModernJobCard key={job.id} job={job} />
+          ))}
         </div>
 
         {filteredJobs.length === 0 && !isLoading && (
