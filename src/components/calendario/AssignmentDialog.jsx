@@ -410,47 +410,42 @@ export default function AssignmentDialog({
           </div>
 
           {/* Custom Color Picker */}
-          <div>
-            <Label className="text-slate-900 dark:text-white mb-2 block">Custom Shift Color (Optional)</Label>
+          <div className="flex items-center gap-3">
+            <Label className="text-slate-900 dark:text-white text-xs flex-shrink-0">Shift Color</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button 
+                <button
                   type="button"
-                  variant="outline" 
-                  className="w-full justify-start bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-10"
-                >
-                  {customColor ? (
-                    <div className="flex items-center gap-2">
-                      <div className={`w-6 h-6 rounded-full bg-${customColor}-500`} />
-                      <span className="capitalize">{customColor}</span>
-                    </div>
-                  ) : (
-                    <span className="text-slate-500">Select color...</span>
-                  )}
-                </Button>
+                  className={`w-8 h-8 rounded-full ${customColor ? `bg-${customColor}-500` : 'bg-slate-300 dark:bg-slate-600'} hover:scale-110 transition-transform border-2 border-slate-400 dark:border-slate-500`}
+                  title="Select color"
+                />
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                <div className="grid grid-cols-6 gap-2">
-                  {['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'slate'].map(color => (
+              <PopoverContent className="w-56 p-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
+                <div className="grid grid-cols-6 gap-1.5">
+                  {[
+                    'red', 'rose', 'pink', 'fuchsia', 'purple', 'violet',
+                    'indigo', 'blue', 'sky', 'cyan', 'teal', 'emerald',
+                    'green', 'lime', 'yellow', 'amber', 'orange', 'stone',
+                    'zinc', 'gray', 'slate', 'neutral', 'red', 'orange',
+                    'yellow', 'green', 'blue', 'indigo', 'purple', 'pink'
+                  ].map((color, idx) => (
                     <button
-                      key={color}
+                      key={`${color}-${idx}`}
                       type="button"
                       onClick={() => setCustomColor(color)}
-                      className={`w-8 h-8 rounded-full bg-${color}-500 hover:scale-110 transition-transform ${customColor === color ? 'ring-2 ring-blue-400' : ''}`}
+                      className={`w-6 h-6 rounded-full bg-${color}-500 hover:scale-110 transition-transform ${customColor === color ? 'ring-2 ring-offset-1 ring-blue-400' : ''}`}
                       title={color}
                     />
                   ))}
                 </div>
                 {customColor && (
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="sm"
                     onClick={() => setCustomColor('')}
-                    className="w-full mt-2 text-xs text-slate-500 hover:text-slate-700"
+                    className="w-full mt-2 text-[10px] text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
                   >
-                    Clear color
-                  </Button>
+                    Clear
+                  </button>
                 )}
               </PopoverContent>
             </Popover>
