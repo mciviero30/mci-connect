@@ -339,7 +339,7 @@ export default function AssignmentDialog({
                       {selectedEmployees.map(email => {
                         const emp = (employees || []).find(e => e.email === email);
                         return (
-                          <Badge key={email} variant="secondary" className="bg-[#3B9FF3] text-white">
+                          <Badge key={email} variant="secondary" className="badge-soft-blue">
                             {emp?.full_name || email}
                           </Badge>
                         );
@@ -366,7 +366,7 @@ export default function AssignmentDialog({
                         className="text-slate-900 dark:text-white"
                       >
                         <div className="flex items-center gap-2">
-                          <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'bg-[#3B9FF3] border-[#3B9FF3]' : 'border-slate-400 dark:border-slate-600'}`} />
+                          <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'soft-blue-bg' : 'border-slate-400 dark:border-slate-600'}`} />
                           {emp.full_name}
                         </div>
                       </CommandItem>
@@ -421,20 +421,23 @@ export default function AssignmentDialog({
                 />
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
-                <div className="grid grid-cols-6 gap-1.5">
+                <div className="grid grid-cols-4 gap-2">
                   {[
-                    'red', 'rose', 'pink', 'fuchsia', 'purple', 'violet',
-                    'indigo', 'blue', 'sky', 'cyan', 'teal', 'emerald',
-                    'green', 'lime', 'yellow', 'amber', 'orange', 'stone',
-                    'zinc', 'gray', 'slate', 'neutral', 'red', 'orange',
-                    'yellow', 'green', 'blue', 'indigo', 'purple', 'pink'
-                  ].map((color, idx) => (
+                    { name: 'blue', class: 'soft-blue-gradient' },
+                    { name: 'green', class: 'soft-green-gradient' },
+                    { name: 'purple', class: 'soft-purple-gradient' },
+                    { name: 'amber', class: 'soft-amber-gradient' },
+                    { name: 'red', class: 'soft-red-gradient' },
+                    { name: 'pink', class: 'soft-pink-gradient' },
+                    { name: 'cyan', class: 'soft-cyan-gradient' },
+                    { name: 'slate', class: 'soft-slate-gradient' }
+                  ].map((color) => (
                     <button
-                      key={`${color}-${idx}`}
+                      key={color.name}
                       type="button"
-                      onClick={() => setCustomColor(color)}
-                      className={`w-6 h-6 rounded-full bg-${color}-500 hover:scale-110 transition-transform ${customColor === color ? 'ring-2 ring-offset-1 ring-blue-400' : ''}`}
-                      title={color}
+                      onClick={() => setCustomColor(color.name)}
+                      className={`h-8 rounded-lg ${color.class} hover:scale-105 transition-transform ${customColor === color.name ? 'ring-2 ring-offset-2 ring-blue-400' : ''}`}
+                      title={color.name}
                     />
                   ))}
                 </div>
@@ -474,7 +477,7 @@ export default function AssignmentDialog({
                     variant="destructive"
                     onClick={handleDeleteAllForProject}
                     disabled={isProcessing}
-                    className="justify-start bg-red-500 hover:bg-red-600"
+                    className="justify-start soft-red-gradient"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Todos los turnos de "{shift.job_name || 'este proyecto'}" / All shifts for this project
@@ -520,7 +523,7 @@ export default function AssignmentDialog({
                   (isAppointment && !shiftTitle) || 
                   (isJobWork && (!jobId || selectedEmployees.length === 0))
                 } 
-                className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                className="soft-blue-gradient"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {isProcessing ? 'Saving...' : 'Save Shift'}
