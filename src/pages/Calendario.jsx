@@ -419,18 +419,18 @@ export default function Calendario() {
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-2">
             <Card 
-              className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-sm border-0 cursor-pointer hover:shadow-md transition-shadow dark:from-blue-600 dark:to-blue-700"
+              className="soft-blue-gradient shadow-sm cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setEventTypeFilter('all')}
             >
               <CardContent className="p-1.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[8px] md:text-[9px] font-medium text-blue-50">
+                    <p className="text-[8px] md:text-[9px] font-medium opacity-90">
                       {language === 'es' ? 'Total Turnos' : 'Total Shifts'}
                     </p>
-                    <p className="text-sm md:text-lg font-bold text-white">{workload.totalEvents}</p>
+                    <p className="text-sm md:text-lg font-bold">{workload.totalEvents}</p>
                   </div>
-                  <CalendarIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/60" />
+                  <CalendarIcon className="w-3.5 h-3.5 md:w-4 md:h-4 opacity-60" />
                 </div>
               </CardContent>
             </Card>

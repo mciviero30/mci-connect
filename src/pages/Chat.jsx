@@ -898,7 +898,7 @@ export default function Chat() {
                     <Button 
                       type="submit" 
                       disabled={!message.trim() || sendMutation.isPending} 
-                      className="h-11 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg shadow-blue-500/30 rounded-xl font-medium"
+                      className="h-11 px-6 soft-blue-gradient shadow-lg rounded-xl font-medium"
                     >
                       <Send className="w-5 h-5" />
                     </Button>

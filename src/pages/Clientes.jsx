@@ -157,7 +157,7 @@ export default function Clientes() {
           icon={Users}
           actions={
             isAdmin && (
-              <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg">
+              <Button onClick={() => setShowForm(true)} size="lg" className="soft-blue-gradient shadow-lg">
                 <Plus className="w-5 h-5 mr-2" />
                 {t('newCustomer')}
               </Button>
@@ -194,7 +194,7 @@ export default function Clientes() {
               <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('noCustomers')}</h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6">Start by adding your first customer</p>
               {isAdmin && (
-                <Button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE2] text-white shadow-lg">
+                <Button onClick={() => setShowForm(true)} className="soft-blue-gradient shadow-lg">
                   <Plus className="w-4 h-4 mr-2" />
                   {t('newCustomer')}
                 </Button>
