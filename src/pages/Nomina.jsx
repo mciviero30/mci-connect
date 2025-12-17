@@ -299,7 +299,7 @@ export default function Nomina() {
 
 
 
-        <div className="grid md:grid-cols-6 gap-4 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
