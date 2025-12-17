@@ -119,7 +119,7 @@ export default function ExecutiveControlTower() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e] p-6">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Executive Control Tower"
@@ -185,47 +185,37 @@ export default function ExecutiveControlTower() {
               <p className="text-sm text-slate-600 dark:text-slate-400">Live location of clocked-in staff</p>
             </CardHeader>
             <CardContent className="p-0">
-              {activeTimeEntries.length > 0 ? (
-                <div className="h-[500px] w-full">
-                  <MapContainer
-                    center={[33.7490, -84.3880]} // Atlanta default
-                    zoom={10}
-                    style={{ height: '100%', width: '100%' }}
-                    className="rounded-b-xl"
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; OpenStreetMap contributors'
-                    />
-                    {activeTimeEntries.map((entry) => {
-                      if (!entry.check_in_latitude || !entry.check_in_longitude) return null;
-                      
-                      return (
-                        <Marker
-                          key={entry.id}
-                          position={[entry.check_in_latitude, entry.check_in_longitude]}
-                        >
-                          <Popup>
-                            <div className="text-sm">
-                              <p className="font-bold">{entry.employee_name}</p>
-                              <p className="text-xs text-slate-600">{entry.job_name || 'No job assigned'}</p>
-                              <p className="text-xs text-blue-600">Checked in: {entry.check_in}</p>
-                            </div>
-                          </Popup>
-                        </Marker>
-                      );
-                    })}
-                  </MapContainer>
-                </div>
-              ) : (
-                <div className="h-[500px] flex items-center justify-center text-slate-500">
-                  <div className="text-center">
-                    <MapPin className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                    <p className="font-semibold">No active workers</p>
-                    <p className="text-sm">Workers will appear here when they clock in</p>
-                  </div>
-                </div>
-              )}
+              <div className="h-[500px] w-full">
+                <MapContainer
+                  center={activeTimeEntries.length > 0 ? [33.7490, -84.3880] : [39.8283, -98.5795]} // Atlanta or US center
+                  zoom={activeTimeEntries.length > 0 ? 10 : 4} // Zoom out to show US when no workers
+                  style={{ height: '100%', width: '100%' }}
+                  className="rounded-b-xl"
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; OpenStreetMap contributors'
+                  />
+                  {activeTimeEntries.map((entry) => {
+                    if (!entry.check_in_latitude || !entry.check_in_longitude) return null;
+                    
+                    return (
+                      <Marker
+                        key={entry.id}
+                        position={[entry.check_in_latitude, entry.check_in_longitude]}
+                      >
+                        <Popup>
+                          <div className="text-sm">
+                            <p className="font-bold">{entry.employee_name}</p>
+                            <p className="text-xs text-slate-600">{entry.job_name || 'No job assigned'}</p>
+                            <p className="text-xs text-blue-600">Checked in: {entry.check_in}</p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
+                </MapContainer>
+              </div>
             </CardContent>
           </Card>
 
