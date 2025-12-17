@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Banknote, Download, Search, Edit, User, FileText } from "lucide-react";
+import { Banknote, Download, Search, Edit, User, FileText, Briefcase, Car, DollarSign, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -273,23 +273,10 @@ export default function Nomina() {
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl shadow-lg shadow-cyan-500/30">
-                <Banknote className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">{t('payroll')}</h1>
-                <div className="flex items-center gap-3 mt-2">
-                  <DateRangeFilter 
-                    onDateRangeChange={setDateRange}
-                    defaultRange="this_month"
-                  />
-                </div>
-              </div>
-            </div>
-
+        <PageHeader
+          title={t('payroll')}
+          icon={Banknote}
+          actions={
             <div className="flex gap-2">
               <Button onClick={handleExport} variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
                 <Download className="w-4 h-4 mr-2" />
@@ -300,15 +287,24 @@ export default function Nomina() {
                 {t('printPayroll')}
               </Button>
             </div>
-          </div>
+          }
+        />
+
+        <div className="mb-6">
+          <DateRangeFilter 
+            onDateRangeChange={setDateRange}
+            defaultRange="this_month"
+          />
         </div>
+
+
 
         <div className="grid md:grid-cols-6 gap-6 mb-8"> {/* Changed from 5 to 6 columns */}
           <StatsCard
             title={t('totalWorkPay')}
             value={`$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             subtitle={`${totals.normalHours.toFixed(1)}h normal + ${totals.overtimeHours.toFixed(1)}h OT`}
-            icon={Banknote}
+            icon={Briefcase}
             color="from-[#3B9FF3] to-[#2A8FE3]"
           />
 
@@ -316,21 +312,21 @@ export default function Nomina() {
             title={t('totalDrivingPay')}
             value={`$${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             subtitle={`${totals.drivingHours.toFixed(1)}h driving`}
-            icon={Banknote}
+            icon={Car}
             color="from-green-500 to-emerald-500"
           />
 
           <StatsCard
             title={t('perDiem')}
             value={`$${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-            icon={Banknote}
+            icon={DollarSign}
             color="from-amber-500 to-orange-500"
           />
 
           <StatsCard
             title={t('totalReimbursements')}
             value={`$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
-            icon={Banknote}
+            icon={Download}
             color="from-purple-500 to-pink-500"
           />
 
@@ -339,7 +335,7 @@ export default function Nomina() {
             title={language === 'es' ? 'Bonos' : 'Bonuses'}
             value={`$${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}
             subtitle={language === 'es' ? 'De trabajos completados' : 'From completed jobs'}
-            icon={Banknote}
+            icon={Gift}
             color="from-rose-500 to-fuchsia-500"
           />
 
