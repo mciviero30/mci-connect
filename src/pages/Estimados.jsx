@@ -1,74 +1,30 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  FileText, Plus, Eye, Trash2, Copy, FileCheck, Download, Filter, X, 
-  ArrowUpDown, AlertTriangle, CheckSquare, BarChart3, User, Clock,
-  ChevronUp, ChevronDown, Bell, MessageCircle, Sparkles, MapPin, Calendar
-} from "lucide-react";
+import { FileText, Plus, Eye, Trash2, Copy, Search, X, MapPin, Users, Sparkles, FileCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import PageHeader from "../components/shared/PageHeader";
-import { format, differenceInDays } from "date-fns";
-import { es } from "date-fns/locale";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import { usePermissions } from "@/components/permissions/usePermissions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import QuotePreviewModal from "@/components/quotes/QuotePreviewModal";
-import QuoteTemplates from "@/components/quotes/QuoteTemplates";
-import QuoteStats from "@/components/quotes/QuoteStats";
-import QuoteReminder from "@/components/quotes/QuoteReminder";
-import AIEstimateInput from "@/components/quotes/AIEstimateInput";
-import QuoteDocument from "@/components/documentos/QuoteDocument";
-import QuoteToInvoiceConverter from "@/components/financial/QuoteToInvoiceConverter";
-import _ from "lodash";
+import PageHeader from "../components/shared/PageHeader";
+import AIEstimateInput from "../components/quotes/AIEstimateInput";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { format } from "date-fns";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
-  const { hasFullAccess } = usePermissions();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeTab, setActiveTab] = useState("list");
-  const [selectedQuote, setSelectedQuote] = useState(null);
-  const [showAIInput, setShowAIInput] = useState(false);
-  const [showQuickConvert, setShowQuickConvert] = useState(false);
-  const [convertingQuote, setConvertingQuote] = useState(null);
-
-  // Advanced filter states
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [minAmount, setMinAmount] = useState("");
-  const [maxAmount, setMaxAmount] = useState("");
-  const [teamFilter, setTeamFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [notesKeyword, setNotesKeyword] = useState("");
-
-  // Sorting
-  const [sortField, setSortField] = useState("created_date");
-  const [sortDirection, setSortDirection] = useState("desc");
-
-  // Debounced search
-  const debouncedSetSearch = useCallback(
-    _.debounce((value) => setDebouncedSearch(value), 300),
-    []
-  );
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    debouncedSetSearch(e.target.value);
-  };
+  const [teamFilter, setTeamFilter] = useState("all");
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   const { data: quotes, isLoading } = useQuery({
@@ -77,10 +33,10 @@ export default function Estimados() {
     initialData: [],
   });
 
-  const { data: teams } = useQuery({
+  const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
-    initialData: [],
+    queryFn: () => base44.entities.Team.list('team_name'),
+    initialData: []
   });
 
   const deleteMutation = useMutation({
@@ -88,9 +44,6 @@ export default function Estimados() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       toast.success(t('deletedSuccessfully'));
-      if (selectedQuote?.id === deleteMutation.variables) {
-        setSelectedQuote(null);
-      }
     }
   });
 
@@ -101,13 +54,11 @@ export default function Estimados() {
         quote_number: `${quote.quote_number}-COPY-${Date.now()}`,
         status: 'draft',
         quote_date: new Date().toISOString().split('T')[0],
-        valid_until: '',
       };
       delete newQuote.id;
       delete newQuote.created_date;
       delete newQuote.updated_date;
       delete newQuote.created_by;
-      delete newQuote.invoice_id;
       
       return base44.entities.Quote.create(newQuote);
     },
@@ -119,53 +70,21 @@ export default function Estimados() {
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: async (quote) => {
-      let jobId = quote.job_id;
-      let wasJobCreated = false;
-      
-      if (!jobId) {
-        const jobData = {
-          name: quote.job_name,
-          address: quote.job_address,
-          customer_id: quote.customer_id,
-          customer_name: quote.customer_name,
-          contract_amount: quote.total,
-          status: 'active',
-          team_id: quote.team_id,
-          team_name: quote.team_name,
-          description: `Auto-created from quote ${quote.quote_number}`
-        };
-        
-        const newJob = await base44.entities.Job.create(jobData);
-        jobId = newJob.id;
-        wasJobCreated = true;
-        
-        await base44.entities.Quote.update(quote.id, { job_id: jobId });
-      }
-
-      const invoices = await base44.entities.Invoice.list();
-      const existingNumbers = invoices
-        .map(inv => inv.invoice_number)
-        .filter(n => n?.startsWith('INV-'))
-        .map(n => parseInt(n.replace('INV-', '')))
-        .filter(n => !isNaN(n));
-
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
-
+      const invoiceNumber = `INV-${Date.now()}`;
       const invoiceData = {
-        invoice_number,
+        invoice_number: invoiceNumber,
         quote_id: quote.id,
         customer_id: quote.customer_id,
         customer_name: quote.customer_name,
         customer_email: quote.customer_email,
         customer_phone: quote.customer_phone,
         job_name: quote.job_name,
-        job_id: jobId,
+        job_id: quote.job_id,
         job_address: quote.job_address,
         team_id: quote.team_id,
         team_name: quote.team_name,
-        invoice_date: format(new Date(), 'yyyy-MM-dd'),
-        due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+        invoice_date: new Date().toISOString().split('T')[0],
+        due_date: '',
         items: quote.items,
         subtotal: quote.subtotal,
         tax_rate: quote.tax_rate,
@@ -175,130 +94,42 @@ export default function Estimados() {
         balance: quote.total,
         notes: quote.notes,
         terms: quote.terms,
-        status: 'draft'
+        status: 'draft',
       };
 
       const newInvoice = await base44.entities.Invoice.create(invoiceData);
-
-      await base44.entities.Quote.update(quote.id, {
+      await base44.entities.Quote.update(quote.id, { 
         status: 'converted_to_invoice',
-        invoice_id: newInvoice.id
+        invoice_id: newInvoice.id 
       });
 
-      return { newInvoice, wasJobCreated };
+      return newInvoice;
     },
-    onSuccess: ({ newInvoice }) => {
+    onSuccess: (newInvoice) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      
-      toast.success(language === 'es' ? '✅ Factura creada exitosamente' : '✅ Invoice created successfully');
-      
-      setTimeout(() => {
-        navigate(createPageUrl(`VerFactura?id=${newInvoice.id}`));
-      }, 1500);
+      toast.success(t('convertedToInvoice'));
+      window.open(createPageUrl(`VerFactura?id=${newInvoice.id}`), '_blank');
     },
   });
 
-  const exportToPDF = async () => {
-    if (!selectedQuote) {
-      toast.error(language === 'es' ? '⚠️ Selecciona un estimado para exportar' : '⚠️ Select a quote to export');
-      return;
-    }
+  const filteredQuotes = quotes.filter(quote => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm ||
+      quote.customer_name?.toLowerCase().includes(searchLower) ||
+      quote.quote_number?.toLowerCase().includes(searchLower) ||
+      quote.job_name?.toLowerCase().includes(searchLower);
 
-    const { generateOptimizedPDF } = await import('../components/utils/pdfGenerator');
-    const filename = `${selectedQuote.quote_number} - ${selectedQuote.customer_name}`;
-    
-    try {
-      await generateOptimizedPDF('quote-preview-for-pdf', filename);
-      toast.success(language === 'es' ? 'PDF descargado exitosamente' : 'PDF downloaded successfully');
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast.error(language === 'es' ? 'Error generando PDF' : 'Error generating PDF');
-    }
-  };
+    const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
+    const matchesTeam = teamFilter === 'all' || quote.team_id === teamFilter;
 
-  const clearFilters = () => {
-    setDateFrom("");
-    setDateTo("");
-    setMinAmount("");
-    setMaxAmount("");
-    setTeamFilter("all");
-    setStatusFilter("all");
-    setNotesKeyword("");
-    setSearchTerm("");
-  };
+    return matchesSearch && matchesStatus && matchesTeam;
+  });
 
-  const hasActiveFilters = dateFrom || dateTo || minAmount || maxAmount || teamFilter !== "all" || statusFilter !== "all" || notesKeyword;
-
-  // Filter and sort quotes
-  const filteredQuotes = useMemo(() => {
-    let result = quotes.filter(quote => {
-      if (quote.is_template) return false;
-
-      const search = debouncedSearch.toLowerCase();
-      const matchesSearch = !search ||
-        quote.customer_name?.toLowerCase().includes(search) ||
-        quote.quote_number?.toLowerCase().includes(search) ||
-        quote.job_name?.toLowerCase().includes(search);
-
-      const quoteDate = new Date(quote.quote_date);
-      const matchesDateFrom = !dateFrom || quoteDate >= new Date(dateFrom);
-      const matchesDateTo = !dateTo || quoteDate <= new Date(dateTo);
-      const matchesMinAmount = !minAmount || (quote.total || 0) >= parseFloat(minAmount);
-      const matchesMaxAmount = !maxAmount || (quote.total || 0) <= parseFloat(maxAmount);
-      const matchesTeam = teamFilter === "all" || quote.team_id === teamFilter;
-      const matchesStatus = statusFilter === "all" || quote.status === statusFilter;
-      const matchesNotes = !notesKeyword || 
-        (quote.notes && quote.notes.toLowerCase().includes(notesKeyword.toLowerCase()));
-
-      return matchesSearch && matchesDateFrom && matchesDateTo && 
-             matchesMinAmount && matchesMaxAmount && matchesTeam && 
-             matchesStatus && matchesNotes;
-    });
-
-    result.sort((a, b) => {
-      let aVal = a[sortField];
-      let bVal = b[sortField];
-      
-      if (sortField === 'total' || sortField === 'subtotal') {
-        aVal = aVal || 0;
-        bVal = bVal || 0;
-      } else if (sortField === 'quote_date' || sortField === 'created_date' || sortField === 'valid_until') {
-        aVal = new Date(aVal || 0);
-        bVal = new Date(bVal || 0);
-      } else {
-        aVal = (aVal || '').toLowerCase();
-        bVal = (bVal || '').toLowerCase();
-      }
-      
-      if (sortDirection === 'asc') {
-        return aVal > bVal ? 1 : -1;
-      } else {
-        return aVal < bVal ? 1 : -1;
-      }
-    });
-
-    return result;
-  }, [quotes, debouncedSearch, dateFrom, dateTo, minAmount, maxAmount, teamFilter, statusFilter, notesKeyword, sortField, sortDirection]);
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
-  };
-
-  const isExpired = (quote) => {
-    return quote.valid_until && new Date(quote.valid_until) < new Date() && quote.status === 'sent';
-  };
-
-  const drafts = filteredQuotes.filter(q => q.status === 'draft');
-  const sent = filteredQuotes.filter(q => q.status === 'sent');
-  const converted = filteredQuotes.filter(q => q.status === 'converted_to_invoice');
-  const totalValue = filteredQuotes.reduce((sum, q) => sum + (q.total || 0), 0);
+  const draftQuotes = filteredQuotes.filter(q => q.status === 'draft');
+  const sentQuotes = filteredQuotes.filter(q => q.status === 'sent');
+  const approvedQuotes = filteredQuotes.filter(q => q.status === 'approved');
+  const convertedQuotes = filteredQuotes.filter(q => q.status === 'converted_to_invoice');
 
   const statusColors = {
     draft: "bg-slate-100 text-slate-700 border-slate-200",
@@ -310,238 +141,306 @@ export default function Estimados() {
 
   const getStatusLabel = (status) => {
     const labels = {
-      draft: t('draft'),
-      sent: t('sent'),
-      approved: t('approved'),
-      rejected: t('rejected'),
-      converted_to_invoice: t('converted')
+      draft: language === 'es' ? 'Borrador' : 'Draft',
+      sent: language === 'es' ? 'Enviado' : 'Sent',
+      approved: language === 'es' ? 'Aprobado' : 'Approved',
+      rejected: language === 'es' ? 'Rechazado' : 'Rejected',
+      converted_to_invoice: language === 'es' ? 'Convertido' : 'Converted',
     };
     return labels[status] || status;
-  }
+  };
 
-  const isAdmin = hasFullAccess;
+  const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
-      {/* Header */}
-      <div className="border-b bg-white dark:bg-[#1a1a1a] sticky top-0 z-10">
-        <div className="p-4 md:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t('quotes')}</h1>
-              <p className="text-slate-600 dark:text-slate-400">{filteredQuotes.length} {t('total').toLowerCase()}</p>
-            </div>
-            {isAdmin && (
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowAIInput(!showAIInput)}
-                  variant="outline"
-                  size="sm"
-                  className={showAIInput ? "bg-amber-100 border-amber-300 text-amber-700" : "bg-white border-amber-300 text-amber-700 hover:bg-amber-50"}
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+      <div className="max-w-7xl mx-auto">
+        <PageHeader
+          title={t('quotes')}
+          description={`${draftQuotes.length} ${t('drafts').toLowerCase()}, ${sentQuotes.length} ${t('sent').toLowerCase()}, ${approvedQuotes.length} ${t('approved').toLowerCase()}`}
+          icon={FileText}
+          actions={
+            isAdmin && (
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setShowAIWizard(true)}
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Sparkles className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'IA' : 'AI'}
                 </Button>
-                <Button onClick={exportToPDF} variant="outline" size="sm" disabled={!selectedQuote}>
-                  <Download className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'PDF' : 'PDF'}
-                </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
-                  <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white border-none"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
                     {t('newQuote')}
                   </Button>
                 </Link>
               </div>
-            )}
-          </div>
-        </div>
-      </div>
+            )
+          }
+        />
 
-      {/* AI Input */}
-      {showAIInput && (
-        <div className="p-4 bg-amber-50 border-b">
-          <AIEstimateInput 
-            language={language}
-            onQuoteGenerated={(quoteData) => {
-              navigate(createPageUrl("CrearEstimado"), { state: { aiDraft: quoteData } });
-              setShowAIInput(false);
-            }}
-          />
-        </div>
-      )}
+        {/* Filter Bar */}
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Text Search */}
+              <div className="space-y-2">
+                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                  {language === 'es' ? 'Buscar' : 'Search'}
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <Input
+                    placeholder={language === 'es' ? 'Buscar por cliente, número o trabajo...' : 'Search by customer, number or job...'}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white"
+                  />
+                </div>
+              </div>
 
-      {/* Main Content - Sidebar + Preview */}
-      <div className="flex h-[calc(100vh-140px)]">
-        {/* Sidebar */}
-        <div className="w-80 border-r bg-white dark:bg-[#1a1a1a] flex flex-col overflow-hidden">
-          {/* Search and Filters */}
-          <div className="p-4 border-b space-y-3">
-            <Input
-              placeholder={t('search') + "..."}
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="bg-slate-50 dark:bg-slate-800"
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                variant={showFilters ? "default" : "outline"}
-                size="sm"
-                className="flex-1"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Filtros' : 'Filters'}
-                {hasActiveFilters && <Badge className="ml-2 bg-red-500 text-white text-xs px-1.5">!</Badge>}
-              </Button>
-              {hasActiveFilters && (
-                <Button onClick={clearFilters} variant="outline" size="sm">
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-
-            {showFilters && (
-              <div className="space-y-3 pt-3 border-t">
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                  {language === 'es' ? 'Estado' : 'Status'}
+                </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder={language === 'es' ? 'Estado' : 'Status'} />
+                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                    <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{language === 'es' ? 'Todos' : 'All'}</SelectItem>
-                    <SelectItem value="draft">{language === 'es' ? 'Borrador' : 'Draft'}</SelectItem>
-                    <SelectItem value="sent">{language === 'es' ? 'Enviado' : 'Sent'}</SelectItem>
-                    <SelectItem value="approved">{language === 'es' ? 'Aprobado' : 'Approved'}</SelectItem>
-                    <SelectItem value="converted_to_invoice">{language === 'es' ? 'Convertido' : 'Converted'}</SelectItem>
+                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                    <SelectItem value="all">
+                      {language === 'es' ? 'Todos los Estados' : 'All Status'}
+                    </SelectItem>
+                    <SelectItem value="draft">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-slate-500" />
+                        {language === 'es' ? 'Borrador' : 'Draft'}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="sent">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        {language === 'es' ? 'Enviado' : 'Sent'}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="approved">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        {language === 'es' ? 'Aprobado' : 'Approved'}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="converted_to_invoice">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        {language === 'es' ? 'Convertido' : 'Converted'}
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            )}
-          </div>
 
-          {/* Quote List */}
-          <div className="flex-1 overflow-y-auto">
-            {isLoading ? (
-              <div className="p-4 space-y-3">
-                {[1,2,3,4,5].map(i => (
-                  <div key={i} className="p-3 border-b">
-                    <Skeleton className="h-5 w-32 mb-2" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                ))}
+              {/* Team Filter */}
+              <div className="space-y-2">
+                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                  {language === 'es' ? 'Equipo' : 'Team'}
+                </Label>
+                <Select value={teamFilter} onValueChange={setTeamFilter}>
+                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                    <SelectItem value="all">
+                      {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
+                    </SelectItem>
+                    {teams.map(team => (
+                      <SelectItem key={team.id} value={team.id}>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3 h-3 text-slate-500" />
+                          {team.team_name} - {team.location}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ) : filteredQuotes.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">
-                <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>{hasActiveFilters ? (language === 'es' ? 'No hay resultados' : 'No results') : t('noQuotes')}</p>
-              </div>
-            ) : (
-              filteredQuotes.map(quote => (
-                <div
-                  key={quote.id}
-                  onClick={() => setSelectedQuote(quote)}
-                  className={`p-4 border-b cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
-                    selectedQuote?.id === quote.id ? 'bg-cyan-50 dark:bg-cyan-900/20 border-l-4 border-l-cyan-600' : ''
-                  }`}
+            </div>
+
+            {/* Clear filters button */}
+            {(searchTerm || statusFilter !== 'all' || teamFilter !== 'all') && (
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                    setTeamFilter('all');
+                  }}
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-slate-900 dark:text-white truncate">{quote.customer_name}</h3>
-                    <Badge className={statusColors[quote.status]}>{getStatusLabel(quote.status)}</Badge>
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 truncate mb-1">{quote.job_name}</p>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">{quote.quote_number}</span>
-                    <span className="font-bold text-cyan-600">${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    {format(new Date(quote.quote_date), 'MMM d, yyyy', { locale: language === 'es' ? es : undefined })}
-                  </div>
-                </div>
-              ))
+                  <X className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
+                </Button>
+              </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Preview Panel */}
-        <div className="flex-1 bg-slate-50 dark:bg-[#181818] overflow-y-auto">
-          {selectedQuote ? (
-            <div className="max-w-4xl mx-auto p-6">
-              {/* Actions Bar */}
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{selectedQuote.quote_number}</h2>
-                  <Badge className={statusColors[selectedQuote.status]}>{getStatusLabel(selectedQuote.status)}</Badge>
+        {/* Quotes Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredQuotes.map(quote => (
+            <Card key={quote.id} className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate mb-1">
+                      {quote.customer_name}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <Users className="w-3 h-3" />
+                      <span className="truncate">{quote.job_name}</span>
+                    </div>
+                  </div>
+                  <Badge className={statusColors[quote.status]}>
+                    {getStatusLabel(quote.status)}
+                  </Badge>
                 </div>
-                {isAdmin && (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => duplicateMutation.mutate(selectedQuote)}
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      {language === 'es' ? 'Duplicar' : 'Duplicate'}
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">{quote.quote_number}</span>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      {quote.quote_date && format(new Date(quote.quote_date), 'MMM d, yyyy')}
+                    </span>
+                  </div>
+                  
+                  {quote.team_name && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <MapPin className="w-3 h-3" />
+                      <span>{quote.team_name}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
+                  <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">
+                    {language === 'es' ? 'Valor Total' : 'Total Value'}
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Eye className="w-4 h-4 mr-2" />
+                      {t('view')}
                     </Button>
-                    {selectedQuote.status !== 'converted_to_invoice' && (
+                  </Link>
+                  {isAdmin && (
+                    <>
+                      {quote.status !== 'converted_to_invoice' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => convertToInvoiceMutation.mutate(quote)}
+                          disabled={convertToInvoiceMutation.isPending}
+                          className="text-green-600 hover:bg-green-50"
+                        >
+                          <FileCheck className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => duplicateMutation.mutate(quote)}
+                        disabled={duplicateMutation.isPending}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => {
-                          setConvertingQuote(selectedQuote);
-                          setShowQuickConvert(true);
+                          if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
+                            deleteMutation.mutate(quote.id);
+                          }
                         }}
-                        className="bg-gradient-to-r from-green-500 to-green-600 text-white"
+                        className="text-red-600 hover:bg-red-50"
                       >
-                        <FileCheck className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Convertir' : 'Convert'}
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                    )}
-                    <Link to={createPageUrl(`VerEstimado?id=${selectedQuote.id}`)}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Ver Detalles' : 'View Details'}
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
-                          deleteMutation.mutate(selectedQuote.id);
-                        }
-                      }}
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Quote Document */}
-              <div id="quote-preview-for-pdf" className="bg-white dark:bg-[#282828] rounded-lg shadow-xl">
-                <QuoteDocument quote={selectedQuote} />
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-slate-400">
-                <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg">{language === 'es' ? 'Selecciona un estimado para ver los detalles' : 'Select a quote to view details'}</p>
-              </div>
-            </div>
-          )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
 
-      {/* Quick Convert to Invoice Dialog */}
-      <QuoteToInvoiceConverter
-        quote={convertingQuote}
-        open={showQuickConvert}
-        onOpenChange={(open) => {
-          setShowQuickConvert(open);
-          if (!open) setConvertingQuote(null);
-        }}
-      />
+        {filteredQuotes.length === 0 && !isLoading && (
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
+            <CardContent className="p-12 text-center">
+              <FileText className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                {quotes.length === 0 ? t('noQuotes') : (language === 'es' ? 'No se encontraron estimados' : 'No quotes found')}
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6">
+                {quotes.length === 0
+                  ? (language === 'es' ? 'Comienza creando tu primer estimado' : 'Start by creating your first quote')
+                  : (language === 'es' ? 'Intenta ajustar los filtros' : 'Try adjusting your filters')
+                }
+              </p>
+              {isAdmin && quotes.length === 0 && (
+                <div className="flex justify-center gap-4">
+                  <Button
+                    onClick={() => setShowAIWizard(true)}
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg"
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Crear con IA' : 'Create with AI'}
+                  </Button>
+                  <Link to={createPageUrl("CrearEstimado")}>
+                    <Button className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {t('newQuote')}
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* AI Wizard Dialog */}
+        <Dialog open={showAIWizard} onOpenChange={setShowAIWizard}>
+          <DialogContent className="max-w-4xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-purple-500" />
+                {language === 'es' ? 'Crear Estimado con IA' : 'Create Quote with AI'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <AIEstimateInput
+                onComplete={() => {
+                  setShowAIWizard(false);
+                  queryClient.invalidateQueries({ queryKey: ['quotes'] });
+                }}
+                onCancel={() => setShowAIWizard(false)}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
