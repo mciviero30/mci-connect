@@ -22,8 +22,8 @@ export default function StatsWidget({ value, label, icon: Icon, badge, color = "
     <div className="flex items-center justify-between hover:scale-[1.02] transition-transform cursor-pointer">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <div className={`p-3 bg-gradient-to-br ${colorClasses[color]} rounded-xl shadow-md`}>
-            {Icon && <Icon className="w-6 h-6 text-white" />}
+          <div className={`p-2.5 bg-gradient-to-br ${colorClasses[color]} rounded-xl shadow-md`}>
+            {Icon && <Icon className="w-5 h-5 text-white" />}
           </div>
           {badge && (
             <Badge className={badgeClasses[color]}>

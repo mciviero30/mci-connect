@@ -59,10 +59,10 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
               <img
                 src={employee.profile_photo_url}
                 alt={displayName}
-                className="w-[48px] h-[48px] rounded-full object-cover flex-shrink-0"
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-[48px] h-[48px] bg-[#1E6FE8] rounded-full flex items-center justify-center text-white font-bold text-[19px] flex-shrink-0">
+              <div className="w-12 h-12 bg-[#1E6FE8] rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 {displayName[0]?.toUpperCase()}
               </div>
             )}
@@ -79,13 +79,13 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
           <div className="flex items-center gap-1">
             {hasOSHA30 && (
-              <div className="bg-green-100 p-1 rounded-full" title="OSHA 30 Certified">
-                <Shield className="w-3 h-3 text-green-600" />
+              <div className="bg-green-100 p-1.5 rounded-full" title="OSHA 30 Certified">
+                <Shield className="w-3.5 h-3.5 text-green-600" />
               </div>
             )}
             {hasExpiredCerts && (
-              <div className="bg-red-100 p-1 rounded-full" title="Expired Certifications">
-                <AlertTriangle className="w-3 h-3 text-red-600" />
+              <div className="bg-red-100 p-1.5 rounded-full" title="Expired Certifications">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               </div>
             )}
             <Button
@@ -94,7 +94,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
               onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
               className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0"
             >
-              <IdCard className="w-3 h-3" />
+              <IdCard className="w-3.5 h-3.5" />
               <span className="text-[10px] font-medium">Manage Profile</span>
             </Button>
           </div>
@@ -133,13 +133,13 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         <div className="space-y-1.5 mb-0 mt-auto">
           {employee.email && (
             <div className="flex items-center gap-1.5 text-[#666666]">
-              <Mail className="w-[13px] h-[13px] text-slate-400 flex-shrink-0" strokeWidth={1.5} />
+              <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
               <span className="text-[10px] truncate">{employee.email}</span>
             </div>
           )}
           {employee.phone && (
             <div className="flex items-center gap-1.5 text-[#666666]">
-              <Phone className="w-[13px] h-[13px] text-slate-400 flex-shrink-0" strokeWidth={1.5} />
+              <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
               <span className="text-[10px]">{employee.phone}</span>
             </div>
           )}
