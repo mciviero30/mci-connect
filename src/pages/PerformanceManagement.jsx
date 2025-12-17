@@ -308,7 +308,7 @@ export default function PerformanceManagement() {
                   date: new Date().toISOString().split('T')[0]
                 });
                 setShowDialog(true);
-              }} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30">
+              }} size="lg" className="soft-blue-gradient shadow-lg">
                 <Plus className="w-5 h-5 mr-2" />
                 Add Recognition
               </Button>
@@ -624,7 +624,7 @@ export default function PerformanceManagement() {
                 <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="bg-slate-50 border-slate-200 text-slate-700">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white">
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="soft-blue-gradient">
                   {editingRecognition ? 'Update Recognition' : 'Add Recognition'}
                 </Button>
               </div>

@@ -204,7 +204,7 @@ export default function Teams() {
           description={`${activeTeams.length} active teams`}
           icon={MapPin}
           actions={
-            <Button onClick={handleOpenDialog} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg">
+            <Button onClick={handleOpenDialog} size="lg" className="soft-blue-gradient shadow-lg">
               <Plus className="w-5 h-5 mr-2" />
               New Team
             </Button>
@@ -327,7 +327,7 @@ export default function Teams() {
                 <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE2] text-white">
+                <Button type="submit" className="soft-blue-gradient">
                   {editingTeam ? 'Update Team' : 'Create Team'}
                 </Button>
               </div>
@@ -400,7 +400,7 @@ export default function Teams() {
                     });
                   }
                 }}
-                className="bg-[#3B9FF3] hover:bg-[#2A8FE3] text-white"
+                className="soft-blue-gradient"
               >
                 Update Capacity
               </Button>

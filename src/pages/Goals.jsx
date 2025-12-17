@@ -126,7 +126,7 @@ export default function Goals() {
             { label: 'Completion Rate', value: `${completionRate}%` }
           ]}
           actions={
-            <Button onClick={() => { setEditingGoal(null); setShowForm(true); }} className="bg-gradient-to-r from-blue-600 to-blue-700">
+            <Button onClick={() => { setEditingGoal(null); setShowForm(true); }} className="soft-blue-gradient shadow-lg">
               <Plus className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Nueva Meta' : 'New Goal'}
             </Button>

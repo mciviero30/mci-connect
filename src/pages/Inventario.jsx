@@ -393,7 +393,7 @@ export default function Inventario() {
                   setShowAddDialog(true); 
                 }} 
                 size="lg"
-                className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
+                className="soft-blue-gradient shadow-lg"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Item
@@ -502,7 +502,7 @@ export default function Inventario() {
                       <div className="flex-1">
                         <h3 className="font-bold text-slate-900 dark:text-white text-lg">{item.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge className={item.inventory_type === 'hardware' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}>
+                          <Badge className={item.inventory_type === 'hardware' ? 'badge-soft-purple' : 'badge-soft-blue'}>
                             {item.inventory_type === 'hardware' ? '🔩 Hardware' : '🔧 Tools'}
                           </Badge>
                           <span className="text-sm text-slate-600 dark:text-slate-400">{item.category}</span>
@@ -526,9 +526,9 @@ export default function Inventario() {
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400 text-sm">Quantity:</span>
                         <Badge className={
-                          item.status === 'out_of_stock' ? 'bg-red-100 text-red-700 border-red-300' :
-                          item.status === 'low_stock' ? 'bg-amber-100 text-amber-700 border-amber-300' :
-                          'bg-green-100 text-green-700 border-green-300'
+                          item.status === 'out_of_stock' ? 'badge-soft-red' :
+                          item.status === 'low_stock' ? 'badge-soft-amber' :
+                          'badge-soft-green'
                         }>
                           {item.quantity} {item.unit}
                         </Badge>
@@ -583,7 +583,7 @@ export default function Inventario() {
                     <div className="space-y-2 mb-4">
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400 text-sm">Current:</span>
-                        <Badge className="bg-amber-100 text-amber-700 border-amber-300">
+                        <Badge className="badge-soft-amber">
                           {item.quantity} {item.unit}
                         </Badge>
                       </div>
@@ -593,7 +593,7 @@ export default function Inventario() {
                       </div>
                     </div>
 
-                    <Button size="sm" onClick={() => handleTransaction(item)} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
+                    <Button size="sm" onClick={() => handleTransaction(item)} className="w-full soft-amber-gradient">
                       <ArrowUp className="w-4 h-4 mr-2" />
                       Restock Now
                     </Button>
@@ -761,7 +761,7 @@ export default function Inventario() {
               </Button>
               <Button 
                 onClick={handleSubmitMovement} 
-                className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                className="soft-blue-gradient"
                 disabled={createMovementMutation.isPending}
               >
                 {createMovementMutation.isPending ? 'Recording...' : 'Record Movement'}
@@ -987,7 +987,7 @@ export default function Inventario() {
                     createItemMutation.mutate(itemForm);
                   }
                 }}
-                className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                className="soft-blue-gradient"
               >
                 {selectedItem ? 'Update' : 'Add'} Item
               </Button>
@@ -1065,7 +1065,7 @@ export default function Inventario() {
               <Button variant="outline" onClick={() => setShowTransactionDialog(false)} className="bg-white border-slate-300 text-slate-700">
                 Cancel
               </Button>
-              <Button onClick={handleSubmitTransaction} className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white">
+              <Button onClick={handleSubmitTransaction} className="soft-blue-gradient">
                 Record Transaction
               </Button>
             </DialogFooter>

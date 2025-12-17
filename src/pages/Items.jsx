@@ -738,7 +738,7 @@ export default function Items() {
                   onClick={syncPricesFromMCIConnect}
                   disabled={isSyncing}
                   variant="outline"
-                  className="bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                  className="soft-green-bg"
                 >
                   <RefreshCw className={`w-5 h-5 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
                   {isSyncing 
@@ -759,7 +759,7 @@ export default function Items() {
                     resetFormData();
                     setShowForm(true);
                   }}
-                  className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
+                  className="soft-blue-gradient shadow-lg"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'Nuevo Item' : 'New Item'}
@@ -1370,7 +1370,7 @@ export default function Items() {
                   <Button
                     type="submit"
                     disabled={createMutation.isPending || updateMutation.isPending}
-                    className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                    className="soft-blue-gradient"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {editingItem

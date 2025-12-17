@@ -352,15 +352,15 @@ export default function JobPerformanceAnalysis() {
                             </TableCell>
                             <TableCell className="text-slate-700 dark:text-slate-300 p-4">{team.location || '-'}</TableCell>
                             <TableCell className="text-center p-4">
-                              <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                              <Badge className="badge-soft-blue">
                                 {team.totalProjects}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-center p-4">
                               <Badge className={
-                                isHighProfit ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
-                                isMediumProfit ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                                'bg-red-100 text-red-800 border-red-300'
+                                isHighProfit ? 'badge-soft-green' :
+                                isMediumProfit ? 'badge-soft-amber' :
+                                'badge-soft-red'
                               }>
                                 {profitMargin.toFixed(1)}%
                               </Badge>
@@ -523,10 +523,10 @@ export default function JobPerformanceAnalysis() {
                       </td>
                       <td className="p-4 text-right">
                         <Badge className={
-                          job.efficiency >= 120 ? 'bg-emerald-100 text-emerald-700 border-emerald-300' :
-                          job.efficiency >= 100 ? 'bg-blue-100 text-blue-700 border-blue-300' :
-                          job.efficiency >= 80 ? 'bg-amber-100 text-amber-700 border-amber-300' :
-                          'bg-red-100 text-red-700 border-red-300'
+                          job.efficiency >= 120 ? 'badge-soft-green' :
+                          job.efficiency >= 100 ? 'badge-soft-blue' :
+                          job.efficiency >= 80 ? 'badge-soft-amber' :
+                          'badge-soft-red'
                         }>
                           {job.efficiency.toFixed(0)}%
                         </Badge>
@@ -537,8 +537,8 @@ export default function JobPerformanceAnalysis() {
                       <td className="p-4 text-center">
                         <Badge className={
                           job.status === 'completed'
-                            ? 'bg-blue-100 text-blue-700 border-blue-300'
-                            : 'bg-green-100 text-green-700 border-green-300'
+                            ? 'badge-soft-blue'
+                            : 'badge-soft-green'
                         }>
                           {job.status}
                         </Badge>

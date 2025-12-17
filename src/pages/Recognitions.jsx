@@ -50,14 +50,14 @@ export default function Recognitions() {
               <Button
                 onClick={() => setShowAIGenerator(true)}
                 variant="outline"
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-lg"
+                className="soft-purple-gradient shadow-lg border-0"
               >
                 <Wand2 className="w-4 h-4 mr-2" />
                 AI Generate
               </Button>
               <Button
                 onClick={() => setShowKudosDialog(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
+                className="soft-pink-gradient shadow-lg"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Give Kudos

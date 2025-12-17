@@ -216,7 +216,7 @@ export default function SkillMatrix() {
                           <span className="text-sm text-slate-500">{skill.years_experience} yrs exp</span>
                         )}
                         {skill.validated ? (
-                          <Badge className="bg-green-100 text-green-700 border-green-300">
+                          <Badge className="badge-soft-green">
                             <CheckCircle2 className="w-3 h-3 mr-1" />
                             Validated
                           </Badge>
@@ -224,7 +224,7 @@ export default function SkillMatrix() {
                           <Button
                             size="sm"
                             onClick={() => handleValidate(skill)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="soft-blue-gradient"
                           >
                             <Shield className="w-4 h-4 mr-1" />
                             Validate
@@ -345,7 +345,7 @@ export default function SkillMatrix() {
                       skillId: validateDialog.skill.id,
                       data: { validated_level: validateDialog.validated_level }
                     })}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="soft-green-gradient"
                   >
                     <CheckCircle2 className="w-4 h-4 mr-2" />
                     Validate Skill

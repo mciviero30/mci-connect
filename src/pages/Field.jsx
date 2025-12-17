@@ -132,7 +132,7 @@ export default function Field() {
             </button>
             <Button 
               onClick={() => setShowNewProject(true)}
-              className="bg-[#FFB800] hover:bg-[#E5A600] text-white shadow-lg shadow-[#FFB800]/25"
+              className="soft-amber-gradient shadow-lg"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Project
@@ -296,7 +296,7 @@ export default function Field() {
               <Button 
                 onClick={handleCreateProject}
                 disabled={!newProject.name || createJobMutation.isPending}
-                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                className="soft-amber-gradient"
               >
                 {createJobMutation.isPending ? 'Creating...' : 'Create Project'}
               </Button>
