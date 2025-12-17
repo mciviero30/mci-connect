@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
 import { Dialog } from "@/components/ui/dialog";
+import ModernInvoiceCard from "../components/invoices/ModernInvoiceCard";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
@@ -311,125 +312,20 @@ export default function Facturas() {
 
         {/* Invoices Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInvoices.map(invoice => {
-            const daysOverdue = getDaysOverdue(invoice);
-            return (
-              <Card key={invoice.id} className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate mb-1">
-                        {invoice.customer_name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <Users className="w-3 h-3" />
-                        <span className="truncate">{invoice.job_name}</span>
-                      </div>
-                    </div>
-                    <Badge className={statusColors[invoice.status]}>
-                      {getStatusLabel(invoice.status)}
-                    </Badge>
-                  </div>
-
-                  {daysOverdue > 0 && (
-                    <div className="mb-3 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                      <span className="text-xs font-semibold text-red-600 dark:text-red-400">
-                        ⚠️ {language === 'es' ? `Vencida ${daysOverdue}d` : `Overdue ${daysOverdue}d`}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500 dark:text-slate-400">{invoice.invoice_number}</span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {invoice.invoice_date && format(new Date(invoice.invoice_date), 'MMM d, yyyy')}
-                      </span>
-                    </div>
-                    
-                    {invoice.due_date && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500 dark:text-slate-400">
-                          {language === 'es' ? 'Vence:' : 'Due:'}
-                        </span>
-                        <span className="text-slate-600 dark:text-slate-400 font-medium">
-                          {format(new Date(invoice.due_date), 'MMM d, yyyy')}
-                        </span>
-                      </div>
-                    )}
-
-                    {invoice.team_name && (
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <MapPin className="w-3 h-3" />
-                        <span>{invoice.team_name}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-4">
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">
-                      {language === 'es' ? 'Total' : 'Total'}
-                    </div>
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      ${invoice.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </div>
-                    {invoice.status === 'partial' && (
-                      <div className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                        {language === 'es' ? 'Saldo:' : 'Balance:'} ${(invoice.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Link to={createPageUrl(`VerFactura?id=${invoice.id}`)} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="w-4 h-4 mr-2" />
-                        {t('view')}
-                      </Button>
-                    </Link>
-                    {isAdmin && (
-                      <>
-                        {invoice.status !== 'paid' && invoice.total > (invoice.amount_paid || 0) && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setPaymentInvoice(invoice);
-                              setPaymentAmount(((invoice.balance || invoice.total) > 0 ? (invoice.balance || invoice.total) : 0).toFixed(2));
-                              setPaymentDialogOpen(true);
-                            }}
-                            className="text-green-600 hover:bg-green-50"
-                          >
-                            <DollarSign className="w-4 h-4" />
-                          </Button>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => duplicateMutation.mutate(invoice)}
-                          disabled={duplicateMutation.isPending}
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
-                              deleteMutation.mutate(invoice.id);
-                            }
-                          }}
-                          className="text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {filteredInvoices.map(invoice => (
+            <ModernInvoiceCard
+              key={invoice.id}
+              invoice={invoice}
+              onDuplicate={(inv) => duplicateMutation.mutate(inv)}
+              onDelete={(id) => deleteMutation.mutate(id)}
+              onRegisterPayment={(inv) => {
+                setPaymentInvoice(inv);
+                setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
+                setPaymentDialogOpen(true);
+              }}
+              isAdmin={isAdmin}
+            />
+          ))}
         </div>
 
         {filteredInvoices.length === 0 && !isLoading && (

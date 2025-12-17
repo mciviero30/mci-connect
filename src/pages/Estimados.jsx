@@ -16,6 +16,7 @@ import PageHeader from "../components/shared/PageHeader";
 import AIEstimateInput from "../components/quotes/AIEstimateInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import ModernQuoteCard from "../components/quotes/ModernQuoteCard";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -296,93 +297,14 @@ export default function Estimados() {
         {/* Quotes Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredQuotes.map(quote => (
-            <Card key={quote.id} className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate mb-1">
-                      {quote.customer_name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                      <Users className="w-3 h-3" />
-                      <span className="truncate">{quote.job_name}</span>
-                    </div>
-                  </div>
-                  <Badge className={statusColors[quote.status]}>
-                    {getStatusLabel(quote.status)}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">{quote.quote_number}</span>
-                    <span className="text-slate-500 dark:text-slate-400">
-                      {quote.quote_date && format(new Date(quote.quote_date), 'MMM d, yyyy')}
-                    </span>
-                  </div>
-                  
-                  {quote.team_name && (
-                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                      <MapPin className="w-3 h-3" />
-                      <span>{quote.team_name}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
-                  <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">
-                    {language === 'es' ? 'Valor Total' : 'Total Value'}
-                  </div>
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    ${quote.total?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Link to={createPageUrl(`VerEstimado?id=${quote.id}`)} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Eye className="w-4 h-4 mr-2" />
-                      {t('view')}
-                    </Button>
-                  </Link>
-                  {isAdmin && (
-                    <>
-                      {quote.status !== 'converted_to_invoice' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => convertToInvoiceMutation.mutate(quote)}
-                          disabled={convertToInvoiceMutation.isPending}
-                          className="text-green-600 hover:bg-green-50"
-                        >
-                          <FileCheck className="w-4 h-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => duplicateMutation.mutate(quote)}
-                        disabled={duplicateMutation.isPending}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
-                            deleteMutation.mutate(quote.id);
-                          }
-                        }}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <ModernQuoteCard
+              key={quote.id}
+              quote={quote}
+              onDuplicate={(q) => duplicateMutation.mutate(q)}
+              onDelete={(id) => deleteMutation.mutate(id)}
+              onConvert={(q) => convertToInvoiceMutation.mutate(q)}
+              isAdmin={isAdmin}
+            />
           ))}
         </div>
 
