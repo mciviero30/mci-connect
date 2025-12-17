@@ -648,11 +648,11 @@ const LayoutContent = ({ children, currentPageName }) => {
         <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
           <SidebarHeader className="p-4 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-800/30">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/30 p-0.5">
+              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-xl p-1">
                 <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                   alt="MCI Connect"
-                  className="w-full h-full rounded-xl object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex-1">
@@ -786,11 +786,11 @@ const LayoutContent = ({ children, currentPageName }) => {
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-lg p-0.5 flex-shrink-0">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="MCI Connect"
-                    className="w-full h-full rounded-lg object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <h1 className="text-base font-black leading-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate">
