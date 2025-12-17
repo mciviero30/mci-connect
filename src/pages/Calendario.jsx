@@ -417,23 +417,20 @@ export default function Calendario() {
           />
 
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-3 md:mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-3">
             <Card 
               className="bg-gradient-to-br from-[#3B9FF3] to-blue-600 shadow-lg border-0 cursor-pointer hover:shadow-xl transition-shadow dark:from-blue-600 dark:to-blue-700"
               onClick={() => setEventTypeFilter('all')}
             >
-              <CardContent className="p-2 md:p-4">
+              <CardContent className="p-2 md:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs md:text-sm font-medium text-blue-50">
+                    <p className="text-[10px] md:text-xs font-medium text-blue-50">
                       {language === 'es' ? 'Total Turnos' : 'Total Shifts'}
                     </p>
-                    <p className="text-xl md:text-3xl font-bold text-white mt-0.5 md:mt-1">{workload.totalEvents}</p>
-                    <p className="text-[10px] md:text-xs text-blue-100 mt-0.5 md:mt-1 hidden md:block">
-                      {language === 'es' ? 'Click para mostrar todos' : 'Click to show all'}
-                    </p>
+                    <p className="text-lg md:text-2xl font-bold text-white">{workload.totalEvents}</p>
                   </div>
-                  <CalendarIcon className="w-6 h-6 md:w-8 md:h-8 text-white/60" />
+                  <CalendarIcon className="w-5 h-5 md:w-6 md:h-6 text-white/60" />
                 </div>
               </CardContent>
             </Card>
@@ -442,18 +439,15 @@ export default function Calendario() {
               className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl hover:border-purple-400 dark:hover:border-purple-500 transition-all"
               onClick={() => setEventTypeFilter('job_work')}
             >
-              <CardContent className="p-2 md:p-4">
+              <CardContent className="p-2 md:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Trabajo' : 'Job Work'}
                     </p>
-                    <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mt-0.5 md:mt-1">{workload.jobWork}</p>
-                    <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1 hidden md:block">
-                      {language === 'es' ? 'Click para filtrar' : 'Click to filter'}
-                    </p>
+                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white">{workload.jobWork}</p>
                   </div>
-                  <Briefcase className="w-6 h-6 md:w-8 md:h-8 text-purple-500" />
+                  <Briefcase className="w-5 h-5 md:w-6 md:h-6 text-purple-500" />
                 </div>
               </CardContent>
             </Card>
@@ -462,39 +456,36 @@ export default function Calendario() {
               className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-xl hover:border-blue-400 dark:hover:border-blue-500 transition-all"
               onClick={() => setEventTypeFilter('appointment')}
             >
-              <CardContent className="p-2 md:p-4">
+              <CardContent className="p-2 md:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Citas' : 'Appointments'}
                     </p>
-                    <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mt-0.5 md:mt-1">{workload.appointments}</p>
-                    <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 md:mt-1 hidden md:block">
-                      {language === 'es' ? 'Click para filtrar' : 'Click to filter'}
-                    </p>
+                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white">{workload.appointments}</p>
                   </div>
-                  <CalendarClock className="w-6 h-6 md:w-8 md:h-8 text-blue-500" />
+                  <CalendarClock className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
-              <CardContent className="p-2 md:p-4">
+              <CardContent className="p-2 md:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400">
                       {language === 'es' ? 'Horas Totales' : 'Total Hours'}
                     </p>
-                    <p className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white mt-0.5 md:mt-1">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white">{workload.totalEstimatedHours.toFixed(1)}h</p>
                   </div>
-                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-green-500" />
+                  <Clock className="w-5 h-5 md:w-6 md:h-6 text-green-500" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-3 md:mb-6">
-            <CardContent className="p-3 md:p-6">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-3">
+            <CardContent className="p-3">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
                 <div className="space-y-2">
                   <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
