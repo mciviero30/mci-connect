@@ -36,7 +36,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
   const progressPercentage = onboardingProgress?.percentage || 0;
 
   return (
-    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full min-w-[320px] max-w-[360px]">
+    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full">
       <div className="p-4">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">

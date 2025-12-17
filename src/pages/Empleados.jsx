@@ -389,7 +389,7 @@ export default function Empleados() {
           </TabsList>
 
           <TabsContent value="active">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginateEmployees(activeEmployees).map(employee => (
                 <ModernEmployeeCard
                   key={employee.id}
@@ -430,7 +430,7 @@ export default function Empleados() {
                 ℹ️ Invited employees need to accept invitation from Dashboard to activate their account.
               </AlertDescription>
             </Alert>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginateEmployees(invitedEmployees).map(employee => (
                 <ModernEmployeeCard
                   key={employee.id}
@@ -465,7 +465,7 @@ export default function Empleados() {
           </TabsContent>
 
           <TabsContent value="deleted">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {paginateEmployees(deletedEmployees).map(employee => (
                 <ModernEmployeeCard
                   key={employee.id}
