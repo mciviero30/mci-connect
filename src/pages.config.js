@@ -74,6 +74,7 @@ import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
 import WelcomeMessage from './pages/WelcomeMessage';
 import SetupPassword from './pages/SetupPassword';
+import OnboardingWizard from './pages/OnboardingWizard';
 import __Layout from './Layout.jsx';
 
 
@@ -154,6 +155,7 @@ export const PAGES = {
     "CustomerDetails": CustomerDetails,
     "WelcomeMessage": WelcomeMessage,
     "SetupPassword": SetupPassword,
+    "OnboardingWizard": OnboardingWizard,
 }
 
 export const pagesConfig = {
