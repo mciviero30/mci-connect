@@ -170,7 +170,7 @@ export const getFirstLastName = (employee) => {
  * Format position title without abbreviations
  * CEO -> Chief Executive Officer, etc.
  */
-export function formatPosition(position) {
+export const formatPosition = (position) => {
   if (!position) return 'Employee';
   if (position.toUpperCase() === 'CEO') return 'Chief Executive Officer';
   if (position.toUpperCase() === 'CFO') return 'Chief Financial Officer';
@@ -181,4 +181,4 @@ export function formatPosition(position) {
   return position.split(' ').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   ).join(' ');
-}
+};
