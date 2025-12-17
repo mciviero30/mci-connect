@@ -456,7 +456,7 @@ Lawrenceville, Georgia 30043, U.S.A`
                 size="sm"
                 onClick={() => convertToInvoiceMutation.mutate()}
                 disabled={convertToInvoiceMutation.isPending}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg shadow-cyan-500/30"
+                className="soft-cyan-gradient shadow-lg"
               >
                 <FileCheck className="w-4 h-4 mr-2" />
                 {convertToInvoiceMutation.isPending ? t('converting') : t('convertToInvoice')}

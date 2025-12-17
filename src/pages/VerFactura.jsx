@@ -245,12 +245,12 @@ export default function VerFactura() {
   }
 
   const statusConfig = {
-    draft: { label: t('draft'), color: "bg-slate-100 text-slate-800" },
-    sent: { label: t('sent'), color: "bg-blue-100 text-blue-800" },
-    paid: { label: t('paid'), color: "bg-green-100 text-green-800" },
-    partial: { label: t('partialPayment'), color: "bg-yellow-100 text-yellow-800" },
-    overdue: { label: t('overdue'), color: "bg-red-100 text-red-800" },
-    cancelled: { label: t('cancelled'), color: "bg-slate-100 text-slate-800" }
+    draft: { label: t('draft'), color: "badge-soft-slate" },
+    sent: { label: t('sent'), color: "badge-soft-blue" },
+    paid: { label: t('paid'), color: "badge-soft-green" },
+    partial: { label: t('partialPayment'), color: "badge-soft-amber" },
+    overdue: { label: t('overdue'), color: "badge-soft-red" },
+    cancelled: { label: t('cancelled'), color: "badge-soft-slate" }
   };
 
   const config = statusConfig[invoice.status];
@@ -308,7 +308,7 @@ export default function VerFactura() {
                 variant="default"
                 size="sm"
                 onClick={() => setPaymentDialog(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="soft-green-gradient shadow-lg"
               >
                 <DollarSign className="w-4 h-4 mr-2" />
                 {t('recordPayment')}
@@ -405,7 +405,7 @@ export default function VerFactura() {
             <Button
               onClick={() => recordPaymentMutation.mutate(parseFloat(paymentAmount))}
               disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || recordPaymentMutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
+              className="soft-green-gradient"
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               {recordPaymentMutation.isPending ? t('processing') : t('confirmPayment')}

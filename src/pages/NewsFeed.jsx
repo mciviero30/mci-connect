@@ -145,11 +145,11 @@ export default function NewsFeed() {
           actions={
             canCreateAnnouncements && !isCreating && (
               <div className="flex gap-2">
-                <Button onClick={() => setShowAIGenerator(true)} variant="outline" size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg">
+                <Button onClick={() => setShowAIGenerator(true)} variant="outline" size="lg" className="soft-purple-gradient shadow-lg border-0">
                   <Wand2 className="w-5 h-5 mr-2" />
                   AI Generate
                 </Button>
-                <Button onClick={() => setCreating(true)} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg">
+                <Button onClick={() => setCreating(true)} size="lg" className="soft-blue-gradient shadow-lg">
                   <Plus className="w-5 h-5 mr-2" />
                   {t('newAnnouncement')}
                 </Button>
@@ -209,7 +209,7 @@ export default function NewsFeed() {
                             </div>
                           )}
                           <p className="text-sm text-slate-900 flex-1">{emp.full_name}</p>
-                          <Badge className="bg-purple-100 text-purple-700 border-purple-300">
+                          <Badge className="badge-soft-purple">
                             {format(birthday, 'MMM d')}
                           </Badge>
                         </div>
@@ -283,7 +283,7 @@ export default function NewsFeed() {
                   <Button
                     onClick={() => createMutation.mutate(newPost)}
                     disabled={!newPost.title || !newPost.content || createMutation.isPending}
-                    className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
+                    className="soft-blue-gradient shadow-lg"
                   >
                     {createMutation.isPending ? t('saving') : t('save')}
                   </Button>
@@ -298,9 +298,9 @@ export default function NewsFeed() {
             const likes = post.likes || [];
             const hasLiked = likes.includes(user?.email);
             const priorityColors = {
-              normal: 'bg-blue-100 text-blue-700 border-blue-300',
-              important: 'bg-amber-100 text-amber-700 border-amber-300',
-              urgent: 'bg-red-100 text-red-700 border-red-300'
+              normal: 'badge-soft-blue',
+              important: 'badge-soft-amber',
+              urgent: 'badge-soft-red'
             };
 
             return (
