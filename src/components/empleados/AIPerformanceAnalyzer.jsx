@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +38,7 @@ export default function AIPerformanceAnalyzer({
   const { t, language } = useLanguage();
   const [analysis, setAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showDetails, setShowDetails] = useState(showFullAnalysis);
+  const [showDetails, setShowDetails] = useState(false);
 
   const analyzePerformance = async () => {
     if (!employee) return;
@@ -227,10 +226,10 @@ Response in JSON format.`;
   };
 
   useEffect(() => {
-    if (showFullAnalysis && employee && !analysis) {
+    if (showFullAnalysis && employee && !analysis && showDetails) {
       analyzePerformance();
     }
-  }, [employee, showFullAnalysis, analysis]); // Added 'analysis' to dependency array to prevent re-analysis loop if component re-renders but analysis is null.
+  }, [employee, showFullAnalysis, analysis, showDetails]);
 
   if (!employee) return null;
 
@@ -257,51 +256,45 @@ Response in JSON format.`;
   return (
     <Card className="border-slate-200 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg">
       <CardHeader className="border-b border-slate-200">
-        <div className="flex items-center justify-between">
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="w-full flex items-center justify-between hover:bg-slate-50 transition-colors -m-6 p-6 rounded-t-lg"
+        >
           <CardTitle className="flex items-center gap-2 text-slate-900">
             <Sparkles className="w-5 h-5 text-purple-500" />
             {language === 'es' ? 'Análisis de Desempeño IA' : 'AI Performance Analysis'}
           </CardTitle>
-          {!showFullAnalysis && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowDetails(!showDetails)}
-              className="text-purple-600 hover:text-purple-700"
-            >
-              {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </Button>
-          )}
-        </div>
+          {showDetails ? <ChevronUp className="w-4 h-4 text-purple-600" /> : <ChevronDown className="w-4 h-4 text-purple-600" />}
+        </button>
       </CardHeader>
       
-      <CardContent className="p-6">
-        {!analysis && !isAnalyzing ? (
-          <div className="text-center py-8">
-            <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-4" />
-            <p className="text-slate-600 mb-4">
-              {language === 'es' 
-                ? 'Obtén insights inteligentes sobre el desempeño de este empleado' 
-                : 'Get intelligent insights about this employee\'s performance'}
-            </p>
-            <Button
-              onClick={analyzePerformance}
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Analizar Desempeño' : 'Analyze Performance'}
-            </Button>
-          </div>
-        ) : isAnalyzing ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="w-12 h-12 animate-spin text-purple-500 mb-4" />
-            <p className="text-slate-600">
-              {language === 'es' ? 'Analizando datos de desempeño...' : 'Analyzing performance data...'}
-            </p>
-          </div>
-        ) : (
-          <AnimatePresence>
-            {showDetails && analysis && (
+      <AnimatePresence>
+        {showDetails && (
+          <CardContent className="p-6">
+            {!analysis && !isAnalyzing ? (
+              <div className="text-center py-8">
+                <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                <p className="text-slate-600 mb-4">
+                  {language === 'es' 
+                    ? 'Obtén insights inteligentes sobre el desempeño de este empleado' 
+                    : 'Get intelligent insights about this employee\'s performance'}
+                </p>
+                <Button
+                  onClick={analyzePerformance}
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Analizar Desempeño' : 'Analyze Performance'}
+                </Button>
+              </div>
+            ) : isAnalyzing ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="w-12 h-12 animate-spin text-purple-500 mb-4" />
+                <p className="text-slate-600">
+                  {language === 'es' ? 'Analizando datos de desempeño...' : 'Analyzing performance data...'}
+                </p>
+              </div>
+            ) : analysis ? (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -527,11 +520,11 @@ Response in JSON format.`;
                   <Sparkles className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Re-analizar' : 'Re-analyze'}
                 </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            ) : null}
+          </CardContent>
         )}
-      </CardContent>
+      </AnimatePresence>
     </Card>
   );
 }
