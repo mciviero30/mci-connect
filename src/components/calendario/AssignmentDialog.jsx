@@ -477,7 +477,7 @@ export default function AssignmentDialog({
                     variant="destructive"
                     onClick={handleDeleteAllForProject}
                     disabled={isProcessing}
-                    className="justify-start soft-red-gradient"
+                    className="justify-start btn-soft-red"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Todos los turnos de "{shift.job_name || 'este proyecto'}" / All shifts for this project
