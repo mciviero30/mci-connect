@@ -290,6 +290,12 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   const adminNavigation = [
     {
+      section: 'EXECUTIVE',
+      items: [
+        { title: 'Control Tower', url: createPageUrl("ExecutiveControlTower"), icon: Shield },
+      ]
+    },
+    {
       section: 'GENERAL',
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
