@@ -52,13 +52,14 @@ export default function DailyReportGenerator({ open, onOpenChange, jobId, jobNam
 
   const generateReportMutation = useMutation({
     mutationFn: async () => {
+      const currentUser = await base44.auth.me();
       const report = {
         job_id: jobId,
         job_name: jobName,
         report_date: new Date().toISOString().split('T')[0],
         report_type: 'daily_progress',
-        generated_by: (await base44.auth.me()).email,
-        generated_by_name: (await base44.auth.me()).full_name,
+        generated_by: currentUser.email,
+        generated_by_name: currentUser.full_name,
         content: {
           work_completed: reportData.work_completed,
           materials_used: reportData.materials_used,
@@ -107,7 +108,6 @@ export default function DailyReportGenerator({ open, onOpenChange, jobId, jobNam
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Auto-populated stats */}
           <div className="grid grid-cols-3 gap-3">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-1">

@@ -23,7 +23,6 @@ export default function BeforeAfterPhotos({ jobId }) {
     enabled: !!jobId
   });
 
-  // Auto-detect before/after pairs based on location tags
   const autoDetectedPairs = photos.reduce((pairs, photo) => {
     if (!photo.location_tag) return pairs;
     
@@ -77,7 +76,6 @@ export default function BeforeAfterPhotos({ jobId }) {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2 mb-3">
-                  {/* Before */}
                   <div className="relative">
                     <img 
                       src={pair.before.photo_url} 
@@ -89,7 +87,6 @@ export default function BeforeAfterPhotos({ jobId }) {
                     </Badge>
                   </div>
 
-                  {/* After */}
                   <div className="relative">
                     <img 
                       src={pair.after.photo_url} 
@@ -120,7 +117,6 @@ export default function BeforeAfterPhotos({ jobId }) {
         </div>
       )}
 
-      {/* Full-screen comparison modal */}
       {selectedComparison && (
         <Dialog open={!!selectedComparison} onOpenChange={() => setSelectedComparison(null)}>
           <DialogContent className="max-w-6xl bg-slate-900 border-slate-700 p-0">
@@ -128,7 +124,6 @@ export default function BeforeAfterPhotos({ jobId }) {
               <h2 className="text-2xl font-bold text-white mb-6">{selectedComparison.area_name}</h2>
               
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Before */}
                 <div>
                   <Badge className="mb-3 bg-red-500 text-white">Before</Badge>
                   <img 
@@ -143,7 +138,6 @@ export default function BeforeAfterPhotos({ jobId }) {
                   )}
                 </div>
 
-                {/* After */}
                 <div>
                   <Badge className="mb-3 bg-green-500 text-white">After</Badge>
                   <img 

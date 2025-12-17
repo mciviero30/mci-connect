@@ -49,8 +49,8 @@ import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
 import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
-import DailyReportGenerator from '@/components/field/DailyReportGenerator.js';
-import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.js';
+import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
+import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
