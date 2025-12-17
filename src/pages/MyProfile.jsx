@@ -86,10 +86,10 @@ export default function MyProfile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#181818]">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">{t('loading')}...</p>
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-700 dark:text-slate-300 font-medium">{t('loading')}...</p>
         </div>
       </div>
     );
@@ -110,11 +110,11 @@ export default function MyProfile() {
   const totalPoints = myRecognitions.reduce((sum, r) => sum + (r.points || 0), 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#181818]">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-900">
       <CertificationMonitor userEmail={user.email} />
 
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-blue-800 dark:to-indigo-900">
+      <div className="bg-gradient-to-br from-indigo-500 via-blue-600 to-purple-600 dark:from-indigo-700 dark:via-blue-700 dark:to-purple-700">
         <div className="max-w-5xl mx-auto px-4 pt-8 pb-24">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -165,11 +165,11 @@ export default function MyProfile() {
 
       <div className="max-w-5xl mx-auto px-4 -mt-16">
         {/* Profile Card */}
-        <Card className="bg-white dark:bg-[#282828] shadow-xl border-0 mb-6 overflow-hidden">
+        <Card className="bg-white dark:bg-slate-800 shadow-2xl border-0 mb-6 overflow-hidden rounded-3xl">
           <CardContent className="p-0">
             <div className="flex flex-col md:flex-row">
               {/* Left - Photo Section */}
-              <div className="md:w-72 p-6 flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-[#282828] border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-700">
+              <div className="md:w-72 p-6 flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-800/50 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-700">
                 <button
                   onClick={() => setShowPhotoManager(true)}
                   className="group relative mb-4"
@@ -297,7 +297,7 @@ export default function MyProfile() {
           {/* Left Column - Details */}
           <div className="md:col-span-2 space-y-6">
             {/* Personal Info */}
-            <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <User className="w-4 h-4 text-blue-600" />
@@ -347,7 +347,7 @@ export default function MyProfile() {
             </Card>
 
             {/* Emergency Contact */}
-            <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCircle className="w-4 h-4 text-red-500" />
@@ -399,7 +399,7 @@ export default function MyProfile() {
 
             {/* Recognitions */}
             {myRecognitions.length > 0 && (
-              <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+              <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                     <Award className="w-4 h-4 text-amber-500" />
@@ -431,7 +431,7 @@ export default function MyProfile() {
 
           {/* Right Column - Quick Actions */}
           <div className="space-y-6">
-            <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">
                   Acciones Rápidas
@@ -495,7 +495,7 @@ export default function MyProfile() {
 
             {/* Certifications Summary */}
             {myCertifications.length > 0 && (
-              <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700">
+              <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm flex items-center gap-2">
                     <Shield className="w-4 h-4 text-green-600" />
