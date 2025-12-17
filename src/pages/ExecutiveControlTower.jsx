@@ -129,7 +129,7 @@ export default function ExecutiveControlTower() {
 
         {/* Top Row - Key Metrics */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-br from-[#1E6FE8] to-[#0052CC] text-white border-0 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <Users className="w-8 h-8 opacity-80" />
@@ -140,7 +140,7 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-600 to-emerald-700 text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-br from-[#00C48C] to-[#00A875] text-white border-0 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <Shield className="w-8 h-8 opacity-80" />
@@ -151,7 +151,7 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
 
-          <Card className={`bg-gradient-to-br ${monthBalance >= 0 ? 'from-green-600 to-green-700' : 'from-red-600 to-red-700'} text-white border-0 shadow-xl`}>
+          <Card className={`bg-gradient-to-br ${monthBalance >= 0 ? 'from-[#00C48C] to-[#00A875]' : 'from-[#EF4444] to-[#DC2626]'} text-white border-0 shadow-xl`}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <DollarSign className="w-8 h-8 opacity-80" />
@@ -162,7 +162,7 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-600 to-orange-700 text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-br from-[#EF4444] to-[#DC2626] text-white border-0 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <Bell className="w-8 h-8 opacity-80" />
@@ -179,7 +179,7 @@ export default function ExecutiveControlTower() {
           <Card className="lg:col-span-2 bg-white dark:bg-slate-800 shadow-2xl">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <MapPin className="w-5 h-5 text-blue-600" />
+                <MapPin className="w-5 h-5 text-[#1E6FE8]" />
                 Labor Map - Real-Time GPS
               </CardTitle>
               <p className="text-sm text-slate-600 dark:text-slate-400">Live location of clocked-in staff</p>
@@ -235,7 +235,7 @@ export default function ExecutiveControlTower() {
             <Card className="bg-white dark:bg-slate-800 shadow-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <Shield className="w-5 h-5 text-green-600" />
+                  <Shield className="w-5 h-5 text-[#00C48C]" />
                   Compliance Meter
                 </CardTitle>
               </CardHeader>
@@ -250,9 +250,9 @@ export default function ExecutiveControlTower() {
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4">
                       <div 
                         className={`h-full rounded-full transition-all ${
-                          overallCompliance >= 90 ? 'bg-gradient-to-r from-green-600 to-emerald-600' :
-                          overallCompliance >= 70 ? 'bg-gradient-to-r from-yellow-600 to-amber-600' :
-                          'bg-gradient-to-r from-red-600 to-orange-600'
+                          overallCompliance >= 90 ? 'bg-gradient-to-r from-[#00C48C] to-[#00A875]' :
+                          overallCompliance >= 70 ? 'bg-gradient-to-r from-[#F59E0B] to-[#D97706]' :
+                          'bg-gradient-to-r from-[#EF4444] to-[#DC2626]'
                         }`}
                         style={{ width: `${overallCompliance}%` }}
                       />
@@ -267,7 +267,7 @@ export default function ExecutiveControlTower() {
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div 
-                        className="h-full bg-blue-600 rounded-full transition-all"
+                        className="h-full bg-[#1E6FE8] rounded-full transition-all"
                         style={{ width: `${onboardingCompliance}%` }}
                       />
                     </div>
@@ -284,7 +284,7 @@ export default function ExecutiveControlTower() {
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div 
-                        className="h-full bg-green-600 rounded-full transition-all"
+                        className="h-full bg-[#00C48C] rounded-full transition-all"
                         style={{ width: `${certCompliance}%` }}
                       />
                     </div>
@@ -312,7 +312,7 @@ export default function ExecutiveControlTower() {
             <Card className="bg-white dark:bg-slate-800 shadow-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <TrendingUp className="w-5 h-5 text-[#00C48C]" />
                   Financial Pulse
                 </CardTitle>
               </CardHeader>
@@ -356,7 +356,7 @@ export default function ExecutiveControlTower() {
             <Card className="bg-white dark:bg-slate-800 shadow-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <Bell className="w-5 h-5 text-red-600" />
+                  <Bell className="w-5 h-5 text-[#EF4444]" />
                   Needs Attention ({needsAttention.length})
                 </CardTitle>
               </CardHeader>
@@ -398,7 +398,7 @@ export default function ExecutiveControlTower() {
           <Card className="bg-white dark:bg-slate-800 shadow-2xl">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <Clock className="w-5 h-5 text-blue-600" />
+                <Clock className="w-5 h-5 text-[#1E6FE8]" />
                 Active Workers Details
               </CardTitle>
             </CardHeader>
@@ -407,7 +407,7 @@ export default function ExecutiveControlTower() {
                 {activeTimeEntries.map((entry) => (
                   <div key={entry.id} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#1E6FE8] to-[#0052CC] rounded-full flex items-center justify-center text-white font-bold">
                         {entry.employee_name?.[0]?.toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
