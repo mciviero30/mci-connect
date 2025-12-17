@@ -37,7 +37,7 @@ export default function StatsCard({
               )}
             </div>
             {Icon && (
-              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
+              <div className="p-3 bg-white/20 rounded-2xl">
                 <Icon className="w-6 h-6 text-white" />
               </div>
             )}
@@ -113,7 +113,7 @@ export default function StatsCard({
             )}
           </div>
           {Icon && (
-            <div className={`${theme.icon} backdrop-blur-sm p-3 rounded-2xl`}>
+            <div className={`p-3 ${theme.icon} rounded-2xl`}>
               <Icon className={`w-6 h-6 ${theme.iconColor}`} />
             </div>
           )}
