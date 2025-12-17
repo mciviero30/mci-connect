@@ -23,7 +23,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
   const formatPosition = (position) => {
     if (!position) return 'Employee';
-    if (position === 'CEO') return 'Chief Executive Officer';
+    if (position.toUpperCase() === 'CEO') return 'Chief Executive Officer';
     return position.split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
     ).join(' ');
@@ -36,28 +36,28 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
   const progressPercentage = onboardingProgress?.percentage || 0;
 
   return (
-    <Card className="bg-white rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.08)] border-0 overflow-hidden hover:shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300">
-      <div className="p-8">
+    <Card className="bg-white rounded-[28px] shadow-[0_2px_16px_rgba(0,0,0,0.08)] border border-slate-100 overflow-hidden hover:shadow-[0_4px_24px_rgba(0,0,0,0.12)] transition-all duration-300">
+      <div className="p-6">
         {/* Header Section */}
-        <div className="flex items-start justify-between mb-8">
-          <div className="flex items-start gap-5">
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-start gap-4">
             {employee.profile_photo_url ? (
               <img
                 src={employee.profile_photo_url}
                 alt={displayName}
-                className="w-[120px] h-[120px] rounded-full object-cover"
+                className="w-[90px] h-[90px] rounded-full object-cover"
               />
             ) : (
-              <div className="w-[120px] h-[120px] bg-[#0052CC] rounded-full flex items-center justify-center text-white font-bold text-5xl">
+              <div className="w-[90px] h-[90px] bg-[#0052CC] rounded-full flex items-center justify-center text-white font-bold text-[40px]">
                 {displayName[0]?.toUpperCase()}
               </div>
             )}
 
-            <div className="pt-2">
-              <h3 className="text-[32px] font-bold text-black leading-tight mb-1">
+            <div className="flex-1 min-w-0 pt-1">
+              <h3 className="text-[26px] font-bold text-black leading-tight mb-0.5">
                 {displayName}
               </h3>
-              <p className="text-[20px] text-slate-600">
+              <p className="text-[18px] text-slate-600 leading-snug">
                 {formatPosition(employee.position)}
               </p>
             </div>
@@ -67,19 +67,19 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
             variant="ghost"
             size="sm"
             onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
-            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 flex items-center gap-2 px-4 py-2 text-base"
+            className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center gap-2 px-3 py-2 text-sm flex-shrink-0"
           >
-            <IdCard className="w-5 h-5" />
+            <IdCard className="w-4 h-4" />
             Manage Profile
           </Button>
         </div>
 
         {/* Onboarding Progress */}
-        <div className="mb-8">
-          <p className="text-[16px] font-medium text-slate-700 mb-3">
+        <div className="mb-6">
+          <p className="text-[15px] font-medium text-slate-700 mb-2">
             Onboarding Complete: {progressPercentage}%
           </p>
-          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-[#0052CC] rounded-full transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
@@ -88,44 +88,47 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         </div>
 
         {/* Status Badges */}
-        <div className="flex items-center gap-3 mb-6">
-          <Badge className="bg-[#10B981] hover:bg-[#10B981] text-white px-5 py-2 rounded-full text-[15px] font-semibold">
+        <div className="flex items-center gap-2.5 mb-5">
+          <Badge className="bg-[#10B981] hover:bg-[#10B981] text-white px-4 py-1.5 rounded-full text-[14px] font-semibold">
             Active
           </Badge>
-          <Badge className="bg-[#0052CC] hover:bg-[#0052CC] text-white px-5 py-2 rounded-full text-[15px] font-semibold">
+          <Badge className="bg-[#0052CC] hover:bg-[#0052CC] text-white px-4 py-1.5 rounded-full text-[14px] font-semibold">
             Full-Time
           </Badge>
           <Badge 
             variant="outline" 
-            className="border-2 border-[#0052CC] text-[#0052CC] bg-white hover:bg-white px-5 py-2 rounded-full text-[15px] font-semibold"
+            className="border-2 border-[#0052CC] text-[#0052CC] bg-white hover:bg-white px-4 py-1.5 rounded-full text-[14px] font-semibold"
           >
             {teamLocation}
           </Badge>
         </div>
 
         {/* Contact Info */}
-        <div className="flex items-center gap-8 mb-0">
+        <div className="space-y-2.5 mb-0">
           {employee.email && (
-            <div className="flex items-center gap-3 text-slate-600">
-              <Mail className="w-6 h-6 text-slate-400 flex-shrink-0" />
-              <span className="text-[16px]">{employee.email}</span>
+            <div className="flex items-center gap-2.5 text-slate-600">
+              <Mail className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              <span className="text-[15px] truncate">{employee.email}</span>
             </div>
           )}
           {employee.phone && (
-            <div className="flex items-center gap-3 text-slate-600">
-              <Phone className="w-6 h-6 text-slate-400 flex-shrink-0" />
-              <span className="text-[16px]">{employee.phone}</span>
+            <div className="flex items-center gap-2.5 text-slate-600">
+              <Phone className="w-5 h-5 text-slate-400 flex-shrink-0" />
+              <span className="text-[15px]">{employee.phone}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Add New Button - Full Width at Bottom */}
-      <div className="bg-gradient-to-r from-[#0ea5e9] to-[#0052CC] px-8 py-5 cursor-pointer hover:from-[#0284c7] hover:to-[#003d99] transition-all" onClick={() => onViewDetails(employee)}>
-        <div className="flex items-center justify-end gap-3">
-          <span className="text-white font-bold text-[20px]">Add New</span>
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-            <Plus className="w-6 h-6 text-[#0052CC]" />
+      <div 
+        className="bg-gradient-to-r from-[#0ea5e9] to-[#0052CC] px-6 py-4 cursor-pointer hover:from-[#0284c7] hover:to-[#003d99] transition-all" 
+        onClick={() => onViewDetails(employee)}
+      >
+        <div className="flex items-center justify-center gap-2.5">
+          <span className="text-white font-bold text-[17px]">Add New</span>
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <Plus className="w-5 h-5 text-[#0052CC]" />
           </div>
         </div>
       </div>
