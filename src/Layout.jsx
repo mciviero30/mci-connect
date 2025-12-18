@@ -78,7 +78,7 @@ import RealTimeNotifications from "@/components/notifications/RealTimeNotificati
 import PayrollReminderService from "@/components/payroll/PayrollReminderService";
 import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
 import NotificationBell from "@/components/notifications/NotificationBell";
-import IOSPushManager from "@/components/notifications/IOSPushManager";
+import UniversalPushManager from "@/components/notifications/IOSPushManager";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -573,7 +573,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           <RealTimeNotifications userEmail={user.email} />
           <PayrollReminderService user={user} />
           <UniversalNotificationEngine user={user} />
-          <IOSPushManager user={user} />
+          <UniversalPushManager user={user} />
         </>
       )}
         
