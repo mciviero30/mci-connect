@@ -161,7 +161,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                         <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
                           task.status === 'completed' ? 'bg-green-500' :
                           task.status === 'in_progress' ? 'bg-blue-500' :
-                          'bg-amber-500'
+                          'bg-red-500'
                         }`}>
                           {wallNum}
                         </div>
@@ -207,7 +207,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                         <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
                           task.status === 'completed' ? 'bg-green-500' :
                           task.status === 'in_progress' ? 'bg-blue-500' :
-                          'bg-amber-500'
+                          'bg-red-500'
                         }`}>
                           {wallNum}
                         </div>
