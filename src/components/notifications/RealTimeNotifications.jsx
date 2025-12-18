@@ -11,7 +11,7 @@ export default function RealTimeNotifications({ userEmail }) {
   const queryClient = useQueryClient();
   const [lastCheck, setLastCheck] = useState(new Date().toISOString());
 
-  // Poll for new notifications every 30 seconds
+  // Poll for new notifications every 15 seconds for real-time feel
   const { data: newNotifications = [] } = useQuery({
     queryKey: ['newNotifications', userEmail, lastCheck],
     queryFn: async () => {
@@ -24,7 +24,7 @@ export default function RealTimeNotifications({ userEmail }) {
       return notifications;
     },
     enabled: !!userEmail,
-    refetchInterval: 30000, // Poll every 30 seconds
+    refetchInterval: 15000, // Poll every 15 seconds for better real-time
     staleTime: 0,
   });
 

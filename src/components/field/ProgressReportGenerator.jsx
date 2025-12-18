@@ -84,8 +84,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   };
 
   // ============== COVER PAGE ==============
-  // Dark gradient background
-  doc.setFillColor(26, 26, 26);
+  // White background for print-friendly PDF
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pageWidth, pageHeight, 'F');
   
   // Yellow accent bar
@@ -100,7 +100,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   
   // Project management system subtitle
   doc.setFontSize(9);
-  doc.setTextColor(148, 163, 184);
+  doc.setTextColor(100, 116, 139);
   doc.setFont('helvetica', 'normal');
   doc.text('Construction Project Management', margin, 42);
 
@@ -111,7 +111,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
   // Job name (large)
   doc.setFontSize(28);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(26, 26, 26);
   doc.setFont('helvetica', 'bold');
   const jobName = job.name || job.job_name_field || 'Project';
   doc.text(jobName, margin, 70);
@@ -138,7 +138,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
   // Metadata section
   doc.setFontSize(10);
-  doc.setTextColor(203, 213, 225);
+  doc.setTextColor(71, 85, 105);
   doc.setFont('helvetica', 'normal');
   let metaY = 120;
   
@@ -277,26 +277,69 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     const taskTitle = task.title || `Wall ${task.wall_number || String(i + 1).padStart(3, '0')}`;
     doc.text(taskTitle, margin + 5, yPos);
 
-    // Location map - top right
+    // Location map - top right with improved cropping
     if (task.pin_x && task.pin_y && task.blueprint_id) {
       const plan = plans.find(p => p.id === task.blueprint_id);
       if (plan && plan.file_url) {
         try {
-          // Map dimensions
+          // Crop dimensions - center on task location
+          const cropRadius = 20; // Percentage radius around pin
           const mapWidth = 70;
           const mapHeight = 35;
           const mapX = pageWidth - margin - mapWidth;
           const mapY = yPos - 10;
           
-          // Add plan image
-          doc.addImage(plan.file_url, 'JPEG', mapX, mapY, mapWidth, mapHeight);
+          // Calculate crop area centered on pin
+          const cropX = Math.max(0, task.pin_x - cropRadius);
+          const cropY = Math.max(0, task.pin_y - cropRadius);
+          const cropW = Math.min(100, cropRadius * 2);
+          const cropH = Math.min(100, cropRadius * 2);
           
-          // Draw pin emoji on the location
-          const pinX = mapX + (task.pin_x / 100) * mapWidth;
-          const pinY = mapY + (task.pin_y / 100) * mapHeight;
+          // Compress and add image
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.src = plan.file_url;
           
-          doc.setFontSize(8);
-          doc.text('📍', pinX - 1, pinY + 1);
+          await new Promise((resolve) => {
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              
+              // Set canvas size
+              canvas.width = mapWidth * 3; // Higher resolution
+              canvas.height = mapHeight * 3;
+              
+              // Calculate source crop from image
+              const sx = (cropX / 100) * img.width;
+              const sy = (cropY / 100) * img.height;
+              const sw = (cropW / 100) * img.width;
+              const sh = (cropH / 100) * img.height;
+              
+              // Draw cropped section
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+              
+              // Compress to JPEG
+              const compressedImg = canvas.toDataURL('image/jpeg', 0.7);
+              
+              // Add to PDF
+              doc.addImage(compressedImg, 'JPEG', mapX, mapY, mapWidth, mapHeight);
+              
+              // Draw pin at center (since we cropped)
+              const pinX = mapX + mapWidth / 2;
+              const pinY = mapY + mapHeight / 2;
+              
+              // Yellow pin circle
+              doc.setFillColor(255, 184, 0);
+              doc.circle(pinX, pinY, 2, 'F');
+              
+              // White inner dot
+              doc.setFillColor(255, 255, 255);
+              doc.circle(pinX, pinY, 1, 'F');
+              
+              resolve();
+            };
+            img.onerror = () => resolve();
+          });
           
           // Location label below map
           doc.setFillColor(254, 243, 199);
@@ -304,7 +347,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
           doc.setFontSize(7);
           doc.setTextColor(120, 53, 15);
           doc.setFont('helvetica', 'normal');
-          doc.text(`${Math.round(task.pin_x)}%, ${Math.round(task.pin_y)}% - ${plan.name}`, mapX + mapWidth / 2, mapY + mapHeight + 4.5, { align: 'center' });
+          doc.text(`${plan.name}`, mapX + mapWidth / 2, mapY + mapHeight + 4.5, { align: 'center' });
         } catch (err) {
           console.warn('Error adding location map:', err);
         }
@@ -573,13 +616,51 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
           doc.setLineWidth(0.5);
           doc.rect(photoX, photoY, photoSize, photoSize);
           
-          // Add photo to PDF
+          // Compress and add photo to PDF
           const photoUrl = photo.url || photo.file_url;
           if (photoUrl) {
             try {
-              doc.addImage(photoUrl, 'JPEG', photoX + 1, photoY + 1, photoSize - 2, photoSize - 2);
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.src = photoUrl;
+              
+              await new Promise((resolve) => {
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  
+                  // Compress to max 800px
+                  const maxSize = 800;
+                  let width = img.width;
+                  let height = img.height;
+                  
+                  if (width > maxSize || height > maxSize) {
+                    if (width > height) {
+                      height = (height / width) * maxSize;
+                      width = maxSize;
+                    } else {
+                      width = (width / height) * maxSize;
+                      height = maxSize;
+                    }
+                  }
+                  
+                  canvas.width = width;
+                  canvas.height = height;
+                  ctx.drawImage(img, 0, 0, width, height);
+                  
+                  // Compress to 60% quality
+                  const compressedImg = canvas.toDataURL('image/jpeg', 0.6);
+                  doc.addImage(compressedImg, 'JPEG', photoX + 1, photoY + 1, photoSize - 2, photoSize - 2);
+                  resolve();
+                };
+                img.onerror = () => {
+                  doc.setFontSize(8);
+                  doc.setTextColor(148, 163, 184);
+                  doc.text('Photo', photoX + photoSize / 2, photoY + photoSize / 2, { align: 'center' });
+                  resolve();
+                };
+              });
             } catch (imgError) {
-              // If image fails, show placeholder
               doc.setFontSize(8);
               doc.setTextColor(148, 163, 184);
               doc.text('Photo', photoX + photoSize / 2, photoY + photoSize / 2, { align: 'center' });
