@@ -26,8 +26,6 @@ const statusIcons = {
 
 export default function TaskPin({ task, onClick, isSelected, onDragPin, isDragging }) {
   if (task.pin_x === undefined || task.pin_y === undefined) return null;
-
-  const status = statusColors[task.status] || statusColors.pending;
   
   // Extract wall number from title (e.g., "Wall 019" -> "019")
   const wallNumber = task.title?.match(/\d+/)?.[0] || '';
