@@ -208,7 +208,7 @@ export default function Clientes() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={toggleSelectAll}
-                  style={{ width: '12px', height: '12px', minWidth: '12px', minHeight: '12px', maxWidth: '12px', maxHeight: '12px' }}
+                  style={{ width: '18px', height: '18px', minWidth: '18px', minHeight: '18px', maxWidth: '18px', maxHeight: '18px' }}
                   className={`rounded flex items-center justify-center transition-all ${
                     selectedCustomers.length === sortedCustomers.length && sortedCustomers.length > 0
                       ? 'bg-[#FFB800] text-white'
@@ -216,7 +216,7 @@ export default function Clientes() {
                   }`}
                 >
                   {selectedCustomers.length === sortedCustomers.length && sortedCustomers.length > 0 && (
-                    <svg style={{ width: '8px', height: '8px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg style={{ width: '12px', height: '12px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                     </svg>
                   )}
@@ -234,7 +234,7 @@ export default function Clientes() {
                   className="bg-[#FFB800] hover:bg-[#E5A600] text-white h-7 text-xs"
                 >
                   <Send className="w-3 h-3 mr-1.5" />
-                  Bulk Invite to MCI Field
+                  Invite to MCI Field
                 </Button>
               )}
             </div>
