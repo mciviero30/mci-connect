@@ -75,6 +75,7 @@ import { OfflineProvider } from "@/components/offline/OfflineManager";
 import CertificationMonitor from "@/components/certifications/CertificationMonitor";
 import DeadlineMonitor from "@/components/notifications/DeadlineMonitor";
 import RealTimeNotifications from "@/components/notifications/RealTimeNotifications";
+import PayrollReminderService from "@/components/payroll/PayrollReminderService";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -567,6 +568,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           <CertificationMonitor userEmail={user.email} />
           <DeadlineMonitor userEmail={user.email} />
           <RealTimeNotifications userEmail={user.email} />
+          <PayrollReminderService user={user} />
         </>
       )}
         
