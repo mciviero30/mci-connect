@@ -244,9 +244,14 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.line(margin + 44, metaY, margin + 45, metaY + 0.5);
   doc.text('Working', margin + 47, metaY + 2);
 
-  // Slate - Pending (solid circle)
-  doc.setFillColor(100, 116, 139);
+  // Red - Pending (solid circle with white clock)
+  doc.setFillColor(239, 68, 68);
   doc.circle(margin + 65, metaY, 1.8, 'F');
+  doc.setDrawColor(255, 255, 255);
+  doc.setLineWidth(0.5);
+  doc.circle(margin + 65, metaY, 1.2, 'S');
+  doc.line(margin + 65, metaY, margin + 65, metaY - 1);
+  doc.line(margin + 65, metaY, margin + 66, metaY + 0.5);
   doc.text('Pending', margin + 68, metaY + 2);
 
   metaY += 15;
@@ -374,9 +379,14 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
                 doc.line(pinX, pinY, pinX, pinY - 1);
                 doc.line(pinX, pinY, pinX + 0.7, pinY + 0.4);
               } else {
-                // Slate solid
-                doc.setFillColor(100, 116, 139);
+                // Red with clock (pending)
+                doc.setFillColor(239, 68, 68);
                 doc.circle(pinX, pinY, pinSize, 'F');
+                doc.setDrawColor(255, 255, 255);
+                doc.setLineWidth(0.6);
+                doc.circle(pinX, pinY, 1.3, 'S');
+                doc.line(pinX, pinY, pinX, pinY - 1);
+                doc.line(pinX, pinY, pinX + 0.7, pinY + 0.4);
               }
               
               resolve();
@@ -526,9 +536,14 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
           doc.line(margin + 2.5, yPos - 1, margin + 2.5, yPos - 2);
           doc.line(margin + 2.5, yPos - 1, margin + 3.3, yPos - 0.5);
         } else {
-          // Slate solid circle
-          doc.setFillColor(100, 116, 139);
+          // Red solid circle with white clock (pending)
+          doc.setFillColor(239, 68, 68);
           doc.circle(margin + 2.5, yPos - 1, 1.8, 'F');
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(0.5);
+          doc.circle(margin + 2.5, yPos - 1, 1.2, 'S');
+          doc.line(margin + 2.5, yPos - 1, margin + 2.5, yPos - 2);
+          doc.line(margin + 2.5, yPos - 1, margin + 3.3, yPos - 0.5);
         }
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);

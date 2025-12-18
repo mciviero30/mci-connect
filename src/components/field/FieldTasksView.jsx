@@ -53,7 +53,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
     .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
 
   const columns = [
-    { id: 'pending', label: 'Pending', color: 'amber' },
+    { id: 'pending', label: 'Pending', color: 'red' },
     { id: 'in_progress', label: 'In Progress', color: 'blue' },
     { id: 'completed', label: 'Completed', color: 'green' },
   ];
@@ -218,7 +218,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                       <Badge className={`${
                         task.status === 'completed' ? 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400' :
                         task.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
-                        'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                        'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
                       }`}>
                         {task.status}
                       </Badge>
