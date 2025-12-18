@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { CheckCircle2, Clock, Circle } from 'lucide-react';
 
-const statusColors = {
-  pending: { bg: 'bg-amber-500', border: 'border-amber-300', point: 'border-t-amber-500', text: 'text-white' },
-  in_progress: { bg: 'bg-[#FFB800]', border: 'border-[#FFB800]', point: 'border-t-[#FFB800]', text: 'text-white' },
-  completed: { bg: 'bg-green-500', border: 'border-green-300', point: 'border-t-green-500', text: 'text-white' },
+// Unified solid icon system matching PDF reports
+const statusIcons = {
+  completed: { 
+    icon: CheckCircle2, 
+    bgColor: 'rgb(34, 197, 94)', 
+    iconColor: 'white',
+    className: 'bg-green-500'
+  },
+  in_progress: { 
+    icon: Clock, 
+    bgColor: 'rgb(251, 191, 36)', 
+    iconColor: 'white',
+    className: 'bg-amber-400'
+  },
+  pending: { 
+    icon: Circle, 
+    bgColor: 'rgb(100, 116, 139)', 
+    iconColor: 'white',
+    className: 'bg-slate-500',
+    filled: true
+  },
 };
 
 export default function TaskPin({ task, onClick, isSelected, onDragPin, isDragging }) {
@@ -54,6 +71,9 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
     setDragStartPos(null);
   };
 
+  const statusConfig = statusIcons[task.status] || statusIcons.pending;
+  const Icon = statusConfig.icon;
+
   return (
     <button
       onClick={handleClick}
@@ -61,14 +81,17 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className={`absolute transform -translate-x-1/2 -translate-y-full transition-all hover:scale-110 z-10 ${
-        isDragging ? 'cursor-move scale-110' : 'cursor-pointer'
-      } ${isSelected ? 'scale-125 z-20' : ''}`}
+      className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-125 z-10 ${
+        isDragging ? 'cursor-move scale-125' : 'cursor-pointer'
+      } ${isSelected ? 'scale-150 z-20 ring-2 ring-white ring-offset-2' : ''}`}
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
-      <div className="relative flex items-center justify-center">
-        {/* Pin emoji */}
-        <span className="text-2xl leading-none">📍</span>
+      <div className={`w-7 h-7 rounded-full ${statusConfig.className} shadow-xl flex items-center justify-center border-2 border-white`}>
+        <Icon 
+          className="w-4 h-4" 
+          style={{ color: statusConfig.iconColor }}
+          fill={statusConfig.filled ? statusConfig.iconColor : 'none'}
+        />
       </div>
     </button>
   );

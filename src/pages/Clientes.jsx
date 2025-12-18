@@ -233,7 +233,7 @@ export default function Clientes() {
                   size="sm"
                   className="bg-[#FFB800] hover:bg-[#E5A600] text-white h-7 text-xs"
                 >
-                  <Send className="w-3 h-3 mr-1.5" />
+                  <Send className="w-4 h-4 mr-2" />
                   Invite to MCI Field
                 </Button>
               )}
