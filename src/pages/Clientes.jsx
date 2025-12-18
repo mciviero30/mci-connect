@@ -3,8 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical, Eye } from "lucide-react";
+import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical, Eye, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import PageHeader from "../components/shared/PageHeader";
 import CustomerForm from "../components/clientes/CustomerForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,6 +13,7 @@ import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
 import ModernCustomerCard from "@/components/clientes/ModernCustomerCard";
+import InvitationModal from "@/components/field/InvitationModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +26,8 @@ export default function Clientes() {
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCustomers, setSelectedCustomers] = useState([]);
+  const [showInvitationModal, setShowInvitationModal] = useState(false);
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -148,6 +152,28 @@ export default function Clientes() {
   const activeCustomers = sortedCustomers.filter(c => c.status === 'active');
   const isAdmin = user?.role === 'admin';
 
+  const toggleCustomerSelection = (customer) => {
+    setSelectedCustomers(prev => {
+      const exists = prev.find(c => c.email === customer.email);
+      if (exists) {
+        return prev.filter(c => c.email !== customer.email);
+      } else {
+        return [...prev, { email: customer.email, name: getCustomerDisplayName(customer) }];
+      }
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCustomers.length === sortedCustomers.length) {
+      setSelectedCustomers([]);
+    } else {
+      setSelectedCustomers(sortedCustomers.map(c => ({ 
+        email: c.email, 
+        name: getCustomerDisplayName(c) 
+      })));
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
@@ -165,7 +191,7 @@ export default function Clientes() {
           }
         />
 
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
             <Input
@@ -175,17 +201,63 @@ export default function Clientes() {
               className="pl-12 h-12 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
             />
           </div>
+
+          {/* Bulk Actions Bar */}
+          {isAdmin && sortedCustomers.length > 0 && (
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  checked={selectedCustomers.length === sortedCustomers.length && sortedCustomers.length > 0}
+                  onCheckedChange={toggleSelectAll}
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {selectedCustomers.length > 0
+                    ? `${selectedCustomers.length} selected`
+                    : 'Select all'}
+                </span>
+              </div>
+              {selectedCustomers.length > 0 && (
+                <Button
+                  onClick={() => setShowInvitationModal(true)}
+                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Bulk Invite to MCI Field
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedCustomers.map(customer => (
-            <ModernCustomerCard
-              key={customer.id}
-              customer={customer}
-              onViewDetails={isAdmin ? handleEdit : () => {}}
-            />
-          ))}
+          {sortedCustomers.map(customer => {
+            const isSelected = selectedCustomers.some(c => c.email === customer.email);
+            return (
+              <div key={customer.id} className="relative">
+                {isAdmin && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleCustomerSelection(customer)}
+                      className="bg-white dark:bg-slate-800 border-2 shadow-md"
+                    />
+                  </div>
+                )}
+                <ModernCustomerCard
+                  customer={customer}
+                  onViewDetails={isAdmin ? handleEdit : () => {}}
+                />
+              </div>
+            );
+          })}
         </div>
+
+        {/* Invitation Modal */}
+        <InvitationModal
+          open={showInvitationModal}
+          onOpenChange={setShowInvitationModal}
+          selectedCustomers={selectedCustomers}
+        />
 
         {sortedCustomers.length === 0 && !isLoading && (
           <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">

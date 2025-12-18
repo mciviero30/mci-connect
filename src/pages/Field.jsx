@@ -56,9 +56,37 @@ export default function Field() {
     queryFn: () => base44.auth.me(),
   });
 
+  // Fetch job assignments for restricted users
+  const { data: userAssignments = [] } = useQuery({
+    queryKey: ['user-job-assignments', user?.email],
+    queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }),
+    enabled: !!user?.email && (user?.role === 'customer' || user?.role === 'field_worker'),
+  });
+
+  // Data isolation: Filter jobs based on user role
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['field-jobs'],
-    queryFn: () => base44.entities.Job.list('-created_date'),
+    queryFn: async () => {
+      // Admin and managers see all jobs
+      if (user?.role === 'admin' || user?.position === 'manager' || user?.position === 'CEO') {
+        return base44.entities.Job.list('-created_date');
+      }
+      
+      // Customers and field workers see only assigned jobs
+      if (user?.role === 'customer' || user?.role === 'field_worker') {
+        const assignedJobIds = [...new Set(userAssignments.map(a => a.job_id))];
+        if (assignedJobIds.length === 0) return [];
+        
+        const assignedJobs = await Promise.all(
+          assignedJobIds.map(jobId => base44.entities.Job.filter({ id: jobId }))
+        );
+        return assignedJobs.flat();
+      }
+      
+      // Default: all jobs
+      return base44.entities.Job.list('-created_date');
+    },
+    enabled: !!user,
   });
 
   const { data: tasks = [] } = useQuery({
@@ -130,13 +158,16 @@ export default function Field() {
                 <Command className="w-3 h-3" />K
               </kbd>
             </button>
-            <Button 
-              onClick={() => setShowNewProject(true)}
-              className="soft-amber-gradient shadow-lg"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
+            {/* Hide New Project button for customers */}
+            {user?.role !== 'customer' && (
+              <Button 
+                onClick={() => setShowNewProject(true)}
+                className="soft-amber-gradient shadow-lg"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </Button>
+            )}
           </div>
         </div>
 
@@ -233,7 +264,7 @@ export default function Field() {
           ) : filteredJobs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredJobs.map((job, idx) => (
-                <ProjectCard key={job.id} job={job} index={idx} />
+                <ProjectCard key={job.id} job={job} index={idx} userRole={user?.role} />
               ))}
             </div>
           ) : (
@@ -338,7 +369,7 @@ function StatsCard({ label, value, icon: Icon, color }) {
   );
 }
 
-function ProjectCard({ job, index }) {
+function ProjectCard({ job, index, userRole }) {
   const jobName = job.name || job.job_name_field || 'Untitled';
   const statusColors = {
     active: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -346,6 +377,8 @@ function ProjectCard({ job, index }) {
     on_hold: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     archived: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
   };
+
+  const isCustomer = userRole === 'customer';
 
   return (
     <motion.div
@@ -371,9 +404,15 @@ function ProjectCard({ job, index }) {
           <p className="text-sm text-slate-400 line-clamp-1">
             {job.address || job.description || 'No address'}
           </p>
-          {job.client_name_field && (
+          {/* Hide sensitive data for customers */}
+          {!isCustomer && job.client_name_field && (
             <p className="text-xs text-slate-500 mt-2">
               Client: {job.client_name_field}
+            </p>
+          )}
+          {!isCustomer && job.contract_amount && (
+            <p className="text-xs text-slate-500 mt-1">
+              Budget: ${job.contract_amount.toLocaleString()}
             </p>
           )}
         </div>
