@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import JobImporter from "../sync/JobImporter";
@@ -267,23 +268,25 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
 
         {/* Web Portfolio Settings - ADMIN ONLY */}
         {user?.role === 'admin' && (
-        <div className="border-t-4 border-yellow-400 pt-6 mt-6 bg-yellow-50 dark:bg-yellow-900/10 -mx-4 px-4 pb-4 rounded-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg">
-              <span className="text-3xl">🌐</span>
+        <div className="border-t-4 border-yellow-400 pt-6 mt-6 bg-gradient-to-br from-yellow-50 to-amber-50 dark:bg-yellow-900/10 -mx-4 px-4 pb-4 rounded-lg shadow-inner">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-2xl animate-pulse">
+              <span className="text-4xl">🌐</span>
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-slate-900 dark:text-white text-lg">Public on MCI-us.com</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Sync this project to the public website portfolio</p>
+              <h3 className="font-black text-slate-900 dark:text-white text-xl">Public on MCI-us.com</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Sync this project to the public website portfolio</p>
             </div>
-            <Badge className="bg-amber-500 text-white">Admin Only</Badge>
+            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg px-3 py-1.5 text-sm font-bold">
+              🔒 Admin Only
+            </Badge>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl shadow-md border-2 border-yellow-400">
               <div>
-                <Label className="text-slate-700 font-semibold">Show on MCI-us.com</Label>
-                <p className="text-xs text-slate-600">Enable for completed projects (disables NDA-protected work)</p>
+                <Label className="text-slate-900 dark:text-white font-bold text-base">Show on MCI-us.com</Label>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Enable for completed projects (privacy: no pricing, no full addresses, no quantities)</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -292,7 +295,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
                   onChange={(e) => setFormData({...formData, show_on_website: e.target.checked})}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-400"></div>
+                <div className="w-14 h-7 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border-2 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-yellow-400 peer-checked:to-amber-500 shadow-lg"></div>
               </label>
             </div>
 
