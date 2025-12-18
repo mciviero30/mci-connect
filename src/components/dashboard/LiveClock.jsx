@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -21,36 +22,14 @@ export default function LiveClock() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
   
-  // Fetch today's assignments for this employee
-  const { data: todaysAssignments = [], isLoading: assignmentsLoading } = useQuery({
-    queryKey: ['todaysAssignments', user?.email],
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
+    queryKey: ['activeJobs'],
     queryFn: async () => {
-      if (!user?.email) return [];
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const assignments = await base44.entities.ScheduleShift.filter({
-        employee_email: user.email,
-        date: today,
-        status: 'confirmed'
-      });
-      return assignments.filter(a => a.job_id); // Only assignments with jobs
+      console.log('Loading active jobs...');
+      const result = await base44.entities.Job.filter({ status: 'active' }, 'name');
+      console.log('Active jobs loaded:', result);
+      return result;
     },
-    enabled: !!user?.email,
-    staleTime: 60000,
-    initialData: [],
-  });
-
-  // Fetch the actual job details for today's assignments
-  const { data: assignedJobs = [], isLoading: jobsLoading } = useQuery({
-    queryKey: ['assignedJobs', todaysAssignments],
-    queryFn: async () => {
-      if (todaysAssignments.length === 0) return [];
-      const jobIds = [...new Set(todaysAssignments.map(a => a.job_id))];
-      const jobs = await Promise.all(
-        jobIds.map(id => base44.entities.Job.filter({ id }).then(res => res[0]))
-      );
-      return jobs.filter(Boolean);
-    },
-    enabled: todaysAssignments.length > 0,
     staleTime: 120000,
     initialData: [],
   });
@@ -152,7 +131,7 @@ export default function LiveClock() {
 
   const handleClockIn = async () => {
     console.log('Clock in clicked. Selected job:', selectedJob);
-    console.log('Available jobs:', assignedJobs);
+    console.log('Available jobs:', jobs);
     
     if (!selectedJob) {
       alert('Please select a job first');
@@ -167,7 +146,7 @@ export default function LiveClock() {
       console.log('Clock in location:', location);
       
       const now = Date.now();
-      const job = assignedJobs.find(j => j.id === selectedJob);
+      const job = jobs.find(j => j.id === selectedJob);
       
       if (!job) {
         console.error('Job not found! Selected job ID:', selectedJob);
@@ -193,8 +172,8 @@ export default function LiveClock() {
       setBreaks([]);
       setTotalBreakTime(0);
       setCurrentBreak(null);
+      setSelectedJob('');
       setLocationStatus('idle');
-      // NO resetear selectedJob - mantenerlo para la sesión
     } catch (error) {
       console.error('Clock in error:', error);
       setLocationError(error.toString());
@@ -288,7 +267,6 @@ export default function LiveClock() {
       setElapsedTime(0);
       setBreaks([]);
       setTotalBreakTime(0);
-      setSelectedJob(''); // Reset job selection only on clock out
       setLocationStatus('idle');
       setLocationError(null);
       localStorage.removeItem('clockedInData');
@@ -395,15 +373,15 @@ export default function LiveClock() {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">Select Job</label>
-              {assignmentsLoading || jobsLoading ? (
+              {jobsLoading ? (
                 <div className="flex items-center justify-center p-4 bg-slate-50 rounded-lg">
                   <Loader2 className="w-5 h-5 animate-spin text-blue-600 mr-2" />
-                  <span className="text-sm text-slate-600">Loading your jobs...</span>
+                  <span className="text-sm text-slate-600">Loading jobs...</span>
                 </div>
-              ) : assignedJobs.length === 0 ? (
+              ) : jobs.length === 0 ? (
                 <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-sm text-amber-800 font-medium">No jobs assigned for today</p>
-                  <p className="text-xs text-amber-600 mt-1">Check the Calendar for your scheduled shifts</p>
+                  <p className="text-sm text-amber-800 font-medium">No active jobs available</p>
+                  <p className="text-xs text-amber-600 mt-1">Please contact your administrator</p>
                 </div>
               ) : (
                 <Select 
@@ -415,10 +393,10 @@ export default function LiveClock() {
                   disabled={isProcessing}
                 >
                   <SelectTrigger className="w-full bg-white border-slate-300 text-slate-900">
-                    <SelectValue placeholder="Choose your job for today" />
+                    <SelectValue placeholder="Choose a job to start" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-slate-200">
-                    {assignedJobs.map(job => (
+                    {jobs.map(job => (
                       <SelectItem key={job.id} value={job.id} className="cursor-pointer text-slate-900 hover:bg-slate-100">
                         {job.name}
                       </SelectItem>
@@ -428,7 +406,7 @@ export default function LiveClock() {
               )}
             </div>
             
-            {!selectedJob && !isProcessing && assignedJobs.length > 0 && (
+            {!selectedJob && !isProcessing && jobs.length > 0 && (
               <div className="flex items-center text-sm text-amber-600 p-3 bg-amber-50 rounded-lg border border-amber-200">
                 <AlertTriangle className="w-4 h-4 mr-2 flex-shrink-0"/>
                 <span>Please select a job to clock in</span>
@@ -447,7 +425,7 @@ export default function LiveClock() {
             
             <Button 
               onClick={handleClockIn} 
-              disabled={!selectedJob || isProcessing || assignedJobs.length === 0} 
+              disabled={!selectedJob || isProcessing || jobs.length === 0} 
               className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg shadow-green-500/30" 
               size="lg"
             >
