@@ -742,22 +742,33 @@ export default function JobDetails() {
               )}
             </div>
             <div className="flex justify-between items-center pt-4 border-t">
-              <Button
-                onClick={() => syncToWebsiteMutation.mutate()}
-                disabled={!job?.show_on_website || syncToWebsiteMutation.isPending}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg disabled:opacity-50"
-              >
-                {syncToWebsiteMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    🚀 Sync Now to MCI-us.com
-                  </>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => syncToWebsiteMutation.mutate()}
+                  disabled={!job?.show_on_website || syncToWebsiteMutation.isPending}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg disabled:opacity-50"
+                >
+                  {syncToWebsiteMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      🚀 Sync Now to MCI-us.com
+                    </>
+                  )}
+                </Button>
+                {job?.show_on_website && (
+                  <Button
+                    onClick={() => updateWebSyncMutation.mutate({ show_on_website: false })}
+                    variant="destructive"
+                    className="shadow-lg"
+                  >
+                    🗑️ Remove from Website
+                  </Button>
                 )}
-              </Button>
+              </div>
               <Button variant="outline" onClick={() => setShowWebSync(false)}>
                 Close
               </Button>
