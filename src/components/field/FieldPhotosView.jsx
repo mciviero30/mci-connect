@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import PhotoComparisonView from './PhotoComparison.jsx';
 import MobilePhotoCapture from './MobilePhotoCapture.jsx';
+import BeforeAfterPhotoManager from './BeforeAfterPhotoManager.jsx';
 
 export default function FieldPhotosView({ jobId }) {
   const [showUpload, setShowUpload] = useState(false);
@@ -96,11 +97,17 @@ export default function FieldPhotosView({ jobId }) {
       <Tabs defaultValue="gallery" className="mb-6">
         <TabsList className="bg-slate-100 dark:bg-slate-800/50">
           <TabsTrigger value="gallery" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">Gallery</TabsTrigger>
-          <TabsTrigger value="comparison" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+          <TabsTrigger value="before-after" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">
             <ArrowLeftRight className="w-4 h-4 mr-1" />
+            Before & After
+          </TabsTrigger>
+          <TabsTrigger value="comparison" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
             Comparisons
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="before-after" className="mt-4">
+          <BeforeAfterPhotoManager jobId={jobId} />
+        </TabsContent>
         <TabsContent value="comparison" className="mt-4">
           <PhotoComparisonView jobId={jobId} photos={photos} />
         </TabsContent>
