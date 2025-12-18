@@ -5,22 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Check, X, MapPin, Clock, Briefcase, Filter, CheckCheck, Loader2, Download, AlertTriangle, Info } from 'lucide-react';
+import { Check, X, MapPin, Clock, Briefcase, Filter, CheckCheck, Loader2, Download, AlertTriangle, Info, Edit, Save, XCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { format } from 'date-fns';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { getDisplayName } from '@/components/utils/nameHelpers';
 import { notifyTimesheetStatus } from '../notifications/notificationHelpers';
 import { canCreateTimeEntry } from "../trabajos/JobStatusValidator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast"; // Assuming shadcn toast
+import { useToast } from "@/components/ui/toast";
 
 export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEntry, isAdmin = false, loading }) {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
   const [isApprovingAll, setIsApprovingAll] = useState(false);
-  const { toast } = useToast();
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    check_in: '',
+    check_out: '',
+    job_id: '',
+    correction_reason: ''
+  });
+  const toast = useToast();
 
   // State to support time entry creation form (not fully implemented in this file's UI, but required for outline changes)
   const [formData, setFormData] = useState({
@@ -72,7 +85,11 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   });
 
   const approveMutation = useMutation({
-    mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { status: 'approved' }),
+    mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { 
+      status: 'approved',
+      approved_date: new Date().toISOString(),
+      is_locked: true 
+    }),
     onSuccess: async (_, entry) => {
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
@@ -83,6 +100,35 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       } catch (error) {
         console.error('Notification failed:', error);
       }
+    }
+  });
+
+  const updateEntryMutation = useMutation({
+    mutationFn: async ({ entryId, updates, reason }) => {
+      // Log the manual correction
+      const changeLog = {
+        edited_by: (await base44.auth.me()).email,
+        edited_at: new Date().toISOString(),
+        reason: reason,
+        changes: updates
+      };
+      
+      // Update the time entry with correction log
+      return base44.entities.TimeEntry.update(entryId, {
+        ...updates,
+        manual_corrections: changeLog,
+        last_modified: new Date().toISOString()
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
+      toast.success(language === 'es' ? 'Entrada actualizada correctamente' : 'Entry updated successfully');
+      setEditDialogOpen(false);
+      setEditingEntry(null);
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
   });
 
@@ -113,6 +159,44 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     }
   };
 
+  const handleEdit = (entry) => {
+    setEditingEntry(entry);
+    setEditFormData({
+      check_in: entry.check_in || '',
+      check_out: entry.check_out || '',
+      job_id: entry.job_id || '',
+      correction_reason: ''
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editFormData.correction_reason.trim()) {
+      toast.error(language === 'es' ? 'Por favor ingrese la razón de la corrección' : 'Please enter correction reason');
+      return;
+    }
+
+    const updates = {
+      check_in: editFormData.check_in,
+      check_out: editFormData.check_out,
+      job_id: editFormData.job_id
+    };
+
+    // Recalculate hours if times changed
+    if (editFormData.check_in && editFormData.check_out) {
+      const [inH, inM, inS] = editFormData.check_in.split(':').map(Number);
+      const [outH, outM, outS] = editFormData.check_out.split(':').map(Number);
+      const hoursWorked = (outH + outM/60 + outS/3600) - (inH + inM/60 + inS/3600);
+      updates.hours_worked = Math.max(0, hoursWorked - ((editingEntry.lunch_minutes || 0) / 60));
+    }
+
+    updateEntryMutation.mutate({
+      entryId: editingEntry.id,
+      updates,
+      reason: editFormData.correction_reason
+    });
+  };
+
   const handleApproveAll = async () => {
     const pendingEntries = filteredEntries.filter(e => e.status === 'pending');
     
@@ -123,8 +207,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
     const confirmed = window.confirm(
       language === 'es' 
-        ? `¿Aprobar ${pendingEntries.length} entradas pendientes?` 
-        : `Approve ${pendingEntries.length} pending entries?`
+        ? `¿Aprobar ${pendingEntries.length} entradas pendientes? Todas serán marcadas como "Listas para Pago".` 
+        : `Approve ${pendingEntries.length} pending entries? All will be marked "Ready for Payment".`
     );
 
     if (!confirmed) return;
@@ -132,8 +216,12 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     setIsApprovingAll(true);
     try {
       for (const entry of pendingEntries) {
-        await base44.entities.TimeEntry.update(entry.id, { status: 'approved' });
-        // Also send notification for each approved entry
+        await base44.entities.TimeEntry.update(entry.id, { 
+          status: 'approved',
+          approved_date: new Date().toISOString(),
+          is_locked: true,
+          ready_for_payment: true
+        });
         try {
           await notifyTimesheetStatus(entry, 'approved', null);
         } catch (error) {
@@ -143,8 +231,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       alert(language === 'es' 
-        ? `✅ ${pendingEntries.length} entradas aprobadas exitosamente` 
-        : `✅ ${pendingEntries.length} entries approved successfully`
+        ? `✅ ${pendingEntries.length} entradas aprobadas - Listas para Pago` 
+        : `✅ ${pendingEntries.length} entries approved - Ready for Payment`
       );
     } catch (error) {
       console.error('Error approving entries:', error);
@@ -231,10 +319,48 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   const showApproveAll = statusFilter === 'pending' && pendingCount > 0;
 
   const statusConfig = {
-    pending: { label: t('pending'), color: "bg-amber-100 text-amber-800 border-amber-300" },
-    approved: { label: t('approved'), color: "bg-green-100 text-green-800 border-green-300" },
-    rejected: { label: t('rejected'), color: "bg-red-100 text-red-800 border-red-300" }
+    pending: { label: t('pending'), color: "bg-amber-50 text-amber-900 border-2 border-amber-400 shadow-sm" },
+    approved: { label: language === 'es' ? '✓ Listo para Pago' : '✓ Ready for Payment', color: "bg-green-50 text-green-900 border-2 border-green-400 shadow-sm" },
+    rejected: { label: t('rejected'), color: "bg-red-50 text-red-900 border-2 border-red-400 shadow-sm" }
   };
+
+  // Group entries by employee for breakdown
+  const employeeBreakdown = filteredEntries.reduce((acc, entry) => {
+    const empEmail = entry.employee_email;
+    if (!acc[empEmail]) {
+      acc[empEmail] = {
+        name: entry.employee_name,
+        email: empEmail,
+        totalHours: 0,
+        regularHours: 0,
+        overtimeHours: 0,
+        jobs: {},
+        entries: []
+      };
+    }
+    
+    const hours = entry.hours_worked || 0;
+    acc[empEmail].totalHours += hours;
+    
+    // Calculate regular vs OT (assuming 40h/week threshold)
+    if (acc[empEmail].regularHours < 40) {
+      const regularToAdd = Math.min(hours, 40 - acc[empEmail].regularHours);
+      acc[empEmail].regularHours += regularToAdd;
+      acc[empEmail].overtimeHours += Math.max(0, hours - regularToAdd);
+    } else {
+      acc[empEmail].overtimeHours += hours;
+    }
+    
+    // Track by job
+    const jobName = entry.job_name || 'Unknown';
+    if (!acc[empEmail].jobs[jobName]) {
+      acc[empEmail].jobs[jobName] = 0;
+    }
+    acc[empEmail].jobs[jobName] += hours;
+    
+    acc[empEmail].entries.push(entry);
+    return acc;
+  }, {});
 
   if (loading) {
     return (
@@ -252,8 +378,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   const validation = canCreateTimeEntry(selectedJob);
 
   return (
-    <div className="space-y-4"> {/* Wrapper div to accommodate the Alert */}
-      {/* Add this warning in the dialog before form submission (if a dialog were present) */}
+    <div className="space-y-4">
       {formData.job_id && !validation.allowed && (
         <Alert className="mb-4 bg-red-50 border-red-300">
           <AlertTriangle className="w-4 h-4" />
@@ -263,7 +388,97 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
         </Alert>
       )}
 
-      <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200">
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-w-2xl rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white text-xl font-bold">
+              {language === 'es' ? 'Editar Entrada de Tiempo' : 'Edit Time Entry'}
+            </DialogTitle>
+            <DialogDescription className="text-slate-600 dark:text-slate-400">
+              {language === 'es' 
+                ? 'Modifica la entrada y proporciona una razón para el registro de auditoría'
+                : 'Modify the entry and provide a reason for audit logging'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-slate-700 dark:text-slate-300 font-semibold">
+                  {language === 'es' ? 'Hora de Entrada' : 'Check In Time'}
+                </Label>
+                <Input
+                  type="time"
+                  value={editFormData.check_in}
+                  onChange={(e) => setEditFormData({...editFormData, check_in: e.target.value})}
+                  className="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl"
+                />
+              </div>
+              <div>
+                <Label className="text-slate-700 dark:text-slate-300 font-semibold">
+                  {language === 'es' ? 'Hora de Salida' : 'Check Out Time'}
+                </Label>
+                <Input
+                  type="time"
+                  value={editFormData.check_out}
+                  onChange={(e) => setEditFormData({...editFormData, check_out: e.target.value})}
+                  className="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300 font-semibold">
+                {language === 'es' ? 'Trabajo' : 'Job'}
+              </Label>
+              <Select value={editFormData.job_id} onValueChange={(value) => setEditFormData({...editFormData, job_id: value})}>
+                <SelectTrigger className="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl">
+                  {jobs.map(job => (
+                    <SelectItem key={job.id} value={job.id} className="cursor-pointer">
+                      {job.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300 font-semibold">
+                {language === 'es' ? 'Razón de la Corrección *' : 'Correction Reason *'}
+              </Label>
+              <Textarea
+                value={editFormData.correction_reason}
+                onChange={(e) => setEditFormData({...editFormData, correction_reason: e.target.value})}
+                placeholder={language === 'es' ? 'Ej: Olvidó registrar salida, error en selección de trabajo...' : 'E.g: Forgot to clock out, wrong job selection...'}
+                className="bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-xl min-h-[80px]"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="rounded-xl">
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button 
+              onClick={handleSaveEdit} 
+              disabled={updateEntryMutation.isPending || !editFormData.correction_reason.trim()}
+              className="soft-blue-gradient text-white rounded-xl shadow-lg"
+            >
+              {updateEntryMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {language === 'es' ? 'Guardando...' : 'Saving...'}</>
+              ) : (
+                <><Save className="w-4 h-4 mr-2" /> {language === 'es' ? 'Guardar Cambios' : 'Save Changes'}</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 rounded-2xl">
         <CardHeader className="border-b border-slate-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <CardTitle className="text-slate-900">
@@ -316,7 +531,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                 <Button
                   onClick={handleApproveAll}
                   disabled={isApprovingAll}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg"
+                  className="soft-green-gradient text-white shadow-xl hover:shadow-2xl transition-all rounded-xl"
                 >
                   {isApprovingAll ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -334,46 +549,43 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50 border-slate-200">
+                <TableRow className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-slate-200">
                   {isAdmin && (
-                    <TableHead className="text-slate-700 font-semibold w-16">
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-bold w-16">
                       {language === 'es' ? 'Auditoría' : 'Audit'}
                     </TableHead>
                   )}
-                  <TableHead className="text-slate-700 font-semibold">
+                  <TableHead className="text-slate-700 dark:text-slate-300 font-bold">
                     {language === 'es' ? 'Empleado' : 'Employee'}
                   </TableHead>
-                  <TableHead className="text-slate-700 font-semibold">
-                    {language === 'es' ? 'Fecha' : 'Date'}
+                  <TableHead className="text-slate-700 dark:text-slate-300 font-bold">
+                    {language === 'es' ? 'Total Hrs' : 'Total Hrs'}
                   </TableHead>
-                  <TableHead className="text-slate-700 font-semibold">
-                    {language === 'es' ? 'Trabajo' : 'Job'}
+                  <TableHead className="text-slate-700 dark:text-slate-300 font-bold">
+                    {language === 'es' ? 'Regular' : 'Regular'}
                   </TableHead>
-                  <TableHead className="text-slate-700 font-semibold">
-                    {language === 'es' ? 'Tipo' : 'Type'}
+                  <TableHead className="text-slate-700 dark:text-slate-300 font-bold">
+                    {language === 'es' ? 'OT' : 'OT'}
                   </TableHead>
-                  <TableHead className="text-slate-700 font-semibold">
-                    {language === 'es' ? 'Horas' : 'Hours'}
+                  <TableHead className="text-slate-700 dark:text-slate-300 font-bold">
+                    {language === 'es' ? 'Breakdown por Job' : 'Job Breakdown'}
                   </TableHead>
-                  <TableHead className="text-slate-700 font-semibold">
-                    {language === 'es' ? 'Entrada/Salida' : 'Check In/Out'}
-                  </TableHead>
-                  <TableHead className="text-slate-700 font-semibold">
+                  <TableHead className="text-slate-700 dark:text-slate-300 font-bold">
                     {language === 'es' ? 'Estado' : 'Status'}
                   </TableHead>
                   {isAdmin && (
-                    <TableHead className="text-slate-700 font-semibold text-right">
+                    <TableHead className="text-slate-700 dark:text-slate-300 font-bold text-right">
                       {t('actions')}
                     </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEntries.length === 0 ? (
+                {Object.keys(employeeBreakdown).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isAdmin ? 9 : 7} className="text-center py-12">
-                      <Clock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                      <p className="text-slate-500">
+                    <TableCell colSpan={isAdmin ? 8 : 7} className="text-center py-12">
+                      <Clock className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                      <p className="text-slate-500 dark:text-slate-400">
                         {statusFilter === 'pending' 
                           ? (language === 'es' ? 'No hay registros pendientes' : 'No pending records')
                           : (language === 'es' ? 'No hay registros de horas' : 'No time records')
@@ -382,155 +594,155 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredEntries.map(entry => {
-                    const currentStatus = entry.status;
+                  Object.values(employeeBreakdown).map(empData => {
+                    // Get the first entry to determine overall status
+                    const firstEntry = empData.entries[0];
+                    const hasAnyPending = empData.entries.some(e => e.status === 'pending');
+                    const allApproved = empData.entries.every(e => e.status === 'approved');
+                    const currentStatus = allApproved ? 'approved' : (hasAnyPending ? 'pending' : 'rejected');
                     const displayStatus = statusConfig[currentStatus] || statusConfig.pending;
 
                     return (
-                      <TableRow key={entry.id} className="hover:bg-slate-50 transition-colors">
-                        {isAdmin && (
-                          <TableCell>
-                            <TooltipProvider>
-                              <div className="flex flex-col gap-1 items-center">
-                                {entry.requires_location_review && (
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-slate-900 text-white">
-                                      <p className="text-xs">
-                                        {language === 'es' 
-                                          ? `⚠️ Ubicación: ${Math.round(entry.geofence_distance_meters || 0)}m del sitio`
-                                          : `⚠️ Location: ${Math.round(entry.geofence_distance_meters || 0)}m from site`}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-
-                                {entry.exceeds_max_hours && (
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <AlertTriangle className="w-5 h-5 text-red-600" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-slate-900 text-white">
-                                      <p className="text-xs">
-                                        {language === 'es' 
-                                          ? '🚫 Excede 14 horas' 
-                                          : '🚫 Exceeds 14 hours'}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-
-                                {entry.task_details && (
-                                  <Tooltip>
-                                    <TooltipTrigger>
-                                      <Info className="w-5 h-5 text-blue-600" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="bg-slate-900 text-white max-w-xs">
-                                      <p className="text-xs font-semibold mb-1">
-                                        {language === 'es' ? 'Detalles de Tarea:' : 'Task Details:'}
-                                      </p>
-                                      <p className="text-xs">{entry.task_details}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-                              </div>
-                            </TooltipProvider>
-                          </TableCell>
-                        )}
-
-                        <TableCell className="font-medium text-slate-900">
-                          {getEmployeeName(entry)}
-                        </TableCell>
-                        <TableCell className="text-slate-700">
-                          {format(new Date(entry.date), 'MMM dd, yyyy')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-slate-900">
-                            <Briefcase className="w-4 h-4 text-[#3B9FF3]" />
-                            <span className="truncate max-w-[200px]">{entry.job_name}</span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          <Badge variant="outline" className={
-                            entry.work_type === 'driving' ? 'bg-purple-100 border-purple-300 text-purple-800' :
-                            entry.work_type === 'setup' ? 'bg-blue-100 border-blue-300 text-blue-800' :
-                            entry.work_type === 'cleanup' ? 'bg-green-100 border-green-300 text-green-800' :
-                            'bg-slate-100 border-slate-300 text-slate-800'
-                          }>
-                            {entry.work_type === 'driving' ? (language === 'es' ? 'Manejo' : 'Driving') :
-                            entry.work_type === 'setup' ? 'Setup' :
-                            entry.work_type === 'cleanup' ? 'Cleanup' :
-                            (language === 'es' ? 'Normal' : 'Normal')}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="font-semibold text-slate-900">
-                            {entry.hours_worked?.toFixed(2)}h
-                          </div>
-                          {entry.lunch_minutes > 0 && (
-                            <div className="text-xs text-slate-600">
-                              ({entry.lunch_minutes}min {language === 'es' ? 'pausa' : 'break'})
-                            </div>
+                      <React.Fragment key={empData.email}>
+                        {/* Employee Summary Row */}
+                        <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border-t-2 border-slate-300 dark:border-slate-600">
+                          {isAdmin && (
+                            <TableCell>
+                              <TooltipProvider>
+                                <div className="flex flex-col gap-1 items-center">
+                                  {empData.entries.some(e => e.requires_location_review) && (
+                                    <Tooltip>
+                                      <TooltipTrigger>
+                                        <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-slate-900 text-white">
+                                        <p className="text-xs">{language === 'es' ? '⚠️ Tiene alertas de ubicación' : '⚠️ Has location alerts'}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  )}
+                                </div>
+                              </TooltipProvider>
+                            </TableCell>
                           )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm space-y-1">
-                            <div className="flex items-center gap-2 text-green-700">
-                              <MapPin className="w-3 h-3" />
-                              <span>{entry.check_in}</span>
-                            </div>
-                            {entry.check_out && (
-                              <div className="flex items-center gap-2 text-red-700">
-                                <MapPin className="w-3 h-3" />
-                                <span>{entry.check_out}</span>
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={displayStatus.color}>
-                            {displayStatus.label}
-                          </Badge>
-                        </TableCell>
-                        {isAdmin && (
+
+                          <TableCell className="font-bold text-slate-900 dark:text-white">
+                            {empData.name || empData.email}
+                          </TableCell>
+
                           <TableCell>
-                            <div className="flex justify-end gap-2">
-                              {entry.status === 'pending' ? (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleApprove(entry)} // Pass full entry
-                                    className="bg-green-600 hover:bg-green-700 text-white"
-                                  >
-                                    <Check className="w-4 h-4 mr-1" />
-                                    {language === 'es' ? 'Aprobar' : 'Approve'}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleReject(entry)} // Pass full entry
-                                    className="border-red-300 text-red-600 hover:bg-red-50"
-                                  >
-                                    <X className="w-4 h-4 mr-1" />
-                                    {language === 'es' ? 'Rechazar' : 'Reject'}
-                                  </Button>
-                                </>
-                              ) : (
-                                <Badge variant="outline" className="text-slate-500 border-slate-300">
-                                  {entry.status === 'approved' 
-                                    ? (language === 'es' ? 'Revisado' : 'Reviewed')
-                                    : (language === 'es' ? 'Rechazado' : 'Rejected')
-                                  }
-                                </Badge>
-                              )}
+                            <div className="font-bold text-lg text-indigo-600 dark:text-indigo-400">
+                              {empData.totalHours.toFixed(1)}h
                             </div>
                           </TableCell>
-                        )}
-                      </TableRow>
+
+                          <TableCell>
+                            <div className="font-semibold text-green-700 dark:text-green-400">
+                              {empData.regularHours.toFixed(1)}h
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            <div className="font-semibold text-amber-700 dark:text-amber-400">
+                              {empData.overtimeHours.toFixed(1)}h
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {Object.entries(empData.jobs).map(([jobName, hours]) => (
+                                <TooltipProvider key={jobName}>
+                                  <Tooltip>
+                                    <TooltipTrigger>
+                                      <Badge className="soft-blue-gradient text-xs">
+                                        {jobName.substring(0, 15)}{jobName.length > 15 ? '...' : ''}
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-xs">{jobName}: {hours.toFixed(1)}h</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              ))}
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            <Badge className={displayStatus.color}>
+                              {displayStatus.label}
+                            </Badge>
+                          </TableCell>
+
+                          {isAdmin && (
+                            <TableCell>
+                              <div className="flex justify-end gap-2">
+                                {hasAnyPending && (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        empData.entries.filter(e => e.status === 'pending').forEach(e => handleApprove(e));
+                                      }}
+                                      className="soft-green-gradient text-white rounded-xl shadow-md"
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      {language === 'es' ? 'Aprobar' : 'Approve'}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleEdit(firstEntry)}
+                                      className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-xl"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          )}
+                        </TableRow>
+
+                        {/* Individual Entries (Collapsed by default, could add expand/collapse) */}
+                        {empData.entries.map(entry => (
+                          <TableRow key={entry.id} className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm">
+                            {isAdmin && <TableCell className="pl-8"></TableCell>}
+                            <TableCell className="pl-8 text-slate-600 dark:text-slate-400">
+                              {format(new Date(entry.date), 'MMM dd')}
+                            </TableCell>
+                            <TableCell className="text-slate-600 dark:text-slate-400">
+                              {entry.hours_worked?.toFixed(2)}h
+                            </TableCell>
+                            <TableCell className="text-slate-500 dark:text-slate-500">-</TableCell>
+                            <TableCell className="text-slate-500 dark:text-slate-500">-</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                <Briefcase className="w-3 h-3 text-indigo-500" />
+                                <span className="text-xs truncate max-w-[150px]">{entry.job_name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-xs space-y-0.5">
+                                <div className="text-green-600 dark:text-green-400">{entry.check_in}</div>
+                                {entry.check_out && <div className="text-red-600 dark:text-red-400">{entry.check_out}</div>}
+                              </div>
+                            </TableCell>
+                            {isAdmin && (
+                              <TableCell>
+                                {entry.status === 'pending' && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleEdit(entry)}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg"
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                  </Button>
+                                )}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                      </React.Fragment>
                     );
                   })
                 )}
