@@ -185,46 +185,37 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     metaY += 8 * lines.length;
   }
 
-  // Checklist Legend
+  // Checklist Legend - Compact footer style
   metaY += 10;
-  doc.setFillColor(255, 184, 0, 0.1);
-  doc.roundedRect(margin, metaY - 5, contentWidth, 30, 3, 3, 'F');
+  doc.setFillColor(248, 250, 252);
+  doc.roundedRect(margin, metaY - 3, contentWidth, 12, 2, 2, 'F');
 
-  doc.setFontSize(11);
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(255, 184, 0);
-  doc.text('Checklist Status Legend', margin + 5, metaY + 3);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Legend:', margin + 3, metaY + 2);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(203, 213, 225);
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
 
-  // Green - Completed (checkmark drawn)
-  doc.setDrawColor(34, 197, 94);
-  doc.setLineWidth(1);
-  doc.line(margin + 6, metaY + 11, margin + 7, metaY + 12.5);
-  doc.line(margin + 7, metaY + 12.5, margin + 10, metaY + 9);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(203, 213, 225);
-  doc.text('Completed', margin + 13, metaY + 13);
+  // Green - Completed (solid circle)
+  doc.setFillColor(34, 197, 94);
+  doc.circle(margin + 18, metaY, 1.2, 'F');
+  doc.text('Completed', margin + 21, metaY + 2);
 
-  // Yellow - In Progress (dash drawn)
-  doc.setDrawColor(251, 191, 36);
-  doc.setLineWidth(1);
-  doc.line(margin + 44, metaY + 11, margin + 48, metaY + 11);
-  doc.setTextColor(203, 213, 225);
-  doc.text('In Progress', margin + 50, metaY + 13);
+  // Yellow - Working (solid circle)
+  doc.setFillColor(251, 191, 36);
+  doc.circle(margin + 41, metaY, 1.2, 'F');
+  doc.text('Working', margin + 44, metaY + 2);
 
-  // Red - Pending (X drawn)
-  doc.setDrawColor(239, 68, 68);
-  doc.setLineWidth(1);
-  doc.line(margin + 83, metaY + 10, margin + 86, metaY + 13);
-  doc.line(margin + 86, metaY + 10, margin + 83, metaY + 13);
-  doc.setTextColor(203, 213, 225);
-  doc.text('Pending', margin + 90, metaY + 13);
+  // Slate - Pending (empty circle)
+  doc.setDrawColor(100, 116, 139);
+  doc.setLineWidth(0.5);
+  doc.circle(margin + 62, metaY, 1.2, 'S');
+  doc.text('Pending', margin + 65, metaY + 2);
 
-  metaY += 25;
+  metaY += 15;
 
   // Recipients section
   if (report.recipients && report.recipients.length > 0) {
@@ -282,8 +273,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       const plan = plans.find(p => p.id === task.blueprint_id);
       if (plan && plan.file_url) {
         try {
-          // Crop dimensions - center on task location
-          const cropRadius = 20; // Percentage radius around pin
+          // Auto-zoom: 15% radius around pin for precise focus
+          const cropRadius = 15; // Smaller radius for better zoom
           const mapWidth = 70;
           const mapHeight = 35;
           const mapX = pageWidth - margin - mapWidth;
@@ -305,9 +296,10 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
               const canvas = document.createElement('canvas');
               const ctx = canvas.getContext('2d');
               
-              // Set canvas size
-              canvas.width = mapWidth * 3; // Higher resolution
-              canvas.height = mapHeight * 3;
+              // Set canvas size - 300 DPI quality
+              const dpiScale = 4.17; // 300 DPI scale factor
+              canvas.width = mapWidth * dpiScale;
+              canvas.height = mapHeight * dpiScale;
               
               // Calculate source crop from image
               const sx = (cropX / 100) * img.width;
@@ -324,17 +316,18 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
               // Add to PDF
               doc.addImage(compressedImg, 'JPEG', mapX, mapY, mapWidth, mapHeight);
               
-              // Draw pin at center (since we cropped)
+              // Draw smaller, precise pin at center (40% reduction)
               const pinX = mapX + mapWidth / 2;
               const pinY = mapY + mapHeight / 2;
+              const pinSize = 1.2; // Reduced from 2
               
               // Yellow pin circle
               doc.setFillColor(255, 184, 0);
-              doc.circle(pinX, pinY, 2, 'F');
+              doc.circle(pinX, pinY, pinSize, 'F');
               
               // White inner dot
               doc.setFillColor(255, 255, 255);
-              doc.circle(pinX, pinY, 1, 'F');
+              doc.circle(pinX, pinY, pinSize * 0.5, 'F');
               
               resolve();
             };
@@ -358,10 +351,10 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
 
     // Status badges
     const statusColors = {
-      'pending': { bg: [241, 245, 249], text: [100, 116, 139] },
-      'in_progress': { bg: [254, 243, 199], text: [180, 83, 9] },
-      'completed': { bg: [220, 252, 231], text: [22, 101, 52] },
-      'blocked': { bg: [254, 226, 226], text: [185, 28, 28] }
+      'pending': { bg: [241, 245, 249], text: [100, 116, 139], label: 'PENDING' },
+      'in_progress': { bg: [254, 243, 199], text: [180, 83, 9], label: 'WORKING' },
+      'completed': { bg: [220, 252, 231], text: [22, 101, 52], label: 'COMPLETED' },
+      'blocked': { bg: [254, 226, 226], text: [185, 28, 28], label: 'BLOCKED' }
     };
 
     const statusColor = statusColors[task.status] || statusColors['pending'];
@@ -370,7 +363,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     doc.setFontSize(8);
     doc.setTextColor(...statusColor.text);
     doc.setFont('helvetica', 'bold');
-    doc.text((task.status || 'pending').toUpperCase(), margin + 14, yPos + 4.5, { align: 'center' });
+    doc.text(statusColor.label, margin + 14, yPos + 4.5, { align: 'center' });
 
     // Category only (removed assignee)
     doc.setFontSize(9);
@@ -464,22 +457,20 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         const isCompleted = item.status === 'completed' || item.checked === true;
         const isInProgress = item.status === 'in_progress';
         
-        // Checkbox icon drawn with lines
-        doc.setLineWidth(0.8);
+        // Solid circle icons - clean and professional
         if (isCompleted) {
-          // Green checkmark
-          doc.setDrawColor(34, 197, 94);
-          doc.line(margin + 1.5, yPos - 1, margin + 2.5, yPos);
-          doc.line(margin + 2.5, yPos, margin + 4.5, yPos - 2.5);
+          // Green solid circle
+          doc.setFillColor(34, 197, 94);
+          doc.circle(margin + 2.5, yPos - 1, 1.5, 'F');
         } else if (isInProgress) {
-          // Yellow dash
-          doc.setDrawColor(251, 191, 36);
-          doc.line(margin + 1.5, yPos - 1, margin + 4, yPos - 1);
+          // Yellow solid circle
+          doc.setFillColor(251, 191, 36);
+          doc.circle(margin + 2.5, yPos - 1, 1.5, 'F');
         } else {
-          // Red X
-          doc.setDrawColor(239, 68, 68);
-          doc.line(margin + 1.5, yPos - 2, margin + 4, yPos);
-          doc.line(margin + 4, yPos - 2, margin + 1.5, yPos);
+          // Slate outlined circle
+          doc.setDrawColor(100, 116, 139);
+          doc.setLineWidth(0.5);
+          doc.circle(margin + 2.5, yPos - 1, 1.5, 'S');
         }
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
@@ -501,7 +492,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       yPos += 8;
     }
 
-    // Activity/Comments section
+    // Activity/Comments section - improved spacing
     const comments = taskComments[task.id] || task.comments || [];
     if (comments.length > 0) {
       if (yPos > pageHeight - 50) {
@@ -511,16 +502,16 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         yPos = 28;
       }
 
-      // Section header
+      // Section header with more breathing room
       doc.setFillColor(255, 184, 0);
       doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(26, 26, 26);
       doc.text('Activity', margin + 2, yPos + 2);
-      yPos += 8;
+      yPos += 10;
 
-      // Comments
+      // Comments with improved spacing
       doc.setFontSize(8);
       comments.slice(0, 5).forEach((comment, idx) => {
         if (yPos > pageHeight - 35) {
@@ -530,33 +521,33 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
           yPos = 28;
         }
 
-        // Comment box
+        // Comment box with more padding
         doc.setFillColor(248, 250, 252);
-        const commentHeight = 12;
-        doc.roundedRect(margin, yPos - 3, contentWidth, commentHeight, 1.5, 1.5, 'F');
+        const commentHeight = 14;
+        doc.roundedRect(margin, yPos - 3, contentWidth, commentHeight, 2, 2, 'F');
         
         // Author and date
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(51, 65, 85);
-        doc.text(comment.author_name || 'User', margin + 3, yPos + 2);
+        doc.text(comment.author_name || 'User', margin + 4, yPos + 2);
         
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(100, 116, 139);
         const date = format(new Date(comment.created_date), 'MMM dd, hh:mm a');
-        doc.text(date, margin + 3, yPos + 6);
+        doc.text(date, margin + 4, yPos + 6);
         
         // Comment text
         doc.setTextColor(71, 85, 105);
         const commentText = comment.comment || comment.content;
         const wrappedText = doc.splitTextToSize(commentText, contentWidth - 50);
-        doc.text(wrappedText[0], margin + 40, yPos + 4);
+        doc.text(wrappedText[0], margin + 42, yPos + 4);
         
-        yPos += commentHeight + 3;
+        yPos += commentHeight + 4;
       });
-      yPos += 5;
+      yPos += 6;
     }
 
-    // Photos section
+    // Photos section - improved spacing
     const taskPhotos = task.photo_urls 
       ? task.photo_urls.map((url, idx) => ({ url, id: `${task.id}-${idx}` }))
       : photos.filter(p => p.task_id === task.id);
@@ -568,7 +559,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         yPos = 28;
       }
 
-      // Section header
+      // Section header with breathing room
       doc.setFillColor(255, 184, 0);
       doc.rect(margin - 5, yPos - 3, 3, 8, 'F');
       doc.setFontSize(11);
@@ -582,14 +573,14 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       doc.setFontSize(9);
       doc.setTextColor(71, 85, 105);
       doc.text(`${taskPhotos.length}`, margin + 35, yPos + 2, { align: 'center' });
-      yPos += 10;
+      yPos += 12;
 
-      // Photo count text
+      // Photo count text with more space
       doc.setFontSize(9);
       doc.setTextColor(100, 116, 139);
       doc.setFont('helvetica', 'normal');
       doc.text(`${taskPhotos.length} photo${taskPhotos.length > 1 ? 's' : ''} attached to this task`, margin, yPos);
-      yPos += 10;
+      yPos += 12;
 
       // Render photo thumbnails
       const photoSize = 55;
