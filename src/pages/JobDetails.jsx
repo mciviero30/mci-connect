@@ -65,8 +65,18 @@ export default function JobDetails() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job', jobId] });
       toast.success('Web sync settings updated');
-      setShowWebSync(false);
     },
+  });
+
+  const syncToWebsiteMutation = useMutation({
+    mutationFn: () => base44.functions.invoke('syncJobToWebsite', { job_id: jobId }),
+    onSuccess: (result) => {
+      toast.success('✅ Job synced to MCI-us.com successfully!');
+      console.log('Sync result:', result);
+    },
+    onError: (error) => {
+      toast.error(`Sync failed: ${error.message}`);
+    }
   });
 
   const { data: timeEntries = [] } = useQuery({
@@ -731,7 +741,23 @@ export default function JobDetails() {
                 </>
               )}
             </div>
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-between items-center pt-4 border-t">
+              <Button
+                onClick={() => syncToWebsiteMutation.mutate()}
+                disabled={!job?.show_on_website || syncToWebsiteMutation.isPending}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg disabled:opacity-50"
+              >
+                {syncToWebsiteMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    🚀 Sync Now to MCI-us.com
+                  </>
+                )}
+              </Button>
               <Button variant="outline" onClick={() => setShowWebSync(false)}>
                 Close
               </Button>
