@@ -233,28 +233,14 @@ export default function Clientes() {
           {sortedCustomers.map(customer => {
             const isSelected = selectedCustomers.some(c => c.email === customer.email);
             return (
-              <div key={customer.id} className="relative group">
-                {isAdmin && (
-                  <button
-                    onClick={() => toggleCustomerSelection(customer)}
-                    className={`absolute top-2 right-2 z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all ${
-                      isSelected
-                        ? 'bg-indigo-500 text-white shadow-lg scale-110'
-                        : 'bg-white dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600 opacity-0 group-hover:opacity-100 hover:border-indigo-400'
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-                <ModernCustomerCard
-                  customer={customer}
-                  onViewDetails={isAdmin ? handleEdit : () => {}}
-                />
-              </div>
+              <ModernCustomerCard
+                key={customer.id}
+                customer={customer}
+                onViewDetails={isAdmin ? handleEdit : () => {}}
+                isSelected={isSelected}
+                onToggleSelect={() => toggleCustomerSelection(customer)}
+                showSelectButton={isAdmin}
+              />
             );
           })}
         </div>
