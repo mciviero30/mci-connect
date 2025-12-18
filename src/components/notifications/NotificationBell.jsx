@@ -77,8 +77,10 @@ export default function NotificationBell({ user }) {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'job_assignment': return '📋';
+      case 'schedule_change': return '🔄';
       case 'global_alert': return '🚨';
       case 'payroll_approval': return '✅';
+      case 'timesheet_rejected': return '❌';
       case 'expense_approval': return '💰';
       case 'certification_assigned': return '🎓';
       case 'payroll_reminder': return '🕐';

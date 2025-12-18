@@ -88,7 +88,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { 
       status: 'approved',
       approved_date: new Date().toISOString(),
-      is_locked: true 
+      is_locked: true,
+      ready_for_payment: true
     }),
     onSuccess: async (_, entry) => {
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
@@ -96,6 +97,32 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       toast.success(t('approved'));
       
       try {
+        // Create notification for the employee
+        await base44.entities.Notification.create({
+          recipient_email: entry.employee_email,
+          recipient_name: entry.employee_name,
+          title: '✅ Timecard Approved - Ready for Payment',
+          message: `Your hours for ${entry.date} (${entry.hours_worked?.toFixed(1)}h) have been approved and are ready for payment.`,
+          type: 'payroll_approval',
+          priority: 'high',
+          link: '/page/MyPayroll',
+          related_entity_id: entry.id,
+          related_entity_type: 'timeentry',
+          read: false
+        });
+
+        // Send browser notification
+        if (Notification.permission === 'granted') {
+          new Notification('✅ Timecard Approved', {
+            body: `${entry.hours_worked?.toFixed(1)}h ready for payment - ${entry.date}`,
+            icon: '/logo192.png',
+            badge: '/badge-icon.png',
+            tag: `timecard_${entry.id}`,
+            requireInteraction: false,
+            vibrate: [200, 100, 200]
+          });
+        }
+
         await notifyTimesheetStatus(entry, 'approved', null);
       } catch (error) {
         console.error('Notification failed:', error);
@@ -140,6 +167,20 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       toast.success(t('rejected'));
       
       try {
+        // Create notification for rejection
+        await base44.entities.Notification.create({
+          recipient_email: entry.employee_email,
+          recipient_name: entry.employee_name,
+          title: '❌ Timecard Rejected - Needs Review',
+          message: `Your hours for ${entry.date} have been rejected. Please check with your manager.`,
+          type: 'timesheet_rejected',
+          priority: 'high',
+          link: '/page/MisHoras',
+          related_entity_id: entry.id,
+          related_entity_type: 'timeentry',
+          read: false
+        });
+
         await notifyTimesheetStatus(entry, 'rejected', null);
       } catch (error) {
         console.error('Notification failed:', error);
