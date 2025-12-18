@@ -63,12 +63,21 @@ export default function Field() {
     enabled: !!user?.email && (user?.role === 'customer' || user?.role === 'field_worker'),
   });
 
-  // Data isolation: Filter jobs based on user role
+  // ADMIN BYPASS: Admins see ALL jobs, others see assigned jobs only
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['field-jobs'],
     queryFn: async () => {
-      // Admin and managers see all jobs
-      if (user?.role === 'admin' || user?.position === 'manager' || user?.position === 'CEO') {
+      console.log('🔍 Field: Fetching jobs for user:', user?.email, 'role:', user?.role);
+      
+      // ✅ ADMIN BYPASS - Show all jobs for admins
+      if (user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator') {
+        const allJobs = await base44.entities.Job.list('-created_date');
+        console.log('✅ Admin access: Showing', allJobs.length, 'total jobs');
+        return allJobs;
+      }
+      
+      // Managers see all jobs
+      if (user?.position === 'manager') {
         return base44.entities.Job.list('-created_date');
       }
       

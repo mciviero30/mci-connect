@@ -46,10 +46,18 @@ export default function Trabajos() {
   const [teamFilter, setTeamFilter] = useState('all');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  
+  // ADMIN BYPASS: Admins see ALL jobs without filtering
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list('-created_date'),
+    queryFn: async () => {
+      console.log('🔍 Fetching jobs for user:', user?.email, 'role:', user?.role);
+      const allJobs = await base44.entities.Job.list('-created_date');
+      console.log('✅ Jobs fetched:', allJobs.length, 'total jobs');
+      return allJobs;
+    },
     initialData: [],
+    enabled: !!user,
   });
 
   const { data: teams = [] } = useQuery({

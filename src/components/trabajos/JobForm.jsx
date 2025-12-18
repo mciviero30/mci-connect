@@ -11,6 +11,12 @@ import JobImporter from "../sync/JobImporter";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const { t } = useLanguage();
+  
+  // Get current user for admin check
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
   const [showImporter, setShowImporter] = useState(false);
   
   const { data: customers = [] } = useQuery({
@@ -259,16 +265,18 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
           </div>
         </div>
 
-        {/* Web Portfolio Settings */}
-        <div className="border-t-2 border-yellow-400 pt-4 mt-4">
+        {/* Web Portfolio Settings - ADMIN ONLY */}
+        {user?.role === 'admin' && (
+        <div className="border-t-4 border-yellow-400 pt-6 mt-6 bg-yellow-50 dark:bg-yellow-900/10 -mx-4 px-4 pb-4 rounded-lg">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
-              <span className="text-2xl">🌐</span>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg">
+              <span className="text-3xl">🌐</span>
             </div>
-            <div>
-              <h3 className="font-bold text-slate-900">Public Portfolio (MCI-us.com)</h3>
-              <p className="text-xs text-slate-600">Control project visibility on public website</p>
+            <div className="flex-1">
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg">Public on MCI-us.com</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Sync this project to the public website portfolio</p>
             </div>
+            <Badge className="bg-amber-500 text-white">Admin Only</Badge>
           </div>
 
           <div className="space-y-4">
@@ -315,6 +323,8 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             )}
           </div>
         </div>
+        )}
+        {/* End Admin Web Portfolio Settings */}
 
         <div className="flex justify-end gap-3 pt-4">
           <Button
