@@ -16,11 +16,10 @@ const statusIcons = {
     className: 'bg-amber-400'
   },
   pending: { 
-    icon: Circle, 
-    bgColor: 'rgb(100, 116, 139)', 
+    icon: Clock, 
+    bgColor: 'rgb(239, 68, 68)', 
     iconColor: 'white',
-    className: 'bg-slate-500',
-    filled: true
+    className: 'bg-red-500'
   },
 };
 
