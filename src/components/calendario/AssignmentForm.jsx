@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -97,29 +96,42 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
     const createMutation = useMutation({
         mutationFn: (data) => base44.entities.JobAssignment.create(data),
         onSuccess: async (newAssignment) => {
-            // NEW: Send notification to assigned employee
+            // Create notification for the assigned employee
             if (newAssignment.employee_email && newAssignment.employee_name) {
-                await sendNotification({
-                    recipientEmail: newAssignment.employee_email,
-                    recipientName: newAssignment.employee_name,
-                    type: 'assignment_new',
-                    priority: 'high',
-                    title: language === 'es' ? '📅 Nueva Asignación' : '📅 New Assignment',
-                    message: language === 'es'
-                        ? `Has sido asignado a: ${newAssignment.event_title || newAssignment.job_name} el ${format(new Date(newAssignment.date), 'MMM dd, yyyy')}`
-                        : `You've been assigned to: ${newAssignment.event_title || newAssignment.job_name} on ${format(new Date(newAssignment.date), 'MMM dd, yyyy')}`,
-                    actionUrl: '/Calendario',
-                    relatedEntityType: 'assignment',
-                    relatedEntityId: newAssignment.id,
-                    sendEmail: true // Send email for assignments
-                });
+                try {
+                    await base44.entities.Notification.create({
+                        recipient_email: newAssignment.employee_email,
+                        recipient_name: newAssignment.employee_name,
+                        title: language === 'es' ? '📅 Nueva Asignación de Trabajo' : '📅 New Job Assignment',
+                        message: language === 'es'
+                            ? `Asignado a: ${newAssignment.job_name || newAssignment.event_title} - ${format(new Date(newAssignment.date), 'dd/MM/yyyy')} ${newAssignment.start_time || ''}`
+                            : `Assigned to: ${newAssignment.job_name || newAssignment.event_title} - ${format(new Date(newAssignment.date), 'MM/dd/yyyy')} ${newAssignment.start_time || ''}`,
+                        type: 'job_assignment',
+                        priority: 'high',
+                        link: '/page/Calendario',
+                        related_entity_id: newAssignment.id,
+                        related_entity_type: 'assignment',
+                        read: false
+                    });
+
+                    // Send browser notification
+                    if (Notification.permission === 'granted') {
+                        new Notification(language === 'es' ? '📅 Nueva Asignación' : '📅 New Job Assignment', {
+                            body: `${newAssignment.job_name} - ${format(new Date(newAssignment.date), 'MMM dd')}`,
+                            icon: '/logo192.png',
+                            badge: '/badge-icon.png',
+                            tag: `assignment_${newAssignment.id}`,
+                            requireInteraction: false,
+                            vibrate: [200, 100, 200]
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to create notification:', error);
+                }
             }
-            // toast.success(t('assignmentCreated')); // Moved to handleSubmit for batch/single control
-            // onClose(); // Moved to handleSubmit for batch/single control
         },
         onError: (error) => {
             console.error("Error creating assignment:", error);
-            // toast.error(`Error: ${error.message}`); // Moved to handleSubmit for batch/single control
         },
     });
 
@@ -128,21 +140,37 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
         onSuccess: async (updatedAssignment) => {
             queryClient.invalidateQueries({ queryKey: ['assignments'] });
             
-            // NEW: Send notification about schedule update
+            // Send notification about schedule update
             if (updatedAssignment.employee_email && updatedAssignment.employee_name) {
-                await sendNotification({
-                    recipientEmail: updatedAssignment.employee_email,
-                    recipientName: updatedAssignment.employee_name,
-                    type: 'schedule_update',
-                    priority: 'medium',
-                    title: language === 'es' ? '📅 Horario Actualizado' : '📅 Schedule Updated',
-                    message: language === 'es'
-                        ? `Tu asignación ha sido actualizada: ${updatedAssignment.event_title || updatedAssignment.job_name}`
-                        : `Your assignment has been updated: ${updatedAssignment.event_title || updatedAssignment.job_name}`,
-                    actionUrl: '/Calendario',
-                    relatedEntityType: 'assignment',
-                    relatedEntityId: updatedAssignment.id
-                });
+                try {
+                    await base44.entities.Notification.create({
+                        recipient_email: updatedAssignment.employee_email,
+                        recipient_name: updatedAssignment.employee_name,
+                        title: language === 'es' ? '🔄 Horario Actualizado' : '🔄 Schedule Updated',
+                        message: language === 'es'
+                            ? `Tu asignación ha sido modificada: ${updatedAssignment.job_name || updatedAssignment.event_title} - ${format(new Date(updatedAssignment.date), 'dd/MM/yyyy')}`
+                            : `Your assignment has been updated: ${updatedAssignment.job_name || updatedAssignment.event_title} - ${format(new Date(updatedAssignment.date), 'MM/dd/yyyy')}`,
+                        type: 'schedule_change',
+                        priority: 'high',
+                        link: '/page/Calendario',
+                        related_entity_id: updatedAssignment.id,
+                        related_entity_type: 'assignment',
+                        read: false
+                    });
+
+                    // Send browser notification
+                    if (Notification.permission === 'granted') {
+                        new Notification(language === 'es' ? '🔄 Horario Actualizado' : '🔄 Schedule Updated', {
+                            body: `${updatedAssignment.job_name} - ${format(new Date(updatedAssignment.date), 'MMM dd')}`,
+                            icon: '/logo192.png',
+                            badge: '/badge-icon.png',
+                            tag: `schedule_update_${updatedAssignment.id}`,
+                            vibrate: [200, 100, 200]
+                        });
+                    }
+                } catch (error) {
+                    console.error('Failed to create notification:', error);
+                }
             }
             
             toast.success(t('assignmentUpdated'));
