@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical, Eye, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import PageHeader from "../components/shared/PageHeader";
 import CustomerForm from "../components/clientes/CustomerForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -204,13 +204,23 @@ export default function Clientes() {
 
           {/* Bulk Actions Bar */}
           {isAdmin && sortedCustomers.length > 0 && (
-            <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={selectedCustomers.length === sortedCustomers.length && sortedCustomers.length > 0}
-                  onCheckedChange={toggleSelectAll}
-                />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <div className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleSelectAll}
+                  className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
+                    selectedCustomers.length === sortedCustomers.length && sortedCustomers.length > 0
+                      ? 'bg-[#FFB800] text-white'
+                      : 'bg-white border border-slate-300 hover:border-[#FFB800]'
+                  }`}
+                >
+                  {selectedCustomers.length === sortedCustomers.length && sortedCustomers.length > 0 && (
+                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </button>
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   {selectedCustomers.length > 0
                     ? `${selectedCustomers.length} selected`
                     : 'Select all'}
@@ -219,9 +229,10 @@ export default function Clientes() {
               {selectedCustomers.length > 0 && (
                 <Button
                   onClick={() => setShowInvitationModal(true)}
-                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                  size="sm"
+                  className="bg-[#FFB800] hover:bg-[#E5A600] text-white h-7 text-xs"
                 >
-                  <Send className="w-4 h-4 mr-2" />
+                  <Send className="w-3 h-3 mr-1.5" />
                   Bulk Invite to MCI Field
                 </Button>
               )}
