@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DollarSign,
   Clock,
@@ -19,7 +23,8 @@ import {
   AlertTriangle,
   CalendarPlus,
   MessageSquare,
-  CalendarDays as Calendar
+  CalendarDays as Calendar,
+  Edit
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
@@ -29,6 +34,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import CommentThread from "../components/comments/CommentThread";
 import JobTimeline from "../components/jobs/JobTimeline";
 import CostAccumulationChart from "../components/jobs/CostAccumulationChart";
+import { useToast } from "@/components/ui/toast";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
@@ -36,6 +42,14 @@ export default function JobDetails() {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
   const [showCalendarDialog, setShowCalendarDialog] = useState(false);
+  const [showWebSync, setShowWebSync] = useState(false);
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const { data: job, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
@@ -44,6 +58,15 @@ export default function JobDetails() {
       return jobs[0] || null;
     },
     enabled: !!jobId
+  });
+
+  const updateWebSyncMutation = useMutation({
+    mutationFn: (data) => base44.entities.Job.update(jobId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      toast.success('Web sync settings updated');
+      setShowWebSync(false);
+    },
   });
 
   const { data: timeEntries = [] } = useQuery({
@@ -144,12 +167,22 @@ export default function JobDetails() {
             description={job.description || `${t('customer')}: ${job.customer_name || 'N/A'}`}
             icon={ClipboardList}
             actions={
-              <Link to={createPageUrl(`Calendario?job=${jobId}`)}>
-                <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
-                  <CalendarPlus className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Ver en Calendario' : 'View in Calendar'}
-                </Button>
-              </Link>
+              <div className="flex gap-3">
+                {user?.role === 'admin' && (
+                  <Button 
+                    onClick={() => setShowWebSync(true)}
+                    className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg"
+                  >
+                    🌐 Web Sync
+                  </Button>
+                )}
+                <Link to={createPageUrl(`Calendario?job=${jobId}`)}>
+                  <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
+                    <CalendarPlus className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Ver en Calendario' : 'View in Calendar'}
+                  </Button>
+                </Link>
+              </div>
             }
           />
         </div>
@@ -628,6 +661,83 @@ export default function JobDetails() {
             <CommentThread entityType="job" entityId={jobId} />
           </TabsContent>
         </Tabs>
+
+        {/* Web Sync Dialog - ADMIN ONLY */}
+        <Dialog open={showWebSync} onOpenChange={setShowWebSync}>
+          <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg">
+                  <span className="text-3xl">🌐</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">Public Portfolio Settings</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 font-normal">Sync to MCI-us.com website</p>
+                </div>
+                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg ml-auto">
+                  🔒 Admin Only
+                </Badge>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 py-6">
+              {/* Toggle Switch */}
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl border-2 border-yellow-400 dark:border-yellow-500">
+                <div>
+                  <Label className="text-slate-900 dark:text-white font-bold text-base">Show on MCI-us.com</Label>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                    Enable for completed projects (privacy: no pricing, no full addresses, no quantities)
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={job?.show_on_website || false}
+                    onChange={(e) => updateWebSyncMutation.mutate({ show_on_website: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-7 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 dark:peer-focus:ring-yellow-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border-2 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-yellow-400 peer-checked:to-amber-500 shadow-lg"></div>
+                </label>
+              </div>
+
+              {job?.show_on_website && (
+                <>
+                  <div>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">Hero Photo URL</Label>
+                    <Input
+                      value={job?.hero_photo_url || ''}
+                      onChange={(e) => updateWebSyncMutation.mutate({ hero_photo_url: e.target.value })}
+                      onBlur={(e) => updateWebSyncMutation.mutate({ hero_photo_url: e.target.value })}
+                      className="mt-2 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                      placeholder="https://... (high-resolution project photo)"
+                    />
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                      Used for PDF cover & website portfolio
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">Public Description</Label>
+                    <Textarea
+                      value={job?.website_description || ''}
+                      onChange={(e) => updateWebSyncMutation.mutate({ website_description: e.target.value })}
+                      onBlur={(e) => updateWebSyncMutation.mutate({ website_description: e.target.value })}
+                      className="mt-2 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-24"
+                      placeholder="Privacy-filtered description (no pricing, no full addresses)"
+                    />
+                    <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+                      ⚠️ Auto-filtered: No $ amounts, no street addresses, no LF quantities
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowWebSync(false)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
