@@ -67,24 +67,36 @@ Deno.serve(async (req) => {
       created_at: new Date().toISOString()
     };
 
-    // Here you would POST to your MCI-us.com API endpoint
-    // For now, we'll return the data structure
-    // const response = await fetch('https://mci-us.com/api/projects', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('MCI_WEBSITE_API_KEY')}` },
-    //   body: JSON.stringify(portfolioData)
-    // });
+    // Send to MCI Web app
+    const mciWebUrl = Deno.env.get('APP_URL')?.replace('mci-connect', 'mci-web') || 'https://mci-web.base44.app';
+    const crossAppToken = Deno.env.get('CROSS_APP_TOKEN');
+
+    if (!crossAppToken) {
+      return Response.json({ error: 'CROSS_APP_TOKEN not configured' }, { status: 500 });
+    }
+
+    const response = await fetch(`${mciWebUrl}/functions/receivePortfolioProject`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${crossAppToken}`
+      },
+      body: JSON.stringify(portfolioData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return Response.json({ 
+        error: 'Failed to sync to MCI Web', 
+        details: result 
+      }, { status: response.status });
+    }
 
     return Response.json({ 
       success: true, 
-      message: 'Job data prepared for website sync',
-      portfolio_data: portfolioData,
-      privacy_check: {
-        no_pricing: true,
-        no_full_address: true,
-        no_quantities: true,
-        work_items_count: workItems.length
-      }
+      message: 'Job synced to MCI-us.com successfully',
+      mci_web_response: result
     });
 
   } catch (error) {
