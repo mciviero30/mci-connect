@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useSearchParams } from 'react-router-dom';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
+import AccessDenied from '@/components/field/AccessDenied';
 import { createPageUrl } from '@/utils';
 import { 
   ArrowLeft,
@@ -59,6 +60,27 @@ export default function FieldProject() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
+
+  // Security check: verify user has access to this job
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const { data: userAssignments = [] } = useQuery({
+    queryKey: ['user-job-access', currentUser?.email, jobId],
+    queryFn: () => base44.entities.JobAssignment.filter({ 
+      employee_email: currentUser.email,
+      job_id: jobId 
+    }),
+    enabled: !!currentUser?.email && !!jobId && (currentUser?.role === 'customer' || currentUser?.role === 'field_worker'),
+  });
+
+  const hasAccess = !currentUser || currentUser.role === 'admin' || 
+                     currentUser.position === 'CEO' || 
+                     currentUser.position === 'manager' ||
+                     (currentUser.role !== 'customer' && currentUser.role !== 'field_worker') ||
+                     userAssignments.length > 0;
 
   // Handle resize
   useEffect(() => {
@@ -154,6 +176,11 @@ export default function FieldProject() {
         </div>
       </div>
     );
+  }
+
+  // Security: Block access if user doesn't have permission
+  if (currentUser && !hasAccess) {
+    return <AccessDenied />;
   }
 
   const renderContent = () => {
