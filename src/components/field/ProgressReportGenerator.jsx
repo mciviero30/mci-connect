@@ -83,10 +83,44 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
     pageNumber++;
   };
 
-  // ============== COVER PAGE ==============
-  // White background for print-friendly PDF
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  // ============== PREMIUM COVER PAGE ==============
+  // Hero photo background (if available)
+  if (job.hero_photo_url) {
+    try {
+      const heroImg = new Image();
+      heroImg.crossOrigin = 'anonymous';
+      heroImg.src = job.hero_photo_url;
+      
+      await new Promise((resolve) => {
+        heroImg.onload = () => {
+          // Full page hero image
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          canvas.width = pageWidth * 4;
+          canvas.height = pageHeight * 4;
+          
+          ctx.drawImage(heroImg, 0, 0, canvas.width, canvas.height);
+          const compressedHero = canvas.toDataURL('image/jpeg', 0.8);
+          
+          doc.addImage(compressedHero, 'JPEG', 0, 0, pageWidth, pageHeight);
+          
+          // Dark overlay for text readability
+          doc.setFillColor(26, 26, 26, 0.6);
+          doc.rect(0, 0, pageWidth, pageHeight, 'F');
+          
+          resolve();
+        };
+        heroImg.onerror = () => resolve(); // Fallback if image fails
+      });
+    } catch (err) {
+      console.warn('Error adding hero photo:', err);
+    }
+  } else {
+    // White background fallback
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  }
   
   // Yellow accent bar
   doc.setFillColor(255, 184, 0);
@@ -109,9 +143,9 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setLineWidth(2);
   doc.line(margin, 48, pageWidth - margin, 48);
 
-  // Job name (large)
+  // Job name (large) - white if hero photo, dark otherwise
   doc.setFontSize(28);
-  doc.setTextColor(26, 26, 26);
+  doc.setTextColor(job.hero_photo_url ? 255 : 26, job.hero_photo_url ? 255 : 26, job.hero_photo_url ? 255 : 26);
   doc.setFont('helvetica', 'bold');
   const jobName = job.name || job.job_name_field || 'Project';
   doc.text(jobName, margin, 70);
@@ -136,54 +170,45 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setFont('helvetica', 'bold');
   doc.text(`#${report.report_number || '1'}`, margin + 15, 102, { align: 'center' });
 
-  // Metadata section
-  doc.setFontSize(10);
-  doc.setTextColor(71, 85, 105);
-  doc.setFont('helvetica', 'normal');
-  let metaY = 120;
+  // Project Overview Table - Clean Summary
+  const textColor = job.hero_photo_url ? [255, 255, 255] : [71, 85, 105];
+  doc.setFillColor(job.hero_photo_url ? 26 : 248, job.hero_photo_url ? 26 : 250, job.hero_photo_url ? 26 : 252, job.hero_photo_url ? 0.7 : 1);
+  doc.roundedRect(margin, 115, contentWidth, 45, 3, 3, 'F');
   
+  let metaY = 125;
+  doc.setFontSize(10);
+  doc.setTextColor(...textColor);
   doc.setFont('helvetica', 'bold');
-  doc.text('Created:', margin, metaY);
+  
+  doc.text('Date:', margin + 5, metaY);
   doc.setFont('helvetica', 'normal');
-  doc.text(format(new Date(report.created_date || new Date()), 'MMMM dd, yyyy'), margin + 30, metaY);
+  doc.text(format(new Date(report.created_date || new Date()), 'MMMM dd, yyyy'), margin + 25, metaY);
+  
   metaY += 8;
-
   doc.setFont('helvetica', 'bold');
-  doc.text('Creator:', margin, metaY);
+  doc.text('Location:', margin + 5, metaY);
+  doc.setFont('helvetica', 'normal');
+  const location = `${job.city || ''}, ${job.state || ''}`.trim().replace(/^,\s*/, '');
+  doc.text(location || 'N/A', margin + 25, metaY);
+  
+  metaY += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Status:', margin + 5, metaY);
+  doc.setFont('helvetica', 'normal');
+  const statusLabel = job.status === 'completed' ? 'Completed' : job.status === 'active' ? 'In Progress' : job.status.charAt(0).toUpperCase() + job.status.slice(1);
+  doc.text(statusLabel, margin + 25, metaY);
+  
+  metaY += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Creator:', margin + 5, metaY);
   doc.setFont('helvetica', 'normal');
   const creatorName = user?.full_name || 'MCI Team';
   const capitalizedName = creatorName.split(' ').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   ).join(' ');
-  doc.text(capitalizedName, margin + 30, metaY);
-  metaY += 8;
+  doc.text(capitalizedName, margin + 25, metaY);
   
-  if (job.status) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Status:', margin, metaY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(job.status.charAt(0).toUpperCase() + job.status.slice(1), margin + 30, metaY);
-    metaY += 8;
-  }
-
-  if (job.start_date_field || job.created_date) {
-    const startDate = format(new Date(job.start_date_field || job.created_date), 'MMM dd, yyyy');
-    const endDate = format(new Date(), 'MMM dd, yyyy');
-    doc.setFont('helvetica', 'bold');
-    doc.text('Period:', margin, metaY);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${startDate} - ${endDate}`, margin + 30, metaY);
-    metaY += 8;
-  }
-
-  if (job.address) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Location:', margin, metaY);
-    doc.setFont('helvetica', 'normal');
-    const lines = doc.splitTextToSize(job.address, contentWidth - 35);
-    doc.text(lines, margin + 30, metaY);
-    metaY += 8 * lines.length;
-  }
+  metaY = 165;
 
   // Checklist Legend - Compact footer style
   metaY += 10;

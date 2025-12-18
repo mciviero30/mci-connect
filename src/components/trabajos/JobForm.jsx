@@ -41,7 +41,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     team_id: job?.team_id || '',
     team_name: job?.team_name || '',
     color: job?.color || 'blue',
-    status: job?.status || 'active'
+    status: job?.status || 'active',
+    show_on_website: job?.show_on_website || false,
+    hero_photo_url: job?.hero_photo_url || '',
+    website_description: job?.website_description || ''
   });
 
   const handleCustomerChange = (customerId) => {
@@ -253,6 +256,63 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
                 placeholder="35000"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Web Portfolio Settings */}
+        <div className="border-t-2 border-yellow-400 pt-4 mt-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-yellow-400 flex items-center justify-center">
+              <span className="text-2xl">🌐</span>
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900">Public Portfolio (MCI-us.com)</h3>
+              <p className="text-xs text-slate-600">Control project visibility on public website</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div>
+                <Label className="text-slate-700 font-semibold">Show on MCI-us.com</Label>
+                <p className="text-xs text-slate-600">Enable for completed projects (disables NDA-protected work)</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.show_on_website}
+                  onChange={(e) => setFormData({...formData, show_on_website: e.target.checked})}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-400"></div>
+              </label>
+            </div>
+
+            {formData.show_on_website && (
+              <>
+                <div>
+                  <Label className="text-slate-700 font-semibold">Hero Photo URL</Label>
+                  <Input
+                    value={formData.hero_photo_url}
+                    onChange={(e) => setFormData({...formData, hero_photo_url: e.target.value})}
+                    className="bg-slate-50 border-slate-200"
+                    placeholder="https://... (high-resolution project photo)"
+                  />
+                  <p className="text-xs text-slate-600 mt-1">Used for PDF cover & website portfolio</p>
+                </div>
+
+                <div>
+                  <Label className="text-slate-700 font-semibold">Public Description</Label>
+                  <Textarea
+                    value={formData.website_description}
+                    onChange={(e) => setFormData({...formData, website_description: e.target.value})}
+                    className="bg-slate-50 border-slate-200 h-20"
+                    placeholder="Privacy-filtered description (no pricing, no full addresses)"
+                  />
+                  <p className="text-xs text-amber-600 mt-1">⚠️ Auto-filtered: No $ amounts, no street addresses, no LF quantities</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
