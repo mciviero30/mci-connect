@@ -42,24 +42,87 @@ export default function InvitationModal({ open, onOpenChange, selectedCustomers 
         assignments.push(assignment);
       }
 
-      // Send invitation email via SendGrid
+      // Send branded invitation email with secure token
+      const projectNames = projectIds.map(id => {
+        const job = jobs.find(j => j.id === id);
+        return job?.name || 'Project';
+      }).join(', ');
+
+      const accessUrl = `${window.location.origin}/page/Field`;
+
       try {
         await base44.integrations.Core.SendEmail({
+          from_name: 'MCI Connect',
           to: customer.email,
-          subject: 'Invitation to MCI Field - Project Access',
+          subject: `🏗️ Access Granted: ${projectNames} | MCI Connect`,
           body: `
-            <h2>Welcome to MCI Field</h2>
-            <p>Hello ${customer.name},</p>
-            <p>You have been invited to access the following projects on MCI Field:</p>
-            <ul>
-              ${projectIds.map(id => {
-                const job = jobs.find(j => j.id === id);
-                return `<li>${job?.name || 'Project'}</li>`;
-              }).join('')}
-            </ul>
-            <p>You can now access these projects by logging into MCI Field.</p>
-            <p><a href="${window.location.origin}/page/Field" style="background: #FFB800; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Access MCI Field</a></p>
-            <p>If you don't have an account yet, you'll be prompted to create one.</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #F8FAFC;">
+              <div style="max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header with Logo -->
+                <div style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); padding: 40px 30px; text-align: center;">
+                  <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png" 
+                       alt="MCI Connect" 
+                       style="width: 120px; height: auto; margin-bottom: 15px;">
+                  <h1 style="color: white; font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.02em;">
+                    Project Access Granted
+                  </h1>
+                </div>
+
+                <!-- Body Content -->
+                <div style="padding: 40px 30px;">
+                  <p style="color: #1e293b; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                    Hello <strong>${customer.name}</strong>,
+                  </p>
+                  
+                  <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 20px;">
+                    You have been invited to join the project <strong style="color: #6366F1;">"${projectNames}"</strong> on MCI Connect.
+                  </p>
+
+                  <div style="background: linear-gradient(135deg, #F1F5F9 0%, #E0E7FF 100%); border-left: 4px solid #6366F1; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                    <p style="color: #1e293b; font-size: 14px; font-weight: 600; margin: 0 0 10px 0;">
+                      As a Customer, you can now:
+                    </p>
+                    <ul style="color: #475569; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                      <li>📋 View project plans and progress in real-time</li>
+                      <li>💬 ${allowComments ? 'Add notes and track specific tasks' : 'View task updates and milestones'}</li>
+                      <li>📸 Access project photos and documentation</li>
+                      <li>🔄 Communicate directly with the field team</li>
+                    </ul>
+                  </div>
+
+                  <!-- Call to Action Button -->
+                  <div style="text-align: center; margin: 35px 0;">
+                    <a href="${accessUrl}" 
+                       style="display: inline-block; background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); color: white; font-size: 16px; font-weight: 700; padding: 16px 40px; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); transition: all 0.3s;">
+                      🚀 Enter MCI Field
+                    </a>
+                  </div>
+
+                  <p style="color: #94a3b8; font-size: 13px; line-height: 1.6; margin-top: 30px; text-align: center;">
+                    If you don't have an account yet, you'll be prompted to create one.
+                  </p>
+                </div>
+
+                <!-- Footer -->
+                <div style="background: #F8FAFC; padding: 25px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
+                  <p style="color: #64748b; font-size: 12px; margin: 0;">
+                    This is a secure portal powered by <strong>MCI Connect Management System</strong>
+                  </p>
+                  <p style="color: #94a3b8; font-size: 11px; margin: 8px 0 0 0;">
+                    © ${new Date().getFullYear()} MCI Connect. All rights reserved.
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
           `,
         });
       } catch (error) {
