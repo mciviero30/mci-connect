@@ -61,15 +61,15 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
                   e.stopPropagation();
                   onToggleSelect?.();
                 }}
-                className={`w-4 h-4 rounded flex items-center justify-center transition-all ${
+                className={`w-3 h-3 rounded flex items-center justify-center transition-all ${
                   isSelected
-                    ? 'bg-[#FFB800] text-white shadow-md'
+                    ? 'bg-[#FFB800] text-white shadow-sm'
                     : 'bg-white border border-slate-300 hover:border-[#FFB800]'
                 }`}
               >
                 {isSelected && (
-                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </button>
