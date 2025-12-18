@@ -76,6 +76,9 @@ import CertificationMonitor from "@/components/certifications/CertificationMonit
 import DeadlineMonitor from "@/components/notifications/DeadlineMonitor";
 import RealTimeNotifications from "@/components/notifications/RealTimeNotifications";
 import PayrollReminderService from "@/components/payroll/PayrollReminderService";
+import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import IOSPushManager from "@/components/notifications/IOSPushManager";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -569,6 +572,8 @@ const LayoutContent = ({ children, currentPageName }) => {
           <DeadlineMonitor userEmail={user.email} />
           <RealTimeNotifications userEmail={user.email} />
           <PayrollReminderService user={user} />
+          <UniversalNotificationEngine user={user} />
+          <IOSPushManager user={user} />
         </>
       )}
         
@@ -799,6 +804,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                   MCI Connect
                 </h1>
               </div>
+              <NotificationBell user={user} />
             </div>
           </motion.header>
 
