@@ -210,7 +210,7 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   
   metaY = 165;
 
-  // Checklist Legend - Compact footer style
+  // Checklist Legend - Solid icons with symbols
   metaY += 10;
   doc.setFillColor(248, 250, 252);
   doc.roundedRect(margin, metaY - 3, contentWidth, 12, 2, 2, 'F');
@@ -224,21 +224,30 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
 
-  // Green - Completed (solid circle)
+  // Green - Completed (solid circle with white check)
   doc.setFillColor(34, 197, 94);
-  doc.circle(margin + 18, metaY, 1.2, 'F');
+  doc.circle(margin + 18, metaY, 1.8, 'F');
+  doc.setDrawColor(255, 255, 255);
+  doc.setLineWidth(0.6);
+  doc.line(margin + 16.8, metaY, margin + 17.5, metaY + 0.8);
+  doc.line(margin + 17.5, metaY + 0.8, margin + 19.2, metaY - 0.8);
+  doc.setTextColor(100, 116, 139);
   doc.text('Completed', margin + 21, metaY + 2);
 
-  // Yellow - Working (solid circle)
+  // Amber - Working (solid circle with white clock)
   doc.setFillColor(251, 191, 36);
-  doc.circle(margin + 41, metaY, 1.2, 'F');
-  doc.text('Working', margin + 44, metaY + 2);
-
-  // Slate - Pending (empty circle)
-  doc.setDrawColor(100, 116, 139);
+  doc.circle(margin + 44, metaY, 1.8, 'F');
+  doc.setDrawColor(255, 255, 255);
   doc.setLineWidth(0.5);
-  doc.circle(margin + 62, metaY, 1.2, 'S');
-  doc.text('Pending', margin + 65, metaY + 2);
+  doc.circle(margin + 44, metaY, 1.2, 'S');
+  doc.line(margin + 44, metaY, margin + 44, metaY - 1);
+  doc.line(margin + 44, metaY, margin + 45, metaY + 0.5);
+  doc.text('Working', margin + 47, metaY + 2);
+
+  // Slate - Pending (solid circle)
+  doc.setFillColor(100, 116, 139);
+  doc.circle(margin + 65, metaY, 1.8, 'F');
+  doc.text('Pending', margin + 68, metaY + 2);
 
   metaY += 15;
 
@@ -298,8 +307,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
       const plan = plans.find(p => p.id === task.blueprint_id);
       if (plan && plan.file_url) {
         try {
-          // Auto-zoom: 15% radius around pin for precise focus
-          const cropRadius = 15; // Smaller radius for better zoom
+          // Auto-zoom: 200% zoom (7.5% radius) for maximum precision
+          const cropRadius = 7.5; // 200% zoom level
           const mapWidth = 70;
           const mapHeight = 35;
           const mapX = pageWidth - margin - mapWidth;
@@ -341,18 +350,34 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
               // Add to PDF
               doc.addImage(compressedImg, 'JPEG', mapX, mapY, mapWidth, mapHeight);
               
-              // Draw smaller, precise pin at center (40% reduction)
+              // Draw status-based pin matching task state
               const pinX = mapX + mapWidth / 2;
               const pinY = mapY + mapHeight / 2;
-              const pinSize = 1.2; // Reduced from 2
+              const pinSize = 2;
               
-              // Yellow pin circle
-              doc.setFillColor(255, 184, 0);
-              doc.circle(pinX, pinY, pinSize, 'F');
-              
-              // White inner dot
-              doc.setFillColor(255, 255, 255);
-              doc.circle(pinX, pinY, pinSize * 0.5, 'F');
+              // Status-based pin color
+              if (task.status === 'completed') {
+                // Green with check
+                doc.setFillColor(34, 197, 94);
+                doc.circle(pinX, pinY, pinSize, 'F');
+                doc.setDrawColor(255, 255, 255);
+                doc.setLineWidth(0.8);
+                doc.line(pinX - 0.8, pinY, pinX - 0.3, pinY + 0.6);
+                doc.line(pinX - 0.3, pinY + 0.6, pinX + 0.8, pinY - 0.8);
+              } else if (task.status === 'in_progress') {
+                // Amber with clock
+                doc.setFillColor(251, 191, 36);
+                doc.circle(pinX, pinY, pinSize, 'F');
+                doc.setDrawColor(255, 255, 255);
+                doc.setLineWidth(0.6);
+                doc.circle(pinX, pinY, 1.3, 'S');
+                doc.line(pinX, pinY, pinX, pinY - 1);
+                doc.line(pinX, pinY, pinX + 0.7, pinY + 0.4);
+              } else {
+                // Slate solid
+                doc.setFillColor(100, 116, 139);
+                doc.circle(pinX, pinY, pinSize, 'F');
+              }
               
               resolve();
             };
@@ -482,20 +507,28 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         const isCompleted = item.status === 'completed' || item.checked === true;
         const isInProgress = item.status === 'in_progress';
         
-        // Solid circle icons - clean and professional
+        // Solid icons with symbols
         if (isCompleted) {
-          // Green solid circle
+          // Green solid circle with white check
           doc.setFillColor(34, 197, 94);
-          doc.circle(margin + 2.5, yPos - 1, 1.5, 'F');
+          doc.circle(margin + 2.5, yPos - 1, 1.8, 'F');
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(0.6);
+          doc.line(margin + 1.5, yPos - 1, margin + 2.2, yPos - 0.2);
+          doc.line(margin + 2.2, yPos - 0.2, margin + 3.5, yPos - 2.2);
         } else if (isInProgress) {
-          // Yellow solid circle
+          // Amber solid circle with white clock
           doc.setFillColor(251, 191, 36);
-          doc.circle(margin + 2.5, yPos - 1, 1.5, 'F');
-        } else {
-          // Slate outlined circle
-          doc.setDrawColor(100, 116, 139);
+          doc.circle(margin + 2.5, yPos - 1, 1.8, 'F');
+          doc.setDrawColor(255, 255, 255);
           doc.setLineWidth(0.5);
-          doc.circle(margin + 2.5, yPos - 1, 1.5, 'S');
+          doc.circle(margin + 2.5, yPos - 1, 1.2, 'S');
+          doc.line(margin + 2.5, yPos - 1, margin + 2.5, yPos - 2);
+          doc.line(margin + 2.5, yPos - 1, margin + 3.3, yPos - 0.5);
+        } else {
+          // Slate solid circle
+          doc.setFillColor(100, 116, 139);
+          doc.circle(margin + 2.5, yPos - 1, 1.8, 'F');
         }
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
