@@ -261,20 +261,20 @@ export default function VerFactura() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Action Bar */}
-      <div className="no-print bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+      <div className="no-print border-b shadow-sm px-6 py-4" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(createPageUrl('Facturas'))}
-              className="hover:bg-gray-100"
+              className="text-slate-300 hover:text-white hover:bg-slate-800"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t('back')}
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{invoice.invoice_number}</h1>
+              <h1 className="text-xl font-bold text-white">{invoice.invoice_number}</h1>
               <Badge className={`${config.color} mt-1`}>{config.label}</Badge>
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function VerFactura() {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate(createPageUrl(`CrearFactura?id=${invoice.id}`))}
-                className="border-gray-300 hover:bg-gray-50"
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 {t('edit')}
@@ -297,7 +297,7 @@ export default function VerFactura() {
               size="sm"
               onClick={() => sendInvoiceMutation.mutate()}
               disabled={sendInvoiceMutation.isPending}
-              className="border-gray-300 hover:bg-gray-50"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white disabled:opacity-50"
             >
               <Mail className="w-4 h-4 mr-2" />
               {sendInvoiceMutation.isPending ? t('sending') : t('sendToCustomer')}
@@ -317,32 +317,32 @@ export default function VerFactura() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="border-gray-300">
+                <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200">
-                <DropdownMenuItem onClick={handlePrint} className="cursor-pointer hover:bg-slate-100">
+              <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-800">
+                <DropdownMenuItem onClick={handlePrint} className="cursor-pointer text-white hover:bg-slate-800">
                   <Printer className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Imprimir' : 'Print'}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer hover:bg-slate-100">
+                <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer text-white hover:bg-slate-800">
                   <Download className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleShare} className="cursor-pointer hover:bg-slate-100">
+                <DropdownMenuSeparator className="bg-slate-800" />
+                <DropdownMenuItem onClick={handleShare} className="cursor-pointer text-white hover:bg-slate-800">
                   <Share2 className="w-4 h-4 mr-2" />
                   {t('share')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => cloneMutation.mutate()} className="cursor-pointer hover:bg-slate-100">
+                <DropdownMenuItem onClick={() => cloneMutation.mutate()} className="cursor-pointer text-white hover:bg-slate-800">
                   <Copy className="w-4 h-4 mr-2" />
                   {t('clone')}
                 </DropdownMenuItem>
                 {invoice.status !== 'cancelled' && invoice.status !== 'paid' && (
                   <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => cancelInvoiceMutation.mutate()} className="cursor-pointer hover:bg-slate-100">
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    <DropdownMenuItem onClick={() => cancelInvoiceMutation.mutate()} className="cursor-pointer text-white hover:bg-slate-800">
                       <XCircle className="w-4 h-4 mr-2 text-amber-600" />
                       {t('cancelInvoice')}
                     </DropdownMenuItem>
@@ -350,10 +350,10 @@ export default function VerFactura() {
                 )}
                 {canDelete && (
                   <>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="bg-slate-800" />
                     <DropdownMenuItem
                       onClick={handleDelete}
-                      className="text-red-600 focus:text-red-700 cursor-pointer hover:bg-red-50"
+                      className="text-red-400 focus:text-red-300 cursor-pointer hover:bg-red-500/10"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       {t('delete')}

@@ -423,7 +423,7 @@ Lawrenceville, Georgia 30043, U.S.A`
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Action Bar */}
-      <div className="no-print border-b shadow-sm px-6 py-4" style={{background: 'linear-gradient(135deg, #0a1525 0%, #0f2942 100%)', borderColor: 'rgba(0, 206, 209, 0.2)'}}>
+      <div className="no-print border-b shadow-sm px-6 py-4" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -437,7 +437,7 @@ Lawrenceville, Georgia 30043, U.S.A`
             </Button>
             <div>
               <h1 className="text-xl font-bold text-white">{quote.quote_number}</h1>
-              <Badge className={`${config.color} mt-1`}>{config.label}</Badge>
+              <Badge className={config.color === "bg-purple-500 text-white" ? "bg-slate-900 text-white mt-1" : `${config.color} mt-1`}>{config.label}</Badge>
             </div>
           </div>
 
