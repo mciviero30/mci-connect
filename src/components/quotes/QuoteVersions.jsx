@@ -12,7 +12,7 @@ import { es } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-export default function QuoteVersions({ quote }) {
+export default function QuoteVersions({ quote, asMenuItem = false }) {
   const { language } = useLanguage();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -80,6 +80,88 @@ export default function QuoteVersions({ quote }) {
     rejected: "bg-red-100 text-red-700",
     converted_to_invoice: "bg-purple-100 text-purple-700"
   };
+
+  if (asMenuItem) {
+    return (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <div className="cursor-pointer text-white hover:bg-slate-800 flex items-center px-2 py-1.5 text-sm rounded-md">
+            <GitBranch className="w-4 h-4 mr-2" />
+            {language === 'es' ? 'Versiones' : 'Versions'} (v{quote.version || 1})
+          </div>
+        </DialogTrigger>
+        <DialogContent className="max-w-lg bg-white dark:bg-slate-900">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+              <GitBranch className="w-5 h-5 text-slate-500" />
+              {language === 'es' ? 'Versiones del Estimado' : 'Quote Versions'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* Version List */}
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {versions.map((v) => (
+                <div 
+                  key={v.id} 
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    v.id === quote.id 
+                      ? 'bg-cyan-50 dark:bg-cyan-900/20 border-2 border-cyan-300' 
+                      : 'bg-slate-50 dark:bg-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300">
+                      v{v.version || 1}
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-900 dark:text-white text-sm">
+                        {v.quote_number}
+                        {v.id === quote.id && (
+                          <span className="ml-2 text-xs text-cyan-600">
+                            ({language === 'es' ? 'actual' : 'current'})
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {format(new Date(v.quote_date), 'MMM d, yyyy', { 
+                          locale: language === 'es' ? es : undefined 
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={statusColors[v.status]}>{v.status}</Badge>
+                    {v.id !== quote.id && (
+                      <Link to={createPageUrl(`VerEstimado?id=${v.id}`)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Create New Version */}
+            {quote.status !== 'converted_to_invoice' && (
+              <Button
+                onClick={() => createVersionMutation.mutate()}
+                disabled={createVersionMutation.isPending}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {createVersionMutation.isPending 
+                  ? (language === 'es' ? 'Creando...' : 'Creating...') 
+                  : (language === 'es' ? 'Crear Nueva Versión' : 'Create New Version')}
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
