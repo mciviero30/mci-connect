@@ -654,19 +654,12 @@ const LayoutContent = ({ children, currentPageName }) => {
 
         <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
           <SidebarHeader className="p-5 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800/30">
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-white shadow-xl overflow-hidden">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/394ef3601_image.jpeg"
-                  alt="MCI Connect"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <h2 className="font-black text-2xl tracking-tight text-[#2563eb]">
-                  MCI Connect
-                </h2>
-              </div>
+            <div className="flex items-center justify-center">
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
+                alt="MCI Connect"
+                className="h-12 w-auto object-contain"
+              />
             </div>
           </SidebarHeader>
 
@@ -792,17 +785,12 @@ const LayoutContent = ({ children, currentPageName }) => {
               <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-white shadow-lg overflow-hidden flex-shrink-0">
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/394ef3601_image.jpeg"
-                    alt="MCI Connect"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h1 className="text-lg font-black leading-tight text-[#2563eb] truncate">
-                  MCI Connect
-                </h1>
+              <div className="flex items-center justify-center flex-1 min-w-0">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
+                  alt="MCI Connect"
+                  className="h-8 w-auto object-contain"
+                />
               </div>
               <NotificationBell user={user} />
             </div>
