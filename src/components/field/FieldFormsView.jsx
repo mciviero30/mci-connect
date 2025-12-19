@@ -76,10 +76,12 @@ export default function FieldFormsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Forms</h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Forms</h1>
+        </div>
         <Button 
           onClick={() => setShowCreate(true)}
-          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+          className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create Form
@@ -88,7 +90,7 @@ export default function FieldFormsView({ jobId }) {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-500/20 rounded-lg">
               <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -99,7 +101,7 @@ export default function FieldFormsView({ jobId }) {
             </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-500/20 rounded-lg">
               <FileCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -114,13 +116,13 @@ export default function FieldFormsView({ jobId }) {
 
       {/* Form Templates */}
       {formTemplates.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center">
           <ClipboardList className="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No forms</h3>
           <p className="text-slate-600 dark:text-slate-400 mb-4">Create inspection, safety or quality forms</p>
           <Button 
             onClick={() => setShowCreate(true)}
-            className="bg-[#FFB800] hover:bg-amber-600 text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Form

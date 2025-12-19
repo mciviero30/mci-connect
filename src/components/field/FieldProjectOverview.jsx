@@ -94,8 +94,8 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
 
       {/* Project Info */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Project Information</h3>
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
+          <h3 className="font-semibold text-black mb-4">Project Information</h3>
           <div className="space-y-3">
             {job.address && (
               <div className="flex items-start gap-3">
@@ -129,8 +129,8 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Plans ({plans.length})</h3>
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
+          <h3 className="font-semibold text-black mb-4">Plans ({plans.length})</h3>
           {plans.length === 0 ? (
             <p className="text-slate-500 dark:text-slate-400 text-sm">No plans uploaded</p>
           ) : (

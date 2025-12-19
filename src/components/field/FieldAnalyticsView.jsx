@@ -84,7 +84,11 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Analytics</h1>
+      <div className="mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl inline-block">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Analytics</h1>
+        </div>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -129,7 +133,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
       {/* Charts */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* Status Distribution */}
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Status Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -164,7 +168,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         </div>
 
         {/* Priority Distribution */}
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Priority Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -187,7 +191,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         </div>
 
         {/* Category Distribution */}
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Tasks by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -210,7 +214,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
         </div>
 
         {/* Workload by User */}
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
           <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Workload by User</h3>
           {workloadData.length === 0 ? (
             <div className="h-64 flex items-center justify-center">

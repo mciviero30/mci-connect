@@ -264,7 +264,9 @@ export default function FieldReportsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reports</h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Reports</h1>
+        </div>
         <Button 
           onClick={() => {
             setNewReport({
@@ -283,7 +285,7 @@ export default function FieldReportsView({ jobId }) {
             });
             setShowCreate(true);
           }}
-          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+          className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Report
@@ -292,13 +294,13 @@ export default function FieldReportsView({ jobId }) {
 
       {/* Reports List */}
       {reports.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center shadow-sm">
           <FileText className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No reports</h3>
           <p className="text-slate-500 dark:text-slate-400 mb-4">Generate PDF or Excel reports of project progress</p>
           <Button 
             onClick={() => setShowCreate(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <Plus className="w-4 h-4 mr-2" />
             Create Report
@@ -311,7 +313,7 @@ export default function FieldReportsView({ jobId }) {
             return (
               <div 
                 key={report.id}
-                className="flex items-center justify-between p-5 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl hover:border-[#FFB800]/50 transition-all group shadow-sm"
+                className="flex items-center justify-between p-5 bg-[#3a4556] border border-slate-500 rounded-xl hover:border-orange-500 transition-all group shadow-sm"
               >
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-lg ${

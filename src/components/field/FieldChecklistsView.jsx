@@ -210,12 +210,14 @@ export default function FieldChecklistsView({ jobId }) {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Task Checklist Templates</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl inline-block mb-2">
+            <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Task Checklist Templates</h1>
+          </div>
+          <p className="text-sm text-black mt-1">
             Create reusable checklists for tasks on blueprints
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
+        <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none">
           <Plus className="w-4 h-4 mr-2" />
           New Template
         </Button>
@@ -223,7 +225,7 @@ export default function FieldChecklistsView({ jobId }) {
 
       {/* Templates Grid */}
       {templates.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center shadow-sm">
           <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4 animate-pulse" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Loading templates...</h3>
           <p className="text-slate-500 dark:text-slate-400">Creating default checklists</p>
@@ -233,7 +235,7 @@ export default function FieldChecklistsView({ jobId }) {
           {templates.map(template => (
             <div 
               key={template.id}
-              className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 hover:border-[#FFB800]/50 dark:hover:border-[#FFB800]/30 transition-all shadow-sm"
+              className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 hover:border-orange-500 transition-all shadow-sm"
             >
               <div className="flex items-start justify-between mb-3">
                 <Badge className={categoryColors[template.category]}>
@@ -359,7 +361,7 @@ export default function FieldChecklistsView({ jobId }) {
               <Button variant="outline" onClick={() => setShowCreate(false)} className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white">
                 Cancel
               </Button>
-              <Button onClick={handleCreate} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
+              <Button onClick={handleCreate} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none">
                 Create Template
               </Button>
             </div>

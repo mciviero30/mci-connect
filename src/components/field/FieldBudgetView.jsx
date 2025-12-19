@@ -101,7 +101,9 @@ export default function FieldBudgetView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Budget</h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Budget</h1>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"

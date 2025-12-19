@@ -136,8 +136,11 @@ export default function FieldDocumentsView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Documents</h1>
+        </div>
+        <div className="flex-1"></div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Documents</h1>
           {currentFolder && (
             <button 
               onClick={() => setCurrentFolder(null)}
@@ -151,19 +154,20 @@ export default function FieldDocumentsView({ jobId }) {
           <Button 
             variant="outline"
             onClick={() => setShowNewFolder(true)}
-            className="border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <FolderPlus className="w-4 h-4 mr-2" />
             New Folder
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Document
           </Button>
         </div>
+      </div>
       </div>
 
       {/* Folders */}
