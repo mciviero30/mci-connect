@@ -26,12 +26,10 @@ export default function QuoteDocument({ quote }) {
             `}</style>
 
             {/* Header with Gradient */}
-            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
-                <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
-                    alt="Logo"
-                    className="h-14 object-contain"
-                />
+            <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-blue-700 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+                <div className="h-14 w-14 bg-gradient-to-br from-slate-300 via-blue-400 to-blue-500 rounded-lg flex items-center justify-center">
+                    <div className="text-3xl font-black text-white">M</div>
+                </div>
                 <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">QUOTE</h1>
             </div>
 
@@ -77,7 +75,7 @@ export default function QuoteDocument({ quote }) {
             {/* Tabla con Alineación Superior (CRÍTICO) */}
             <table className="w-full border-collapse mb-8">
                 <thead>
-                    <tr className="bg-slate-700 text-white text-xs uppercase">
+                    <tr className="bg-gradient-to-r from-slate-600 via-slate-500 to-blue-600 text-white text-xs uppercase">
                         <th className="text-left px-3 py-2 w-10">#</th>
                         <th className="text-left px-3 py-2">Item & Description</th>
                         <th className="text-right px-3 py-2 w-20">Qty</th>
@@ -133,9 +131,9 @@ export default function QuoteDocument({ quote }) {
                             <span className="font-bold">${(quote.tax_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                         </div>
                     )}
-                    <div className="bg-slate-100 px-4 py-3 rounded flex justify-between items-center border-t-2 border-slate-800">
-                        <span className="font-bold text-slate-900">TOTAL</span>
-                        <span className="font-bold text-xl text-slate-900">${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    <div className="bg-gradient-to-r from-slate-600 via-slate-500 to-blue-600 px-4 py-3 rounded flex justify-between items-center">
+                        <span className="font-bold text-white">TOTAL</span>
+                        <span className="font-bold text-xl text-white">${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                     </div>
                 </div>
             </div>
