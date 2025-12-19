@@ -178,9 +178,9 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           <Button 
             variant="outline"
             onClick={() => setShowTemplates(true)}
-            className="border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            className="bg-black border-slate-700 text-slate-400 hover:text-white"
           >
-            <Settings2 className="w-4 h-4 mr-2 text-black dark:text-black" />
+            <Settings2 className="w-4 h-4 mr-2 text-black" />
             Templates
           </Button>
           <Button 
