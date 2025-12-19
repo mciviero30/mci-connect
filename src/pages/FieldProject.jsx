@@ -245,7 +245,7 @@ export default function FieldProject() {
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg">
         {/* Header */}
-        <div className="p-4 border-b border-slate-700">
+        <div className="p-4 border-b border-slate-700 bg-black">
           <Link to={createPageUrl('Field')}>
             <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
               <ArrowLeft className="w-4 h-4 mr-2" />
