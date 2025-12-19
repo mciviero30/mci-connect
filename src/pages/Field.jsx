@@ -138,7 +138,7 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 dark:bg-[#0a0a0a] px-6 py-6">
+    <div className="min-h-screen bg-[#2d3748] dark:bg-[#1a202c] px-6 py-6">
       <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
@@ -355,14 +355,14 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+    <div className="bg-black border border-slate-800 rounded-xl p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{value}</p>
+          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold text-white mt-2">{value}</p>
         </div>
-        <div className="p-3 rounded-full bg-black dark:bg-slate-900">
-          <Icon className="w-6 h-6 text-white" />
+        <div className="p-3 rounded-full bg-white">
+          <Icon className="w-6 h-6 text-black" />
         </div>
       </div>
     </div>
