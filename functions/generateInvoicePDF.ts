@@ -28,21 +28,24 @@ Deno.serve(async (req) => {
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 40, 'F');
 
-        // Logo - Corrected base64 conversion
+        // Logo - Fixed with chunked conversion
         try {
             const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
             const logoResponse = await fetch(logoUrl);
             const arrayBuffer = await logoResponse.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
+            const bytes = new Uint8Array(arrayBuffer);
             
-            // Convert Uint8Array to base64 properly
+            // Convert to base64 in chunks to avoid stack overflow
             let binary = '';
-            const len = uint8Array.byteLength;
-            for (let i = 0; i < len; i++) {
-                binary += String.fromCharCode(uint8Array[i]);
-            }
-            const logoBase64 = btoa(binary);
+            const chunkSize = 8192;
+            const len = bytes.byteLength;
             
+            for (let i = 0; i < len; i += chunkSize) {
+                const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+                binary += String.fromCharCode.apply(null, Array.from(chunk));
+            }
+            
+            const logoBase64 = btoa(binary);
             doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
         } catch (err) {
             console.log('Logo load error:', err);
