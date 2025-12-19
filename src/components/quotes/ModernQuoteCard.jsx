@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Eye, Users, Copy, Trash2, FileCheck } from "lucide-react";
+import { MapPin, Users, Copy, Trash2, FileCheck, Download } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -52,15 +52,36 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
-            className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-medium">{language === 'es' ? 'Ver' : 'View'}</span>
-          </Button>
+          <div className="flex gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+              className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2.5 py-1.5 rounded-lg h-[26px]"
+            >
+              <span className="text-[10px] font-medium">{language === 'es' ? 'Ver' : 'View'}</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                const response = await fetch('/api/functions/generateQuotePDF', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ quoteId: quote.id })
+                });
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Quote-${quote.quote_number}.pdf`;
+                a.click();
+              }}
+              className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2 rounded-lg h-[26px]"
+            >
+              <Download className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Status Badges */}
