@@ -139,24 +139,8 @@ export default function Field() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
-      {/* Header */}
-      <div className="px-0 py-0 -mx-4 md:-mx-6 mb-6">
-        <div className="w-screen relative left-[50%] right-[50%] -mx-[50vw] overflow-hidden bg-gradient-to-r from-[#F5A623] to-[#FFB800]">
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5717f3e58_Screenshot2025-12-19at24110AM.png"
-            alt="MCI Field"
-            className="w-full h-24 md:h-28 object-contain object-center"
-            style={{ 
-              imageRendering: 'crisp-edges',
-              imageRendering: '-webkit-optimize-contrast',
-              imageRendering: 'high-quality',
-              shapeRendering: 'geometricPrecision',
-              filter: 'contrast(1.1) brightness(1.05)'
-            }}
-          />
-        </div>
-        <div className="px-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 mt-6">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] px-6 py-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
             <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
@@ -186,10 +170,7 @@ export default function Field() {
               </Button>
             )}
           </div>
-        </div>
-        </div>
 
-        <div className="px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
@@ -301,9 +282,8 @@ export default function Field() {
           </TabsContent>
           </Tabs>
           </div>
-          </div>
 
-      {/* Quick Search Dialog */}
+          {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
 
       {/* New Project Dialog */}
