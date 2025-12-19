@@ -140,13 +140,16 @@ export default function Field() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
-      <div className="bg-black w-full py-4 mb-6">
-        <div className="px-6">
+      <div className="bg-black w-full py-6 mb-6">
+        <div className="px-6 flex items-center justify-between">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/954dae0b3_image.jpeg"
             alt="MCI Field"
-            className="h-16 w-auto object-contain"
+            className="h-12 w-auto object-contain"
           />
+          <h1 className="text-[#FFB800] text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+            MCI FIELD
+          </h1>
         </div>
       </div>
       
