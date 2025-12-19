@@ -660,7 +660,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <Badge className="soft-purple-gradient shadow-md self-start lg:self-center whitespace-nowrap">
+            <Badge className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 shadow-sm self-start lg:self-center whitespace-nowrap">
               MCI Connect • Customizable Dashboard
             </Badge>
           </div>
@@ -693,7 +693,8 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setShowKudosDialog(true)}
                   size="sm"
-                  className="soft-purple-gradient shadow-lg"
+                  variant="outline"
+                  className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 >
                   <Award className="w-4 h-4 mr-1" />
                   Give Kudos
@@ -710,7 +711,8 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setIsEditMode(true)}
                   size="sm"
-                  className="soft-blue-gradient shadow-lg"
+                  variant="outline"
+                  className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 >
                   <SettingsIcon className="w-4 h-4 mr-1" />
                   Customize
