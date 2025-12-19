@@ -140,17 +140,18 @@ export default function Field() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
-      <div className="px-6 py-6">
+      <div className="px-0 py-0">
+        <div className="w-full mb-6">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/954dae0b3_image.jpeg"
+            alt="MCI Field"
+            className="w-full h-auto object-cover"
+          />
+        </div>
+        <div className="px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5dcd95f71_Screenshot2025-12-01at21824PM.png"
-                alt="MCI Field"
-                className="w-48 h-48 object-contain"
-              />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
-            </div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
             <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
             <Badge className="mt-2 bg-[#FFB800]/20 text-[#FFB800] border-[#FFB800]/30">
               🏗️ MCI Field • Field Execution
@@ -179,7 +180,9 @@ export default function Field() {
             )}
           </div>
         </div>
+        </div>
 
+        <div className="px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
@@ -291,6 +294,7 @@ export default function Field() {
           </TabsContent>
           </Tabs>
           </div>
+          </div>
 
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
@@ -352,14 +356,14 @@ function StatsCard({ label, value, icon: Icon, color }) {
   const colorClasses = {
     blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
     green: 'from-green-500/20 to-green-600/20 border-green-500/30',
-    orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
+    orange: 'from-amber-500/20 to-amber-600/20 border-amber-500/30',
     emerald: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30',
   };
 
   const iconColors = {
     blue: 'bg-blue-500/20 text-blue-400',
     green: 'bg-green-500/20 text-green-400',
-    orange: 'bg-orange-500/20 text-orange-400',
+    orange: 'bg-amber-500/20 text-amber-400',
     emerald: 'bg-emerald-500/20 text-emerald-400',
   };
 
