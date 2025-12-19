@@ -28,13 +28,14 @@ Deno.serve(async (req) => {
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 40, 'F');
 
-        // Logo
+        // Logo - Fixed loading method
         try {
             const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
             const logoResponse = await fetch(logoUrl);
-            const logoBlob = await logoResponse.blob();
-            const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(await logoBlob.arrayBuffer())));
-            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 60, 14);
+            const arrayBuffer = await logoResponse.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+            const logoBase64 = btoa(String.fromCharCode.apply(null, uint8Array));
+            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
         } catch (err) {
             console.log('Logo load error:', err);
         }
@@ -128,31 +129,44 @@ Deno.serve(async (req) => {
         for (const item of invoice.items || []) {
             if (currentY > 260) { doc.addPage(); currentY = 20; }
 
-            // Row background
+            // Multi-line text wrapping
+            const desc = item.item_name || item.description || '';
+            const wrappedText = doc.splitTextToSize(desc, 95);
+            const lineHeight = 4;
+            const rowHeight = Math.max(8, wrappedText.length * lineHeight + 2);
+
+            // Row background (zebra striping)
             if (itemIndex % 2 === 0) {
                 doc.setFillColor(249, 250, 251);
-                doc.rect(15, currentY, 180, 8, 'F');
+                doc.rect(15, currentY, 180, rowHeight, 'F');
             }
 
+            // Column 1: # (fixed at x=18)
             doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
             doc.text(itemIndex.toString(), 18, currentY + 5.5);
             
-            // Truncate description to fit column
-            const desc = item.item_name || item.description || '';
-            const truncatedDesc = desc.length > 55 ? desc.substring(0, 52) + '...' : desc;
+            // Column 2: ITEM & DESCRIPTION (fixed at x=30, width=95)
             doc.setFont(undefined, 'bold');
-            doc.text(truncatedDesc, 30, currentY + 5.5);
+            doc.setFontSize(8);
+            doc.text(wrappedText, 30, currentY + 5.5);
 
+            // Column 3: QTY (fixed at x=135, right-aligned)
             doc.setFont(undefined, 'normal');
             const qtyText = `${item.quantity || 0} ${item.unit || ''}`;
-            doc.text(qtyText, 140, currentY + 5.5, { align: 'right' });
-            doc.text((item.unit_price || 0).toFixed(2), 165, currentY + 5.5, { align: 'right' });
+            doc.text(qtyText, 135, currentY + 5.5, { align: 'right' });
+            
+            // Column 4: RATE (fixed at x=165, right-aligned)
+            doc.text('$' + (item.unit_price || 0).toFixed(2), 165, currentY + 5.5, { align: 'right' });
+            
+            // Column 5: AMOUNT (fixed at x=190, right-aligned)
             doc.setFont(undefined, 'bold');
-            doc.text((item.total || 0).toFixed(2), 190, currentY + 5.5, { align: 'right' });
+            doc.text('$' + (item.total || 0).toFixed(2), 190, currentY + 5.5, { align: 'right' });
 
+            // Border line
             doc.setDrawColor(241, 245, 249);
-            doc.line(15, currentY + 8, 195, currentY + 8);
-            currentY += 8;
+            doc.line(15, currentY + rowHeight, 195, currentY + rowHeight);
+            currentY += rowHeight;
             itemIndex++;
         }
 
