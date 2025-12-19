@@ -178,27 +178,25 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
         </div>
 
         {/* Action Buttons - Only for Admin */}
-        {isAdmin && (
+        {isAdmin && invoice.status !== 'paid' && invoice.status !== 'cancelled' && onRegisterPayment && (
           <div className="flex gap-1.5 mt-3">
-            {invoice.status !== 'paid' && invoice.total > (invoice.amount_paid || 0) && onRegisterPayment && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onRegisterPayment(invoice)}
-                className="flex-1 h-[28px] text-[10px] text-green-600 border-green-300 hover:bg-green-50"
-              >
-                <DollarSign className="w-3 h-3 mr-1" />
-                {language === 'es' ? 'Pago' : 'Payment'}
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onRegisterPayment(invoice)}
+              className="flex-1 h-[32px] text-[10px] font-semibold text-green-600 border-2 border-green-300 hover:bg-green-50"
+            >
+              <DollarSign className="w-3.5 h-3.5 mr-1.5" />
+              {language === 'es' ? 'Pago' : 'Payment'}
+            </Button>
             {onDuplicate && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onDuplicate(invoice)}
-                className="h-[28px] px-2"
+                className="h-[32px] px-2.5"
               >
-                <Copy className="w-3 h-3" />
+                <Copy className="w-3.5 h-3.5" />
               </Button>
             )}
             {onDelete && (
@@ -210,9 +208,9 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                     onDelete(invoice.id);
                   }
                 }}
-                className="h-[28px] px-2 text-red-600 hover:bg-red-50"
+                className="h-[32px] px-2.5 text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
             )}
           </div>
