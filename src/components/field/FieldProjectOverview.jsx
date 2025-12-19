@@ -53,9 +53,11 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Project Overview</h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Project Overview</h1>
+        </div>
         {onOpenDailyReport && (
-          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none">
             <FileCheck className="w-4 h-4 mr-2" />
             Daily Report
           </Button>

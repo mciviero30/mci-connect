@@ -115,10 +115,12 @@ export default function FieldMembersView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Project Team</h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Project Team</h1>
+        </div>
         <Button 
           onClick={() => setShowInvite(true)}
-          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+          className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Invite Member
@@ -297,7 +299,7 @@ export default function FieldMembersView({ jobId }) {
           <p className="text-slate-500 dark:text-slate-400 mb-4">Invite your team to the project</p>
           <Button 
             onClick={() => setShowInvite(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <UserPlus className="w-4 h-4 mr-2" />
             Invite Member
@@ -366,7 +368,7 @@ export default function FieldMembersView({ jobId }) {
               <Button 
                 onClick={handleInvite}
                 disabled={!inviteData.email || inviteMutation.isPending}
-                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
               >
                 {inviteMutation.isPending ? 'Sending...' : 'Send Invitation'}
               </Button>

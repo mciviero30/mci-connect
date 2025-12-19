@@ -72,12 +72,14 @@ export default function FieldPhotosView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Photos</h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Photos</h1>
+        </div>
         <div className="flex gap-2">
           {/* Mobile: Camera capture button */}
           <Button 
             onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             {isMobile ? (
               <>
@@ -96,12 +98,12 @@ export default function FieldPhotosView({ jobId }) {
 
       <Tabs defaultValue="gallery" className="mb-6">
         <TabsList className="bg-slate-100 dark:bg-slate-800/50">
-          <TabsTrigger value="gallery" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">Gallery</TabsTrigger>
-          <TabsTrigger value="before-after" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">
+          <TabsTrigger value="gallery" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">Gallery</TabsTrigger>
+          <TabsTrigger value="before-after" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">
             <ArrowLeftRight className="w-4 h-4 mr-1" />
             Before & After
           </TabsTrigger>
-          <TabsTrigger value="comparison" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+          <TabsTrigger value="comparison" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">
             Comparisons
           </TabsTrigger>
         </TabsList>
@@ -124,7 +126,7 @@ export default function FieldPhotosView({ jobId }) {
           <p className="text-slate-500 dark:text-slate-400 mb-4">Upload photos of project progress</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Photo
@@ -222,7 +224,7 @@ export default function FieldPhotosView({ jobId }) {
               <Button 
                 onClick={handleCreatePhoto}
                 disabled={!newPhoto.file_url || createPhotoMutation.isPending}
-                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
               >
                 {createPhotoMutation.isPending ? 'Saving...' : 'Save Photo'}
               </Button>
