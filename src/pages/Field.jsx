@@ -145,7 +145,7 @@ export default function Field() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5dcd95f71_Screenshot2025-12-01at21824PM.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/ea0545761_Screenshot2025-12-19at14922AM.png"
                 alt="MCI Field"
                 className="w-48 h-48 object-contain"
               />

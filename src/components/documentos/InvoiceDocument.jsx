@@ -34,7 +34,7 @@ export default function InvoiceDocument({ invoice }) {
             {/* Dark Header Banner */}
             <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
                 <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/ea0545761_Screenshot2025-12-19at14922AM.png"
                     alt="Modern Components Installation"
                     className="h-14 object-contain"
                 />
