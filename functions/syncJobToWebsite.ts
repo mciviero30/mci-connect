@@ -68,8 +68,12 @@ Deno.serve(async (req) => {
     };
 
     // Send to MCI Web app
-    const mciWebUrl = 'https://mci-web.base44.app';
+    const mciWebUrl = Deno.env.get('MCI_WEB_URL');
     const crossAppToken = Deno.env.get('CROSS_APP_TOKEN');
+    
+    if (!mciWebUrl) {
+      return Response.json({ error: 'MCI_WEB_URL not configured in secrets' }, { status: 500 });
+    }
 
     if (!crossAppToken) {
       return Response.json({ error: 'CROSS_APP_TOKEN not configured' }, { status: 500 });
