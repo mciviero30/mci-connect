@@ -28,10 +28,10 @@ export default function QuoteDocument({ quote }) {
             {/* Header with Gradient */}
             <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-blue-700 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
                 <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/869e48625_Screenshot2025-12-19at13210AM.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/3e4afe658_Screenshot2025-12-19at13747AM.png"
                     alt="MCI Logo"
                     className="h-16 object-contain"
-                    style={{ filter: 'brightness(0) saturate(100%) invert(85%) sepia(15%) saturate(1500%) hue-rotate(180deg) brightness(105%) contrast(95%)' }}
+                    style={{ filter: 'hue-rotate(180deg) saturate(1.5) brightness(1.3)' }}
                 />
                 <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">QUOTE</h1>
             </div>
