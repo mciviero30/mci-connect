@@ -133,27 +133,25 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
         </div>
 
         {/* Action Buttons - Only for Admin */}
-        {isAdmin && (
+        {isAdmin && quote.status !== 'converted_to_invoice' && onConvert && (
           <div className="flex gap-1.5 mt-3">
-            {quote.status !== 'converted_to_invoice' && onConvert && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onConvert(quote)}
-                className="flex-1 h-[28px] text-[10px] text-green-600 border-green-300 hover:bg-green-50"
-              >
-                <FileCheck className="w-3 h-3 mr-1" />
-                {language === 'es' ? 'Factura' : 'Invoice'}
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onConvert(quote)}
+              className="flex-1 h-[32px] text-[10px] font-semibold text-blue-600 border-2 border-blue-300 hover:bg-blue-50"
+            >
+              <FileCheck className="w-3.5 h-3.5 mr-1.5" />
+              {language === 'es' ? 'Convertir a Factura' : 'Convert to Invoice'}
+            </Button>
             {onDuplicate && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onDuplicate(quote)}
-                className="h-[28px] px-2"
+                className="h-[32px] px-2.5"
               >
-                <Copy className="w-3 h-3" />
+                <Copy className="w-3.5 h-3.5" />
               </Button>
             )}
             {onDelete && (
@@ -165,9 +163,9 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
                     onDelete(quote.id);
                   }
                 }}
-                className="h-[28px] px-2 text-red-600 hover:bg-red-50"
+                className="h-[32px] px-2.5 text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
             )}
           </div>
