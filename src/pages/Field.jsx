@@ -141,24 +141,13 @@ export default function Field() {
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
       <div className="px-0 py-0">
-        <div className="w-full mb-3 flex justify-center bg-black py-4">
-          <div className="w-4/5 max-w-6xl">
-            <svg viewBox="0 0 800 120" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-              {/* M Logo con diseño hexagonal */}
-              <g transform="translate(40, 20)">
-                <path d="M10,10 L30,0 L50,10 L50,40 L30,50 L10,40 Z M15,15 L30,7 L45,15 L45,35 L30,43 L15,35 Z" 
-                      fill="none" stroke="#FFB800" strokeWidth="2.5"/>
-                <path d="M20,20 L20,35 M30,15 L30,40 M40,20 L40,35 M20,20 L30,15 M30,15 L40,20" 
-                      stroke="#FFB800" strokeWidth="2.5" fill="none"/>
-                <circle cx="30" cy="52" r="4" fill="#FFB800"/>
-                <path d="M30,56 L30,60 L28,63 L32,63 Z" fill="#FFB800"/>
-              </g>
-              {/* MCI Field Text */}
-              <text x="120" y="55" fill="#FFB800" fontFamily="Arial, sans-serif" fontSize="32" fontWeight="bold" letterSpacing="2">
-                MCI Field
-              </text>
-            </svg>
-          </div>
+        <div className="w-full mb-3 flex justify-center">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/515dece8f_Screenshot2025-12-19at22713AM.png"
+            alt="MCI Field"
+            className="w-4/5 h-auto object-contain"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
+          />
         </div>
         <div className="px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
