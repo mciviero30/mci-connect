@@ -159,19 +159,19 @@ export default function FieldProject() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
       </div>
     );
   }
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
           <p className="text-slate-400 mb-4">Project not found</p>
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-amber-500 hover:bg-amber-600">Back</Button>
+            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white">Back</Button>
           </Link>
         </div>
       </div>
@@ -232,7 +232,7 @@ export default function FieldProject() {
 
   return (
     <FieldOfflineProvider jobId={jobId}>
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex flex-col md:flex-row">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
       
@@ -243,26 +243,26 @@ export default function FieldProject() {
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 flex-col shadow-sm">
+      <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg">
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700/50">
+        <div className="p-4 border-b border-slate-700">
           <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-3">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
           </Link>
           <div className="flex items-center gap-3">
             <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5dcd95f71_Screenshot2025-12-01at21824PM.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
                 alt="MCI Field"
                 className="w-10 h-10 object-contain"
               />
             <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-slate-900 dark:text-white truncate">{job.name || job.job_name_field}</h2>
+              <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
               <Badge className={`text-xs ${
                 job.status === 'active' 
-                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                  ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
                   : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
               }`}>
                 {job.status === 'active' ? 'Active' : job.status}
@@ -279,8 +279,8 @@ export default function FieldProject() {
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === item.id
-                  ? 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                  ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -290,8 +290,8 @@ export default function FieldProject() {
               {item.count !== undefined && item.count > 0 && (
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   activeTab === item.id
-                    ? 'bg-amber-500/30 text-amber-600 dark:text-amber-300'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                    ? 'bg-orange-500/30 text-orange-300'
+                    : 'bg-slate-700 text-slate-400'
                 }`}>
                   {item.count}
                 </span>
