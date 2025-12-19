@@ -31,8 +31,8 @@ export default function InvoiceDocument({ invoice }) {
                 }
             `}</style>
 
-            {/* Dark Header Banner */}
-            <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+            {/* Dark Header Banner con Gradiente */}
+            <div className="px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
                 <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
                     alt="MCI Logo"
@@ -109,7 +109,7 @@ export default function InvoiceDocument({ invoice }) {
             <div className="mb-8 overflow-x-auto">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-slate-700 text-white">
+                        <tr className="text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
                             <th className="text-left px-3 py-2 text-sm font-semibold w-12">#</th>
                             <th className="text-left px-3 py-2 text-sm font-semibold">ITEM & DESCRIPTION</th>
                             <th className="text-right px-3 py-2 text-sm font-semibold w-20">QTY</th>
@@ -170,20 +170,20 @@ export default function InvoiceDocument({ invoice }) {
                         )}
                     </div>
 
-                    <div className="bg-slate-100 px-6 py-3 rounded flex justify-between items-center mb-3">
+                    <div className="px-6 py-3 rounded flex justify-between items-center mb-3" style={{ background: 'linear-gradient(to right, #f1f5f9 0%, #cbd5e1 100%)' }}>
                         <span className="font-bold text-lg text-slate-900">Total</span>
                         <span className="font-bold text-2xl text-slate-900">${invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
 
                     {invoice.amount_paid > 0 && (
-                        <div className="bg-emerald-50 px-6 py-3 rounded flex justify-between items-center border border-emerald-200 mb-3">
+                        <div className="px-6 py-3 rounded flex justify-between items-center border border-emerald-200 mb-3" style={{ background: 'linear-gradient(to right, #d1fae5 0%, #6ee7b7 100%)' }}>
                             <span className="font-semibold text-emerald-800">Amount Paid</span>
                             <span className="font-bold text-emerald-800 text-lg">-${invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     )}
 
                     {hasBalance && (
-                        <div className="bg-slate-900 px-6 py-3 rounded flex justify-between items-center">
+                        <div className="px-6 py-3 rounded flex justify-between items-center" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
                             <span className="font-bold text-white text-base">Balance Due</span>
                             <span className="font-bold text-white text-2xl">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
