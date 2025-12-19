@@ -138,7 +138,7 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] px-6 py-6">
+    <div className="min-h-screen bg-slate-900 dark:bg-[#0a0a0a] px-6 py-6">
       <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
@@ -151,8 +151,8 @@ export default function Field() {
           }}
         />
         <div className="text-right">
-          <h1 className="text-4xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
-          <p className="text-slate-300 text-sm mt-1">Central management for construction projects</p>
+          <h1 className="text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
+          <p className="text-slate-400 text-sm mt-1">Central management for construction projects</p>
         </div>
       </div>
       <div>
@@ -209,7 +209,7 @@ export default function Field() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+        <TabsList className="bg-slate-800 dark:bg-slate-800/50 border border-slate-700 dark:border-slate-700">
           <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
             <Briefcase className="w-4 h-4 mr-2" />
             Projects
@@ -226,7 +226,7 @@ export default function Field() {
 
         <TabsContent value="projects" className="mt-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <h2 className="text-2xl font-bold text-black dark:text-white">My Projects</h2>
+            <h2 className="text-2xl font-bold text-slate-300 dark:text-white">My Projects</h2>
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -234,16 +234,16 @@ export default function Field() {
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 w-64"
+                className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 w-64"
               />
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
+            <div className="flex bg-black rounded-lg p-1">
               <button
                 onClick={() => setFilter('active')}
                 className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   filter === 'active' 
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-slate-700 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Active
@@ -252,8 +252,8 @@ export default function Field() {
                 onClick={() => setFilter('all')}
                 className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   filter === 'all' 
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-slate-700 text-white shadow-sm' 
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 All
@@ -355,14 +355,14 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className={`bg-gradient-to-br ${colorClasses[color]} border border-transparent rounded-xl p-5 shadow-sm`}>
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-black uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold text-black mt-2">{value}</p>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{value}</p>
         </div>
-        <div className={`p-3 rounded-full bg-black/10`}>
-          <Icon className="w-6 h-6 text-black" />
+        <div className="p-3 rounded-full bg-black dark:bg-slate-900">
+          <Icon className="w-6 h-6 text-white" />
         </div>
       </div>
     </div>
