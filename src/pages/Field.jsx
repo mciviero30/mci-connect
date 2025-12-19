@@ -387,7 +387,7 @@ function ProjectCard({ job, index, userRole }) {
       transition={{ delay: index * 0.05 }}
     >
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
-        <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer group shadow-sm">
+        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 hover:bg-slate-700/50 transition-all cursor-pointer group shadow-lg">
           <div className="flex items-start justify-between mb-3">
             <div className="p-2 bg-[#FFB800]/20 rounded-lg">
               <FolderOpen className="w-5 h-5 text-[#FFB800]" />
