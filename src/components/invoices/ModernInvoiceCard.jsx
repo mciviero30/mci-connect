@@ -7,6 +7,7 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { format } from "date-fns";
+import { base44 } from "@/api/base44Client";
 
 export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRegisterPayment, isAdmin }) {
   const navigate = useNavigate();
@@ -81,17 +82,14 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
               variant="ghost"
               size="sm"
               onClick={async () => {
-                const response = await fetch('/api/functions/generateInvoicePDF', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ invoiceId: invoice.id })
-                });
-                const blob = await response.blob();
+                const { data } = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
+                const blob = new Blob([data], { type: 'application/pdf' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `Invoice-${invoice.invoice_number}.pdf`;
                 a.click();
+                window.URL.revokeObjectURL(url);
               }}
               className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2 rounded-lg h-[26px]"
             >
