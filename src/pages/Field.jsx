@@ -141,11 +141,11 @@ export default function Field() {
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
       <div className="px-0 py-0">
-        <div className="w-full mb-3">
+        <div className="w-full mb-3 flex justify-center">
           <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5717f3e58_Screenshot2025-12-19at24110AM.png"
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/36077bd2e_Screenshot2025-12-19at24801AM.png"
             alt="MCI Field"
-            className="w-full h-auto object-cover"
+            className="w-[90%] h-auto object-contain"
             style={{ imageRendering: 'crisp-edges', imageRendering: '-webkit-optimize-contrast' }}
           />
         </div>
