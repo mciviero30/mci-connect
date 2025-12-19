@@ -153,6 +153,8 @@ const LayoutContent = ({ children, currentPageName }) => {
     retry: false,
     staleTime: Infinity,
     cacheTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   // Check if user is a client member (for redirect to ClientPortal)
@@ -163,6 +165,8 @@ const LayoutContent = ({ children, currentPageName }) => {
       role: 'client'
     }),
     enabled: !!user?.email && user?.role !== 'admin',
+    staleTime: 300000, // 5 minutes
+    refetchOnMount: false,
   });
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
@@ -173,8 +177,9 @@ const LayoutContent = ({ children, currentPageName }) => {
     queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user?.email }),
     enabled: !!user?.email && !isClientOnly && user?.employment_status !== 'deleted',
     initialData: [],
-    staleTime: 0, // Always check fresh data for onboarding
-    refetchOnMount: true
+    staleTime: 60000, // 1 minute cache
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const onboardingCompleted = onboardingForms.length >= 3;
@@ -241,7 +246,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 60000,
+    staleTime: 300000, // 5 minutes
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -483,10 +488,7 @@ const LayoutContent = ({ children, currentPageName }) => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="font-semibold text-slate-900 dark:text-slate-100">{t('loading')}...</p>
-        </div>
+        <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -566,12 +568,8 @@ const LayoutContent = ({ children, currentPageName }) => {
         <NotificationEngine user={user} />
       </NotificationService>
 
-      {user && (
+      {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <>
-          <CertificationMonitor userEmail={user.email} />
-          <DeadlineMonitor userEmail={user.email} />
-          <RealTimeNotifications userEmail={user.email} />
-          <PayrollReminderService user={user} />
           <UniversalNotificationEngine user={user} />
           <UniversalPushManager user={user} />
         </>
