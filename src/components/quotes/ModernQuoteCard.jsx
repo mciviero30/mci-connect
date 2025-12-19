@@ -144,30 +144,6 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               <FileCheck className="w-3.5 h-3.5 mr-1.5" />
               {language === 'es' ? 'Convertir a Factura' : 'Convert to Invoice'}
             </Button>
-            {onDuplicate && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDuplicate(quote)}
-                className="h-[32px] px-2.5"
-              >
-                <Copy className="w-3.5 h-3.5" />
-              </Button>
-            )}
-            {onDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (window.confirm(language === 'es' ? '¿Eliminar?' : 'Delete?')) {
-                    onDelete(quote.id);
-                  }
-                }}
-                className="h-[32px] px-2.5 text-red-600 hover:bg-red-50"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
-            )}
           </div>
         )}
       </div>
