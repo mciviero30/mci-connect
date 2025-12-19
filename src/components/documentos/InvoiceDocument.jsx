@@ -37,7 +37,6 @@ export default function InvoiceDocument({ invoice }) {
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/869e48625_Screenshot2025-12-19at13210AM.png"
                     alt="MCI Logo"
                     className="h-16 object-contain"
-                    style={{ filter: 'brightness(0) saturate(100%) invert(87%) sepia(11%) saturate(965%) hue-rotate(179deg) brightness(101%) contrast(97%)' }}
                 />
                 <div className="text-right">
                     <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">INVOICE</h1>
