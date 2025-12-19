@@ -109,23 +109,22 @@ export default function QuoteDocument({ quote }) {
                     <tbody className="bg-white">
                         {quote.items && quote.items.length > 0 ? quote.items.map((item, index) => (
                             <tr key={index} className="border-b border-slate-200 page-break-inside-avoid">
-                                <td className="px-3 py-2 align-middle">
+                                <td className="px-3 py-2 align-top">
                                     <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                                 </td>
-                                <td className="px-3 py-2 align-middle">
-                                   <p className="font-semibold text-sm text-slate-900 truncate print:truncate-none print-word-wrap">
+                                <td className="px-3 py-2 align-top">
+                                   <p className="font-semibold text-sm text-slate-900 print-word-wrap">
                                        {(item.item_name || item.description || '').replace(/\n/g, ' ').trim()}
                                    </p>
                                 </td>
-                                <td className="px-3 py-2 align-middle text-right text-sm font-medium text-slate-900">
-                                    {(item.quantity || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                                    {item.unit && <span className="text-xs ml-1">{item.unit}</span>}
+                                <td className="px-3 py-2 align-top text-right text-sm text-slate-700">
+                                    {item.quantity} {item.unit || ''}
                                 </td>
-                                <td className="px-3 py-2 align-middle text-right text-sm font-medium text-slate-900">
-                                    {(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <td className="px-3 py-2 align-top text-right text-sm text-slate-700">
+                                    ${item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
-                                <td className="px-3 py-2 align-middle text-right text-base font-semibold text-slate-900">
-                                    {(item.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <td className="px-3 py-2 align-top text-right text-base font-semibold text-slate-900">
+                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </td>
                             </tr>
                         )) : (
