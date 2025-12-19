@@ -2,12 +2,19 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Copy, Trash2, DollarSign, AlertCircle, Download } from "lucide-react";
+import { MapPin, Users, Copy, Trash2, DollarSign, AlertCircle, Download, MoreVertical } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRegisterPayment, isAdmin }) {
   const navigate = useNavigate();
@@ -69,33 +76,60 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
             )}
           </div>
 
-          <div className="flex gap-1.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
-              className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2.5 py-1.5 rounded-lg h-[26px]"
-            >
-              <span className="text-[10px] font-medium">{language === 'es' ? 'Ver' : 'View'}</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                const { data } = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
-                const blob = new Blob([data], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Invoice-${invoice.invoice_number}.pdf`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-              }}
-              className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2 rounded-lg h-[26px]"
-            >
-              <Download className="w-3.5 h-3.5" />
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2 rounded-lg h-[26px]"
+              >
+                <MoreVertical className="w-3.5 h-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+              <DropdownMenuItem 
+                onClick={() => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
+                className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
+              >
+                {language === 'es' ? 'Ver' : 'View'}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={async () => {
+                  const { data } = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
+                  const blob = new Blob([data], { type: 'application/pdf' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Invoice-${invoice.invoice_number}.pdf`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                }}
+                className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
+              >
+                <Download className="w-3.5 h-3.5 mr-2" />
+                {language === 'es' ? 'Descargar' : 'Download'}
+              </DropdownMenuItem>
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-800" />
+                  <DropdownMenuItem 
+                    onClick={() => onDuplicate?.(invoice)}
+                    className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
+                  >
+                    <Copy className="w-3.5 h-3.5 mr-2" />
+                    {language === 'es' ? 'Duplicar' : 'Duplicate'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => onDelete?.(invoice)}
+                    className="cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-2" />
+                    {language === 'es' ? 'Eliminar' : 'Delete'}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Status Badges */}
