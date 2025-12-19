@@ -232,7 +232,7 @@ export default function FieldProject() {
 
   return (
     <FieldOfflineProvider jobId={jobId}>
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
       
