@@ -53,10 +53,7 @@ export default function JobDetails() {
 
   const { data: job, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
-    queryFn: async () => {
-      const jobs = await base44.entities.Job.filter({ id: jobId });
-      return jobs[0] || null;
-    },
+    queryFn: () => base44.entities.Job.get(jobId),
     enabled: !!jobId
   });
 
