@@ -178,9 +178,9 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           <Button 
             variant="outline"
             onClick={() => setShowTemplates(true)}
-            className="border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+            className="border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           >
-            <Settings2 className="w-4 h-4 mr-2" />
+            <Settings2 className="w-4 h-4 mr-2 text-black dark:text-black" />
             Templates
           </Button>
           <Button 
@@ -214,7 +214,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-[#2d3748] border border-slate-600 rounded-xl overflow-hidden hover:border-[#FFB800]/50 transition-all group relative shadow-sm"
+                className="bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden hover:border-[#FFB800]/50 transition-all group relative shadow-sm"
               >
                 {/* Action Menu */}
                 <div className="absolute top-2 left-2 z-20">
@@ -222,7 +222,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     <DropdownMenuTrigger asChild>
                       <button 
                         onClick={(e) => e.stopPropagation()}
-                        className="p-2 rounded-lg bg-slate-700/90 hover:bg-slate-600 text-white transition-colors"
+                        className="p-2 text-black transition-colors"
                         title="Options"
                       >
                         <MoreVertical className="w-4 h-4" />
