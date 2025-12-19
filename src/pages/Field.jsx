@@ -140,20 +140,15 @@ export default function Field() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
-      <div className="bg-black w-full py-6 mb-6">
-        <div className="px-6 flex items-center justify-between">
+      <div className="px-0 py-0">
+        <div className="w-full mb-6">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/954dae0b3_image.jpeg"
             alt="MCI Field"
-            className="h-12 w-auto object-contain"
+            className="w-full h-auto object-cover"
           />
-          <h1 className="text-[#FFB800] text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-            MCI FIELD
-          </h1>
         </div>
-      </div>
-      
-      <div className="px-6">
+        <div className="px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
@@ -185,7 +180,9 @@ export default function Field() {
             )}
           </div>
         </div>
+        </div>
 
+        <div className="px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
@@ -296,6 +293,7 @@ export default function Field() {
           <GlobalChecklistsManager />
           </TabsContent>
           </Tabs>
+          </div>
           </div>
 
       {/* Quick Search Dialog */}
