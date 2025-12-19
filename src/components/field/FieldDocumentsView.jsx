@@ -168,7 +168,6 @@ export default function FieldDocumentsView({ jobId }) {
           </Button>
         </div>
       </div>
-      </div>
 
       {/* Folders */}
       {currentFolders.length > 0 && (
