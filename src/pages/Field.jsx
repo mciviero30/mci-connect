@@ -177,9 +177,7 @@ export default function Field() {
             )}
           </div>
         </div>
-        </div>
 
-        <div className="px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
@@ -289,9 +287,8 @@ export default function Field() {
           <TabsContent value="checklists" className="mt-6">
           <GlobalChecklistsManager />
           </TabsContent>
-          </Tabs>
-          </div>
-          </div>
+        </Tabs>
+      </div>
 
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
