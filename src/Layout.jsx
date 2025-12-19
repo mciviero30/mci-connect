@@ -657,7 +657,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-2xl bg-white shadow-xl overflow-hidden">
                 <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/ea0545761_Screenshot2025-12-19at14922AM.png"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                   alt="MCI Connect"
                   className="w-full h-full object-cover"
                 />
@@ -795,7 +795,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-white shadow-lg overflow-hidden flex-shrink-0">
                   <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/ea0545761_Screenshot2025-12-19at14922AM.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="MCI Connect"
                     className="w-full h-full object-cover"
                   />
