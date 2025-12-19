@@ -214,32 +214,45 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-[#FFB800]/50 transition-all group relative shadow-sm"
+                className="bg-[#2d3748] border border-slate-600 rounded-xl overflow-hidden hover:border-[#FFB800]/50 transition-all group relative shadow-sm"
               >
-                {/* Action buttons */}
-                <div className="absolute top-2 left-2 z-20 flex gap-1">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (window.confirm('Are you sure you want to delete this plan and all its tasks?')) {
-                        deletePlanMutation.mutate(plan.id);
-                      }
-                    }}
-                    className="p-2 rounded-lg bg-red-600/90 hover:bg-red-600 text-white transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setAnalyzePlan(plan);
-                    }}
-                    className="p-2 rounded-lg bg-amber-500/80 hover:bg-amber-500 text-white transition-colors"
-                    title="Analyze and create tasks"
-                  >
-                    <Wand2 className="w-4 h-4" />
-                  </button>
+                {/* Action Menu */}
+                <div className="absolute top-2 left-2 z-20">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button 
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 rounded-lg bg-slate-700/90 hover:bg-slate-600 text-white transition-colors"
+                        title="Options"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-slate-800 border-slate-700">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAnalyzePlan(plan);
+                        }}
+                        className="text-white hover:bg-slate-700 cursor-pointer"
+                      >
+                        <Wand2 className="w-4 h-4 mr-2" />
+                        Analyze & Create Tasks
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Are you sure you want to delete this plan and all its tasks?')) {
+                            deletePlanMutation.mutate(plan.id);
+                          }
+                        }}
+                        className="text-red-400 hover:bg-slate-700 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Plan
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 <div 
