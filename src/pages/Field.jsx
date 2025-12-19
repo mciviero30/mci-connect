@@ -138,7 +138,7 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-[#2d3748] dark:bg-[#1a202c] px-6 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-6 py-6">
       <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
@@ -226,7 +226,7 @@ export default function Field() {
 
         <TabsContent value="projects" className="mt-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <h2 className="text-2xl font-bold text-slate-300 dark:text-white">My Projects</h2>
+            <h2 className="text-2xl font-bold text-white">My Projects</h2>
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -355,7 +355,7 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-black border border-slate-800 rounded-xl p-5 shadow-sm">
+    <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 shadow-lg">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">{label}</p>
