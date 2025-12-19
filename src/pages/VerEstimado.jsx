@@ -330,10 +330,23 @@ Lawrenceville, Georgia 30043, U.S.A`
       console.log('🔄 Generating Quote PDF using backend function...');
       const response = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
       console.log('✅ PDF generated, downloading...');
+      console.log('Response type:', typeof response, response);
       
-      // Response is already an ArrayBuffer, not wrapped in .data
-      const blob = new Blob([response], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
+      // CRITICAL: Response from backend is already a Blob/ArrayBuffer
+      // Check if it's already a Blob
+      let pdfData;
+      if (response instanceof Blob) {
+        pdfData = response;
+      } else if (response instanceof ArrayBuffer) {
+        pdfData = new Blob([response], { type: 'application/pdf' });
+      } else if (response?.data) {
+        // Fallback if wrapped
+        pdfData = new Blob([response.data], { type: 'application/pdf' });
+      } else {
+        throw new Error('Invalid response format');
+      }
+      
+      const url = window.URL.createObjectURL(pdfData);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${quote.quote_number}-${quote.customer_name}.pdf`;
