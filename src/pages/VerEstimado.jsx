@@ -331,7 +331,8 @@ Lawrenceville, Georgia 30043, U.S.A`
       const response = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
       console.log('✅ PDF generated, downloading...');
       
-      const blob = new Blob([response.data], { type: 'application/pdf' });
+      // Response is already an ArrayBuffer, not wrapped in .data
+      const blob = new Blob([response], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
