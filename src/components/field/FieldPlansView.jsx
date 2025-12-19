@@ -180,7 +180,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             onClick={() => setShowTemplates(true)}
             className="bg-black border-slate-700 text-slate-400 hover:text-white"
           >
-            <Settings2 className="w-4 h-4 mr-2 text-black" />
+            <Settings2 className="w-5 h-5 mr-2 text-slate-400" />
             Templates
           </Button>
           <Button 
