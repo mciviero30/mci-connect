@@ -141,21 +141,19 @@ export default function Field() {
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
       <div className="px-0 py-0 -mx-4 md:-mx-6 mb-6">
-        <div className="w-screen relative left-[50%] right-[50%] -mx-[50vw] overflow-hidden bg-gradient-to-r from-[#F5A623] to-[#FFB800] px-6 md:px-12 py-4">
-          <div className="max-w-screen-2xl mx-auto flex items-center justify-end">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/4d12775b3_Screenshot2025-12-19at24952AM.png"
-              alt="MCI Logo"
-              className="h-16 md:h-20 object-contain"
-              style={{ 
-                imageRendering: 'crisp-edges',
-                imageRendering: '-webkit-optimize-contrast',
-                imageRendering: 'high-quality',
-                shapeRendering: 'geometricPrecision',
-                filter: 'contrast(1.15) brightness(1.08) saturate(1.1)'
-              }}
-            />
-          </div>
+        <div className="w-screen relative left-[50%] right-[50%] -mx-[50vw] overflow-hidden bg-gradient-to-r from-[#F5A623] to-[#FFB800]">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5717f3e58_Screenshot2025-12-19at24110AM.png"
+            alt="MCI Field"
+            className="w-full h-24 md:h-28 object-contain object-center"
+            style={{ 
+              imageRendering: 'crisp-edges',
+              imageRendering: '-webkit-optimize-contrast',
+              imageRendering: 'high-quality',
+              shapeRendering: 'geometricPrecision',
+              filter: 'contrast(1.1) brightness(1.05)'
+            }}
+          />
         </div>
         <div className="px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 mt-6">
