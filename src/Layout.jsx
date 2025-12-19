@@ -663,7 +663,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                 />
               </div>
               <div className="flex-1">
-                <h2 className="font-black text-2xl tracking-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                <h2 className="font-black text-2xl tracking-tight bg-gradient-to-r from-slate-500 via-blue-600 to-blue-800 bg-clip-text text-transparent">
                   MCI Connect
                 </h2>
               </div>
@@ -800,7 +800,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <h1 className="text-lg font-black leading-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 bg-clip-text text-transparent truncate">
+                <h1 className="text-lg font-black leading-tight bg-gradient-to-r from-slate-500 via-blue-600 to-blue-800 bg-clip-text text-transparent truncate">
                   MCI Connect
                 </h1>
               </div>
