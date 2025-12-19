@@ -317,7 +317,7 @@ export default function Facturas() {
               key={invoice.id}
               invoice={invoice}
               onDuplicate={(inv) => duplicateMutation.mutate(inv)}
-              onDelete={(id) => deleteMutation.mutate(id)}
+              onDelete={(inv) => deleteMutation.mutate(inv.id)}
               onRegisterPayment={(inv) => {
                 setPaymentInvoice(inv);
                 setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
