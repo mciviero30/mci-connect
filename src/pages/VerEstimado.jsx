@@ -479,8 +479,6 @@ Lawrenceville, Georgia 30043, U.S.A`
 
             {/* New action buttons */}
             {quote.status === 'sent' && <QuoteReminder quote={quote} />}
-            <QuoteVersions quote={quote} />
-            <QuoteCompare currentQuote={quote} />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -506,6 +504,9 @@ Lawrenceville, Georgia 30043, U.S.A`
                   <Copy className="w-4 h-4 mr-2" />
                   {t('clone')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-800" />
+                <QuoteVersions quote={quote} asMenuItem />
+                <QuoteCompare currentQuote={quote} asMenuItem />
                 {quote.status === 'sent' && (
                   <>
                     <DropdownMenuSeparator className="bg-slate-800" />
