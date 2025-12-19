@@ -138,30 +138,39 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] px-6 py-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
-          <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
-          <Badge className="mt-2 bg-[#FFB800]/20 text-[#FFB800] border-[#FFB800]/30">
-            🏗️ MCI Field • Field Execution
-          </Badge>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] px-6 py-6">
+      <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+        <img
+          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
+          alt="MCI Field"
+          className="h-20 object-contain"
+          style={{ 
+            imageRendering: 'crisp-edges',
+            imageRendering: '-webkit-optimize-contrast',
+            imageRendering: 'high-quality'
+          }}
+        />
+        <div className="text-right">
+          <h1 className="text-4xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
+          <p className="text-slate-300 text-sm mt-1">Central management for construction projects</p>
         </div>
+      </div>
+      <div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowQuickSearch(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
           >
             <Search className="w-4 h-4" />
             <span className="text-sm hidden md:inline">Quick Search</span>
-            <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-white dark:bg-slate-900 rounded text-[10px] font-medium">
+            <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-black rounded text-[10px] font-medium">
               <Command className="w-3 h-3" />K
             </kbd>
           </button>
           {user?.role !== 'customer' && (
             <Button 
               onClick={() => setShowNewProject(true)}
-              className="soft-amber-gradient shadow-lg"
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Project
@@ -176,13 +185,13 @@ export default function Field() {
           label="ACTIVE PROJECTS"
           value={activeProjects}
           icon={TrendingUp}
-          color="blue"
+          color="orange"
         />
         <StatsCard 
           label="COMPLETED PROJECTS"
           value={completedProjects}
           icon={CheckCircle2}
-          color="green"
+          color="yellow"
         />
         <StatsCard 
           label="TASKS IN PROGRESS"
@@ -194,30 +203,30 @@ export default function Field() {
           label="COMPLETED TASKS"
           value={tasksCompleted}
           icon={CheckCheck}
-          color="emerald"
+          color="yellow"
         />
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-          <TabsTrigger value="projects" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
             <Briefcase className="w-4 h-4 mr-2" />
             Projects
           </TabsTrigger>
-          <TabsTrigger value="dimensions" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
             <FileText className="w-4 h-4 mr-2" />
             Field Dimensions
           </TabsTrigger>
-          <TabsTrigger value="checklists" className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-white">
+          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
             <ClipboardList className="w-4 h-4 mr-2" />
             Checklists
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects" className="mt-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">My Projects</h2>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <h2 className="text-2xl font-bold text-black dark:text-white">My Projects</h2>
           <div className="flex items-center gap-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -336,28 +345,24 @@ export default function Field() {
 
 function StatsCard({ label, value, icon: Icon, color }) {
   const colorClasses = {
-    blue: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
-    green: 'from-green-500/20 to-green-600/20 border-green-500/30',
-    orange: 'from-amber-500/20 to-amber-600/20 border-amber-500/30',
-    emerald: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30',
+    orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
+    yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
   };
 
   const iconColors = {
-    blue: 'bg-blue-500/20 text-blue-400',
-    green: 'bg-green-500/20 text-green-400',
-    orange: 'bg-amber-500/20 text-amber-400',
-    emerald: 'bg-emerald-500/20 text-emerald-400',
+    orange: 'bg-orange-500/20 text-orange-400',
+    yellow: 'bg-yellow-500/20 text-yellow-400',
   };
 
   return (
-    <div className={`bg-white dark:bg-gradient-to-br dark:${colorClasses[color]} border border-slate-200 dark:border-transparent rounded-xl p-5 shadow-sm`}>
+    <div className={`bg-gradient-to-br ${colorClasses[color]} border border-transparent rounded-xl p-5 shadow-sm`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{value}</p>
+          <p className="text-xs font-bold text-black uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold text-black mt-2">{value}</p>
         </div>
-        <div className={`p-3 rounded-full ${iconColors[color]}`}>
-          <Icon className="w-6 h-6" />
+        <div className={`p-3 rounded-full bg-black/10`}>
+          <Icon className="w-6 h-6 text-black" />
         </div>
       </div>
     </div>
@@ -393,7 +398,7 @@ function ProjectCard({ job, index, userRole }) {
                job.status === 'on_hold' ? 'On Hold' : 'Archived'}
             </Badge>
           </div>
-          <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-[#FFB800] transition-colors mb-1">
+          <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors mb-1">
             {jobName}
           </h3>
           <p className="text-sm text-slate-400 line-clamp-1">
@@ -418,17 +423,17 @@ function ProjectCard({ job, index, userRole }) {
 
 function EmptyState({ onCreateProject }) {
   return (
-    <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
-      <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-        <AlertCircle className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-12 text-center shadow-sm">
+      <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <AlertCircle className="w-8 h-8 text-orange-400" />
       </div>
-      <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No projects assigned</h3>
+      <h3 className="text-xl font-semibold text-white mb-2">No projects assigned</h3>
       <p className="text-slate-400 mb-6">
         Start by creating your first project or request access to an existing one
       </p>
       <Button 
         onClick={onCreateProject}
-        className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+        className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white"
       >
         <Plus className="w-4 h-4 mr-2" />
         Create Project
