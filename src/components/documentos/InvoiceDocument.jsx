@@ -31,22 +31,22 @@ export default function InvoiceDocument({ invoice }) {
                 }
             `}</style>
 
-            {/* Header with Gradient */}
-            <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-blue-700 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+            {/* Dark Header Banner */}
+            <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
                 <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/3e4afe658_Screenshot2025-12-19at13747AM.png"
-                    alt="MCI Logo"
-                    className="h-16 object-contain"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    alt="Modern Components Installation"
+                    className="h-14 object-contain"
                 />
                 <div className="text-right">
-                    <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">INVOICE</h1>
+                    <h1 className="text-5xl font-bold tracking-wider">INVOICE</h1>
                     {hasBalance && (
-                        <p className="text-base font-bold mt-1 text-slate-200">
-                            BALANCE DUE <span className="text-2xl ml-2 bg-gradient-to-r from-amber-300 to-amber-400 bg-clip-text text-transparent">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <p className="text-base font-bold mt-1">
+                            BALANCE DUE <span className="text-2xl ml-2">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </p>
                     )}
                     {isPaid && (
-                        <p className="text-xl font-bold bg-gradient-to-r from-emerald-300 to-emerald-400 bg-clip-text text-transparent mt-1">✓ PAID</p>
+                        <p className="text-xl font-bold text-emerald-400 mt-1">✓ PAID</p>
                     )}
                 </div>
             </div>
@@ -105,7 +105,7 @@ export default function InvoiceDocument({ invoice }) {
             <div className="mb-8 overflow-x-auto">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-gradient-to-r from-slate-600 via-slate-500 to-blue-600 text-white">
+                        <tr className="bg-slate-700 text-white">
                             <th className="text-left px-3 py-2 text-sm font-semibold w-12">#</th>
                             <th className="text-left px-3 py-2 text-sm font-semibold">ITEM & DESCRIPTION</th>
                             <th className="text-right px-3 py-2 text-sm font-semibold w-20">QTY</th>
@@ -166,20 +166,20 @@ export default function InvoiceDocument({ invoice }) {
                         )}
                     </div>
 
-                    <div className="bg-gradient-to-r from-slate-600 via-slate-500 to-blue-600 px-6 py-3 rounded flex justify-between items-center mb-3">
-                        <span className="font-bold text-lg text-white">Total</span>
-                        <span className="font-bold text-2xl text-white">${invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="bg-slate-100 px-6 py-3 rounded flex justify-between items-center mb-3">
+                        <span className="font-bold text-lg text-slate-900">Total</span>
+                        <span className="font-bold text-2xl text-slate-900">${invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
 
                     {invoice.amount_paid > 0 && (
-                        <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 rounded flex justify-between items-center mb-3">
-                            <span className="font-semibold text-white">Amount Paid</span>
-                            <span className="font-bold text-white text-lg">-${invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <div className="bg-emerald-50 px-6 py-3 rounded flex justify-between items-center border border-emerald-200 mb-3">
+                            <span className="font-semibold text-emerald-800">Amount Paid</span>
+                            <span className="font-bold text-emerald-800 text-lg">-${invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     )}
 
                     {hasBalance && (
-                        <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-blue-700 px-6 py-3 rounded flex justify-between items-center">
+                        <div className="bg-slate-900 px-6 py-3 rounded flex justify-between items-center">
                             <span className="font-bold text-white text-base">Balance Due</span>
                             <span className="font-bold text-white text-2xl">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
