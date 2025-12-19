@@ -25,14 +25,14 @@ export default function QuoteDocument({ quote }) {
                 }
             `}</style>
 
-            {/* Header Negro */}
-            <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+            {/* Header with Gradient */}
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
                 <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="Logo"
-                    className="h-12 object-contain"
+                    className="h-14 object-contain"
                 />
-                <h1 className="text-5xl font-bold tracking-wider">QUOTE</h1>
+                <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">QUOTE</h1>
             </div>
 
             {/* Info de la Empresa y Cliente */}

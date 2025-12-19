@@ -31,22 +31,22 @@ export default function InvoiceDocument({ invoice }) {
                 }
             `}</style>
 
-            {/* Dark Header Banner */}
-            <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+            {/* Header with Gradient */}
+            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
                 <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="Modern Components Installation"
                     className="h-14 object-contain"
                 />
                 <div className="text-right">
-                    <h1 className="text-5xl font-bold tracking-wider">INVOICE</h1>
+                    <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">INVOICE</h1>
                     {hasBalance && (
-                        <p className="text-base font-bold mt-1">
-                            BALANCE DUE <span className="text-2xl ml-2">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <p className="text-base font-bold mt-1 text-slate-200">
+                            BALANCE DUE <span className="text-2xl ml-2 bg-gradient-to-r from-amber-300 to-amber-400 bg-clip-text text-transparent">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </p>
                     )}
                     {isPaid && (
-                        <p className="text-xl font-bold text-emerald-400 mt-1">✓ PAID</p>
+                        <p className="text-xl font-bold bg-gradient-to-r from-emerald-300 to-emerald-400 bg-clip-text text-transparent mt-1">✓ PAID</p>
                     )}
                 </div>
             </div>
