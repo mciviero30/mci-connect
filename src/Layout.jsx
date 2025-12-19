@@ -655,7 +655,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
           <SidebarHeader className="p-5 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800/30">
             <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 flex items-center justify-center shadow-xl p-0">
+              <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-xl p-1.5">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                   alt="MCI Connect"
@@ -793,7 +793,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 flex items-center justify-center shadow-lg p-0 flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg p-0.5 flex-shrink-0">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="MCI Connect"
