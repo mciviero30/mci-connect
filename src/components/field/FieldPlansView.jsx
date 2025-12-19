@@ -177,14 +177,14 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
         <div className="flex gap-2">
           <Button 
             onClick={() => setShowTemplates(true)}
-            className="bg-[#3a4556] border-slate-700 text-black hover:bg-[#4a5566] h-10"
+            className="bg-[#F5A623] border-[#F5A623] text-black hover:bg-[#E09000] h-10"
           >
             <Settings2 className="w-4 h-4 mr-2 text-black" />
             Templates
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#3a4556] hover:bg-[#4a5566] text-black h-10"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-black h-10"
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload Plan
@@ -213,7 +213,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden hover:border-[#FFB800]/50 transition-all group relative shadow-sm"
+                className="bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden hover:border-[#F5A623] transition-all group relative shadow-sm"
               >
                 {/* Action Menu */}
                 <div className="absolute top-2 left-2 z-20">
@@ -280,14 +280,14 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     {taskCount > 0 && (
-                      <div className="absolute top-2 right-2 bg-amber-500 text-black text-xs px-2 py-1 rounded-full z-10">
+                      <div className="absolute top-2 right-2 bg-[#F5A623] text-black text-xs px-2 py-1 rounded-full z-10">
                         {taskCount} tasks
                       </div>
                     )}
                   </div>
                   <div className="p-4">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-black dark:text-black group-hover:text-[#FFB800] transition-colors flex-1">
+                      <h3 className="font-semibold text-black dark:text-black group-hover:text-[#F5A623] transition-colors flex-1">
                         {plan.name}
                       </h3>
                       {plan.needs_confirmation && (
