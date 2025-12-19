@@ -134,7 +134,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Status Distribution */}
         <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Status Distribution</h3>
+          <h3 className="font-semibold text-white mb-4">Status Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -169,7 +169,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
         {/* Priority Distribution */}
         <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Priority Distribution</h3>
+          <h3 className="font-semibold text-white mb-4">Priority Distribution</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={priorityData}>
@@ -192,7 +192,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
         {/* Category Distribution */}
         <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Tasks by Category</h3>
+          <h3 className="font-semibold text-white mb-4">Tasks by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryData} layout="vertical">
@@ -215,7 +215,7 @@ export default function FieldAnalyticsView({ jobId, tasks }) {
 
         {/* Workload by User */}
         <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Workload by User</h3>
+          <h3 className="font-semibold text-white mb-4">Workload by User</h3>
           {workloadData.length === 0 ? (
             <div className="h-64 flex items-center justify-center">
               <p className="text-slate-500 dark:text-slate-400">No assigned tasks</p>

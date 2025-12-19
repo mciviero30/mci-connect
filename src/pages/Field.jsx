@@ -138,24 +138,18 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-6 py-6">
-      <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
-        <img
-          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
-          alt="MCI Field"
-          className="h-20 object-contain"
-          style={{ 
-            imageRendering: 'crisp-edges',
-            imageRendering: '-webkit-optimize-contrast',
-            imageRendering: 'high-quality'
-          }}
-        />
+    <div className="min-h-screen bg-[#1a1a1a] px-6 py-0">
+      <div className="w-screen -mx-6 px-10 py-4 mb-4 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #FFB800 0%, #FF8C00 100%)' }}>
+        <svg width="140" height="60" viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
+          <text x="10" y="35" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="800" fill="#000000" letterSpacing="2">MCI</text>
+          <text x="10" y="52" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="600" fill="#000000" letterSpacing="1">FIELD</text>
+        </svg>
         <div className="text-right">
-          <h1 className="text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
-          <p className="text-slate-400 text-sm mt-1">Central management for construction projects</p>
+          <h1 className="text-4xl font-bold tracking-wide text-black">DASHBOARD</h1>
+          <p className="text-black/70 text-sm mt-1">Central management for construction projects</p>
         </div>
       </div>
-      <div>
+      <div className="pt-2">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowQuickSearch(true)}
@@ -355,14 +349,14 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 shadow-lg">
+    <div className="bg-[#2a2a2a] border border-slate-700/50 rounded-xl p-5 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold text-white mt-2">{value}</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+          <p className="text-4xl font-black text-[#FFB800] mt-2">{value}</p>
         </div>
-        <div className="p-3 rounded-full bg-white">
-          <Icon className="w-6 h-6 text-black" />
+        <div className="p-3 rounded-full bg-slate-700/50">
+          <Icon className="w-6 h-6 text-white" />
         </div>
       </div>
     </div>
@@ -387,7 +381,7 @@ function ProjectCard({ job, index, userRole }) {
       transition={{ delay: index * 0.05 }}
     >
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
-        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 hover:bg-slate-700/50 transition-all cursor-pointer group shadow-lg">
+        <div className="bg-[#3a4556] border-2 border-orange-500 rounded-xl p-5 hover:border-orange-400 transition-all cursor-pointer group shadow-lg">
           <div className="flex items-start justify-between mb-3">
             <div className="p-2 bg-[#FFB800]/20 rounded-lg">
               <FolderOpen className="w-5 h-5 text-[#FFB800]" />
@@ -423,7 +417,7 @@ function ProjectCard({ job, index, userRole }) {
 
 function EmptyState({ onCreateProject }) {
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-12 text-center shadow-sm">
+    <div className="bg-[#3a4556] border-2 border-orange-500 rounded-2xl p-12 text-center shadow-lg">
       <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
         <AlertCircle className="w-8 h-8 text-orange-400" />
       </div>
