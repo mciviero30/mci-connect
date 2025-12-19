@@ -37,10 +37,16 @@ export default function InvoiceDocument({ invoice }) {
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
                     alt="MCI Logo"
                     className="h-16 object-contain"
-                    style={{ imageRendering: 'crisp-edges' }}
+                    style={{ 
+                        imageRendering: 'crisp-edges',
+                        imageRendering: '-webkit-optimize-contrast',
+                        imageRendering: 'high-quality',
+                        shapeRendering: 'geometricPrecision',
+                        filter: 'contrast(1.05) brightness(1.02)'
+                    }}
                 />
                 <div className="text-right">
-                    <h1 className="text-5xl font-bold tracking-wider">INVOICE</h1>
+                    <h1 className="text-5xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>INVOICE</h1>
                     {isPaid && (
                         <p className="text-2xl font-bold text-emerald-400 mt-2 flex items-center justify-end gap-2">
                             <span className="text-3xl">✓</span> PAID

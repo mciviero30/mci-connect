@@ -653,11 +653,16 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
-          <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50">
+          <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
               alt="MCI Connect"
               className="w-full h-full object-cover"
+              style={{ 
+                imageRendering: 'crisp-edges',
+                imageRendering: '-webkit-optimize-contrast',
+                imageRendering: 'high-quality'
+              }}
             />
           </SidebarHeader>
 

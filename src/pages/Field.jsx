@@ -140,15 +140,21 @@ export default function Field() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
-      <div className="px-0 py-0">
-        <div className="w-full mb-3">
+      <div className="px-0 py-0 -mx-4 md:-mx-6">
+        <div className="w-screen relative left-[50%] right-[50%] -mx-[50vw] overflow-hidden">
           <img 
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5717f3e58_Screenshot2025-12-19at24110AM.png"
             alt="MCI Field"
             className="w-full h-auto object-cover"
-            style={{ imageRendering: 'crisp-edges', imageRendering: '-webkit-optimize-contrast' }}
+            style={{ 
+              imageRendering: 'crisp-edges',
+              imageRendering: '-webkit-optimize-contrast',
+              imageRendering: 'high-quality',
+              shapeRendering: 'geometricPrecision'
+            }}
           />
         </div>
+        <div className="mb-3"></div>
         <div className="px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
