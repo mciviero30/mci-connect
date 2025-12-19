@@ -301,7 +301,7 @@ export default function Estimados() {
               key={quote.id}
               quote={quote}
               onDuplicate={(q) => duplicateMutation.mutate(q)}
-              onDelete={(id) => deleteMutation.mutate(id)}
+              onDelete={(q) => deleteMutation.mutate(q.id)}
               onConvert={(q) => convertToInvoiceMutation.mutate(q)}
               isAdmin={isAdmin}
             />
