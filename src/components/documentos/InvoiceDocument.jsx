@@ -31,17 +31,18 @@ export default function InvoiceDocument({ invoice }) {
                 }
             `}</style>
 
-            {/* Header con gradiente MCI Connect */}
-            <div className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
+            {/* Dark Header Banner */}
+            <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
                 <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
                     alt="MCI Logo"
                     className="h-16 object-contain"
                     style={{ 
                         imageRendering: 'crisp-edges',
                         imageRendering: '-webkit-optimize-contrast',
                         imageRendering: 'high-quality',
-                        shapeRendering: 'geometricPrecision'
+                        shapeRendering: 'geometricPrecision',
+                        filter: 'contrast(1.05) brightness(1.02)'
                     }}
                 />
                 <div className="text-right">
@@ -108,7 +109,7 @@ export default function InvoiceDocument({ invoice }) {
             <div className="mb-8 overflow-x-auto">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-white">
+                        <tr className="bg-slate-700 text-white">
                             <th className="text-left px-3 py-2 text-sm font-semibold w-12">#</th>
                             <th className="text-left px-3 py-2 text-sm font-semibold">ITEM & DESCRIPTION</th>
                             <th className="text-right px-3 py-2 text-sm font-semibold w-20">QTY</th>
@@ -175,14 +176,14 @@ export default function InvoiceDocument({ invoice }) {
                     </div>
 
                     {invoice.amount_paid > 0 && (
-                        <div className="bg-gradient-to-r from-emerald-50 to-green-50 px-6 py-3 rounded flex justify-between items-center border border-emerald-300 mb-3">
+                        <div className="bg-emerald-50 px-6 py-3 rounded flex justify-between items-center border border-emerald-200 mb-3">
                             <span className="font-semibold text-emerald-800">Amount Paid</span>
                             <span className="font-bold text-emerald-800 text-lg">-${invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     )}
 
                     {hasBalance && (
-                        <div className="bg-gradient-to-r from-cyan-600 to-indigo-700 px-6 py-3 rounded flex justify-between items-center">
+                        <div className="bg-slate-900 px-6 py-3 rounded flex justify-between items-center">
                             <span className="font-bold text-white text-base">Balance Due</span>
                             <span className="font-bold text-white text-2xl">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
