@@ -68,36 +68,55 @@ Deno.serve(async (req) => {
     };
 
     // Send to MCI Web app
-    const mciWebUrl = Deno.env.get('APP_URL')?.replace('mci-connect', 'mci-web') || 'https://mci-web.base44.app';
+    const mciWebUrl = 'https://mci-web.base44.app';
     const crossAppToken = Deno.env.get('CROSS_APP_TOKEN');
 
     if (!crossAppToken) {
       return Response.json({ error: 'CROSS_APP_TOKEN not configured' }, { status: 500 });
     }
 
-    const response = await fetch(`${mciWebUrl}/functions/receivePortfolioProject`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${crossAppToken}`
-      },
-      body: JSON.stringify(portfolioData)
-    });
+    console.log('Syncing to MCI Web:', mciWebUrl);
+    console.log('Portfolio data:', JSON.stringify(portfolioData, null, 2));
 
-    const result = await response.json();
+    let response;
+    try {
+      response = await fetch(`${mciWebUrl}/functions/receivePortfolioProject`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${crossAppToken}`
+        },
+        body: JSON.stringify(portfolioData)
+      });
 
-    if (!response.ok) {
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('MCI Web error:', errorText);
+        return Response.json({ 
+          error: 'Failed to sync to MCI Web', 
+          status: response.status,
+          details: errorText
+        }, { status: 500 });
+      }
+
+      const result = await response.json();
+      console.log('Sync successful:', result);
+
       return Response.json({ 
-        error: 'Failed to sync to MCI Web', 
-        details: result 
-      }, { status: response.status });
-    }
+        success: true, 
+        message: 'Job synced to MCI-us.com successfully',
+        mci_web_response: result
+      });
 
-    return Response.json({ 
-      success: true, 
-      message: 'Job synced to MCI-us.com successfully',
-      mci_web_response: result
-    });
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError);
+      return Response.json({ 
+        error: 'Network error connecting to MCI Web', 
+        details: fetchError.message 
+      }, { status: 500 });
+    }
 
   } catch (error) {
     console.error('Error syncing job to website:', error);
