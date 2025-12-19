@@ -27,14 +27,12 @@ export default function QuoteDocument({ quote }) {
 
             {/* Header with Gradient */}
             <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-blue-700 text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
-                <div className="h-16 w-16 bg-gradient-to-br from-slate-300 via-blue-400 to-blue-500 rounded-lg p-2 flex items-center justify-center">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/17c220d4f_Screenshot2025-12-19at10354AM.png"
-                        alt="MCI Logo"
-                        className="w-full h-full object-contain"
-                        style={{ filter: 'brightness(0) invert(1)' }}
-                    />
-                </div>
+                <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/17c220d4f_Screenshot2025-12-19at10354AM.png"
+                    alt="MCI Logo"
+                    className="h-16 object-contain"
+                    style={{ filter: 'brightness(0) saturate(100%) invert(87%) sepia(11%) saturate(965%) hue-rotate(179deg) brightness(101%) contrast(97%)' }}
+                />
                 <h1 className="text-5xl font-bold tracking-wider bg-gradient-to-r from-slate-300 via-blue-400 to-blue-500 bg-clip-text text-transparent">QUOTE</h1>
             </div>
 
