@@ -154,7 +154,7 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
       </div>
 
       {/* Recent Tasks */}
-      <div className="mt-6 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-5 shadow-sm">
+      <div className="mt-6 bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
         <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Recent Tasks</h3>
         {tasks.length === 0 ? (
           <p className="text-slate-500 dark:text-slate-400 text-sm">No tasks created</p>

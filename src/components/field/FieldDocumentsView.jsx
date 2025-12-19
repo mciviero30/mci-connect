@@ -187,7 +187,7 @@ export default function FieldDocumentsView({ jobId }) {
 
       {/* Documents */}
       {currentDocs.length === 0 && currentFolders.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
+        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center shadow-sm">
           <FileText className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No documents</h3>
           <p className="text-slate-500 dark:text-slate-400 mb-4">Upload documents to share with the team</p>

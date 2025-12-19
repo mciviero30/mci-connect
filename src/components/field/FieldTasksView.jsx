@@ -139,7 +139,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
             return (
               <div 
                 key={column.id}
-                className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-sm"
+                className="bg-[#3a4556] border border-slate-500 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-sm"
                 onDrop={(e) => handleDrop(e, column.id)}
                 onDragOver={handleDragOver}
               >
@@ -184,7 +184,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
 
       {/* List View */}
       {view === 'list' && (
-        <div className="flex-1 bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden shadow-sm">
+        <div className="flex-1 bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden shadow-sm">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
