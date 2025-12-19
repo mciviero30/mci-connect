@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Copy, Trash2, DollarSign, AlertCircle, Download, MoreVertical } from "lucide-react";
+import { MapPin, Users, Copy, Trash2, DollarSign, AlertCircle, Download, MoreVertical, Eye } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -91,6 +91,7 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                 onClick={() => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
                 className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
               >
+                <Eye className="w-3.5 h-3.5 mr-2" />
                 {language === 'es' ? 'Ver' : 'View'}
               </DropdownMenuItem>
               <DropdownMenuItem 
