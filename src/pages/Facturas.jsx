@@ -51,9 +51,20 @@ export default function Facturas() {
 
   const duplicateMutation = useMutation({
     mutationFn: async (invoice) => {
+      // Get all invoices to find the next number
+      const allInvoices = await base44.entities.Invoice.list();
+      const existingNumbers = allInvoices
+        .map(inv => inv.invoice_number)
+        .filter(n => n?.startsWith('INV-'))
+        .map(n => parseInt(n.replace('INV-', '')))
+        .filter(n => !isNaN(n));
+      
+      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+      const newInvoiceNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
+      
       const newInvoice = {
         ...invoice,
-        invoice_number: `${invoice.invoice_number}-COPY-${Date.now()}`,
+        invoice_number: newInvoiceNumber,
         status: 'draft',
         invoice_date: new Date().toISOString().split('T')[0],
         due_date: '',
