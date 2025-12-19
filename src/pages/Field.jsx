@@ -143,19 +143,12 @@ export default function Field() {
       <div className="px-6 py-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <div className="flex items-center gap-4 mb-2">
-              <div className="bg-black rounded-xl px-6 py-3 flex items-center gap-3">
-                <img 
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/17c220d4f_Screenshot2025-12-19at10354AM.png"
-                  alt="MCI Field Logo"
-                  className="h-10 object-contain"
-                  style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(84%) saturate(4054%) hue-rotate(0deg) brightness(101%) contrast(105%)' }}
-                />
-                <div className="flex flex-col">
-                  <span className="text-white text-sm font-bold tracking-wider">MCI</span>
-                  <span className="text-[#FF8C42] text-sm font-bold tracking-wider">FIELD</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 mb-2">
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5dcd95f71_Screenshot2025-12-01at21824PM.png"
+                alt="MCI Field"
+                className="w-48 h-48 object-contain"
+              />
               <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
             </div>
             <p className="text-slate-500 dark:text-slate-400">Central management for construction projects</p>
