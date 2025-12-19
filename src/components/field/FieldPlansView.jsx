@@ -177,14 +177,14 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
         <div className="flex gap-2">
           <Button 
             onClick={() => setShowTemplates(true)}
-            className="bg-[#F5A623] border-[#F5A623] text-black hover:bg-[#E09000] h-10"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none h-10"
           >
             <Settings2 className="w-4 h-4 mr-2 text-black" />
             Templates
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#F5A623] hover:bg-[#E09000] text-black h-10"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none h-10"
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload Plan
@@ -213,7 +213,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden hover:border-[#F5A623] transition-all group relative shadow-sm"
+                className="bg-[#3a4556] border-2 border-orange-500 rounded-xl overflow-hidden hover:border-orange-400 transition-all group relative shadow-sm"
               >
                 {/* Action Menu */}
                 <div className="absolute top-2 left-2 z-20">
@@ -287,7 +287,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                   </div>
                   <div className="p-4">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-black dark:text-black group-hover:text-[#F5A623] transition-colors flex-1">
+                      <h3 className="font-semibold text-orange-500 dark:text-orange-500 group-hover:text-orange-400 transition-colors flex-1">
                         {plan.name}
                       </h3>
                       {plan.needs_confirmation && (
