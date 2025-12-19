@@ -27,12 +27,15 @@ export default function QuoteDocument({ quote }) {
 
             {/* Header Negro */}
             <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
-                <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png"
-                    alt="Logo"
-                    className="h-12 object-contain"
-                />
-                <h1 className="text-5xl font-bold tracking-wider">QUOTE</h1>
+                <div className="flex items-center gap-6">
+                    <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
+                        alt="MCI Logo"
+                        className="h-16 object-contain"
+                        style={{ imageRendering: 'crisp-edges' }}
+                    />
+                    <h1 className="text-4xl font-bold tracking-wider">QUOTE</h1>
+                </div>
             </div>
 
             {/* Info de la Empresa y Cliente */}
