@@ -653,9 +653,9 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
-          <SidebarHeader className="p-4 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-white to-slate-50/30 dark:from-slate-900 dark:to-slate-800/30">
+          <SidebarHeader className="p-5 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800/30">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-xl p-1">
+              <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-xl p-1.5">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                   alt="MCI Connect"
@@ -663,7 +663,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                 />
               </div>
               <div className="flex-1">
-                <h2 className="font-black text-xl tracking-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <h2 className="font-black text-2xl tracking-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 bg-clip-text text-transparent">
                   MCI Connect
                 </h2>
               </div>
@@ -786,21 +786,21 @@ const LayoutContent = ({ children, currentPageName }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-white/98 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
+            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
           >
             <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
               <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-lg p-0.5 flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg p-0.5 flex-shrink-0">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="MCI Connect"
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <h1 className="text-base font-black leading-tight bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent truncate">
+                <h1 className="text-lg font-black leading-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 bg-clip-text text-transparent truncate">
                   MCI Connect
                 </h1>
               </div>
