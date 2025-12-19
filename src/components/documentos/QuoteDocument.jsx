@@ -26,22 +26,20 @@ export default function QuoteDocument({ quote }) {
             `}</style>
 
             {/* Header Negro con Gradiente */}
-            <div className="px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
-                <div className="flex items-center gap-8">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png"
-                        alt="MCI Logo"
-                        className="h-14 object-contain"
-                        style={{ 
-                            imageRendering: 'crisp-edges',
-                            imageRendering: '-webkit-optimize-contrast',
-                            imageRendering: 'high-quality',
-                            shapeRendering: 'geometricPrecision',
-                            filter: 'contrast(1.05) brightness(1.02)'
-                        }}
-                    />
-                    <h1 className="text-5xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>QUOTE</h1>
-                </div>
+            <div className="px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
+                <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png"
+                    alt="MCI Logo"
+                    className="h-14 object-contain"
+                    style={{ 
+                        imageRendering: 'crisp-edges',
+                        imageRendering: '-webkit-optimize-contrast',
+                        imageRendering: 'high-quality',
+                        shapeRendering: 'geometricPrecision',
+                        filter: 'contrast(1.05) brightness(1.02)'
+                    }}
+                />
+                <h1 className="text-5xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>QUOTE</h1>
             </div>
 
             {/* Info de la Empresa y Cliente */}
