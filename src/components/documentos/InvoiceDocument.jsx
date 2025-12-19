@@ -33,23 +33,18 @@ export default function InvoiceDocument({ invoice }) {
 
             {/* Dark Header Banner */}
             <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <img
-                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
-                        alt="MCI Logo"
-                        className="h-16 object-contain"
-                        style={{ imageRendering: 'crisp-edges' }}
-                    />
-                    <h1 className="text-4xl font-bold tracking-wider">INVOICE</h1>
-                </div>
+                <img
+                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
+                    alt="MCI Logo"
+                    className="h-16 object-contain"
+                    style={{ imageRendering: 'crisp-edges' }}
+                />
                 <div className="text-right">
-                    {hasBalance && (
-                        <p className="text-base font-bold mt-1">
-                            BALANCE DUE <span className="text-2xl ml-2">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </p>
-                    )}
+                    <h1 className="text-5xl font-bold tracking-wider">INVOICE</h1>
                     {isPaid && (
-                        <p className="text-xl font-bold text-emerald-400 mt-1">✓ PAID</p>
+                        <p className="text-2xl font-bold text-emerald-400 mt-2 flex items-center justify-end gap-2">
+                            <span className="text-3xl">✓</span> PAID
+                        </p>
                     )}
                 </div>
             </div>
