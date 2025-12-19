@@ -1,6 +1,5 @@
 import React from 'react';
 import { format } from 'date-fns';
-import MCIDocumentLogo from '@/components/logos/MCIDocumentLogo';
 
 export default function QuoteDocument({ quote }) {
     if (!quote) return null;
@@ -28,8 +27,21 @@ export default function QuoteDocument({ quote }) {
 
             {/* Header Negro */}
             <div className="bg-black text-white px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between">
-                <MCIDocumentLogo height={64} />
-                <h1 className="text-5xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>QUOTE</h1>
+                <div className="flex items-center gap-8">
+                    <img
+                        src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b3461dcf2_Screenshot2025-12-19at24605AM.png"
+                        alt="MCI Logo"
+                        className="h-16 object-contain"
+                        style={{ 
+                            imageRendering: 'crisp-edges',
+                            imageRendering: '-webkit-optimize-contrast',
+                            imageRendering: 'high-quality',
+                            shapeRendering: 'geometricPrecision',
+                            filter: 'contrast(1.05) brightness(1.02)'
+                        }}
+                    />
+                    <h1 className="text-5xl font-bold tracking-wide" style={{ letterSpacing: '0.05em' }}>QUOTE</h1>
+                </div>
             </div>
 
             {/* Info de la Empresa y Cliente */}

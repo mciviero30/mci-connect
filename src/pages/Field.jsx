@@ -20,7 +20,6 @@ import {
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
 import FieldDimensionView from '@/components/field/FieldDimensionView';
-import MCIFieldLogo from '@/components/logos/MCIFieldLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -141,11 +140,22 @@ export default function Field() {
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
       {/* Header */}
-      <div className="px-0 py-0 -mx-4 md:-mx-6 mb-6">
-        <MCIFieldLogo fullWidth={true} />
-      </div>
-
-      <div className="px-6">
+      <div className="px-0 py-0 -mx-4 md:-mx-6">
+        <div className="w-screen relative left-[50%] right-[50%] -mx-[50vw] overflow-hidden">
+          <img 
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5717f3e58_Screenshot2025-12-19at24110AM.png"
+            alt="MCI Field"
+            className="w-full h-auto object-cover"
+            style={{ 
+              imageRendering: 'crisp-edges',
+              imageRendering: '-webkit-optimize-contrast',
+              imageRendering: 'high-quality',
+              shapeRendering: 'geometricPrecision'
+            }}
+          />
+        </div>
+        <div className="mb-3"></div>
+        <div className="px-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-[#FFB800]">Dashboard</h1>
@@ -177,7 +187,9 @@ export default function Field() {
             )}
           </div>
         </div>
+        </div>
 
+        <div className="px-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard 
@@ -287,8 +299,9 @@ export default function Field() {
           <TabsContent value="checklists" className="mt-6">
           <GlobalChecklistsManager />
           </TabsContent>
-        </Tabs>
-      </div>
+          </Tabs>
+          </div>
+          </div>
 
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
