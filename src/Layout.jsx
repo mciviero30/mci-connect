@@ -655,11 +655,11 @@ const LayoutContent = ({ children, currentPageName }) => {
         <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
           <SidebarHeader className="p-5 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800/30">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-xl p-1.5">
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-xl overflow-hidden">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                   alt="MCI Connect"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1">
@@ -793,11 +793,11 @@ const LayoutContent = ({ children, currentPageName }) => {
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg p-0.5 flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-white shadow-lg overflow-hidden flex-shrink-0">
                   <img
                     src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/d99aa5458_Screenshot2025-12-17at51932PM.png"
                     alt="MCI Connect"
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <h1 className="text-lg font-black leading-tight bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 bg-clip-text text-transparent truncate">
