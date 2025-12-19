@@ -176,16 +176,15 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-[#FFB800]">Plans</h1>
         <div className="flex gap-2">
           <Button 
-            variant="outline"
             onClick={() => setShowTemplates(true)}
-            className="bg-black border-slate-700 text-slate-400 hover:text-white"
+            className="bg-black border-slate-700 text-slate-400 hover:text-white h-10"
           >
-            <Settings2 className="w-5 h-5 mr-2 text-slate-400" />
+            <Settings2 className="w-4 h-4 mr-2 text-slate-400" />
             Templates
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#F5A623] hover:bg-[#E09000] text-white"
+            className="bg-[#F5A623] hover:bg-[#E09000] text-white h-10"
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload Plan
