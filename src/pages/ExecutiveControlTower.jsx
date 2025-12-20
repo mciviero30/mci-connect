@@ -138,7 +138,7 @@ export default function ExecutiveControlTower() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e] p-6">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Executive Control Tower"
@@ -148,55 +148,55 @@ export default function ExecutiveControlTower() {
 
         {/* Top Row - Key Metrics */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
-          <Card className="soft-blue-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <div className="p-3 bg-blue-600 dark:bg-blue-500 rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold">{activeTimeEntries.length}</span>
+                <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{activeTimeEntries.length}</span>
               </div>
-              <p className="text-sm font-medium opacity-80">Active Workers</p>
-              <p className="text-xs opacity-70 mt-1">Clocked in now</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Active Workers</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Clocked in now</p>
             </CardContent>
           </Card>
 
-          <Card className="soft-green-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <div className="p-3 bg-green-600 dark:bg-green-500 rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold">{overallCompliance}%</span>
+                <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{overallCompliance}%</span>
               </div>
-              <p className="text-sm font-medium opacity-80">Compliance Rate</p>
-              <p className="text-xs opacity-70 mt-1">Onboarding + Certs</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Compliance Rate</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Onboarding + Certs</p>
             </CardContent>
           </Card>
 
-          <Card className={monthBalance >= 0 ? 'soft-green-gradient shadow-lg' : 'soft-red-gradient shadow-lg'}>
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <div className={`p-3 ${monthBalance >= 0 ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500'} rounded-2xl shadow-lg`}>
+                <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
                   <DollarSign className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold">${(monthBalance / 1000).toFixed(1)}k</span>
+                <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">${(monthBalance / 1000).toFixed(1)}k</span>
               </div>
-              <p className="text-sm font-medium opacity-80">Monthly Balance</p>
-              <p className="text-xs opacity-70 mt-1">Income - Expenses</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Monthly Balance</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Income - Expenses</p>
             </CardContent>
           </Card>
 
-          <Card className="soft-amber-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <div className="p-3 bg-amber-600 dark:bg-amber-500 rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
                   <Bell className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-3xl font-bold">{needsAttention.length}</span>
+                <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{needsAttention.length}</span>
               </div>
-              <p className="text-sm font-medium opacity-80">Needs Attention</p>
-              <p className="text-xs opacity-70 mt-1">Action items</p>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Needs Attention</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">Action items</p>
             </CardContent>
           </Card>
         </div>
@@ -206,7 +206,7 @@ export default function ExecutiveControlTower() {
           <Card className="lg:col-span-2 bg-white dark:bg-slate-800 shadow-2xl">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <MapPin className="w-5 h-5 text-[#1E6FE8]" />
+                <MapPin className="w-5 h-5 text-[#507DB4]" />
                 Labor Map - Real-Time GPS
               </CardTitle>
               <p className="text-sm text-slate-600 dark:text-slate-400">Live location of clocked-in staff</p>
@@ -270,7 +270,7 @@ export default function ExecutiveControlTower() {
             <Card className="bg-white dark:bg-slate-800 shadow-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <Shield className="w-5 h-5 text-[#00C48C]" />
+                  <Shield className="w-5 h-5 text-[#507DB4]" />
                   Compliance Meter
                 </CardTitle>
               </CardHeader>
@@ -302,7 +302,7 @@ export default function ExecutiveControlTower() {
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div 
-                        className="h-full bg-[#1E6FE8] rounded-full transition-all"
+                        className="h-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-full transition-all"
                         style={{ width: `${onboardingCompliance}%` }}
                       />
                     </div>
@@ -319,7 +319,7 @@ export default function ExecutiveControlTower() {
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                       <div 
-                        className="h-full bg-[#00C48C] rounded-full transition-all"
+                        className="h-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-full transition-all"
                         style={{ width: `${certCompliance}%` }}
                       />
                     </div>
@@ -347,7 +347,7 @@ export default function ExecutiveControlTower() {
             <Card className="bg-white dark:bg-slate-800 shadow-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <TrendingUp className="w-5 h-5 text-[#00C48C]" />
+                  <TrendingUp className="w-5 h-5 text-[#507DB4]" />
                   Financial Pulse
                 </CardTitle>
               </CardHeader>
@@ -391,7 +391,7 @@ export default function ExecutiveControlTower() {
             <Card className="bg-white dark:bg-slate-800 shadow-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                  <Bell className="w-5 h-5 text-[#EF4444]" />
+                  <Bell className="w-5 h-5 text-[#507DB4]" />
                   Needs Attention ({needsAttention.length})
                 </CardTitle>
               </CardHeader>
@@ -433,7 +433,7 @@ export default function ExecutiveControlTower() {
           <Card className="bg-white dark:bg-slate-800 shadow-2xl">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <Clock className="w-5 h-5 text-[#1E6FE8]" />
+                <Clock className="w-5 h-5 text-[#507DB4]" />
                 Active Workers Details
               </CardTitle>
             </CardHeader>
@@ -442,7 +442,7 @@ export default function ExecutiveControlTower() {
                 {activeTimeEntries.map((entry) => (
                   <div key={entry.id} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#1E6FE8] to-[#0052CC] rounded-full flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold shadow-md">
                         {entry.employee_name?.[0]?.toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">

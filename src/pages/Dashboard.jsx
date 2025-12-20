@@ -612,7 +612,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#507DB4] dark:text-[#6B9DD8] mx-auto mb-4" />
           <p className="text-slate-900 dark:text-slate-100 font-semibold">Loading dashboard...</p>
           <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparing your personalized widgets</p>
         </div>
@@ -660,7 +660,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <Badge className="border-[#3B82F6]/30 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] bg-[#EFF6FF] dark:bg-[#1E3A8A]/20 shadow-sm self-start lg:self-center whitespace-nowrap">
+            <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm self-start lg:self-center whitespace-nowrap">
               MCI Connect • Customizable Dashboard
             </Badge>
           </div>
@@ -681,7 +681,7 @@ export default function Dashboard() {
                 <Button
                   onClick={handleSaveLayout}
                   size="sm"
-                  className="soft-green-gradient shadow-lg"
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                   disabled={savePreferencesMutation.isPending}
                 >
                   <Save className="w-4 h-4 mr-1" />
@@ -694,7 +694,7 @@ export default function Dashboard() {
                   onClick={() => setShowKudosDialog(true)}
                   size="sm"
                   variant="outline"
-                  className="border-[#3B82F6]/30 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
                 >
                   <Award className="w-4 h-4 mr-1" />
                   Give Kudos
@@ -703,7 +703,7 @@ export default function Dashboard() {
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
                   size="sm"
-                  className="border-[#3B82F6]/30 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   Add Widget
@@ -712,7 +712,7 @@ export default function Dashboard() {
                   onClick={() => setIsEditMode(true)}
                   size="sm"
                   variant="outline"
-                  className="border-[#3B82F6]/30 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
                 >
                   <SettingsIcon className="w-4 h-4 mr-1" />
                   Customize
@@ -778,7 +778,7 @@ export default function Dashboard() {
           <div className="text-center mt-8">
             <Button
               onClick={() => setShowTimeOffDialog(true)}
-              className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-lg"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               {t('requestTimeOff')}

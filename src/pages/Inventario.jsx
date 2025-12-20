@@ -341,7 +341,7 @@ export default function Inventario() {
     .reduce((sum, t) => sum + (t.quantity || 0), 0);
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Inventory Management"
@@ -393,7 +393,7 @@ export default function Inventario() {
                   setShowAddDialog(true); 
                 }} 
                 size="lg"
-                className="soft-blue-gradient shadow-lg"
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Item
@@ -416,12 +416,12 @@ export default function Inventario() {
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-amber-200 dark:border-amber-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <AlertTriangle className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
                 Low Stock
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">{lowStockItems.length}</div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{lowStockItems.length}</div>
             </CardContent>
           </Card>
 
@@ -430,7 +430,7 @@ export default function Inventario() {
               <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Total Value</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400">${totalValue.toFixed(2)}</div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totalValue.toFixed(2)}</div>
             </CardContent>
           </Card>
 
@@ -440,7 +440,7 @@ export default function Inventario() {
               <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Items Used This Month</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{itemsUsedThisMonth}</div>
+              <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{itemsUsedThisMonth}</div>
             </CardContent>
           </Card>
         </div>
@@ -483,14 +483,14 @@ export default function Inventario() {
 
         <Tabs defaultValue="all" className="mb-6">
           <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">All Items ({filteredItems.length})</TabsTrigger>
-            <TabsTrigger value="low_stock" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">
+            <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:data-[state=active]:text-white dark:text-slate-300">All Items ({filteredItems.length})</TabsTrigger>
+            <TabsTrigger value="low_stock" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:data-[state=active]:text-white dark:text-slate-300">
               Low Stock ({lowStockItems.length})
               {lowStockItems.length > 0 && (
-                <Badge className="ml-2 bg-amber-500 text-white text-xs">{lowStockItems.length}</Badge>
+                <Badge className="ml-2 bg-[#507DB4] text-white text-xs shadow-sm">{lowStockItems.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-white dark:data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-slate-900 dark:data-[state=active]:text-white dark:text-slate-300">Transaction History</TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:data-[state=active]:text-white dark:text-slate-300">Transaction History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
@@ -502,13 +502,13 @@ export default function Inventario() {
                       <div className="flex-1">
                         <h3 className="font-bold text-slate-900 dark:text-white text-lg">{item.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge className={item.inventory_type === 'hardware' ? 'badge-soft-purple' : 'badge-soft-blue'}>
+                          <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
                             {item.inventory_type === 'hardware' ? '🔩 Hardware' : '🔧 Tools'}
                           </Badge>
                           <span className="text-sm text-slate-600 dark:text-slate-400">{item.category}</span>
                         </div>
                         {item.team_name && (
-                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">Team: {item.team_name}</p>
+                          <p className="text-xs text-[#507DB4] dark:text-[#6B9DD8] mt-1 font-medium">Team: {item.team_name}</p>
                         )}
                         {item.sku && (
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">SKU: {item.sku}</p>
@@ -570,10 +570,10 @@ export default function Inventario() {
           <TabsContent value="low_stock">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {lowStockItems.map(item => (
-                <Card key={item.id} className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-lg">
+                <Card key={item.id} className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-3 mb-4">
-                      <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <AlertTriangle className="w-6 h-6 text-[#507DB4] dark:text-[#6B9DD8] flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-bold text-slate-900 dark:text-white text-lg">{item.name}</h3>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{item.category}</p>
@@ -593,7 +593,7 @@ export default function Inventario() {
                       </div>
                     </div>
 
-                    <Button size="sm" onClick={() => handleTransaction(item)} className="w-full soft-amber-gradient">
+                    <Button size="sm" onClick={() => handleTransaction(item)} className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                       <ArrowUp className="w-4 h-4 mr-2" />
                       Restock Now
                     </Button>
@@ -631,7 +631,7 @@ export default function Inventario() {
                               {transaction.employee_name} • {new Date(transaction.created_date).toLocaleString()}
                             </p>
                             {transaction.job_name && (
-                              <p className="text-xs text-[#3B9FF3] dark:text-blue-400 mt-1">Job: {transaction.job_name}</p>
+                              <p className="text-xs text-[#507DB4] dark:text-[#6B9DD8] mt-1">Job: {transaction.job_name}</p>
                             )}
                             {transaction.reason && (
                               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Reason: {transaction.reason}</p>

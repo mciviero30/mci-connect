@@ -59,48 +59,48 @@ export default function StatsCard({
     );
   }
 
-  // Color theme definitions with soft gradients
+  // Color theme definitions - ALL using soft blue gradient from logo
   const colorThemes = {
     blue: {
-      gradient: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
-      border: "border-2 border-blue-200 dark:border-blue-700",
-      text: "text-blue-900 dark:text-blue-100",
-      icon: "bg-blue-600 dark:bg-blue-500",
+      gradient: "from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10",
+      border: "border border-blue-200/40 dark:border-blue-700/30",
+      text: "text-slate-900 dark:text-slate-100",
+      icon: "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]",
       iconColor: "text-white"
     },
     green: {
-      gradient: "from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20",
-      border: "border-2 border-green-200 dark:border-green-700",
-      text: "text-green-900 dark:text-green-100",
-      icon: "bg-green-600 dark:bg-green-500",
+      gradient: "from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10",
+      border: "border border-blue-200/40 dark:border-blue-700/30",
+      text: "text-slate-900 dark:text-slate-100",
+      icon: "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]",
       iconColor: "text-white"
     },
     purple: {
-      gradient: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
-      border: "border-2 border-purple-200 dark:border-purple-700",
-      text: "text-purple-900 dark:text-purple-100",
-      icon: "bg-purple-600 dark:bg-purple-500",
+      gradient: "from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10",
+      border: "border border-blue-200/40 dark:border-blue-700/30",
+      text: "text-slate-900 dark:text-slate-100",
+      icon: "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]",
       iconColor: "text-white"
     },
     amber: {
-      gradient: "from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20",
-      border: "border-2 border-amber-200 dark:border-amber-700",
-      text: "text-amber-900 dark:text-amber-100",
-      icon: "bg-amber-600 dark:bg-amber-500",
+      gradient: "from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10",
+      border: "border border-blue-200/40 dark:border-blue-700/30",
+      text: "text-slate-900 dark:text-slate-100",
+      icon: "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]",
       iconColor: "text-white"
     },
     red: {
-      gradient: "from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20",
-      border: "border-2 border-red-200 dark:border-red-700",
-      text: "text-red-900 dark:text-red-100",
-      icon: "bg-red-600 dark:bg-red-500",
+      gradient: "from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10",
+      border: "border border-blue-200/40 dark:border-blue-700/30",
+      text: "text-slate-900 dark:text-slate-100",
+      icon: "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]",
       iconColor: "text-white"
     },
     slate: {
-      gradient: "from-slate-50 to-slate-100 dark:from-slate-800/20 dark:to-slate-700/20",
-      border: "border-2 border-slate-200 dark:border-slate-700",
+      gradient: "from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10",
+      border: "border border-blue-200/40 dark:border-blue-700/30",
       text: "text-slate-900 dark:text-slate-100",
-      icon: "bg-slate-600 dark:bg-slate-500",
+      icon: "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]",
       iconColor: "text-white"
     }
   };
@@ -108,7 +108,7 @@ export default function StatsCard({
   const theme = colorThemes[color] || colorThemes.blue;
 
   return (
-    <Card className={`overflow-hidden shadow-lg relative group hover:scale-105 transition-transform duration-300 bg-gradient-to-br ${theme.gradient} ${theme.border}`}>
+    <Card className={`overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 bg-gradient-to-br ${theme.gradient} ${theme.border}`}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -125,7 +125,7 @@ export default function StatsCard({
             )}
           </div>
           {Icon && (
-            <div className={`p-3 ${theme.icon} rounded-2xl shadow-lg`}>
+            <div className={`p-3 ${theme.icon} rounded-2xl shadow-md`}>
               <Icon className={`w-6 h-6 ${theme.iconColor}`} />
             </div>
           )}

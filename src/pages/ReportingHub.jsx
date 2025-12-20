@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import CustomReportBuilder from '../components/reporting/CustomReportBuilder';
 import { exportToCSV, exportToPDF } from '../components/reportes/ExportButtons';
 
-const COLORS = ['#3B9FF3', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+const COLORS = ['#507DB4', '#6B9DD8', '#8BB4DE', '#A5C9E8', '#BFD9EE', '#D9E9F4'];
 
 export default function ReportingHub() {
   const { t, language } = useLanguage();
@@ -256,7 +256,7 @@ export default function ReportingHub() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Advanced Analytics & Reporting"
@@ -281,7 +281,7 @@ export default function ReportingHub() {
                 <Download className="w-4 h-4 mr-2" />
                 Export Summary
               </Button>
-              <Button onClick={() => setShowCustomBuilder(true)} className="bg-gradient-to-r from-blue-600 to-blue-700">
+              <Button onClick={() => setShowCustomBuilder(true)} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                 <Filter className="w-4 h-4 mr-2" />
                 Custom Report
               </Button>
@@ -300,7 +300,7 @@ export default function ReportingHub() {
                     {kpis.avgHoursPerEmployee.toFixed(1)}
                   </p>
                 </div>
-                <Clock className="w-12 h-12 text-blue-500" />
+                <Clock className="w-12 h-12 text-[#507DB4] opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -314,7 +314,7 @@ export default function ReportingHub() {
                     {kpis.completionRate.toFixed(1)}%
                   </p>
                 </div>
-                <CheckCircle className="w-12 h-12 text-green-500" />
+                <CheckCircle className="w-12 h-12 text-[#507DB4] opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -328,7 +328,7 @@ export default function ReportingHub() {
                     {kpis.profitMargin.toFixed(1)}%
                   </p>
                 </div>
-                <TrendingUp className="w-12 h-12 text-amber-500" />
+                <TrendingUp className="w-12 h-12 text-[#507DB4] opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -342,7 +342,7 @@ export default function ReportingHub() {
                     {kpis.readRate.toFixed(1)}%
                   </p>
                 </div>
-                <Bell className="w-12 h-12 text-purple-500" />
+                <Bell className="w-12 h-12 text-[#507DB4] opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -354,7 +354,7 @@ export default function ReportingHub() {
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <Users className="w-5 h-5 text-blue-600" />
+                <Users className="w-5 h-5 text-[#507DB4]" />
                 Top Employee Performance
               </CardTitle>
             </CardHeader>
@@ -377,7 +377,7 @@ export default function ReportingHub() {
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <BarChart3 className="w-5 h-5 text-green-600" />
+                <BarChart3 className="w-5 h-5 text-[#507DB4]" />
                 Project Status Distribution
               </CardTitle>
             </CardHeader>
@@ -408,7 +408,7 @@ export default function ReportingHub() {
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <DollarSign className="w-5 h-5 text-amber-600" />
+                <DollarSign className="w-5 h-5 text-[#507DB4]" />
                 Revenue vs Expenses (6 Months)
               </CardTitle>
             </CardHeader>
@@ -431,7 +431,7 @@ export default function ReportingHub() {
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <Bell className="w-5 h-5 text-purple-600" />
+                <Bell className="w-5 h-5 text-[#507DB4]" />
                 Notification Engagement by Type
               </CardTitle>
             </CardHeader>
@@ -460,15 +460,15 @@ export default function ReportingHub() {
             <CardContent className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Total Revenue:</span>
-                <span className="font-bold text-green-600">${kpis.totalRevenue.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">${kpis.totalRevenue.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Total Expenses:</span>
-                <span className="font-bold text-red-600">${kpis.totalExpenses.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">${kpis.totalExpenses.toFixed(2)}</span>
               </div>
               <div className="flex justify-between pt-3 border-t border-slate-200 dark:border-slate-700">
                 <span className="text-slate-900 dark:text-white font-semibold">Net Profit:</span>
-                <span className="font-bold text-blue-600">${(kpis.totalRevenue - kpis.totalExpenses).toFixed(2)}</span>
+                <span className="font-bold text-[#507DB4] dark:text-[#6B9DD8]">${(kpis.totalRevenue - kpis.totalExpenses).toFixed(2)}</span>
               </div>
             </CardContent>
           </Card>

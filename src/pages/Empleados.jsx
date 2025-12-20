@@ -320,13 +320,13 @@ export default function Empleados() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-600 to-blue-500 rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
                   <Users className="w-7 h-7 text-white" />
                 </div>
                 Employee Management
@@ -351,7 +351,7 @@ export default function Empleados() {
                 Export PDF
               </Button>
               
-              <Button onClick={() => { setEditingEmployee(null); setShowDialog(true); }} className="soft-blue-gradient shadow-lg">
+              <Button onClick={() => { setEditingEmployee(null); setShowDialog(true); }} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                 <Plus className="w-5 h-5 mr-2" />
                 Add Employee
               </Button>

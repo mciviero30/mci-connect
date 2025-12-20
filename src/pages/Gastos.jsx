@@ -96,7 +96,7 @@ export default function Gastos() {
   const totalApproved = approvedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="min-h-screen p-4 md:p-8 bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Expenses"
@@ -105,7 +105,7 @@ export default function Gastos() {
           actions={
             <Button 
               onClick={() => setShowCreateDialog(true)}
-              className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
             >
               <Plus className="w-5 h-5 mr-2" />
               {t('newExpense')}
@@ -124,10 +124,10 @@ export default function Gastos() {
         )}
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <StatsCard title={t('pending')} value={pendingExpenses.length} icon={Receipt} color="from-slate-500 to-slate-600" loading={isLoading} />
-          <StatsCard title={t('totalPending')} value={`$${totalPending.toFixed(2)}`} icon={Receipt} color="from-slate-500 to-slate-600" loading={isLoading} />
-          <StatsCard title={t('approved')} value={approvedExpenses.length} icon={CheckCircle} color="from-[#3B9FF3] to-[#2A8FE3]" loading={isLoading} />
-          <StatsCard title={t('totalApproved')} value={`$${totalApproved.toFixed(2)}`} icon={CheckCircle} color="from-[#3B9FF3] to-[#2A8FE3]" loading={isLoading} />
+          <StatsCard title={t('pending')} value={pendingExpenses.length} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
+          <StatsCard title={t('totalPending')} value={`$${totalPending.toFixed(2)}`} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
+          <StatsCard title={t('approved')} value={approvedExpenses.length} icon={CheckCircle} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
+          <StatsCard title={t('totalApproved')} value={`$${totalApproved.toFixed(2)}`} icon={CheckCircle} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
         </div>
 
         {/* AI Expense Analyzer */}
@@ -199,7 +199,7 @@ export default function Gastos() {
                   <Button 
                     onClick={handleSelectEmployee} 
                     disabled={!selectedEmployee}
-                    className="w-full bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                    className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                   >
                     {t('next')}
                   </Button>

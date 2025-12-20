@@ -165,7 +165,7 @@ export default function Estimados() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('quotes')}
@@ -186,7 +186,7 @@ export default function Estimados() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="border-[#3B82F6]/40 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20"
+                    className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     {t('newQuote')}
@@ -250,7 +250,7 @@ export default function Estimados() {
                     </SelectItem>
                     <SelectItem value="converted_to_invoice">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        <div className="w-2 h-2 rounded-full bg-[#507DB4]" />
                         {language === 'es' ? 'Convertido' : 'Converted'}
                       </div>
                     </SelectItem>
@@ -336,13 +336,13 @@ export default function Estimados() {
                 <div className="flex justify-center gap-4">
                   <Button
                     onClick={() => setShowAIWizard(true)}
-                    className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
+                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {language === 'es' ? 'Crear con IA' : 'Create with AI'}
                   </Button>
                   <Link to={createPageUrl("CrearEstimado")}>
-                    <Button className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
+                    <Button className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                       <Plus className="w-4 h-4 mr-2" />
                       {t('newQuote')}
                     </Button>
@@ -358,7 +358,7 @@ export default function Estimados() {
           <DialogContent className="max-w-4xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-purple-500" />
+                <Sparkles className="w-6 h-6 text-[#507DB4]" />
                 {language === 'es' ? 'Crear Estimado con IA' : 'Create Quote with AI'}
               </DialogTitle>
             </DialogHeader>

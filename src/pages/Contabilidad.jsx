@@ -13,7 +13,7 @@ import TransactionList from "../components/contabilidad/TransactionList";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
-const COLORS = ['#3B9FF3', '#64748b', '#475569', '#334155', '#1e293b'];
+const COLORS = ['#507DB4', '#6B9DD8', '#8BB4DE', '#A5C9E8', '#BFD9EE'];
 
 export default function Contabilidad() {
   const { t } = useLanguage();
@@ -134,9 +134,9 @@ export default function Contabilidad() {
         />
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <StatsCard title={t('monthlyIncome')} value={`$${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingUp} color="from-[#3B9FF3] to-[#2A8FE3]" loading={isLoading} />
-          <StatsCard title={t('monthlyExpenses')} value={`$${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingDown} color="from-slate-600 to-slate-700" loading={isLoading} />
-          <StatsCard title={t('balance')} value={`$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={DollarSign} color={balance >= 0 ? "from-[#3B9FF3] to-[#2A8FE3]" : "from-slate-600 to-slate-700"} loading={isLoading} />
+          <StatsCard title={t('monthlyIncome')} value={`$${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingUp} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
+          <StatsCard title={t('monthlyExpenses')} value={`$${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingDown} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
+          <StatsCard title={t('balance')} value={`$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={DollarSign} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
@@ -159,8 +159,8 @@ export default function Contabilidad() {
                     }}
                     formatter={(value) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} />
                   <Legend />
-                  <Bar dataKey="income" fill="#3B9FF3" name={t('income')} radius={[8, 8, 0, 0]} />
-                  <Bar dataKey="expenses" fill="#64748b" name={t('expenses')} radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="income" fill="#507DB4" name={t('income')} radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="expenses" fill="#8BB4DE" name={t('expenses')} radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

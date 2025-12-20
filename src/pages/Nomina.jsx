@@ -300,66 +300,66 @@ export default function Nomina() {
 
 
         <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/60 dark:border-blue-800/60 shadow-sm">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium">{t('totalWorkPay')}</p>
-                <Briefcase className="w-10 h-10 opacity-50" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalWorkPay')}</p>
+                <Briefcase className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
-              <p className="text-3xl font-bold">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs mt-1 opacity-70">{totals.normalHours.toFixed(1)}h + {totals.overtimeHours.toFixed(1)}h OT</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">{totals.normalHours.toFixed(1)}h + {totals.overtimeHours.toFixed(1)}h OT</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20 border border-green-200/60 dark:border-green-800/60 shadow-sm">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium">{t('totalDrivingPay')}</p>
-                <Car className="w-10 h-10 opacity-50" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalDrivingPay')}</p>
+                <Car className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
-              <p className="text-3xl font-bold">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs mt-1 opacity-70">{totals.drivingHours.toFixed(1)}h driving</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">{totals.drivingHours.toFixed(1)}h driving</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/20 border border-amber-200/60 dark:border-amber-800/60 shadow-sm">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium">{t('perDiem')}</p>
-                <DollarSign className="w-10 h-10 opacity-50" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('perDiem')}</p>
+                <DollarSign className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
-              <p className="text-3xl font-bold">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-900/20 dark:to-slate-800/20 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium">{t('totalReimbursements')}</p>
-                <Download className="w-10 h-10 opacity-50" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalReimbursements')}</p>
+                <Download className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
-              <p className="text-3xl font-bold">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/60 dark:border-blue-800/60 shadow-sm">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
-                <Gift className="w-10 h-10 opacity-50" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
+                <Gift className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
-              <p className="text-3xl font-bold">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs mt-1 opacity-70">{language === 'es' ? 'Trabajos completados' : 'Completed jobs'}</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">{language === 'es' ? 'Trabajos completados' : 'Completed jobs'}</p>
             </CardContent>
           </Card>
 
           <Card className="soft-cyan-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium">{t('totalPayroll')}</p>
-                <Banknote className="w-10 h-10 opacity-50" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalPayroll')}</p>
+                <Banknote className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
-              <p className="text-3xl font-bold">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
             </CardContent>
           </Card>
         </div>
