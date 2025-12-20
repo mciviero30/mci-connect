@@ -692,12 +692,12 @@ const LayoutContent = ({ children, currentPageName }) => {
                             }`}
                           >
                             <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
-                              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
-                                isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'
-                              }`} />
-                              <span className="font-medium text-sm">
-                                {item.title}
-                              </span>
+                                          <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
+                                            isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
+                                          }`} />
+                                          <span className={`font-medium text-sm ${item.title === 'MCI Field' && !isActive ? 'text-[#FF8C00]' : ''}`}>
+                                            {item.title}
+                                          </span>
                               {showBadge && (
                                 <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
                                   {pendingExpenses}
