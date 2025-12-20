@@ -60,6 +60,7 @@ export default function FieldProject() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -138,7 +139,7 @@ export default function FieldProject() {
     enabled: !!jobId,
   });
 
-  const sidebarItems = [
+  const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
@@ -152,6 +153,7 @@ export default function FieldProject() {
     { id: 'members', label: 'Team', icon: Users },
     { id: 'forms', label: 'Forms', icon: ClipboardList },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'budget', label: 'Budget', icon: DollarSign },
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
@@ -239,8 +241,8 @@ export default function FieldProject() {
       {/* Offline Status Indicator */}
       <OfflineStatusBadge />
       
-      {/* Mobile Header */}
-      {isMobile && <MobileHeader job={job} onBack={handleBack} />}
+      {/* Mobile Header - Hidden, using inline menu instead */}
+      {/* {isMobile && <MobileHeader job={job} onBack={handleBack} />} */}
 
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg">
@@ -273,7 +275,7 @@ export default function FieldProject() {
 
         {/* Navigation */}
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-          {sidebarItems.map((item) => (
+          {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
@@ -305,18 +307,101 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto pb-20 md:pb-0">
+      <div className="flex-1 overflow-auto pb-20 md:pb-0 bg-[#1a1a1a]">
         {renderContent()}
       </div>
+      
+      {/* Mobile Menu Overlay */}
+      {isMobile && showMobileMenu && (
+        <div className="fixed inset-0 bg-black/80 z-50 md:hidden" onClick={() => setShowMobileMenu(false)}>
+          <div 
+            className="absolute bottom-0 left-0 right-0 bg-slate-900 rounded-t-3xl max-h-[75vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-slate-700 flex items-center justify-between sticky top-0 bg-slate-900">
+              <h3 className="text-lg font-semibold text-white">All Options</h3>
+              <button onClick={() => setShowMobileMenu(false)} className="p-2 text-slate-400">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-3 grid grid-cols-3 gap-2">
+              {navItems.map((item) => {
+                const isActive = activeTab === item.id;
+                const count = item.id === 'tasks' ? tasks.length : item.id === 'plans' ? plans.length : null;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setShowMobileMenu(false);
+                    }}
+                    className={`flex flex-col items-center p-3 rounded-xl transition-all ${
+                      isActive 
+                        ? 'bg-[#FFB800]/20 text-[#FFB800] border-2 border-[#FFB800]/50' 
+                        : 'bg-slate-800 text-slate-400 border-2 border-slate-700'
+                    }`}
+                  >
+                    <div className="relative">
+                      <item.icon className="w-6 h-6 mb-1" />
+                      {count > 0 && (
+                        <span className="absolute -top-1 -right-2 bg-[#FFB800] text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                          {count}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs font-medium text-center">{item.label}</span>
+                    {item.badge && <span className="text-xs">{item.badge}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation */}
       {isMobile && (
-        <MobileBottomNav 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          taskCount={tasks.length}
-          planCount={plans.length}
-        />
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 px-2 py-2 z-50 md:hidden pb-safe">
+          <div className="flex justify-around items-center">
+            {[
+              { id: 'overview', label: 'Home', icon: LayoutDashboard },
+              { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+              { id: 'plans', label: 'Plans', icon: Map },
+              { id: 'photos', label: 'Photos', icon: Camera },
+            ].map((item) => {
+              const isActive = activeTab === item.id;
+              const count = item.id === 'tasks' ? tasks.length : item.id === 'plans' ? plans.length : null;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all min-w-[60px] ${
+                    isActive 
+                      ? 'text-[#FFB800]' 
+                      : 'text-slate-400'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''} transition-transform`} />
+                    {count > 0 && (
+                      <span className="absolute -top-1 -right-2 bg-[#FFB800] text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-[10px] mt-1 ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setShowMobileMenu(true)}
+              className="flex flex-col items-center py-2 px-3 rounded-lg text-slate-400"
+            >
+              <Menu className="w-5 h-5" />
+              <span className="text-[10px] mt-1">More</span>
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Daily Report Dialog */}
