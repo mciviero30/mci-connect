@@ -310,7 +310,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto pb-20 md:pb-0 bg-[#1a1a1a]">
+      <div className="flex-1 overflow-auto md:pb-0 bg-[#1a1a1a]" style={{ paddingBottom: isMobile ? 'max(5rem, calc(5rem + env(safe-area-inset-bottom)))' : '0' }}>
         {renderContent()}
       </div>
       
@@ -364,7 +364,7 @@ export default function FieldProject() {
 
       {/* Mobile Bottom Navigation */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 px-2 py-2 z-50 md:hidden pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 px-2 pt-2 pb-6 z-50 md:hidden" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
           <div className="flex justify-around items-center">
             {[
               { id: 'overview', label: 'Home', icon: LayoutDashboard },
