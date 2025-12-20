@@ -581,11 +581,11 @@ const LayoutContent = ({ children, currentPageName }) => {
           /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
           /* ============================================ */
 
-          /* Soft Primary Colors */
+          /* Corporate Blue Colors */
           :root {
-            --color-primary: #6366F1;
-            --color-primary-hover: #4F46E5;
-            --color-primary-light: #A5B4FC;
+            --color-primary: #1E3A8A;
+            --color-primary-hover: #1E40AF;
+            --color-primary-light: #3B82F6;
           }
 
           /* Glassmorphism Effects */
@@ -612,17 +612,17 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
 
           .sidebar-scroll-content::-webkit-scrollbar-track {
-            background: rgba(99, 102, 241, 0.05);
+            background: rgba(30, 58, 138, 0.05);
             border-radius: 3px;
           }
 
           .sidebar-scroll-content::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(30, 58, 138, 0.2);
             border-radius: 3px;
           }
 
           .sidebar-scroll-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.4);
+            background: rgba(30, 58, 138, 0.4);
           }
 
           *::-webkit-scrollbar {
@@ -631,16 +631,16 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
 
           *::-webkit-scrollbar-track {
-            background: rgba(99, 102, 241, 0.05);
+            background: rgba(30, 58, 138, 0.05);
           }
 
           *::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.15);
+            background: rgba(30, 58, 138, 0.15);
             border-radius: 4px;
           }
 
           *::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.3);
+            background: rgba(30, 58, 138, 0.3);
           }
 
           @media (max-width: 1024px) {
@@ -650,7 +650,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
         `}</style>
 
-        <Sidebar className="border-r border-slate-200 dark:border-slate-800 shadow-lg bg-white dark:bg-slate-900">
+        <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-[#F0F4FF] dark:bg-slate-900">
           <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
@@ -666,12 +666,12 @@ const LayoutContent = ({ children, currentPageName }) => {
 
           <SidebarContent 
             ref={sidebarContentRef} 
-            className="p-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50"
+            className="p-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
             data-scrollable="true"
           >
             {navigation.map((section, idx) => (
               <SidebarGroup key={idx} className="mb-6">
-                <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#1E3A8A] dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#1E3A8A] dark:text-slate-300 border border-[#1E3A8A]/10 dark:border-slate-700">
                   {section.icon && <section.icon className="w-3.5 h-3.5" />}
                   {section.section}
                 </SidebarGroupLabel>
@@ -720,10 +720,10 @@ const LayoutContent = ({ children, currentPageName }) => {
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="p-4 flex-shrink-0 border-t border-slate-200/50 dark:border-slate-700/50 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800/50">
+          <SidebarFooter className="p-4 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
             <div className="mb-3 px-2 flex items-center gap-2">
               <Select value={language} onValueChange={changeLanguage}>
-                <SelectTrigger className="h-9 flex-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl">
+                <SelectTrigger className="h-9 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded-xl">
                   <Languages className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -735,16 +735,16 @@ const LayoutContent = ({ children, currentPageName }) => {
               <ThemeToggle />
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl p-3 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center justify-between rounded-2xl p-3 border bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 shadow-sm">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
                     src={profileImage}
                     alt={user.full_name}
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-indigo-500/30 shadow-md"
+                    className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"
                   />
                 ) : (
-                  <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center ring-2 ring-indigo-400/30 shadow-lg">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-full flex items-center justify-center ring-2 ring-[#1E3A8A]/30 shadow-lg">
                     <span className="text-white font-bold text-base">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
@@ -754,14 +754,14 @@ const LayoutContent = ({ children, currentPageName }) => {
                   <p className="font-bold text-sm truncate text-slate-900 dark:text-slate-100">
                     {user?.full_name || 'User'}
                   </p>
-                  <p className="text-xs truncate text-indigo-600 dark:text-indigo-400 font-medium">
+                  <p className="text-xs truncate text-[#1E3A8A] dark:text-[#60A5FA] font-medium">
                     {user?.role === 'admin' ? t('admin') : t('user')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Link to={createPageUrl("Configuracion")} className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')}>
-                  <Settings className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <Link to={createPageUrl("Configuracion")} className="p-2 rounded-xl transition-all hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')}>
+                  <Settings className="w-4 h-4 text-[#1E3A8A] dark:text-[#60A5FA]" />
                 </Link>
                 <button
                   onClick={() => base44.auth.logout()}

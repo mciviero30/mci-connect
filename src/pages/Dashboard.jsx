@@ -434,7 +434,7 @@ export default function Dashboard() {
       case 'total-hours':
         return (
           <Link to={createPageUrl('Horarios')}>
-            <StatsWidget value={`${totalWorkedHours.toFixed(1)}h`} label={t('totalWorkedHours')} icon={Clock} color="purple" />
+            <StatsWidget value={`${totalWorkedHours.toFixed(1)}h`} label={t('totalWorkedHours')} icon={Clock} color="slate" />
           </Link>
         );
       
@@ -471,7 +471,7 @@ export default function Dashboard() {
         );
       
       case 'my-expenses':
-        return <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="purple" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />;
+        return <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="slate" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />;
       
       case 'pending-timesheets':
         return (
