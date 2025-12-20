@@ -189,7 +189,7 @@ export default function Facturas() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('invoices')}
@@ -198,7 +198,7 @@ export default function Facturas() {
           actions={
             isAdmin && (
               <Link to={createPageUrl("CrearFactura")}>
-                <Button size="lg" className="soft-green-gradient shadow-lg">
+                <Button size="lg" className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
                   <Plus className="w-5 h-5 mr-2" />
                   {t('newInvoice')}
                 </Button>
@@ -208,7 +208,7 @@ export default function Facturas() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
+        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Text Search */}
@@ -354,7 +354,7 @@ export default function Facturas() {
               </p>
               {isAdmin && invoices.length === 0 && (
                 <Link to={createPageUrl("CrearFactura")}>
-                  <Button className="soft-green-gradient shadow-lg">
+                  <Button className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
                     <Plus className="w-4 h-4 mr-2" />
                     {t('newInvoice')}
                   </Button>
@@ -376,7 +376,7 @@ export default function Facturas() {
               </p>
               <div className="mb-4">
                 <Label className="text-slate-700 dark:text-slate-300 mb-2 block">{language === 'es' ? 'Saldo Pendiente' : 'Outstanding Balance'}</Label>
-                <p className="text-3xl font-bold text-blue-600">
+                <p className="text-3xl font-bold text-[#1E3A8A] dark:text-[#60A5FA]">
                   ${(paymentInvoice.balance || paymentInvoice.total).toFixed(2)}
                 </p>
               </div>
@@ -406,7 +406,7 @@ export default function Facturas() {
                 <Button
                   onClick={handleRegisterPayment}
                   disabled={registerPaymentMutation.isPending}
-                  className="flex-1 soft-green-gradient"
+                  className="flex-1 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                 >
                   <DollarSign className="w-4 h-4 mr-2" />
                   {registerPaymentMutation.isPending ? (language === 'es' ? 'Procesando...' : 'Processing...') : (language === 'es' ? 'Registrar' : 'Register')}

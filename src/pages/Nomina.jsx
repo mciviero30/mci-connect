@@ -271,7 +271,7 @@ export default function Nomina() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('payroll')}
@@ -282,7 +282,7 @@ export default function Nomina() {
                 <Download className="w-4 h-4 mr-2" />
                 {t('export')}
               </Button>
-              <Button onClick={handlePrint} className="soft-blue-gradient shadow-lg">
+              <Button onClick={handlePrint} className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
                 <Download className="w-4 h-4 mr-2" />
                 {t('printPayroll')}
               </Button>
@@ -300,7 +300,7 @@ export default function Nomina() {
 
 
         <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card className="soft-blue-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/60 dark:border-blue-800/60 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-medium">{t('totalWorkPay')}</p>
@@ -311,7 +311,7 @@ export default function Nomina() {
             </CardContent>
           </Card>
 
-          <Card className="soft-green-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/20 border border-green-200/60 dark:border-green-800/60 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-medium">{t('totalDrivingPay')}</p>
@@ -322,7 +322,7 @@ export default function Nomina() {
             </CardContent>
           </Card>
 
-          <Card className="soft-amber-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/20 border border-amber-200/60 dark:border-amber-800/60 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-medium">{t('perDiem')}</p>
@@ -332,7 +332,7 @@ export default function Nomina() {
             </CardContent>
           </Card>
 
-          <Card className="soft-purple-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-900/20 dark:to-slate-800/20 border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-medium">{t('totalReimbursements')}</p>
@@ -342,7 +342,7 @@ export default function Nomina() {
             </CardContent>
           </Card>
 
-          <Card className="soft-pink-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/60 dark:border-blue-800/60 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <p className="text-sm font-medium">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
@@ -397,7 +397,7 @@ export default function Nomina() {
                           className="w-16 h-16 rounded-full object-cover border-2 border-[#3B9FF3]/30"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
                           {employee.full_name?.[0]?.toUpperCase()}
                         </div>
                       )}
@@ -422,7 +422,7 @@ export default function Nomina() {
                             {drivingHours.toFixed(1)}h {language === 'es' ? 'manejo' : 'driving'}
                           </Badge>
                           {perDiemAmount > 0 && (
-                            <Badge className="badge-soft-purple">
+                            <Badge className="badge-soft-slate">
                               ${perDiemAmount.toFixed(2)} Per Diem ({workDaysCount}d)
                             </Badge>
                           )}
@@ -433,7 +433,7 @@ export default function Nomina() {
                     <div className="flex items-center gap-6">
                       <div className="text-right">
                         <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{t('totalPay')}</p>
-                        <p className="text-3xl font-bold text-[#3B9FF3] dark:text-blue-400">
+                        <p className="text-3xl font-bold text-[#1E3A8A] dark:text-[#60A5FA]">
                           ${totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
                         <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 space-y-0.5">
@@ -464,7 +464,7 @@ export default function Nomina() {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => setSelectedEmployee(employee)}
-                          className="soft-blue-gradient shadow-lg"
+                          className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                         >
                           <Edit className="w-4 h-4 mr-2" />
                           {t('viewDetails')}

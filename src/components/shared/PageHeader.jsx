@@ -32,13 +32,13 @@ export default function PageHeader({
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2 flex-wrap">
               {Icon && (
-                <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl shadow-indigo-500/30">
+                <div className="p-3 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-2xl shadow-lg shadow-[#1E3A8A]/20">
                   <Icon className="w-6 h-6 text-white" />
                 </div>
               )}
               <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{title}</h1>
               {appBadge && (
-                <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-500/30">
+                <Badge className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] text-white shadow-md shadow-[#1E3A8A]/20">
                   {appBadge}
                 </Badge>
               )}
@@ -50,7 +50,7 @@ export default function PageHeader({
               <div className="flex flex-wrap gap-4 mt-3 ml-[60px]">
                 {stats.map((stat, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-sm">
-                    {stat.icon && <stat.icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                    {stat.icon && <stat.icon className="w-4 h-4 text-[#1E3A8A] dark:text-[#60A5FA]" />}
                     <span className="text-slate-600 dark:text-slate-400 font-medium">{stat.label}:</span>
                     <span className="font-semibold text-slate-900 dark:text-white">{stat.value}</span>
                   </div>

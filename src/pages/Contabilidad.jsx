@@ -119,14 +119,14 @@ export default function Contabilidad() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('accounting')}
           description={`${t('period')}: ${format(monthStart, 'MMMM yyyy')}`}
           icon={DollarSign}
           actions={
-            <Button onClick={() => setFormOpen(true)} size="lg" className="soft-blue-gradient shadow-lg">
+            <Button onClick={() => setFormOpen(true)} size="lg" className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
               <Plus className="w-5 h-5 mr-2" />
               {t('newTransaction')}
             </Button>
