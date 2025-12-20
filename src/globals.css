@@ -60,55 +60,55 @@
 
 @layer base {
   :root {
-    /* Premium Soft Blue Primary */
-    --primary: 238 70% 65%;
+    /* MCI Connect Corporate Blue */
+    --primary: 221 83% 33%;
     --primary-foreground: 0 0% 100%;
 
-    /* Light Mode Colors - Soft Palette */
+    /* Light Mode Colors - Corporate Clean */
     --background: 210 20% 98%;
-    --foreground: 222 20% 20%;
+    --foreground: 215 25% 27%;
     --card: 0 0% 100%;
-    --card-foreground: 222 20% 20%;
+    --card-foreground: 215 25% 27%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 20% 20%;
-    --secondary: 210 30% 96%;
-    --secondary-foreground: 222 20% 30%;
-    --muted: 210 30% 96%;
-    --muted-foreground: 215 15% 50%;
-    --accent: 210 30% 96%;
-    --accent-foreground: 222 20% 30%;
-    --destructive: 0 60% 60%;
+    --popover-foreground: 215 25% 27%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 215 25% 27%;
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 25% 92%;
-    --input: 214 25% 92%;
-    --ring: 238 70% 65%;
-    --radius: 1.25rem;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
     
-    /* Premium Soft Color System - Pastel & Muted */
-    --soft-blue-from: 238 70% 96%;
-    --soft-blue-to: 238 60% 92%;
-    --soft-blue-border: 238 50% 80%;
-    --soft-blue-text: 238 70% 30%;
+    /* MCI Connect Corporate Blue System */
+    --soft-blue-from: 221 83% 96%;
+    --soft-blue-to: 221 83% 92%;
+    --soft-blue-border: 221 83% 75%;
+    --soft-blue-text: 221 83% 25%;
 
-    --soft-green-from: 142 60% 95%;
-    --soft-green-to: 142 50% 90%;
-    --soft-green-border: 142 45% 75%;
-    --soft-green-text: 142 60% 25%;
+    --soft-green-from: 142 50% 94%;
+    --soft-green-to: 142 45% 88%;
+    --soft-green-border: 142 40% 70%;
+    --soft-green-text: 142 50% 28%;
 
     --soft-red-from: 0 70% 96%;
     --soft-red-to: 0 60% 92%;
     --soft-red-border: 0 50% 80%;
     --soft-red-text: 0 60% 30%;
 
-    --soft-amber-from: 45 85% 95%;
-    --soft-amber-to: 45 75% 88%;
-    --soft-amber-border: 45 65% 75%;
-    --soft-amber-text: 45 70% 30%;
+    --soft-amber-from: 38 92% 94%;
+    --soft-amber-to: 38 84% 88%;
+    --soft-amber-border: 38 70% 70%;
+    --soft-amber-text: 38 80% 32%;
 
-    --soft-purple-from: 270 70% 96%;
-    --soft-purple-to: 270 60% 92%;
-    --soft-purple-border: 270 50% 80%;
-    --soft-purple-text: 270 60% 30%;
+    --soft-purple-from: 221 45% 94%;
+    --soft-purple-to: 221 40% 90%;
+    --soft-purple-border: 221 50% 75%;
+    --soft-purple-text: 221 60% 30%;
 
     --soft-slate-from: 215 20% 96%;
     --soft-slate-to: 215 15% 92%;

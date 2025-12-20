@@ -650,7 +650,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
         `}</style>
 
-        <Sidebar className="border-none shadow-2xl bg-white dark:bg-slate-900">
+        <Sidebar className="border-r border-slate-200 dark:border-slate-800 shadow-lg bg-white dark:bg-slate-900">
           <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
@@ -671,8 +671,8 @@ const LayoutContent = ({ children, currentPageName }) => {
           >
             {navigation.map((section, idx) => (
               <SidebarGroup key={idx} className="mb-6">
-                <SidebarGroupLabel className="text-[11px] font-extrabold soft-blue-gradient rounded-xl px-3 py-2.5 mb-2 flex items-center gap-2 shadow-sm">
-                  {section.icon && <section.icon className="w-4 h-4" />}
+                <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#1E3A8A] dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  {section.icon && <section.icon className="w-3.5 h-3.5" />}
                   {section.section}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -685,15 +685,15 @@ const LayoutContent = ({ children, currentPageName }) => {
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton
                             asChild
-                            className={`transition-all duration-300 rounded-xl mb-1 border-none ${
+                            className={`transition-all duration-200 rounded-lg mb-1 border-none ${
                               isActive
-                                ? 'soft-blue-gradient shadow-sm'
+                                ? 'bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] text-white shadow-md'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
                             <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
-                              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110 ${
-                                isActive ? 'text-blue-700 dark:text-blue-300' : 'text-slate-500 dark:text-slate-400'
+                              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
+                                isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'
                               }`} />
                               <span className="font-medium text-sm">
                                 {item.title}
@@ -707,7 +707,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                                 <span className="text-xs">{item.badge}</span>
                               )}
                               {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 dark:bg-blue-400 rounded-r-full shadow-sm" />
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
                               )}
                             </Link>
                           </SidebarMenuButton>
@@ -780,8 +780,8 @@ const LayoutContent = ({ children, currentPageName }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
-          >
+            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shadow-sm"
+            >
             <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
               <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
@@ -795,7 +795,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             </div>
           </motion.header>
 
-          <div className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#181818]" data-scrollable="true">
+          <div className="flex-1 overflow-y-auto bg-[#F1F5F9] dark:bg-[#181818]" data-scrollable="true">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
