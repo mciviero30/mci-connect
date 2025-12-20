@@ -80,20 +80,20 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="p-3 md:p-6 flex flex-col h-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Tasks</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 mb-4 md:mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-4 md:px-6 py-2 md:py-3 rounded-xl">
+          <h1 className="text-lg md:text-2xl font-bold text-black">Tasks</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:flex-initial">
+            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400" />
             <Input 
-              placeholder="Search tasks..."
+              placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white w-48"
+              className="pl-7 md:pl-9 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white w-full md:w-32 lg:w-48 text-sm h-9"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
