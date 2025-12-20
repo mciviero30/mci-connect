@@ -165,7 +165,7 @@ export default function Estimados() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('quotes')}
@@ -177,7 +177,7 @@ export default function Estimados() {
                 <Button
                   onClick={() => setShowAIWizard(true)}
                   size="lg"
-                  className="soft-purple-gradient shadow-lg"
+                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'IA' : 'AI'}
@@ -186,7 +186,7 @@ export default function Estimados() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="soft-cyan-gradient shadow-lg border-none"
+                    className="border-[#3B82F6]/40 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20"
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     {t('newQuote')}
@@ -198,7 +198,7 @@ export default function Estimados() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
+        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Text Search */}
@@ -336,13 +336,13 @@ export default function Estimados() {
                 <div className="flex justify-center gap-4">
                   <Button
                     onClick={() => setShowAIWizard(true)}
-                    className="soft-purple-gradient shadow-lg"
+                    className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {language === 'es' ? 'Crear con IA' : 'Create with AI'}
                   </Button>
                   <Link to={createPageUrl("CrearEstimado")}>
-                    <Button className="soft-cyan-gradient shadow-lg">
+                    <Button className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
                       <Plus className="w-4 h-4 mr-2" />
                       {t('newQuote')}
                     </Button>

@@ -220,7 +220,7 @@ export default function Trabajos() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('jobs')}
@@ -232,8 +232,7 @@ export default function Trabajos() {
                 <Button
                   onClick={() => setShowAIWizard(true)}
                   size="lg"
-                  variant="outline"
-                  className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'Crear con IA' : 'Create with AI'}
@@ -242,7 +241,7 @@ export default function Trabajos() {
                   onClick={() => setShowForm(true)}
                   variant="outline"
                   size="lg"
-                  className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  className="border-[#3B82F6]/40 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'Creación Rápida' : 'Quick Create'}
@@ -253,7 +252,7 @@ export default function Trabajos() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
+        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Text Search */}
@@ -377,13 +376,12 @@ export default function Trabajos() {
                 <div className="flex justify-center gap-4">
                   <Button
                     onClick={() => setShowAIWizard(true)}
-                    variant="outline"
-                    className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     {language === 'es' ? 'Crear con IA' : 'Create with AI'}
                   </Button>
-                  <Button onClick={() => setShowForm(true)} variant="outline" className="border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                  <Button onClick={() => setShowForm(true)} variant="outline" className="border-[#3B82F6]/40 dark:border-[#3B82F6]/50 text-[#1E3A8A] dark:text-[#60A5FA] hover:bg-[#EFF6FF] dark:hover:bg-[#1E3A8A]/20">
                     <Plus className="w-4 h-4 mr-2" />
                     {t('createJob')}
                   </Button>
