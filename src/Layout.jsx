@@ -816,21 +816,34 @@ const LayoutContent = ({ children, currentPageName }) => {
 
           <AIAssistant currentPage={currentPageName} />
         </main>
-      </div>
-    </SidebarProvider>
-  );
-};
+        </div>
 
-export default function Layout({ children, currentPageName }) {
-  return (
-    <ToastProvider>
-      <ErrorBoundary>
+        {/* Hide Base44 edit button */}
+        <style>{`
+        [class*="base44-edit"],
+        [class*="edit-with-base44"],
+        button[class*="floating-edit"],
+        div[class*="base44-floating"],
+        [class*="Base44"] {
+          display: none !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+        `}</style>
+        </SidebarProvider>
+        );
+        };
+
+        export default function Layout({ children, currentPageName }) {
+        return (
+        <ToastProvider>
+        <ErrorBoundary>
         <LanguageProvider>
           <PermissionsProvider>
             <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
           </PermissionsProvider>
         </LanguageProvider>
-      </ErrorBoundary>
-    </ToastProvider>
-  );
-}
+        </ErrorBoundary>
+        </ToastProvider>
+        );
+        }
