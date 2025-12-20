@@ -207,7 +207,7 @@ export default function FieldChecklistsView({ jobId }) {
 
 
   return (
-    <div className="p-3 md:p-6">
+    <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl inline-block mb-2">

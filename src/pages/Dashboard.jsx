@@ -630,7 +630,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowPhotoManager(true)}
-                className="group relative hover:scale-105 transition-transform flex-shrink-0 z-0"
+                className="group relative hover:scale-105 transition-transform flex-shrink-0"
               >
                 {profileImage ? (
                   <img

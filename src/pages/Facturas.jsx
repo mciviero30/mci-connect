@@ -189,7 +189,7 @@ export default function Facturas() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#1a1a1a]">
+    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('invoices')}
@@ -208,7 +208,7 @@ export default function Facturas() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-[#3a4556] border-2 border-slate-500 shadow-lg mb-6">
+        <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700 mb-6">
           <CardContent className="p-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Text Search */}
@@ -340,7 +340,7 @@ export default function Facturas() {
         </div>
 
         {filteredInvoices.length === 0 && !isLoading && (
-          <Card className="bg-[#3a4556] border-2 border-slate-500 shadow-lg">
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
               <FileCheck className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">

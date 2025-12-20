@@ -776,28 +776,24 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {currentPageName !== 'Field' && currentPageName !== 'FieldProject' && (
-            <motion.header 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="backdrop-blur-xl px-3 py-3 md:hidden flex-shrink-0 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
-            >
-              <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-                <div className="flex items-center gap-3">
-                  <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
-                    <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-                  </SidebarTrigger>
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
-                    alt="MCI Connect"
-                    className="h-12 object-contain"
-                  />
-                </div>
-                <NotificationBell user={user} />
-              </div>
-            </motion.header>
-          )}
+          <motion.header 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
+          >
+            <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
+              <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
+                <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              </SidebarTrigger>
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
+                alt="MCI Connect"
+                className="h-full w-full object-cover"
+              />
+              <NotificationBell user={user} />
+            </div>
+          </motion.header>
 
           <div className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#181818]" data-scrollable="true">
             <AnimatePresence mode="wait">
@@ -818,34 +814,21 @@ const LayoutContent = ({ children, currentPageName }) => {
 
           <AIAssistant currentPage={currentPageName} />
         </main>
-        </div>
+      </div>
+    </SidebarProvider>
+  );
+};
 
-        {/* Hide Base44 edit button */}
-        <style>{`
-        [class*="base44-edit"],
-        [class*="edit-with-base44"],
-        button[class*="floating-edit"],
-        div[class*="base44-floating"],
-        [class*="Base44"] {
-          display: none !important;
-          opacity: 0 !important;
-          pointer-events: none !important;
-        }
-        `}</style>
-        </SidebarProvider>
-        );
-        };
-
-        export default function Layout({ children, currentPageName }) {
-        return (
-        <ToastProvider>
-        <ErrorBoundary>
+export default function Layout({ children, currentPageName }) {
+  return (
+    <ToastProvider>
+      <ErrorBoundary>
         <LanguageProvider>
           <PermissionsProvider>
             <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
           </PermissionsProvider>
         </LanguageProvider>
-        </ErrorBoundary>
-        </ToastProvider>
-        );
-        }
+      </ErrorBoundary>
+    </ToastProvider>
+  );
+}

@@ -117,9 +117,8 @@ export default function NotificationBell({ user }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-[9998] lg:hidden"
+              className="fixed inset-0 z-40 lg:hidden"
               onClick={() => setIsOpen(false)}
-              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
             />
 
             <motion.div
@@ -127,14 +126,30 @@ export default function NotificationBell({ user }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="fixed lg:absolute right-2 lg:right-0 top-16 lg:top-auto lg:mt-2 w-[calc(100vw-1rem)] lg:w-96 max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[9999] overflow-hidden"
+              className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden"
             >
               {/* Header */}
-              <div className="p-3 lg:p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-slate-800">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-slate-900 dark:text-white text-sm lg:text-base">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-slate-800">
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white">
                     {language === 'es' ? 'Notificaciones' : 'Notifications'}
                   </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    {unreadCount} {language === 'es' ? 'sin leer' : 'unread'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => markAllAsReadMutation.mutate()}
+                      className="text-xs hover:bg-white dark:hover:bg-slate-700 rounded-lg"
+                    >
+                      <Check className="w-3 h-3 mr-1" />
+                      {language === 'es' ? 'Leer todo' : 'Mark all read'}
+                    </Button>
+                  )}
                   <button
                     onClick={() => setIsOpen(false)}
                     className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
@@ -142,26 +157,10 @@ export default function NotificationBell({ user }) {
                     <X className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                   </button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    {unreadCount} {language === 'es' ? 'sin leer' : 'unread'}
-                  </p>
-                  {unreadCount > 0 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => markAllAsReadMutation.mutate()}
-                      className="text-xs h-7 px-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg"
-                    >
-                      <Check className="w-3 h-3 mr-1" />
-                      {language === 'es' ? 'Leer todo' : 'Mark all read'}
-                    </Button>
-                  )}
-                </div>
               </div>
 
               {/* Notifications List */}
-              <ScrollArea className="h-[400px] lg:h-[500px]">
+              <ScrollArea className="h-[500px]">
                 {isLoading ? (
                   <div className="p-8 text-center">
                     <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>

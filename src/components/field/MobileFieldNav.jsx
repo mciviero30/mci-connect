@@ -12,9 +12,8 @@ const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'plans', label: 'Plans', icon: Map },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-  { id: 'dimensions', label: 'Site Dims', icon: FileText },
+  { id: 'milestones', label: 'Milestones', icon: Flag },
   { id: 'photos', label: 'Photos', icon: Camera },
-  { id: 'before-after', label: 'Before/After', icon: Camera },
   { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
   { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
@@ -22,7 +21,6 @@ const navItems = [
   { id: 'members', label: 'Team', icon: Users },
   { id: 'forms', label: 'Forms', icon: ClipboardList },
   { id: 'reports', label: 'Reports', icon: BarChart3 },
-  { id: 'budget', label: 'Budget', icon: BarChart3 },
   { id: 'activity', label: 'Activity', icon: Activity },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
@@ -32,8 +30,8 @@ const navItems = [
 const quickNavItems = [
   { id: 'overview', label: 'Home', icon: LayoutDashboard },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-  { id: 'plans', label: 'Plans', icon: Map },
   { id: 'photos', label: 'Photos', icon: Camera },
+  { id: 'plans', label: 'Plans', icon: Map },
 ];
 
 export function MobileBottomNav({ activeTab, onTabChange, taskCount, planCount }) {

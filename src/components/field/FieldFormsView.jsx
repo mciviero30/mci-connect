@@ -74,7 +74,7 @@ export default function FieldFormsView({ jobId }) {
   };
 
   return (
-    <div className="p-3 md:p-6">
+    <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
           <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Forms</h1>

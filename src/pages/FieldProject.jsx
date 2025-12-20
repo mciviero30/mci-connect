@@ -24,11 +24,7 @@ import {
   CheckCircle2,
   Activity,
   QrCode,
-  Brain,
-  Menu,
-  X,
-  ChevronLeft,
-  Home
+  Brain
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,7 +60,6 @@ export default function FieldProject() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -106,24 +101,13 @@ export default function FieldProject() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const { data: job, isLoading, error: jobError } = useQuery({
+  const { data: job, isLoading } = useQuery({
     queryKey: ['field-job', jobId],
     queryFn: async () => {
-      if (!jobId) return null;
-      try {
-        const jobs = await base44.entities.Job.filter({ id: jobId });
-        if (jobs.length === 0) {
-          console.error('Job not found with ID:', jobId);
-          return null;
-        }
-        return jobs[0];
-      } catch (error) {
-        console.error('Error fetching job:', error);
-        throw error;
-      }
+      const jobs = await base44.entities.Job.filter({ id: jobId });
+      return jobs[0] || null;
     },
     enabled: !!jobId,
-    retry: 2,
   });
 
   const { data: tasks = [] } = useQuery({
@@ -154,7 +138,7 @@ export default function FieldProject() {
     enabled: !!jobId,
   });
 
-  const navItems = [
+  const sidebarItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
@@ -168,7 +152,6 @@ export default function FieldProject() {
     { id: 'members', label: 'Team', icon: Users },
     { id: 'forms', label: 'Forms', icon: ClipboardList },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
-    { id: 'budget', label: 'Budget', icon: DollarSign },
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
@@ -182,15 +165,13 @@ export default function FieldProject() {
     );
   }
 
-  if (!job && !isLoading) {
+  if (!job) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-center p-6">
-          <p className="text-slate-400 mb-2">Project not found</p>
-          {jobId && <p className="text-xs text-slate-500 mb-4">ID: {jobId}</p>}
-          {jobError && <p className="text-xs text-red-500 mb-4">{jobError.message}</p>}
+        <div className="text-center">
+          <p className="text-slate-400 mb-4">Project not found</p>
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white">Back to Projects</Button>
+            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white">Back</Button>
           </Link>
         </div>
       </div>
@@ -205,48 +186,7 @@ export default function FieldProject() {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return (
-          <>
-            <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />
-            {isMobile && (
-              <div className="bg-slate-900 border-t-2 border-slate-700 px-2 py-3 mx-3 mb-3 rounded-xl">
-                <div className="flex justify-around items-center">
-                  {[
-                    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-                    { id: 'plans', label: 'Plans', icon: Map },
-                    { id: 'photos', label: 'Photos', icon: Camera },
-                  ].map((item) => {
-                    const count = item.id === 'tasks' ? tasks.length : item.id === 'plans' ? plans.length : null;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id)}
-                        className="flex flex-col items-center py-2 px-3 rounded-xl text-slate-400 hover:text-[#FFB800] transition-all"
-                      >
-                        <div className="relative">
-                          <item.icon className="w-6 h-6" />
-                          {count > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-[#FFB800] text-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                              {count > 99 ? '99+' : count}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] mt-1 font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })}
-                  <button
-                    onClick={() => setShowMobileMenu(true)}
-                    className="flex flex-col items-center py-2 px-3 rounded-xl text-slate-400"
-                  >
-                    <Menu className="w-6 h-6" />
-                    <span className="text-[10px] mt-1 font-medium">More</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        );
+        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
       case 'plans':
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
       case 'tasks':
@@ -299,28 +239,28 @@ export default function FieldProject() {
       {/* Offline Status Indicator */}
       <OfflineStatusBadge />
       
-      {/* Mobile Header - Hidden, using inline menu instead */}
-      {/* {isMobile && <MobileHeader job={job} onBack={handleBack} />} */}
+      {/* Mobile Header */}
+      {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg">
         {/* Header */}
-        <div className="p-3 border-b border-slate-700 bg-black">
+        <div className="p-4 border-b border-slate-700 bg-black">
           <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-2 text-xs px-2 py-1 h-8">
-              <ArrowLeft className="w-3 h-3 mr-1" />
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
                 alt="MCI Field"
-                className="w-8 h-8 object-contain flex-shrink-0"
+                className="w-10 h-10 object-contain"
               />
             <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-white truncate text-sm">{job.name || job.job_name_field}</h2>
-              <Badge className={`text-[10px] px-1.5 py-0 ${
+              <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
+              <Badge className={`text-xs ${
                 job.status === 'active' 
                   ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
                   : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
@@ -332,23 +272,23 @@ export default function FieldProject() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => (
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === item.id
                   ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/30'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <item.icon className="w-3.5 h-3.5" />
-                <span className="truncate">{item.label}</span>
+              <div className="flex items-center gap-3">
+                <item.icon className="w-4 h-4" />
+                {item.label}
               </div>
               {item.count !== undefined && item.count > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
                   activeTab === item.id
                     ? 'bg-orange-500/30 text-orange-300'
                     : 'bg-slate-700 text-slate-400'
@@ -357,7 +297,7 @@ export default function FieldProject() {
                 </span>
               )}
               {item.badge && (
-                <span className="text-[10px] flex-shrink-0">{item.badge}</span>
+                <span className="text-xs">{item.badge}</span>
               )}
             </button>
           ))}
@@ -365,67 +305,19 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-[#1a1a1a] relative">
-        {/* Mobile Home Button - Top Right */}
-        {isMobile && (
-          <Link to={createPageUrl('Dashboard')} className="fixed top-3 right-3 z-50">
-            <button className="p-2.5 rounded-xl bg-slate-900 border-2 border-[#FFB800] shadow-lg hover:bg-slate-800 transition-all">
-              <Home className="w-5 h-5 text-[#FFB800]" />
-            </button>
-          </Link>
-        )}
+      <div className="flex-1 overflow-auto pb-20 md:pb-0">
         {renderContent()}
       </div>
-      
-      {/* Mobile Menu Overlay */}
-      {isMobile && showMobileMenu && (
-        <div className="fixed inset-0 bg-black/80 z-50 md:hidden" onClick={() => setShowMobileMenu(false)}>
-          <div 
-            className="absolute bottom-0 left-0 right-0 bg-slate-900 rounded-t-3xl max-h-[75vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 border-b border-slate-700 flex items-center justify-between sticky top-0 bg-slate-900">
-              <h3 className="text-lg font-semibold text-white">All Options</h3>
-              <button onClick={() => setShowMobileMenu(false)} className="p-2 text-slate-400">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-3 grid grid-cols-3 gap-2">
-              {navItems.map((item) => {
-                const isActive = activeTab === item.id;
-                const count = item.id === 'tasks' ? tasks.length : item.id === 'plans' ? plans.length : null;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setShowMobileMenu(false);
-                    }}
-                    className={`flex flex-col items-center p-3 rounded-xl transition-all ${
-                      isActive 
-                        ? 'bg-[#FFB800]/20 text-[#FFB800] border-2 border-[#FFB800]/50' 
-                        : 'bg-slate-800 text-slate-400 border-2 border-slate-700'
-                    }`}
-                  >
-                    <div className="relative">
-                      <item.icon className="w-6 h-6 mb-1" />
-                      {count > 0 && (
-                        <span className="absolute -top-1 -right-2 bg-[#FFB800] text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                          {count}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs font-medium text-center">{item.label}</span>
-                    {item.badge && <span className="text-xs">{item.badge}</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <MobileBottomNav 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          taskCount={tasks.length}
+          planCount={plans.length}
+        />
       )}
-
-
 
       {/* Daily Report Dialog */}
       <DailyReportGenerator 

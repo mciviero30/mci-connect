@@ -15,9 +15,7 @@ import {
   FolderOpen,
   Command,
   ClipboardList,
-  FileText,
-  MoreVertical,
-  Home
+  FileText
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -140,51 +138,49 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a] px-3 md:px-6 py-0">
-      <div className="w-screen -mx-3 md:-mx-6 px-4 md:px-10 py-3 md:py-4 mb-3 md:mb-4 flex items-center justify-between relative" style={{ background: 'linear-gradient(to right, #FFB800 0%, #FF8C00 100%)' }}>
-        <svg className="w-20 h-10 md:w-32 md:h-14" viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
-          <text x="10" y="35" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="800" fill="#000000" letterSpacing="2">MCI</text>
-          <text x="10" y="52" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="600" fill="#000000" letterSpacing="1">FIELD</text>
-        </svg>
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-6 py-6">
+      <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+        <img
+          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
+          alt="MCI Field"
+          className="h-20 object-contain"
+          style={{ 
+            imageRendering: 'crisp-edges',
+            imageRendering: '-webkit-optimize-contrast',
+            imageRendering: 'high-quality'
+          }}
+        />
         <div className="text-right">
-          <h1 className="text-xl md:text-4xl font-bold tracking-wide text-black">DASHBOARD</h1>
-          <p className="text-black/70 text-[10px] md:text-sm mt-0.5 md:mt-1 hidden sm:block">Central management for construction projects</p>
+          <h1 className="text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
+          <p className="text-slate-400 text-sm mt-1">Central management for construction projects</p>
         </div>
-        
-        {/* Menu Button - Top Right */}
-        <Link to={createPageUrl('Dashboard')} className="absolute top-3 right-4 md:top-4 md:right-10">
-          <button className="p-2 rounded-lg bg-black/10 hover:bg-black/20 transition-all">
-            <Home className="w-5 h-5 text-black" />
-          </button>
-        </Link>
       </div>
-      <div className="pt-1 md:pt-2">
-        <div className="flex items-center gap-2 md:gap-3 w-full">
+      <div>
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setShowQuickSearch(true)}
-            className="flex items-center gap-2 px-2 md:px-3 py-1.5 md:py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
           >
             <Search className="w-4 h-4" />
-            <span className="text-xs md:text-sm hidden sm:inline">Quick Search</span>
-            <kbd className="hidden lg:flex items-center gap-0.5 px-1.5 py-0.5 bg-black rounded text-[10px] font-medium">
+            <span className="text-sm hidden md:inline">Quick Search</span>
+            <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-black rounded text-[10px] font-medium">
               <Command className="w-3 h-3" />K
             </kbd>
           </button>
           {user?.role !== 'customer' && (
             <Button 
               onClick={() => setShowNewProject(true)}
-              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg text-xs md:text-sm px-3 md:px-4"
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg"
             >
-              <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">New Project</span>
-              <span className="sm:hidden">New</span>
+              <Plus className="w-4 h-4 mr-2" />
+              New Project
             </Button>
           )}
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard 
           label="ACTIVE PROJECTS"
           value={activeProjects}
@@ -228,23 +224,23 @@ export default function Field() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="projects" className="mt-3 md:mt-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 mb-3 md:mb-4">
-            <h2 className="text-xl md:text-2xl font-bold text-white">My Projects</h2>
-          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:flex-initial">
-              <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400" />
+        <TabsContent value="projects" className="mt-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <h2 className="text-2xl font-bold text-white">My Projects</h2>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input 
-                placeholder="Search..."
+                placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 md:pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 w-full md:w-48 lg:w-64 text-sm h-9"
+                className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 w-64"
               />
             </div>
-            <div className="flex bg-black rounded-lg p-0.5 md:p-1 flex-shrink-0">
+            <div className="flex bg-black rounded-lg p-1">
               <button
                 onClick={() => setFilter('active')}
-                className={`px-2 md:px-4 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   filter === 'active' 
                     ? 'bg-slate-700 text-white shadow-sm' 
                     : 'text-slate-400 hover:text-white'
@@ -254,7 +250,7 @@ export default function Field() {
               </button>
               <button
                 onClick={() => setFilter('all')}
-                className={`px-2 md:px-4 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
                   filter === 'all' 
                     ? 'bg-slate-700 text-white shadow-sm' 
                     : 'text-slate-400 hover:text-white'
@@ -272,7 +268,7 @@ export default function Field() {
             <div className="w-8 h-8 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredJobs.map((job, idx) => (
               <ProjectCard key={job.id} job={job} index={idx} userRole={user?.role} />
             ))}
@@ -359,14 +355,14 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-[#2a2a2a] border border-slate-700/50 rounded-lg md:rounded-xl p-3 md:p-5 shadow-xl">
+    <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 shadow-lg">
       <div className="flex items-center justify-between">
-        <div className="min-w-0">
-          <p className="text-[9px] md:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">{label}</p>
-          <p className="text-2xl md:text-4xl font-black text-[#FFB800] mt-1 md:mt-2">{value}</p>
+        <div>
+          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">{label}</p>
+          <p className="text-3xl font-bold text-white mt-2">{value}</p>
         </div>
-        <div className="p-2 md:p-3 rounded-full bg-slate-700/50 flex-shrink-0">
-          <Icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
+        <div className="p-3 rounded-full bg-white">
+          <Icon className="w-6 h-6 text-black" />
         </div>
       </div>
     </div>
@@ -391,31 +387,31 @@ function ProjectCard({ job, index, userRole }) {
       transition={{ delay: index * 0.05 }}
     >
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
-        <div className="bg-[#3a4556] border-2 border-orange-500 rounded-lg md:rounded-xl p-3 md:p-5 hover:border-orange-400 transition-all cursor-pointer group shadow-lg">
-          <div className="flex items-start justify-between mb-2 md:mb-3">
-            <div className="p-1.5 md:p-2 bg-[#FFB800]/20 rounded-lg">
-              <FolderOpen className="w-4 h-4 md:w-5 md:h-5 text-[#FFB800]" />
+        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 hover:bg-slate-700/50 transition-all cursor-pointer group shadow-lg">
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-[#FFB800]/20 rounded-lg">
+              <FolderOpen className="w-5 h-5 text-[#FFB800]" />
             </div>
-            <Badge className={`${statusColors[job.status] || statusColors.active} text-[10px] md:text-xs px-1.5 md:px-2`}>
+            <Badge className={statusColors[job.status] || statusColors.active}>
               {job.status === 'active' ? 'Active' : 
                job.status === 'completed' ? 'Completed' : 
                job.status === 'on_hold' ? 'On Hold' : 'Archived'}
             </Badge>
           </div>
-          <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors mb-1 text-sm md:text-base">
+          <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors mb-1">
             {jobName}
           </h3>
-          <p className="text-xs md:text-sm text-slate-400 line-clamp-1">
+          <p className="text-sm text-slate-400 line-clamp-1">
             {job.address || job.description || 'No address'}
           </p>
           {/* Hide sensitive data for customers */}
           {!isCustomer && job.client_name_field && (
-            <p className="text-[10px] md:text-xs text-slate-500 mt-1.5 md:mt-2">
+            <p className="text-xs text-slate-500 mt-2">
               Client: {job.client_name_field}
             </p>
           )}
           {!isCustomer && job.contract_amount && (
-            <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 md:mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Budget: ${job.contract_amount.toLocaleString()}
             </p>
           )}
@@ -427,7 +423,7 @@ function ProjectCard({ job, index, userRole }) {
 
 function EmptyState({ onCreateProject }) {
   return (
-    <div className="bg-[#3a4556] border-2 border-orange-500 rounded-2xl p-12 text-center shadow-lg">
+    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-12 text-center shadow-sm">
       <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
         <AlertCircle className="w-8 h-8 text-orange-400" />
       </div>

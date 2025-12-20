@@ -78,7 +78,7 @@ export default function FieldChatView({ jobId }) {
   return (
     <div className="flex h-full">
       {/* Channels Sidebar */}
-      <div className="w-56 bg-[#2a2a2a] border-r border-slate-700 p-4">
+      <div className="w-56 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-slate-900 dark:text-white">Channels</h3>
           <Button 
@@ -109,7 +109,7 @@ export default function FieldChatView({ jobId }) {
 
         {/* Online Members */}
         <div className="mt-6">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
             Team ({members.length})
           </h3>
@@ -129,10 +129,10 @@ export default function FieldChatView({ jobId }) {
       {/* Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-slate-700 bg-[#2a2a2a]">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 bg-white dark:bg-transparent">
           <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-[#FFB800]" />
-            <h2 className="font-semibold text-white capitalize">{activeChannel}</h2>
+            <Hash className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+            <h2 className="font-semibold text-slate-900 dark:text-white capitalize">{activeChannel}</h2>
           </div>
         </div>
 
@@ -188,7 +188,7 @@ export default function FieldChatView({ jobId }) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-slate-700 bg-[#2a2a2a]">
+        <div className="p-4 border-t border-slate-200 dark:border-slate-700/50 bg-white dark:bg-transparent">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
               <Paperclip className="w-5 h-5" />
