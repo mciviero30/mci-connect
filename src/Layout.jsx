@@ -776,26 +776,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {currentPageName !== 'Field' && currentPageName !== 'FieldProject' && (
-            <motion.header 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:bg-slate-900/98 border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm"
-            >
-              <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
-                <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
-                  <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-                </SidebarTrigger>
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
-                  alt="MCI Connect"
-                  className="h-10 object-contain"
-                />
-                <NotificationBell user={user} />
-              </div>
-            </motion.header>
-          )}
+
 
           <div className="flex-1 overflow-y-auto bg-[#F8FAFC] dark:bg-[#181818]" data-scrollable="true">
             <AnimatePresence mode="wait">

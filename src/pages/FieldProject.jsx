@@ -27,7 +27,8 @@ import {
   Brain,
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -364,7 +365,15 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto bg-[#1a1a1a]">
+      <div className="flex-1 overflow-auto bg-[#1a1a1a] relative">
+        {/* Mobile Home Button - Top Right */}
+        {isMobile && (
+          <Link to={createPageUrl('Dashboard')} className="fixed top-3 right-3 z-50">
+            <button className="p-2.5 rounded-xl bg-slate-900 border-2 border-[#FFB800] shadow-lg hover:bg-slate-800 transition-all">
+              <Home className="w-5 h-5 text-[#FFB800]" />
+            </button>
+          </Link>
+        )}
         {renderContent()}
       </div>
       

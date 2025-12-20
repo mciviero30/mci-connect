@@ -15,7 +15,9 @@ import {
   FolderOpen,
   Command,
   ClipboardList,
-  FileText
+  FileText,
+  MoreVertical,
+  Home
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -139,7 +141,7 @@ export default function Field() {
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] px-3 md:px-6 py-0">
-      <div className="w-screen -mx-3 md:-mx-6 px-4 md:px-10 py-3 md:py-4 mb-3 md:mb-4 flex items-center justify-between" style={{ background: 'linear-gradient(to right, #FFB800 0%, #FF8C00 100%)' }}>
+      <div className="w-screen -mx-3 md:-mx-6 px-4 md:px-10 py-3 md:py-4 mb-3 md:mb-4 flex items-center justify-between relative" style={{ background: 'linear-gradient(to right, #FFB800 0%, #FF8C00 100%)' }}>
         <svg className="w-20 h-10 md:w-32 md:h-14" viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg">
           <text x="10" y="35" fontFamily="Arial, sans-serif" fontSize="28" fontWeight="800" fill="#000000" letterSpacing="2">MCI</text>
           <text x="10" y="52" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="600" fill="#000000" letterSpacing="1">FIELD</text>
@@ -148,6 +150,13 @@ export default function Field() {
           <h1 className="text-xl md:text-4xl font-bold tracking-wide text-black">DASHBOARD</h1>
           <p className="text-black/70 text-[10px] md:text-sm mt-0.5 md:mt-1 hidden sm:block">Central management for construction projects</p>
         </div>
+        
+        {/* Menu Button - Top Right */}
+        <Link to={createPageUrl('Dashboard')} className="absolute top-3 right-4 md:top-4 md:right-10">
+          <button className="p-2 rounded-lg bg-black/10 hover:bg-black/20 transition-all">
+            <Home className="w-5 h-5 text-black" />
+          </button>
+        </Link>
       </div>
       <div className="pt-1 md:pt-2">
         <div className="flex items-center gap-2 md:gap-3 w-full">
