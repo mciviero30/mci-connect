@@ -406,7 +406,7 @@ export default function Calendario() {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="p-2 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+      <div className="p-2 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
         <div className="max-w-7xl mx-auto">
           <PageHeader
             title={t('calendar')}
@@ -419,7 +419,7 @@ export default function Calendario() {
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-2">
             <Card 
-              className="soft-blue-gradient shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setEventTypeFilter('all')}
             >
               <CardContent className="p-1.5">
@@ -447,7 +447,7 @@ export default function Calendario() {
                     </p>
                     <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.jobWork}</p>
                   </div>
-                  <Briefcase className="w-3.5 h-3.5 md:w-4 md:h-4 text-purple-500" />
+                  <Briefcase className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#507DB4] opacity-60" />
                 </div>
               </CardContent>
             </Card>
@@ -464,7 +464,7 @@ export default function Calendario() {
                     </p>
                     <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.appointments}</p>
                   </div>
-                  <CalendarClock className="w-3.5 h-3.5 md:w-4 md:h-4 text-blue-500" />
+                  <CalendarClock className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#507DB4] opacity-60" />
                 </div>
               </CardContent>
             </Card>
@@ -478,7 +478,7 @@ export default function Calendario() {
                     </p>
                     <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.totalEstimatedHours.toFixed(1)}h</p>
                   </div>
-                  <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
+                  <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#507DB4] opacity-60" />
                 </div>
               </CardContent>
             </Card>
@@ -606,19 +606,19 @@ export default function Calendario() {
             <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto justify-end">
               <Tabs value={view} onValueChange={setView}>
                 <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-8">
-                  <TabsTrigger value="day" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
+                  <TabsTrigger value="day" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Día' : 'Day'}
                   </TabsTrigger>
-                  <TabsTrigger value="week" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
+                  <TabsTrigger value="week" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Semana' : 'Week'}
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
+                  <TabsTrigger value="month" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300 text-xs md:text-sm px-2 md:px-3 h-7">
                     {language === 'es' ? 'Mes' : 'Month'}
                   </TabsTrigger>
-                  <TabsTrigger value="agenda" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 h-7 px-2">
+                  <TabsTrigger value="agenda" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300 h-7 px-2">
                     <List className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
-                  <TabsTrigger value="resource" className="data-[state=active]:soft-blue-gradient dark:text-slate-300 h-7 px-2 hidden md:flex">
+                  <TabsTrigger value="resource" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300 h-7 px-2 hidden md:flex">
                     <Grid3X3 className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
                 </TabsList>
@@ -636,7 +636,7 @@ export default function Calendario() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => setShowAvailability(!showAvailability)} 
-                    className={`bg-white dark:bg-slate-800 ${showAvailability ? 'border-blue-500 text-blue-600' : ''}`}
+                    className={`bg-white dark:bg-slate-800 ${showAvailability ? 'border-[#507DB4] text-[#507DB4]' : ''}`}
                     title={language === 'es' ? 'Disponibilidad' : 'Availability'}
                   >
                     <Users className="w-4 h-4" />
@@ -779,12 +779,12 @@ export default function Calendario() {
               <div className="space-y-3 py-4">
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700 hover:border-[#3B9FF3]"
+                  className="w-full justify-start h-auto p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 hover:border-[#507DB4]/40"
                   onClick={() => handleEventTypeSelected('appointment')}
                 >
                   <div className="text-left">
                     <div className="flex items-center gap-2 mb-1">
-                      <CalendarIcon className="w-5 h-5 text-[#3B9FF3]" />
+                      <CalendarIcon className="w-5 h-5 text-[#507DB4]" />
                       <span className="font-semibold text-slate-900 dark:text-white">
                         {language === 'es' ? 'Cita / Reunión' : 'Appointment / Meeting'}
                       </span>
@@ -799,12 +799,12 @@ export default function Calendario() {
 
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-purple-50 dark:hover:bg-slate-700 hover:border-purple-400"
+                  className="w-full justify-start h-auto p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 hover:border-[#507DB4]/40"
                   onClick={() => handleEventTypeSelected('job_work')}
                 >
                   <div className="text-left">
                     <div className="flex items-center gap-2 mb-1">
-                      <Briefcase className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <Briefcase className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                       <span className="font-semibold text-slate-900 dark:text-white">
                         {language === 'es' ? 'Turno de Trabajo' : 'Job Work Shift'}
                       </span>
@@ -819,12 +819,12 @@ export default function Calendario() {
 
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-auto p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-orange-50 dark:hover:bg-slate-700 hover:border-orange-400"
+                  className="w-full justify-start h-auto p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 hover:border-[#507DB4]/40"
                   onClick={() => handleEventTypeSelected('time_off')}
                 >
                   <div className="text-left">
                     <div className="flex items-center gap-2 mb-1">
-                      <CalendarClock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                      <CalendarClock className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                       <span className="font-semibold text-slate-900 dark:text-white">
                         {language === 'es' ? 'Ausencia' : 'Time-Off'}
                       </span>

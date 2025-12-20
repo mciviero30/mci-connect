@@ -175,7 +175,7 @@ export default function Clientes() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('customers')}
@@ -183,7 +183,7 @@ export default function Clientes() {
           icon={Users}
           actions={
             isAdmin && (
-              <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
+              <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                 <Plus className="w-5 h-5 mr-2" />
                 {t('newCustomer')}
               </Button>

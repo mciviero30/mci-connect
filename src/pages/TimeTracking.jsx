@@ -180,13 +180,13 @@ export default function TimeTracking() {
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] p-6">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <Clock className="w-8 h-8 text-blue-600" />
+              <Clock className="w-8 h-8 text-[#507DB4]" />
               {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
             </h1>
             <p className="text-slate-600 dark:text-slate-400 mt-1">
@@ -203,7 +203,7 @@ export default function TimeTracking() {
         </div>
 
         {/* Clock In/Out Card */}
-        <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-2 border-blue-100 dark:border-blue-900">
+        <Card className="bg-gradient-to-br from-blue-50/40 to-white/50 dark:from-blue-900/10 dark:to-slate-900/50 border border-blue-200/40 dark:border-blue-800/40">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>{format(new Date(), 'EEEE, MMMM d, yyyy')}</span>
@@ -228,7 +228,7 @@ export default function TimeTracking() {
                 size="lg"
                 onClick={() => clockInMutation.mutate()}
                 disabled={clockInMutation.isPending}
-                className="w-full h-16 text-lg soft-green-gradient shadow-lg"
+                className="w-full h-16 text-lg bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
               >
                 <Play className="w-6 h-6 mr-2" />
                 {language === 'es' ? 'Registrar Entrada' : 'Clock In'}
@@ -242,7 +242,7 @@ export default function TimeTracking() {
                   </div>
                   <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
                     <p className="text-sm text-slate-600 dark:text-slate-400">{language === 'es' ? 'Horas' : 'Hours'}</p>
-                    <p className="text-2xl font-bold text-blue-600">{todayEntry.hours_worked || '0.00'}</p>
+                    <p className="text-2xl font-bold text-[#507DB4] dark:text-[#6B9DD8]">{todayEntry.hours_worked || '0.00'}</p>
                   </div>
                 </div>
 
@@ -261,7 +261,7 @@ export default function TimeTracking() {
                       <Button
                         onClick={() => clockOutMutation.mutate()}
                         disabled={clockOutMutation.isPending}
-                        className="flex-1 soft-red-gradient"
+                        className="flex-1 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white shadow-md"
                       >
                         <Square className="w-4 h-4 mr-2" />
                         {language === 'es' ? 'Registrar Salida' : 'Clock Out'}
@@ -271,7 +271,7 @@ export default function TimeTracking() {
                     <Button
                       onClick={() => endBreakMutation.mutate()}
                       disabled={endBreakMutation.isPending}
-                      className="w-full soft-amber-gradient"
+                      className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                     >
                       <Coffee className="w-4 h-4 mr-2" />
                       {language === 'es' ? 'Terminar Pausa' : 'End Break'}
@@ -291,15 +291,15 @@ export default function TimeTracking() {
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">{weekTotal.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-[#507DB4] dark:text-[#6B9DD8]">{weekTotal.toFixed(2)}</p>
                 <p className="text-sm text-slate-600">{language === 'es' ? 'Horas Totales' : 'Total Hours'}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">{weekEntries.filter(e => e.status === 'approved').length}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{weekEntries.filter(e => e.status === 'approved').length}</p>
                 <p className="text-sm text-slate-600">{language === 'es' ? 'Aprobadas' : 'Approved'}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-600">{weekEntries.filter(e => e.status === 'pending').length}</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{weekEntries.filter(e => e.status === 'pending').length}</p>
                 <p className="text-sm text-slate-600">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
               </div>
             </div>
