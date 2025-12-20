@@ -3,18 +3,18 @@ import { Badge } from "@/components/ui/badge";
 
 export default function StatsWidget({ value, label, icon: Icon, badge, color = "blue" }) {
   const colorClasses = {
-    blue: "soft-blue-gradient shadow-lg",
-    green: "soft-green-gradient shadow-lg",
-    amber: "soft-amber-gradient shadow-lg",
-    purple: "soft-purple-gradient shadow-lg",
-    red: "soft-red-gradient shadow-lg"
+    blue: "soft-blue-gradient shadow-md",
+    green: "soft-green-gradient shadow-md",
+    amber: "soft-amber-gradient shadow-md",
+    slate: "soft-slate-gradient shadow-md",
+    red: "soft-red-gradient shadow-md"
   };
 
   const badgeClasses = {
     blue: "badge-soft-blue",
     green: "badge-soft-green",
     amber: "badge-soft-amber",
-    purple: "badge-soft-purple",
+    slate: "badge-soft-slate",
     red: "badge-soft-red"
   };
 
