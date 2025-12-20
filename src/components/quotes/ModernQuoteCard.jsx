@@ -125,7 +125,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
           {quote.team_name && (
             <Badge 
               variant="outline" 
-              className="border border-[#1E6FE8] text-[#1E6FE8] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
+              className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
             >
               <MapPin className="w-3 h-3 mr-0.5" />
               {quote.team_name}
@@ -160,7 +160,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               <span className="text-[10px] text-[#666666] font-semibold">
                 {language === 'es' ? 'Valor Total' : 'Total Value'}
               </span>
-              <span className="text-[14px] font-bold text-[#1E6FE8]">
+              <span className="text-[14px] font-bold text-[#507DB4]">
                 {formatCurrency(quote.total)}
               </span>
             </div>
@@ -174,7 +174,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               variant="outline"
               size="sm"
               onClick={() => onConvert(quote)}
-              className="flex-1 h-[32px] text-[10px] font-semibold text-blue-600 border-2 border-blue-300 hover:bg-blue-50"
+              className="flex-1 h-[32px] text-[10px] font-semibold text-[#507DB4] border border-[#507DB4]/30 hover:bg-blue-50/30"
             >
               <FileCheck className="w-3.5 h-3.5 mr-1.5" />
               {language === 'es' ? 'Convertir a Factura' : 'Convert to Invoice'}
@@ -184,7 +184,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
       </div>
 
       {/* Gradient Line at Bottom */}
-      <div className="h-[3px] bg-gradient-to-r from-cyan-500 to-blue-600" />
+      <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
     </Card>
   );
 }

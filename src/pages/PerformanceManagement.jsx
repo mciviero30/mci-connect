@@ -290,7 +290,7 @@ export default function PerformanceManagement() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Performance & Recognition"
@@ -308,7 +308,7 @@ export default function PerformanceManagement() {
                   date: new Date().toISOString().split('T')[0]
                 });
                 setShowDialog(true);
-              }} size="lg" className="soft-blue-gradient shadow-lg">
+              }} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                 <Plus className="w-5 h-5 mr-2" />
                 Add Recognition
               </Button>
@@ -416,7 +416,7 @@ export default function PerformanceManagement() {
                       {emp.profile_photo_url ? (
                         <img src={emp.profile_photo_url} alt={emp.displayName} className="w-10 h-10 rounded-full object-cover" />
                       ) : (
-                        <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                           {emp.displayName?.[0]?.toUpperCase()}
                         </div>
                       )}
@@ -624,7 +624,7 @@ export default function PerformanceManagement() {
                 <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="bg-slate-50 border-slate-200 text-slate-700">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="soft-blue-gradient">
+                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                   {editingRecognition ? 'Update Recognition' : 'Add Recognition'}
                 </Button>
               </div>

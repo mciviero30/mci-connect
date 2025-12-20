@@ -726,7 +726,7 @@ export default function Items() {
 
   return (
     <TooltipProvider>
-      <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+      <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
         <div className="max-w-7xl mx-auto">
           <PageHeader
             title={language === 'es' ? 'Biblioteca de Items' : 'Item Library'}
@@ -759,7 +759,7 @@ export default function Items() {
                     resetFormData();
                     setShowForm(true);
                   }}
-                  className="soft-blue-gradient shadow-lg"
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   {language === 'es' ? 'Nuevo Item' : 'New Item'}
@@ -769,12 +769,12 @@ export default function Items() {
           />
 
           {/* LABOR RATE INFO WITH EDIT BUTTON */}
-          <Alert className="mb-4 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-800">
-            <Calculator className="w-4 h-4 dark:text-indigo-400" />
-            <AlertDescription className="text-indigo-900 dark:text-indigo-300 text-sm flex items-center justify-between">
+          <Alert className="mb-4 bg-blue-50/40 dark:bg-blue-900/10 border border-blue-200/40 dark:border-blue-700/30">
+            <Calculator className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
+            <AlertDescription className="text-slate-900 dark:text-slate-100 text-sm flex items-center justify-between">
               <div>
                 <strong>Standard Labor Rate:</strong> ${STANDARD_LABOR_RATE.toFixed(2)}/hour
-                <span className="ml-2 text-indigo-700">
+                <span className="ml-2 text-slate-700 dark:text-slate-300">
                   (Labor/Service costs auto-calculated: Material Cost + Installation Time × Labor Rate)
                 </span>
               </div>
@@ -785,7 +785,7 @@ export default function Items() {
                   setLaborRateInput(STANDARD_LABOR_RATE.toString());
                   setShowLaborRateDialog(true);
                 }}
-                className="ml-4 bg-white border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+                className="ml-4 bg-white border-[#507DB4]/30 text-[#507DB4] hover:bg-blue-50/30"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 {language === 'es' ? 'Editar Tasa' : 'Edit Rate'}
@@ -985,7 +985,7 @@ export default function Items() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge className={categoryConfig[item.category]?.color || categoryConfig.other.color}>
+                              <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
                                 {categoryLabel}
                               </Badge>
                             </TableCell>
@@ -1017,7 +1017,7 @@ export default function Items() {
                               )}
                             </TableCell>
 
-                            <TableCell className="text-right font-bold text-[#3B9FF3] dark:text-blue-400">
+                            <TableCell className="text-right font-bold text-[#507DB4] dark:text-[#6B9DD8]">
                               ${(item.unit_price || 0).toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right text-slate-600 dark:text-slate-400">
@@ -1040,7 +1040,7 @@ export default function Items() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleViewAudit(item)}
-                                  className="text-blue-600 hover:bg-blue-50"
+                                  className="text-[#507DB4] hover:bg-blue-50/30"
                                   title="View price history"
                                 >
                                   <History className="w-4 h-4" />
@@ -1049,7 +1049,7 @@ export default function Items() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleEdit(item)}
-                                  className="text-[#3B9FF3] hover:bg-blue-50"
+                                  className="text-[#507DB4] hover:bg-blue-50/30"
                                 >
                                   <Edit className="w-4 h-4" />
                                 </Button>
@@ -1248,11 +1248,11 @@ export default function Items() {
                             </TooltipContent>
                           </Tooltip>
                         </Label>
-                        <div className="bg-indigo-50 border-2 border-indigo-300 rounded-md p-3">
-                          <p className="text-2xl font-bold text-indigo-900">
+                        <div className="bg-blue-50/40 border border-blue-200/40 rounded-md p-3">
+                          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                             ${calculatedCostPerUnit || '0.00'}
                           </p>
-                          <p className="text-xs text-indigo-700 mt-1">
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                             {language === 'es' ? 'Auto-calculado según fórmula' : 'Auto-calculated from formula'}
                           </p>
                         </div>
@@ -1471,7 +1471,7 @@ export default function Items() {
             <DialogContent className="bg-white border-slate-200">
               <DialogHeader>
                 <DialogTitle className="text-slate-900 flex items-center gap-2">
-                  <Calculator className="w-5 h-5 text-indigo-600" />
+                  <Calculator className="w-5 h-5 text-[#507DB4]" />
                   {language === 'es' ? 'Editar Tasa Laboral Estándar' : 'Edit Standard Labor Rate'}
                 </DialogTitle>
                 <DialogDescription className="text-slate-600">
@@ -1528,7 +1528,7 @@ export default function Items() {
                     updateLaborRateMutation.mutate(rate);
                   }}
                   disabled={updateLaborRateMutation.isPending}
-                  className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white"
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Guardar Tasa' : 'Save Rate'}

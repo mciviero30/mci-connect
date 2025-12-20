@@ -507,7 +507,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
             <Button 
               onClick={handleSaveEdit} 
               disabled={updateEntryMutation.isPending || !editFormData.correction_reason.trim()}
-              className="soft-blue-gradient text-white rounded-xl shadow-lg"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md rounded-xl"
             >
               {updateEntryMutation.isPending ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {language === 'es' ? 'Guardando...' : 'Saving...'}</>
@@ -532,7 +532,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                   variant={statusFilter === 'all' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setStatusFilter('all')}
-                  className={statusFilter === 'all' ? 'bg-[#3B9FF3] text-white' : 'bg-white border-slate-200 text-slate-700'}
+                  className={statusFilter === 'all' ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md' : 'bg-white border-slate-200 text-slate-700'}
                 >
                   <Filter className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Todos' : 'All'} ({timeEntries.length})
@@ -572,7 +572,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                 <Button
                   onClick={handleApproveAll}
                   disabled={isApprovingAll}
-                  className="soft-green-gradient text-white shadow-xl hover:shadow-2xl transition-all rounded-xl"
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md rounded-xl"
                 >
                   {isApprovingAll ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -694,7 +694,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                                 <TooltipProvider key={jobName}>
                                   <Tooltip>
                                     <TooltipTrigger>
-                                      <Badge className="soft-blue-gradient text-xs">
+                                      <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
                                         {jobName.substring(0, 15)}{jobName.length > 15 ? '...' : ''}
                                       </Badge>
                                     </TooltipTrigger>
@@ -732,7 +732,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                                       size="sm"
                                       variant="outline"
                                       onClick={() => handleEdit(firstEntry)}
-                                      className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-xl"
+                                      className="border-[#507DB4]/30 text-[#507DB4] hover:bg-blue-50/30 dark:border-[#507DB4]/40 dark:text-[#6B9DD8] dark:hover:bg-blue-900/10 rounded-xl"
                                     >
                                       <Edit className="w-4 h-4" />
                                     </Button>
@@ -774,7 +774,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => handleEdit(entry)}
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg"
+                                    className="text-[#507DB4] hover:text-[#507DB4]/90 hover:bg-blue-50/30 dark:text-[#6B9DD8] dark:hover:bg-blue-900/10 rounded-lg"
                                   >
                                     <Edit className="w-3 h-3" />
                                   </Button>

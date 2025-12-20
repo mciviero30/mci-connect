@@ -55,7 +55,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-12 h-12 bg-[#1E6FE8] rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
                 {displayName[0]?.toUpperCase()}
               </div>
             )}
@@ -100,7 +100,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
           </p>
           <div className="w-full h-[3px] bg-[#E0E0E0] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#1E6FE8] rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-full transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
@@ -108,15 +108,15 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className="badge-soft-green h-[22px] flex items-center">
+          <Badge className="bg-blue-50/60 text-slate-900 dark:text-slate-900 border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
             Active
           </Badge>
-          <Badge className="badge-soft-blue h-[22px] flex items-center">
+          <Badge className="bg-blue-50/60 text-slate-900 dark:text-slate-900 border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
             Full-Time
           </Badge>
           <Badge 
             variant="outline" 
-            className="border border-[#1E6FE8] text-[#1E6FE8] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
+            className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
           >
             {teamLocation}
           </Badge>
@@ -140,7 +140,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
       </div>
 
       {/* Gradient Line at Bottom */}
-      <div className="h-[3px] bg-gradient-to-r from-[#1E6FE8] to-[#0052CC]" />
+      <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
     </Card>
   );
 }

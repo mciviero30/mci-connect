@@ -30,7 +30,7 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-2.5">
-            <div className="w-[48px] h-[48px] bg-[#1E6FE8] rounded-full flex items-center justify-center text-white font-bold text-[19px] flex-shrink-0">
+            <div className="w-[48px] h-[48px] bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-[19px] flex-shrink-0 shadow-md">
               {displayName[0]?.toUpperCase()}
             </div>
 
@@ -83,20 +83,20 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
           <p className="text-[10px] font-semibold text-[#666666] mb-1.5">
             Company
           </p>
-          <Badge className="bg-[#1E6FE8] hover:bg-[#1E6FE8] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center w-fit">
+          <Badge className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:bg-gradient-to-r hover:from-[#507DB4] hover:to-[#6B9DD8] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center w-fit shadow-sm">
             {companyName}
           </Badge>
         </div>
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className="bg-[#00C48C] hover:bg-[#00C48C] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+          <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
             Active
           </Badge>
           {customer.address && (
             <Badge 
               variant="outline" 
-              className="border border-[#1E6FE8] text-[#1E6FE8] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
+              className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
             >
               {customer.city || 'Location'}
             </Badge>
@@ -121,7 +121,7 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
       </div>
 
       {/* Bottom Border Line */}
-      <div className="h-[3px] bg-gradient-to-r from-[#1E6FE8] to-[#0052CC]" />
+      <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
     </Card>
   );
 }

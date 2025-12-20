@@ -136,7 +136,7 @@ export default function NewsFeed() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-4xl mx-auto">
         <PageHeader
           title={t('announcements')}
@@ -145,11 +145,11 @@ export default function NewsFeed() {
           actions={
             canCreateAnnouncements && !isCreating && (
               <div className="flex gap-2">
-                <Button onClick={() => setShowAIGenerator(true)} variant="outline" size="lg" className="soft-purple-gradient shadow-lg border-0">
+                <Button onClick={() => setShowAIGenerator(true)} variant="outline" size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md border-0">
                   <Wand2 className="w-5 h-5 mr-2" />
                   AI Generate
                 </Button>
-                <Button onClick={() => setCreating(true)} size="lg" className="soft-blue-gradient shadow-lg">
+                <Button onClick={() => setCreating(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                   <Plus className="w-5 h-5 mr-2" />
                   {t('newAnnouncement')}
                 </Button>
@@ -283,7 +283,7 @@ export default function NewsFeed() {
                   <Button
                     onClick={() => createMutation.mutate(newPost)}
                     disabled={!newPost.title || !newPost.content || createMutation.isPending}
-                    className="soft-blue-gradient shadow-lg"
+                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                   >
                     {createMutation.isPending ? t('saving') : t('save')}
                   </Button>
@@ -331,7 +331,7 @@ export default function NewsFeed() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleLike(post)}
-                      className={`${hasLiked ? 'text-[#3B9FF3]' : 'text-slate-600 dark:text-slate-400'} hover:text-[#3B9FF3] hover:bg-blue-50 dark:hover:bg-slate-700`}
+                      className={`${hasLiked ? 'text-[#507DB4]' : 'text-slate-600 dark:text-slate-400'} hover:text-[#507DB4] hover:bg-blue-50/30 dark:hover:bg-slate-700`}
                     >
                       <Heart className={`w-5 h-5 mr-2 ${hasLiked ? 'fill-current' : ''}`} />
                       {likes.length}

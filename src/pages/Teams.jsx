@@ -197,14 +197,14 @@ export default function Teams() {
   const activeTeams = teams.filter(t => t.status === 'active');
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Teams Management"
           description={`${activeTeams.length} active teams`}
           icon={MapPin}
           actions={
-            <Button onClick={handleOpenDialog} size="lg" className="soft-blue-gradient shadow-lg">
+            <Button onClick={handleOpenDialog} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
               <Plus className="w-5 h-5 mr-2" />
               New Team
             </Button>
@@ -318,7 +318,7 @@ export default function Teams() {
                   id="is_headquarters"
                   checked={formData.is_headquarters}
                   onChange={(e) => setFormData({...formData, is_headquarters: e.target.checked})}
-                  className="w-4 h-4 accent-[#3B9FF3] cursor-pointer"
+                  className="w-4 h-4 accent-[#507DB4] cursor-pointer"
                 />
                 <Label htmlFor="is_headquarters" className="cursor-pointer text-slate-700">Mark as Headquarters (HQ)</Label>
               </div>
@@ -327,7 +327,7 @@ export default function Teams() {
                 <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
                   Cancel
                 </Button>
-                <Button type="submit" className="soft-blue-gradient">
+                <Button type="submit" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                   {editingTeam ? 'Update Team' : 'Create Team'}
                 </Button>
               </div>
@@ -400,7 +400,7 @@ export default function Teams() {
                     });
                   }
                 }}
-                className="soft-blue-gradient"
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
               >
                 Update Capacity
               </Button>

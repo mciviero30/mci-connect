@@ -195,7 +195,7 @@ export default function MileageApproval() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="min-h-screen p-4 md:p-8 bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Aprobación de Millas' : 'Mileage Approval'}
@@ -204,7 +204,7 @@ export default function MileageApproval() {
           actions={
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className="soft-blue-gradient shadow-lg"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
             >
               <Plus className="w-5 h-5 mr-2" />
               {language === 'es' ? 'Nueva Milla' : 'New Mileage'}
@@ -213,50 +213,50 @@ export default function MileageApproval() {
         />
 
         <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="soft-amber-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
-                  <p className="text-3xl font-bold">{pendingLogs.length}</p>
+                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{pendingLogs.length}</p>
                 </div>
-                <Car className="w-10 h-10 opacity-50" />
+                <Car className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="soft-blue-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
-                  <p className="text-3xl font-bold">{totalPendingMiles.toFixed(0)} mi</p>
+                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{totalPendingMiles.toFixed(0)} mi</p>
                 </div>
-                <MapPin className="w-10 h-10 opacity-50" />
+                <MapPin className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="soft-pink-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
-                  <p className="text-2xl font-bold">${totalPendingAmount.toFixed(2)}</p>
+                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${totalPendingAmount.toFixed(2)}</p>
                 </div>
-                <Car className="w-10 h-10 opacity-50" />
+                <Car className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="soft-green-gradient shadow-lg">
+          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
-                  <p className="text-2xl font-bold">${totalApprovedAmount.toFixed(2)}</p>
+                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${totalApprovedAmount.toFixed(2)}</p>
                 </div>
-                <CheckCircle className="w-10 h-10 opacity-50" />
+                <CheckCircle className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
               </div>
             </CardContent>
           </Card>
@@ -265,7 +265,7 @@ export default function MileageApproval() {
         <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
           <CardHeader className="border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-800">
             <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-              <Car className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+              <Car className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
               {language === 'es' ? 'Registros de Millas' : 'Mileage Records'}
             </CardTitle>
           </CardHeader>

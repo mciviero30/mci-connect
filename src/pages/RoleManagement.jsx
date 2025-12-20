@@ -183,14 +183,14 @@ export default function RoleManagement() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Role Management"
           description="Create and manage custom roles with granular permissions"
           icon={Shield}
           actions={
-            <Button onClick={() => handleOpenDialog()} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
               <Plus className="w-4 h-4 mr-2" />
               New Role
             </Button>
@@ -208,8 +208,8 @@ export default function RoleManagement() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                          <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="p-2 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-lg shadow-md">
+                          <Shield className="w-5 h-5 text-white" />
                         </div>
                         <div>
                           <h3 className="text-lg font-bold text-slate-900 dark:text-white">{role.name}</h3>
@@ -218,7 +218,7 @@ export default function RoleManagement() {
                           )}
                         </div>
                         {role.is_system_role && (
-                          <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                          <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
                             System Role
                           </Badge>
                         )}
@@ -337,7 +337,7 @@ export default function RoleManagement() {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSubmit} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                 {editingRole ? 'Update Role' : 'Create Role'}
               </Button>
             </DialogFooter>

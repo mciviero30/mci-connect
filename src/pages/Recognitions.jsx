@@ -39,7 +39,7 @@ export default function Recognitions() {
   const uniqueReceivers = new Set(allRecognitions.map(r => r.employee_email)).size;
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Recognition & Kudos"
@@ -50,14 +50,14 @@ export default function Recognitions() {
               <Button
                 onClick={() => setShowAIGenerator(true)}
                 variant="outline"
-                className="soft-purple-gradient shadow-lg border-0"
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
               >
                 <Wand2 className="w-4 h-4 mr-2" />
                 AI Generate
               </Button>
               <Button
                 onClick={() => setShowKudosDialog(true)}
-                className="soft-pink-gradient shadow-lg"
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Give Kudos
@@ -75,7 +75,7 @@ export default function Recognitions() {
                   <p className="text-slate-600 dark:text-slate-400 text-sm">Total Recognitions</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{totalRecognitions}</p>
                 </div>
-                <Award className="w-12 h-12 text-blue-600 dark:text-blue-400 opacity-30" />
+                <Award className="w-12 h-12 text-[#507DB4] dark:text-[#6B9DD8] opacity-30" />
               </div>
             </CardContent>
           </Card>
@@ -87,7 +87,7 @@ export default function Recognitions() {
                   <p className="text-slate-600 dark:text-slate-400 text-sm">Total Points</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{totalPoints}</p>
                 </div>
-                <Sparkles className="w-12 h-12 text-purple-600 dark:text-purple-400 opacity-30" />
+                <Sparkles className="w-12 h-12 text-[#507DB4] dark:text-[#6B9DD8] opacity-30" />
               </div>
             </CardContent>
           </Card>
@@ -99,7 +99,7 @@ export default function Recognitions() {
                   <p className="text-slate-600 dark:text-slate-400 text-sm">People Giving</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{uniqueGivers}</p>
                 </div>
-                <Users className="w-12 h-12 text-green-600 dark:text-green-400 opacity-30" />
+                <Users className="w-12 h-12 text-[#507DB4] dark:text-[#6B9DD8] opacity-30" />
               </div>
             </CardContent>
           </Card>
@@ -111,7 +111,7 @@ export default function Recognitions() {
                   <p className="text-slate-600 dark:text-slate-400 text-sm">People Recognized</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{uniqueReceivers}</p>
                 </div>
-                <TrendingUp className="w-12 h-12 text-orange-600 dark:text-orange-400 opacity-30" />
+                <TrendingUp className="w-12 h-12 text-[#507DB4] dark:text-[#6B9DD8] opacity-30" />
               </div>
             </CardContent>
           </Card>
@@ -124,7 +124,7 @@ export default function Recognitions() {
             <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <Sparkles className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                   Recent Recognitions
                 </CardTitle>
               </CardHeader>
@@ -139,7 +139,7 @@ export default function Recognitions() {
             <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 shadow-sm sticky top-8">
               <CardHeader>
                 <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
-                  <Award className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <Award className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                   Top Performers
                 </CardTitle>
               </CardHeader>

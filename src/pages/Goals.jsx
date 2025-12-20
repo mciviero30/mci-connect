@@ -114,7 +114,7 @@ export default function Goals() {
   }, [goals, filter]);
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Objetivos y Metas' : 'Goals & Objectives'}
@@ -126,7 +126,7 @@ export default function Goals() {
             { label: 'Completion Rate', value: `${completionRate}%` }
           ]}
           actions={
-            <Button onClick={() => { setEditingGoal(null); setShowForm(true); }} className="soft-blue-gradient shadow-lg">
+            <Button onClick={() => { setEditingGoal(null); setShowForm(true); }} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
               <Plus className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Nueva Meta' : 'New Goal'}
             </Button>
@@ -138,19 +138,19 @@ export default function Goals() {
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">On Track</p>
-              <p className="text-2xl font-bold text-green-600">{stats.onTrack}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.onTrack}</p>
             </CardContent>
           </Card>
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">At Risk</p>
-              <p className="text-2xl font-bold text-amber-600">{stats.atRisk}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.atRisk}</p>
             </CardContent>
           </Card>
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardContent className="p-4">
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Completed</p>
-              <p className="text-2xl font-bold text-blue-600">{stats.completed}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stats.completed}</p>
             </CardContent>
           </Card>
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">

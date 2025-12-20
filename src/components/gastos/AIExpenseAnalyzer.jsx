@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -206,11 +205,11 @@ Response in JSON format.`;
       >
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-slate-900">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+            <div className="p-2 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-lg shadow-md">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             {language === 'es' ? 'Análisis AI de Gastos' : 'AI Expense Analysis'}
-            <Badge className="bg-purple-100 text-purple-700 border-purple-300">
+            <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
               {language === 'es' ? 'Potenciado por AI' : 'AI-Powered'}
             </Badge>
           </CardTitle>
@@ -264,69 +263,69 @@ Response in JSON format.`;
                 </h4>
 
                 <div className="grid md:grid-cols-4 gap-4">
-                  <Card className="bg-green-50 border-green-200">
+                  <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <Check className="w-4 h-4 text-green-600" />
+                        <div className="p-2 bg-blue-100/50 rounded-lg">
+                          <Check className="w-4 h-4 text-[#507DB4]" />
                         </div>
-                        <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                        <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 text-xs">
                           ≥80%
                         </Badge>
                       </div>
-                      <div className="text-2xl font-bold text-green-700">{aiStats.highConfidence}</div>
-                      <p className="text-xs text-green-600 mt-1">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{aiStats.highConfidence}</div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                         {language === 'es' ? 'Alta Confianza' : 'High Confidence'}
                       </p>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-blue-50 border-blue-200">
+                  <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <TrendingUp className="w-4 h-4 text-blue-600" />
+                        <div className="p-2 bg-blue-100/50 rounded-lg">
+                          <TrendingUp className="w-4 h-4 text-[#507DB4]" />
                         </div>
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                        <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 text-xs">
                           60-79%
                         </Badge>
                       </div>
-                      <div className="text-2xl font-bold text-blue-700">{aiStats.mediumConfidence}</div>
-                      <p className="text-xs text-blue-600 mt-1">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{aiStats.mediumConfidence}</div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                         {language === 'es' ? 'Confianza Media' : 'Medium Confidence'}
                       </p>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-amber-50 border-amber-200">
+                  <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-amber-100 rounded-lg">
-                          <AlertTriangle className="w-4 h-4 text-amber-600" />
+                        <div className="p-2 bg-blue-100/50 rounded-lg">
+                          <AlertTriangle className="w-4 h-4 text-[#507DB4]" />
                         </div>
-                        <Badge className="bg-amber-100 text-amber-700 border-amber-300 text-xs">
+                        <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 text-xs">
                           {'<60%'}
                         </Badge>
                       </div>
-                      <div className="text-2xl font-bold text-amber-700">{aiStats.lowConfidence}</div>
-                      <p className="text-xs text-amber-600 mt-1">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{aiStats.lowConfidence}</div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                         {language === 'es' ? 'Baja Confianza' : 'Low Confidence'}
                       </p>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-purple-50 border-purple-200">
+                  <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-purple-100 rounded-lg">
-                          <Brain className="w-4 h-4 text-purple-600" />
+                        <div className="p-2 bg-blue-100/50 rounded-lg">
+                          <Brain className="w-4 h-4 text-[#507DB4]" />
                         </div>
-                        <Badge className="bg-purple-100 text-purple-700 border-purple-300 text-xs">
+                        <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 text-xs">
                           {aiAccuracy}%
                         </Badge>
                       </div>
-                      <div className="text-2xl font-bold text-purple-700">{aiStats.userCorrected}</div>
-                      <p className="text-xs text-purple-600 mt-1">
+                      <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{aiStats.userCorrected}</div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                         {language === 'es' ? 'Corregidos (Aprendiendo)' : 'Corrected (Learning)'}
                       </p>
                     </CardContent>
@@ -369,7 +368,7 @@ Response in JSON format.`;
                   <Button
                     onClick={analyzeExpenses}
                     disabled={expenses.length === 0} // Disable if no expenses
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {language === 'es' ? 'Analizar Gastos' : 'Analyze Expenses'}
@@ -377,7 +376,7 @@ Response in JSON format.`;
                 </div>
               ) : isAnalyzing ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="w-12 h-12 animate-spin text-purple-500 mb-4" />
+                  <Loader2 className="w-12 h-12 animate-spin text-[#507DB4] mb-4" />
                   <p className="text-slate-600">
                     {language === 'es' ? 'Analizando patrones y generando insights...' : 'Analyzing patterns and generating insights...'}
                   </p>
