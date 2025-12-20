@@ -310,7 +310,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto md:pb-0 bg-[#1a1a1a]" style={{ paddingBottom: isMobile ? 'max(5rem, calc(5rem + env(safe-area-inset-bottom)))' : '0' }}>
+      <div className="flex-1 overflow-auto md:pb-0 bg-[#1a1a1a]" style={{ paddingBottom: isMobile ? 'calc(6rem + env(safe-area-inset-bottom, 20px))' : '0' }}>
         {renderContent()}
       </div>
       
@@ -364,8 +364,8 @@ export default function FieldProject() {
 
       {/* Mobile Bottom Navigation */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 px-2 pt-2 pb-6 z-50 md:hidden" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
-          <div className="flex justify-around items-center">
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t-2 border-slate-700 px-2 pt-3 z-50 md:hidden" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 20px))' }}>
+          <div className="flex justify-around items-center mb-1">
             {[
               { id: 'overview', label: 'Home', icon: LayoutDashboard },
               { id: 'tasks', label: 'Tasks', icon: CheckSquare },
@@ -378,30 +378,32 @@ export default function FieldProject() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all min-w-[60px] ${
+                  className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all ${
                     isActive 
-                      ? 'text-[#FFB800]' 
+                      ? 'text-[#FFB800] bg-slate-800' 
                       : 'text-slate-400'
                   }`}
+                  style={{ minWidth: '70px', minHeight: '60px' }}
                 >
                   <div className="relative">
-                    <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''} transition-transform`} />
+                    <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
                     {count > 0 && (
-                      <span className="absolute -top-1 -right-2 bg-[#FFB800] text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                      <span className="absolute -top-2 -right-2 bg-[#FFB800] text-black text-[11px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
                         {count > 99 ? '99+' : count}
                       </span>
                     )}
                   </div>
-                  <span className={`text-[10px] mt-1 ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
+                  <span className={`text-[11px] mt-1 ${isActive ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
                 </button>
               );
             })}
             <button
               onClick={() => setShowMobileMenu(true)}
-              className="flex flex-col items-center py-2 px-3 rounded-lg text-slate-400"
+              className="flex flex-col items-center py-3 px-4 rounded-xl text-slate-400"
+              style={{ minWidth: '70px', minHeight: '60px' }}
             >
-              <Menu className="w-5 h-5" />
-              <span className="text-[10px] mt-1">More</span>
+              <Menu className="w-6 h-6" />
+              <span className="text-[11px] mt-1 font-medium">More</span>
             </button>
           </div>
         </div>
