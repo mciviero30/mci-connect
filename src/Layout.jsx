@@ -694,8 +694,14 @@ const LayoutContent = ({ children, currentPageName }) => {
                             <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
                                           <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
                                             isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
-                                          }`} />
-                                          <span className={`font-medium text-sm ${item.title === 'MCI Field' && !isActive ? 'text-[#FF8C00]' : ''}`}>
+                                          }`} style={item.title === 'MCI Field' && !isActive ? { 
+                                            filter: 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
+                                          } : {}} />
+                                          <span className={`font-medium text-sm ${
+                                            item.title === 'MCI Field' && !isActive 
+                                              ? 'bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent font-bold' 
+                                              : ''
+                                          }`}>
                                             {item.title}
                                           </span>
                               {showBadge && (
