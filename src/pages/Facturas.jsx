@@ -198,7 +198,7 @@ export default function Facturas() {
           actions={
             isAdmin && (
               <Link to={createPageUrl("CrearFactura")}>
-                <Button size="lg" className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#3B82F6]/90 hover:to-[#60A5FA]/90 text-white shadow-md">
+                <Button size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                   <Plus className="w-5 h-5 mr-2" />
                   {t('newInvoice')}
                 </Button>
@@ -354,7 +354,7 @@ export default function Facturas() {
               </p>
               {isAdmin && invoices.length === 0 && (
                 <Link to={createPageUrl("CrearFactura")}>
-                  <Button className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#3B82F6]/90 hover:to-[#60A5FA]/90 text-white shadow-md">
+                  <Button className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                     <Plus className="w-4 h-4 mr-2" />
                     {t('newInvoice')}
                   </Button>
@@ -376,7 +376,7 @@ export default function Facturas() {
               </p>
               <div className="mb-4">
                 <Label className="text-slate-700 dark:text-slate-300 mb-2 block">{language === 'es' ? 'Saldo Pendiente' : 'Outstanding Balance'}</Label>
-                <p className="text-3xl font-bold text-[#3B82F6] dark:text-[#60A5FA]">
+                <p className="text-3xl font-bold text-[#507DB4] dark:text-[#6B9DD8]">
                   ${(paymentInvoice.balance || paymentInvoice.total).toFixed(2)}
                 </p>
               </div>
@@ -406,7 +406,7 @@ export default function Facturas() {
                 <Button
                   onClick={handleRegisterPayment}
                   disabled={registerPaymentMutation.isPending}
-                  className="flex-1 bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#3B82F6]/90 hover:to-[#60A5FA]/90 text-white shadow-md"
+                  className="flex-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
                 >
                   <DollarSign className="w-4 h-4 mr-2" />
                   {registerPaymentMutation.isPending ? (language === 'es' ? 'Procesando...' : 'Processing...') : (language === 'es' ? 'Registrar' : 'Register')}

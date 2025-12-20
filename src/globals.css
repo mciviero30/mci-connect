@@ -60,8 +60,8 @@
 
 @layer base {
   :root {
-    /* MCI Connect Corporate Blue - Lighter to match logo */
-    --primary: 221 83% 60%;
+    /* MCI Connect Corporate Blue - Exact logo background color */
+    --primary: 211 45% 55%;
     --primary-foreground: 0 0% 100%;
 
     /* Light Mode Colors - Corporate Clean */
