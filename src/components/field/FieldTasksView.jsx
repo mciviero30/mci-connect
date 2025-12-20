@@ -80,162 +80,217 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   };
 
   return (
-    <div className="p-3 md:p-6 flex flex-col h-full">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4 mb-4 md:mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-4 md:px-6 py-2 md:py-3 rounded-xl">
-          <h1 className="text-lg md:text-2xl font-bold text-black">Tasks</h1>
+    <div className="flex flex-col h-full bg-[#1a1a1a]">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-gradient-to-r from-orange-600 to-yellow-500 px-4 py-4 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-xl font-bold text-black">Tasks</h1>
+          <Button 
+            onClick={() => setShowCreateTask(true)}
+            size="sm"
+            className="bg-black/20 hover:bg-black/30 text-black border-none h-8"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            New
+          </Button>
         </div>
-        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:flex-initial">
-            <Search className="absolute left-2 md:left-3 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 text-slate-400" />
+        
+        {/* Mobile Filters */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-black/60" />
             <Input 
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 md:pl-9 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white w-full md:w-32 lg:w-48 text-sm h-9"
+              className="pl-8 bg-white/20 border-none text-black placeholder:text-black/60 h-9 text-sm"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-24 md:w-36 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs md:text-sm h-9">
+            <SelectTrigger className="w-28 bg-white/20 border-none text-black h-9 text-sm">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <SelectItem value="all" className="text-slate-900 dark:text-white">All</SelectItem>
-              <SelectItem value="pending" className="text-slate-900 dark:text-white">Pending</SelectItem>
-              <SelectItem value="in_progress" className="text-slate-900 dark:text-white">In Progress</SelectItem>
-              <SelectItem value="completed" className="text-slate-900 dark:text-white">Completed</SelectItem>
+            <SelectContent className="bg-white">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
-          <div className="hidden md:flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="hidden md:flex justify-between items-center p-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black">Tasks</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input 
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-slate-800/50 border-slate-700 text-white w-48"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36 bg-slate-800/50 border-slate-700 text-white">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="all" className="text-white">All</SelectItem>
+              <SelectItem value="pending" className="text-white">Pending</SelectItem>
+              <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
+              <SelectItem value="completed" className="text-white">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex bg-slate-800/50 rounded-lg p-1">
             <button
               onClick={() => setView('kanban')}
-              className={`p-2 rounded ${view === 'kanban' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`p-2 rounded ${view === 'kanban' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setView('list')}
-              className={`p-2 rounded ${view === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`p-2 rounded ${view === 'list' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
             >
               <List className="w-4 h-4" />
             </button>
           </div>
           <Button 
             onClick={() => setShowCreateTask(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none text-xs md:text-sm px-2 md:px-4 h-9"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
-            <Plus className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
-            <span className="hidden sm:inline">New Task</span>
-            <span className="sm:hidden">New</span>
+            <Plus className="w-4 h-4 mr-2" />
+            New Task
           </Button>
         </div>
       </div>
 
-      {/* Kanban View - Responsive */}
+      {/* Mobile Kanban View - Horizontal Scroll */}
       {view === 'kanban' && (
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 overflow-x-auto">
-          {columns.map((column) => {
-            const columnTasks = filteredTasks.filter(t => t.status === column.id);
-            return (
-              <div 
-                key={column.id}
-                className="bg-[#3a4556] border border-slate-500 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-sm"
-                onDrop={(e) => handleDrop(e, column.id)}
-                onDragOver={handleDragOver}
-              >
-                <div className="flex items-center justify-between mb-2 md:mb-4">
-                  <h3 className={`font-semibold text-xs md:text-sm text-${column.color}-600 dark:text-${column.color}-400`}>{column.label}</h3>
-                  <Badge className={`bg-${column.color}-100 dark:bg-${column.color}-500/20 text-${column.color}-600 dark:text-${column.color}-400 border-${column.color}-200 dark:border-${column.color}-500/30 text-[10px] md:text-xs`}>
-                    {columnTasks.length}
-                  </Badge>
-                </div>
-                <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
-                  {columnTasks.sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title)).map((task) => {
-                    const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
-                    return (
-                      <div
-                        key={task.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task)}
-                        onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
-                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-2 cursor-pointer hover:border-[#FFB800]/50 transition-all flex items-center gap-2"
-                      >
-                        <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
-                          task.status === 'completed' ? 'bg-green-500' :
-                          task.status === 'in_progress' ? 'bg-blue-500' :
-                          'bg-red-500'
-                        }`}>
-                          {wallNum}
+        <div className="flex-1 overflow-x-auto md:overflow-x-visible px-3 md:px-6 pb-4">
+          <div className="flex md:grid md:grid-cols-3 gap-3 md:gap-4 min-w-max md:min-w-0">
+            {columns.map((column) => {
+              const columnTasks = filteredTasks.filter(t => t.status === column.id);
+              const colorMap = {
+                red: { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', badge: 'bg-red-500/20 text-red-300' },
+                blue: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', badge: 'bg-blue-500/20 text-blue-300' },
+                green: { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400', badge: 'bg-green-500/20 text-green-300' },
+              };
+              const colors = colorMap[column.color];
+              
+              return (
+                <div 
+                  key={column.id}
+                  className={`${colors.bg} border-2 ${colors.border} rounded-2xl p-3 md:p-4 w-[280px] md:w-auto min-h-[450px] md:min-h-[500px]`}
+                  onDrop={(e) => handleDrop(e, column.id)}
+                  onDragOver={handleDragOver}
+                >
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-700/50">
+                    <h3 className={`font-bold text-sm md:text-base ${colors.text}`}>{column.label}</h3>
+                    <Badge className={`${colors.badge} border-none text-xs font-bold px-2 py-1`}>
+                      {columnTasks.length}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2.5 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
+                    {columnTasks.sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title)).map((task) => {
+                      const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+                      return (
+                        <div
+                          key={task.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, task)}
+                          onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
+                          className="bg-slate-800/80 border-2 border-slate-700 hover:border-[#FFB800] rounded-xl p-3 cursor-pointer transition-all active:scale-95"
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-base font-bold text-white flex-shrink-0 shadow-lg ${
+                              task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                              task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
+                              'bg-gradient-to-br from-red-500 to-red-600'
+                            }`}>
+                              {wallNum}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-white font-semibold text-sm mb-1 truncate">Wall {wallNum}</div>
+                              <Badge className={`${priorityColors[task.priority]} text-[10px] px-2 py-0.5 border`}>
+                                {task.priority}
+                              </Badge>
+                            </div>
+                          </div>
+                          {task.category && (
+                            <div className="text-xs text-slate-400 mt-2 truncate">{task.category}</div>
+                          )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <Badge className={`${priorityColors[task.priority]} text-[10px] px-1.5 py-0`}>
-                            {task.priority?.[0]?.toUpperCase()}
-                          </Badge>
-                        </div>
+                      );
+                    })}
+                    {columnTasks.length === 0 && (
+                      <div className="text-center py-8 text-slate-500 text-sm">
+                        No tasks
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* List View */}
       {view === 'list' && (
-        <div className="flex-1 bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden shadow-sm">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Wall #</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Status</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Priority</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Category</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Assigned</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.map((task) => {
-                const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
-                return (
-                  <tr 
-                    key={task.id}
-                    onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
-                    className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
-                          task.status === 'completed' ? 'bg-green-500' :
-                          task.status === 'in_progress' ? 'bg-blue-500' :
-                          'bg-red-500'
-                        }`}>
-                          {wallNum}
-                        </div>
-                        <span className="text-slate-900 dark:text-white font-medium">Wall {wallNum}</span>
+        <div className="flex-1 px-3 md:px-6 pb-4">
+          <div className="space-y-2">
+            {filteredTasks.map((task) => {
+              const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+              return (
+                <div
+                  key={task.id}
+                  onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
+                  className="bg-slate-800/80 border-2 border-slate-700 hover:border-[#FFB800] rounded-xl p-4 cursor-pointer transition-all active:scale-98"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-base font-bold text-white flex-shrink-0 shadow-lg ${
+                      task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                      task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
+                      'bg-gradient-to-br from-red-500 to-red-600'
+                    }`}>
+                      {wallNum}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-semibold mb-1">Wall {wallNum}</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge className={`${priorityColors[task.priority]} text-[10px] px-2 py-0.5 border`}>
+                          {task.priority}
+                        </Badge>
+                        <Badge className={`${
+                          task.status === 'completed' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                          task.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                          'bg-red-500/20 text-red-400 border-red-500/30'
+                        } text-[10px] px-2 py-0.5 border`}>
+                          {task.status}
+                        </Badge>
+                        {task.category && (
+                          <Badge className="bg-slate-600/30 text-slate-300 border-slate-600/50 text-[10px] px-2 py-0.5 border">
+                            {task.category}
+                          </Badge>
+                        )}
                       </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge className={`${
-                        task.status === 'completed' ? 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400' :
-                        task.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
-                        'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
-                      }`}>
-                        {task.status}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
-                    </td>
-                    <td className="p-4 text-slate-500 dark:text-slate-400">{task.category}</td>
-                    <td className="p-4 text-slate-500 dark:text-slate-400">{task.assigned_to || '-'}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {filteredTasks.length === 0 && (
+              <div className="text-center py-12 text-slate-500">
+                No tasks found
+              </div>
+            )}
+          </div>
         </div>
       )}
 
