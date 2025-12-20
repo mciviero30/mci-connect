@@ -83,8 +83,8 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{stat.label}</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stat.value}</p>
+                <p className="text-sm text-slate-400 mb-2">{stat.label}</p>
+                <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
               </div>
               <stat.icon className={`w-8 h-8 opacity-50`} />
             </div>
@@ -94,15 +94,15 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
 
       {/* Project Info */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-black mb-4">Project Information</h3>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
+          <h3 className="text-lg font-bold text-white mb-4">Project Information</h3>
           <div className="space-y-3">
             {job.address && (
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-slate-500 dark:text-slate-400 mt-1" />
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Address</p>
-                  <p className="text-slate-900 dark:text-white">{job.address}</p>
+                  <p className="text-xs text-slate-400 mb-1">Address</p>
+                  <p className="text-sm text-white">{job.address}</p>
                 </div>
               </div>
             )}
@@ -110,8 +110,8 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
               <div className="flex items-start gap-3">
                 <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400 mt-1" />
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Start Date</p>
-                  <p className="text-slate-900 dark:text-white">
+                  <p className="text-xs text-slate-400 mb-1">Start Date</p>
+                  <p className="text-sm text-white">
                     {format(new Date(job.start_date_field || job.created_date), 'dd MMM yyyy')}
                   </p>
                 </div>
@@ -121,16 +121,16 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
               <div className="flex items-start gap-3">
                 <Users className="w-4 h-4 text-slate-500 dark:text-slate-400 mt-1" />
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Client</p>
-                  <p className="text-slate-900 dark:text-white">{job.client_name_field}</p>
+                  <p className="text-xs text-slate-400 mb-1">Client</p>
+                  <p className="text-sm text-white">{job.client_name_field}</p>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
-          <h3 className="font-semibold text-black mb-4">Plans ({plans.length})</h3>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
+          <h3 className="text-lg font-bold text-white mb-4">Plans ({plans.length})</h3>
           {plans.length === 0 ? (
             <p className="text-slate-500 dark:text-slate-400 text-sm">No plans uploaded</p>
           ) : (
@@ -154,7 +154,7 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
       </div>
 
       {/* Recent Tasks */}
-      <div className="mt-6 bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
+      <div className="mt-6 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
         <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Recent Tasks</h3>
         {tasks.length === 0 ? (
           <p className="text-slate-500 dark:text-slate-400 text-sm">No tasks created</p>

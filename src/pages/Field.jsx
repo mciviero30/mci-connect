@@ -152,7 +152,7 @@ export default function Field() {
         />
         <div className="text-right">
           <h1 className="text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
-          <p className="text-slate-400 text-sm mt-1">Central management for construction projects</p>
+          <p className="text-slate-300 text-sm mt-1">Central management for construction projects</p>
         </div>
       </div>
       <div>
@@ -358,7 +358,7 @@ function StatsCard({ label, value, icon: Icon, color }) {
     <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 shadow-lg">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">{label}</p>
+          <p className="text-xs font-bold text-white uppercase tracking-wider">{label}</p>
           <p className="text-3xl font-bold text-white mt-2">{value}</p>
         </div>
         <div className="p-3 rounded-full bg-white">

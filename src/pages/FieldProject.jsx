@@ -232,7 +232,7 @@ export default function FieldProject() {
 
   return (
     <FieldOfflineProvider jobId={jobId}>
-    <div className="min-h-screen bg-slate-100 dark:bg-gradient-to-b dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
       
@@ -243,11 +243,11 @@ export default function FieldProject() {
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 bg-white dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 flex-col shadow-sm">
+      <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg">
         {/* Header */}
-        <div className="p-4 border-b border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-black">
+        <div className="p-4 border-b border-slate-700 bg-black">
           <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-3">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
@@ -259,7 +259,7 @@ export default function FieldProject() {
                 className="w-10 h-10 object-contain"
               />
             <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-slate-900 dark:text-white truncate">{job.name || job.job_name_field}</h2>
+              <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
               <Badge className={`text-xs ${
                 job.status === 'active' 
                   ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
@@ -272,15 +272,15 @@ export default function FieldProject() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto bg-white dark:bg-slate-900">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30'
-                  : 'text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                  ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -290,8 +290,8 @@ export default function FieldProject() {
               {item.count !== undefined && item.count > 0 && (
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   activeTab === item.id
-                    ? 'bg-orange-500/30 text-orange-700 dark:text-orange-300'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-400'
+                    ? 'bg-orange-500/30 text-orange-300'
+                    : 'bg-slate-700 text-slate-400'
                 }`}>
                   {item.count}
                 </span>
