@@ -79,14 +79,14 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
         {stats.map((stat) => (
           <div 
             key={stat.label}
-            className={`dark:bg-gradient-to-br ${colorClasses[stat.color]} border rounded-xl p-4`}
+            className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-slate-600/50 rounded-xl p-4"
           >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400 mb-2">{stat.label}</p>
                 <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
               </div>
-              <stat.icon className={`w-8 h-8 opacity-50`} />
+              <stat.icon className={`w-8 h-8 text-slate-400 opacity-50`} />
             </div>
           </div>
         ))}
@@ -132,7 +132,7 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
         <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
           <h3 className="text-lg font-bold text-white mb-4">Plans ({plans.length})</h3>
           {plans.length === 0 ? (
-            <p className="text-slate-500 dark:text-slate-400 text-sm">No plans uploaded</p>
+            <p className="text-slate-400 text-sm">No plans uploaded</p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {plans.slice(0, 4).map((plan) => (
@@ -157,13 +157,13 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
       <div className="mt-6 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
         <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Recent Tasks</h3>
         {tasks.length === 0 ? (
-          <p className="text-slate-500 dark:text-slate-400 text-sm">No tasks created</p>
+          <p className="text-slate-400 text-sm">No tasks created</p>
         ) : (
           <div className="space-y-2">
             {tasks.slice(0, 5).map((task) => (
               <div 
                 key={task.id}
-                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${
@@ -172,13 +172,13 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
                     task.status === 'blocked' ? 'bg-red-500' :
                     'bg-amber-500'
                   }`} />
-                  <span className="text-slate-900 dark:text-white">{task.title}</span>
+                  <span className="text-white">{task.title}</span>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded ${
-                  task.priority === 'urgent' ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400' :
-                  task.priority === 'high' ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400' :
-                  task.priority === 'medium' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400' :
-                  'bg-slate-100 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400'
+                  task.priority === 'urgent' ? 'bg-red-500/20 text-red-400' :
+                  task.priority === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                  task.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' :
+                  'bg-slate-500/20 text-slate-400'
                 }`}>
                   {task.priority}
                 </span>
