@@ -282,7 +282,7 @@ export default function Nomina() {
                 <Download className="w-4 h-4 mr-2" />
                 {t('export')}
               </Button>
-              <Button onClick={handlePrint} className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md">
+              <Button onClick={handlePrint} className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#3B82F6]/90 hover:to-[#60A5FA]/90 text-white shadow-md">
                 <Download className="w-4 h-4 mr-2" />
                 {t('printPayroll')}
               </Button>
@@ -397,7 +397,7 @@ export default function Nomina() {
                           className="w-16 h-16 rounded-full object-cover border-2 border-[#3B9FF3]/30"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#3B82F6] to-[#60A5FA] rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
                           {employee.full_name?.[0]?.toUpperCase()}
                         </div>
                       )}
@@ -433,7 +433,7 @@ export default function Nomina() {
                     <div className="flex items-center gap-6">
                       <div className="text-right">
                         <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{t('totalPay')}</p>
-                        <p className="text-3xl font-bold text-[#1E3A8A] dark:text-[#60A5FA]">
+                        <p className="text-3xl font-bold text-[#3B82F6] dark:text-[#60A5FA]">
                           ${totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </p>
                         <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 space-y-0.5">
@@ -464,7 +464,7 @@ export default function Nomina() {
                       <div className="flex gap-2">
                         <Button
                           onClick={() => setSelectedEmployee(employee)}
-                          className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
+                          className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] hover:from-[#3B82F6]/90 hover:to-[#60A5FA]/90 text-white shadow-md"
                         >
                           <Edit className="w-4 h-4 mr-2" />
                           {t('viewDetails')}

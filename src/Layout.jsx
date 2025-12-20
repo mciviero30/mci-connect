@@ -671,7 +671,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           >
             {navigation.map((section, idx) => (
               <SidebarGroup key={idx} className="mb-6">
-                <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#1E3A8A] dark:text-slate-300 border border-[#1E3A8A]/10 dark:border-slate-700">
+                <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#3B82F6] dark:text-slate-300 border border-[#3B82F6]/10 dark:border-slate-700">
                   {section.icon && <section.icon className="w-3.5 h-3.5" />}
                   {section.section}
                 </SidebarGroupLabel>
@@ -687,7 +687,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                             asChild
                             className={`transition-all duration-200 rounded-lg mb-1 border-none ${
                               isActive
-                                ? 'bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] text-white shadow-md'
+                                ? 'bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] text-white shadow-md'
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
@@ -744,7 +744,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                     className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"
                   />
                 ) : (
-                  <div className="w-11 h-11 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-full flex items-center justify-center ring-2 ring-[#1E3A8A]/30 shadow-lg">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#3B82F6] to-[#60A5FA] rounded-full flex items-center justify-center ring-2 ring-[#3B82F6]/30 shadow-md">
                     <span className="text-white font-bold text-base">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
@@ -754,14 +754,14 @@ const LayoutContent = ({ children, currentPageName }) => {
                   <p className="font-bold text-sm truncate text-slate-900 dark:text-slate-100">
                     {user?.full_name || 'User'}
                   </p>
-                  <p className="text-xs truncate text-[#1E3A8A] dark:text-[#60A5FA] font-medium">
+                  <p className="text-xs truncate text-[#3B82F6] dark:text-[#60A5FA] font-medium">
                     {user?.role === 'admin' ? t('admin') : t('user')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <Link to={createPageUrl("Configuracion")} className="p-2 rounded-xl transition-all hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')}>
-                  <Settings className="w-4 h-4 text-[#1E3A8A] dark:text-[#60A5FA]" />
+                  <Settings className="w-4 h-4 text-[#3B82F6] dark:text-[#60A5FA]" />
                 </Link>
                 <button
                   onClick={() => base44.auth.logout()}
