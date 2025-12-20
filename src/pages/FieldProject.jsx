@@ -204,7 +204,48 @@ export default function FieldProject() {
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
+        return (
+          <>
+            <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />
+            {isMobile && (
+              <div className="bg-slate-900 border-t-2 border-slate-700 px-2 py-3 mx-3 mb-3 rounded-xl">
+                <div className="flex justify-around items-center">
+                  {[
+                    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+                    { id: 'plans', label: 'Plans', icon: Map },
+                    { id: 'photos', label: 'Photos', icon: Camera },
+                  ].map((item) => {
+                    const count = item.id === 'tasks' ? tasks.length : item.id === 'plans' ? plans.length : null;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveTab(item.id)}
+                        className="flex flex-col items-center py-2 px-3 rounded-xl text-slate-400 hover:text-[#FFB800] transition-all"
+                      >
+                        <div className="relative">
+                          <item.icon className="w-6 h-6" />
+                          {count > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-[#FFB800] text-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                              {count > 99 ? '99+' : count}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => setShowMobileMenu(true)}
+                    className="flex flex-col items-center py-2 px-3 rounded-xl text-slate-400"
+                  >
+                    <Menu className="w-6 h-6" />
+                    <span className="text-[10px] mt-1 font-medium">More</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        );
       case 'plans':
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
       case 'tasks':
@@ -375,50 +416,7 @@ export default function FieldProject() {
         </div>
       )}
 
-      {/* Mobile Top Navigation */}
-      {isMobile && (
-        <div className="sticky top-0 left-0 right-0 bg-slate-900 border-b-2 border-slate-700 px-2 py-2 z-50 md:hidden" style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top, 0px))' }}>
-          <div className="flex justify-around items-center">
-            {[
-              { id: 'overview', label: 'Home', icon: LayoutDashboard },
-              { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-              { id: 'plans', label: 'Plans', icon: Map },
-              { id: 'photos', label: 'Photos', icon: Camera },
-            ].map((item) => {
-              const isActive = activeTab === item.id;
-              const count = item.id === 'tasks' ? tasks.length : item.id === 'plans' ? plans.length : null;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex flex-col items-center py-2 px-3 rounded-xl transition-all ${
-                    isActive 
-                      ? 'text-[#FFB800] bg-slate-800' 
-                      : 'text-slate-400'
-                  }`}
-                >
-                  <div className="relative">
-                    <item.icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''} transition-transform`} />
-                    {count > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-[#FFB800] text-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                        {count > 99 ? '99+' : count}
-                      </span>
-                    )}
-                  </div>
-                  <span className={`text-[10px] mt-1 ${isActive ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
-                </button>
-              );
-            })}
-            <button
-              onClick={() => setShowMobileMenu(true)}
-              className="flex flex-col items-center py-2 px-3 rounded-xl text-slate-400"
-            >
-              <Menu className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-medium">More</span>
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Daily Report Dialog */}
       <DailyReportGenerator 
