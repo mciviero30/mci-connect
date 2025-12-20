@@ -171,22 +171,23 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen bg-[#0a0a0a]">
       <div className="flex items-center justify-between mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Plans</h1>
-        </div>
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-yellow-400 bg-clip-text text-transparent" style={{ fontSize: '1.575rem' }}>
+          Plans
+        </h1>
         <div className="flex gap-2">
           <Button 
             onClick={() => setShowTemplates(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none h-10"
+            variant="outline"
+            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-400 h-10 backdrop-blur-sm"
           >
-            <Settings2 className="w-4 h-4 mr-2 text-black" />
+            <Settings2 className="w-4 h-4 mr-2" />
             Templates
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none h-10"
+            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold border-none h-10 shadow-lg shadow-orange-500/20"
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload Plan
@@ -195,13 +196,13 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       </div>
 
       {plans.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
-          <Upload className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No plans yet</h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">Upload your first plan to get started</p>
+        <div className="bg-[#1a1a1a] border border-orange-500/20 rounded-2xl p-12 text-center backdrop-blur-sm">
+          <Upload className="w-12 h-12 text-orange-500/40 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No plans yet</h3>
+          <p className="text-slate-400 mb-4">Upload your first plan to get started</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600]"
+            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold shadow-lg shadow-orange-500/20"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Plan
@@ -215,7 +216,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             return (
               <div 
                 key={plan.id}
-                className="bg-[#3a4556] border-2 border-orange-500 rounded-xl overflow-hidden hover:border-orange-400 transition-all group relative shadow-sm"
+                className="bg-[#1a1a1a] border border-orange-500/30 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/20 transition-all group relative backdrop-blur-sm"
               >
                 {/* Action Menu */}
                 <div className="absolute top-2 left-2 z-20">
@@ -223,21 +224,21 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     <DropdownMenuTrigger asChild>
                       <button 
                         onClick={(e) => e.stopPropagation()}
-                        className="p-2 text-black transition-colors"
+                        className="p-2 bg-black/40 backdrop-blur-sm rounded-lg hover:bg-black/60 transition-colors"
                         title="Options"
                       >
-                        <MoreVertical className="w-4 h-4" />
+                        <MoreVertical className="w-4 h-4 text-white" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-slate-800 border-slate-700">
+                    <DropdownMenuContent className="bg-[#1a1a1a] border-orange-500/30 backdrop-blur-xl">
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
                           setAnalyzePlan(plan);
                         }}
-                        className="text-white hover:bg-slate-700 cursor-pointer"
+                        className="text-white hover:bg-orange-500/10 focus:bg-orange-500/10 cursor-pointer"
                       >
-                        <Wand2 className="w-4 h-4 mr-2" />
+                        <Wand2 className="w-4 h-4 mr-2 text-orange-400" />
                         Analyze & Create Tasks
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -247,7 +248,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                             deletePlanMutation.mutate(plan.id);
                           }
                         }}
-                        className="text-red-400 hover:bg-slate-700 cursor-pointer"
+                        className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Plan
@@ -260,7 +261,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                   onClick={() => setSelectedPlan(plan)}
                   className="cursor-pointer"
                 >
-                  <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-slate-700">
+                  <div className="aspect-video relative overflow-hidden bg-black/40">
                     {isPdf ? (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
@@ -282,24 +283,24 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     {taskCount > 0 && (
-                      <div className="absolute top-2 right-2 bg-[#F5A623] text-black text-xs px-2 py-1 rounded-full z-10">
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-black text-xs px-3 py-1 rounded-full z-10 font-semibold shadow-lg">
                         {taskCount} tasks
                       </div>
                     )}
                   </div>
-                  <div className="p-4">
+                  <div className="p-4 bg-gradient-to-b from-transparent to-black/20">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-orange-500 dark:text-orange-500 group-hover:text-orange-400 transition-colors flex-1">
+                      <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors flex-1">
                         {plan.name}
                       </h3>
                       {plan.needs_confirmation && (
-                        <div className="flex-shrink-0 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded text-[10px] text-black dark:text-black font-medium">
+                        <div className="flex-shrink-0 px-2 py-1 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] text-amber-400 font-medium backdrop-blur-sm">
                           Pending
                         </div>
                       )}
                     </div>
                     {plan.folder && (
-                      <p className="text-sm text-black dark:text-black">{plan.folder}</p>
+                      <p className="text-sm text-slate-400 mt-1">{plan.folder}</p>
                     )}
                   </div>
                 </div>
@@ -311,9 +312,11 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
 
       {/* Upload Dialog */}
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="bg-[#1a1a1a] border-orange-500/30 text-white backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle>Upload New Plan</DialogTitle>
+            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-500 to-yellow-400 bg-clip-text text-transparent">
+              Upload New Plan
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
@@ -322,16 +325,16 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                 value={newPlan.name}
                 onChange={(e) => setNewPlan({...newPlan, name: e.target.value})}
                 placeholder="e.g., Floor Plan Level 1"
-                className="mt-1.5 bg-slate-800 border-slate-700 text-white"
+                className="mt-1.5 bg-black/40 border-orange-500/30 text-white focus:border-orange-400 backdrop-blur-sm"
               />
             </div>
             <div>
               <Label className="text-slate-300">File</Label>
               <div className="mt-1.5">
                 {newPlan.file ? (
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-800">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40 border border-orange-500/20">
                     {newPlan.file.toLowerCase().endsWith('.pdf') || newPlan.file.includes('.pdf') ? (
-                      <div className="w-full h-full flex items-center justify-center bg-slate-700">
+                      <div className="w-full h-full flex items-center justify-center bg-black/60">
                         <div className="text-center">
                           <div className="text-4xl mb-2">📄</div>
                           <p className="text-white text-sm">{newPlan.name || 'PDF subido'}</p>
@@ -361,13 +364,13 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                   </div>
                 ) : (
-                  <label className={`flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-                    fileError ? 'border-red-500/50 bg-red-500/5' : 'border-slate-700 hover:border-amber-500/50'
+                  <label className={`flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors backdrop-blur-sm ${
+                    fileError ? 'border-red-500/50 bg-red-500/5' : 'border-orange-500/30 hover:border-orange-400 hover:bg-orange-500/5'
                   }`}>
                     {uploading ? (
                       <div className="flex flex-col items-center w-full px-8">
-                        <Loader2 className="w-8 h-8 text-amber-500 animate-spin mb-2" />
-                        <span className="text-sm text-slate-400 mb-2">Uploading file...</span>
+                        <Loader2 className="w-8 h-8 text-orange-400 animate-spin mb-2" />
+                        <span className="text-sm text-slate-300 mb-2">Uploading file...</span>
                         {uploadProgress > 0 && (
                           <div className="w-full">
                             <Progress value={uploadProgress} className="h-2" />
@@ -379,9 +382,9 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                       </div>
                     ) : (
                       <>
-                        <Upload className="w-8 h-8 text-slate-500 mb-2" />
-                        <span className="text-sm text-slate-400">Click to upload image or PDF</span>
-                                                      <span className="text-xs text-slate-500 mt-1">Max {MAX_FILE_SIZE_MB}MB</span>
+                        <Upload className="w-8 h-8 text-orange-400/60 mb-2" />
+                        <span className="text-sm text-slate-300">Click to upload image or PDF</span>
+                        <span className="text-xs text-slate-500 mt-1">Max {MAX_FILE_SIZE_MB}MB</span>
                       </>
                     )}
                     <input 
@@ -412,13 +415,13 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-orange-500/30 text-slate-300 hover:bg-orange-500/10">
                 Cancel
               </Button>
               <Button 
                 onClick={handleCreatePlan}
                 disabled={!newPlan.file || !newPlan.name || createPlanMutation.isPending}
-                className="bg-[#FFB800] hover:bg-[#E5A600]"
+                className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold shadow-lg shadow-orange-500/20"
               >
                 {createPlanMutation.isPending ? 'Saving...' : 'Save Plan'}
               </Button>
