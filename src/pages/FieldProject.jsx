@@ -105,13 +105,24 @@ export default function FieldProject() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const { data: job, isLoading } = useQuery({
+  const { data: job, isLoading, error: jobError } = useQuery({
     queryKey: ['field-job', jobId],
     queryFn: async () => {
-      const jobs = await base44.entities.Job.filter({ id: jobId });
-      return jobs[0] || null;
+      if (!jobId) return null;
+      try {
+        const jobs = await base44.entities.Job.filter({ id: jobId });
+        if (jobs.length === 0) {
+          console.error('Job not found with ID:', jobId);
+          return null;
+        }
+        return jobs[0];
+      } catch (error) {
+        console.error('Error fetching job:', error);
+        throw error;
+      }
     },
     enabled: !!jobId,
+    retry: 2,
   });
 
   const { data: tasks = [] } = useQuery({
@@ -170,13 +181,15 @@ export default function FieldProject() {
     );
   }
 
-  if (!job) {
+  if (!job && !isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-slate-400 mb-4">Project not found</p>
+        <div className="text-center p-6">
+          <p className="text-slate-400 mb-2">Project not found</p>
+          {jobId && <p className="text-xs text-slate-500 mb-4">ID: {jobId}</p>}
+          {jobError && <p className="text-xs text-red-500 mb-4">{jobError.message}</p>}
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white">Back</Button>
+            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white">Back to Projects</Button>
           </Link>
         </div>
       </div>
