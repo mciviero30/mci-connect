@@ -268,14 +268,14 @@ export default function BonusConfiguration() {
     : [];
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Bonus Configuration"
           description={`${activeBonuses.length} active bonus configurations`}
           icon={Award}
           actions={
-            <Button onClick={handleOpenDialog} size="lg" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white shadow-lg shadow-blue-500/30">
+            <Button onClick={handleOpenDialog} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
               <Plus className="w-5 h-5 mr-2" />
               New Bonus
             </Button>
@@ -307,7 +307,7 @@ export default function BonusConfiguration() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <Award className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                        <Award className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                         <CardTitle className="text-lg text-slate-900 dark:text-white">{bonus.employee_name}</CardTitle>
                       </div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 truncate">{bonus.job_name}</p>
@@ -345,9 +345,9 @@ export default function BonusConfiguration() {
                   <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-2 mb-1">
                       {bonus.bonus_type === 'percentage' ? (
-                        <Percent className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                        <Percent className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                       ) : (
-                        <DollarSign className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                        <DollarSign className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
                       )}
                       <span className="text-xs text-slate-600 dark:text-slate-400">
                         {bonus.bonus_type === 'percentage' ? 'Percentage of Profit' : 'Fixed Amount'}
@@ -490,7 +490,7 @@ export default function BonusConfiguration() {
                 <Button type="button" variant="outline" onClick={() => setShowDialog(false)} className="bg-slate-50 border-slate-200 text-slate-700">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white">
+                <Button type="submit" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                   {editingBonus ? 'Update Bonus' : 'Create Bonus'}
                 </Button>
               </div>

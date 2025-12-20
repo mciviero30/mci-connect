@@ -133,7 +133,7 @@ export default function Contabilidad() {
           }
         />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8 text-slate-900 dark:text-slate-100">
           <StatsCard title={t('monthlyIncome')} value={`$${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingUp} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
           <StatsCard title={t('monthlyExpenses')} value={`$${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingDown} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
           <StatsCard title={t('balance')} value={`$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={DollarSign} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />

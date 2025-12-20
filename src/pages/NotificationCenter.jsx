@@ -85,7 +85,7 @@ export default function NotificationCenter() {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
+    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
       <div className="max-w-5xl mx-auto">
         <PageHeader
           title="Notification Center"
@@ -99,7 +99,7 @@ export default function NotificationCenter() {
               <Button 
                 onClick={() => markAllAsReadMutation.mutate()}
                 variant="outline"
-                className="border-blue-300 dark:border-blue-600 text-blue-600 dark:text-blue-400"
+                className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
               >
                 <CheckCheck className="w-4 h-4 mr-2" />
                 Mark All Read
@@ -167,7 +167,7 @@ export default function NotificationCenter() {
               <Card 
                 key={notification.id} 
                 className={`bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 transition-all hover:shadow-md ${
-                  !notification.is_read ? 'border-l-4 border-l-blue-500 dark:border-l-blue-400' : ''
+                  !notification.is_read ? 'border-l-4 border-l-[#507DB4] dark:border-l-[#6B9DD8]' : ''
                 }`}
               >
                 <CardContent className="p-4">
@@ -203,7 +203,7 @@ export default function NotificationCenter() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                className="text-xs border-blue-300 dark:border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                className="text-xs border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
                               >
                                 View
                               </Button>

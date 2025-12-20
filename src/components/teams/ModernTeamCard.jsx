@@ -18,7 +18,7 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-start gap-2.5">
-            <div className="w-[48px] h-[48px] bg-[#1E6FE8] rounded-full flex items-center justify-center text-white font-bold text-[19px] flex-shrink-0">
+            <div className="w-[48px] h-[48px] bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-[19px] flex-shrink-0 shadow-md">
               {team.team_name?.[0]?.toUpperCase()}
             </div>
 
@@ -53,7 +53,7 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 capacityPercentage >= 100 ? 'bg-red-500' :
-                capacityPercentage > 80 ? 'bg-amber-500' : 'bg-[#1E6FE8]'
+                capacityPercentage > 80 ? 'bg-amber-500' : 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]'
               }`}
               style={{ width: `${Math.min(100, capacityPercentage)}%` }}
             />
@@ -62,7 +62,7 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className="bg-[#00C48C] hover:bg-[#00C48C] text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+          <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
             Active
           </Badge>
           {team.is_headquarters && (
@@ -72,7 +72,7 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
           )}
           <Badge 
             variant="outline" 
-            className="border border-[#1E6FE8] text-[#1E6FE8] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
+            className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
           >
             {stats.employees} Members
           </Badge>
@@ -92,7 +92,7 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
       </div>
 
       {/* Gradient Line at Bottom */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-[#1E6FE8] to-[#0052CC]" />
+      <div className="h-[3px] w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
     </Card>
   );
 }

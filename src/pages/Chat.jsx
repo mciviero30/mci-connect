@@ -514,7 +514,7 @@ export default function Chat() {
         {/* Header - mobile/tablet */}
         <div className="md:hidden px-4 py-3 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-md">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -576,15 +576,15 @@ export default function Chat() {
             <div className="flex-1 overflow-y-auto px-3 py-2">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
                 <TabsList className="w-full h-10 bg-slate-100 dark:bg-slate-900 mb-3 grid grid-cols-3 p-1 rounded-xl">
-                  <TabsTrigger value="channels" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
+                  <TabsTrigger value="channels" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <Hash className="w-3.5 h-3.5 mr-1.5" />
                     Channels
                   </TabsTrigger>
-                  <TabsTrigger value="groups" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
+                  <TabsTrigger value="groups" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <Users className="w-3.5 h-3.5 mr-1.5" />
                     Groups
                   </TabsTrigger>
-                  <TabsTrigger value="direct" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
+                  <TabsTrigger value="direct" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
                     <AtSign className="w-3.5 h-3.5 mr-1.5" />
                     Direct
                   </TabsTrigger>
@@ -605,20 +605,20 @@ export default function Chat() {
                           }}
                           className={`w-full px-3 py-3 rounded-xl text-left flex items-center gap-3 transition-all group ${
                             isActive
-                              ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400'
+                              ? 'bg-blue-50/40 dark:bg-blue-950/20 text-[#507DB4] dark:text-[#6B9DD8]'
                               : 'hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                             isActive 
-                              ? 'bg-blue-500 shadow-lg shadow-blue-500/30' 
+                              ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] shadow-md' 
                               : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
                           }`}>
                             <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>{group.name}</p>
-                            {isActive && <p className="text-xs text-blue-500 dark:text-blue-500">Active</p>}
+                            <p className={`font-semibold text-sm truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : ''}`}>{group.name}</p>
+                            {isActive && <p className="text-xs text-[#507DB4] dark:text-[#6B9DD8]">Active</p>}
                           </div>
                           <ChatUnreadBadge userEmail={user?.email} groupId={group.id} />
                         </button>
@@ -640,7 +640,7 @@ export default function Chat() {
                             onClick={() => selectCustomGroup(group)}
                             className={`w-full px-3 py-3 rounded-xl text-left flex items-center gap-3 transition-all group ${
                               isActive
-                                ? 'bg-blue-50 dark:bg-blue-950/30'
+                                ? 'bg-blue-50/40 dark:bg-blue-950/20'
                                 : 'hover:bg-slate-50 dark:hover:bg-slate-900'
                             }`}
                           >
@@ -648,7 +648,7 @@ export default function Chat() {
                               <Users className="w-5 h-5 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={`font-semibold text-sm truncate ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
+                              <p className={`font-semibold text-sm truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
                               <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                 {group.members.length} members
                               </p>
@@ -695,7 +695,7 @@ export default function Chat() {
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1a1a]">
               <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-md">
                   <MessageSquare className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -720,7 +720,7 @@ export default function Chat() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowJobMembers(true)}
-                    className="h-9 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                    className="h-9 text-xs text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 rounded-lg"
                   >
                     <UserPlus className="w-4 h-4 mr-1.5" />
                     Invite
@@ -860,8 +860,8 @@ export default function Chat() {
                         <PopoverContent className="w-80 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
                           <Tabs defaultValue="emojis">
                             <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                              <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
-                              <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
+                              <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
+                              <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
                             </TabsList>
                             <TabsContent value="emojis" className="m-0">
                               <EmojiPicker onSelect={handleEmojiSelect} />
@@ -898,7 +898,7 @@ export default function Chat() {
                     <Button 
                       type="submit" 
                       disabled={!message.trim() || sendMutation.isPending} 
-                      className="h-11 px-6 soft-blue-gradient shadow-lg rounded-xl font-medium"
+                      className="h-11 px-6 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md rounded-xl font-medium"
                     >
                       <Send className="w-5 h-5" />
                     </Button>
@@ -933,7 +933,7 @@ export default function Chat() {
                         className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors text-left border border-transparent hover:border-blue-200 dark:hover:border-blue-700"
                       >
                         <div className="relative">
-                          <div className="w-10 h-10 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
                             <span className="text-white font-bold">
                               {displayName[0]?.toUpperCase() || 'U'}
                             </span>
