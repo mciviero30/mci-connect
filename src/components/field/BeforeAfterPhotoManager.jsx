@@ -44,13 +44,13 @@ export default function BeforeAfterPhotoManager({ jobId }) {
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Before Section */}
-        <div>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-4 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-bold text-white flex items-center gap-2">
               <span className="w-3 h-3 bg-red-500 rounded-full"></span>
               Before Photos
             </h4>
-            <Badge className="bg-red-100 text-red-800">{beforePhotos.length}</Badge>
+            <Badge className="bg-red-500 text-white">{beforePhotos.length}</Badge>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {beforePhotos.map(photo => (
@@ -74,13 +74,13 @@ export default function BeforeAfterPhotoManager({ jobId }) {
         </div>
 
         {/* After Section */}
-        <div>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-4 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-bold text-white flex items-center gap-2">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
               After Photos
             </h4>
-            <Badge className="bg-green-100 text-green-800">{afterPhotos.length}</Badge>
+            <Badge className="bg-green-500 text-white">{afterPhotos.length}</Badge>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {afterPhotos.map(photo => (
@@ -106,7 +106,7 @@ export default function BeforeAfterPhotoManager({ jobId }) {
 
       {/* Untagged Photos */}
       {generalPhotos.length > 0 && (
-        <div>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-4 shadow-lg">
           <h4 className="font-bold text-white mb-3">General Photos (Click to tag)</h4>
           <div className="grid grid-cols-4 gap-2">
             {generalPhotos.map(photo => (
@@ -114,7 +114,7 @@ export default function BeforeAfterPhotoManager({ jobId }) {
                 <img 
                   src={photo.thumbnail_url || photo.file_url} 
                   alt="General"
-                  className="w-full h-24 object-cover rounded-lg border border-slate-300 cursor-pointer hover:border-yellow-400"
+                  className="w-full h-24 object-cover rounded-lg border border-slate-500 cursor-pointer hover:border-orange-500"
                   onClick={() => setSelectedPhoto(photo)}
                 />
                 {selectedPhoto?.id === photo.id && (
