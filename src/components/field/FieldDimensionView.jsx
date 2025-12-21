@@ -181,11 +181,8 @@ export default function FieldDimensionView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Field Dimensions</h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Upload dimension drawings and add annotations
-          </p>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Field Dimensions</h1>
         </div>
         <Button
           onClick={() => setShowUpload(true)}

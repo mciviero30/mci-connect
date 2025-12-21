@@ -287,14 +287,8 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#FFB800]/20 rounded-xl">
-            <Brain className="w-6 h-6 text-[#FFB800]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">AI Assistant</h1>
-            <p className="text-sm text-slate-400">Intelligent insights for your project</p>
-          </div>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>AI Assistant</h1>
         </div>
       </div>
 
