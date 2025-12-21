@@ -51,15 +51,11 @@ export default function BeforeAfterPhotos({ jobId }) {
       </div>
 
       {validPairs.length === 0 ? (
-        <Card className="bg-white dark:bg-slate-800">
-          <CardContent className="p-12 text-center">
-            <Camera className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No before/after pairs yet</h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
-              Take photos with matching location tags to create comparisons
-            </p>
-          </CardContent>
-        </Card>
+        <div className="text-center py-12 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-2xl shadow-lg">
+          <Camera className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No before/after pairs yet</h3>
+          <p className="text-slate-400">Take photos with matching location tags to create comparisons</p>
+        </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {validPairs.map((pair, index) => (
