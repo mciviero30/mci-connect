@@ -353,17 +353,17 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
       </div>
 
       {/* AI Reports Tabs */}
-      <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+      <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 shadow-xl">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-lg text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#FFB800]" />
+              <Sparkles className="w-5 h-5 text-orange-500" />
               AI-Generated Reports
             </CardTitle>
             <Button 
               onClick={handleGenerate}
               disabled={generating}
-              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg"
             >
               {generating ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -393,14 +393,14 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
               <TabsContent key={tab.id} value={tab.id} className="mt-4">
                 {reports[tab.id] ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                    <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
                       <ReactMarkdown>{reports[tab.id]}</ReactMarkdown>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                  <div className="text-center py-12 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl border border-slate-700">
                     <tab.icon className={`w-12 h-12 mx-auto mb-4 ${tab.color} opacity-50`} />
-                    <p>Click "Generate Report" to create your {tab.label.toLowerCase()}</p>
+                    <p className="text-slate-400">Click "Generate Report" to create your {tab.label.toLowerCase()}</p>
                   </div>
                 )}
               </TabsContent>
