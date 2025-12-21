@@ -294,10 +294,10 @@ export default function FieldReportsView({ jobId }) {
 
       {/* Reports List */}
       {reports.length === 0 ? (
-        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center shadow-sm">
-          <FileText className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No reports</h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">Generate PDF or Excel reports of project progress</p>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-2xl p-12 text-center shadow-lg">
+          <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No reports</h3>
+          <p className="text-slate-400 mb-4">Generate PDF or Excel reports of project progress</p>
           <Button 
             onClick={() => setShowCreate(true)}
             className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
@@ -313,7 +313,7 @@ export default function FieldReportsView({ jobId }) {
             return (
               <div 
                 key={report.id}
-                className="flex items-center justify-between p-5 bg-[#3a4556] border border-slate-500 rounded-xl hover:border-orange-500 transition-all group shadow-sm"
+                className="flex items-center justify-between p-5 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl hover:border-orange-500 transition-all group shadow-lg"
               >
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-lg ${
@@ -324,8 +324,8 @@ export default function FieldReportsView({ jobId }) {
                     }`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">{report.name}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <h3 className="font-semibold text-white">{report.name}</h3>
+                    <p className="text-sm text-slate-400">
                       {report.report_type === 'progress_report' ? 'Progress Report' :
                        report.report_type === 'punch_report' ? 'Punch Report' :
                        report.report_type === 'rfi_report' ? 'RFI Report' :

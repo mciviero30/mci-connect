@@ -97,7 +97,7 @@ export default function FieldPhotosView({ jobId }) {
       </div>
 
       <Tabs defaultValue="gallery" className="mb-6">
-        <TabsList className="bg-slate-100 dark:bg-slate-800/50">
+        <TabsList className="bg-slate-800/50 border border-slate-700">
           <TabsTrigger value="gallery" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">Gallery</TabsTrigger>
           <TabsTrigger value="before-after" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">
             <ArrowLeftRight className="w-4 h-4 mr-1" />
@@ -120,10 +120,10 @@ export default function FieldPhotosView({ jobId }) {
           <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : photos.length === 0 ? (
-        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center shadow-sm">
-          <Upload className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No photos</h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">Upload photos of project progress</p>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-2xl p-12 text-center shadow-lg">
+          <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No photos</h3>
+          <p className="text-slate-400 mb-4">Upload photos of project progress</p>
           <Button 
             onClick={() => setShowUpload(true)}
             className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"

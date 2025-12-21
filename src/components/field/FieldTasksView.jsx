@@ -93,30 +93,30 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
               placeholder="Search tasks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white w-48"
+              className="pl-9 bg-slate-800/50 border-slate-700 text-white w-48"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36 bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+            <SelectTrigger className="w-36 bg-slate-800/50 border-slate-700 text-white">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <SelectItem value="all" className="text-slate-900 dark:text-white">All</SelectItem>
-              <SelectItem value="pending" className="text-slate-900 dark:text-white">Pending</SelectItem>
-              <SelectItem value="in_progress" className="text-slate-900 dark:text-white">In Progress</SelectItem>
-              <SelectItem value="completed" className="text-slate-900 dark:text-white">Completed</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="all" className="text-white">All</SelectItem>
+              <SelectItem value="pending" className="text-white">Pending</SelectItem>
+              <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
+              <SelectItem value="completed" className="text-white">Completed</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex bg-slate-100 dark:bg-slate-800/50 rounded-lg p-1">
+          <div className="flex bg-slate-800/50 rounded-lg p-1">
             <button
               onClick={() => setView('kanban')}
-              className={`p-2 rounded ${view === 'kanban' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`p-2 rounded ${view === 'kanban' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setView('list')}
-              className={`p-2 rounded ${view === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`p-2 rounded ${view === 'list' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -139,12 +139,12 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
             return (
               <div 
                 key={column.id}
-                className="bg-[#3a4556] border border-slate-500 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-sm"
+                className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-lg"
                 onDrop={(e) => handleDrop(e, column.id)}
                 onDragOver={handleDragOver}
               >
                 <div className="flex items-center justify-between mb-2 md:mb-4">
-                  <h3 className={`font-semibold text-xs md:text-sm text-${column.color}-600 dark:text-${column.color}-400`}>{column.label}</h3>
+                  <h3 className="font-semibold text-xs md:text-sm text-white">{column.label}</h3>
                   <Badge className={`bg-${column.color}-100 dark:bg-${column.color}-500/20 text-${column.color}-600 dark:text-${column.color}-400 border-${column.color}-200 dark:border-${column.color}-500/30 text-[10px] md:text-xs`}>
                     {columnTasks.length}
                   </Badge>
@@ -158,7 +158,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                         draggable
                         onDragStart={(e) => handleDragStart(e, task)}
                         onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
-                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700/50 rounded-lg p-2 cursor-pointer hover:border-[#FFB800]/50 transition-all flex items-center gap-2"
+                        className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-2 cursor-pointer hover:border-[#FFB800]/50 transition-all flex items-center gap-2"
                       >
                         <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
                           task.status === 'completed' ? 'bg-green-500' :
@@ -184,15 +184,15 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
 
       {/* List View */}
       {view === 'list' && (
-        <div className="flex-1 bg-[#3a4556] border border-slate-500 rounded-xl overflow-hidden shadow-sm">
+        <div className="flex-1 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl overflow-hidden shadow-lg">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Wall #</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Status</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Priority</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Category</th>
-                <th className="text-left p-4 text-slate-600 dark:text-slate-400 font-medium">Assigned</th>
+              <tr className="border-b border-slate-700">
+                <th className="text-left p-4 text-slate-400 font-medium">Wall #</th>
+                <th className="text-left p-4 text-slate-400 font-medium">Status</th>
+                <th className="text-left p-4 text-slate-400 font-medium">Priority</th>
+                <th className="text-left p-4 text-slate-400 font-medium">Category</th>
+                <th className="text-left p-4 text-slate-400 font-medium">Assigned</th>
               </tr>
             </thead>
             <tbody>
@@ -202,7 +202,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                   <tr 
                     key={task.id}
                     onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
-                    className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                    className="border-b border-slate-700/50 hover:bg-slate-800/50 cursor-pointer"
                   >
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -213,14 +213,14 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                         }`}>
                           {wallNum}
                         </div>
-                        <span className="text-slate-900 dark:text-white font-medium">Wall {wallNum}</span>
+                        <span className="text-white font-medium">Wall {wallNum}</span>
                       </div>
                     </td>
                     <td className="p-4">
                       <Badge className={`${
-                        task.status === 'completed' ? 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-400' :
-                        task.status === 'in_progress' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' :
-                        'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
+                        task.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                        task.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400' :
+                        'bg-red-500/20 text-red-400'
                       }`}>
                         {task.status}
                       </Badge>
@@ -228,8 +228,8 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                     <td className="p-4">
                       <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
                     </td>
-                    <td className="p-4 text-slate-500 dark:text-slate-400">{task.category}</td>
-                    <td className="p-4 text-slate-500 dark:text-slate-400">{task.assigned_to || '-'}</td>
+                    <td className="p-4 text-slate-400">{task.category}</td>
+                    <td className="p-4 text-slate-400">{task.assigned_to || '-'}</td>
                   </tr>
                 );
               })}
