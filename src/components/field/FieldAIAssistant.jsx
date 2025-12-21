@@ -300,12 +300,12 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card className="bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Completion</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                <p className="text-xs text-slate-400">Completion</p>
+                <p className="text-2xl font-bold text-white">
                   {stats.total > 0 ? Math.round(stats.completed / stats.total * 100) : 0}%
                 </p>
               </div>
@@ -315,36 +315,36 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card className="bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">In Progress</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.inProgress}</p>
+                <p className="text-xs text-slate-400">In Progress</p>
+                <p className="text-2xl font-bold text-white">{stats.inProgress}</p>
               </div>
               <Clock className="w-8 h-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card className="bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Team Size</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{members.length}</p>
+                <p className="text-xs text-slate-400">Team Size</p>
+                <p className="text-2xl font-bold text-white">{members.length}</p>
               </div>
               <Users className="w-8 h-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
+        <Card className="bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Blocked</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.blocked}</p>
+                <p className="text-xs text-slate-400">Blocked</p>
+                <p className="text-2xl font-bold text-white">{stats.blocked}</p>
               </div>
               <AlertTriangle className={`w-8 h-8 ${stats.blocked > 0 ? 'text-red-500' : 'text-slate-400'}`} />
             </div>
