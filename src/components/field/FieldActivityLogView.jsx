@@ -80,10 +80,9 @@ export default function FieldActivityLogView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Activity className="w-6 h-6" />
-          Project Activity
-        </h1>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Project Activity</h1>
+        </div>
         <div className="flex gap-2">
           <Select value={entityFilter} onValueChange={setEntityFilter}>
             <SelectTrigger className="w-36 bg-slate-800 border-slate-700 text-white">
