@@ -293,7 +293,7 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">AI Assistant</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Intelligent insights for your project</p>
+            <p className="text-sm text-slate-400">Intelligent insights for your project</p>
           </div>
         </div>
       </div>
@@ -356,7 +356,7 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
       <Card className="bg-white dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-slate-900 dark:text-white flex items-center gap-2">
+            <CardTitle className="text-lg text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[#FFB800]" />
               AI-Generated Reports
             </CardTitle>
@@ -376,12 +376,12 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 bg-slate-100 dark:bg-slate-900/50">
+            <TabsList className="grid grid-cols-4 bg-slate-900/50 border border-slate-700">
               {tabs.map(tab => (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
-                  className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800"
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black"
                 >
                   <tab.icon className={`w-4 h-4 ${tab.color}`} />
                   <span className="hidden md:inline">{tab.label}</span>

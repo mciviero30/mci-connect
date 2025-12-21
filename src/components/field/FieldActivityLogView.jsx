@@ -80,7 +80,7 @@ export default function FieldActivityLogView({ jobId }) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <Activity className="w-6 h-6" />
           Project Activity
         </h1>
@@ -89,25 +89,25 @@ export default function FieldActivityLogView({ jobId }) {
             <SelectTrigger className="w-36 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <SelectItem value="all" className="text-slate-900 dark:text-white">All</SelectItem>
-              <SelectItem value="task" className="text-slate-900 dark:text-white">Tasks</SelectItem>
-              <SelectItem value="photo" className="text-slate-900 dark:text-white">Photos</SelectItem>
-              <SelectItem value="document" className="text-slate-900 dark:text-white">Documents</SelectItem>
-              <SelectItem value="comment" className="text-slate-900 dark:text-white">Comments</SelectItem>
-              <SelectItem value="milestone" className="text-slate-900 dark:text-white">Milestones</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="all" className="text-white">All</SelectItem>
+              <SelectItem value="task" className="text-white">Tasks</SelectItem>
+              <SelectItem value="photo" className="text-white">Photos</SelectItem>
+              <SelectItem value="document" className="text-white">Documents</SelectItem>
+              <SelectItem value="comment" className="text-white">Comments</SelectItem>
+              <SelectItem value="milestone" className="text-white">Milestones</SelectItem>
             </SelectContent>
           </Select>
           <Select value={actionFilter} onValueChange={setActionFilter}>
-            <SelectTrigger className="w-36 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+            <SelectTrigger className="w-36 bg-slate-800 border-slate-700 text-white">
               <SelectValue placeholder="Action" />
             </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <SelectItem value="all" className="text-slate-900 dark:text-white">All</SelectItem>
-              <SelectItem value="created" className="text-slate-900 dark:text-white">Created</SelectItem>
-              <SelectItem value="updated" className="text-slate-900 dark:text-white">Updated</SelectItem>
-              <SelectItem value="completed" className="text-slate-900 dark:text-white">Completed</SelectItem>
-              <SelectItem value="deleted" className="text-slate-900 dark:text-white">Deleted</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="all" className="text-white">All</SelectItem>
+              <SelectItem value="created" className="text-white">Created</SelectItem>
+              <SelectItem value="updated" className="text-white">Updated</SelectItem>
+              <SelectItem value="completed" className="text-white">Completed</SelectItem>
+              <SelectItem value="deleted" className="text-white">Deleted</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -118,10 +118,10 @@ export default function FieldActivityLogView({ jobId }) {
           <div className="w-8 h-8 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filteredActivities.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center shadow-sm">
-          <Activity className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No activity</h3>
-          <p className="text-slate-500 dark:text-slate-400">No activity recorded yet</p>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-2xl p-12 text-center shadow-lg">
+          <Activity className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No activity</h3>
+          <p className="text-slate-400">No activity recorded yet</p>
         </div>
       ) : (
         <div className="space-y-6">

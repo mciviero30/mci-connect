@@ -107,7 +107,7 @@ export default function BeforeAfterPhotoManager({ jobId }) {
       {/* Untagged Photos */}
       {generalPhotos.length > 0 && (
         <div>
-          <h4 className="font-bold text-slate-900 mb-3">General Photos (Click to tag)</h4>
+          <h4 className="font-bold text-white mb-3">General Photos (Click to tag)</h4>
           <div className="grid grid-cols-4 gap-2">
             {generalPhotos.map(photo => (
               <div key={photo.id} className="relative group">

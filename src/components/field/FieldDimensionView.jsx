@@ -201,12 +201,12 @@ export default function FieldDimensionView({ jobId }) {
           <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
         </div>
       ) : dimensions.length === 0 ? (
-        <Card className="p-12 text-center bg-white dark:bg-slate-800/30 border-slate-200 dark:border-slate-700/50">
+        <Card className="p-12 text-center bg-gradient-to-br from-slate-700 to-slate-800 border-slate-600 shadow-lg">
           <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+          <h3 className="text-lg font-semibold text-white mb-2">
             No dimension drawings yet
           </h3>
-          <p className="text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-slate-400 mb-4">
             Upload your first dimension drawing to start adding annotations
           </p>
           <Button

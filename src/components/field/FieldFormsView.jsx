@@ -90,25 +90,25 @@ export default function FieldFormsView({ jobId }) {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-5 shadow-lg">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-500/20 rounded-lg">
-              <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <ClipboardList className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{formTemplates.length}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Templates</p>
+              <p className="text-2xl font-bold text-white">{formTemplates.length}</p>
+              <p className="text-sm text-slate-400">Templates</p>
             </div>
           </div>
         </div>
-        <div className="bg-[#3a4556] border border-slate-500 rounded-xl p-5 shadow-sm">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-5 shadow-lg">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-500/20 rounded-lg">
-              <FileCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <FileCheck className="w-6 h-6 text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{submissions.length}</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Responses</p>
+              <p className="text-2xl font-bold text-white">{submissions.length}</p>
+              <p className="text-sm text-slate-400">Responses</p>
             </div>
           </div>
         </div>
@@ -116,10 +116,10 @@ export default function FieldFormsView({ jobId }) {
 
       {/* Form Templates */}
       {formTemplates.length === 0 ? (
-        <div className="bg-[#3a4556] border border-slate-500 rounded-2xl p-12 text-center">
-          <ClipboardList className="w-12 h-12 text-slate-300 dark:text-slate-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No forms</h3>
-          <p className="text-slate-600 dark:text-slate-400 mb-4">Create inspection, safety or quality forms</p>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-2xl p-12 text-center shadow-lg">
+          <ClipboardList className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-white mb-2">No forms</h3>
+          <p className="text-slate-400 mb-4">Create inspection, safety or quality forms</p>
           <Button 
             onClick={() => setShowCreate(true)}
             className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"

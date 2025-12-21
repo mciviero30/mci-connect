@@ -78,9 +78,9 @@ export default function FieldChatView({ jobId }) {
   return (
     <div className="flex h-full">
       {/* Channels Sidebar */}
-      <div className="w-56 bg-white dark:bg-slate-900/50 border-r border-slate-200 dark:border-slate-700/50 p-4">
+      <div className="w-56 bg-slate-900/50 border-r border-slate-700/50 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-900 dark:text-white">Channels</h3>
+          <h3 className="font-semibold text-white">Channels</h3>
           <Button 
             variant="ghost" 
             size="icon"
@@ -97,7 +97,7 @@ export default function FieldChatView({ jobId }) {
               onClick={() => setActiveChannel(channel.id)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
                 activeChannel === channel.id
-                  ? 'bg-amber-500/20 text-amber-400'
+                  ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
               }`}
             >
@@ -109,7 +109,7 @@ export default function FieldChatView({ jobId }) {
 
         {/* Online Members */}
         <div className="mt-6">
-          <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
             Team ({members.length})
           </h3>
@@ -129,10 +129,10 @@ export default function FieldChatView({ jobId }) {
       {/* Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 bg-white dark:bg-transparent">
+        <div className="p-4 border-b border-slate-700/50 bg-transparent">
           <div className="flex items-center gap-2">
-            <Hash className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-            <h2 className="font-semibold text-slate-900 dark:text-white capitalize">{activeChannel}</h2>
+            <Hash className="w-5 h-5 text-slate-400" />
+            <h2 className="font-semibold text-white capitalize">{activeChannel}</h2>
           </div>
         </div>
 
@@ -188,12 +188,12 @@ export default function FieldChatView({ jobId }) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-700/50 bg-white dark:bg-transparent">
+        <div className="p-4 border-t border-slate-700/50 bg-transparent">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
               <Paperclip className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
               <Image className="w-5 h-5" />
             </Button>
             <Input 
@@ -201,7 +201,7 @@ export default function FieldChatView({ jobId }) {
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               placeholder={`Message in #${activeChannel}...`}
-              className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+              className="flex-1 bg-slate-800 border-slate-700 text-white"
             />
             <Button 
               onClick={handleSendMessage}

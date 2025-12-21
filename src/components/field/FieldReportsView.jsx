@@ -352,7 +352,7 @@ export default function FieldReportsView({ jobId }) {
                     size="sm"
                     onClick={() => handleDownloadReport(report)}
                     disabled={downloadingReport === report.id}
-                    className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                    className="bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700"
                   >
                     {downloadingReport === report.id ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -364,7 +364,7 @@ export default function FieldReportsView({ jobId }) {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                    className="bg-slate-800/50 border-slate-700 text-slate-300 hover:bg-slate-700"
                   >
                     <Send className="w-4 h-4 mr-2" />
                     Send

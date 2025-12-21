@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PageHeader from "../components/shared/PageHeader";
-import { Briefcase, Clock, Calendar, TrendingUp, Target } from "lucide-react";
+import { Briefcase, Clock, Calendar, TrendingUp, Target, Folder } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { format, addDays, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -117,7 +117,7 @@ export default function MisProyectos() {
           {myJobs.length === 0 ? (
             <Card className="bg-white/90 shadow-lg border-slate-200">
               <CardContent className="p-12 text-center">
-                <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <Folder className="w-16 h-16 text-orange-500 mx-auto mb-4" />
                 <p className="text-slate-600">{language === 'es' ? 'No tienes proyectos asignados' : 'No jobs assigned'}</p>
               </CardContent>
             </Card>
