@@ -34,11 +34,11 @@ export default function BeforeAfterPhotoManager({ jobId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-400 to-amber-400 rounded-xl">
-        <ArrowLeftRight className="w-6 h-6 text-slate-900" />
+      <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl shadow-lg">
+        <ArrowLeftRight className="w-6 h-6 text-orange-500" />
         <div>
-          <h3 className="font-bold text-slate-900">Before & After Photos</h3>
-          <p className="text-sm text-slate-700">Tag photos for web portfolio and PDF reports</p>
+          <h3 className="font-bold text-white">Before & After Photos</h3>
+          <p className="text-sm text-slate-400">Tag photos for web portfolio and PDF reports</p>
         </div>
       </div>
 
