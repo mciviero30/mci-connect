@@ -46,8 +46,9 @@ export default function BeforeAfterPhotos({ jobId }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Before & After Comparisons</h2>
-        <p className="text-slate-600 dark:text-slate-400">Visual progress documentation by area</p>
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Before & After Comparisons</h1>
+        </div>
       </div>
 
       {validPairs.length === 0 ? (
