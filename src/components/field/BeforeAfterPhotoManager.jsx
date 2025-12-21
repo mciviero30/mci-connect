@@ -34,12 +34,8 @@ export default function BeforeAfterPhotoManager({ jobId }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl shadow-lg">
-        <ArrowLeftRight className="w-6 h-6 text-orange-500" />
-        <div>
-          <h3 className="font-bold text-white">Before & After Photos</h3>
-          <p className="text-sm text-slate-400">Tag photos for web portfolio and PDF reports</p>
-        </div>
+      <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl mb-6">
+        <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Before & After Photos</h1>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

@@ -48,11 +48,10 @@ export default function PhotoComparisonView({ jobId, photos = [] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-          <ArrowLeftRight className="w-5 h-5 text-amber-400" />
-          Comparaciones Antes/Después
-        </h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
+          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Comparaciones Antes/Después</h1>
+        </div>
         <Button
           size="sm"
           onClick={() => setShowCreate(true)}
