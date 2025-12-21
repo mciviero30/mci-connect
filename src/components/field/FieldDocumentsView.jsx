@@ -196,7 +196,7 @@ export default function FieldDocumentsView({ jobId }) {
           <p className="text-slate-400 mb-4">Upload documents to share with the team</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <Upload className="w-4 h-4 mr-2" />
             Upload Document

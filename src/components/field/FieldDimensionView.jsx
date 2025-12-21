@@ -189,7 +189,7 @@ export default function FieldDimensionView({ jobId }) {
         </div>
         <Button
           onClick={() => setShowUpload(true)}
-          className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+          className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
         >
           <Plus className="w-4 h-4 mr-2" />
           Upload Drawing
@@ -211,7 +211,7 @@ export default function FieldDimensionView({ jobId }) {
           </p>
           <Button
             onClick={() => setShowUpload(true)}
-            className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
           >
             <Plus className="w-4 h-4 mr-2" />
             Upload Drawing
@@ -328,7 +328,7 @@ export default function FieldDimensionView({ jobId }) {
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg cursor-pointer hover:border-[#FFB800]">
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-orange-500"
                     {uploading ? (
                       <div className="flex flex-col items-center w-full px-8">
                         <Loader2 className="w-8 h-8 text-[#FFB800] animate-spin mb-2" />
@@ -381,7 +381,7 @@ export default function FieldDimensionView({ jobId }) {
               <Button
                 onClick={handleCreateDimension}
                 disabled={!newDimension.name || !newDimension.file || createDimensionMutation.isPending}
-                className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
               >
                 {createDimensionMutation.isPending ? 'Saving...' : 'Save Drawing'}
               </Button>

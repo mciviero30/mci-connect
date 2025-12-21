@@ -363,7 +363,7 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
             <Button 
               onClick={handleGenerate}
               disabled={generating}
-              className="bg-[#FFB800] hover:bg-[#E5A600] text-white"
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
             >
               {generating ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -376,15 +376,15 @@ Keep it brief and focused on what executives need to know. Use markdown.`;
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4 bg-slate-900/50 border border-slate-700">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 bg-slate-900/50 border border-slate-700">
               {tabs.map(tab => (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
-                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black"
+                  className="flex items-center gap-2 text-xs md:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black"
                 >
                   <tab.icon className={`w-4 h-4 ${tab.color}`} />
-                  <span className="hidden md:inline">{tab.label}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
