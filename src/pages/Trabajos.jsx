@@ -220,7 +220,7 @@ export default function Trabajos() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-safe">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('jobs')}
@@ -228,23 +228,22 @@ export default function Trabajos() {
           icon={Briefcase}
           actions={
             isAdmin && (
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                 <Button
                   onClick={() => setShowAIWizard(true)}
-                  size="lg"
-                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
+                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] sm:min-h-[48px] text-sm sm:text-base px-4 sm:px-5"
                 >
-                  <Plus className="w-5 h-5 mr-2" />
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   {language === 'es' ? 'Crear con IA' : 'Create with AI'}
                 </Button>
                 <Button
                   onClick={() => setShowForm(true)}
                   variant="outline"
-                  size="lg"
-                  className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
+                  className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[44px] sm:min-h-[48px] text-sm sm:text-base px-4 sm:px-5"
                 >
-                  <Plus className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'Creación Rápida' : 'Quick Create'}
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  <span className="hidden sm:inline">{language === 'es' ? 'Creación Rápida' : 'Quick Create'}</span>
+                  <span className="sm:hidden">{language === 'es' ? 'Rápido' : 'Quick'}</span>
                 </Button>
               </div>
             )
@@ -252,21 +251,21 @@ export default function Trabajos() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-6">
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-3 gap-4">
+        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-4 sm:mb-6">
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
               {/* Text Search */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
                   {language === 'es' ? 'Buscar' : 'Search'}
                 </Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" />
                   <Input
-                    placeholder={language === 'es' ? 'Buscar por nombre, dirección o cliente...' : 'Search by name, address or customer...'}
+                    placeholder={language === 'es' ? 'Buscar...' : 'Search...'}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white"
+                    className="pl-9 sm:pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[44px] text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -353,7 +352,7 @@ export default function Trabajos() {
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {filteredJobs.map(job => (
             <ModernJobCard key={job.id} job={job} />
           ))}

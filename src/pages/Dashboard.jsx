@@ -621,13 +621,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-slate-900">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen bg-[#F1F5F9] dark:bg-slate-900 pb-safe">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4 sm:mb-6 md:mb-8">
           {/* Top row: Avatar, greeting, and badge */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <button
                 onClick={() => setShowPhotoManager(true)}
                 className="group relative hover:scale-105 transition-transform flex-shrink-0"
@@ -636,11 +636,11 @@ export default function Dashboard() {
                   <img
                     src={profileImage}
                     alt={user?.full_name}
-                    className="w-16 h-16 rounded-full object-cover ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg"
+                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover ring-2 sm:ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] flex items-center justify-center ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg">
-                    <span className="text-white font-bold text-2xl">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] flex items-center justify-center ring-2 sm:ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg">
+                    <span className="text-white font-bold text-lg sm:text-xl md:text-2xl">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
@@ -650,42 +650,43 @@ export default function Dashboard() {
                 </div>
               </button>
 
-              <div className="min-w-0">
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white leading-tight">
                   {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-1">
+                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1">
                   {isAdmin ? 'Welcome to the admin panel!' : 'Have a great day!'}
                 </p>
               </div>
             </div>
 
-            <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm self-start lg:self-center whitespace-nowrap">
-              MCI Connect • Customizable Dashboard
+            <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm self-start lg:self-center whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1">
+              <span className="hidden sm:inline">MCI Connect • </span>Customizable
             </Badge>
           </div>
 
           {/* Action buttons row */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {isEditMode ? (
               <>
                 <Button
                   onClick={handleCancelEdit}
                   variant="outline"
                   size="sm"
-                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[40px] px-3 text-xs sm:text-sm"
                 >
-                  <XIcon className="w-4 h-4 mr-1" />
-                  Cancel
+                  <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Cancel</span>
                 </Button>
                 <Button
                   onClick={handleSaveLayout}
                   size="sm"
-                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[40px] px-3 text-xs sm:text-sm"
                   disabled={savePreferencesMutation.isPending}
                 >
-                  <Save className="w-4 h-4 mr-1" />
-                  {savePreferencesMutation.isPending ? 'Saving...' : 'Save Layout'}
+                  <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  {savePreferencesMutation.isPending ? 'Saving...' : <span className="hidden sm:inline">Save Layout</span>}
+                  <span className="sm:hidden">Save</span>
                 </Button>
               </>
             ) : (
@@ -694,28 +695,28 @@ export default function Dashboard() {
                   onClick={() => setShowKudosDialog(true)}
                   size="sm"
                   variant="outline"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
                 >
-                  <Award className="w-4 h-4 mr-1" />
-                  Give Kudos
+                  <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Give Kudos</span>
                 </Button>
                 <Button
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
                   size="sm"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Widget
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Add Widget</span>
                 </Button>
                 <Button
                   onClick={() => setIsEditMode(true)}
                   size="sm"
                   variant="outline"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
                 >
-                  <SettingsIcon className="w-4 h-4 mr-1" />
-                  Customize
+                  <SettingsIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Customize</span>
                 </Button>
               </>
             )}
@@ -724,14 +725,14 @@ export default function Dashboard() {
 
         {/* Quick Actions for Employees - Mobile-First */}
         {!isAdmin && (
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-6 md:mb-8">
             <QuickActions user={user} certifications={certifications} />
           </div>
         )}
 
         {/* Live Clock for Employees */}
         {!isAdmin && (
-          <div className="mb-8">
+          <div className="mb-4 sm:mb-6 md:mb-8">
             <LiveClock />
           </div>
         )}
@@ -743,7 +744,7 @@ export default function Dashboard() {
               <div
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
               >
                 <AnimatePresence>
                   {widgets.filter(w => w.visible).sort((a, b) => a.position - b.position).map((widget, index) => (
@@ -775,10 +776,10 @@ export default function Dashboard() {
 
         {/* Actions for Employees */}
         {!isAdmin && (
-          <div className="text-center mt-8">
+          <div className="text-center mt-6 sm:mt-8">
             <Button
               onClick={() => setShowTimeOffDialog(true)}
-              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md w-full sm:w-auto min-h-[48px] text-sm sm:text-base px-6"
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               {t('requestTimeOff')}

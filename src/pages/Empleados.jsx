@@ -320,21 +320,22 @@ export default function Empleados() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-safe">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
-                  <Users className="w-7 h-7 text-white" />
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <div className="flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2 sm:gap-3">
+                <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-xl sm:rounded-2xl shadow-md">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
                 </div>
-                Employee Management
+                <span className="hidden sm:inline">Employee Management</span>
+                <span className="sm:hidden">Employees</span>
               </h1>
-              <p className="text-slate-600 mt-2 ml-[60px]">Manage your team members</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1 sm:mt-2 text-xs sm:text-sm ml-0 sm:ml-[48px] md:ml-[60px]">Manage your team members</p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button
                 onClick={async () => {
                   const response = await base44.functions.invoke('exportEmployeesToPDF');
@@ -346,51 +347,59 @@ export default function Empleados() {
                   a.click();
                 }}
                 variant="outline"
+                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
               >
-                <FileText className="w-4 h-4 mr-2" />
-                Export PDF
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Export PDF</span>
+                <span className="sm:hidden">Export</span>
               </Button>
               
-              <Button onClick={() => { setEditingEmployee(null); setShowDialog(true); }} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                <Plus className="w-5 h-5 mr-2" />
-                Add Employee
+              <Button 
+                onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
+              >
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Employee</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
           </div>
         </div>
 
-        <Card className="mb-6 shadow-lg">
-          <CardContent className="p-4">
+        <Card className="mb-4 sm:mb-6 shadow-sm sm:shadow-lg bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <CardContent className="p-3 sm:p-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
               <Input
                 placeholder="Search employees..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 h-12"
+                className="pl-10 sm:pl-12 min-h-[44px] sm:h-12 text-sm sm:text-base bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white"
               />
             </div>
           </CardContent>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white shadow-md border">
-            <TabsTrigger value="active">
-              <Users className="w-4 h-4 mr-2" />
-              Active ({activeEmployees.length})
-            </TabsTrigger>
-            <TabsTrigger value="invited">
-              <Mail className="w-4 h-4 mr-2" />
-              Invited ({invitedEmployees.length})
-            </TabsTrigger>
-            <TabsTrigger value="deleted">
-              <UserX className="w-4 h-4 mr-2" />
-              Deleted ({deletedEmployees.length})
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+            <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
+              <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Active</span> ({activeEmployees.length})
+              </TabsTrigger>
+              <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Invited</span> ({invitedEmployees.length})
+              </TabsTrigger>
+              <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Deleted</span> ({deletedEmployees.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="active">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {paginateEmployees(activeEmployees).map(employee => (
                 <ModernEmployeeCard
                   key={employee.id}
@@ -403,21 +412,23 @@ export default function Empleados() {
 
             {/* Pagination */}
             {activeEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center gap-2 mt-8">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 sm:mt-8">
                 <Button
                   variant="outline"
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
+                  className="w-full sm:w-auto min-h-[44px] text-sm"
                 >
                   Previous
                 </Button>
-                <span className="flex items-center px-4 text-sm text-slate-600">
+                <span className="flex items-center px-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
                   Page {page} of {Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
                 </span>
                 <Button
                   variant="outline"
                   onClick={() => setPage(p => Math.min(Math.ceil(activeEmployees.length / ITEMS_PER_PAGE), p + 1))}
                   disabled={page >= Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
+                  className="w-full sm:w-auto min-h-[44px] text-sm"
                 >
                   Next
                 </Button>
