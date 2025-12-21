@@ -64,9 +64,9 @@ export default function PhotoComparisonView({ jobId, photos = [] }) {
       </div>
 
       {comparisons.length === 0 ? (
-        <div className="text-center py-8 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-12 shadow-lg">
-          <ArrowLeftRight className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-          <h3 className="text-lg font-semibold text-white mb-2">No before/after pairs yet</h3>
+        <div className="text-center py-12 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 rounded-2xl shadow-xl">
+          <ArrowLeftRight className="w-16 h-16 mx-auto mb-4 text-slate-500" />
+          <h3 className="text-xl font-bold text-white mb-2">No before/after pairs yet</h3>
           <p className="text-slate-400">Take photos with matching location tags to create comparisons</p>
         </div>
       ) : (
