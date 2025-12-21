@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
 import { createPageUrl } from '@/utils';
+import { ThemeProvider } from '@/components/themes/ThemeProvider';
 import { 
   ArrowLeft,
   LayoutDashboard,
@@ -231,6 +232,7 @@ export default function FieldProject() {
   };
 
   return (
+    <ThemeProvider appType="field">
     <FieldOfflineProvider jobId={jobId}>
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row">
       {/* Quick Search Dialog */}
@@ -328,5 +330,6 @@ export default function FieldProject() {
       />
     </div>
     </FieldOfflineProvider>
+    </ThemeProvider>
   );
 }
