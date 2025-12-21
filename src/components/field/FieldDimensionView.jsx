@@ -328,7 +328,7 @@ export default function FieldDimensionView({ jobId }) {
                     </button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-orange-500"
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-700 rounded-lg cursor-pointer hover:border-orange-500">
                     {uploading ? (
                       <div className="flex flex-col items-center w-full px-8">
                         <Loader2 className="w-8 h-8 text-[#FFB800] animate-spin mb-2" />
