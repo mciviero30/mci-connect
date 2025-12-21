@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import { ThemedPageTitle } from '@/components/themes/ThemedComponents';
 
 export default function BeforeAfterPhotos({ jobId }) {
   const [selectedComparison, setSelectedComparison] = useState(null);
@@ -44,11 +45,9 @@ export default function BeforeAfterPhotos({ jobId }) {
   const validPairs = autoDetectedPairs.filter(p => p.before && p.after);
 
   return (
-    <div>
+    <div className="p-6">
       <div className="mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Before & After Comparisons</h1>
-        </div>
+        <ThemedPageTitle>Before & After Comparisons</ThemedPageTitle>
       </div>
 
       {validPairs.length === 0 ? (
