@@ -63,7 +63,7 @@ export default function OverdueTasksAlert({ tasks, onTaskClick }) {
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-sm text-slate-900 dark:text-white truncate">
+                    <span className="text-sm text-white truncate">
                       {task.title}
                     </span>
                   </div>
@@ -110,7 +110,7 @@ export default function OverdueTasksAlert({ tasks, onTaskClick }) {
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-2 h-2 rounded-full bg-amber-500" />
-                    <span className="text-sm text-slate-900 dark:text-white truncate">
+                    <span className="text-sm text-white truncate">
                       {task.title}
                     </span>
                   </div>
