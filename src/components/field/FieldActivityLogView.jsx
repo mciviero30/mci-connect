@@ -86,7 +86,7 @@ export default function FieldActivityLogView({ jobId }) {
         </h1>
         <div className="flex gap-2">
           <Select value={entityFilter} onValueChange={setEntityFilter}>
-            <SelectTrigger className="w-36 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+            <SelectTrigger className="w-36 bg-slate-800 border-slate-700 text-white">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700">
@@ -144,13 +144,13 @@ export default function FieldActivityLogView({ jobId }) {
                   return (
                     <div 
                       key={activity.id}
-                      className="flex items-start gap-3 p-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl hover:border-blue-300 dark:hover:border-slate-600 transition-all"
+                      className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all"
                     >
                       <div className={`p-2 rounded-lg ${colorClass.split(' ')[1]}`}>
                         <ActionIcon className={`w-4 h-4 ${colorClass.split(' ')[0]}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-slate-900 dark:text-white">{activity.description}</p>
+                        <p className="text-sm text-white">{activity.description}</p>
                         <div className="flex items-center gap-3 mt-1">
                           <div className="flex items-center gap-1 text-xs text-slate-500">
                             <EntityIcon className="w-3 h-3" />

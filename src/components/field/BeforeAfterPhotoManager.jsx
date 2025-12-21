@@ -46,7 +46,7 @@ export default function BeforeAfterPhotoManager({ jobId }) {
         {/* Before Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-bold text-slate-900 flex items-center gap-2">
+            <h4 className="font-bold text-white flex items-center gap-2">
               <span className="w-3 h-3 bg-red-500 rounded-full"></span>
               Before Photos
             </h4>
@@ -76,7 +76,7 @@ export default function BeforeAfterPhotoManager({ jobId }) {
         {/* After Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-bold text-slate-900 flex items-center gap-2">
+            <h4 className="font-bold text-white flex items-center gap-2">
               <span className="w-3 h-3 bg-green-500 rounded-full"></span>
               After Photos
             </h4>
