@@ -789,8 +789,9 @@ const LayoutContent = ({ children, currentPageName }) => {
             className="px-3 py-3 md:hidden flex-shrink-0 border-b border-slate-200/20 dark:border-slate-700/30 shadow-sm"
             style={{ 
               backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/c735e6d47_Screenshot2025-12-23at53940PM.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
+              backgroundSize: '100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
             }}
             >
             <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
