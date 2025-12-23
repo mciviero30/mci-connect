@@ -234,7 +234,7 @@ export default function FieldProject() {
   return (
     <ThemeProvider appType="field">
     <FieldOfflineProvider jobId={jobId}>
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
       
@@ -245,9 +245,9 @@ export default function FieldProject() {
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg">
+      <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg overflow-y-auto">
         {/* Header */}
-        <div className="p-4 border-b border-slate-700 bg-black">
+        <div className="p-4 border-b border-slate-700 bg-black flex-shrink-0">
           <Link to={createPageUrl('Field')}>
             <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -255,11 +255,6 @@ export default function FieldProject() {
             </Button>
           </Link>
           <div className="flex items-center gap-3">
-            <img 
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
-                alt="MCI Field"
-                className="w-10 h-10 object-contain"
-              />
             <div className="flex-1 min-w-0">
               <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
               <Badge className={`text-xs ${
@@ -307,7 +302,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto pb-20 md:pb-0">
+      <div className="flex-1 overflow-y-auto pb-20 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
         {renderContent()}
       </div>
 

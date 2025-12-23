@@ -43,19 +43,19 @@ export default function QuickActions({ user, certifications = [] }) {
   const expired = certifications.filter(c => c.status === 'expired').length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Quick Actions Title */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Quick Actions</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-400">Fast access to your most used features</p>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-1">Quick Actions</h2>
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Fast access to your most used features</p>
       </motion.div>
 
       {/* Action Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
         {quickActions.map((action, idx) => (
           <motion.div
             key={action.title}
@@ -64,14 +64,14 @@ export default function QuickActions({ user, certifications = [] }) {
             transition={{ duration: 0.4, delay: action.delay }}
           >
             <Link to={action.url}>
-              <Card className={`${action.gradient} border-2 p-6 hover:scale-105 transition-all duration-300 shadow-lg cursor-pointer group`}>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white/50 dark:bg-black/20 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
-                    <action.icon className="w-8 h-8" />
+              <Card className={`${action.gradient} border-2 p-4 sm:p-5 md:p-6 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg cursor-pointer group touch-manipulation`}>
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-2 sm:p-2.5 md:p-3 bg-white/50 dark:bg-black/20 rounded-lg sm:rounded-xl shadow-sm group-hover:scale-110 transition-transform">
+                    <action.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8" />
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold mb-1">{action.title}</h3>
-                    <p className="text-xs opacity-80">{action.subtitle}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold mb-0.5 sm:mb-1">{action.title}</h3>
+                    <p className="text-xs opacity-80 line-clamp-1">{action.subtitle}</p>
                   </div>
                 </div>
               </Card>
@@ -87,18 +87,18 @@ export default function QuickActions({ user, certifications = [] }) {
         transition={{ duration: 0.4, delay: 0.4 }}
       >
         <Link to={createPageUrl('MyProfile')}>
-          <Card className="border-2 border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all duration-300 bg-white dark:bg-slate-900">
+          <Card className="border-2 border-slate-200 dark:border-slate-700 p-4 sm:p-5 md:p-6 hover:shadow-lg active:scale-[0.98] transition-all duration-300 bg-white dark:bg-slate-900 touch-manipulation">
             <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4 flex-1">
-                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                  <QrCode className="w-10 h-10 text-slate-700 dark:text-slate-300" />
+              <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                <div className="p-2 sm:p-2.5 md:p-3 bg-slate-100 dark:bg-slate-800 rounded-lg sm:rounded-xl flex-shrink-0">
+                  <QrCode className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-slate-700 dark:text-slate-300" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Certifications & QR Pass</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">Certifications & QR Pass</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 sm:mb-3 truncate">
                     {user?.full_name} • Digital Credentials
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 hidden sm:block">
                     Scan QR code to verify credentials
                   </p>
                   

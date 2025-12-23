@@ -651,11 +651,11 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-[#F0F4FF] dark:bg-slate-900">
-          <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+          <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden h-24 sm:h-28 md:h-32">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
               alt="MCI Connect"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain sm:object-cover"
               style={{ 
                 imageRendering: 'crisp-edges',
                 imageRendering: '-webkit-optimize-contrast',
@@ -786,18 +786,20 @@ const LayoutContent = ({ children, currentPageName }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="backdrop-blur-xl px-3 py-2.5 md:hidden flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shadow-sm"
+            className="backdrop-blur-xl px-3 py-2 md:hidden flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shadow-sm"
             >
             <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
-              <SidebarTrigger className="p-2 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 hover:scale-105">
+              <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0 min-w-[40px] min-h-[40px]">
                 <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               </SidebarTrigger>
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/b59c99510_394ef3601_image.jpeg"
                 alt="MCI Connect"
-                className="h-full w-full object-cover"
+                className="h-8 w-auto object-contain"
               />
-              <NotificationBell user={user} />
+              <div className="ml-auto">
+                <NotificationBell user={user} />
+              </div>
             </div>
           </motion.header>
 

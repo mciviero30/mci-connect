@@ -271,12 +271,12 @@ export default function Trabajos() {
               </div>
 
               {/* Status Filter */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
                   {language === 'es' ? 'Estado' : 'Status'}
                 </Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[44px] text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
@@ -306,12 +306,12 @@ export default function Trabajos() {
               </div>
 
               {/* Team Filter */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
                   {language === 'es' ? 'Equipo' : 'Team'}
                 </Label>
                 <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[44px] text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">

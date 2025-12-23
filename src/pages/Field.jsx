@@ -138,31 +138,31 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-6 py-6">
-      <div className="px-10 py-6 -mx-6 -mt-6 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-6 pb-safe overflow-y-auto">
+      <div className="px-3 sm:px-6 md:px-10 py-4 sm:py-5 md:py-6 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-4 sm:mb-5 md:mb-6 flex flex-col sm:flex-row items-center justify-between text-white gap-3 sm:gap-0" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
           alt="MCI Field"
-          className="h-20 object-contain"
+          className="h-12 sm:h-16 md:h-20 object-contain"
           style={{ 
             imageRendering: 'crisp-edges',
             imageRendering: '-webkit-optimize-contrast',
             imageRendering: 'high-quality'
           }}
         />
-        <div className="text-right">
-          <h1 className="text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
-          <p className="text-slate-300 text-sm mt-1">Central management for construction projects</p>
+        <div className="text-center sm:text-right">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
+          <p className="text-slate-300 text-xs sm:text-sm mt-0.5 sm:mt-1">Central management for construction projects</p>
         </div>
       </div>
       <div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
           <button
             onClick={() => setShowQuickSearch(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+            className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors min-h-[44px]"
           >
             <Search className="w-4 h-4" />
-            <span className="text-sm hidden md:inline">Quick Search</span>
+            <span className="text-sm">Quick Search</span>
             <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-black rounded text-[10px] font-medium">
               <Command className="w-3 h-3" />K
             </kbd>
@@ -170,7 +170,7 @@ export default function Field() {
           {user?.role !== 'customer' && (
             <Button 
               onClick={() => setShowNewProject(true)}
-              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg"
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[44px] text-sm sm:text-base px-4 sm:px-5 w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Project
@@ -180,7 +180,7 @@ export default function Field() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
         <StatsCard 
           label="ACTIVE PROJECTS"
           value={activeProjects}
@@ -268,7 +268,7 @@ export default function Field() {
             <div className="w-8 h-8 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredJobs.map((job, idx) => (
               <ProjectCard key={job.id} job={job} index={idx} userRole={user?.role} />
             ))}
@@ -355,14 +355,14 @@ function StatsCard({ label, value, icon: Icon, color }) {
   };
 
   return (
-    <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 shadow-lg">
+    <div className="bg-[#1e293b] border border-slate-700/50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 shadow-lg">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-bold text-white uppercase tracking-wider">{label}</p>
-          <p className="text-3xl font-bold text-white mt-2">{value}</p>
+          <p className="text-[10px] sm:text-xs font-bold text-white uppercase tracking-wider">{label}</p>
+          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white mt-1 sm:mt-2">{value}</p>
         </div>
-        <div className="p-3 rounded-full bg-white">
-          <Icon className="w-6 h-6 text-black" />
+        <div className="p-2 sm:p-2.5 md:p-3 rounded-full bg-white">
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black" />
         </div>
       </div>
     </div>

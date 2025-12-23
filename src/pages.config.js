@@ -1,147 +1,151 @@
-import Dashboard from './pages/Dashboard';
-import Contabilidad from './pages/Contabilidad';
-import MisHoras from './pages/MisHoras';
-import Horarios from './pages/Horarios';
-import MisGastos from './pages/MisGastos';
-import Gastos from './pages/Gastos';
-import Empleados from './pages/Empleados';
-import Trabajos from './pages/Trabajos';
-import Nomina from './pages/Nomina';
-import Calendario from './pages/Calendario';
-import Chat from './pages/Chat';
-import Manejo from './pages/Manejo';
-import JobDetails from './pages/JobDetails';
-import NewsFeed from './pages/NewsFeed';
-import Formularios from './pages/Formularios';
-import Capacitacion from './pages/Capacitacion';
-import Estimados from './pages/Estimados';
-import CrearEstimado from './pages/CrearEstimado';
-import VerEstimado from './pages/VerEstimado';
-import Facturas from './pages/Facturas';
-import VerFactura from './pages/VerFactura';
-import EditarEstimado from './pages/EditarEstimado';
-import PerDiem from './pages/PerDiem';
-import CrearFactura from './pages/CrearFactura';
-import Clientes from './pages/Clientes';
-import HorasManejo from './pages/HorasManejo';
-import MyProfile from './pages/MyProfile';
-import Directory from './pages/Directory';
-import PerformanceManagement from './pages/PerformanceManagement';
-import EmployeeProfile from './pages/EmployeeProfile';
-import Reportes from './pages/Reportes';
-import JobPhotos from './pages/JobPhotos';
-import Inventario from './pages/Inventario';
-import TimeOffRequests from './pages/TimeOffRequests';
-import MyPayroll from './pages/MyPayroll';
-import MileageApproval from './pages/MileageApproval';
-import Teams from './pages/Teams';
-import BonusConfiguration from './pages/BonusConfiguration';
-import TeamDetails from './pages/TeamDetails';
 import AdminCleanup from './pages/AdminCleanup';
-import TestingChecklist from './pages/TestingChecklist';
-import Items from './pages/Items';
-import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
+import BonusConfiguration from './pages/BonusConfiguration';
 import BudgetForecasting from './pages/BudgetForecasting';
+import Calendario from './pages/Calendario';
+import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
-import Configuracion from './pages/Configuracion';
-import CompanyInfo from './pages/CompanyInfo';
-import NotificationSettings from './pages/NotificationSettings';
-import Recognitions from './pages/Recognitions';
-import MiScorecard from './pages/MiScorecard';
-import MisProyectos from './pages/MisProyectos';
-import RoleManagement from './pages/RoleManagement';
-import NotificationCenter from './pages/NotificationCenter';
-import ReportingHub from './pages/ReportingHub';
-import Goals from './pages/Goals';
-import TeamGoals from './pages/TeamGoals';
-import TimeTracking from './pages/TimeTracking';
-import TimeReports from './pages/TimeReports';
-import Field from './pages/Field';
-import FieldProject from './pages/FieldProject';
+import Chat from './pages/Chat';
 import ClientPortal from './pages/ClientPortal';
-import SkillMatrix from './pages/SkillMatrix';
+import Clientes from './pages/Clientes';
+import CompanyInfo from './pages/CompanyInfo';
+import ComplianceHub from './pages/ComplianceHub';
+import Configuracion from './pages/Configuracion';
+import Contabilidad from './pages/Contabilidad';
+import CrearEstimado from './pages/CrearEstimado';
+import CrearFactura from './pages/CrearFactura';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
-import WelcomeMessage from './pages/WelcomeMessage';
-import SetupPassword from './pages/SetupPassword';
-import OnboardingWizard from './pages/OnboardingWizard';
-import ComplianceHub from './pages/ComplianceHub';
+import Dashboard from './pages/Dashboard';
+import Directory from './pages/Directory';
+import EditarEstimado from './pages/EditarEstimado';
+import Empleados from './pages/Empleados';
+import EmployeeProfile from './pages/EmployeeProfile';
+import Estimados from './pages/Estimados';
 import ExecutiveControlTower from './pages/ExecutiveControlTower';
+import Facturas from './pages/Facturas';
+import Field from './pages/Field';
+import FieldProject from './pages/FieldProject';
+import Formularios from './pages/Formularios';
+import Gastos from './pages/Gastos';
+import Goals from './pages/Goals';
+import Home from './pages/Home';
+import Horarios from './pages/Horarios';
+import HorasManejo from './pages/HorasManejo';
+import Inventario from './pages/Inventario';
+import Items from './pages/Items';
+import JobDetails from './pages/JobDetails';
+import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
+import JobPhotos from './pages/JobPhotos';
+import Manejo from './pages/Manejo';
+import MiScorecard from './pages/MiScorecard';
+import MileageApproval from './pages/MileageApproval';
+import MisGastos from './pages/MisGastos';
+import MisHoras from './pages/MisHoras';
+import MisProyectos from './pages/MisProyectos';
+import MyPayroll from './pages/MyPayroll';
+import MyProfile from './pages/MyProfile';
+import NewsFeed from './pages/NewsFeed';
+import Nomina from './pages/Nomina';
+import NotificationCenter from './pages/NotificationCenter';
+import NotificationSettings from './pages/NotificationSettings';
+import OnboardingWizard from './pages/OnboardingWizard';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
+import PerDiem from './pages/PerDiem';
+import PerformanceManagement from './pages/PerformanceManagement';
+import QuoteImporter from './pages/QuoteImporter';
+import Recognitions from './pages/Recognitions';
+import Reportes from './pages/Reportes';
+import ReportingHub from './pages/ReportingHub';
+import RoleManagement from './pages/RoleManagement';
+import SetupPassword from './pages/SetupPassword';
+import SkillMatrix from './pages/SkillMatrix';
+import TeamDetails from './pages/TeamDetails';
+import TeamGoals from './pages/TeamGoals';
+import Teams from './pages/Teams';
+import TestingChecklist from './pages/TestingChecklist';
+import TimeOffRequests from './pages/TimeOffRequests';
+import TimeReports from './pages/TimeReports';
+import TimeTracking from './pages/TimeTracking';
+import Trabajos from './pages/Trabajos';
+import VerEstimado from './pages/VerEstimado';
+import VerFactura from './pages/VerFactura';
+import WelcomeMessage from './pages/WelcomeMessage';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
-    "Contabilidad": Contabilidad,
-    "MisHoras": MisHoras,
-    "Horarios": Horarios,
-    "MisGastos": MisGastos,
-    "Gastos": Gastos,
-    "Empleados": Empleados,
-    "Trabajos": Trabajos,
-    "Nomina": Nomina,
-    "Calendario": Calendario,
-    "Chat": Chat,
-    "Manejo": Manejo,
-    "JobDetails": JobDetails,
-    "NewsFeed": NewsFeed,
-    "Formularios": Formularios,
-    "Capacitacion": Capacitacion,
-    "Estimados": Estimados,
-    "CrearEstimado": CrearEstimado,
-    "VerEstimado": VerEstimado,
-    "Facturas": Facturas,
-    "VerFactura": VerFactura,
-    "EditarEstimado": EditarEstimado,
-    "PerDiem": PerDiem,
-    "CrearFactura": CrearFactura,
-    "Clientes": Clientes,
-    "HorasManejo": HorasManejo,
-    "MyProfile": MyProfile,
-    "Directory": Directory,
-    "PerformanceManagement": PerformanceManagement,
-    "EmployeeProfile": EmployeeProfile,
-    "Reportes": Reportes,
-    "JobPhotos": JobPhotos,
-    "Inventario": Inventario,
-    "TimeOffRequests": TimeOffRequests,
-    "MyPayroll": MyPayroll,
-    "MileageApproval": MileageApproval,
-    "Teams": Teams,
-    "BonusConfiguration": BonusConfiguration,
-    "TeamDetails": TeamDetails,
     "AdminCleanup": AdminCleanup,
-    "TestingChecklist": TestingChecklist,
-    "Items": Items,
-    "JobPerformanceAnalysis": JobPerformanceAnalysis,
+    "BonusConfiguration": BonusConfiguration,
     "BudgetForecasting": BudgetForecasting,
+    "Calendario": Calendario,
+    "Capacitacion": Capacitacion,
     "CashFlowReport": CashFlowReport,
-    "Configuracion": Configuracion,
-    "CompanyInfo": CompanyInfo,
-    "NotificationSettings": NotificationSettings,
-    "Recognitions": Recognitions,
-    "MiScorecard": MiScorecard,
-    "MisProyectos": MisProyectos,
-    "RoleManagement": RoleManagement,
-    "NotificationCenter": NotificationCenter,
-    "ReportingHub": ReportingHub,
-    "Goals": Goals,
-    "TeamGoals": TeamGoals,
-    "TimeTracking": TimeTracking,
-    "TimeReports": TimeReports,
-    "Field": Field,
-    "FieldProject": FieldProject,
+    "Chat": Chat,
     "ClientPortal": ClientPortal,
-    "SkillMatrix": SkillMatrix,
+    "Clientes": Clientes,
+    "CompanyInfo": CompanyInfo,
+    "ComplianceHub": ComplianceHub,
+    "Configuracion": Configuracion,
+    "Contabilidad": Contabilidad,
+    "CrearEstimado": CrearEstimado,
+    "CrearFactura": CrearFactura,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
-    "WelcomeMessage": WelcomeMessage,
-    "SetupPassword": SetupPassword,
-    "OnboardingWizard": OnboardingWizard,
-    "ComplianceHub": ComplianceHub,
+    "Dashboard": Dashboard,
+    "Directory": Directory,
+    "EditarEstimado": EditarEstimado,
+    "Empleados": Empleados,
+    "EmployeeProfile": EmployeeProfile,
+    "Estimados": Estimados,
     "ExecutiveControlTower": ExecutiveControlTower,
+    "Facturas": Facturas,
+    "Field": Field,
+    "FieldProject": FieldProject,
+    "Formularios": Formularios,
+    "Gastos": Gastos,
+    "Goals": Goals,
+    "Home": Home,
+    "Horarios": Horarios,
+    "HorasManejo": HorasManejo,
+    "Inventario": Inventario,
+    "Items": Items,
+    "JobDetails": JobDetails,
+    "JobPerformanceAnalysis": JobPerformanceAnalysis,
+    "JobPhotos": JobPhotos,
+    "Manejo": Manejo,
+    "MiScorecard": MiScorecard,
+    "MileageApproval": MileageApproval,
+    "MisGastos": MisGastos,
+    "MisHoras": MisHoras,
+    "MisProyectos": MisProyectos,
+    "MyPayroll": MyPayroll,
+    "MyProfile": MyProfile,
+    "NewsFeed": NewsFeed,
+    "Nomina": Nomina,
+    "NotificationCenter": NotificationCenter,
+    "NotificationSettings": NotificationSettings,
+    "OnboardingWizard": OnboardingWizard,
     "PayrollAutoFlow": PayrollAutoFlow,
+    "PerDiem": PerDiem,
+    "PerformanceManagement": PerformanceManagement,
+    "QuoteImporter": QuoteImporter,
+    "Recognitions": Recognitions,
+    "Reportes": Reportes,
+    "ReportingHub": ReportingHub,
+    "RoleManagement": RoleManagement,
+    "SetupPassword": SetupPassword,
+    "SkillMatrix": SkillMatrix,
+    "TeamDetails": TeamDetails,
+    "TeamGoals": TeamGoals,
+    "Teams": Teams,
+    "TestingChecklist": TestingChecklist,
+    "TimeOffRequests": TimeOffRequests,
+    "TimeReports": TimeReports,
+    "TimeTracking": TimeTracking,
+    "Trabajos": Trabajos,
+    "VerEstimado": VerEstimado,
+    "VerFactura": VerFactura,
+    "WelcomeMessage": WelcomeMessage,
 }
 
 export const pagesConfig = {

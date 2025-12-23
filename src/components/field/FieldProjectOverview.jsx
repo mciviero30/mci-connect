@@ -51,13 +51,13 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Project Overview</h1>
+    <div className="p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-black">Project Overview</h1>
         </div>
         {onOpenDailyReport && (
-          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none">
+          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none min-h-[44px] text-sm sm:text-base px-4 sm:px-5 w-full sm:w-auto">
             <FileCheck className="w-4 h-4 mr-2" />
             Daily Report
           </Button>
@@ -75,27 +75,27 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
         {stats.map((stat) => (
           <div 
             key={stat.label}
-            className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-slate-600/50 rounded-xl p-4"
+            className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-slate-600/50 rounded-lg sm:rounded-xl p-3 sm:p-4"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 mb-2">{stat.label}</p>
-                <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
+                <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{stat.label}</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
               </div>
-              <stat.icon className={`w-8 h-8 text-slate-400 opacity-50`} />
+              <stat.icon className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-slate-400 opacity-50`} />
             </div>
           </div>
         ))}
       </div>
 
       {/* Project Info */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
-          <h3 className="text-lg font-bold text-white mb-4">Project Information</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border border-slate-600 shadow-lg">
+          <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Project Information</h3>
           <div className="space-y-3">
             {job.address && (
               <div className="flex items-start gap-3">
@@ -129,8 +129,8 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
-          <h3 className="text-lg font-bold text-white mb-4">Plans ({plans.length})</h3>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border border-slate-600 shadow-lg">
+          <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Plans ({plans.length})</h3>
           {plans.length === 0 ? (
             <p className="text-slate-400 text-sm">No plans uploaded</p>
           ) : (
@@ -154,8 +154,8 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
       </div>
 
       {/* Recent Tasks */}
-      <div className="mt-6 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border border-slate-600 shadow-lg">
-        <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Recent Tasks</h3>
+      <div className="mt-4 sm:mt-6 bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border border-slate-600 shadow-lg">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Recent Tasks</h3>
         {tasks.length === 0 ? (
           <p className="text-slate-400 text-sm">No tasks created</p>
         ) : (

@@ -46,18 +46,18 @@ export default function ModernJobCard({ job }) {
   const colorIndicator = job.color || 'blue';
 
   return (
-    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
-      <div className="p-4 flex-1 flex flex-col">
+    <Card className="bg-white dark:bg-[#282828] rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col">
         {/* Header Section */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5 line-clamp-2">
+            <h3 className="text-sm sm:text-base md:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2">
               {job.name}
             </h3>
             {job.customer_name && (
               <div className="flex items-center gap-1 mt-1">
-                <Users className="w-3 h-3 text-[#666666]" />
-                <p className="text-[11px] text-[#666666] leading-tight truncate">
+                <Users className="w-3 h-3 text-[#666666] dark:text-slate-400" />
+                <p className="text-[10px] sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate">
                   {job.customer_name}
                 </p>
               </div>
@@ -68,7 +68,7 @@ export default function ModernJobCard({ job }) {
             variant="ghost"
             size="sm"
             onClick={() => navigate(createPageUrl(`JobDetails?id=${job.id}`))}
-            className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0"
+            className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
           >
             <Eye className="w-3.5 h-3.5" />
             <span className="text-[10px] font-medium">{language === 'es' ? 'Ver' : 'View'}</span>

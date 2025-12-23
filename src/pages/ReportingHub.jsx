@@ -256,17 +256,17 @@ export default function ReportingHub() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-safe overflow-y-auto">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Advanced Analytics & Reporting"
           description="Comprehensive business intelligence and custom reports"
           icon={BarChart3}
           actions={
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="w-40 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600">
-                  <Calendar className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-full sm:w-40 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600 min-h-[44px] text-sm">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-[#282828]">
@@ -277,30 +277,32 @@ export default function ReportingHub() {
                   <SelectItem value="365">Last year</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={handleExportSummary} variant="outline" className="border-blue-300 dark:border-blue-600">
-                <Download className="w-4 h-4 mr-2" />
-                Export Summary
+              <Button onClick={handleExportSummary} variant="outline" className="border-blue-300 dark:border-blue-600 min-h-[44px] text-xs sm:text-sm px-3 sm:px-4">
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Export Summary</span>
+                <span className="sm:hidden">Export</span>
               </Button>
-              <Button onClick={() => setShowCustomBuilder(true)} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                <Filter className="w-4 h-4 mr-2" />
-                Custom Report
+              <Button onClick={() => setShowCustomBuilder(true)} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4">
+                <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Custom Report</span>
+                <span className="sm:hidden">Custom</span>
               </Button>
             </div>
           }
         />
 
         {/* KPI Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-5 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Avg Hours/Employee</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Avg Hours/Employee</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">
                     {kpis.avgHoursPerEmployee.toFixed(1)}
                   </p>
                 </div>
-                <Clock className="w-12 h-12 text-[#507DB4] opacity-60" />
+                <Clock className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-[#507DB4] opacity-60" />
               </div>
             </CardContent>
           </Card>
@@ -349,7 +351,7 @@ export default function ReportingHub() {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
           {/* Employee Performance */}
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardHeader>
@@ -452,7 +454,7 @@ export default function ReportingHub() {
         </div>
 
         {/* Detailed Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <CardHeader>
               <CardTitle className="text-slate-900 dark:text-white">Financial Summary</CardTitle>

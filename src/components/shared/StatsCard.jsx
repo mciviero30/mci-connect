@@ -109,24 +109,24 @@ export default function StatsCard({
 
   return (
     <Card className={`overflow-hidden shadow-sm relative group hover:shadow-md transition-all duration-300 bg-gradient-to-br ${theme.gradient} ${theme.border}`}>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-5 md:p-6">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <p className={`text-sm font-medium mb-2 ${theme.text} opacity-80`}>
+          <div className="flex-1 min-w-0">
+            <p className={`text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${theme.text} opacity-80`}>
               {title}
             </p>
-            <h3 className={`text-3xl font-bold mb-1 ${theme.text}`}>
+            <h3 className={`text-2xl sm:text-3xl font-bold mb-0.5 sm:mb-1 ${theme.text}`}>
               {value}
             </h3>
             {subtitle && (
-              <p className={`text-sm ${theme.text} opacity-70`}>
+              <p className={`text-xs sm:text-sm ${theme.text} opacity-70`}>
                 {subtitle}
               </p>
             )}
           </div>
           {Icon && (
-            <div className={`p-3 ${theme.icon} rounded-2xl shadow-md`}>
-              <Icon className={`w-6 h-6 ${theme.iconColor}`} />
+            <div className={`p-2 sm:p-2.5 md:p-3 ${theme.icon} rounded-xl sm:rounded-2xl shadow-md flex-shrink-0`}>
+              <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${theme.iconColor}`} />
             </div>
           )}
         </div>
