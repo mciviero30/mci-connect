@@ -621,8 +621,34 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen bg-[#F1F5F9] dark:bg-slate-900 pb-safe">
-      <div className="max-w-7xl mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen pb-safe relative overflow-hidden" style={{
+      background: 'linear-gradient(135deg, #E8F4FD 0%, #D9E9F4 50%, #F1F5F9 100%)'
+    }}>
+      {/* Network Pattern Background */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="network-pattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              <circle cx="20" cy="20" r="2" fill="#507DB4" opacity="0.4" />
+              <circle cx="100" cy="50" r="2.5" fill="#507DB4" opacity="0.6" />
+              <circle cx="180" cy="30" r="2" fill="#507DB4" opacity="0.4" />
+              <circle cx="60" cy="120" r="2" fill="#507DB4" opacity="0.5" />
+              <circle cx="150" cy="150" r="2.5" fill="#507DB4" opacity="0.6" />
+              <circle cx="30" cy="180" r="2" fill="#507DB4" opacity="0.4" />
+              
+              <line x1="20" y1="20" x2="100" y2="50" stroke="#507DB4" strokeWidth="0.5" opacity="0.2" />
+              <line x1="100" y1="50" x2="180" y2="30" stroke="#507DB4" strokeWidth="0.5" opacity="0.2" />
+              <line x1="20" y1="20" x2="60" y2="120" stroke="#507DB4" strokeWidth="0.5" opacity="0.15" />
+              <line x1="100" y1="50" x2="150" y2="150" stroke="#507DB4" strokeWidth="0.5" opacity="0.2" />
+              <line x1="60" y1="120" x2="150" y2="150" stroke="#507DB4" strokeWidth="0.5" opacity="0.15" />
+              <line x1="60" y1="120" x2="30" y2="180" stroke="#507DB4" strokeWidth="0.5" opacity="0.15" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#network-pattern)" />
+        </svg>
+      </div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           {/* Top row: Avatar, greeting, and badge */}
