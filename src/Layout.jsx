@@ -787,7 +787,11 @@ const LayoutContent = ({ children, currentPageName }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
             className="px-3 py-3 md:hidden flex-shrink-0 border-b border-slate-200/20 dark:border-slate-700/30 shadow-sm"
-            style={{ background: '#D9E9F4' }}
+            style={{ 
+              backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/c735e6d47_Screenshot2025-12-23at53940PM.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
             >
             <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
               <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[40px] min-h-[40px]">
