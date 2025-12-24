@@ -55,6 +55,7 @@ import {
   SidebarFooter,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
@@ -119,6 +120,7 @@ const LayoutContent = ({ children, currentPageName }) => {
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const { setOpenMobile } = useSidebar();
   
   // Check if we're on a Field page
   const isFieldPage = location.pathname.toLowerCase().includes('field');
@@ -694,7 +696,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                                 : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                           >
-                            <Link to={item.url} className="flex items-center gap-3 px-3 py-2.5 relative group">
+                            <Link to={item.url} onClick={() => setOpenMobile(false)} className="flex items-center gap-3 px-3 py-2.5 relative group">
                                           <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
                                             isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
                                           }`} style={item.title === 'MCI Field' && !isActive ? { 
