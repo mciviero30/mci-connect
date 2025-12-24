@@ -280,8 +280,8 @@ export default function Configuracion() {
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F8FAFC] dark:bg-slate-900">
-      <div className="max-w-7xl mx-auto">
+    <div className="h-screen overflow-y-auto pb-safe p-4 md:p-8 bg-[#F8FAFC] dark:bg-slate-900">
+      <div className="w-full max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Configuración' : 'Settings'}
           description={language === 'es' ? 'Configura tu empresa y preferencias' : 'Configure your company and preferences'}
@@ -289,7 +289,7 @@ export default function Configuracion() {
         />
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm">
+          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm flex flex-nowrap overflow-x-auto">
             {isAdmin && (
               <>
                 <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
