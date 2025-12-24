@@ -651,11 +651,11 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-[#F0F4FF] dark:bg-slate-900">
-          <SidebarHeader className="p-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden h-24 sm:h-28 md:h-32">
+          <SidebarHeader className="p-3 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden h-20">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
               alt="MCI Connect"
-              className="w-full h-full object-contain sm:object-cover"
+              className="w-full h-full object-contain"
               style={{ 
                 imageRendering: 'crisp-edges',
                 imageRendering: '-webkit-optimize-contrast',
@@ -797,11 +797,11 @@ const LayoutContent = ({ children, currentPageName }) => {
               <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[40px] min-h-[40px]">
                 <Menu className="w-5 h-5 text-[#1E3A8A]" />
               </SidebarTrigger>
-              <div className="flex-1 flex justify-center px-2">
+              <div className="flex-1 flex justify-center">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                   alt="MCI Connect"
-                  className="w-full h-14 object-contain"
+                  className="h-16 max-w-full object-contain"
                 />
               </div>
               <div className="flex-shrink-0">
