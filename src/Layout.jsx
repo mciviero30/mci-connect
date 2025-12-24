@@ -786,12 +786,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="px-3 py-3 md:hidden flex-shrink-0 border-b border-slate-200/20 dark:border-slate-700/30 shadow-sm"
-            style={{ 
-              backgroundImage: 'url(https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/5e22b3a8e_Screenshot2025-12-23at54059PM.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
+            className="px-3 py-1 md:hidden flex-shrink-0 bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
             >
             <div className="flex items-center gap-3 max-w-screen-xl mx-auto">
               <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[40px] min-h-[40px]">
@@ -802,6 +797,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                   alt="MCI Connect"
                   className="h-16 max-w-full object-contain"
+                  style={{ mixBlendMode: 'multiply' }}
                 />
               </div>
               <div className="flex-shrink-0">
