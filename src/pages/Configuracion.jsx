@@ -25,13 +25,15 @@ import {
   Briefcase,     // New import
   Calendar as CalendarIcon, // Alias to avoid conflict with Calendar from date-fns
   CalendarClock,  // New import
-  Info
+  Info,
+  Camera
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
+import CameraCapture from "@/components/shared/CameraCapture";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
@@ -42,6 +44,7 @@ export default function Configuracion() {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const { toast } = useToast();
 
   const { data: user } = useQuery({
@@ -240,6 +243,30 @@ export default function Configuracion() {
       toast({
         title: "✅ Success!",
         description: language === 'es' ? 'Foto de perfil actualizada.' : 'Profile photo updated!',
+      });
+    } catch (error) {
+      toast({
+        title: "❌ Error",
+        description: language === 'es' ? `Error al subir foto: ${error.message}` : `Error uploading photo: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+    setUploading(false);
+  };
+
+  const handleCameraCapture = async (file) => {
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setProfileForm({ ...profileForm, profile_photo_url: file_url });
+      await base44.auth.updateMe({ 
+        profile_photo_url: file_url,
+        preferred_profile_image: user?.preferred_profile_image || 'photo'
+      });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast({
+        title: "✅ Success!",
+        description: language === 'es' ? 'Foto capturada y actualizada.' : 'Photo captured and updated!',
       });
     } catch (error) {
       toast({
@@ -659,14 +686,14 @@ export default function Configuracion() {
                     <img
                       src={profileForm.profile_photo_url}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full object-cover border-2 border-slate-300"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-slate-300 dark:border-slate-600"
                     />
                   ) : (
                     <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold text-3xl">
                       {user?.full_name?.[0]?.toUpperCase()}
                     </div>
                   )}
-                  <div>
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="file"
                       accept="image/*"
@@ -676,12 +703,21 @@ export default function Configuracion() {
                       id="profile-photo-upload"
                     />
                     <Button
+                      onClick={() => setShowCamera(true)}
+                      disabled={uploading}
+                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      {language === 'es' ? 'Tomar Foto' : 'Take Photo'}
+                    </Button>
+                    <Button
                       onClick={() => document.getElementById('profile-photo-upload').click()}
                       disabled={uploading}
-                      className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
+                      variant="outline"
+                      className="border-slate-300 dark:border-slate-600"
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Cambiar Foto' : 'Change Photo')}
+                      {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Subir Archivo' : 'Upload File')}
                     </Button>
                   </div>
                 </div>
@@ -738,6 +774,13 @@ export default function Configuracion() {
             </TabsContent>
           )}
         </Tabs>
+
+        <CameraCapture 
+          isOpen={showCamera} 
+          onClose={() => setShowCamera(false)} 
+          onCapture={handleCameraCapture}
+          language={language}
+        />
       </div>
     </div>
   );
