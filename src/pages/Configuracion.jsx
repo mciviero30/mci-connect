@@ -332,7 +332,7 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="company" className="pt-4">
-              <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
+              <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                     <Building2 className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
@@ -448,7 +448,7 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="defaults" className="pt-4">
-              <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
+              <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                     <DollarSign className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
@@ -533,7 +533,7 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="notifications" className="pt-4">
-              <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
+              <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                     <Bell className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
@@ -593,7 +593,7 @@ export default function Configuracion() {
           )}
 
           <TabsContent value="profile" className="pt-4">
-            <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
+            <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                   <User className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
@@ -760,7 +760,7 @@ function SystemMaintenanceTools() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
+      <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
         <CardHeader className="border-b border-slate-200 dark:border-slate-700">
           <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
             <HardDrive className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
@@ -794,7 +794,7 @@ function SystemMaintenanceTools() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
+      <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
         <CardHeader className="border-b border-slate-200 dark:border-slate-700">
           <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
             <Shield className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
