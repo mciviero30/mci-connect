@@ -21,14 +21,12 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
   });
 
   const getShiftColor = (shift) => {
-    // Priority: custom_color > time_off > appointment > job color > default
+    // Priority: custom_color > job color > shift type
     if (shift.custom_color) return shift.custom_color;
+    if (shift.color) return shift.color; // Use Job.color directly
     if (shift.shift_type === 'time_off') return 'orange';
-    if (shift.shift_type === 'appointment' && !shift.job_id) return 'blue';
-    if (!shift.job_id) return 'slate';
-    const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'cyan', 'red', 'indigo'];
-    const hash = shift.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    if (shift.shift_type === 'appointment') return 'blue';
+    return 'slate';
   };
 
   const getEventLabel = (shift) => {
@@ -42,19 +40,19 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
   };
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm shadow-lg overflow-hidden border-slate-200">
+    <Card className="bg-white shadow-md overflow-hidden border-slate-200/50">
       <div className="overflow-x-auto">
         <div className="min-w-[700px]">
           {/* Compact Header */}
-          <div className="grid grid-cols-7 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
+          <div className="grid grid-cols-7 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
             {days.map((day, i) => {
               if (!isValid(day)) return null;
               const isToday = isSameDay(day, new Date());
               
               return (
-                <div key={i} className={`p-2 text-center border-l border-slate-200 first:border-l-0 ${isToday ? 'bg-[#3B9FF3]/10' : ''}`}>
+                <div key={i} className={`p-2 text-center border-l border-slate-200 first:border-l-0 ${isToday ? 'bg-[#1E3A8A]/5' : ''}`}>
                   <div className="text-[10px] font-medium text-slate-600">{format(day, 'EEE')}</div>
-                  <div className={`text-lg font-bold ${isToday ? 'text-[#3B9FF3]' : 'text-slate-900'}`}>{format(day, 'd')}</div>
+                  <div className={`text-lg font-bold ${isToday ? 'text-[#1E3A8A]' : 'text-slate-900'}`}>{format(day, 'd')}</div>
                   <div className="text-[9px] text-slate-500">{format(day, 'MMM')}</div>
                 </div>
               );
@@ -77,7 +75,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
               return (
                 <div
                   key={i}
-                  className={`border-l border-slate-200 first:border-l-0 p-1 hover:bg-blue-50 transition-colors group relative min-h-[150px] ${isToday ? 'bg-blue-50/50' : 'bg-white'}`}
+                  className={`border-l border-slate-200 first:border-l-0 p-1 hover:bg-slate-50 transition-colors group relative min-h-[150px] ${isToday ? 'bg-[#1E3A8A]/5' : 'bg-white'}`}
                   onDoubleClick={() => isAdmin && onDateClick(day)}
                 >
                   {/* Horizontal layout for shifts */}
@@ -90,15 +88,16 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                       return (
                         <div key={shift.id} className="w-full">
                           <div
-                            className={`px-1.5 py-0.5 rounded text-[9px] leading-tight ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-opacity ${
-                              color === 'blue' ? 'soft-blue-gradient' :
-                              color === 'green' ? 'soft-green-gradient' :
-                              color === 'purple' ? 'soft-purple-gradient' :
-                              color === 'orange' ? 'soft-amber-gradient' :
-                              color === 'pink' ? 'soft-pink-gradient' :
-                              color === 'cyan' ? 'soft-cyan-gradient' :
-                              color === 'red' ? 'soft-red-gradient' :
-                              'soft-slate-gradient'
+                            className={`px-1.5 py-0.5 rounded text-[9px] leading-tight ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-all border-l-4 bg-opacity-20 ${
+                              color === 'blue' ? 'bg-blue-100 border-blue-600 text-blue-900' :
+                              color === 'green' ? 'bg-green-100 border-green-600 text-green-900' :
+                              color === 'purple' ? 'bg-purple-100 border-purple-600 text-purple-900' :
+                              color === 'orange' ? 'bg-orange-100 border-orange-600 text-orange-900' :
+                              color === 'amber' ? 'bg-amber-100 border-amber-600 text-amber-900' :
+                              color === 'pink' ? 'bg-pink-100 border-pink-600 text-pink-900' :
+                              color === 'cyan' ? 'bg-cyan-100 border-cyan-600 text-cyan-900' :
+                              color === 'red' ? 'bg-red-100 border-red-600 text-red-900' :
+                              'bg-slate-100 border-slate-600 text-slate-900'
                             } shadow-sm relative group/shift`}
                             onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
                           >
@@ -170,7 +169,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                       <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 w-full mt-1">
                         <button
                           onClick={() => onDateClick(day)}
-                          className="flex-1 p-1 border border-dashed border-slate-300 rounded hover:border-[#3B9FF3] hover:bg-[#3B9FF3]/10 transition-colors flex items-center justify-center text-slate-400 hover:text-[#3B9FF3]"
+                          className="flex-1 p-1 border border-dashed border-slate-300 rounded hover:border-[#1E3A8A] hover:bg-[#1E3A8A]/10 transition-colors flex items-center justify-center text-slate-400 hover:text-[#1E3A8A]"
                         >
                           <Plus className="w-3 h-3" />
                         </button>

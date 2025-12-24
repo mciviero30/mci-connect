@@ -1,7 +1,6 @@
 import AdminCleanup from './pages/AdminCleanup';
 import BonusConfiguration from './pages/BonusConfiguration';
 import BudgetForecasting from './pages/BudgetForecasting';
-import Calendario from './pages/Calendario';
 import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
 import Chat from './pages/Chat';
@@ -70,6 +69,7 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import Calendario from './pages/Calendario';
 import __Layout from './Layout.jsx';
 
 
@@ -77,7 +77,6 @@ export const PAGES = {
     "AdminCleanup": AdminCleanup,
     "BonusConfiguration": BonusConfiguration,
     "BudgetForecasting": BudgetForecasting,
-    "Calendario": Calendario,
     "Capacitacion": Capacitacion,
     "CashFlowReport": CashFlowReport,
     "Chat": Chat,
@@ -146,6 +145,7 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "Calendario": Calendario,
 }
 
 export const pagesConfig = {

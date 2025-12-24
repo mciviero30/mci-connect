@@ -11,12 +11,11 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
   const hours = Array.from({ length: 16 }, (_, i) => i + 6);
 
   const getShiftColor = (shift) => {
+    if (shift.custom_color) return shift.custom_color;
+    if (shift.color) return shift.color;
     if (shift.shift_type === 'time_off') return 'orange';
-    if (shift.shift_type === 'appointment' && !shift.job_id) return 'blue';
-    if (!shift.job_id) return 'slate';
-    const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'cyan', 'red', 'indigo'];
-    const hash = shift.job_id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return colors[hash % colors.length];
+    if (shift.shift_type === 'appointment') return 'blue';
+    return 'slate';
   };
 
   const getEventLabel = (shift) => {
@@ -37,7 +36,7 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
   });
 
   return (
-    <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-slate-200">
+    <Card className="bg-white shadow-md border-slate-200/50">
       <div className="flex flex-col h-[calc(100vh-300px)]">
         <div className="flex-1 overflow-x-auto">
           <div className="min-w-[800px] relative">
@@ -90,16 +89,17 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
                 return (
                   <div key={shift.id}>
                     <div
-                      className={`absolute top-1 bottom-1 rounded-lg px-2 py-1 ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-opacity ${
-                        color === 'blue' ? 'soft-blue-gradient' :
-                        color === 'green' ? 'soft-green-gradient' :
-                        color === 'purple' ? 'soft-purple-gradient' :
-                        color === 'orange' ? 'soft-amber-gradient' :
-                        color === 'pink' ? 'soft-pink-gradient' :
-                        color === 'cyan' ? 'soft-cyan-gradient' :
-                        color === 'red' ? 'soft-red-gradient' :
-                        'soft-slate-gradient'
-                      } shadow-lg overflow-hidden`}
+                      className={`absolute top-1 bottom-1 rounded-lg px-2 py-1 border-l-4 bg-opacity-20 ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-all ${
+                        color === 'blue' ? 'bg-blue-100 border-blue-600 text-blue-900' :
+                        color === 'green' ? 'bg-green-100 border-green-600 text-green-900' :
+                        color === 'purple' ? 'bg-purple-100 border-purple-600 text-purple-900' :
+                        color === 'orange' ? 'bg-orange-100 border-orange-600 text-orange-900' :
+                        color === 'amber' ? 'bg-amber-100 border-amber-600 text-amber-900' :
+                        color === 'pink' ? 'bg-pink-100 border-pink-600 text-pink-900' :
+                        color === 'cyan' ? 'bg-cyan-100 border-cyan-600 text-cyan-900' :
+                        color === 'red' ? 'bg-red-100 border-red-600 text-red-900' :
+                        'bg-slate-100 border-slate-600 text-slate-900'
+                      } shadow-md overflow-hidden`}
                       style={{ left: `${startPercent}%`, width: `${widthPercent}%` }}
                       onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
                     >

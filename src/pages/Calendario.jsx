@@ -25,6 +25,7 @@ import ResourceView from "../components/calendario/ResourceView";
 import OccupancyStats from "../components/calendario/OccupancyStats";
 import GoogleCalendarSync from "../components/calendario/GoogleCalendarSync";
 import AvailabilityOverview from "../components/calendario/AvailabilityOverview";
+import ColorLegend from "../components/calendario/ColorLegend";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
@@ -37,7 +38,14 @@ export default function Calendario() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState('week');
+  
+  // Mobile detection: default to 'agenda' on small screens
+  const [view, setView] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return 'agenda';
+    }
+    return 'week';
+  });
   const [showDialog, setShowDialog] = useState(false);
   const [showEventTypeSelector, setShowEventTypeSelector] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -90,7 +98,25 @@ export default function Calendario() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.ScheduleShift.create(data),
+    mutationFn: async (data) => {
+      const shift = await base44.entities.ScheduleShift.create(data);
+      
+      // Send notification to assigned employee
+      if (data.employee_email) {
+        await base44.asServiceRole.entities.Notification.create({
+          user_email: data.employee_email,
+          title: language === 'es' ? 'Nuevo turno asignado' : 'New shift assigned',
+          message: language === 'es' 
+            ? `Has sido asignado a: ${data.job_name || data.shift_title || 'Turno'} el ${data.date}`
+            : `You've been assigned to: ${data.job_name || data.shift_title || 'Shift'} on ${data.date}`,
+          type: 'schedule_change',
+          link: createPageUrl('Calendario'),
+          read: false
+        });
+      }
+      
+      return shift;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
       setShowDialog(false);
@@ -767,6 +793,11 @@ export default function Calendario() {
               onEmployeeClick={(emp) => setEmployeeFilter(emp.email)}
               language={language}
             />
+          </div>
+
+          {/* Color Legend */}
+          <div className="mt-4">
+            <ColorLegend jobs={jobs} language={language} />
           </div>
 
           <Dialog open={showEventTypeSelector} onOpenChange={setShowEventTypeSelector}>
