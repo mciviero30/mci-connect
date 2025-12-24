@@ -280,8 +280,8 @@ export default function Configuracion() {
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
   return (
-    <div className="h-screen overflow-y-auto pb-safe p-4 md:p-8 bg-[#F8FAFC] dark:bg-slate-900">
-      <div className="w-full max-w-7xl mx-auto">
+    <div className="overflow-hidden pb-safe p-4 md:p-8 bg-[#F8FAFC] dark:bg-slate-900">
+      <div className="w-full max-w-full px-4 md:max-w-7xl mx-auto">
         <PageHeader
           title={language === 'es' ? 'Configuración' : 'Settings'}
           description={language === 'es' ? 'Configura tu empresa y preferencias' : 'Configure your company and preferences'}
@@ -289,7 +289,7 @@ export default function Configuracion() {
         />
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm flex flex-nowrap overflow-x-auto">
+          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm flex flex-row overflow-x-auto whitespace-nowrap scrollbar-hide">
             {isAdmin && (
               <>
                 <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
@@ -323,7 +323,7 @@ export default function Configuracion() {
           </TabsList>
 
           {isAdmin && (
-            <TabsContent value="company">
+            <TabsContent value="company" className="pt-4">
               <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
@@ -440,7 +440,7 @@ export default function Configuracion() {
           )}
 
           {isAdmin && (
-            <TabsContent value="defaults">
+            <TabsContent value="defaults" className="pt-4">
               <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
@@ -525,7 +525,7 @@ export default function Configuracion() {
           )}
 
           {isAdmin && (
-            <TabsContent value="notifications">
+            <TabsContent value="notifications" className="pt-4">
               <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
@@ -585,7 +585,7 @@ export default function Configuracion() {
             </TabsContent>
           )}
 
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="pt-4">
             <Card className="bg-white dark:bg-slate-800 shadow-xl border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                 <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
@@ -669,12 +669,12 @@ export default function Configuracion() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="my-notifications">
+          <TabsContent value="my-notifications" className="pt-4">
             <NotificationSettings user={user} />
           </TabsContent>
 
           {isAdmin && (
-            <TabsContent value="system">
+            <TabsContent value="system" className="pt-4">
               <SystemMaintenanceTools />
             </TabsContent>
           )}
