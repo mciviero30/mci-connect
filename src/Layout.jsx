@@ -119,6 +119,9 @@ const LayoutContent = ({ children, currentPageName }) => {
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  
+  // Check if we're on a Field page
+  const isFieldPage = location.pathname.toLowerCase().includes('field');
 
   // Initialize theme on mount
   useEffect(() => {
@@ -782,7 +785,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {currentPageName !== 'Field' && currentPageName !== 'FieldProject' && (
+          {!isFieldPage && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
