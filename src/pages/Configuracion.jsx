@@ -289,33 +289,33 @@ export default function Configuracion() {
         />
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm flex flex-row overflow-x-auto whitespace-nowrap scrollbar-hide">
+          <TabsList className="w-full justify-start bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm flex flex-row overflow-x-auto scrollbar-hide">
             {isAdmin && (
               <>
-                <TabsTrigger value="company" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
+                <TabsTrigger value="company" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
                   <Building2 className="w-4 h-4" />
                   {language === 'es' ? 'Empresa' : 'Company'}
                 </TabsTrigger>
-                <TabsTrigger value="defaults" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
+                <TabsTrigger value="defaults" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
                   <DollarSign className="w-4 h-4" />
                   {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
+                <TabsTrigger value="notifications" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
                   <Bell className="w-4 h-4" />
                   {language === 'es' ? 'Notificaciones (Admin)' : 'Notifications (Admin)'}
                 </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="profile" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
+            <TabsTrigger value="profile" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
               <Users className="w-4 h-4" />
               {language === 'es' ? 'Mi Perfil' : 'My Profile'}
             </TabsTrigger>
-            <TabsTrigger value="my-notifications" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
+            <TabsTrigger value="my-notifications" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
               <Bell className="w-4 h-4" />
               {language === 'es' ? 'Mis Notificaciones' : 'My Notifications'}
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
+              <TabsTrigger value="system" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
                 <HardDrive className="w-4 h-4" />
                 {language === 'es' ? 'Sistema' : 'System'}
               </TabsTrigger>
