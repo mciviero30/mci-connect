@@ -14,6 +14,7 @@ import DayView from "../components/calendario/DayView";
 import WeekView from "../components/calendario/WeekView";
 import MonthView from "../components/calendario/MonthView";
 import AssignmentDialog from "../components/calendario/AssignmentDialog";
+import EventDetailCard from "../components/calendario/EventDetailCard";
 import AgendaView from "../components/calendario/AgendaView";
 import MiniCalendar from "../components/calendario/MiniCalendar";
 import RecurringShiftDialog from "../components/calendario/RecurringShiftDialog";
@@ -30,6 +31,8 @@ import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
 import { useToast } from "@/components/ui/toast";
 import { DragDropContext } from '@hello-pangea/dnd';
+import { notifyEmployeeAssignment, syncShiftToJob } from "@/components/calendario/ShiftNotifications";
+import { useEffect } from "react";
 
 export default function Calendario() {
   const { t, language } = useLanguage();
@@ -91,21 +94,33 @@ export default function Calendario() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduleShift.create(data),
-    onSuccess: () => {
+    onSuccess: async (newShift) => {
       queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
+      
+      // Send notification to assigned employee
+      if (newShift.employee_email && employees.length > 0) {
+        await notifyEmployeeAssignment(newShift, employees);
+      }
+      
       setShowDialog(false);
       setSelectedDate(null);
       setSelectedTime(null);
       setEditingShift(null);
       setSelectedEventType(null);
-      toast.success(language === 'es' ? 'Turno creado' : 'Shift created');
+      toast.success(language === 'es' ? 'Turno creado y notificado' : 'Shift created and notified');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ScheduleShift.update(id, data),
-    onSuccess: () => {
+    mutationFn: ({ id, data, originalShift }) => base44.entities.ScheduleShift.update(id, data),
+    onSuccess: async (updatedShift, variables) => {
       queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
+      
+      // Sync shift changes to job if date changed
+      if (variables.originalShift) {
+        await syncShiftToJob(updatedShift, variables.originalShift);
+      }
+      
       setShowDialog(false);
       setSelectedDate(null);
       setSelectedTime(null);
@@ -189,7 +204,7 @@ export default function Calendario() {
 
   const handleSubmit = (data) => {
     if (editingShift) {
-      updateMutation.mutate({ id: editingShift.id, data });
+      updateMutation.mutate({ id: editingShift.id, data, originalShift: editingShift });
     } else {
       createMutation.mutate(data);
     }
@@ -333,8 +348,16 @@ export default function Calendario() {
       updatedData.end_time = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
     }
 
-    updateMutation.mutate({ id: shiftId, data: updatedData });
+    updateMutation.mutate({ id: shiftId, data: updatedData, originalShift: shift });
   };
+
+  // Mobile optimization: Default to agenda view on mobile
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile && view === 'month') {
+      setView('agenda');
+    }
+  }, []);
 
   const getDateRange = () => {
     if (view === 'day') return format(currentDate, 'MMMM d, yyyy');
@@ -840,7 +863,7 @@ export default function Calendario() {
             </DialogContent>
           </Dialog>
 
-          {isAdmin && (
+          {isAdmin && showDialog && !editingShift && (
             <AssignmentDialog
               open={showDialog}
               onOpenChange={setShowDialog}
@@ -858,6 +881,45 @@ export default function Calendario() {
               onShowRecurring={() => setShowRecurring(true)}
               conflicts={conflicts}
             />
+          )}
+
+          {/* Event Detail Card for viewing shifts */}
+          {editingShift && showDialog && (
+            <Dialog open={showDialog} onOpenChange={setShowDialog}>
+              <DialogContent className="max-w-2xl bg-white dark:bg-slate-900">
+                <EventDetailCard
+                  shift={editingShift}
+                  employees={employees}
+                  jobs={jobs}
+                  currentUser={user}
+                  isAdmin={isAdmin}
+                  language={language}
+                />
+                {isAdmin && (
+                  <div className="flex gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowDialog(false);
+                        setTimeout(() => {
+                          setShowDialog(true);
+                        }, 100);
+                      }}
+                      className="flex-1"
+                    >
+                      {language === 'es' ? 'Editar' : 'Edit'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleDelete(editingShift.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      {language === 'es' ? 'Eliminar' : 'Delete'}
+                    </Button>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           )}
 
           {/* Recurring Shift Dialog */}
