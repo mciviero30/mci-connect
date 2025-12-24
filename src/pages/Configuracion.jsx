@@ -298,12 +298,12 @@ export default function Configuracion() {
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
           <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 p-2 rounded-2xl shadow-sm">
+            <TabsTrigger value="company" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+              <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="truncate">{language === 'es' ? 'Empresa' : 'Company'}</span>
+            </TabsTrigger>
             {isAdmin && (
               <>
-                <TabsTrigger value="company" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
-                  <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="truncate">{language === 'es' ? 'Empresa' : 'Company'}</span>
-                </TabsTrigger>
                 <TabsTrigger value="defaults" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                   <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="truncate">{language === 'es' ? 'Valores' : 'Defaults'}</span>
@@ -330,28 +330,28 @@ export default function Configuracion() {
             )}
           </TabsList>
 
-          {isAdmin && (
-            <TabsContent value="company" className="pt-4">
-              <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
-                <CardHeader className="border-b border-slate-200 dark:border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                    <Building2 className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-                    {language === 'es' ? 'Información de la Empresa' : 'Company Information'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-6 mb-6">
-                    {settings.company_logo_url ? (
-                      <img
-                        src={settings.company_logo_url}
-                        alt="Company Logo"
-                        className="w-24 h-24 rounded-lg object-cover border-2 border-slate-300"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-lg flex items-center justify-center">
-                        <Building2 className="w-12 h-12 text-white" />
-                      </div>
-                    )}
+          <TabsContent value="company" className="pt-4">
+            <Card className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 rounded-2xl">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                  <Building2 className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
+                  {language === 'es' ? 'Información de la Empresa' : 'Company Information'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-6 mb-6">
+                  {settings.company_logo_url ? (
+                    <img
+                      src={settings.company_logo_url}
+                      alt="Company Logo"
+                      className="w-24 h-24 rounded-lg object-cover border-2 border-slate-300"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-lg flex items-center justify-center">
+                      <Building2 className="w-12 h-12 text-white" />
+                    </div>
+                  )}
+                  {isAdmin && (
                     <div>
                       <input
                         type="file"
@@ -370,64 +370,72 @@ export default function Configuracion() {
                         {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Subir Logo' : 'Upload Logo')}
                       </Button>
                     </div>
+                  )}
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Nombre de la Empresa' : 'Company Name'}</Label>
+                    <Input
+                      value={settings.company_name}
+                      onChange={(e) => setSettings({...settings, company_name: e.target.value})}
+                      disabled={!isAdmin}
+                      className={!isAdmin ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                    />
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre de la Empresa' : 'Company Name'}</Label>
-                      <Input
-                        value={settings.company_name}
-                        onChange={(e) => setSettings({...settings, company_name: e.target.value})}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Dirección Línea 1' : 'Address Line 1'}</Label>
-                      <Input
-                        value={settings.address_line_1}
-                        onChange={(e) => setSettings({...settings, address_line_1: e.target.value})}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Ciudad' : 'City'}</Label>
-                      <Input
-                        value={settings.city}
-                        onChange={(e) => setSettings({...settings, city: e.target.value})}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Estado' : 'State'}</Label>
-                      <Input
-                        value={settings.state}
-                        onChange={(e) => setSettings({...settings, state: e.target.value})}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
-                      <Input
-                        value={settings.phone}
-                        onChange={(e) => setSettings({...settings, phone: e.target.value})}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
-                      <Input
-                        value={settings.email}
-                        onChange={(e) => setSettings({...settings, email: e.target.value})}
-                        className="bg-slate-50 border-slate-200"
-                      />
-                    </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Dirección Línea 1' : 'Address Line 1'}</Label>
+                    <Input
+                      value={settings.address_line_1}
+                      onChange={(e) => setSettings({...settings, address_line_1: e.target.value})}
+                      disabled={!isAdmin}
+                      className={!isAdmin ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                    />
                   </div>
 
+                  <div>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Ciudad' : 'City'}</Label>
+                    <Input
+                      value={settings.city}
+                      onChange={(e) => setSettings({...settings, city: e.target.value})}
+                      disabled={!isAdmin}
+                      className={!isAdmin ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Estado' : 'State'}</Label>
+                    <Input
+                      value={settings.state}
+                      onChange={(e) => setSettings({...settings, state: e.target.value})}
+                      disabled={!isAdmin}
+                      className={!isAdmin ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                    <Input
+                      value={settings.phone}
+                      onChange={(e) => setSettings({...settings, phone: e.target.value})}
+                      disabled={!isAdmin}
+                      className={!isAdmin ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
+                    <Input
+                      value={settings.email}
+                      onChange={(e) => setSettings({...settings, email: e.target.value})}
+                      disabled={!isAdmin}
+                      className={!isAdmin ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                    />
+                  </div>
+                </div>
+
+                {isAdmin && (
                   <div className="flex justify-end mt-6">
                     <Button
                       onClick={handleSaveSettings}
@@ -441,10 +449,10 @@ export default function Configuracion() {
                       }
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {isAdmin && (
             <TabsContent value="defaults" className="pt-4">
