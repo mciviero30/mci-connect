@@ -666,7 +666,7 @@ const LayoutContent = ({ children, currentPageName }) => {
 
           <SidebarContent 
             ref={sidebarContentRef} 
-            className="p-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
+            className="px-3 pt-1 pb-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
             data-scrollable="true"
           >
             {navigation.map((section, idx) => (
