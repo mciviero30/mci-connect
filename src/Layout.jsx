@@ -782,7 +782,6 @@ const LayoutContent = ({ children, currentPageName }) => {
         </Sidebar>
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {console.log('🔍 Layout currentPageName:', currentPageName)}
           {currentPageName !== 'Field' && currentPageName !== 'FieldProject' && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
