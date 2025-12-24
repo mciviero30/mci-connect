@@ -68,9 +68,9 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
               {isAdmin && dayShifts.length === 0 && (
                 <button
                   onClick={() => onDateClick(validDate)}
-                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50/50 hover:bg-blue-50"
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-50/50 hover:bg-slate-100/50"
                 >
-                  <div className="p-2 bg-[#3B9FF3] rounded-full shadow-lg">
+                  <div className="p-2 bg-[#1E3A8A] rounded-full shadow-lg">
                     <Plus className="w-4 h-4 text-white" />
                   </div>
                 </button>

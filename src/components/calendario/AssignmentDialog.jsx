@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarDays as CalendarIcon, MapPin, Users, Save, X, Trash2, Briefcase, Copy } from 'lucide-react';
+import { CalendarDays as CalendarIcon, MapPin, Users, Save, X, Trash2, Briefcase, Copy, Check } from 'lucide-react';
 import { format, parseISO, addDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 export default function AssignmentDialog({ 
   open, 
@@ -197,14 +198,16 @@ export default function AssignmentDialog({
   const isAppointment = shiftType === 'appointment';
   const isJobWork = shiftType === 'job_work';
 
+  const activeEmployees = (employees || []).filter(e => e.employment_status === 'active');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              {isAppointment && <CalendarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
-              {isJobWork && <Briefcase className="w-6 h-6 text-purple-600 dark:text-purple-400" />}
+            <DialogTitle className="text-2xl font-bold text-[#1E3A8A] flex items-center gap-3">
+              {isAppointment && <CalendarIcon className="w-6 h-6 text-[#1E3A8A]" />}
+              {isJobWork && <Briefcase className="w-6 h-6 text-[#1E3A8A]" />}
               {shift 
                 ? (isAppointment ? 'Edit Appointment' : 'Edit Job Shift')
                 : (isAppointment ? 'New Appointment' : 'New Job Shift')}
@@ -238,15 +241,15 @@ export default function AssignmentDialog({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-4">
+        <form onSubmit={handleSubmit} className="space-y-6 py-6">
           {isAppointment && (
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">Event Title *</Label>
+              <Label className="text-slate-700 font-semibold mb-2 block">Event Title *</Label>
               <Input
                 value={shiftTitle}
                 onChange={(e) => setShiftTitle(e.target.value)}
                 placeholder="e.g., Team Meeting, Client Call, Site Visit"
-                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A] focus:ring-[#1E3A8A]"
                 required
               />
             </div>
@@ -254,16 +257,24 @@ export default function AssignmentDialog({
 
           {isJobWork && (
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">Job / Project *</Label>
+              <Label className="text-slate-700 font-semibold mb-2 block">Job / Project *</Label>
               <Select value={jobId} onValueChange={setJobId} required>
-                <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
+                <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A] focus:ring-[#1E3A8A]">
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                <SelectContent className="bg-white border-slate-200 shadow-lg">
                   {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-slate-900 dark:text-white">
+                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
                       <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full bg-${job.color}-500`} />
+                        <div className={`w-3 h-3 rounded-full ${
+                          job.color === 'blue' ? 'bg-blue-600' :
+                          job.color === 'green' ? 'bg-green-600' :
+                          job.color === 'purple' ? 'bg-purple-600' :
+                          job.color === 'cyan' ? 'bg-cyan-600' :
+                          job.color === 'pink' ? 'bg-pink-600' :
+                          job.color === 'red' ? 'bg-red-600' :
+                          'bg-slate-600'
+                        }`} />
                         {job.name}
                       </div>
                     </SelectItem>
@@ -275,17 +286,25 @@ export default function AssignmentDialog({
 
           {isAppointment && (
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">Related Job (Optional)</Label>
+              <Label className="text-slate-700 font-semibold mb-2 block">Related Job (Optional)</Label>
               <Select value={jobId} onValueChange={setJobId}>
-                <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white">
+                <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]">
                   <SelectValue placeholder="Link to a job (optional)" />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                  <SelectItem value={null} className="text-slate-900 dark:text-white">None</SelectItem>
+                <SelectContent className="bg-white border-slate-200 shadow-lg">
+                  <SelectItem value={null} className="text-slate-900">None</SelectItem>
                   {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-slate-900 dark:text-white">
+                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
                       <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full bg-${job.color}-500`} />
+                        <div className={`w-3 h-3 rounded-full ${
+                          job.color === 'blue' ? 'bg-blue-600' :
+                          job.color === 'green' ? 'bg-green-600' :
+                          job.color === 'purple' ? 'bg-purple-600' :
+                          job.color === 'cyan' ? 'bg-cyan-600' :
+                          job.color === 'pink' ? 'bg-pink-600' :
+                          job.color === 'red' ? 'bg-red-600' :
+                          'bg-slate-600'
+                        }`} />
                         {job.name}
                       </div>
                     </SelectItem>
@@ -297,28 +316,28 @@ export default function AssignmentDialog({
 
           {isJobWork && (
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">Shift Title (Optional)</Label>
+              <Label className="text-slate-700 font-semibold mb-2 block">Shift Title (Optional)</Label>
               <Input
                 value={shiftTitle}
                 onChange={(e) => setShiftTitle(e.target.value)}
                 placeholder="e.g., Morning Installation, Material Setup"
-                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]"
               />
             </div>
           )}
 
           {selectedJob && (
-            <Card className="p-4 bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <Card className="p-5 bg-slate-50 border-slate-200 rounded-xl">
+              <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#1E3A8A]" />
                 Job Details
               </h3>
               <div className="space-y-2 text-sm">
                 {selectedJob.address && (
-                  <p className="text-slate-700 dark:text-slate-300"><span className="text-slate-500">Address:</span> {selectedJob.address}</p>
+                  <p className="text-slate-700"><span className="text-slate-500 font-medium">Address:</span> {selectedJob.address}</p>
                 )}
                 {selectedJob.description && (
-                  <p className="text-slate-700 dark:text-slate-300"><span className="text-slate-500">Description:</span> {selectedJob.description}</p>
+                  <p className="text-slate-700"><span className="text-slate-500 font-medium">Description:</span> {selectedJob.description}</p>
                 )}
               </div>
             </Card>
@@ -379,76 +398,72 @@ export default function AssignmentDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">Start Date</Label>
-              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
+              <Label className="text-slate-700 font-semibold mb-2 block">Start Date</Label>
+              <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]" />
             </div>
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">End Date</Label>
-              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
+              <Label className="text-slate-700 font-semibold mb-2 block">End Date</Label>
+              <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate} required className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">Start Time</Label>
-              <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
+              <Label className="text-slate-700 font-semibold mb-2 block">Start Time</Label>
+              <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]" />
             </div>
             <div>
-              <Label className="text-slate-900 dark:text-white mb-2 block">End Time</Label>
-              <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" />
+              <Label className="text-slate-700 font-semibold mb-2 block">End Time</Label>
+              <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]" />
             </div>
           </div>
 
           <div>
-            <Label className="text-slate-900 dark:text-white mb-2 block">Notes / Instructions</Label>
+            <Label className="text-slate-700 font-semibold mb-2 block">Notes / Instructions</Label>
             <Textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Additional information..."
-              className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white h-24"
+              className="bg-slate-50 border-slate-200 text-slate-900 h-24 focus:border-[#1E3A8A]"
             />
           </div>
 
-          {/* Custom Color Picker */}
+          {/* Custom Color Picker - Professional Palette */}
           <div className="flex items-center gap-3">
-            <Label className="text-slate-900 dark:text-white text-sm flex-shrink-0">Shift Color</Label>
+            <Label className="text-slate-700 font-semibold text-sm flex-shrink-0">Shift Color</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className={`w-10 h-10 rounded-lg ${
-                    customColor === 'blue' ? 'soft-blue-gradient' :
-                    customColor === 'green' ? 'soft-green-gradient' :
-                    customColor === 'purple' ? 'soft-purple-gradient' :
-                    customColor === 'amber' ? 'soft-amber-gradient' :
-                    customColor === 'red' ? 'soft-red-gradient' :
-                    customColor === 'pink' ? 'soft-pink-gradient' :
-                    customColor === 'cyan' ? 'soft-cyan-gradient' :
-                    customColor === 'slate' ? 'soft-slate-gradient' :
-                    'bg-slate-200 dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600'
-                  } hover:scale-105 transition-transform shadow-sm`}
+                  className={`w-10 h-10 rounded-lg border-2 ${
+                    customColor === 'blue' ? 'bg-blue-600 border-blue-700' :
+                    customColor === 'green' ? 'bg-green-600 border-green-700' :
+                    customColor === 'purple' ? 'bg-purple-600 border-purple-700' :
+                    customColor === 'cyan' ? 'bg-cyan-600 border-cyan-700' :
+                    customColor === 'pink' ? 'bg-pink-600 border-pink-700' :
+                    customColor === 'red' ? 'bg-red-600 border-red-700' :
+                    'bg-slate-200 border-slate-300'
+                  } hover:scale-105 transition-transform shadow-md`}
                   title="Select color"
                 />
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-3 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800" align="start">
-                <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 font-medium">Choose a color for this shift:</p>
-                <div className="grid grid-cols-4 gap-2">
+              <PopoverContent className="w-64 p-4 bg-white border-slate-200 shadow-xl rounded-xl" align="start">
+                <p className="text-xs text-slate-600 mb-3 font-semibold">Professional Color Palette:</p>
+                <div className="grid grid-cols-3 gap-2">
                   {[
-                    { name: 'blue', class: 'soft-blue-gradient', label: 'Blue' },
-                    { name: 'green', class: 'soft-green-gradient', label: 'Green' },
-                    { name: 'purple', class: 'soft-purple-gradient', label: 'Purple' },
-                    { name: 'amber', class: 'soft-amber-gradient', label: 'Amber' },
-                    { name: 'red', class: 'soft-red-gradient', label: 'Red' },
-                    { name: 'pink', class: 'soft-pink-gradient', label: 'Pink' },
-                    { name: 'cyan', class: 'soft-cyan-gradient', label: 'Cyan' },
-                    { name: 'slate', class: 'soft-slate-gradient', label: 'Gray' }
+                    { name: 'blue', bg: 'bg-blue-600', label: 'Blue' },
+                    { name: 'green', bg: 'bg-green-600', label: 'Green' },
+                    { name: 'purple', bg: 'bg-purple-600', label: 'Purple' },
+                    { name: 'cyan', bg: 'bg-cyan-600', label: 'Cyan' },
+                    { name: 'pink', bg: 'bg-pink-600', label: 'Pink' },
+                    { name: 'red', bg: 'bg-red-600', label: 'Red' }
                   ].map((color) => (
                     <button
                       key={color.name}
                       type="button"
                       onClick={() => setCustomColor(color.name)}
-                      className={`h-12 rounded-lg ${color.class} hover:scale-105 transition-all shadow-sm ${
-                        customColor === color.name ? 'ring-2 ring-offset-2 ring-blue-500 scale-105' : ''
+                      className={`h-12 rounded-lg ${color.bg} hover:scale-105 transition-all shadow-md ${
+                        customColor === color.name ? 'ring-2 ring-offset-2 ring-[#1E3A8A] scale-105' : ''
                       }`}
                       title={color.label}
                     />
@@ -458,7 +473,7 @@ export default function AssignmentDialog({
                   <button
                     type="button"
                     onClick={() => setCustomColor('')}
-                    className="w-full mt-3 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors font-medium"
+                    className="w-full mt-3 text-xs text-slate-600 hover:text-slate-900 py-2 hover:bg-slate-50 rounded-lg transition-colors font-medium"
                   >
                     Clear Selection
                   </button>
@@ -466,14 +481,14 @@ export default function AssignmentDialog({
               </PopoverContent>
             </Popover>
             {customColor && (
-              <span className="text-xs text-slate-600 dark:text-slate-400 capitalize">{customColor}</span>
+              <span className="text-xs text-slate-600 capitalize font-medium">{customColor}</span>
             )}
           </div>
 
           {/* Delete Options Modal */}
           {showDeleteOptions && shift && (
-            <div className="mb-4 p-4 soft-red-bg rounded-lg">
-              <p className="text-sm text-red-700 dark:text-red-300 mb-3 font-medium">
+            <div className="mb-4 p-5 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-sm text-red-900 mb-3 font-semibold">
                 ¿Qué deseas eliminar? / What do you want to delete?
               </p>
               <div className="flex flex-col gap-2">
@@ -482,7 +497,7 @@ export default function AssignmentDialog({
                   variant="outline"
                   onClick={handleDeleteSingle}
                   disabled={isProcessing}
-                  className="justify-start soft-red-bg hover:opacity-90"
+                  className="justify-start border-red-300 text-red-700 hover:bg-red-100"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Solo este turno / Only this shift
@@ -490,10 +505,10 @@ export default function AssignmentDialog({
                 {shift.job_id && (
                   <Button 
                     type="button"
-                    variant="destructive"
+                    variant="outline"
                     onClick={handleDeleteAllForProject}
                     disabled={isProcessing}
-                    className="justify-start btn-soft-red"
+                    className="justify-start border-red-400 text-red-800 hover:bg-red-100 bg-red-50"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Todos los turnos de "{shift.job_name || 'este proyecto'}" / All shifts for this project
@@ -503,7 +518,7 @@ export default function AssignmentDialog({
                   type="button"
                   variant="ghost"
                   onClick={() => setShowDeleteOptions(false)}
-                  className="justify-start text-slate-500"
+                  className="justify-start text-slate-600 hover:bg-slate-100"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Cancelar / Cancel
@@ -512,14 +527,14 @@ export default function AssignmentDialog({
             </div>
           )}
 
-          <div className="flex justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex justify-between gap-3 pt-6 border-t border-slate-100">
             {shift && !showDeleteOptions ? (
               <Button 
                 type="button" 
                 variant="outline"
                 onClick={handleDelete} 
                 disabled={isProcessing}
-                className="soft-red-bg hover:opacity-90"
+                className="border-2 border-red-200 text-red-700 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete
@@ -528,8 +543,13 @@ export default function AssignmentDialog({
               <div />
             )}
             <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing} className="soft-slate-bg hover:opacity-90">
-                <X className="w-4 h-4 mr-2" />
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)} 
+                disabled={isProcessing} 
+                className="border-slate-300 text-slate-700 hover:bg-slate-50"
+              >
                 Cancel
               </Button>
               <Button 
@@ -539,7 +559,7 @@ export default function AssignmentDialog({
                   (isAppointment && !shiftTitle) || 
                   (isJobWork && (!jobId || selectedEmployees.length === 0))
                 } 
-                className="soft-blue-gradient"
+                className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white shadow-md font-semibold"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {isProcessing ? 'Saving...' : 'Save Shift'}
