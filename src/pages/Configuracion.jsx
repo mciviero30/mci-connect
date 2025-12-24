@@ -24,7 +24,8 @@ import {
   Clock,         // New import
   Briefcase,     // New import
   Calendar as CalendarIcon, // Alias to avoid conflict with Calendar from date-fns
-  CalendarClock  // New import
+  CalendarClock,  // New import
+  Info
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // New imports
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Configuracion() {
   const { language } = useLanguage();
@@ -306,7 +308,7 @@ export default function Configuracion() {
               <>
                 <TabsTrigger value="defaults" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                   <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="truncate">{language === 'es' ? 'Valores' : 'Defaults'}</span>
+                  <span className="truncate">{language === 'es' ? 'Nómina y Beneficios' : 'Payroll & Benefits'}</span>
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                   <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -460,80 +462,123 @@ export default function Configuracion() {
                 <CardHeader className="border-b border-slate-200 dark:border-slate-700">
                   <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
                     <DollarSign className="w-5 h-5 text-[#3B9FF3] dark:text-blue-400" />
-                    {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
+                    {language === 'es' ? 'Configuración de Nómina y Beneficios' : 'Payroll & Benefits Settings'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label className="text-slate-700 font-semibold">
-                          {language === 'es' ? 'Tarifa Por Hora Predeterminada' : 'Default Hourly Rate'}
-                        </Label>
-                        <div className="relative mt-2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.50"
-                            value={settings.default_hourly_rate}
-                            onChange={(e) => setSettings({...settings, default_hourly_rate: parseFloat(e.target.value)})}
-                            className="pl-7 bg-slate-50 border-slate-200"
-                          />
+                  <TooltipProvider>
+                    <div className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <Label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-2">
+                            {language === 'es' ? 'Tarifa Por Hora Predeterminada' : 'Default Hourly Rate'}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs max-w-xs">
+                                  {language === 'es' 
+                                    ? 'Tarifa estándar global utilizada para todos los cálculos de nómina y análisis de trabajos' 
+                                    : 'Global company standard used for all payroll calculations and job analysis'}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </Label>
+                          <div className="relative mt-2">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">$</span>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.50"
+                              value={settings.default_hourly_rate}
+                              onChange={(e) => setSettings({...settings, default_hourly_rate: parseFloat(e.target.value)})}
+                              disabled={!isAdmin}
+                              className={!isAdmin ? "pl-7 bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "pl-7 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-2">
+                            {language === 'es' ? 'Monto Per Diem Predeterminado' : 'Default Per Diem Amount'}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs max-w-xs">
+                                  {language === 'es' 
+                                    ? 'Monto diario estándar para gastos de manutención en trabajos fuera de la oficina' 
+                                    : 'Standard daily allowance for meals and expenses on out-of-office jobs'}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </Label>
+                          <div className="relative mt-2">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">$</span>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="5"
+                              value={settings.default_per_diem_amount}
+                              onChange={(e) => setSettings({...settings, default_per_diem_amount: parseFloat(e.target.value)})}
+                              disabled={!isAdmin}
+                              className={!isAdmin ? "pl-7 bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "pl-7 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
+                            />
+                          </div>
                         </div>
                       </div>
 
                       <div>
-                        <Label className="text-slate-700 font-semibold">
-                          {language === 'es' ? 'Monto Per Diem Predeterminado' : 'Default Per Diem Amount'}
+                        <Label className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-2">
+                          {language === 'es' ? 'Tasa de Acumulación de Vacaciones' : 'Vacation Accrual Rate'}
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs max-w-xs">
+                                {language === 'es' 
+                                  ? 'Días de vacaciones que acumula cada empleado por mes trabajado' 
+                                  : 'Vacation days earned by employees per month of service'}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
                         </Label>
-                        <div className="relative mt-2">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                        <div className="flex items-center gap-2 mt-2">
                           <Input
                             type="number"
                             min="0"
-                            step="5"
-                            value={settings.default_per_diem_amount}
-                            onChange={(e) => setSettings({...settings, default_per_diem_amount: parseFloat(e.target.value)})}
-                            className="pl-7 bg-slate-50 border-slate-200"
+                            step="0.1"
+                            value={settings.default_vacation_accrual_rate}
+                            onChange={(e) => setSettings({...settings, default_vacation_accrual_rate: parseFloat(e.target.value)})}
+                            disabled={!isAdmin}
+                            className={!isAdmin ? "w-32 bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "w-32 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"}
                           />
+                          <span className="text-slate-700 dark:text-slate-300">
+                            {language === 'es' ? 'días por mes' : 'days per month'}
+                          </span>
                         </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <Label className="text-slate-700 font-semibold">
-                        {language === 'es' ? 'Tasa de Acumulación de Vacaciones' : 'Vacation Accrual Rate'}
-                      </Label>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.1"
-                          value={settings.default_vacation_accrual_rate}
-                          onChange={(e) => setSettings({...settings, default_vacation_accrual_rate: parseFloat(e.target.value)})}
-                          className="w-32 bg-slate-50 border-slate-200"
-                        />
-                        <span className="text-slate-700">
-                          {language === 'es' ? 'días por mes' : 'days per month'}
-                        </span>
-                      </div>
+                      {isAdmin && (
+                        <div className="flex justify-end pt-4">
+                          <Button
+                            onClick={handleSaveSettings}
+                            disabled={updateSettingsMutation.isPending}
+                            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {updateSettingsMutation.isPending
+                              ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                              : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
+                            }
+                          </Button>
+                        </div>
+                      )}
                     </div>
-
-                    <div className="flex justify-end pt-4">
-                      <Button
-                        onClick={handleSaveSettings}
-                        disabled={updateSettingsMutation.isPending}
-                        className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        {updateSettingsMutation.isPending
-                          ? (language === 'es' ? 'Guardando...' : 'Saving...')
-                          : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')
-                        }
-                      </Button>
-                    </div>
-                  </div>
+                  </TooltipProvider>
                 </CardContent>
               </Card>
             </TabsContent>
