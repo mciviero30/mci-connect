@@ -280,42 +280,50 @@ export default function Configuracion() {
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
   return (
-    <div className="overflow-hidden pb-safe p-4 md:p-8 bg-[#F8FAFC] dark:bg-slate-900">
+    <div className="overflow-hidden pb-safe p-4 md:p-8 bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="w-full max-w-full px-4 md:max-w-7xl mx-auto">
-        <PageHeader
-          title={language === 'es' ? 'Configuración' : 'Settings'}
-          description={language === 'es' ? 'Configura tu empresa y preferencias' : 'Configure your company and preferences'}
-          icon={Settings}
-        />
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-3 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-2xl shadow-md">
+              <Settings className="w-7 h-7 md:w-8 md:h-8 text-white" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#1E3A8A] dark:text-white">
+              {language === 'es' ? 'Configuración' : 'Settings'}
+            </h1>
+          </div>
+          <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base ml-16">
+            {language === 'es' ? 'Configura tu empresa y preferencias' : 'Configure your company and preferences'}
+          </p>
+        </div>
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-2xl shadow-sm">
+          <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white/40 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 p-2 rounded-2xl shadow-sm">
             {isAdmin && (
               <>
-                <TabsTrigger value="company" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                <TabsTrigger value="company" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                   <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="truncate">{language === 'es' ? 'Empresa' : 'Company'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="defaults" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                <TabsTrigger value="defaults" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                   <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="truncate">{language === 'es' ? 'Valores' : 'Defaults'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                <TabsTrigger value="notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                   <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="truncate">{language === 'es' ? 'Notif. Admin' : 'Notif. Admin'}</span>
                 </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="profile" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+            <TabsTrigger value="profile" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
               <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="truncate">{language === 'es' ? 'Mi Perfil' : 'My Profile'}</span>
             </TabsTrigger>
-            <TabsTrigger value="my-notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+            <TabsTrigger value="my-notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
               <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="truncate">{language === 'es' ? 'Mis Notif.' : 'My Notif.'}</span>
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="system" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+              <TabsTrigger value="system" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white data-[state=active]:shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
                 <HardDrive className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="truncate">{language === 'es' ? 'Sistema' : 'System'}</span>
               </TabsTrigger>
@@ -356,8 +364,7 @@ export default function Configuracion() {
                       <Button
                         onClick={() => document.getElementById('company-logo-upload').click()}
                         disabled={uploading}
-                        variant="outline"
-                        className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                        className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Subir Logo' : 'Upload Logo')}
@@ -425,7 +432,7 @@ export default function Configuracion() {
                     <Button
                       onClick={handleSaveSettings}
                       disabled={updateSettingsMutation.isPending}
-                      className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       {updateSettingsMutation.isPending
@@ -618,8 +625,7 @@ export default function Configuracion() {
                     <Button
                       onClick={() => document.getElementById('profile-photo-upload').click()}
                       disabled={uploading}
-                      variant="outline"
-                      className="bg-white border-slate-300 text-slate-700"
+                      className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       {uploading ? (language === 'es' ? 'Subiendo...' : 'Uploading...') : (language === 'es' ? 'Cambiar Foto' : 'Change Photo')}
@@ -659,7 +665,7 @@ export default function Configuracion() {
                   <Button
                     onClick={() => updateProfileMutation.mutate(profileForm)}
                     disabled={updateProfileMutation.isPending}
-                    className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white w-full"
+                    className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
@@ -765,7 +771,7 @@ function SystemMaintenanceTools() {
           <Button
             onClick={scanFiles}
             disabled={scanning}
-            className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white mb-4"
+            className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md mb-4"
           >
             {scanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <HardDrive className="w-4 h-4 mr-2" />}
             {scanning ? (language === 'es' ? 'Escaneando...' : 'Scanning...') : (language === 'es' ? 'Escanear Archivos' : 'Scan Files')}
