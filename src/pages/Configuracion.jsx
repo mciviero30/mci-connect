@@ -289,35 +289,35 @@ export default function Configuracion() {
         />
 
         <Tabs defaultValue={isAdmin ? "company" : "profile"} className="space-y-6">
-          <TabsList className="w-full justify-start bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 rounded-2xl shadow-sm flex flex-row overflow-x-auto scrollbar-hide">
+          <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-2xl shadow-sm">
             {isAdmin && (
               <>
-                <TabsTrigger value="company" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
-                  <Building2 className="w-4 h-4" />
-                  {language === 'es' ? 'Empresa' : 'Company'}
+                <TabsTrigger value="company" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                  <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="truncate">{language === 'es' ? 'Empresa' : 'Company'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="defaults" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
-                  <DollarSign className="w-4 h-4" />
-                  {language === 'es' ? 'Valores Predeterminados' : 'Default Values'}
+                <TabsTrigger value="defaults" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                  <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="truncate">{language === 'es' ? 'Valores' : 'Defaults'}</span>
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
-                  <Bell className="w-4 h-4" />
-                  {language === 'es' ? 'Notificaciones (Admin)' : 'Notifications (Admin)'}
+                <TabsTrigger value="notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                  <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="truncate">{language === 'es' ? 'Notif. Admin' : 'Notif. Admin'}</span>
                 </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="profile" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
-              <Users className="w-4 h-4" />
-              {language === 'es' ? 'Mi Perfil' : 'My Profile'}
+            <TabsTrigger value="profile" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="truncate">{language === 'es' ? 'Mi Perfil' : 'My Profile'}</span>
             </TabsTrigger>
-            <TabsTrigger value="my-notifications" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
-              <Bell className="w-4 h-4" />
-              {language === 'es' ? 'Mis Notificaciones' : 'My Notifications'}
+            <TabsTrigger value="my-notifications" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="truncate">{language === 'es' ? 'Mis Notif.' : 'My Notif.'}</span>
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="system" className="flex-shrink-0 whitespace-nowrap flex items-center gap-2 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300">
-                <HardDrive className="w-4 h-4" />
-                {language === 'es' ? 'Sistema' : 'System'}
+              <TabsTrigger value="system" className="w-full justify-center flex items-center gap-1.5 data-[state=active]:soft-blue-gradient data-[state=active]:shadow-sm rounded-xl text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs px-2 py-2">
+                <HardDrive className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="truncate">{language === 'es' ? 'Sistema' : 'System'}</span>
               </TabsTrigger>
             )}
           </TabsList>
