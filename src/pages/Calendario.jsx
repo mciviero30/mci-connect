@@ -26,6 +26,7 @@ import OccupancyStats from "../components/calendario/OccupancyStats";
 import GoogleCalendarSync from "../components/calendario/GoogleCalendarSync";
 import AvailabilityOverview from "../components/calendario/AvailabilityOverview";
 import ColorLegend from "../components/calendario/ColorLegend";
+import ShiftDetailCard from "../components/calendario/ShiftDetailCard";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
@@ -66,6 +67,7 @@ export default function Calendario() {
   const [showAvailability, setShowAvailability] = useState(false);
   const [conflicts, setConflicts] = useState([]);
   const [copiedShift, setCopiedShift] = useState(null);
+  const [selectedShiftDetail, setSelectedShiftDetail] = useState(null);
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
@@ -206,11 +208,16 @@ export default function Calendario() {
   };
 
   const handleShiftClick = (shift) => {
-    setEditingShift(shift);
-    setSelectedDate(null);
-    setSelectedTime(null);
-    setSelectedEventType(shift.shift_type || null);
-    setShowDialog(true);
+    // Show detail card for employees, edit dialog for admins
+    if (isAdmin) {
+      setEditingShift(shift);
+      setSelectedDate(null);
+      setSelectedTime(null);
+      setSelectedEventType(shift.shift_type || null);
+      setShowDialog(true);
+    } else {
+      setSelectedShiftDetail(shift);
+    }
   };
 
   const handleSubmit = (data) => {
@@ -923,6 +930,19 @@ export default function Calendario() {
             open={showGoogleSync}
             onOpenChange={setShowGoogleSync}
             shifts={filteredShifts}
+            language={language}
+          />
+
+          {/* Shift Detail Card */}
+          <ShiftDetailCard
+            open={!!selectedShiftDetail}
+            onOpenChange={(open) => !open && setSelectedShiftDetail(null)}
+            shift={selectedShiftDetail}
+            job={selectedShiftDetail ? jobs.find(j => j.id === selectedShiftDetail.job_id) : null}
+            employees={employees}
+            onConfirm={handleConfirmShift}
+            onReject={handleRejectShift}
+            currentUser={user}
             language={language}
           />
         </div>
