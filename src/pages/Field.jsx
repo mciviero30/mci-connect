@@ -15,7 +15,8 @@ import {
   FolderOpen,
   Command,
   ClipboardList,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -139,7 +140,12 @@ export default function Field() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6 pb-safe overflow-y-auto">
-      <div className="px-3 sm:px-6 md:px-10 py-4 sm:py-5 md:py-6 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-4 sm:mb-5 md:mb-6 flex flex-col sm:flex-row items-center justify-between text-white gap-3 sm:gap-0" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+      <div className="px-3 sm:px-6 md:px-10 py-4 sm:py-5 md:py-6 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-4 sm:mb-5 md:mb-6 flex flex-col sm:flex-row items-center justify-between text-white gap-3 sm:gap-0 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+        <Link to={createPageUrl('Dashboard')} className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </Link>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
           alt="MCI Field"
