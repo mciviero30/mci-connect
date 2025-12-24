@@ -34,6 +34,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import CameraCapture from "@/components/shared/CameraCapture";
+import SystemHealthDashboard from "@/components/admin/SystemHealthDashboard";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
@@ -770,7 +771,7 @@ export default function Configuracion() {
 
           {isAdmin && (
             <TabsContent value="system" className="pt-4">
-              <SystemMaintenanceTools />
+              <SystemHealthDashboard language={language} />
             </TabsContent>
           )}
         </Tabs>
