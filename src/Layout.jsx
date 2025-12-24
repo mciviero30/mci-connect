@@ -115,12 +115,75 @@ const ThemeToggle = () => {
   );
 };
 
+const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
+  const { setOpenMobile } = useSidebar();
+  
+  return (
+    <>
+      {navigation.map((section, idx) => (
+        <SidebarGroup key={idx} className={idx === 0 ? "mb-6 mt-0 pt-0" : "mb-6"}>
+          <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#507DB4] dark:text-slate-300 border border-[#507DB4]/10 dark:border-slate-700">
+            {section.icon && <section.icon className="w-3.5 h-3.5" />}
+            {section.section}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {section.items.map((item) => {
+                const isActive = location.pathname === item.url;
+                const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={`transition-all duration-200 rounded-lg mb-1 border-none ${
+                        isActive
+                          ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      <Link to={item.url} onClick={() => setOpenMobile(false)} className="flex items-center gap-3 px-3 py-2.5 relative group">
+                        <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
+                          isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
+                        }`} style={item.title === 'MCI Field' && !isActive ? { 
+                          filter: 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
+                        } : {}} />
+                        <span className={`font-medium text-sm ${
+                          item.title === 'MCI Field' && !isActive 
+                            ? 'bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent font-bold' 
+                            : ''
+                        }`}>
+                          {item.title}
+                        </span>
+                        {showBadge && (
+                          <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
+                            {pendingExpenses}
+                          </Badge>
+                        )}
+                        {item.badge && (
+                          <span className="text-xs">{item.badge}</span>
+                        )}
+                        {isActive && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      ))}
+    </>
+  );
+};
+
 const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-  const { setOpenMobile } = useSidebar();
   
   // Check if we're on a Field page
   const isFieldPage = location.pathname.toLowerCase().includes('field');
@@ -674,61 +737,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             className="px-3 pt-0 pb-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-transparent"
             data-scrollable="true"
           >
-            {navigation.map((section, idx) => (
-              <SidebarGroup key={idx} className={idx === 0 ? "mb-6 mt-0 pt-0" : "mb-6"}>
-                <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#507DB4] dark:text-slate-300 border border-[#507DB4]/10 dark:border-slate-700">
-                  {section.icon && <section.icon className="w-3.5 h-3.5" />}
-                  {section.section}
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {section.items.map((item) => {
-                      const isActive = location.pathname === item.url;
-                      const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
-
-                      return (
-                        <SidebarMenuItem key={item.title}>
-                          <SidebarMenuButton
-                            asChild
-                            className={`transition-all duration-200 rounded-lg mb-1 border-none ${
-                              isActive
-                                ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
-                                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                          >
-                            <Link to={item.url} onClick={() => setOpenMobile(false)} className="flex items-center gap-3 px-3 py-2.5 relative group">
-                                          <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
-                                            isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
-                                          }`} style={item.title === 'MCI Field' && !isActive ? { 
-                                            filter: 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
-                                          } : {}} />
-                                          <span className={`font-medium text-sm ${
-                                            item.title === 'MCI Field' && !isActive 
-                                              ? 'bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent font-bold' 
-                                              : ''
-                                          }`}>
-                                            {item.title}
-                                          </span>
-                              {showBadge && (
-                                <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
-                                  {pendingExpenses}
-                                </Badge>
-                              )}
-                              {item.badge && (
-                                <span className="text-xs">{item.badge}</span>
-                              )}
-                              {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
-                              )}
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ))}
+            <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} />
           </SidebarContent>
 
           <SidebarFooter className="p-4 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
