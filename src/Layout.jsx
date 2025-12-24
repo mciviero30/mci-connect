@@ -651,7 +651,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-[#F0F4FF] dark:bg-slate-900">
-          <SidebarHeader className="px-0 py-0.5 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden h-[146px]">
+          <SidebarHeader className="px-0 py-0 flex-shrink-0 border-b border-slate-200/50 dark:border-slate-700/50 overflow-hidden h-[146px]">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
               alt="MCI Connect"
@@ -666,7 +666,7 @@ const LayoutContent = ({ children, currentPageName }) => {
 
           <SidebarContent 
             ref={sidebarContentRef} 
-            className="px-3 pt-1 pb-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
+            className="px-3 pt-0 pb-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
             data-scrollable="true"
           >
             {navigation.map((section, idx) => (
