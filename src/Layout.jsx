@@ -81,6 +81,7 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
+import CrossAppProfileSync from "@/components/sync/CrossAppProfileSync";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -722,6 +723,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         `}</style>
 
         <ProfileSyncManager user={user} />
+        <CrossAppProfileSync user={user} />
       <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50">
           <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
             <img
