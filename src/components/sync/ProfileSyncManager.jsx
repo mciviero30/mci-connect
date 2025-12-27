@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function ProfileSyncManager({ user }) {
   const queryClient = useQueryClient();
@@ -51,6 +52,39 @@ export default function ProfileSyncManager({ user }) {
 
     return () => clearInterval(checkForUpdates);
   }, [user?.profile_last_updated, queryClient]);
+
+  // Sync with MCI Web when profile updates
+  useEffect(() => {
+    if (!user) return;
+
+    const syncWithMCIWeb = async () => {
+      try {
+        await base44.functions.invoke('syncUserProfile', {
+          userId: user.id,
+          userData: {
+            email: user.email,
+            full_name: user.full_name,
+            profile_photo_url: user.profile_photo_url,
+            avatar_image_url: user.avatar_image_url,
+            preferred_profile_image: user.preferred_profile_image,
+          }
+        });
+        console.log('✅ Profile synced with MCI Web');
+      } catch (error) {
+        console.warn('⚠️ Could not sync with MCI Web:', error);
+      }
+    };
+
+    const handleProfileUpdateForSync = () => {
+      syncWithMCIWeb();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdateForSync);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdateForSync);
+    };
+  }, [user?.id, user?.profile_last_updated]);
 
   return null;
 }
