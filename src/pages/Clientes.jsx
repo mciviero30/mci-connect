@@ -31,7 +31,11 @@ export default function Clientes() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const { data: customers, isLoading } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list(),
