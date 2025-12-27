@@ -628,6 +628,7 @@ const LayoutContent = ({ children, currentPageName }) => {
   };
 
   const profileImage = getProfileImage();
+  const imageKey = user?.profile_last_updated || user?.id;
 
   return (
     <SidebarProvider>
@@ -759,6 +760,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
+                    key={imageKey}
                     src={profileImage}
                     alt={user.full_name}
                     className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"

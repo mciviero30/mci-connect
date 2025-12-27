@@ -607,6 +607,7 @@ export default function Dashboard() {
   };
 
   const profileImage = getProfileImage();
+  const imageKey = user?.profile_last_updated || user?.id;
 
   if (userLoading || prefsLoading) {
     return (
@@ -660,6 +661,7 @@ export default function Dashboard() {
               >
                 {profileImage ? (
                   <img
+                    key={imageKey}
                     src={profileImage}
                     alt={user?.full_name}
                     className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover ring-2 sm:ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg"
