@@ -77,7 +77,7 @@ export default function EmployeeProfile() {
     queryFn: async () => {
       const allTeams = await base44.entities.Team.list();
       console.log('🔍 Teams loaded:', allTeams);
-      return allTeams;
+      return allTeams.filter(t => t.status === 'active');
     },
     initialData: [],
     staleTime: 60000,
@@ -1430,7 +1430,7 @@ export default function EmployeeProfile() {
                         setEditForm({
                           ...editForm,
                           team_id: e.target.value,
-                          team_name: selectedTeam?.name || selectedTeam?.team_name || ''
+                          team_name: selectedTeam?.team_name || ''
                         });
                       }}
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1443,12 +1443,14 @@ export default function EmployeeProfile() {
                         <option disabled>No teams available</option>
                       ) : (
                         teams.map(team => (
-                          <option key={team.id} value={team.id}>{team.name || team.team_name}</option>
+                          <option key={team.id} value={team.id}>{team.team_name}</option>
                         ))
                       )}
                     </select>
-                    {!teamsLoading && teams.length > 0 && (
-                      <p className="text-xs text-gray-500 mt-1">{teams.length} teams available</p>
+                    {!teamsLoading && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {teams.length > 0 ? `${teams.length} teams available` : 'No active teams found'}
+                      </p>
                     )}
                   </div>
 
