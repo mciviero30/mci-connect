@@ -24,7 +24,11 @@ export default function Gastos() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: employees, isLoading: loadingEmployees, error: employeesError } = useQuery({
     queryKey: ['employees'],
