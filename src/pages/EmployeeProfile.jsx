@@ -76,12 +76,18 @@ export default function EmployeeProfile() {
     queryKey: ['teams'],
     queryFn: async () => {
       const allTeams = await base44.entities.Team.list();
-      console.log('🔍 Teams loaded:', allTeams);
-      return allTeams.filter(t => t.status === 'active');
+      console.log('🔍 Teams loaded - RAW:', allTeams);
+      console.log('🔍 Teams count:', allTeams.length);
+      console.log('🔍 First team:', allTeams[0]);
+      const activeTeams = allTeams.filter(t => t.status === 'active' || !t.status);
+      console.log('🔍 Active teams:', activeTeams);
+      return activeTeams;
     },
     initialData: [],
-    staleTime: 60000,
-    refetchOnMount: true
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
@@ -1401,8 +1407,11 @@ export default function EmployeeProfile() {
                     <Label htmlFor="department" className="text-gray-900 font-medium">Department</Label>
                     <select
                       id="department"
-                      value={editForm.department}
-                      onChange={(e) => setEditForm({...editForm, department: e.target.value})}
+                      value={editForm.department || ''}
+                      onChange={(e) => {
+                        console.log('🔄 Department selected:', e.target.value);
+                        setEditForm({...editForm, department: e.target.value});
+                      }}
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select Department</option>
@@ -1412,7 +1421,9 @@ export default function EmployeeProfile() {
                       <option value="sales">Sales</option>
                       <option value="marketing">Marketing</option>
                       <option value="hr">HR</option>
+                      <option value="field">Field</option>
                     </select>
+                    <p className="text-xs text-gray-500 mt-1">Current: {editForm.department || 'None'}</p>
                   </div>
 
                   <div>
