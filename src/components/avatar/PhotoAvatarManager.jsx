@@ -80,15 +80,17 @@ export default function PhotoAvatarManager({ open, onOpenChange }) {
     setLoading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      // Add timestamp for cache-busting
-      const cacheBustedUrl = `${file_url}?v=${Date.now()}`;
       await base44.auth.updateMe({ 
-        profile_photo_url: cacheBustedUrl, 
+        profile_photo_url: file_url,
         preferred_profile_image: 'photo',
         profile_last_updated: new Date().toISOString()
       });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.refetchQueries({ queryKey: ['currentUser'] });
+      
+      localStorage.setItem('profile_updated', Date.now().toString());
+      localStorage.setItem('profile_timestamp', new Date().toISOString());
+      window.dispatchEvent(new Event('profileUpdated'));
     } catch (error) {
       console.error('Error uploading photo:', error);
       alert('❌ Error al subir la foto');
@@ -129,13 +131,11 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 
       const result = await base44.integrations.Core.GenerateImage({
         prompt: prompt,
-        existing_image_urls: [user.profile_photo_url.split('?')[0]] // Remove existing query params
+        existing_image_urls: [user.profile_photo_url.split('?')[0]]
       });
 
-      // Add timestamp for cache-busting
-      const cacheBustedUrl = `${result.url}?v=${Date.now()}`;
       await base44.auth.updateMe({ 
-        avatar_image_url: cacheBustedUrl,
+        avatar_image_url: result.url,
         preferred_profile_image: 'avatar',
         profile_last_updated: new Date().toISOString()
       });
