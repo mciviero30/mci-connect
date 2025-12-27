@@ -764,7 +764,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                 {profileImage ? (
                   <img
                     key={imageKey}
-                    src={profileImage}
+                    src={`${profileImage}?v=${Date.now()}`}
                     alt={user.full_name}
                     className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"
                   />
