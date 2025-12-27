@@ -61,6 +61,31 @@ const getDisplayName = (employee) => {
   return 'Unknown Employee';
 };
 
+// Helper function to get profile image with cache busting
+const getProfileImage = (employee) => {
+  if (!employee) return null;
+  
+  // Check preferred image first
+  if (employee.preferred_profile_image === 'avatar' && employee.avatar_image_url) {
+    return employee.avatar_image_url;
+  }
+  
+  // Then check profile_photo_url
+  if (employee.profile_photo_url) {
+    return employee.profile_photo_url;
+  }
+  
+  // Fallback to avatar if exists
+  if (employee.avatar_image_url) {
+    return employee.avatar_image_url;
+  }
+  
+  return null;
+};
+
+// Helper for cache busting key
+const getImageKey = (employee) => employee?.profile_last_updated || employee?.id;
+
 export default function PerformanceManagement() {
   const queryClient = useQueryClient();
   const toast = useToast();
