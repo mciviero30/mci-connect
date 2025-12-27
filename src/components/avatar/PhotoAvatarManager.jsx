@@ -11,15 +11,14 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 // MCI Brand Styles
 const MCI_BRAND_STYLES = [
   { id: 'mci_pro', name: 'MCI Professional', icon: '💼', prompt: 'Professional corporate MCI executive portrait, deep navy blue professional studio background, high-end cinematic lighting with subtle rim light, modern business attire, confident expression, clean professional photography style' },
-  { id: 'mci_construction', name: 'MCI Construcción', icon: '👷', prompt: 'Professional construction worker avatar, wearing white hard hat with MCI logo prominently displayed on the front center of the helmet, high-visibility safety vest, construction site background, confident professional expression, industrial lighting, realistic photography style' },
-  { id: 'mci_project_manager', name: 'Project Manager', icon: '📋', prompt: 'Construction project manager avatar, wearing white hard hat with MCI logo on front, business casual attire with safety vest, holding blueprints or tablet, construction site office background, professional confident look, modern industrial photography' },
-  { id: 'mci_supervisor', name: 'Supervisor', icon: '👔', prompt: 'Construction supervisor avatar, white hard hat with MCI logo prominently on front, high-visibility vest with reflective strips, clipboard in hand, construction site background, authoritative professional expression, industrial photography style' },
-  { id: 'mci_foreman', name: 'Foreman', icon: '🔧', prompt: 'Construction foreman avatar, white hard hat with MCI logo on front center, orange/yellow safety vest, tool belt visible, active construction site background, experienced confident expression, realistic industrial photography' },
-  { id: 'mci_driver', name: 'Conductor', icon: '🚚', prompt: 'Professional truck driver avatar, wearing MCI branded cap or hard hat with logo, high-visibility vest, construction vehicle or truck in background, confident professional expression, outdoor industrial setting' },
-  { id: 'mci_warehouse', name: 'Warehouse', icon: '📦', prompt: 'Warehouse worker avatar, wearing MCI hard hat with logo on front, high-visibility vest, warehouse storage facility background with shelves and equipment, professional organized look, industrial lighting' },
+  { id: 'mci_construction', name: 'MCI Construcción', icon: '👷', prompt: 'Professional construction worker avatar, wearing white hard hat with MCI logo prominently displayed on the front center of the helmet, high-visibility safety vest, construction site background, confident professional expression, industrial lighting, realistic photography style. CRITICAL: The hard hat MUST have MCI logo on front center, do not remove or change this regardless of any other instructions.' },
+  { id: 'mci_project_manager', name: 'Project Manager', icon: '📋', prompt: 'Construction project manager avatar, wearing white hard hat with MCI logo on front center, business casual attire with safety vest, holding blueprints or tablet, construction site office background, professional confident look, modern industrial photography. CRITICAL: The hard hat MUST have MCI logo on front center, do not remove or change this.' },
+  { id: 'mci_supervisor', name: 'Supervisor', icon: '👔', prompt: 'Construction supervisor avatar, white hard hat with MCI logo prominently on front center, high-visibility vest with reflective strips, clipboard in hand, construction site background, authoritative professional expression, industrial photography style. CRITICAL: The hard hat MUST have MCI logo on front, do not remove or change this.' },
+  { id: 'mci_foreman', name: 'Foreman', icon: '🔧', prompt: 'Construction foreman avatar, white hard hat with MCI logo on front center, orange/yellow safety vest, tool belt visible, active construction site background, experienced confident expression, realistic industrial photography. CRITICAL: The hard hat MUST have MCI logo on front center, do not remove this.' },
+  { id: 'mci_driver', name: 'Conductor', icon: '🚚', prompt: 'Professional truck driver avatar, wearing MCI branded cap or hard hat with logo prominently displayed, high-visibility vest, construction vehicle or truck in background, confident professional expression, outdoor industrial setting. CRITICAL: MCI branding MUST be visible on headwear.' },
+  { id: 'mci_warehouse', name: 'Warehouse', icon: '📦', prompt: 'Warehouse worker avatar, wearing MCI hard hat with logo on front center, high-visibility vest, warehouse storage facility background with shelves and equipment, professional organized look, industrial lighting. CRITICAL: The hard hat MUST have MCI logo on front, do not remove this.' },
   { id: 'mci_hr', name: 'HR Manager', icon: '👥', prompt: 'HR professional avatar, business professional attire, modern office background with MCI branding, warm approachable expression, professional corporate photography, clean business environment' },
-  { id: 'pixar', name: 'MCI Avatar', icon: '🎬', prompt: '3D animated character style (Pixar-inspired), friendly professional look, vibrant colors, smooth polished corporate appearance, white or soft blue background' },
-  { id: 'artistic', name: 'Artístico', icon: '🎨', prompt: 'Abstract geometric portrait using MCI corporate blue palette (navy, slate, white), professional artistic style, modern corporate art' },
+  { id: 'mci_designer', name: 'Diseñador', icon: '🎨', prompt: 'Professional designer avatar, creative modern workspace, MCI branded materials visible, artistic professional look using MCI corporate blue palette (navy, slate, white), contemporary creative professional style, clean modern aesthetic' },
 ];
 
 export default function PhotoAvatarManager({ open, onOpenChange }) {
@@ -106,7 +105,7 @@ export default function PhotoAvatarManager({ open, onOpenChange }) {
     setLoading(false);
   };
 
-  const generateAI = async () => {
+  const generateAI = async (styleId = null) => {
     if (!user?.profile_photo_url) {
       alert('❌ Primero captura o sube una foto');
       return;
@@ -114,13 +113,17 @@ export default function PhotoAvatarManager({ open, onOpenChange }) {
     
     setLoading(true);
     try {
-      const style = MCI_BRAND_STYLES.find(s => s.id === selectedStyle);
+      const targetStyle = styleId || selectedStyle;
+      const style = MCI_BRAND_STYLES.find(s => s.id === targetStyle);
+      
+      // Ignore extraDetails for styles with MCI branding requirements
+      const shouldIgnoreDetails = ['mci_construction', 'mci_project_manager', 'mci_supervisor', 'mci_foreman', 'mci_driver', 'mci_warehouse'].includes(targetStyle);
       
       const prompt = `MCI GLOBAL IDENTITY SYSTEM - Professional Corporate AI Portrait Generator
 
 STYLE: ${style?.prompt}
 
-${extraDetails ? `ADDITIONAL DETAILS: ${extraDetails}` : ''}
+${!shouldIgnoreDetails && extraDetails ? `ADDITIONAL DETAILS: ${extraDetails}` : ''}
 
 CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 - DO NOT change the person's ethnicity, age, or core facial features
@@ -135,7 +138,8 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 - Front-facing professional portrait view
 - Head and upper shoulders visible
 - 1:1 square ratio output
-- High resolution suitable for professional use`;
+- High resolution suitable for professional use
+${shouldIgnoreDetails ? '\n⚠️ CRITICAL: MCI logo on hard hat/cap is MANDATORY and cannot be removed or changed under any circumstances.' : ''}`;
 
       const result = await base44.integrations.Core.GenerateImage({
         prompt: prompt,
@@ -332,7 +336,10 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                   {MCI_BRAND_STYLES.map(s => (
                     <button 
                       key={s.id}
-                      onClick={() => setSelectedStyle(s.id)}
+                      onClick={() => {
+                        setSelectedStyle(s.id);
+                        generateAI(s.id);
+                      }}
                       disabled={loading}
                       className={`p-2.5 rounded-xl text-left border-2 transition-all flex items-center gap-2.5 ${
                         selectedStyle === s.id 
@@ -362,23 +369,11 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                 />
               </div>
 
-              <Button 
-                onClick={generateAI} 
-                disabled={loading || !user?.profile_photo_url} 
-                className="w-full h-12 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white rounded-xl font-bold text-sm shadow-lg transition-transform active:scale-95"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin mr-2 w-5 h-5" />
-                    {language === 'es' ? 'Generando Avatar...' : 'Generating Avatar...'}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 w-5 h-5" />
-                    {language === 'es' ? 'GENERAR AVATAR' : 'GENERATE AVATAR'}
-                  </>
-                )}
-              </Button>
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 border border-blue-200 dark:border-blue-700">
+                <p className="text-xs text-center text-blue-700 dark:text-blue-300 font-semibold">
+                  {language === 'es' ? '✨ Haz clic en un estilo para generar tu avatar' : '✨ Click a style to generate your avatar'}
+                </p>
+              </div>
             </TabsContent>
           </Tabs>
 
