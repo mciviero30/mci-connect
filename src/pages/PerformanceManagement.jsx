@@ -368,8 +368,12 @@ export default function PerformanceManagement() {
                       #{idx + 1}
                     </div>
                     
-                    {emp.profile_photo_url ? (
-                      <img src={emp.profile_photo_url} alt={emp.displayName} className="w-12 h-12 rounded-full object-cover border-2 border-[#3B9FF3]" />
+                    {getProfileImage(emp) ? (
+                      <img 
+                        src={`${getProfileImage(emp)}?v=${getImageKey(emp)}`} 
+                        alt={emp.displayName} 
+                        className="w-12 h-12 rounded-full object-cover border-2 border-[#3B9FF3]" 
+                      />
                     ) : (
                       <div className="w-12 h-12 bg-gradient-to-br from-[#3B9FF3] to-[#2A8FE3] rounded-full flex items-center justify-center text-white font-bold">
                         {emp.displayName?.[0]?.toUpperCase()}
