@@ -21,7 +21,11 @@ export default function Formularios() {
   const [selectedForm, setSelectedForm] = useState(null);
   const [responses, setResponses] = useState({});
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const isAdmin = user?.role === 'admin';
 
   const { data: templates, isLoading } = useQuery({
