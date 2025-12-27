@@ -764,7 +764,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               </div>
 
               {/* Location Preview - Screenshot area */}
-              {(pinPosition || existingTask?.pin_x) && (planImageUrl || plan?.file_url) && (
+              {(pinPosition || existingTask?.pin_x) && (pdfCanvas || planImageUrl || plan?.file_url) && (
                 <div>
                   <label className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-2 block">Location</label>
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
@@ -777,7 +777,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                             height: '400%',
                             left: `calc(50% - ${(pinPosition?.x || existingTask?.pin_x) * 4}%)`,
                             top: `calc(50% - ${(pinPosition?.y || existingTask?.pin_y) * 4}%)`,
-                            backgroundImage: `url(${planImageUrl || plan?.file_url})`,
+                            backgroundImage: `url(${pdfCanvas || planImageUrl || plan?.file_url})`,
                             backgroundSize: 'contain',
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'top left',
