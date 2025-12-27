@@ -919,10 +919,22 @@ export default function EmployeeProfile() {
                 )}
 
                 {employee.department && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Badge variant="outline" className="text-blue-700 border-blue-200">{capitalizeName(employee.department)}</Badge>
+                  <div className="text-gray-700">
+                    <Badge variant="outline" className="text-blue-700 border-blue-200 text-sm px-3 py-1">
+                      {capitalizeName(employee.department)}
+                    </Badge>
                   </div>
                 )}
+
+                {(() => {
+                  const teamName = employee.team_name || (employee.team_id ? teams.find(t => t.id === employee.team_id)?.team_name : null);
+                  return teamName ? (
+                    <div className="text-gray-700">
+                      <span className="text-xs text-gray-500 block mb-1">Team:</span>
+                      <Badge variant="outline" className="text-blue-700 border-blue-200">{teamName}</Badge>
+                    </div>
+                  ) : null;
+                })()}
 
                 {employee.address && (
                   <div className="flex items-center gap-2 text-gray-700">
