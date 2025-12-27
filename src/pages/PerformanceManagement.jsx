@@ -442,8 +442,12 @@ export default function PerformanceManagement() {
                 <Link key={emp.id} to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
                   <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#3B9FF3]/30 dark:hover:border-blue-500/50 transition-all cursor-pointer">
                     <div className="flex items-center gap-3 mb-3">
-                      {emp.profile_photo_url ? (
-                        <img src={emp.profile_photo_url} alt={emp.displayName} className="w-10 h-10 rounded-full object-cover" />
+                      {getProfileImage(emp) ? (
+                        <img 
+                          src={`${getProfileImage(emp)}?v=${getImageKey(emp)}`} 
+                          alt={emp.displayName} 
+                          className="w-10 h-10 rounded-full object-cover" 
+                        />
                       ) : (
                         <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
                           {emp.displayName?.[0]?.toUpperCase()}
