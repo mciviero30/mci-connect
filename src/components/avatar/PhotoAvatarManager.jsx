@@ -215,13 +215,15 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
             <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-2xl bg-slate-100">
               {user?.preferred_profile_image === 'avatar' && user?.avatar_image_url ? (
                 <img 
-                  src={user.avatar_image_url} 
+                  key={user.profile_last_updated || user.id}
+                  src={`${user.avatar_image_url}?v=${user.profile_last_updated || Date.now()}`}
                   className="w-full h-full object-cover"
                   alt="Avatar"
                 />
               ) : user?.profile_photo_url ? (
                 <img 
-                  src={user.profile_photo_url} 
+                  key={user.profile_last_updated || user.id}
+                  src={`${user.profile_photo_url}?v=${user.profile_last_updated || Date.now()}`}
                   className="w-full h-full object-cover"
                   alt="Profile"
                 />
