@@ -28,7 +28,11 @@ export default function Facturas() {
   const [paymentInvoice, setPaymentInvoice] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices'],
     queryFn: () => base44.entities.Invoice.list('-created_date'),
