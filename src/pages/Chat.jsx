@@ -149,7 +149,11 @@ export default function Chat() {
   const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
   const [showJobMembers, setShowJobMembers] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', selectedGroup, selectedDMConv?.id, selectedCustomGroup?.id],
