@@ -196,9 +196,19 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
         
         {/* Header Corporativo MCI */}
         <div className="bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] p-8 flex flex-col items-center relative overflow-hidden">
-          <div className="absolute top-4 right-4 text-white/10">
-            <UserCircle size={60} />
-          </div>
+          <button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+              queryClient.refetchQueries({ queryKey: ['currentUser'] });
+              window.location.reload();
+            }}
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
+            title="Actualizar"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+          </button>
           <div className="relative group z-10">
             <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-2xl bg-slate-100">
               {user?.preferred_profile_image === 'avatar' && user?.avatar_image_url ? (
@@ -363,7 +373,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
           </Tabs>
 
           {/* Switch between photo and avatar */}
-          {user?.profile_photo_url && user?.avatar_image_url && (
+          {(user?.profile_photo_url || user?.avatar_image_url) && (
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center font-medium">
                 Usar como perfil:
