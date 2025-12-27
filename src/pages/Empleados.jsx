@@ -130,9 +130,13 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
             className="w-full p-2 border rounded-md"
           >
             <option value="">Select Department</option>
+            <option value="executive">Executive</option>
+            <option value="management">Management</option>
             <option value="operations">Operations</option>
             <option value="administration">Administration</option>
             <option value="field">Field</option>
+            <option value="foreman">Foreman</option>
+            <option value="technician">Technician</option>
             <option value="HR">HR</option>
             <option value="IT">IT</option>
             <option value="sales">Sales</option>
