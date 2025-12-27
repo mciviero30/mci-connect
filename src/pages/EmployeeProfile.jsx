@@ -1439,13 +1439,17 @@ export default function EmployeeProfile() {
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Select Department</option>
+                      <option value="executive">Executive</option>
+                      <option value="management">Management</option>
                       <option value="operations">Operations</option>
                       <option value="administration">Administration</option>
+                      <option value="field">Field</option>
+                      <option value="foreman">Foreman</option>
+                      <option value="technician">Technician</option>
                       <option value="it">IT</option>
                       <option value="sales">Sales</option>
                       <option value="marketing">Marketing</option>
                       <option value="hr">HR</option>
-                      <option value="field">Field</option>
                     </select>
                     <p className="text-xs text-gray-500 mt-1">Current: {editForm.department || 'None'}</p>
                   </div>
