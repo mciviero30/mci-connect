@@ -644,6 +644,17 @@ export default function EmployeeProfile() {
     }
   });
 
+  // Determine user permissions
+  const isEditingSelf = currentUser && employee && currentUser.email === employee.email;
+  const isAdmin = currentUser?.role === 'admin';
+  const isCEO = currentUser?.position === 'CEO';
+  const isHR = currentUser?.department === 'HR' || currentUser?.department === 'hr';
+  const isManager = currentUser?.position === 'manager';
+  
+  const canEditSensitiveFields = isAdmin || isCEO || isHR;
+  const canEditPositionDepartment = isAdmin || isCEO || isHR || isManager;
+  const canOnlyEditBasicInfo = isEditingSelf && !canEditSensitiveFields;
+
   React.useEffect(() => {
     if (employee && teams.length > 0) {
       // Build proper full name from first_name + last_name
@@ -1347,6 +1358,14 @@ export default function EmployeeProfile() {
             </DialogHeader>
 
             <div className="space-y-6">
+              {canOnlyEditBasicInfo && (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertDescription className="text-blue-800 text-sm">
+                    ℹ️ Solo puedes editar: Teléfono, Email, Dirección y Foto de perfil. Los demás campos requieren permisos de HR/CEO/Admin.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {/* Personal Information Section */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200">Personal Information</h3>
@@ -1359,7 +1378,9 @@ export default function EmployeeProfile() {
                       onChange={(e) => setEditForm({...editForm, full_name: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
                       autoCapitalizeInput={true}
+                      disabled={canOnlyEditBasicInfo}
                     />
+                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1370,7 +1391,9 @@ export default function EmployeeProfile() {
                       onChange={(e) => setEditForm({...editForm, position: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
                       autoCapitalizeInput={true}
+                      disabled={!canEditPositionDepartment}
                     />
+                    {!canEditPositionDepartment && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos Manager/HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1381,7 +1404,9 @@ export default function EmployeeProfile() {
                       value={editForm.dob}
                       onChange={(e) => setEditForm({...editForm, dob: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      disabled={canOnlyEditBasicInfo}
                     />
+                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1391,7 +1416,9 @@ export default function EmployeeProfile() {
                       value={editForm.ssn_tax_id}
                       onChange={(e) => setEditForm({...editForm, ssn_tax_id: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      disabled={canOnlyEditBasicInfo}
                     />
+                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
                 </div>
               </div>
@@ -1401,17 +1428,18 @@ export default function EmployeeProfile() {
                 <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200">Contact Information</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone" className="text-gray-900 font-medium">Phone</Label>
+                    <Label htmlFor="phone" className="text-gray-900 font-medium">Phone ✅</Label>
                     <Input
                       id="phone"
                       value={editForm.phone}
                       onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
                     />
+                    {canOnlyEditBasicInfo && <p className="text-xs text-green-600 mt-1">✅ Puedes editar este campo</p>}
                   </div>
 
                   <div className="md:col-span-2">
-                    <Label htmlFor="address" className="text-gray-900 font-medium">Address</Label>
+                    <Label htmlFor="address" className="text-gray-900 font-medium">Address ✅</Label>
                     <Input
                       id="address"
                       value={editForm.address}
@@ -1419,6 +1447,7 @@ export default function EmployeeProfile() {
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
                       autoCapitalizeInput={true}
                     />
+                    {canOnlyEditBasicInfo && <p className="text-xs text-green-600 mt-1">✅ Puedes editar este campo</p>}
                   </div>
                 </div>
               </div>
@@ -1437,6 +1466,7 @@ export default function EmployeeProfile() {
                         setEditForm({...editForm, department: e.target.value});
                       }}
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={!canEditPositionDepartment}
                     >
                       <option value="">Select Department</option>
                       <option value="executive">Executive</option>
@@ -1450,7 +1480,7 @@ export default function EmployeeProfile() {
                       <option value="marketing">Marketing</option>
                       <option value="hr">HR</option>
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">Current: {editForm.department || 'None'}</p>
+                    {!canEditPositionDepartment && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos Manager/HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1472,7 +1502,7 @@ export default function EmployeeProfile() {
                         });
                       }}
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={teamsLoading}
+                      disabled={teamsLoading || canOnlyEditBasicInfo}
                     >
                       <option value="">Select Team</option>
                       {teamsLoading ? (
@@ -1485,11 +1515,7 @@ export default function EmployeeProfile() {
                         ))
                       )}
                     </select>
-                    {!teamsLoading && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {teams.length > 0 ? `${teams.length} teams available` : 'No active teams found'}
-                      </p>
-                    )}
+                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1500,7 +1526,9 @@ export default function EmployeeProfile() {
                       value={editForm.hire_date}
                       onChange={(e) => setEditForm({...editForm, hire_date: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      disabled={canOnlyEditBasicInfo}
                     />
+                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1512,7 +1540,9 @@ export default function EmployeeProfile() {
                       value={editForm.hourly_rate}
                       onChange={(e) => setEditForm({...editForm, hourly_rate: e.target.value})}
                       className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      disabled={!canEditSensitiveFields}
                     />
+                    {!canEditSensitiveFields && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
 
                   <div>
@@ -1522,6 +1552,7 @@ export default function EmployeeProfile() {
                       value={editForm.tshirt_size}
                       onChange={(e) => setEditForm({...editForm, tshirt_size: e.target.value})}
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={canOnlyEditBasicInfo}
                     >
                       <option value="">Select Size</option>
                       <option value="S">S</option>
@@ -1531,6 +1562,7 @@ export default function EmployeeProfile() {
                       <option value="XXL">XXL</option>
                       <option value="XXXL">XXXL</option>
                     </select>
+                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
                   </div>
                 </div>
               </div>
