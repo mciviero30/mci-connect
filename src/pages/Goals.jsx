@@ -23,7 +23,11 @@ export default function Goals() {
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: goals = [], isLoading } = useQuery({
     queryKey: ['goals', user?.email],
