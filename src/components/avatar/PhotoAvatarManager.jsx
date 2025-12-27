@@ -141,9 +141,15 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 - High resolution suitable for professional use
 ${shouldIgnoreDetails ? '\n⚠️ CRITICAL: MCI logo on hard hat/cap is MANDATORY and cannot be removed or changed under any circumstances.' : ''}`;
 
+      // Include MCI logo for branding on hard hats
+      const mciLogoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png';
+      
       const result = await base44.integrations.Core.GenerateImage({
         prompt: prompt,
-        existing_image_urls: [user.profile_photo_url.split('?')[0]]
+        existing_image_urls: [
+          user.profile_photo_url.split('?')[0],
+          mciLogoUrl
+        ]
       });
 
       await base44.auth.updateMe({ 
