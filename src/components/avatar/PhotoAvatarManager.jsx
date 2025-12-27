@@ -163,6 +163,11 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
     });
     queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     queryClient.refetchQueries({ queryKey: ['currentUser'] });
+    
+    // Notify other tabs/windows and apps
+    localStorage.setItem('profile_updated', Date.now().toString());
+    localStorage.setItem('profile_timestamp', new Date().toISOString());
+    window.dispatchEvent(new Event('profileUpdated'));
   };
 
   const switchToAvatar = async () => {
@@ -176,6 +181,11 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
     });
     queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     queryClient.refetchQueries({ queryKey: ['currentUser'] });
+    
+    // Notify other tabs/windows and apps
+    localStorage.setItem('profile_updated', Date.now().toString());
+    localStorage.setItem('profile_timestamp', new Date().toISOString());
+    window.dispatchEvent(new Event('profileUpdated'));
   };
 
   const usingAvatar = user?.preferred_profile_image === 'avatar' && user?.avatar_image_url;
