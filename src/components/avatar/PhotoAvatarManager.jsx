@@ -11,7 +11,13 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 // MCI Brand Styles
 const MCI_BRAND_STYLES = [
   { id: 'mci_pro', name: 'MCI Professional', icon: '💼', prompt: 'Professional corporate MCI executive portrait, deep navy blue professional studio background, high-end cinematic lighting with subtle rim light, modern business attire, confident expression, clean professional photography style' },
-  { id: 'mci_tech', name: 'MCI Tech', icon: '🖥️', prompt: 'Modern tech specialist avatar, clean futuristic corporate office with subtle blue neon accents, professional tech environment, sharp focus, contemporary corporate style' },
+  { id: 'mci_construction', name: 'MCI Construcción', icon: '👷', prompt: 'Professional construction worker avatar, wearing white hard hat with MCI logo prominently displayed on the front center of the helmet, high-visibility safety vest, construction site background, confident professional expression, industrial lighting, realistic photography style' },
+  { id: 'mci_project_manager', name: 'Project Manager', icon: '📋', prompt: 'Construction project manager avatar, wearing white hard hat with MCI logo on front, business casual attire with safety vest, holding blueprints or tablet, construction site office background, professional confident look, modern industrial photography' },
+  { id: 'mci_supervisor', name: 'Supervisor', icon: '👔', prompt: 'Construction supervisor avatar, white hard hat with MCI logo prominently on front, high-visibility vest with reflective strips, clipboard in hand, construction site background, authoritative professional expression, industrial photography style' },
+  { id: 'mci_foreman', name: 'Foreman', icon: '🔧', prompt: 'Construction foreman avatar, white hard hat with MCI logo on front center, orange/yellow safety vest, tool belt visible, active construction site background, experienced confident expression, realistic industrial photography' },
+  { id: 'mci_driver', name: 'Conductor', icon: '🚚', prompt: 'Professional truck driver avatar, wearing MCI branded cap or hard hat with logo, high-visibility vest, construction vehicle or truck in background, confident professional expression, outdoor industrial setting' },
+  { id: 'mci_warehouse', name: 'Warehouse', icon: '📦', prompt: 'Warehouse worker avatar, wearing MCI hard hat with logo on front, high-visibility vest, warehouse storage facility background with shelves and equipment, professional organized look, industrial lighting' },
+  { id: 'mci_hr', name: 'HR Manager', icon: '👥', prompt: 'HR professional avatar, business professional attire, modern office background with MCI branding, warm approachable expression, professional corporate photography, clean business environment' },
   { id: 'pixar', name: 'MCI Avatar', icon: '🎬', prompt: '3D animated character style (Pixar-inspired), friendly professional look, vibrant colors, smooth polished corporate appearance, white or soft blue background' },
   { id: 'artistic', name: 'Artístico', icon: '🎨', prompt: 'Abstract geometric portrait using MCI corporate blue palette (navy, slate, white), professional artistic style, modern corporate art' },
 ];
@@ -322,20 +328,20 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                 <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-3">
                   {language === 'es' ? 'Estilo de Avatar' : 'Avatar Style'}
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 max-h-[320px] overflow-y-auto pr-2">
                   {MCI_BRAND_STYLES.map(s => (
                     <button 
                       key={s.id}
                       onClick={() => setSelectedStyle(s.id)}
                       disabled={loading}
-                      className={`p-3 rounded-xl text-left border-2 transition-all flex items-center gap-3 ${
+                      className={`p-2.5 rounded-xl text-left border-2 transition-all flex items-center gap-2.5 ${
                         selectedStyle === s.id 
                           ? 'border-[#1E3A8A] bg-blue-50 dark:bg-blue-900/30' 
                           : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-300'
                       }`}
                     >
-                      <span className="text-2xl">{s.icon}</span>
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <span className="text-xl flex-shrink-0">{s.icon}</span>
+                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-tight">
                         {s.name}
                       </span>
                     </button>
