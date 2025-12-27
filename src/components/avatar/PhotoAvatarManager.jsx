@@ -242,7 +242,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
             )}
           </div>
           <h2 className="text-white font-bold mt-4 text-xl tracking-tight">
-            {user?.full_name || 'Usuario MCI'}
+            {user?.full_name?.replace(/\./g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') || 'Usuario MCI'}
           </h2>
           <p className="text-blue-200 text-xs uppercase tracking-widest font-semibold">
             Global ID System
