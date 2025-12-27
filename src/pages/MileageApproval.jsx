@@ -30,7 +30,11 @@ export default function MileageApproval() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showMileageForm, setShowMileageForm] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: employees } = useQuery({
     queryKey: ['employees'],
