@@ -194,7 +194,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) stopCamera(); onOpenChange(v); }}>
-      <DialogContent className="p-0 overflow-hidden bg-white dark:bg-slate-950 border-none max-w-[400px] rounded-3xl" hideCloseButton>
+      <DialogContent className="p-0 overflow-hidden bg-white dark:bg-slate-950 border-none max-w-[400px] rounded-3xl [&>button]:hidden">
         
         {/* Header Corporativo MCI */}
         <div className="bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] p-8 flex flex-col items-center relative overflow-hidden">
