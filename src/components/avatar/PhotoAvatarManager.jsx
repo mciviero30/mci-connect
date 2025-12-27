@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Camera, Sparkles, Loader2, Check, Upload, X, UserCircle } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 // MCI Brand Styles
 const MCI_BRAND_STYLES = [
@@ -19,6 +20,7 @@ export default function PhotoAvatarManager({ open, onOpenChange }) {
   const queryClient = useQueryClient();
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const { language } = useLanguage();
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
@@ -202,8 +204,8 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
               queryClient.refetchQueries({ queryKey: ['currentUser'] });
               window.location.reload();
             }}
-            className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
-            title="Actualizar"
+            className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
+            title={language === 'es' ? 'Actualizar' : 'Refresh'}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
@@ -249,10 +251,10 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
           <Tabs defaultValue="capture" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
               <TabsTrigger value="capture" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                Foto Real
+                {language === 'es' ? 'Foto Real' : 'Real Photo'}
               </TabsTrigger>
               <TabsTrigger value="ai" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                Avatar IA
+                {language === 'es' ? 'Avatar IA' : 'AI Avatar'}
               </TabsTrigger>
             </TabsList>
 
@@ -270,7 +272,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                       onClick={capturePhoto} 
                       className="bg-white text-[#1E3A8A] hover:bg-slate-100 rounded-full px-8 shadow-xl font-bold"
                     >
-                      CAPTURAR
+                      {language === 'es' ? 'CAPTURAR' : 'CAPTURE'}
                     </Button>
                     <Button 
                       onClick={stopCamera} 
@@ -293,14 +295,14 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                     <div className="bg-blue-100 p-3 rounded-full">
                       <Camera className="text-[#1E3A8A]" size={24} />
                     </div>
-                    <span className="text-sm font-semibold text-slate-700">Cámara</span>
+                    <span className="text-sm font-semibold text-slate-700">{language === 'es' ? 'Cámara' : 'Camera'}</span>
                   </Button>
                   
                   <label className="h-28 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-[#1E3A8A] transition-all">
                     <div className="bg-slate-100 p-3 rounded-full">
                       <Upload className="text-slate-600" size={24} />
                     </div>
-                    <span className="text-sm font-semibold mt-2 text-slate-700">Archivo</span>
+                    <span className="text-sm font-semibold mt-2 text-slate-700">{language === 'es' ? 'Archivo' : 'File'}</span>
                     <input 
                       type="file" 
                       className="hidden" 
@@ -316,7 +318,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
             <TabsContent value="ai" className="space-y-4">
               <div>
                 <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-3">
-                  Estilo de Avatar
+                  {language === 'es' ? 'Estilo de Avatar' : 'Avatar Style'}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
                   {MCI_BRAND_STYLES.map(s => (
@@ -341,10 +343,10 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 
               <div>
                 <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
-                  Descripción (opcional)
+                  {language === 'es' ? 'Descripción (opcional)' : 'Description (optional)'}
                 </p>
                 <Textarea 
-                  placeholder="Ej: Hombre con barba, calvo, lentes..." 
+                  placeholder={language === 'es' ? 'Ej: Hombre con barba, calvo, lentes...' : 'Ex: Man with beard, bald, glasses...'} 
                   className="text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 focus-visible:ring-[#1E3A8A] rounded-xl h-20 resize-none"
                   value={extraDetails}
                   onChange={(e) => setExtraDetails(e.target.value)}
@@ -360,12 +362,12 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin mr-2 w-5 h-5" />
-                    Generando Avatar...
+                    {language === 'es' ? 'Generando Avatar...' : 'Generating Avatar...'}
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 w-5 h-5" />
-                    GENERAR AVATAR
+                    {language === 'es' ? 'GENERAR AVATAR' : 'GENERATE AVATAR'}
                   </>
                 )}
               </Button>
@@ -376,7 +378,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
           {(user?.profile_photo_url || user?.avatar_image_url) && (
             <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 text-center font-medium">
-                Usar como perfil:
+                {language === 'es' ? 'Usar como perfil:' : 'Use as profile:'}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <Button
@@ -390,7 +392,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
                   }`}
                 >
                   <Camera className="w-4 h-4 mr-1.5" />
-                  Foto
+                  {language === 'es' ? 'Foto' : 'Photo'}
                   {!usingAvatar && <Check className="w-4 h-4 ml-1.5" />}
                 </Button>
                 <Button
