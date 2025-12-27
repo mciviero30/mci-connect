@@ -90,7 +90,11 @@ export default function EmployeeProfile() {
     refetchOnWindowFocus: true
   });
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
+  const { data: currentUser } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
