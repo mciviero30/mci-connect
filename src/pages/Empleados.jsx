@@ -134,7 +134,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
             <option value="management">Management</option>
             <option value="operations">Operations</option>
             <option value="administration">Administration</option>
-            <option value="field">Field</option>
+            <option value="field">Field Technician</option>
             <option value="foreman">Foreman</option>
             <option value="HR">HR</option>
             <option value="IT">IT</option>
