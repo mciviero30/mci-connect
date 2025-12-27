@@ -80,6 +80,7 @@ import PayrollReminderService from "@/components/payroll/PayrollReminderService"
 import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
+import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -219,10 +220,11 @@ const LayoutContent = ({ children, currentPageName }) => {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: false,
-    staleTime: Infinity,
-    cacheTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 seconds instead of Infinity
+    cacheTime: 300000, // 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchInterval: 60000, // Poll every 60 seconds for changes
   });
 
   // Check if user is a client member (for redirect to ClientPortal)
@@ -719,7 +721,8 @@ const LayoutContent = ({ children, currentPageName }) => {
           }
         `}</style>
 
-        <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50">
+        <ProfileSyncManager user={user} />
+      <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50">
           <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"

@@ -147,6 +147,13 @@ export default function Configuracion() {
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.refetchQueries({ queryKey: ['currentUser'] });
+
+      // Notify other tabs/windows and apps
+      localStorage.setItem('profile_updated', Date.now().toString());
+      localStorage.setItem('profile_timestamp', new Date().toISOString());
+      window.dispatchEvent(new Event('profileUpdated'));
+
       toast({
         title: "✅ Success!",
         description: language === 'es' ? 'Perfil actualizado exitosamente.' : 'Profile updated successfully!',
@@ -241,6 +248,13 @@ export default function Configuracion() {
         preferred_profile_image: user?.preferred_profile_image || 'photo'
       });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.refetchQueries({ queryKey: ['currentUser'] });
+
+      // Notify other tabs/windows and apps
+      localStorage.setItem('profile_updated', Date.now().toString());
+      localStorage.setItem('profile_timestamp', new Date().toISOString());
+      window.dispatchEvent(new Event('profileUpdated'));
+
       toast({
         title: "✅ Success!",
         description: language === 'es' ? 'Foto de perfil actualizada.' : 'Profile photo updated!',
@@ -265,6 +279,13 @@ export default function Configuracion() {
         preferred_profile_image: user?.preferred_profile_image || 'photo'
       });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.refetchQueries({ queryKey: ['currentUser'] });
+
+      // Notify other tabs/windows and apps
+      localStorage.setItem('profile_updated', Date.now().toString());
+      localStorage.setItem('profile_timestamp', new Date().toISOString());
+      window.dispatchEvent(new Event('profileUpdated'));
+
       toast({
         title: "✅ Success!",
         description: language === 'es' ? 'Foto capturada y actualizada.' : 'Photo captured and updated!',
