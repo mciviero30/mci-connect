@@ -23,7 +23,11 @@ export default function TimeOffRequests() {
   const [rejectionReason, setRejectionReason] = useState(''); // Renamed from notes
   const [language, setLanguage] = useState('en'); // Added for toast messages
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const isAdmin = user?.role === 'admin';
 
   const { data: requests, isLoading } = useQuery({
