@@ -221,12 +221,27 @@ export default function Empleados() {
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
-  const { data: employees = [], isLoading } = useQuery({
+  const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('-created_date'),
     staleTime: 30000,
     select: (data) => data // Full data, we'll paginate in UI
   });
+
+  // Listen for profile updates
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      refetchEmployees();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('storage', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('storage', handleProfileUpdate);
+    };
+  }, [refetchEmployees]);
 
   // Lazy load onboarding forms for progress calculation
   const { data: onboardingForms = [] } = useQuery({
