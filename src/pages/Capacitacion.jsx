@@ -17,7 +17,11 @@ export default function Capacitacion() {
   const toast = useToast();
   const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses'],
     queryFn: () => base44.entities.Course.list(),
