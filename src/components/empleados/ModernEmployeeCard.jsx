@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,33 @@ import { formatPosition } from "@/components/utils/nameHelpers";
 
 export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails }) {
   const navigate = useNavigate();
+  const [profileImage, setProfileImage] = useState(
+    employee.preferred_profile_image === 'avatar' && employee.avatar_image_url
+      ? employee.avatar_image_url
+      : employee.profile_photo_url
+  );
+
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      const timestamp = localStorage.getItem('profile_timestamp');
+      if (timestamp) {
+        // Force re-render with new timestamp
+        const newImage = employee.preferred_profile_image === 'avatar' && employee.avatar_image_url
+          ? `${employee.avatar_image_url}?v=${timestamp}`
+          : employee.profile_photo_url ? `${employee.profile_photo_url}?v=${timestamp}` : null;
+        setProfileImage(newImage);
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('storage', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('storage', handleProfileUpdate);
+    };
+  }, [employee.email, employee.avatar_image_url, employee.profile_photo_url, employee.preferred_profile_image]);
 
   // Lazy load certifications only when needed
   const { data: certifications = [] } = useQuery({
@@ -48,9 +75,10 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         {/* Header Section */}
         <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
           <div className="flex items-start gap-2 sm:gap-2.5">
-            {employee.profile_photo_url ? (
+            {profileImage ? (
               <img
-                src={employee.profile_photo_url}
+                key={employee.profile_last_updated || employee.id}
+                src={profileImage}
                 alt={displayName}
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
               />
