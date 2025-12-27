@@ -45,7 +45,11 @@ export default function Trabajos() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [teamFilter, setTeamFilter] = useState('all');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   
   // ADMIN BYPASS: Admins see ALL jobs without filtering
   const { data: jobs, isLoading } = useQuery({
