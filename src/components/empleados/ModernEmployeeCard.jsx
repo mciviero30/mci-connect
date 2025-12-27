@@ -63,8 +63,20 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
     ).join(' ');
   })();
 
-  const teamLocation = employee.team_name 
-    ? `Team: ${employee.team_name}`
+  // Load team name if team_id exists but team_name is missing
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    initialData: [],
+    staleTime: 300000,
+    enabled: !!employee.team_id && !employee.team_name
+  });
+
+  const teamName = employee.team_name || 
+    (employee.team_id ? teams.find(t => t.id === employee.team_id)?.team_name : null);
+
+  const teamLocation = teamName 
+    ? `Team: ${teamName}`
     : 'No Team Assigned';
 
   const progressPercentage = onboardingProgress?.percentage || 0;
