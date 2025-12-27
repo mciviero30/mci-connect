@@ -12,7 +12,11 @@ export default function TeamGoals() {
   const { t, language } = useLanguage();
   const [selectedTeam, setSelectedTeam] = useState('all');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
