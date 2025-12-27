@@ -76,10 +76,11 @@ export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-    cacheTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 30000,
+    cacheTime: 300000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000,
   });
 
   const isAdmin = user?.role === 'admin' || 
@@ -662,7 +663,7 @@ export default function Dashboard() {
                 {profileImage ? (
                   <img
                     key={imageKey}
-                    src={profileImage}
+                    src={`${profileImage}?v=${imageKey}`}
                     alt={user?.full_name}
                     className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover ring-2 sm:ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg"
                   />
