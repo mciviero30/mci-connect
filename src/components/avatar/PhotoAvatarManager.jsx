@@ -194,7 +194,7 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) stopCamera(); onOpenChange(v); }}>
-      <DialogContent className="p-0 overflow-hidden bg-white dark:bg-slate-950 border-none max-w-[400px] rounded-3xl">
+      <DialogContent className="p-0 overflow-hidden bg-white dark:bg-slate-950 border-none max-w-[400px] rounded-3xl" hideCloseButton>
         
         {/* Header Corporativo MCI */}
         <div className="bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] p-8 flex flex-col items-center relative overflow-hidden">
@@ -204,10 +204,10 @@ CRITICAL IDENTITY PRESERVATION REQUIREMENTS:
               queryClient.refetchQueries({ queryKey: ['currentUser'] });
               window.location.reload();
             }}
-            className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
             title={language === 'es' ? 'Actualizar' : 'Refresh'}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
             </svg>
           </button>
