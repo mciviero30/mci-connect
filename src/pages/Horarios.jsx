@@ -9,7 +9,11 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 
 export default function Horarios() {
   const { t, language } = useLanguage();
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const isAdmin = user?.role === 'admin' || 
     ['CEO', 'administrator', 'manager'].includes(user?.position) ||
     user?.department === 'HR';
