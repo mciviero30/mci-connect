@@ -17,6 +17,8 @@ export default function Recognitions() {
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
   });
 
   const { data: allEmployees = [] } = useQuery({
