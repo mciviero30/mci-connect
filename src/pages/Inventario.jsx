@@ -41,7 +41,11 @@ export default function Inventario() {
   const [selectedTeamId, setSelectedTeamId] = useState('all');
   const [selectedInventoryType, setSelectedInventoryType] = useState('all');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
