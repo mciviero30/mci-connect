@@ -24,11 +24,21 @@ const Tooltip = ({ children }) => {
   )
 }
 
-const TooltipTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
-  <div ref={ref} className={cn("cursor-pointer", className)} {...props}>
-    {children}
-  </div>
-))
+const TooltipTrigger = React.forwardRef(({ className, children, asChild, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      ref,
+      className: cn("cursor-pointer", className, children.props.className),
+      ...props
+    });
+  }
+  
+  return (
+    <div ref={ref} className={cn("cursor-pointer", className)} {...props}>
+      {children}
+    </div>
+  );
+})
 TooltipTrigger.displayName = "TooltipTrigger"
 
 const TooltipContent = React.forwardRef(({ className, sideOffset = 4, children, open, ...props }, ref) => {
