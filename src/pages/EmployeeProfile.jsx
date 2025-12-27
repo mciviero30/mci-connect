@@ -645,13 +645,21 @@ export default function EmployeeProfile() {
   });
 
   React.useEffect(() => {
-    if (employee) {
+    if (employee && teams.length > 0) {
       // Build proper full name from first_name + last_name
       const properFullName = employee.first_name && employee.last_name
         ? `${employee.first_name} ${employee.last_name}`.trim()
         : (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')
           ? employee.full_name
           : '');
+
+      // Find team_name from team_id if missing
+      let teamName = employee.team_name || '';
+      if (employee.team_id && !teamName) {
+        const matchedTeam = teams.find(t => t.id === employee.team_id);
+        teamName = matchedTeam?.team_name || '';
+        console.log('🔧 Fixed team_name from team_id:', { team_id: employee.team_id, team_name: teamName });
+      }
 
       setEditForm({
         full_name: properFullName,
@@ -665,16 +673,16 @@ export default function EmployeeProfile() {
         ssn_tax_id: employee.ssn_tax_id || '',
         hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : '',
         team_id: employee.team_id || '',
-        team_name: employee.team_name || ''
+        team_name: teamName
       });
       
       console.log('🔍 Edit form initialized:', {
         department: employee.department,
         team_id: employee.team_id,
-        team_name: employee.team_name
+        team_name: teamName
       });
     }
-  }, [employee]);
+  }, [employee, teams]);
 
   // NEW: Prompt #54 - Calculate KPIs
   const performanceKPIs = React.useMemo(() => {
