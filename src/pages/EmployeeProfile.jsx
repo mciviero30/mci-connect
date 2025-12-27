@@ -561,9 +561,13 @@ export default function EmployeeProfile() {
         last_name: lastName,
         full_name: fullName,
         position: data.position ? formatPosition(data.position) : data.position,
-        department: data.department ? capitalizeName(data.department) : data.department,
-        address: data.address ? capitalizeName(data.address) : data.address
+        department: data.department || null,
+        address: data.address ? capitalizeName(data.address) : data.address,
+        team_id: data.team_id || null,
+        team_name: data.team_name || null
       };
+      
+      console.log('💾 Saving employee data:', updatePayload);
       
       if (currentUser && employee.email === currentUser.email) {
         await base44.auth.updateMe(updatePayload);
@@ -601,10 +605,17 @@ export default function EmployeeProfile() {
         console.error('Directory sync error:', error);
       }
 
+      // Invalidate all relevant queries
       queryClient.invalidateQueries({ queryKey: ['employee'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+
+      // Trigger profile sync event
+      localStorage.setItem('profile_updated', Date.now().toString());
+      localStorage.setItem('profile_timestamp', new Date().toISOString());
+      window.dispatchEvent(new Event('profileUpdated'));
 
       setShowEditDialog(false);
       alert('✅ Employee updated successfully!');
@@ -645,6 +656,12 @@ export default function EmployeeProfile() {
         hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : '',
         team_id: employee.team_id || '',
         team_name: employee.team_name || ''
+      });
+      
+      console.log('🔍 Edit form initialized:', {
+        department: employee.department,
+        team_id: employee.team_id,
+        team_name: employee.team_name
       });
     }
   }, [employee]);
@@ -1402,13 +1419,18 @@ export default function EmployeeProfile() {
                     <Label htmlFor="team" className="text-gray-900 font-medium">Team</Label>
                     <select
                       id="team"
-                      value={editForm.team_id}
+                      value={editForm.team_id || ''}
                       onChange={(e) => {
                         const selectedTeam = teams.find(t => t.id === e.target.value);
+                        console.log('🔄 Team selected:', { 
+                          teamId: e.target.value, 
+                          selectedTeam,
+                          allTeams: teams 
+                        });
                         setEditForm({
                           ...editForm,
                           team_id: e.target.value,
-                          team_name: selectedTeam?.team_name || ''
+                          team_name: selectedTeam?.name || selectedTeam?.team_name || ''
                         });
                       }}
                       className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1421,7 +1443,7 @@ export default function EmployeeProfile() {
                         <option disabled>No teams available</option>
                       ) : (
                         teams.map(team => (
-                          <option key={team.id} value={team.id}>{team.team_name}</option>
+                          <option key={team.id} value={team.id}>{team.name || team.team_name}</option>
                         ))
                       )}
                     </select>
@@ -1486,8 +1508,12 @@ export default function EmployeeProfile() {
                 onClick={() => {
                   const submitData = {
                     ...editForm,
-                    hourly_rate: editForm.hourly_rate ? parseFloat(editForm.hourly_rate) : null
+                    hourly_rate: editForm.hourly_rate ? parseFloat(editForm.hourly_rate) : null,
+                    department: editForm.department || null,
+                    team_id: editForm.team_id || null,
+                    team_name: editForm.team_name || null
                   };
+                  console.log('📤 Submitting form data:', submitData);
                   updateEmployeeMutation.mutate(submitData);
                 }}
                 disabled={updateEmployeeMutation.isPending}
