@@ -29,7 +29,11 @@ export default function SkillMatrix() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [validateDialog, setValidateDialog] = useState({ open: false, skill: null });
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   const isAdmin = user?.role === 'admin';
 
   const { data: allSkills = [], isLoading: skillsLoading } = useQuery({
