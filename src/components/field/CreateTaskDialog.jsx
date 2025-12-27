@@ -43,7 +43,7 @@ const CHECKLIST_TEMPLATES = {
   ],
 };
 
-export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated, planImageUrl, existingTask }) {
+export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated, planImageUrl, pdfCanvas, existingTask }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [task, setTask] = useState({

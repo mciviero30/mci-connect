@@ -1010,6 +1010,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         pinPosition={pendingPinPosition || (editingTask ? { x: editingTask.pin_x, y: editingTask.pin_y } : null)}
         onCreated={handleTaskCreated}
         planImageUrl={pdfCanvas || plan.file_url}
+        pdfCanvas={pdfCanvas}
         existingTask={editingTask}
       />
     </div>

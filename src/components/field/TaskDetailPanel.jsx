@@ -29,7 +29,7 @@ import TaskDependencies from './TaskDependencies.jsx';
 import TaskChecklistEditor from './TaskChecklistEditor.jsx';
 import OptimalAssigneeSuggestor from './OptimalAssigneeSuggestor.jsx';
 
-export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTasks = [], onZoomTo, planImageUrl }) {
+export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTasks = [], onZoomTo, planImageUrl, pdfCanvas }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
   const [newComment, setNewComment] = useState('');
@@ -166,12 +166,12 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
         )}
 
         {/* Mini Map - Location Preview */}
-        {task.pin_x && task.pin_y && planImageUrl && (
+        {task.pin_x && task.pin_y && (pdfCanvas || planImageUrl) && (
           <div>
             <label className="text-xs text-slate-600 dark:text-slate-400 uppercase mb-1 block">Location</label>
             <div className="relative w-full h-32 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900">
               <img 
-                src={planImageUrl}
+                src={pdfCanvas || planImageUrl}
                 alt="Plan preview"
                 className="w-full h-full object-cover"
               />
