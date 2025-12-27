@@ -55,6 +55,7 @@ export default function EmployeeProfile() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [profileImageKey, setProfileImageKey] = useState(Date.now());
 
   const [editForm, setEditForm] = useState({
     full_name: '',
@@ -91,7 +92,7 @@ export default function EmployeeProfile() {
     initialData: [],
   });
 
-  const { data: employee, isLoading } = useQuery({
+  const { data: employee, isLoading, refetch: refetchEmployee } = useQuery({
     queryKey: ['employee', employeeId],
     queryFn: async () => {
       const employees = await base44.entities.User.list();
@@ -99,6 +100,25 @@ export default function EmployeeProfile() {
     },
     enabled: !!employeeId
   });
+
+  // Listen for profile updates
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      const timestamp = localStorage.getItem('profile_timestamp');
+      if (timestamp) {
+        setProfileImageKey(Date.now());
+        refetchEmployee();
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('storage', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('storage', handleProfileUpdate);
+    };
+  }, [refetchEmployee]);
 
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['employeeTimeEntries', employee?.email],
@@ -822,17 +842,24 @@ export default function EmployeeProfile() {
               <CardTitle className="text-gray-900">Employee Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {employee.profile_photo_url ? (
-                <img
-                  src={employee.profile_photo_url}
-                  alt={getDisplayName(employee)}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-blue-500/30 mx-auto"
-                />
-              ) : (
-                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-4xl mx-auto">
-                  {getDisplayName(employee)?.[0]?.toUpperCase()}
-                </div>
-              )}
+              {(() => {
+                const profileImage = employee.preferred_profile_image === 'avatar' && employee.avatar_image_url
+                  ? employee.avatar_image_url
+                  : employee.profile_photo_url;
+                
+                return profileImage ? (
+                  <img
+                    key={profileImageKey}
+                    src={`${profileImage}?v=${profileImageKey}`}
+                    alt={getDisplayName(employee)}
+                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-500/30 mx-auto"
+                  />
+                ) : (
+                  <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-4xl mx-auto">
+                    {getDisplayName(employee)?.[0]?.toUpperCase()}
+                  </div>
+                );
+              })()}
 
               <div className="space-y-3 text-sm">
                 {employee.email && (
