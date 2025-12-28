@@ -42,13 +42,13 @@ Deno.serve(async (req) => {
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           
-          <!-- Header with Logo and Black Bar -->
+          <!-- Header with Logo and Blue Bar -->
           <tr>
-            <td style="background-color: #000000; padding: 0; height: 100px;">
+            <td style="background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); padding: 0; height: 100px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding: 20px 30px; vertical-align: middle;">
-                    <img src="${logoUrl}" alt="MCI" style="height: 60px; width: auto; display: block;">
+                    <img src="${logoUrl}" alt="MCI Connect" style="height: 60px; width: auto; display: block;">
                   </td>
                 </tr>
               </table>
@@ -163,13 +163,13 @@ Deno.serve(async (req) => {
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           
-          <!-- Header with Logo and Black Bar -->
+          <!-- Header with Logo and Blue Bar -->
           <tr>
-            <td style="background-color: #000000; padding: 0; height: 100px;">
+            <td style="background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); padding: 0; height: 100px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding: 20px 30px; vertical-align: middle;">
-                    <img src="${logoUrl}" alt="MCI" style="height: 60px; width: auto; display: block;">
+                    <img src="${logoUrl}" alt="MCI Connect" style="height: 60px; width: auto; display: block;">
                   </td>
                 </tr>
               </table>
