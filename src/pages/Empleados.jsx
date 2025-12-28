@@ -12,12 +12,14 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
+import { useToast } from "@/components/ui/toast";
 
 
 
 const EmployeeFormDialog = ({ employee, onClose }) => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     email: employee?.email || '',
     first_name: employee?.first_name || '',
@@ -58,14 +60,19 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
       };
 
       if (employee) {
-        await base44.entities.User.update(employee.id, payload);
+        return await base44.entities.User.update(employee.id, payload);
       } else {
-        await base44.entities.User.create(payload);
+        return await base44.entities.User.create(payload);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success(employee ? 'Employee updated!' : 'Employee created!');
       onClose();
+    },
+    onError: (error) => {
+      console.error('Error saving employee:', error);
+      toast.error('Error: ' + (error.message || 'Could not save employee'));
     }
   });
 
