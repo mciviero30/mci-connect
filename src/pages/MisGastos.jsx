@@ -105,21 +105,22 @@ export default function MisGastos() {
   ];
 
   return (
-    <EmployeePageLayout
-      title={t('my_expenses')}
-      subtitle={t('track_your_expenses_and_receipts')}
-      stats={pageStats}
-      headerActions={
-        <Button 
-          onClick={() => { setEditingExpense(null); setShowForm(!showForm); }} 
-          className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-          variant="outline"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {t('new_expense')}
-        </Button>
-      }
-    >
+    <div className="pb-20 md:pb-0">
+      <EmployeePageLayout
+        title={t('my_expenses')}
+        subtitle={t('track_your_expenses_and_receipts')}
+        stats={pageStats}
+        headerActions={
+          <Button 
+            onClick={() => { setEditingExpense(null); setShowForm(!showForm); }} 
+            className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+            variant="outline"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t('new_expense')}
+          </Button>
+        }
+      >
       {showForm && (
         <ModernCard className="mb-6">
           <ExpenseForm
@@ -206,6 +207,7 @@ export default function MisGastos() {
           </Table>
         </div>
       </ModernCard>
-    </EmployeePageLayout>
+      </EmployeePageLayout>
+    </div>
   );
 }

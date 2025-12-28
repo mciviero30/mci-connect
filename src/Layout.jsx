@@ -81,6 +81,7 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
+import BottomNav from "@/components/navigation/BottomNav";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -896,13 +897,16 @@ const LayoutContent = ({ children, currentPageName }) => {
           </div>
 
           <AIAssistant currentPage={currentPageName} />
-        </main>
-      </div>
-    </SidebarProvider>
-  );
-};
+          </main>
 
-export default function Layout({ children, currentPageName }) {
+          {/* Bottom Navigation for Mobile */}
+          <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
+          </div>
+          </SidebarProvider>
+          );
+          };
+
+          export default function Layout({ children, currentPageName }) {
   return (
     <ToastProvider>
       <ErrorBoundary>

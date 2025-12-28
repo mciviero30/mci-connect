@@ -116,8 +116,8 @@ export default function SkillMatrix() {
 
   if (!isAdmin) {
     return (
-      <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] pb-20 md:pb-0">
+        <div className="max-w-4xl mx-auto p-4 md:p-8">
           <PageHeader
             title="My Skills"
             description="Manage your skills and expertise"
@@ -130,8 +130,8 @@ export default function SkillMatrix() {
   }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title="Skill Matrix"
           description="View and validate employee skills across the organization"
