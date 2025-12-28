@@ -26,6 +26,7 @@ import { format } from 'date-fns';
 import AvatarCreator from '@/components/avatar/AvatarCreator';
 import ClientComments from '@/components/client/ClientComments';
 import PhotoGalleryEnhanced from '@/components/client/PhotoGalleryEnhanced';
+import ClientDriveViewer from '@/components/client/ClientDriveViewer';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -266,6 +267,10 @@ export default function ClientPortal() {
               <FileText className="w-4 h-4 mr-2" />
               Documentos
             </TabsTrigger>
+            <TabsTrigger value="drive" className="rounded-lg">
+              <FileText className="w-4 h-4 mr-2" />
+              Drive
+            </TabsTrigger>
             <TabsTrigger value="reports" className="rounded-lg">
               <BarChart3 className="w-4 h-4 mr-2" />
               Reportes
@@ -366,6 +371,17 @@ export default function ClientPortal() {
           {/* Comments Tab */}
           <TabsContent value="comments">
             <ClientComments jobId={selectedJob?.id} />
+          </TabsContent>
+
+          {/* Google Drive Tab */}
+          <TabsContent value="drive">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                Archivos en Google Drive
+              </h3>
+              <ClientDriveViewer job={selectedJob} />
+            </div>
           </TabsContent>
 
           {/* Documents Tab */}
