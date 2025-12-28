@@ -88,6 +88,10 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
 
   React.useEffect(() => {
     console.log('Teams loaded:', teams);
+    console.log('Teams count:', teams.length);
+    teams.forEach((team, idx) => {
+      console.log(`Team ${idx}:`, { id: team.id, name: team.name });
+    });
   }, [teams]);
 
   return (
