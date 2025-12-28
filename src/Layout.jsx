@@ -133,23 +133,30 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setFocusedIndex(prev => {
-          const next = prev < allItems.length - 1 ? prev + 1 : prev === -1 ? 0 : 0;
+          const next = (prev + 1) % allItems.length;
           itemRefs.current[next]?.focus();
           return next;
         });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setFocusedIndex(prev => {
-          const next = prev > 0 ? prev - 1 : prev === -1 ? 0 : allItems.length - 1;
+          const next = prev <= 0 ? allItems.length - 1 : prev - 1;
           itemRefs.current[next]?.focus();
           return next;
         });
+      } else if (e.key === 'Enter' && focusedIndex >= 0) {
+        e.preventDefault();
+        const selectedItem = allItems[focusedIndex];
+        if (selectedItem?.url) {
+          navigate(selectedItem.url);
+          setOpenMobile(false);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [allItems]);
+  }, [allItems, focusedIndex, navigate, setOpenMobile]);
   
   let itemIndex = 0;
   
