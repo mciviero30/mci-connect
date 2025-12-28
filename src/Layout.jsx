@@ -928,7 +928,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             </motion.header>
           )}
 
-          <div className="flex-1 overflow-y-auto bg-[#F1F5F9] dark:bg-[#181818]" data-scrollable="true">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818] -webkit-overflow-scrolling: touch;" data-scrollable="true" style={{ WebkitOverflowScrolling: 'touch' }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
@@ -936,9 +936,9 @@ const LayoutContent = ({ children, currentPageName }) => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="h-full w-full"
+                className="min-h-full w-full"
               >
-                <div className="h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0">
+                <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0">
                   {children}
                 </div>
               </motion.div>
