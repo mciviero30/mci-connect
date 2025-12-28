@@ -118,6 +118,42 @@ const ThemeToggle = () => {
 
 const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
   const { setOpenMobile } = useSidebar();
+  const [focusedIndex, setFocusedIndex] = React.useState(-1);
+  const itemRefs = React.useRef([]);
+  
+  // Flatten all navigation items for keyboard navigation
+  const allItems = React.useMemo(() => {
+    return navigation.flatMap(section => section.items);
+  }, [navigation]);
+
+  // Keyboard navigation
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIndex(prev => {
+          const next = prev < allItems.length - 1 ? prev + 1 : 0;
+          itemRefs.current[next]?.focus();
+          return next;
+        });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIndex(prev => {
+          const next = prev > 0 ? prev - 1 : allItems.length - 1;
+          itemRefs.current[next]?.focus();
+          return next;
+        });
+      } else if (e.key === 'Enter' && focusedIndex >= 0) {
+        e.preventDefault();
+        itemRefs.current[focusedIndex]?.click();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [focusedIndex, allItems.length]);
+  
+  let itemIndex = 0;
   
   return (
     <>
@@ -132,6 +168,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
               {section.items.map((item) => {
                 const isActive = location.pathname === item.url;
                 const showBadge = (item.title === 'Expenses' || item.title === 'My Expenses') && pendingExpenses > 0;
+                const currentItemIndex = itemIndex++;
 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -143,7 +180,12 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
                           : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      <Link to={item.url} onClick={() => setOpenMobile(false)} className="flex items-center gap-3 px-3 py-2.5 relative group">
+                      <Link 
+                        ref={el => itemRefs.current[currentItemIndex] = el}
+                        to={item.url} 
+                        onClick={() => setOpenMobile(false)} 
+                        className="flex items-center gap-3 px-3 py-2.5 relative group"
+                        tabIndex={0}>
                         <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
                           isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
                         }`} style={item.title === 'MCI Field' && !isActive ? { 
