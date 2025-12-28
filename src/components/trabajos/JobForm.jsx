@@ -9,10 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import JobImporter from "../sync/JobImporter";
-import { MapPin } from "lucide-react";
+import { MapPin, FolderPlus, ExternalLink } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const { t } = useLanguage();
+  const toast = useToast();
   
   // Get current user for admin check
   const { data: user } = useQuery({
@@ -20,6 +22,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     queryFn: () => base44.auth.me(),
   });
   const [showImporter, setShowImporter] = useState(false);
+  const [creatingFolder, setCreatingFolder] = useState(false);
   
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -99,6 +102,37 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
       ...importedData
     });
     setShowImporter(false);
+  };
+
+  const handleCreateDriveFolder = async () => {
+    if (!formData.id || !formData.name) {
+      toast.error('Save the job first before creating a folder');
+      return;
+    }
+
+    setCreatingFolder(true);
+    try {
+      const { createJobDriveFolder } = await import('@/functions/createJobDriveFolder');
+      const response = await createJobDriveFolder({
+        job_id: formData.id,
+        job_name: formData.name
+      });
+
+      if (response.data.success) {
+        setFormData({
+          ...formData,
+          drive_folder_id: response.data.folder_id,
+          drive_folder_url: response.data.folder_url
+        });
+        toast.success('Google Drive folder created!');
+      } else {
+        toast.error(response.data.error || 'Failed to create folder');
+      }
+    } catch (error) {
+      toast.error('Error creating folder: ' + error.message);
+    } finally {
+      setCreatingFolder(false);
+    }
   };
 
   return (
@@ -305,6 +339,55 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             </div>
           </div>
         </div>
+
+        {/* Google Drive Folder - ADMIN ONLY */}
+        {user?.role === 'admin' && job && (
+          <div className="border-t-4 border-blue-400 pt-6 mt-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:bg-blue-900/10 -mx-4 px-4 pb-4 rounded-lg shadow-inner">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-2xl">
+                <FolderPlus className="w-7 h-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-black text-slate-900 dark:text-white text-xl">Google Drive Folder</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Auto-create project folder for photos & documents</p>
+              </div>
+            </div>
+
+            {formData.drive_folder_url ? (
+              <a
+                href={formData.drive_folder_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-xl border-2 border-blue-400 hover:border-blue-500 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                  <span className="text-2xl">✓</span>
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-slate-900 dark:text-white">Folder Created</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">Click to open in Google Drive</p>
+                </div>
+                <ExternalLink className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" />
+              </a>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleCreateDriveFolder}
+                disabled={creatingFolder}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700 shadow-lg"
+              >
+                {creatingFolder ? (
+                  <>Creating Folder...</>
+                ) : (
+                  <>
+                    <FolderPlus className="w-5 h-5 mr-2" />
+                    Create Google Drive Folder
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Web Portfolio Settings - ADMIN ONLY */}
         {user?.role === 'admin' && (
