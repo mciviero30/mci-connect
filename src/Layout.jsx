@@ -720,17 +720,27 @@ const LayoutContent = ({ children, currentPageName }) => {
           /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
           /* ============================================ */
 
-          /* iOS PWA Optimizations */
+          /* Mobile Touch Optimizations - All Devices */
           html {
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
-            overscroll-behavior: none;
+            overscroll-behavior-y: contain;
+            height: 100%;
           }
 
           body {
             -webkit-user-select: none;
             user-select: none;
+            height: 100%;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+          }
+          
+          #root {
+            height: 100%;
+            overflow: auto;
           }
 
           /* Allow text selection in inputs and content areas */
@@ -923,7 +933,11 @@ const LayoutContent = ({ children, currentPageName }) => {
             </motion.header>
           )}
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" data-scrollable="true" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" data-scrollable="true" style={{ 
+            WebkitOverflowScrolling: 'touch', 
+            touchAction: 'pan-y',
+            overscrollBehaviorY: 'contain'
+          }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
