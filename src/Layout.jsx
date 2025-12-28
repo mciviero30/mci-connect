@@ -127,26 +127,20 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
     return navigation.flatMap(section => section.items);
   }, [navigation]);
 
-  // Keyboard navigation - only moves focus, user presses Enter to navigate
+  // Keyboard navigation
   React.useEffect(() => {
     const handleKeyDown = (e) => {
-      // Only handle arrow keys when focus is on a sidebar item
-      const activeElement = document.activeElement;
-      const isSidebarItem = activeElement && activeElement.closest('[data-sidebar-item]');
-
-      if (!isSidebarItem) return;
-
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setFocusedIndex(prev => {
-          const next = prev < allItems.length - 1 ? prev + 1 : 0;
+          const next = prev < allItems.length - 1 ? prev + 1 : prev === -1 ? 0 : 0;
           itemRefs.current[next]?.focus();
           return next;
         });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setFocusedIndex(prev => {
-          const next = prev > 0 ? prev - 1 : allItems.length - 1;
+          const next = prev > 0 ? prev - 1 : prev === -1 ? 0 : allItems.length - 1;
           itemRefs.current[next]?.focus();
           return next;
         });
@@ -155,7 +149,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedIndex, allItems]);
+  }, [allItems]);
   
   let itemIndex = 0;
   
