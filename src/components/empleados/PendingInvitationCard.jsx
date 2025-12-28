@@ -145,7 +145,7 @@ export default function PendingInvitationCard({ employee }) {
         </div>
 
         {/* Contact Info */}
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 mt-auto">
           {employee.email && (
             <div className="flex items-center gap-1.5 text-[#666666]">
               <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
@@ -159,7 +159,7 @@ export default function PendingInvitationCard({ employee }) {
             </div>
           )}
         </div>
-      </div>
+        </div>
 
       {/* Gradient Line at Bottom */}
       <div className="h-[3px] bg-gradient-to-r from-yellow-400 to-yellow-600" />
