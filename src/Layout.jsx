@@ -220,11 +220,11 @@ const LayoutContent = ({ children, currentPageName }) => {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: false,
-    staleTime: 30000, // 30 seconds instead of Infinity
-    cacheTime: 300000, // 5 minutes
-    refetchOnMount: true,
-    refetchOnWindowFocus: true, // Refetch when user returns to tab
-    refetchInterval: 60000, // Poll every 60 seconds for changes
+    staleTime: 300000, // 5 minutes
+    cacheTime: 600000, // 10 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: false, // No polling
   });
 
   // Check if user is a client member (for redirect to ClientPortal)
@@ -235,8 +235,9 @@ const LayoutContent = ({ children, currentPageName }) => {
       role: 'client'
     }),
     enabled: !!user?.email && user?.role !== 'admin',
-    staleTime: 300000, // 5 minutes
+    staleTime: 600000, // 10 minutes
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
@@ -247,7 +248,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user?.email }),
     enabled: !!user?.email && !isClientOnly && user?.employment_status !== 'deleted',
     initialData: [],
-    staleTime: 60000, // 1 minute cache
+    staleTime: 600000, // 10 minutes cache
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -316,7 +317,7 @@ const LayoutContent = ({ children, currentPageName }) => {
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 300000, // 5 minutes
+    staleTime: 600000, // 10 minutes
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
