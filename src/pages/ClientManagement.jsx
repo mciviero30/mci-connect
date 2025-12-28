@@ -262,7 +262,8 @@ export default function ClientManagement() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="clients" className="space-y-6">
+          <TabsContent value="clients">
+            <div className="space-y-6">
           {Object.entries(projectGroups).map(([projectId, members]) => (
             <Card key={projectId}>
               <CardHeader className="border-b bg-slate-50">
@@ -351,7 +352,7 @@ export default function ClientManagement() {
               </CardContent>
             </Card>
           )}
-        </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="automation">
