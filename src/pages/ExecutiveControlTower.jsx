@@ -40,7 +40,10 @@ const createTeamIcon = (color) => {
 export default function ExecutiveControlTower() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Real-time active employees (clocked in today)
@@ -51,23 +54,33 @@ export default function ExecutiveControlTower() {
       const entries = await base44.entities.TimeEntry.filter({ date: today });
       return entries.filter(e => e.check_in && !e.check_out); // Currently working
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 30000
   });
 
   // Compliance data
   const { data: employees = [] } = useQuery({
     queryKey: ['all-employees'],
-    queryFn: () => base44.entities.User.list()
+    queryFn: () => base44.entities.User.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: certifications = [] } = useQuery({
     queryKey: ['all-certifications'],
-    queryFn: () => base44.entities.Certification.list()
+    queryFn: () => base44.entities.Certification.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['all-onboarding-forms'],
-    queryFn: () => base44.entities.OnboardingForm.list()
+    queryFn: () => base44.entities.OnboardingForm.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Financial data
@@ -76,28 +89,43 @@ export default function ExecutiveControlTower() {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['transactions-month'],
-    queryFn: () => base44.entities.Transaction.list()
+    queryFn: () => base44.entities.Transaction.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices-month'],
-    queryFn: () => base44.entities.Invoice.list()
+    queryFn: () => base44.entities.Invoice.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses-month'],
-    queryFn: () => base44.entities.Expense.list()
+    queryFn: () => base44.entities.Expense.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Needs attention items
   const { data: pendingExpenses = [] } = useQuery({
     queryKey: ['pending-expenses'],
-    queryFn: () => base44.entities.Expense.filter({ status: 'pending' })
+    queryFn: () => base44.entities.Expense.filter({ status: 'pending' }),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: incidentReports = [] } = useQuery({
     queryKey: ['incident-reports'],
-    queryFn: () => base44.entities.FormSubmission.filter({ template_name: 'Incident Report' })
+    queryFn: () => base44.entities.FormSubmission.filter({ template_name: 'Incident Report' }),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Calculate compliance metrics

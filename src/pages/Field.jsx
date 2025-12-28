@@ -55,6 +55,9 @@ export default function Field() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Fetch job assignments for restricted users
@@ -62,6 +65,9 @@ export default function Field() {
     queryKey: ['user-job-assignments', user?.email],
     queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }),
     enabled: !!user?.email && (user?.role === 'customer' || user?.role === 'field_worker'),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // ADMIN BYPASS: Admins see ALL jobs, others see assigned jobs only
@@ -97,11 +103,17 @@ export default function Field() {
       return base44.entities.Job.list('-created_date');
     },
     enabled: !!user,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['field-tasks'],
     queryFn: () => base44.entities.Task.list('-created_date'),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const createJobMutation = useMutation({
