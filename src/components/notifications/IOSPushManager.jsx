@@ -31,6 +31,12 @@ export default function UniversalPushManager({ user }) {
 
     const setupPushNotifications = async () => {
       try {
+        // Check if running in iframe (preview mode) - skip notifications
+        if (window.self !== window.top) {
+          console.log('Running in iframe - push notifications disabled');
+          return;
+        }
+
         // Check current permission status
         const currentPermission = Notification.permission;
         
