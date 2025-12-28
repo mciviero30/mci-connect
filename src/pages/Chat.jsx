@@ -512,18 +512,18 @@ export default function Chat() {
   ];
 
   return (
-    <div className="p-0 md:p-4 min-h-screen bg-slate-50 dark:bg-[#0a0a0a]">
+    <div className="p-0 md:p-6 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50 dark:from-[#0a0a0a] dark:via-[#0f1419] dark:to-[#0a0a0a]">
       <OnlineStatusManager userEmail={user?.email} />
-      <div className="max-w-[1600px] mx-auto h-screen md:h-[calc(100vh-2rem)] flex flex-col">
+      <div className="max-w-[1800px] mx-auto h-screen md:h-[calc(100vh-3rem)] flex flex-col">
         {/* Header - mobile/tablet */}
-        <div className="md:hidden px-4 py-3 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div className="md:hidden px-4 py-4 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-md">
-              <MessageSquare className="w-5 h-5 text-white" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <MessageSquare className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white">{t('chat')}</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{t('realTimeCommunication')}</p>
+              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t('chat')}</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t('realTimeCommunication')}</p>
             </div>
           </div>
           <ChatNotificationCenter 
@@ -546,56 +546,59 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Container */}
-        <div className="flex-1 flex overflow-hidden bg-white dark:bg-[#0a0a0a] md:rounded-2xl md:shadow-2xl md:border md:border-slate-200 dark:md:border-slate-800">
+        <div className="flex-1 flex overflow-hidden bg-white/90 dark:bg-[#0a0a0a]/90 md:rounded-3xl md:shadow-2xl md:border md:border-slate-200/60 dark:md:border-slate-800/60 backdrop-blur-xl">
           {/* Sidebar */}
-          <div className="hidden md:flex md:w-80 lg:w-96 flex-col bg-white dark:bg-[#1a1a1a] border-r border-slate-200 dark:border-slate-800">
+          <div className="hidden md:flex md:w-80 lg:w-[400px] flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#141414] border-r border-slate-200/60 dark:border-slate-800/60">
             {/* Sidebar Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Messages</h2>
-                <div className="flex gap-1">
+            <div className="px-6 py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Messages</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Team communication</p>
+                </div>
+                <div className="flex gap-2">
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => setShowCreateGroup(true)}
-                    className="h-9 w-9 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
                     title="Create group chat"
                   >
-                    <Users className="w-4 h-4" />
+                    <Users className="w-5 h-5" />
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => setShowNewDM(true)}
-                    className="h-9 w-9 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
                     title="Start direct message"
                   >
-                    <UserPlus className="w-4 h-4" />
+                    <UserPlus className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
             </div>
 
             {/* Sidebar Content */}
-            <div className="flex-1 overflow-y-auto px-3 py-2">
+            <div className="flex-1 overflow-y-auto px-4 py-3">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full h-10 bg-slate-100 dark:bg-slate-900 mb-3 grid grid-cols-3 p-1 rounded-xl">
-                  <TabsTrigger value="channels" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
-                    <Hash className="w-3.5 h-3.5 mr-1.5" />
+                <TabsList className="w-full h-12 bg-slate-100/80 dark:bg-slate-900/50 mb-4 grid grid-cols-3 p-1.5 rounded-2xl shadow-inner">
+                  <TabsTrigger value="channels" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
+                    <Hash className="w-4 h-4 mr-2" />
                     Channels
                   </TabsTrigger>
-                  <TabsTrigger value="groups" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
-                    <Users className="w-3.5 h-3.5 mr-1.5" />
+                  <TabsTrigger value="groups" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
+                    <Users className="w-4 h-4 mr-2" />
                     Groups
                   </TabsTrigger>
-                  <TabsTrigger value="direct" className="text-xs font-medium rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-sm text-slate-600 dark:text-slate-400">
-                    <AtSign className="w-3.5 h-3.5 mr-1.5" />
+                  <TabsTrigger value="direct" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
+                    <AtSign className="w-4 h-4 mr-2" />
                     Direct
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="channels" className="mt-0">
-                  <div className="space-y-0.5">
+                  <div className="space-y-1.5">
                     {groups.map(group => {
                       const Icon = group.icon;
                       const isActive = chatMode === 'channels' && selectedGroup === group.id;
@@ -607,22 +610,22 @@ export default function Chat() {
                             setSelectedDMConv(null);
                             setSelectedCustomGroup(null);
                           }}
-                          className={`w-full px-3 py-3 rounded-xl text-left flex items-center gap-3 transition-all group ${
+                          className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all duration-200 group ${
                             isActive
-                              ? 'bg-blue-50/40 dark:bg-blue-950/20 text-[#507DB4] dark:text-[#6B9DD8]'
-                              : 'hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300'
+                              ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 shadow-sm border-l-4 border-[#507DB4] dark:border-[#6B9DD8]'
+                              : 'hover:bg-slate-100/80 dark:hover:bg-slate-900/50 border-l-4 border-transparent'
                           }`}
                         >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-md ${
                             isActive 
-                              ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] shadow-md' 
-                              : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700'
+                              ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] shadow-blue-500/30 scale-105' 
+                              : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:scale-105'
                           }`}>
-                            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
+                            <Icon className={`w-6 h-6 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-semibold text-sm truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : ''}`}>{group.name}</p>
-                            {isActive && <p className="text-xs text-[#507DB4] dark:text-[#6B9DD8]">Active</p>}
+                            <p className={`font-bold text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.name}</p>
+                            {isActive && <p className="text-xs text-[#507DB4]/70 dark:text-[#6B9DD8]/70 font-semibold mt-0.5">Active channel</p>}
                           </div>
                           <ChatUnreadBadge userEmail={user?.email} groupId={group.id} />
                         </button>
@@ -694,23 +697,23 @@ export default function Chat() {
           </div>
 
           {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-[#0a0a0a]">
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-slate-50/30 dark:from-[#0a0a0a] dark:to-[#0f0f0f]">
             {/* Chat Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1a1a]">
+            <div className="px-8 py-5 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
               <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-md">
-                  <MessageSquare className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
+                  <MessageSquare className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                  <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight">
                     {chatMode === 'direct' && selectedDMConv
                       ? selectedDMConv.other_user_name
                       : chatMode === 'groups' && selectedCustomGroup
                       ? selectedCustomGroup.group_name
                       : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
                     {chatMode === 'groups' && selectedCustomGroup 
                       ? `${selectedCustomGroup.members.length} members`
                       : 'Team channel'}
@@ -718,25 +721,25 @@ export default function Chat() {
                 </div>
               </div>
                 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {chatMode === 'channels' && selectedGroup !== 'general' && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowJobMembers(true)}
-                    className="h-9 text-xs text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 rounded-lg"
+                    className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
                   >
-                    <UserPlus className="w-4 h-4 mr-1.5" />
+                    <UserPlus className="w-4 h-4 mr-2" />
                     Invite
                   </Button>
                 )}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                   <Input
                     placeholder="Search messages..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-64 pl-9 h-9 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-lg text-sm"
+                    className="w-72 pl-11 h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium shadow-sm"
                   />
                 </div>
               </div>
@@ -763,7 +766,7 @@ export default function Chat() {
               )}
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2 bg-slate-50 dark:bg-[#0a0a0a]">
+              <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3 bg-slate-50/50 dark:bg-[#0a0a0a]">
                 {isLoading && (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
@@ -809,9 +812,9 @@ export default function Chat() {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSend} className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1a1a]">
+              <form onSubmit={handleSend} className="px-8 py-5 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
                   <div className="flex gap-3 items-end">
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <input
                         type="file"
                         accept="image/*"
@@ -825,7 +828,7 @@ export default function Chat() {
                         size="icon"
                         onClick={() => document.getElementById('image-upload').click()}
                         disabled={uploadingImage}
-                        className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
                         title="Upload image"
                       >
                         <Image className="w-5 h-5" />
@@ -843,7 +846,7 @@ export default function Chat() {
                         size="icon"
                         onClick={() => document.getElementById('file-upload').click()}
                         disabled={uploadingFile}
-                        className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
                         title="Upload file"
                       >
                         <Paperclip className="w-5 h-5" />
@@ -855,7 +858,7 @@ export default function Chat() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                            className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
                             title="Emojis & GIFs"
                           >
                             <Smile className="w-5 h-5" />
@@ -883,7 +886,7 @@ export default function Chat() {
                           variant="ghost"
                           size="icon"
                           onClick={handleDeleteSelectedGroup}
-                          className="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400"
+                          className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all shadow-sm"
                           title="Delete group"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -897,12 +900,12 @@ export default function Chat() {
                       onSubmit={handleSend}
                       employees={employees}
                       placeholder={replyingTo ? `Reply to ${replyingTo.sender_name}...` : 'Write a message...'}
-                      className="h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                      className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium shadow-sm"
                       />
                     <Button 
                       type="submit" 
                       disabled={!message.trim() || sendMutation.isPending} 
-                      className="h-11 px-6 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md rounded-xl font-medium"
+                      className="h-12 px-8 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg shadow-blue-500/20 rounded-2xl font-bold hover:scale-105 transition-all"
                     >
                       <Send className="w-5 h-5" />
                     </Button>
