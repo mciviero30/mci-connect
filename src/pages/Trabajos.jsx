@@ -48,7 +48,9 @@ export default function Trabajos() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   
   // ADMIN BYPASS: Admins see ALL jobs without filtering
@@ -62,19 +64,28 @@ export default function Trabajos() {
     },
     initialData: [],
     enabled: !!user,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('team_name'),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Fetch all time entries for validation
   const { data: allTimeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.list('-date', 1000), // Assuming 1000 is a sufficient limit for validation
-    initialData: []
+    initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const createMutation = useMutation({

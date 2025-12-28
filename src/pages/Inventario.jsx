@@ -44,37 +44,54 @@ export default function Inventario() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: items, isLoading } = useQuery({
     queryKey: ['inventoryItems'],
     queryFn: () => base44.entities.InventoryItem.list('name'),
-    initialData: []
+    initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: transactions } = useQuery({
     queryKey: ['inventoryTransactions'],
     queryFn: () => base44.entities.InventoryTransaction.list('-created_date'),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list(),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list(),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const [itemForm, setItemForm] = useState({
