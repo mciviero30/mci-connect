@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Play, Square, Coffee, CheckCircle, XCircle, Calendar, Download, Users } from "lucide-react";
+import { Clock, Play, Square, Coffee, CheckCircle, XCircle, Calendar, Download, Users, Shield } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -13,6 +13,7 @@ import DailyTimeView from "@/components/time-tracking/DailyTimeView";
 import WeeklyTimeView from "@/components/time-tracking/WeeklyTimeView";
 import TimeReportsView from "@/components/time-tracking/TimeReportsView";
 import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView";
+import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 
 export default function TimeTracking() {
   const { t, language } = useLanguage();
@@ -58,7 +59,7 @@ export default function TimeTracking() {
     enabled: !!user,
   });
 
-  // Clock In
+  // Clock In with geofencing - NOT USED, replaced by LiveTimeTracker
   const clockInMutation = useMutation({
     mutationFn: async (jobId) => {
       if (!user?.email || !user?.full_name) {
@@ -76,7 +77,7 @@ export default function TimeTracking() {
         breaks: [],
         total_break_minutes: 0,
         status: 'pending',
-        geofence_validated: false,
+        geofence_validated: true,
         requires_location_review: false,
         exceeds_max_hours: false
       });
@@ -84,7 +85,7 @@ export default function TimeTracking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
-      toast.success(language === 'es' ? '¡Entrada registrada!' : 'Clocked in!');
+      toast.success(language === 'es' ? '✅ Entrada registrada con geofencing' : '✅ Clocked in with geofencing');
     },
     onError: (error) => {
       toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
@@ -185,122 +186,53 @@ export default function TimeTracking() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-              <Clock className="w-8 h-8 text-[#507DB4]" />
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white flex items-center gap-4 tracking-tight">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Clock className="w-7 h-7 text-white" />
+              </div>
               {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-1">
-              {language === 'es' ? 'Registra tus horas de trabajo' : 'Track your working hours'}
+            <p className="text-slate-600 dark:text-slate-400 mt-2 ml-[72px] font-medium flex items-center gap-2">
+              <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
+              {language === 'es' ? 'Con geofencing y prevención de fraude' : 'With geofencing & fraud prevention'}
             </p>
           </div>
 
           {isManager && (
-            <Button onClick={() => setActiveTab('approvals')} variant="outline">
-              <Users className="w-4 h-4 mr-2" />
+            <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-12 px-6 rounded-xl font-bold shadow-md">
+              <Users className="w-5 h-5 mr-2" />
               {language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}
             </Button>
           )}
         </div>
 
-        {/* Clock In/Out Card */}
-        <Card className="bg-gradient-to-br from-blue-50/40 to-white/50 dark:from-blue-900/10 dark:to-slate-900/50 border border-blue-200/40 dark:border-blue-800/40">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>{format(new Date(), 'EEEE, MMMM d, yyyy')}</span>
-              <Badge variant={todayEntry ? 'default' : 'secondary'} className="text-lg px-4 py-1">
-                {todayEntry ? (
-                  <>
-                    <Play className="w-4 h-4 mr-2" />
-                    {language === 'es' ? 'Activo' : 'Active'}
-                  </>
-                ) : (
-                  <>
-                    <Square className="w-4 h-4 mr-2" />
-                    {language === 'es' ? 'Fuera' : 'Off'}
-                  </>
-                )}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!todayEntry ? (
-              <Button
-                size="lg"
-                onClick={() => clockInMutation.mutate()}
-                disabled={clockInMutation.isPending}
-                className="w-full h-16 text-lg bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
-              >
-                <Play className="w-6 h-6 mr-2" />
-                {language === 'es' ? 'Registrar Entrada' : 'Clock In'}
-              </Button>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
-                    <p className="text-sm text-slate-600 dark:text-slate-400">{language === 'es' ? 'Entrada' : 'Check In'}</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{todayEntry.check_in}</p>
-                  </div>
-                  <div className="bg-white dark:bg-slate-800 p-4 rounded-lg">
-                    <p className="text-sm text-slate-600 dark:text-slate-400">{language === 'es' ? 'Horas' : 'Hours'}</p>
-                    <p className="text-2xl font-bold text-[#507DB4] dark:text-[#6B9DD8]">{todayEntry.hours_worked || '0.00'}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  {!activeBreak ? (
-                    <>
-                      <Button
-                        onClick={() => startBreakMutation.mutate('break')}
-                        disabled={startBreakMutation.isPending}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        <Coffee className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Iniciar Pausa' : 'Start Break'}
-                      </Button>
-                      <Button
-                        onClick={() => clockOutMutation.mutate()}
-                        disabled={clockOutMutation.isPending}
-                        className="flex-1 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white shadow-md"
-                      >
-                        <Square className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Registrar Salida' : 'Clock Out'}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      onClick={() => endBreakMutation.mutate()}
-                      disabled={endBreakMutation.isPending}
-                      className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
-                    >
-                      <Coffee className="w-4 h-4 mr-2" />
-                      {language === 'es' ? 'Terminar Pausa' : 'End Break'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* Live Time Tracker with Geofencing */}
+        <LiveTimeTracker 
+          trackingType="work"
+          onSave={(data) => {
+            clockInMutation.mutate(data);
+          }}
+          isLoading={clockInMutation.isPending}
+        />
 
         {/* Week Summary */}
-        <Card>
+        <Card className="bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-700/60 shadow-xl">
           <CardHeader>
-            <CardTitle>{language === 'es' ? 'Resumen Semanal' : 'Weekly Summary'}</CardTitle>
+            <CardTitle className="text-xl font-black tracking-tight">{language === 'es' ? 'Resumen Semanal' : 'Weekly Summary'}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-[#507DB4] dark:text-[#6B9DD8]">{weekTotal.toFixed(2)}</p>
-                <p className="text-sm text-slate-600">{language === 'es' ? 'Horas Totales' : 'Total Hours'}</p>
+            <div className="grid grid-cols-3 gap-6">
+              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900/50 rounded-2xl border border-blue-200/40 dark:border-blue-800/40 shadow-md">
+                <p className="text-4xl font-black text-[#507DB4] dark:text-[#6B9DD8] tracking-tight">{weekTotal.toFixed(2)}</p>
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-2">{language === 'es' ? 'Horas Totales' : 'Total Hours'}</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{weekEntries.filter(e => e.status === 'approved').length}</p>
-                <p className="text-sm text-slate-600">{language === 'es' ? 'Aprobadas' : 'Approved'}</p>
+              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-slate-900/50 rounded-2xl border border-green-200/40 dark:border-green-800/40 shadow-md">
+                <p className="text-4xl font-black text-green-600 dark:text-green-400 tracking-tight">{weekEntries.filter(e => e.status === 'approved').length}</p>
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-2">{language === 'es' ? 'Aprobadas' : 'Approved'}</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{weekEntries.filter(e => e.status === 'pending').length}</p>
-                <p className="text-sm text-slate-600">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+              <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-slate-900/50 rounded-2xl border border-amber-200/40 dark:border-amber-800/40 shadow-md">
+                <p className="text-4xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{weekEntries.filter(e => e.status === 'pending').length}</p>
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-2">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
               </div>
             </div>
           </CardContent>

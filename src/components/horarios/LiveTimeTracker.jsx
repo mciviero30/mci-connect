@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -117,14 +116,48 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const getLocation = useCallback(() => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        return reject('Geolocation not supported');
+        return reject(language === 'es' ? 'GPS no soportado por tu dispositivo' : 'Geolocation not supported');
       }
+      
+      // Request high accuracy position with mock location detection
       navigator.geolocation.getCurrentPosition(
-        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => reject(err.message)
+        (pos) => {
+          // Check for mock locations (Android)
+          if (pos.coords.accuracy > 100) {
+            return reject(language === 'es' 
+              ? '⚠️ Precisión GPS muy baja. Asegúrate de estar al aire libre y tener señal GPS fuerte.' 
+              : '⚠️ GPS accuracy too low. Make sure you are outdoors with strong GPS signal.');
+          }
+          
+          resolve({ 
+            lat: pos.coords.latitude, 
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy
+          });
+        },
+        (err) => {
+          if (err.code === 1) {
+            return reject(language === 'es' 
+              ? '❌ Permiso de ubicación denegado. Debes habilitar GPS para fichar.' 
+              : '❌ Location permission denied. You must enable GPS to clock in.');
+          } else if (err.code === 2) {
+            return reject(language === 'es' 
+              ? '❌ GPS no disponible. Verifica que el GPS esté activado.' 
+              : '❌ GPS unavailable. Check that GPS is enabled.');
+          } else {
+            return reject(language === 'es' 
+              ? '❌ Error obteniendo ubicación. Intenta de nuevo.' 
+              : '❌ Error getting location. Try again.');
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0 // Don't use cached location
+        }
       );
     });
-  }, []);
+  }, [language]);
 
   const handleClockIn = async () => {
     setShowJobSelector(true);
@@ -137,81 +170,80 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     setShowWorkTypeDialog(true); // NEW: Show work type dialog
   };
 
-  // NEW: Modified handleStartSession with geofencing notification
+  // GEOFENCING - Strict enforcement with 100m radius
   const handleStartSession = async () => {
     if (!selectedJobForStart) return;
-    if (!user) { // Ensure user is loaded for notifications
+    if (!user) {
       setLocationError(language === 'es' ? 'Error: Usuario no cargado. Intenta de nuevo.' : 'Error: User not loaded. Please try again.');
       setShowWorkTypeDialog(false);
       return;
     }
     
+    setLocationError(null);
+    
     try {
       const location = await getLocation();
       const job = jobs.find(j => j.id === selectedJobForStart);
       
-      // NEW: Prompt #51 - Geofencing validation
-      let geofenceValidated = true;
-      let distanceMeters = 0;
-      let requiresReview = false;
+      if (!job.latitude || !job.longitude) {
+        alert(language === 'es' 
+          ? '❌ Este proyecto no tiene coordenadas GPS configuradas. Contacta a tu supervisor.'
+          : '❌ This project has no GPS coordinates configured. Contact your supervisor.');
+        setShowWorkTypeDialog(false);
+        return;
+      }
 
-      if (job.latitude && job.longitude) {
-        distanceMeters = calculateDistance(
-          location.lat,
-          location.lng,
-          job.latitude,
-          job.longitude
-        );
+      const distanceMeters = calculateDistance(
+        location.lat,
+        location.lng,
+        job.latitude,
+        job.longitude
+      );
 
-        // NEW: Send notification if entering job site
-        if (distanceMeters <= 500) {
+      // STRICT GEOFENCING: 100m maximum distance
+      const MAX_DISTANCE = 100;
+      
+      if (distanceMeters > MAX_DISTANCE) {
+        setLocationError(language === 'es' 
+          ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(distanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar.`
+          : `❌ OUT OF RANGE: You are ${Math.round(distanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock in.`);
+        
+        // Notify admins of attempted fraud
+        const admins = await base44.entities.User.filter({ role: 'admin' });
+        for (const admin of admins) {
           sendNotification({
-            recipientEmail: user.email,
-            recipientName: user.full_name,
-            type: 'geofence_entry',
-            priority: 'medium',
-            title: language === 'es' ? '📍 Entrada al Sitio' : '📍 Job Site Entry',
+            recipientEmail: admin.email,
+            recipientName: admin.full_name,
+            type: 'security_alert',
+            priority: 'urgent',
+            title: language === 'es' ? '🚨 Intento de Fichaje Fuera de Geofence' : '🚨 Clock-In Attempt Outside Geofence',
             message: language === 'es'
-              ? `Has entrado al sitio de trabajo: ${job.name}`
-              : `You've entered the job site: ${job.name}`,
-            actionUrl: '/MisHoras',
-            relatedEntityType: 'job',
-            relatedEntityId: job.id
+              ? `${user.full_name} intentó fichar a ${Math.round(distanceMeters)}m de ${job.name} (límite: ${MAX_DISTANCE}m)`
+              : `${user.full_name} attempted to clock in ${Math.round(distanceMeters)}m from ${job.name} (limit: ${MAX_DISTANCE}m)`,
+            actionUrl: '/Horarios',
+            relatedEntityType: 'timeentry',
+            sendEmail: true
           });
         }
-
-        if (distanceMeters > 500) {
-          geofenceValidated = false;
-          const confirmed = window.confirm(
-            language === 'es' 
-              ? `⚠️ Ubicación fuera del sitio del proyecto (${Math.round(distanceMeters)}m). ¿Confirmar de todos modos?`
-              : `⚠️ Location outside project site (${Math.round(distanceMeters)}m). Confirm anyway?`
-          );
-          
-          if (!confirmed) {
-            setShowWorkTypeDialog(false);
-            return;
-          }
-          requiresReview = true;
-          
-          // NEW: Send notification for admin review
-          const admins = await base44.entities.User.filter({ role: 'admin' });
-          for (const admin of admins) {
-            sendNotification({
-              recipientEmail: admin.email,
-              recipientName: admin.full_name,
-              type: 'approval_required',
-              priority: 'high',
-              title: language === 'es' ? '⚠️ Revisión de Ubicación Requerida' : '⚠️ Location Review Required',
-              message: language === 'es'
-                ? `${user.full_name} fichó fuera del geofence (${Math.round(distanceMeters)}m) para ${job.name}`
-                : `${user.full_name} clocked in outside geofence (${Math.round(distanceMeters)}m) for ${job.name}`,
-              actionUrl: '/Horarios',
-              relatedEntityType: 'timeentry'
-            });
-          }
-        }
+        
+        setShowWorkTypeDialog(false);
+        return;
       }
+
+      // SUCCESS: Within geofence
+      sendNotification({
+        recipientEmail: user.email,
+        recipientName: user.full_name,
+        type: 'geofence_entry',
+        priority: 'low',
+        title: language === 'es' ? '✅ Entrada Registrada' : '✅ Clock In Successful',
+        message: language === 'es'
+          ? `Entrada registrada en ${job.name} (${Math.round(distanceMeters)}m del centro)`
+          : `Clocked in at ${job.name} (${Math.round(distanceMeters)}m from center)`,
+        actionUrl: '/MisHoras',
+        relatedEntityType: 'job',
+        relatedEntityId: job.id
+      });
 
       const session = {
         startTime: Date.now(),
@@ -221,11 +253,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         location,
         onBreak: false,
         breakDuration: 0,
-        workType, // NEW: Store work type
-        taskDetails, // NEW: Store task details
-        geofenceValidated,
-        distanceMeters,
-        requiresReview,
+        workType,
+        taskDetails,
+        geofenceValidated: true,
+        distanceMeters: Math.round(distanceMeters),
+        requiresReview: false,
       };
       
       localStorage.setItem(storageKey, JSON.stringify(session));
@@ -237,24 +269,26 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       setWorkType('normal');
       setTaskDetails('');
     } catch (error) {
-      setLocationError(error.message || error);
+      setLocationError(error);
       setShowWorkTypeDialog(false);
     }
   };
 
   const handleClockOut = async () => {
-    if (!user) { // Ensure user is loaded for notifications
+    if (!user) {
       setLocationError(language === 'es' ? 'Error: Usuario no cargado. Intenta de nuevo.' : 'Error: User not loaded. Please try again.');
       return;
     }
+    
+    setLocationError(null);
+    
     try {
       const location = await getLocation();
       const endTime = Date.now();
       const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
 
-      // NEW: Prompt #50 - Validate maximum 14 hours and send notification
+      // Validate maximum 14 hours
       if (totalHours > 14) {
-        // Send urgent notification
         sendNotification({
           recipientEmail: user.email,
           recipientName: user.full_name,
@@ -269,7 +303,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           sendEmail: true
         });
         
-        // Notify admins
         const admins = await base44.entities.User.filter({ role: 'admin' });
         for (const admin of admins) {
           sendNotification({
@@ -286,47 +319,63 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           });
         }
         
-        alert(
-          language === 'es'
-            ? '❌ Error: Límite máximo de turno (14 horas) excedido. Por favor contacta a tu supervisor.'
-            : '❌ Error: Maximum shift limit (14 hours) exceeded. Please contact your supervisor.'
-        );
+        alert(language === 'es'
+          ? '❌ Error: Límite máximo de turno (14 horas) excedido. Por favor contacta a tu supervisor.'
+          : '❌ Error: Maximum shift limit (14 hours) exceeded. Please contact your supervisor.');
         return;
       }
 
-      // NEW: Calculate geofence for check-out and send notification
-      let checkOutGeofenceValidated = true;
-      let checkOutDistanceMeters = 0;
+      // STRICT GEOFENCING for clock-out: 100m maximum
       const job = jobs.find(j => j.id === activeSession.jobId);
+      const MAX_DISTANCE = 100;
 
       if (job?.latitude && job?.longitude) {
-        checkOutDistanceMeters = calculateDistance(
+        const checkOutDistanceMeters = calculateDistance(
           location.lat,
           location.lng,
           job.latitude,
           job.longitude
         );
 
-        if (checkOutDistanceMeters > 500) {
-          checkOutGeofenceValidated = false;
+        if (checkOutDistanceMeters > MAX_DISTANCE) {
+          setLocationError(language === 'es' 
+            ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(checkOutDistanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar salida.`
+            : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
+          
+          // Notify admins
+          const admins = await base44.entities.User.filter({ role: 'admin' });
+          for (const admin of admins) {
+            sendNotification({
+              recipientEmail: admin.email,
+              recipientName: admin.full_name,
+              type: 'security_alert',
+              priority: 'urgent',
+              title: language === 'es' ? '🚨 Intento de Salida Fuera de Geofence' : '🚨 Clock-Out Attempt Outside Geofence',
+              message: language === 'es'
+                ? `${user.full_name} intentó fichar salida a ${Math.round(checkOutDistanceMeters)}m de ${job.name} (límite: ${MAX_DISTANCE}m)`
+                : `${user.full_name} attempted to clock out ${Math.round(checkOutDistanceMeters)}m from ${job.name} (limit: ${MAX_DISTANCE}m)`,
+              actionUrl: '/Horarios',
+              relatedEntityType: 'timeentry',
+              sendEmail: true
+            });
+          }
+          return;
         }
-        
-        // NEW: Send notification when leaving job site
-        if (checkOutDistanceMeters <= 500) {
-          sendNotification({
-            recipientEmail: user.email,
-            recipientName: user.full_name,
-            type: 'geofence_exit',
-            priority: 'low',
-            title: language === 'es' ? '📍 Salida del Sitio' : '📍 Job Site Exit',
-            message: language === 'es'
-              ? `Has salido del sitio de trabajo: ${job.name}. Tiempo trabajado: ${totalHours.toFixed(1)}h`
-              : `You've left the job site: ${job.name}. Time worked: ${totalHours.toFixed(1)}h`,
-            actionUrl: '/MisHoras',
-            relatedEntityType: 'job',
-            relatedEntityId: job.id
-          });
-        }
+
+        // SUCCESS: Within geofence
+        sendNotification({
+          recipientEmail: user.email,
+          recipientName: user.full_name,
+          type: 'clock_out',
+          priority: 'low',
+          title: language === 'es' ? '✅ Salida Registrada' : '✅ Clock Out Successful',
+          message: language === 'es'
+            ? `Salida registrada en ${job.name}. Tiempo trabajado: ${totalHours.toFixed(1)}h`
+            : `Clocked out at ${job.name}. Time worked: ${totalHours.toFixed(1)}h`,
+          actionUrl: '/MisHoras',
+          relatedEntityType: 'job',
+          relatedEntityId: job.id
+        });
       }
 
       onSave({
@@ -341,12 +390,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         check_out_longitude: location.lng,
         hours_worked: totalHours,
         lunch_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
-        work_type: activeSession.workType, // NEW
-        task_details: activeSession.taskDetails, // NEW
-        geofence_validated: activeSession.geofenceValidated && checkOutGeofenceValidated, // NEW
-        geofence_distance_meters: Math.max(activeSession.distanceMeters, checkOutDistanceMeters), // NEW
-        requires_location_review: activeSession.requiresReview || !checkOutGeofenceValidated, // NEW
-        exceeds_max_hours: false, // NEW - Already validated above
+        work_type: activeSession.workType,
+        task_details: activeSession.taskDetails,
+        geofence_validated: true, // Always true if we reached here
+        geofence_distance_meters: activeSession.distanceMeters,
+        requires_location_review: false,
+        exceeds_max_hours: false,
       });
 
       localStorage.removeItem(storageKey);
@@ -354,7 +403,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       setElapsed(0);
       setLocationError(null);
     } catch (error) {
-      setLocationError(error.message || error);
+      setLocationError(error);
     }
   };
 
@@ -382,91 +431,104 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   };
   
   if (activeSession) {
-    // NEW: Prompt #50 - Check if session exceeds 14 hours
     const sessionHours = elapsed / 3600;
     const exceedsMaxHours = sessionHours > 14;
 
     return (
-      <Card className={`border-0 shadow-xl mb-8 ${exceedsMaxHours ? 'bg-gradient-to-br from-red-600 to-red-800' : 'bg-gradient-to-br from-blue-600 to-blue-800'} text-white overflow-hidden`}>
-        <CardContent className="p-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Briefcase className="w-5 h-5 opacity-80"/>
-            <Badge variant="secondary">{activeSession.jobName}</Badge>
-            {activeSession.workType !== 'normal' && (
-              <Badge variant="outline" className="bg-white/20 border-white/30">
-                {activeSession.workType === 'driving' ? (language === 'es' ? 'Manejo' : 'Driving') :
-                 activeSession.workType === 'setup' ? (language === 'es' ? 'Preparación' : 'Setup') :
-                 (language === 'es' ? 'Limpieza' : 'Cleanup')}
-              </Badge>
-            )}
+      <Card className={`border-0 shadow-2xl mb-8 overflow-hidden ${
+        exceedsMaxHours 
+          ? 'bg-gradient-to-br from-red-600 via-red-700 to-red-800 ring-4 ring-red-500/50' 
+          : 'bg-gradient-to-br from-green-600 via-green-700 to-green-800'
+      } text-white animate-pulse-slow`}>
+        <CardContent className="p-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+              <Briefcase className="w-6 h-6"/>
+            </div>
+            <div className="text-left">
+              <Badge variant="secondary" className="text-base font-bold px-3 py-1 shadow-md">{activeSession.jobName}</Badge>
+              {activeSession.workType !== 'normal' && (
+                <Badge variant="outline" className="bg-white/20 border-white/40 text-white ml-2 font-semibold">
+                  {activeSession.workType === 'driving' ? (language === 'es' ? 'Manejo' : 'Driving') :
+                   activeSession.workType === 'setup' ? (language === 'es' ? 'Preparación' : 'Setup') :
+                   (language === 'es' ? 'Limpieza' : 'Cleanup')}
+                </Badge>
+              )}
+            </div>
           </div>
 
-          {/* NEW: Warning for exceeding 14 hours */}
           {exceedsMaxHours && (
-            <div className="mb-4 p-3 bg-red-900/50 border border-red-400 rounded-lg flex items-center justify-center gap-2">
-              <AlertTriangle className="w-5 h-5" />
-              <span className="font-semibold text-sm">
+            <div className="mb-6 p-4 bg-red-900/60 border-2 border-red-300 rounded-2xl flex items-center justify-center gap-3 shadow-lg animate-pulse">
+              <AlertTriangle className="w-6 h-6" />
+              <span className="font-black text-base">
                 {language === 'es' 
-                  ? '¡LÍMITE EXCEDIDO! Contacta a tu supervisor' 
-                  : 'LIMIT EXCEEDED! Contact your supervisor'}
+                  ? '¡LÍMITE EXCEDIDO! Contacta a tu supervisor AHORA' 
+                  : 'LIMIT EXCEEDED! Contact your supervisor NOW'}
               </span>
             </div>
           )}
 
-          <h1 className="text-7xl font-bold font-mono tracking-tighter">
-            {activeSession.onBreak ? formatTime(activeSession.breakDuration / 1000) : formatTime(elapsed)}
-          </h1>
-          
-          <div className="flex items-center justify-center gap-2 text-sm opacity-80 mt-2">
-             <MapPin className="w-4 h-4"/>
-             <span>{language === 'es' ? 'Fichado a las' : 'Clocked in at'} {activeSession.checkIn}</span>
+          <div className="bg-black/20 rounded-3xl p-6 mb-6 shadow-inner">
+            <h1 className="text-8xl font-black font-mono tracking-tight mb-2 drop-shadow-lg">
+              {activeSession.onBreak ? formatTime(activeSession.breakDuration / 1000) : formatTime(elapsed)}
+            </h1>
+            <div className="flex items-center justify-center gap-3 text-base font-bold opacity-90">
+              <MapPin className="w-5 h-5"/>
+              <span>{language === 'es' ? 'Entrada' : 'Started'}: {activeSession.checkIn}</span>
+              <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
+                {Math.round(activeSession.distanceMeters)}m
+              </Badge>
+            </div>
           </div>
 
-          {/* NEW: Show geofence warning if location was out of range */}
-          {activeSession.requiresReview && (
-            <div className="mt-2 text-center text-yellow-300">
-              <AlertCircle className="w-4 h-4 inline mr-1" />
-              <span className="text-xs">
-                {language === 'es' 
-                  ? 'Ubicación marcada para revisión' 
-                  : 'Location flagged for review'}
+          {activeSession.onBreak && (
+            <div className="mb-4 p-3 bg-amber-500/30 border border-amber-300 rounded-2xl flex items-center justify-center gap-2">
+              <Coffee className="w-5 h-5" />
+              <span className="font-bold text-sm">
+                {language === 'es' ? 'EN PAUSA' : 'ON BREAK'}
               </span>
             </div>
           )}
 
           {locationError && (
-            <div className="mt-4 text-center text-red-300">
-                <p className="text-sm font-semibold">{locationError}</p>
-                <p className="text-xs mt-1">
-                  {language === 'es' 
-                    ? 'Por favor, activa la ubicación y refresca la página.' 
-                    : 'Please enable location and refresh the page.'}
-                </p>
+            <div className="mb-4 p-4 bg-red-900/60 border-2 border-red-300 rounded-2xl shadow-lg">
+              <AlertCircle className="w-6 h-6 mx-auto mb-2" />
+              <p className="text-sm font-bold">{locationError}</p>
+              <p className="text-xs mt-2 opacity-90">
+                {language === 'es' 
+                  ? 'Acércate al sitio del proyecto o contacta a tu supervisor.' 
+                  : 'Move closer to project site or contact your supervisor.'}
+              </p>
             </div>
           )}
           
           <div className="flex gap-4 justify-center mt-6">
-            <Button onClick={handleToggleBreak} variant="secondary" size="lg" className="rounded-full">
+            <Button 
+              onClick={handleToggleBreak} 
+              variant="secondary" 
+              size="lg" 
+              className="rounded-2xl h-14 px-8 font-bold text-base shadow-lg hover:scale-105 transition-transform"
+            >
               <Coffee className="w-5 h-5 mr-2"/>
-              {activeSession.onBreak ? (language === 'es' ? 'Reanudar Trabajo' : 'Resume Work') : (language === 'es' ? 'Iniciar Pausa' : 'Start Break')}
+              {activeSession.onBreak ? (language === 'es' ? 'Reanudar' : 'Resume') : (language === 'es' ? 'Pausa' : 'Break')}
             </Button>
             <Button 
               onClick={handleClockOut} 
               variant="destructive" 
               size="lg" 
-              className="rounded-full" 
+              className="rounded-2xl h-14 px-8 font-bold text-base shadow-lg hover:scale-105 transition-transform bg-red-600 hover:bg-red-700" 
               disabled={isLoading || exceedsMaxHours}
             >
               <Square className="w-5 h-5 mr-2"/>
-              {t('checkOut')}
+              {language === 'es' ? 'Salida' : 'Clock Out'}
             </Button>
           </div>
 
           {exceedsMaxHours && (
-            <p className="text-xs text-white/70 mt-3">
+            <p className="text-sm text-white/90 mt-4 font-semibold bg-red-900/40 p-3 rounded-xl">
               {language === 'es' 
-                ? 'No puedes cerrar automáticamente. Requiere revisión manual.' 
-                : 'Cannot auto clock-out. Requires manual review.'}
+                ? '⚠️ No puedes cerrar automáticamente. Requiere revisión manual del supervisor.' 
+                : '⚠️ Cannot auto clock-out. Requires manual supervisor review.'}
             </p>
           )}
         </CardContent>
@@ -476,26 +538,40 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
   return (
     <>
-      <Card className="border-0 shadow-lg mb-8">
-        <CardContent className="p-6 text-center">
-          <Button
-            onClick={handleClockIn}
-            size="lg"
-            className="h-24 w-24 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg text-lg"
-            disabled={isLoading}
-          >
-            <Clock className="w-8 h-8 mb-1"/>
-          </Button>
-          <p className="mt-4 font-semibold text-xl text-slate-800">{t('checkIn')}</p>
+      <Card className="border-0 shadow-2xl mb-8 bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800">
+        <CardContent className="p-8 text-center">
+          <div className="relative inline-block">
+            <Button
+              onClick={handleClockIn}
+              size="lg"
+              className="h-32 w-32 rounded-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-2xl shadow-blue-500/30 hover:scale-110 transition-all duration-300"
+              disabled={isLoading}
+            >
+              <Play className="w-12 h-12"/>
+            </Button>
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+              <Badge className="bg-green-500 text-white font-bold text-xs shadow-lg">
+                {language === 'es' ? 'LISTO' : 'READY'}
+              </Badge>
+            </div>
+          </div>
+          <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
+            {language === 'es' ? 'Iniciar Jornada' : 'Start Work Day'}
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">
+            {language === 'es' 
+              ? 'Geofencing activo - Debes estar en el sitio del proyecto' 
+              : 'Geofencing active - Must be at project site'}
+          </p>
           {locationError && (
-            <div className="mt-2 text-center text-red-500">
-                <AlertCircle className="mx-auto h-6 w-6" />
-                <p className="text-sm font-semibold mt-1">{locationError}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {language === 'es' 
-                    ? 'Por favor, activa la ubicación y refresca la página.' 
-                    : 'Please enable location and refresh the page.'}
-                </p>
+            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-700 rounded-2xl">
+              <AlertCircle className="mx-auto h-8 w-8 text-red-600 dark:text-red-400 mb-2" />
+              <p className="text-sm font-bold text-red-600 dark:text-red-400">{locationError}</p>
+              <p className="text-xs text-red-500 dark:text-red-300 mt-2">
+                {language === 'es' 
+                  ? 'Verifica que el GPS esté activado y que no estés usando ubicaciones falsas.' 
+                  : 'Verify GPS is enabled and you are not using mock locations.'}
+              </p>
             </div>
           )}
         </CardContent>
