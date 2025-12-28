@@ -55,19 +55,22 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
         last_name: lastName,
         full_name: fullName,
         hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
-        employment_status: employee ? employee.employment_status : 'invited',
-        role: employee?.role || 'user'
       };
 
       if (employee) {
         return await base44.entities.User.update(employee.id, payload);
       } else {
-        return await base44.entities.User.create(payload);
+        // Create as PendingEmployee
+        return await base44.entities.PendingEmployee.create({
+          ...payload,
+          status: 'pending'
+        });
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(employee ? 'Employee updated!' : 'Employee created!');
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      toast.success(employee ? 'Employee updated!' : 'Employee created! Now invite them from Dashboard.');
       onClose();
     },
     onError: (error) => {
