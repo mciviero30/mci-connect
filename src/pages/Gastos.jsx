@@ -127,7 +127,7 @@ export default function Gastos() {
           </Alert>
         )}
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
           <StatsCard title={t('pending')} value={pendingExpenses.length} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
           <StatsCard title={t('totalPending')} value={`$${totalPending.toFixed(2)}`} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
           <StatsCard title={t('approved')} value={approvedExpenses.length} icon={CheckCircle} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />

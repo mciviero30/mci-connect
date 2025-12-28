@@ -623,9 +623,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen pb-safe relative overflow-hidden" style={{
+    <div className="min-h-screen pb-20 md:pb-0 relative overflow-hidden" style={{
       background: 'linear-gradient(135deg, #E8F4FD 0%, #D9E9F4 50%, #F1F5F9 100%)'
     }}>
+      <div className="p-3 sm:p-4 md:p-6 lg:p-8">
       {/* Network Pattern Background */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -829,6 +830,7 @@ export default function Dashboard() {
           userRole={isAdmin ? 'admin' : 'employee'}
         />
         <GiveKudosDialog open={showKudosDialog} onOpenChange={setShowKudosDialog} />
+      </div>
       </div>
     </div>
   );

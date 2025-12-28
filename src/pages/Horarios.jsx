@@ -42,7 +42,7 @@ export default function Horarios() {
           icon={Clock}
         />
 
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           <Card className="soft-amber-gradient shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">

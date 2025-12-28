@@ -235,8 +235,8 @@ export default function Trabajos() {
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-6 lg:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-safe">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
         <PageHeader
           title={t('jobs')}
           description={`${activeJobs.length} ${t('active').toLowerCase()}, ${completedJobs.length} ${t('completed').toLowerCase()}`}
