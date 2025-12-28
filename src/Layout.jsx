@@ -731,11 +731,6 @@ const LayoutContent = ({ children, currentPageName }) => {
           body {
             -webkit-user-select: none;
             user-select: none;
-            overscroll-behavior-y: none;
-            position: fixed;
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
           }
 
           /* Allow text selection in inputs and content areas */
@@ -904,7 +899,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           </SidebarFooter>
         </Sidebar>
 
-        <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
           {!isFieldPage && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
@@ -928,7 +923,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             </motion.header>
           )}
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818] -webkit-overflow-scrolling: touch;" data-scrollable="true" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" data-scrollable="true" style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentPageName}
