@@ -635,7 +635,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                     </TableCell>
                   </TableRow>
                 ) : (
-                  Object.values(employeeBreakdown).map(empData => {
+                  Object.values(employeeBreakdown).flatMap(empData => {
                     // Get the first entry to determine overall status
                     const firstEntry = empData.entries[0];
                     const hasAnyPending = empData.entries.some(e => e.status === 'pending');
@@ -643,9 +643,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                     const currentStatus = allApproved ? 'approved' : (hasAnyPending ? 'pending' : 'rejected');
                     const displayStatus = statusConfig[currentStatus] || statusConfig.pending;
 
-                    return (
-                      <React.Fragment key={empData.email}>
-                        <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border-t-2 border-slate-300 dark:border-slate-600">
+                    return [
+                        <TableRow key={`${empData.email}-summary`} className="bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border-t-2 border-slate-300 dark:border-slate-600">
                           {isAdmin && (
                             <TableCell>
                               <TooltipProvider>
@@ -742,8 +741,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                           )}
                         </TableRow>
 
-                        {/* Individual Entries (Collapsed by default, could add expand/collapse) */}
-                        {empData.entries.map(entry => (
+                        ,
+                        ...empData.entries.map(entry => (
                           <TableRow key={entry.id} className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-sm">
                             {isAdmin && <TableCell className="pl-8"></TableCell>}
                             <TableCell className="pl-8 text-slate-600 dark:text-slate-400">
@@ -781,9 +780,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
                               </TableCell>
                             )}
                           </TableRow>
-                        ))}
-                      </React.Fragment>
-                    );
+                        ))
+                    ];
                   })
                 )}
               </TableBody>
