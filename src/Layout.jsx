@@ -707,6 +707,42 @@ const LayoutContent = ({ children, currentPageName }) => {
           /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
           /* ============================================ */
 
+          /* iOS PWA Optimizations */
+          html {
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            overscroll-behavior: none;
+          }
+
+          body {
+            -webkit-user-select: none;
+            user-select: none;
+            overscroll-behavior-y: none;
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+          }
+
+          /* Allow text selection in inputs and content areas */
+          input, textarea, [contenteditable] {
+            -webkit-user-select: text;
+            user-select: text;
+          }
+
+          /* Prevent zoom on input focus for iOS */
+          input, select, textarea {
+            font-size: 16px !important;
+          }
+
+          /* Fix iOS Safari bottom bar issue */
+          @supports (-webkit-touch-callout: none) {
+            .min-h-screen {
+              min-height: -webkit-fill-available;
+            }
+          }
+
           /* Corporate Blue Colors */
           :root {
             --color-primary: #1E3A8A;

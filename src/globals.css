@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* iOS PWA Full Screen Support */
+@supports (-webkit-touch-callout: none) {
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}
+
 @media print {
   @page {
     size: letter;
