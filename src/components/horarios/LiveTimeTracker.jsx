@@ -12,6 +12,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNotificationService } from '../notifications/NotificationService';
+import GeofenceMonitor from './GeofenceMonitor';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -200,8 +201,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         job.longitude
       );
 
-      // STRICT GEOFENCING: 100m maximum distance
-      const MAX_DISTANCE = 100;
+      // CUSTOMIZABLE GEOFENCING: Use job's configured radius (default 100m)
+      const MAX_DISTANCE = job.geofence_radius || 100;
       
       if (distanceMeters > MAX_DISTANCE) {
         setLocationError(language === 'es' 
@@ -325,9 +326,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         return;
       }
 
-      // STRICT GEOFENCING for clock-out: 100m maximum
+      // STRICT GEOFENCING for clock-out: Use job's configured radius
       const job = jobs.find(j => j.id === activeSession.jobId);
-      const MAX_DISTANCE = 100;
+      const MAX_DISTANCE = job?.geofence_radius || 100;
 
       if (job?.latitude && job?.longitude) {
         const checkOutDistanceMeters = calculateDistance(
@@ -536,8 +537,51 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     );
   }
 
+  const handleAutoClockOut = async () => {
+    if (!activeSession || !user) return;
+
+    try {
+      const location = await getLocation();
+      const endTime = Date.now();
+      const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
+
+      onSave({
+        job_id: activeSession.jobId,
+        job_name: activeSession.jobName,
+        date: new Date().toISOString().split('T')[0],
+        check_in: activeSession.checkIn,
+        check_out: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        check_in_latitude: activeSession.location.lat,
+        check_in_longitude: activeSession.location.lng,
+        check_out_latitude: location.lat,
+        check_out_longitude: location.lng,
+        hours_worked: totalHours,
+        lunch_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
+        work_type: activeSession.workType,
+        task_details: activeSession.taskDetails,
+        geofence_validated: false, // Auto clock-out due to geofence exit
+        geofence_distance_meters: activeSession.distanceMeters,
+        requires_location_review: true, // Flagged for review
+        exceeds_max_hours: false,
+      });
+
+      localStorage.removeItem(storageKey);
+      setActiveSession(null);
+      setElapsed(0);
+      setLocationError(null);
+    } catch (error) {
+      console.error('Auto clock-out error:', error);
+    }
+  };
+
   return (
     <>
+      {/* Real-time Geofence Monitor */}
+      <GeofenceMonitor 
+        activeSession={activeSession} 
+        onAutoClockOut={handleAutoClockOut}
+      />
+
       <Card className="border-0 shadow-2xl mb-8 bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800">
         <CardContent className="p-8 text-center">
           <div className="relative inline-block">
