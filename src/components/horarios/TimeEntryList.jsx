@@ -645,7 +645,6 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
                     return (
                       <React.Fragment key={empData.email}>
-                        {/* Employee Summary Row */}
                         <TableRow className="bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border-t-2 border-slate-300 dark:border-slate-600">
                           {isAdmin && (
                             <TableCell>
