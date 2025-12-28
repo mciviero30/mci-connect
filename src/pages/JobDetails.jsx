@@ -24,7 +24,8 @@ import {
   CalendarPlus,
   MessageSquare,
   CalendarDays as Calendar,
-  Edit
+  Edit,
+  UserPlus
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
@@ -35,6 +36,7 @@ import CommentThread from "../components/comments/CommentThread";
 import JobTimeline from "../components/jobs/JobTimeline";
 import CostAccumulationChart from "../components/jobs/CostAccumulationChart";
 import { useToast } from "@/components/ui/toast";
+import ClientInvitationManager from "@/components/field/ClientInvitationManager";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
@@ -43,6 +45,7 @@ export default function JobDetails() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showCalendarDialog, setShowCalendarDialog] = useState(false);
   const [showWebSync, setShowWebSync] = useState(false);
+  const [showClientInvitation, setShowClientInvitation] = useState(false);
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -176,12 +179,21 @@ export default function JobDetails() {
             actions={
               <div className="flex gap-3">
                 {user?.role === 'admin' && (
-                  <Button 
-                    onClick={() => setShowWebSync(true)}
-                    className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg"
-                  >
-                    🌐 Web Sync
-                  </Button>
+                  <>
+                    <Button 
+                      onClick={() => setShowClientInvitation(true)}
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      {language === 'es' ? 'Invitar Cliente' : 'Invite Client'}
+                    </Button>
+                    <Button 
+                      onClick={() => setShowWebSync(true)}
+                      className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg"
+                    >
+                      🌐 Web Sync
+                    </Button>
+                  </>
                 )}
                 <Link to={createPageUrl(`Calendario?job=${jobId}`)}>
                   <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
@@ -668,6 +680,14 @@ export default function JobDetails() {
             <CommentThread entityType="job" entityId={jobId} />
           </TabsContent>
         </Tabs>
+
+        {/* Client Invitation Manager */}
+        <ClientInvitationManager 
+          open={showClientInvitation}
+          onClose={() => setShowClientInvitation(false)}
+          jobId={jobId}
+          jobName={job?.name}
+        />
 
         {/* Web Sync Dialog - ADMIN ONLY */}
         <Dialog open={showWebSync} onOpenChange={setShowWebSync}>
