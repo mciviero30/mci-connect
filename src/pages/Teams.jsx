@@ -197,21 +197,21 @@ export default function Teams() {
   const activeTeams = teams.filter(t => t.status === 'active');
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title="Teams Management"
           description={`${activeTeams.length} active teams`}
           icon={MapPin}
           actions={
-            <Button onClick={handleOpenDialog} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-              <Plus className="w-5 h-5 mr-2" />
-              New Team
+            <Button onClick={handleOpenDialog} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+              <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+              <span className="hidden sm:inline">New Team</span>
             </Button>
           }
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {teams.map(team => {
             const stats = getTeamStats(team.id, team.team_name);
             

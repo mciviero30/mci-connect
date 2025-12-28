@@ -17,14 +17,14 @@ export default function EmployeePageLayout({
     <div className="min-h-screen bg-slate-50 dark:bg-[#181818]">
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-blue-800 dark:to-indigo-900">
-        <div className="max-w-6xl mx-auto px-4 pt-8 pb-20">
-          <div className="flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6 md:pt-8 pb-16 md:pb-20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">{title}</h1>
-              {subtitle && <p className="text-blue-200 text-sm mt-1">{subtitle}</p>}
+              <h1 className="text-xl md:text-2xl font-bold text-white">{title}</h1>
+              {subtitle && <p className="text-blue-200 text-xs md:text-sm mt-1">{subtitle}</p>}
             </div>
             {headerActions && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 {headerActions}
               </div>
             )}
@@ -33,26 +33,26 @@ export default function EmployeePageLayout({
       </div>
 
       {/* Content Area - overlaps header */}
-      <div className={`max-w-6xl mx-auto px-4 -mt-12 pb-8 ${className}`}>
+      <div className={`max-w-6xl mx-auto px-4 md:px-6 -mt-12 pb-8 ${className}`}>
         {/* Stats Cards */}
         {stats && stats.length > 0 && (
-          <div className={`grid grid-cols-2 md:grid-cols-${Math.min(stats.length, 4)} gap-4 mb-6`}>
+          <div className={`grid grid-cols-2 md:grid-cols-${Math.min(stats.length, 4)} gap-3 md:gap-4 mb-6`}>
             {stats.map((stat, index) => (
               <Card key={index} className="bg-white dark:bg-[#282828] shadow-lg border-0">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                     {stat.icon && (
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.iconBg || 'bg-blue-100 dark:bg-blue-900/50'}`}>
-                        <stat.icon className={`w-5 h-5 ${stat.iconColor || 'text-blue-600 dark:text-blue-400'}`} />
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center ${stat.iconBg || 'bg-blue-100 dark:bg-blue-900/50'}`}>
+                        <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.iconColor || 'text-blue-600 dark:text-blue-400'}`} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{stat.label}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate">{stat.label}</p>
                     </div>
                   </div>
                   {stat.subtitle && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">{stat.subtitle}</p>
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-2">{stat.subtitle}</p>
                   )}
                 </CardContent>
               </Card>

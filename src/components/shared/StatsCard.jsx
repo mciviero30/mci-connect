@@ -15,7 +15,7 @@ export default function StatsCard({
   if (gradient) {
     return (
       <Card className={`overflow-hidden border-[#E0E7FF] dark:border-slate-700 shadow-md relative group hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${gradient}`}>
-        <CardContent className="p-6">
+        <CardContent className="p-4 md:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <p className="text-[#507DB4] dark:text-[#6B9DD8] text-sm font-bold mb-2 tracking-wide uppercase opacity-90">
