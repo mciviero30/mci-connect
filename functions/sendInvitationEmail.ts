@@ -42,16 +42,10 @@ Deno.serve(async (req) => {
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           
-          <!-- Header with Logo and Blue Bar -->
+          <!-- Header with Logo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); padding: 0; height: 100px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding: 20px 30px; vertical-align: middle;">
-                    <img src="${logoUrl}" alt="MCI Connect" style="height: 60px; width: auto; display: block;">
-                  </td>
-                </tr>
-              </table>
+            <td style="padding: 0;">
+              <img src="${logoUrl}" alt="MCI Connect" style="width: 100%; height: auto; display: block; max-height: 150px; object-fit: cover;">
             </td>
           </tr>
 
@@ -163,16 +157,10 @@ Deno.serve(async (req) => {
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           
-          <!-- Header with Logo and Blue Bar -->
+          <!-- Header with Logo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); padding: 0; height: 100px;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding: 20px 30px; vertical-align: middle;">
-                    <img src="${logoUrl}" alt="MCI Connect" style="height: 60px; width: auto; display: block;">
-                  </td>
-                </tr>
-              </table>
+            <td style="padding: 0;">
+              <img src="${logoUrl}" alt="MCI Connect" style="width: 100%; height: auto; display: block; max-height: 150px; object-fit: cover;">
             </td>
           </tr>
 
