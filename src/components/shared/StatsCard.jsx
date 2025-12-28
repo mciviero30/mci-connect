@@ -11,33 +11,27 @@ export default function StatsCard({
   color = "blue",
   gradient
 }) {
-  // If gradient is provided directly as a CSS string, use it
+  // If gradient is provided directly as a Tailwind classes string
   if (gradient) {
     return (
-      <Card 
-        className="overflow-hidden border-none shadow-lg relative group hover:scale-105 transition-transform duration-300"
-        style={{ 
-          background: gradient,
-          boxShadow: 'none'
-        }}
-      >
+      <Card className={`overflow-hidden border-[#E0E7FF] dark:border-slate-700 shadow-md relative group hover:shadow-lg transition-all duration-300 bg-gradient-to-br ${gradient}`}>
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-white/90 text-sm font-medium mb-2">
+              <p className="text-[#507DB4] dark:text-[#6B9DD8] text-sm font-bold mb-2 tracking-wide uppercase opacity-90">
                 {title}
               </p>
-              <h3 className="text-3xl font-bold text-white mb-1">
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-1">
                 {value}
               </h3>
               {subtitle && (
-                <p className="text-white/80 text-sm">
+                <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
                   {subtitle}
                 </p>
               )}
             </div>
             {Icon && (
-              <div className="p-3 bg-white/20 rounded-2xl">
+              <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-lg shadow-[#507DB4]/30">
                 <Icon className="w-6 h-6 text-white" />
               </div>
             )}
@@ -45,11 +39,11 @@ export default function StatsCard({
           {trend && (
             <div className="flex items-center gap-1 mt-3">
               {trend > 0 ? (
-                <TrendingUp className="w-4 h-4 text-white/90" />
+                <TrendingUp className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-white/90" />
+                <TrendingDown className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
               )}
-              <span className="text-sm text-white/90 font-medium">
+              <span className="text-sm text-slate-700 dark:text-slate-300 font-semibold">
                 {Math.abs(trend)}% {trend > 0 ? 'increase' : 'decrease'}
               </span>
             </div>
