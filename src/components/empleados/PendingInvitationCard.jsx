@@ -1,16 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, Send } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { formatPosition } from "@/components/utils/nameHelpers";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function PendingInvitationCard({ employee }) {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
+  const [showTeamSelect, setShowTeamSelect] = useState(false);
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    initialData: [],
+    staleTime: 60000
+  });
 
   const displayName = (() => {
     if (employee.first_name && employee.last_name) {
@@ -23,6 +32,20 @@ export default function PendingInvitationCard({ employee }) {
       p.charAt(0).toUpperCase() + p.slice(1)
     ).join(' ') || 'Unknown';
   })();
+
+  const updateTeamMutation = useMutation({
+    mutationFn: async (teamId) => {
+      const selectedTeam = teams.find(t => t.id === teamId);
+      await base44.entities.PendingEmployee.update(employee.id, {
+        team_id: teamId,
+        team_name: selectedTeam?.team_name || ''
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      setShowTeamSelect(false);
+    }
+  });
 
   const inviteMutation = useMutation({
     mutationFn: async () => {
@@ -96,12 +119,29 @@ export default function PendingInvitationCard({ employee }) {
           <Badge className="bg-yellow-50/60 text-yellow-900 border border-yellow-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
             Pending Invitation
           </Badge>
-          <Badge 
-            variant="outline" 
-            className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
-          >
-            {teamLocation}
-          </Badge>
+          
+          {showTeamSelect ? (
+            <Select value={employee.team_id || ''} onValueChange={(value) => updateTeamMutation.mutate(value)}>
+              <SelectTrigger className="h-[26px] w-[140px] text-[10px] border-[#507DB4]/40">
+                <SelectValue placeholder="Select Team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map(team => (
+                  <SelectItem key={team.id} value={team.id} className="text-[11px]">
+                    {team.team_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Badge 
+              variant="outline" 
+              onClick={() => setShowTeamSelect(true)}
+              className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-[#507DB4]/10 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center cursor-pointer"
+            >
+              {teamLocation}
+            </Badge>
+          )}
         </div>
 
         {/* Contact Info */}
