@@ -12,7 +12,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNotificationService } from '../notifications/NotificationService';
-import GeofenceMonitor from './GeofenceMonitor';
+import GeofenceMonitor from '../time-tracking/GeofenceMonitor';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
