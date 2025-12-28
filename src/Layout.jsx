@@ -500,6 +500,13 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
       ]
+    },
+    {
+      section: 'CLIENT ACCESS',
+      icon: User,
+      items: [
+        { title: 'Client Portal Manager', url: createPageUrl("ClientManagement"), icon: Users },
+      ]
     }
   ];
 
