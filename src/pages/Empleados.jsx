@@ -79,11 +79,16 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
     }
   });
 
-  const { data: teams = [] } = useQuery({
+  const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list(),
-    initialData: []
+    initialData: [],
+    staleTime: 60000
   });
+
+  React.useEffect(() => {
+    console.log('Teams loaded:', teams);
+  }, [teams]);
 
   return (
     <div className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
@@ -166,9 +171,11 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
               team_name: selectedTeam?.name || ''
             });
           }}
-          className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
+          className="w-full min-h-[44px] px-3 py-2 border rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
         >
           <option value="">Select Team</option>
+          {teamsLoading && <option disabled>Loading teams...</option>}
+          {!teamsLoading && teams.length === 0 && <option disabled>No teams available</option>}
           {teams.map(team => (
             <option key={team.id} value={team.id}>{team.name}</option>
           ))}
