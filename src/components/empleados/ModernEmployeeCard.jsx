@@ -2,14 +2,17 @@ import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, IdCard, Plus, Shield, AlertTriangle } from "lucide-react";
+import { Mail, Phone, IdCard, Plus, Shield, AlertTriangle, Send } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { formatPosition } from "@/components/utils/nameHelpers";
+import { useLanguage } from "@/components/i18n/LanguageContext";
 
 export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails }) {
+  const { language } = useLanguage();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState(
     employee.preferred_profile_image === 'avatar' && employee.avatar_image_url
@@ -81,6 +84,36 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
   const progressPercentage = onboardingProgress?.percentage || 0;
 
+  const isPending = employee.employment_status === 'pending' || employee.status === 'pending';
+
+  const inviteMutation = useMutation({
+    mutationFn: async () => {
+      const fullName = employee.full_name || `${employee.first_name} ${employee.last_name}`.trim() || employee.email.split('@')[0];
+      
+      await base44.functions.invoke('sendInvitationEmail', {
+        to: employee.email,
+        fullName,
+        language
+      });
+
+      await navigator.clipboard.writeText(employee.email);
+      window.open('https://app.base44.com/dashboard', '_blank');
+      
+      // Update status to invited
+      if (employee.entity_name === 'PendingEmployee') {
+        await base44.entities.PendingEmployee.update(employee.id, { status: 'invited' });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      alert(language === 'es' 
+        ? '✅ Email enviado. Ahora invita desde Dashboard → "Invite User"'
+        : '✅ Email sent. Now invite from Dashboard → "Invite User"'
+      );
+    }
+  });
+
   return (
     <Card className="bg-white dark:bg-[#282828] rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
       <div className="p-3 sm:p-4 flex-1 flex flex-col">
@@ -121,15 +154,28 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
                 <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               </div>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
-              className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
-            >
-              <IdCard className="w-3.5 h-3.5" />
-              <span className="text-[10px] font-medium hidden sm:inline">Manage</span>
-            </Button>
+            {isPending ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => inviteMutation.mutate()}
+                disabled={inviteMutation.isPending}
+                className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-medium">Invite</span>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
+                className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
+              >
+                <IdCard className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-medium hidden sm:inline">Manage</span>
+              </Button>
+            )}
           </div>
         </div>
 
