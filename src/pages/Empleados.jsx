@@ -363,7 +363,12 @@ export default function Empleados() {
   const activeEmployees = filterEmployees(employees.filter(e => e.employment_status === 'active' || !e.employment_status));
   const invitedEmployees = filterEmployees([
     ...employees.filter(e => e.employment_status === 'invited'),
-    ...pendingEmployees.map(pe => ({ ...pe, employment_status: 'pending' }))
+    ...pendingEmployees.map(pe => ({ 
+      ...pe.data, 
+      id: pe.id, 
+      entity_name: 'PendingEmployee',
+      created_date: pe.created_date 
+    }))
   ]);
   const deletedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'deleted'));
 
