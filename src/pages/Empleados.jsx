@@ -77,7 +77,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
 
   return (
     <div className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>Email *</Label>
           <Input 
@@ -94,7 +94,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>First Name</Label>
           <Input value={formData.first_name} onChange={(e) => setFormData({...formData, first_name: e.target.value})} />
@@ -105,13 +105,13 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label>Position</Label>
           <select 
             value={formData.position} 
             onChange={(e) => setFormData({...formData, position: e.target.value})}
-            className="w-full p-2 border rounded-md"
+            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
           >
             <option value="">Select Position</option>
             <option value="CEO">CEO</option>
@@ -127,7 +127,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
           <select 
             value={formData.department} 
             onChange={(e) => setFormData({...formData, department: e.target.value})}
-            className="w-full p-2 border rounded-md"
+            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
           >
             <option value="">Select Department</option>
             <option value="executive">Executive</option>
@@ -156,7 +156,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
               team_name: selectedTeam?.name || ''
             });
           }}
-          className="w-full p-2 border rounded-md"
+          className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
         >
           <option value="">Select Team</option>
           {teams.map(team => (
@@ -170,7 +170,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
         <Input value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div>
           <Label>Date of Birth</Label>
           <Input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} />
@@ -184,7 +184,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
           <select 
             value={formData.tshirt_size} 
             onChange={(e) => setFormData({...formData, tshirt_size: e.target.value})}
-            className="w-full p-2 border rounded-md"
+            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
           >
             <option value="">Select</option>
             <option value="S">S</option>
@@ -204,7 +204,16 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
 
       <div className="flex gap-2 justify-end pt-4">
         <Button variant="outline" onClick={onClose}>Cancel</Button>
-        <Button onClick={() => mutation.mutate(formData)} disabled={mutation.isPending}>
+        <Button 
+          onClick={() => {
+            if (!formData.email) {
+              alert('Email is required');
+              return;
+            }
+            mutation.mutate(formData);
+          }} 
+          disabled={mutation.isPending || !formData.email}
+        >
           {mutation.isPending ? 'Saving...' : employee ? 'Update' : 'Create Employee'}
         </Button>
       </div>
@@ -531,7 +540,7 @@ export default function Empleados() {
         </Tabs>
 
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
             </DialogHeader>
