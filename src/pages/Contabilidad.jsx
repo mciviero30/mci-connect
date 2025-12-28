@@ -25,6 +25,9 @@ export default function Contabilidad() {
     queryKey: ['transactions'],
     queryFn: () => base44.entities.Transaction.list('-date'),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const createMutation = useMutation({

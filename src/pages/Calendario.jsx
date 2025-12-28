@@ -71,7 +71,10 @@ export default function Calendario() {
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // CRITICAL: Replace JobAssignment with ScheduleShift
@@ -79,24 +82,36 @@ export default function Calendario() {
     queryKey: ['scheduleShifts'],
     queryFn: () => base44.entities.ScheduleShift.list('-date'),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: employees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: timeOffRequests = [] } = useQuery({
     queryKey: ['timeOffRequests'],
     queryFn: () => base44.entities.TimeOffRequest.filter({ status: 'approved' }),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const createMutation = useMutation({

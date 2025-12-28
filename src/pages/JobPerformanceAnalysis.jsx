@@ -41,30 +41,45 @@ export default function JobPerformanceAnalysis() {
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list('name'),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: quotes } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => base44.entities.Quote.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: timeEntries } = useQuery({
     queryKey: ['timeEntries'],
     queryFn: () => base44.entities.TimeEntry.list(),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: teams } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('team_name'), // Modified: Added 'team_name' for sorting
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: employees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // NEW: Query for expenses for profitability calculation
@@ -72,6 +87,9 @@ export default function JobPerformanceAnalysis() {
     queryKey: ['expenses'],
     queryFn: () => base44.entities.Expense.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const employeeRateMap = new Map(employees?.map(emp => [emp.email, emp.hourly_rate || 25]));

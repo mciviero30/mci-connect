@@ -30,18 +30,26 @@ export default function Estimados() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => base44.entities.Quote.list('-created_date'),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('team_name'),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const deleteMutation = useMutation({
