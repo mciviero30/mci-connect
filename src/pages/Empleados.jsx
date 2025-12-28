@@ -360,16 +360,20 @@ export default function Empleados() {
     );
   };
 
-  const activeEmployees = filterEmployees(employees.filter(e => e.employment_status === 'active' || !e.employment_status));
-  const pendingList = filterEmployees(pendingEmployees.map(pe => ({ 
+  // Exclude account owner from all employee lists
+  const OWNER_EMAIL = 'mciviero30@gmail.com';
+  const excludeOwner = (list) => list.filter(e => e.email !== OWNER_EMAIL);
+
+  const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status)));
+  const pendingList = filterEmployees(excludeOwner(pendingEmployees.map(pe => ({ 
     ...pe.data, 
     id: pe.id, 
     entity_name: 'PendingEmployee',
     created_date: pe.created_date 
-  })));
-  const invitedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'invited'));
-  const archivedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'archived'));
-  const deletedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'deleted'));
+  }))));
+  const invitedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited')));
+  const archivedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'archived')));
+  const deletedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')));
 
   // Paginate current tab employees
   const paginateEmployees = (empList) => {
