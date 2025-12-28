@@ -193,18 +193,19 @@ export default function Facturas() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title={t('invoices')}
           description={`${draftInvoices.length} ${t('drafts').toLowerCase()}, ${sentInvoices.length} ${t('sent').toLowerCase()}, ${paidInvoices.length} ${t('paid').toLowerCase()}`}
           icon={FileCheck}
           actions={
             isAdmin && (
-              <Link to={createPageUrl("CrearFactura")}>
-                <Button size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                  <Plus className="w-5 h-5 mr-2" />
-                  {t('newInvoice')}
+              <Link to={createPageUrl("CrearFactura")} className="w-full sm:w-auto">
+                <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <span className="hidden sm:inline">{t('newInvoice')}</span>
+                  <span className="sm:hidden">{language === 'es' ? 'Nueva' : 'New'}</span>
                 </Button>
               </Link>
             )
@@ -326,7 +327,7 @@ export default function Facturas() {
         </Card>
 
         {/* Invoices Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {filteredInvoices.map(invoice => (
             <ModernInvoiceCard
               key={invoice.id}

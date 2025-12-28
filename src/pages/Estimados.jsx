@@ -177,31 +177,30 @@ export default function Estimados() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title={t('quotes')}
           description={`${draftQuotes.length} ${t('drafts').toLowerCase()}, ${sentQuotes.length} ${t('sent').toLowerCase()}, ${approvedQuotes.length} ${t('approved').toLowerCase()}`}
           icon={FileText}
           actions={
             isAdmin && (
-              <div className="flex gap-3">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   onClick={() => setShowAIWizard(true)}
-                  size="lg"
-                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md"
+                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] px-3 sm:px-4 flex-1 sm:flex-none"
                 >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  {language === 'es' ? 'IA' : 'AI'}
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <span className="hidden sm:inline">{language === 'es' ? 'IA' : 'AI'}</span>
                 </Button>
-                <Link to={createPageUrl("CrearEstimado")}>
+                <Link to={createPageUrl("CrearEstimado")} className="flex-1 sm:flex-none">
                   <Button
                     variant="outline"
-                    size="lg"
-                    className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
+                    className="w-full border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[44px] px-3 sm:px-4"
                   >
-                    <Plus className="w-5 h-5 mr-2" />
-                    {t('newQuote')}
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                    <span className="hidden sm:inline">{t('newQuote')}</span>
+                    <span className="sm:hidden">{language === 'es' ? 'Nuevo' : 'New'}</span>
                   </Button>
                 </Link>
               </div>
@@ -318,7 +317,7 @@ export default function Estimados() {
         </Card>
 
         {/* Quotes Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
           {filteredQuotes.map(quote => (
             <ModernQuoteCard
               key={quote.id}

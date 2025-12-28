@@ -275,20 +275,21 @@ export default function Nomina() {
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title={t('payroll')}
           icon={Banknote}
           actions={
-            <div className="flex gap-2">
-              <Button onClick={handleExport} variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
-                <Download className="w-4 h-4 mr-2" />
-                {t('export')}
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button onClick={handleExport} variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 min-h-[44px] flex-1 sm:flex-none">
+                <Download className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t('export')}</span>
               </Button>
-              <Button onClick={handlePrint} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                <Download className="w-4 h-4 mr-2" />
-                {t('printPayroll')}
+              <Button onClick={handlePrint} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] flex-1 sm:flex-none">
+                <Download className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t('printPayroll')}</span>
+                <span className="sm:hidden">{language === 'es' ? 'Imprimir' : 'Print'}</span>
               </Button>
             </div>
           }
@@ -303,7 +304,7 @@ export default function Nomina() {
 
 
 
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
           <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
@@ -382,7 +383,7 @@ export default function Nomina() {
           </CardHeader>
         </Card>
 
-        <div className="grid gap-4">
+        <div className="grid gap-3 md:gap-4">
           {filteredPayrollData.map(({ employee, normalHours, overtimeHours, drivingHours, drivingMiles, perDiemAmount, workDaysCount, workPay, drivingPay, reimbursements, bonusAmount, totalPay, hourlyRate, overtimeRate }) => {
             const weekPayroll = getEmployeeWeekPayroll(employee);
             const config = weekPayroll ? statusConfig[weekPayroll.status] : statusConfig.draft;
