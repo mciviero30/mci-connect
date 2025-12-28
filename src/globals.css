@@ -138,6 +138,11 @@
     --soft-pink-text: 330 65% 30%;
   }
 
+  /* Hide Base44 badge */
+  iframe[src*="base44"] {
+    display: none !important;
+  }
+
   /* Safe area insets for mobile devices */
   .px-safe {
     padding-left: env(safe-area-inset-left);
