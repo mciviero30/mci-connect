@@ -127,46 +127,44 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
     return navigation.flatMap(section => section.items);
   }, [navigation]);
 
-  // Keyboard navigation
-  React.useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setFocusedIndex(prev => {
-          const next = (prev + 1) % allItems.length;
-          const element = itemRefs.current[next];
-          element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          element?.focus();
-          return next;
-        });
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setFocusedIndex(prev => {
-          const next = prev <= 0 ? allItems.length - 1 : prev - 1;
-          const element = itemRefs.current[next];
-          element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          element?.focus();
-          return next;
-        });
-      } else if (e.key === 'Enter' && focusedIndex >= 0) {
-        e.preventDefault();
-        const selectedItem = allItems[focusedIndex];
-        if (selectedItem?.url) {
-          // Guardar posición actual del scroll antes de navegar
-          const sidebar = sidebarContentRef.current;
-          if (sidebar) {
-            sessionStorage.setItem('sidebarScrollPosition', sidebar.scrollTop.toString());
-          }
-          
-          navigate(selectedItem.url);
-          setOpenMobile(false);
+  // Keyboard navigation with useCallback to prevent recreation
+  const handleKeyDown = React.useCallback((e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedIndex(prev => (prev + 1) % allItems.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedIndex(prev => (prev <= 0 ? allItems.length - 1 : prev - 1));
+    } else if (e.key === 'Enter' && focusedIndex >= 0) {
+      e.preventDefault();
+      const selectedItem = allItems[focusedIndex];
+      if (selectedItem?.url) {
+        const sidebar = sidebarContentRef.current;
+        if (sidebar) {
+          sessionStorage.setItem('sidebarScrollPosition', sidebar.scrollTop.toString());
         }
+        navigate(selectedItem.url);
+        setOpenMobile(false);
       }
-    };
+    }
+  }, [allItems, focusedIndex, navigate, setOpenMobile, sidebarContentRef]);
 
+  // Register keyboard listener (stable)
+  React.useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [allItems, focusedIndex, navigate, setOpenMobile]);
+  }, [handleKeyDown]);
+
+  // Separate effect for visual focus (doesn't trigger API calls)
+  React.useEffect(() => {
+    if (focusedIndex >= 0 && focusedIndex < allItems.length) {
+      const element = itemRefs.current[focusedIndex];
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        element.focus({ preventScroll: true });
+      }
+    }
+  }, [focusedIndex, allItems.length]);
   
   let itemIndex = 0;
   
