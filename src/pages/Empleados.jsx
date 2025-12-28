@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
+import PendingInvitationCard from "@/components/empleados/PendingInvitationCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import { useToast } from "@/components/ui/toast";
 
@@ -505,14 +506,24 @@ export default function Empleados() {
               </AlertDescription>
             </Alert>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginateEmployees(invitedEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onboardingProgress={employeeProgress[employee.id]}
-                  onViewDetails={handleViewOnboarding}
-                />
-              ))}
+              {paginateEmployees(invitedEmployees).map(employee => {
+                // Check if this is a PendingEmployee (from entity) or a User
+                const isPending = employee.entity_name === 'PendingEmployee' || employee.employment_status === 'pending';
+                
+                return isPending ? (
+                  <PendingInvitationCard
+                    key={employee.id}
+                    employee={employee}
+                  />
+                ) : (
+                  <ModernEmployeeCard
+                    key={employee.id}
+                    employee={employee}
+                    onboardingProgress={employeeProgress[employee.id]}
+                    onViewDetails={handleViewOnboarding}
+                  />
+                );
+              })}
             </div>
 
             {invitedEmployees.length > ITEMS_PER_PAGE && (
