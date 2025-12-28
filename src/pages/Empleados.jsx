@@ -181,7 +181,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
           <option value="" style={{ color: '#0f172a' }}>Select Team</option>
           {teamsLoading && <option disabled style={{ color: '#64748b' }}>Loading teams...</option>}
           {!teamsLoading && teams.length === 0 && <option disabled style={{ color: '#64748b' }}>No teams available</option>}
-          {teams.map(team => (
+          {teams.filter(team => team?.team_name).map(team => (
             <option key={team.id} value={team.id} style={{ color: '#0f172a' }}>{team.team_name}</option>
           ))}
         </select>
