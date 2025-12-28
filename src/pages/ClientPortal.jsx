@@ -21,9 +21,11 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
+import AvatarCreator from '@/components/avatar/AvatarCreator';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [showAvatarCreator, setShowAvatarCreator] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -123,9 +125,18 @@ export default function ClientPortal() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
+              <button 
+                onClick={() => setShowAvatarCreator(true)}
+                className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-blue-100 hover:ring-blue-300 transition-all"
+              >
+                {user?.avatar_image_url ? (
+                  <img src={user.avatar_image_url} alt={user.full_name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-white" />
+                  </div>
+                )}
+              </button>
               <div>
                 <h1 className="font-bold text-slate-900">Portal del Cliente</h1>
                 <p className="text-sm text-slate-500">Bienvenido, {user?.full_name}</p>
@@ -424,6 +435,15 @@ export default function ClientPortal() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Avatar Creator Modal */}
+      {showAvatarCreator && (
+        <AvatarCreator 
+          open={showAvatarCreator}
+          onClose={() => setShowAvatarCreator(false)}
+          readOnly={true}
+        />
       )}
     </div>
   );
