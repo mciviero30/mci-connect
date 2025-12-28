@@ -23,7 +23,11 @@ export default function NewsFeed() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
   
   // Check if user can create announcements (CEO, HR, administrators, managers)
   const canCreateAnnouncements = user?.role === 'admin' || 
