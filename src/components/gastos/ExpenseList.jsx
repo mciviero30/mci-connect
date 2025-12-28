@@ -120,18 +120,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50 border-slate-200">
-                {showEmployeeName && <TableHead className="text-slate-700 font-semibold">{t('employee')}</TableHead>} {/* MODIFIED: uses showEmployeeName */}
-                <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('payment_method')}</TableHead>
-                <TableHead className="text-right text-slate-700 font-semibold">{t('amount')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('receipt')}</TableHead>
-                {showActions && <TableHead className="text-right text-slate-700 font-semibold">{t('actions')}</TableHead>}
-              </TableRow>
+              <TableRow className="bg-slate-50 border-slate-200">{showEmployeeName && <TableHead className="text-slate-700 font-semibold">{t('employee')}</TableHead>}<TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('payment_method')}</TableHead><TableHead className="text-right text-slate-700 font-semibold">{t('amount')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('receipt')}</TableHead>{showActions && <TableHead className="text-right text-slate-700 font-semibold">{t('actions')}</TableHead>}</TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
