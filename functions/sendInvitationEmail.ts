@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'SendGrid credentials not configured' }, { status: 500 });
     }
 
-    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/9476c84db_Screenshot2025-12-16at22005AM.png';
+    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png';
 
     // Send password reset to allow user to set password
     const appUrl = Deno.env.get('APP_URL') || 'https://mci-connect.base44.app';
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
               </p>
 
               <!-- Key Features Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #1E40AF; border-bottom: 2px solid #1E40AF; padding-bottom: 10px;">
+              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
                 Características Clave de MCI Connect
               </h2>
 
@@ -78,18 +78,20 @@ Deno.serve(async (req) => {
               </p>
 
               <ul style="margin: 0 0 30px 0; padding-left: 25px; font-size: 15px; line-height: 1.8; color: #333333;">
-                <li style="margin-bottom: 10px;"><strong>Registre su tiempo:</strong> Entrada/salida y registro de horas de trabajo.</li>
-                <li style="margin-bottom: 10px;"><strong>Gestione gastos:</strong> Suba recibos y solicite reembolsos eficientemente.</li>
-                <li style="margin-bottom: 10px;"><strong>Reporte millaje:</strong> Registre sus viajes y millas recorridas.</li>
-                <li style="margin-bottom: 10px;"><strong>Revise nómina:</strong> Consulte su pago y horas trabajadas.</li>
-                <li style="margin-bottom: 10px;"><strong>Vea el calendario:</strong> Asignaciones de trabajo y horarios.</li>
-                <li style="margin-bottom: 10px;"><strong>Comuníquese:</strong> Chat en tiempo real con el equipo.</li>
-                <li style="margin-bottom: 10px;"><strong style="color: #F59E0B;">MCI Field:</strong> Fotos de proyectos, planos y tareas en campo.</li>
-                <li style="margin-bottom: 10px;"><strong>Capacitación:</strong> Acceda a cursos y certificaciones.</li>
+                <li style="margin-bottom: 10px;"><strong>Control de Tiempo:</strong> Entrada/salida inteligente con geolocalización y aprobación de horas.</li>
+                <li style="margin-bottom: 10px;"><strong>Gestión de Gastos:</strong> Categorización AI de gastos, per diem y reembolsos automatizados.</li>
+                <li style="margin-bottom: 10px;"><strong>Nómina Automatizada:</strong> Cálculo automático de pago con bonos y reportes detallados.</li>
+                <li style="margin-bottom: 10px;"><strong>Calendario Inteligente:</strong> Asignaciones, disponibilidad de equipo y sincronización con Google Calendar.</li>
+                <li style="margin-bottom: 10px;"><strong style="color: #FF8C00;">MCI Field:</strong> Gestión completa de proyectos en campo - planos, fotos, tareas y progreso en tiempo real.</li>
+                <li style="margin-bottom: 10px;"><strong>Facturación y Estimados:</strong> Creación de quotes e invoices con inteligencia artificial.</li>
+                <li style="margin-bottom: 10px;"><strong>Chat y Colaboración:</strong> Comunicación en tiempo real con equipos, GIFs y compartir archivos.</li>
+                <li style="margin-bottom: 10px;"><strong>Reconocimientos y Metas:</strong> Sistema de puntos, premios y OKRs para el equipo.</li>
+                <li style="margin-bottom: 10px;"><strong>Capacitación:</strong> Cursos, certificaciones y compliance tracking automatizado.</li>
+                <li style="margin-bottom: 10px;"><strong>Analytics y Reportes:</strong> Cash flow, forecasting presupuestario y análisis de rentabilidad.</li>
               </ul>
 
               <!-- Steps Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #1E40AF; border-bottom: 2px solid #1E40AF; padding-bottom: 10px;">
+              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
                 Pasos para Comenzar
               </h2>
 
@@ -118,13 +120,13 @@ Deno.serve(async (req) => {
               </p>
 
               <!-- Signature -->
-              <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #1E40AF; border-top: 2px solid #1E40AF; padding-top: 15px; display: inline-block;">
+              <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 15px; display: inline-block;">
                 El Equipo MCI
               </p>
 
               <!-- CTA Button -->
               <div style="text-align: center; margin: 40px 0 20px 0;">
-                <a href="${setupPasswordUrl}" style="display: inline-block; background-color: #1E40AF; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
                   Únete a MCI Connect Ahora
                 </a>
               </div>
@@ -188,7 +190,7 @@ Deno.serve(async (req) => {
               </p>
 
               <!-- Key Features Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #1E40AF; border-bottom: 2px solid #1E40AF; padding-bottom: 10px;">
+              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
                 Key Features of MCI Connect
               </h2>
 
@@ -197,18 +199,20 @@ Deno.serve(async (req) => {
               </p>
 
               <ul style="margin: 0 0 30px 0; padding-left: 25px; font-size: 15px; line-height: 1.8; color: #333333;">
-                <li style="margin-bottom: 10px;"><strong>Track your time:</strong> Clock in/out and log your work hours.</li>
-                <li style="margin-bottom: 10px;"><strong>Manage expenses:</strong> Upload receipts and request reimbursements efficiently.</li>
-                <li style="margin-bottom: 10px;"><strong>Report mileage:</strong> Track your trips and miles driven.</li>
-                <li style="margin-bottom: 10px;"><strong>Review payroll:</strong> Check your pay and hours worked.</li>
-                <li style="margin-bottom: 10px;"><strong>View calendar:</strong> See job assignments and schedules.</li>
-                <li style="margin-bottom: 10px;"><strong>Communicate:</strong> Engage in real-time chat with the team.</li>
-                <li style="margin-bottom: 10px;"><strong style="color: #F59E0B;">MCI Field:</strong> Access project photos, blueprints, and field tasks.</li>
-                <li style="margin-bottom: 10px;"><strong>Training:</strong> Access courses and certifications.</li>
+                <li style="margin-bottom: 10px;"><strong>Time Tracking:</strong> Smart clock in/out with geolocation and hours approval.</li>
+                <li style="margin-bottom: 10px;"><strong>Expense Management:</strong> AI categorization, per diem and automated reimbursements.</li>
+                <li style="margin-bottom: 10px;"><strong>Automated Payroll:</strong> Automatic pay calculation with bonuses and detailed reports.</li>
+                <li style="margin-bottom: 10px;"><strong>Smart Calendar:</strong> Job assignments, team availability and Google Calendar sync.</li>
+                <li style="margin-bottom: 10px;"><strong style="color: #FF8C00;">MCI Field:</strong> Complete field project management - blueprints, photos, tasks and real-time progress.</li>
+                <li style="margin-bottom: 10px;"><strong>Invoicing & Estimates:</strong> AI-powered quote and invoice creation.</li>
+                <li style="margin-bottom: 10px;"><strong>Chat & Collaboration:</strong> Real-time team communication with GIFs and file sharing.</li>
+                <li style="margin-bottom: 10px;"><strong>Recognition & Goals:</strong> Points system, awards and team OKRs.</li>
+                <li style="margin-bottom: 10px;"><strong>Training:</strong> Courses, certifications and automated compliance tracking.</li>
+                <li style="margin-bottom: 10px;"><strong>Analytics & Reports:</strong> Cash flow, budget forecasting and profitability analysis.</li>
               </ul>
 
               <!-- Steps Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #1E40AF; border-bottom: 2px solid #1E40AF; padding-bottom: 10px;">
+              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
                 Steps to Get Started
               </h2>
 
@@ -237,13 +241,13 @@ Deno.serve(async (req) => {
               </p>
 
               <!-- Signature -->
-              <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #1E40AF; border-top: 2px solid #1E40AF; padding-top: 15px; display: inline-block;">
+              <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 15px; display: inline-block;">
                 The MCI Team
               </p>
 
               <!-- CTA Button -->
               <div style="text-align: center; margin: 40px 0 20px 0;">
-                <a href="${setupPasswordUrl}" style="display: inline-block; background-color: #1E40AF; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
                   Join MCI Connect Now
                 </a>
               </div>
