@@ -68,6 +68,9 @@ import { PermissionsProvider } from "@/components/permissions/PermissionsContext
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
+import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
+import { SyncQueueProvider } from "@/components/pwa/SyncQueueManager";
+import OfflineIndicator from "@/components/pwa/OfflineIndicator";
 import AIAssistant from "@/components/ai/AIAssistant";
 import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
@@ -689,10 +692,13 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   return (
     <SidebarProvider>
+      <ServiceWorkerRegistration />
       <MobileOptimizations />
-      <NotificationService user={user}>
-        <NotificationEngine user={user} />
-      </NotificationService>
+      <SyncQueueProvider>
+        <OfflineIndicator />
+        <NotificationService user={user}>
+          <NotificationEngine user={user} />
+        </NotificationService>
 
       {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <>
@@ -938,6 +944,7 @@ const LayoutContent = ({ children, currentPageName }) => {
           {/* Bottom Navigation for Mobile */}
           <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           </div>
+          </SyncQueueProvider>
           </SidebarProvider>
           );
           };
