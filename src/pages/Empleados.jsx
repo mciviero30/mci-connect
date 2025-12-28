@@ -361,15 +361,14 @@ export default function Empleados() {
   };
 
   const activeEmployees = filterEmployees(employees.filter(e => e.employment_status === 'active' || !e.employment_status));
-  const invitedEmployees = filterEmployees([
-    ...employees.filter(e => e.employment_status === 'invited'),
-    ...pendingEmployees.map(pe => ({ 
-      ...pe.data, 
-      id: pe.id, 
-      entity_name: 'PendingEmployee',
-      created_date: pe.created_date 
-    }))
-  ]);
+  const pendingList = filterEmployees(pendingEmployees.map(pe => ({ 
+    ...pe.data, 
+    id: pe.id, 
+    entity_name: 'PendingEmployee',
+    created_date: pe.created_date 
+  })));
+  const invitedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'invited'));
+  const archivedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'archived'));
   const deletedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'deleted'));
 
   // Paginate current tab employees
@@ -450,21 +449,29 @@ export default function Empleados() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-            <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
-              <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Active</span> ({activeEmployees.length})
-              </TabsTrigger>
-              <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Invited</span> ({invitedEmployees.length})
-              </TabsTrigger>
-              <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Deleted</span> ({deletedEmployees.length})
-              </TabsTrigger>
-            </TabsList>
-          </div>
+              <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
+                <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Active</span> ({activeEmployees.length})
+                </TabsTrigger>
+                <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Pending</span> ({pendingEmployees.length})
+                </TabsTrigger>
+                <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Invited</span> ({invitedEmployees.length})
+                </TabsTrigger>
+                <TabsTrigger value="archived" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                  <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Archived</span> ({archivedEmployees.length})
+                </TabsTrigger>
+                <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                  <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Deleted</span> ({deletedEmployees.length})
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
           <TabsContent value="active">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -504,31 +511,61 @@ export default function Empleados() {
             )}
           </TabsContent>
 
-          <TabsContent value="invited">
+          <TabsContent value="pending">
             <Alert className="mb-4 bg-yellow-50 border-yellow-200">
               <AlertDescription className="text-yellow-800">
+                ℹ️ Pending employees need to be invited to join the system.
+              </AlertDescription>
+            </Alert>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginateEmployees(pendingList).map(employee => (
+                <PendingInvitationCard
+                  key={employee.id}
+                  employee={employee}
+                />
+              ))}
+            </div>
+
+            {pendingList.length > ITEMS_PER_PAGE && (
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 sm:mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="w-full sm:w-auto min-h-[44px] text-sm"
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                  Page {page} of {Math.ceil(pendingList.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(pendingList.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(pendingList.length / ITEMS_PER_PAGE)}
+                  className="w-full sm:w-auto min-h-[44px] text-sm"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="invited">
+            <Alert className="mb-4 bg-blue-50 border-blue-200">
+              <AlertDescription className="text-blue-800">
                 ℹ️ Invited employees need to accept invitation from Dashboard to activate their account.
               </AlertDescription>
             </Alert>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginateEmployees(invitedEmployees).map(employee => {
-                // Check if this is a PendingEmployee (from entity) or a User
-                const isPending = employee.entity_name === 'PendingEmployee' || employee.employment_status === 'pending';
-                
-                return isPending ? (
-                  <PendingInvitationCard
-                    key={employee.id}
-                    employee={employee}
-                  />
-                ) : (
-                  <ModernEmployeeCard
-                    key={employee.id}
-                    employee={employee}
-                    onboardingProgress={employeeProgress[employee.id]}
-                    onViewDetails={handleViewOnboarding}
-                  />
-                );
-              })}
+              {paginateEmployees(invitedEmployees).map(employee => (
+                <ModernEmployeeCard
+                  key={employee.id}
+                  employee={employee}
+                  onboardingProgress={employeeProgress[employee.id]}
+                  onViewDetails={handleViewOnboarding}
+                />
+              ))}
             </div>
 
             {invitedEmployees.length > ITEMS_PER_PAGE && (
@@ -547,6 +584,41 @@ export default function Empleados() {
                   variant="outline"
                   onClick={() => setPage(p => Math.min(Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE), p + 1))}
                   disabled={page >= Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="archived">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginateEmployees(archivedEmployees).map(employee => (
+                <ModernEmployeeCard
+                  key={employee.id}
+                  employee={employee}
+                  onboardingProgress={employeeProgress[employee.id]}
+                  onViewDetails={handleViewOnboarding}
+                />
+              ))}
+            </div>
+
+            {archivedEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="flex items-center px-4 text-sm text-slate-600">
+                  Page {page} of {Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
                 >
                   Next
                 </Button>
