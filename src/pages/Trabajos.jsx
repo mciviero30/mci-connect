@@ -387,16 +387,16 @@ export default function Trabajos() {
                 }
               </p>
               {isAdmin && jobs.length === 0 && ( // Only show create buttons if there are truly no jobs at all
-                <div className="flex justify-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-center gap-3 w-full sm:w-auto px-4 sm:px-0">
                   <Button
                     onClick={() => setShowAIWizard(true)}
-                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
+                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[48px] w-full sm:w-auto"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     {language === 'es' ? 'Crear con IA' : 'Create with AI'}
                   </Button>
-                  <Button onClick={() => setShowForm(true)} variant="outline" className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <Button onClick={() => setShowForm(true)} variant="outline" className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[48px] w-full sm:w-auto">
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     {t('createJob')}
                   </Button>
                 </div>

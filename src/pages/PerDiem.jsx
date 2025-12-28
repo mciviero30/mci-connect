@@ -183,8 +183,8 @@ export default function PerDiem() {
       subtitle={t('request_per_diem_for_work_days')}
       stats={pageStats}
       headerActions={
-        <Button onClick={() => { setEditingRequest(null); setShowForm(!showForm); }} className="bg-white/10 border-white/30 text-white hover:bg-white/20" variant="outline">
-          <Plus className="w-4 h-4 mr-2"/>{t('request_per_diem')}
+        <Button onClick={() => { setEditingRequest(null); setShowForm(!showForm); }} className="bg-white/10 border-white/30 text-white hover:bg-white/20 min-h-[44px] w-full sm:w-auto" variant="outline">
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2"/>{t('request_per_diem')}
         </Button>
       }
     >

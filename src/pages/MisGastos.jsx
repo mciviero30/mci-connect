@@ -113,10 +113,10 @@ export default function MisGastos() {
         headerActions={
           <Button 
             onClick={() => { setEditingExpense(null); setShowForm(!showForm); }} 
-            className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+            className="bg-white/10 border-white/30 text-white hover:bg-white/20 min-h-[44px] w-full sm:w-auto"
             variant="outline"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             {t('new_expense')}
           </Button>
         }
