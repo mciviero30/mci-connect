@@ -81,8 +81,8 @@ export default function PendingInvitationCard({ employee }) {
     : 'No Team Assigned';
 
   return (
-    <Card className="bg-white dark:bg-[#282828] rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all duration-300">
-      <div className="p-4 flex flex-col">
+    <Card className="bg-white dark:bg-[#282828] rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all duration-300 h-full flex flex-col">
+      <div className="p-4 flex flex-col flex-1">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3 gap-2">
           <div className="flex items-start gap-2.5">
