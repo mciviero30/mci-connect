@@ -24,6 +24,8 @@ import { useToast } from '@/components/ui/toast';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import PageHeader from '@/components/shared/PageHeader';
 import { createPageUrl } from '@/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import NotificationRulesManager from '@/components/client/NotificationRulesManager';
 
 export default function ClientManagement() {
   const { t } = useLanguage();
@@ -247,8 +249,20 @@ export default function ClientManagement() {
           </Card>
         </div>
 
-        {/* Projects with Client Access */}
-        <div className="space-y-6">
+        {/* Main Tabs */}
+        <Tabs defaultValue="clients" className="space-y-6">
+          <TabsList className="bg-white border border-slate-200">
+            <TabsTrigger value="clients">
+              <Users className="w-4 h-4 mr-2" />
+              Clientes
+            </TabsTrigger>
+            <TabsTrigger value="automation">
+              <Mail className="w-4 h-4 mr-2" />
+              Automatización
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="clients" className="space-y-6">
           {Object.entries(projectGroups).map(([projectId, members]) => (
             <Card key={projectId}>
               <CardHeader className="border-b bg-slate-50">
@@ -338,6 +352,12 @@ export default function ClientManagement() {
             </Card>
           )}
         </div>
+          </TabsContent>
+
+          <TabsContent value="automation">
+            <NotificationRulesManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
