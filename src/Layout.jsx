@@ -344,9 +344,26 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         console.log('🔄 Auto-activating invited user:', user.email);
         
+        // Get team info if team_id exists
+        let teamData = {};
+        if (user.team_id && !user.team_name) {
+          try {
+            const teams = await base44.entities.Team.list();
+            const userTeam = teams.find(t => t.id === user.team_id);
+            if (userTeam) {
+              teamData = {
+                team_name: userTeam.team_name
+              };
+            }
+          } catch (error) {
+            console.error('Error fetching team:', error);
+          }
+        }
+        
         await base44.auth.updateMe({ 
           employment_status: 'active',
-          hire_date: user.hire_date || new Date().toISOString().split('T')[0]
+          hire_date: user.hire_date || new Date().toISOString().split('T')[0],
+          ...teamData
         });
         
         console.log('✅ User activated successfully');
