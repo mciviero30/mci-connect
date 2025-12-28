@@ -134,14 +134,18 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         e.preventDefault();
         setFocusedIndex(prev => {
           const next = (prev + 1) % allItems.length;
-          itemRefs.current[next]?.focus();
+          const element = itemRefs.current[next];
+          element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          element?.focus();
           return next;
         });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setFocusedIndex(prev => {
           const next = prev <= 0 ? allItems.length - 1 : prev - 1;
-          itemRefs.current[next]?.focus();
+          const element = itemRefs.current[next];
+          element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          element?.focus();
           return next;
         });
       } else if (e.key === 'Enter' && focusedIndex >= 0) {
@@ -189,7 +193,9 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
                         ref={el => itemRefs.current[currentItemIndex] = el}
                         to={item.url} 
                         onClick={() => setOpenMobile(false)} 
-                        className="flex items-center gap-3 px-3 py-2.5 relative group"
+                        className={`flex items-center gap-3 px-3 py-2.5 relative group outline-none ${
+                          focusedIndex === currentItemIndex ? 'ring-2 ring-[#507DB4] ring-offset-2' : ''
+                        }`}
                         data-sidebar-item
                         tabIndex={0}>
                         <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
