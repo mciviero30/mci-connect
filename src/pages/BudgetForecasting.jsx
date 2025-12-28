@@ -19,19 +19,28 @@ export default function BudgetForecasting() {
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
     queryFn: () => base44.entities.Expense.list('-date', 1000),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list('-created_date', 500),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('full_name'),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const activeEmployees = employees.filter(e => 
