@@ -635,7 +635,7 @@ export default function Chat() {
                 </TabsContent>
 
                 <TabsContent value="groups" className="mt-0">
-                  <div className="space-y-0.5">
+                  <div className="space-y-1.5">
                     {customGroups
                       .filter(g => g.is_active && g.members.includes(user?.email))
                       .map(group => {
@@ -645,18 +645,18 @@ export default function Chat() {
                           <button
                             key={group.id}
                             onClick={() => selectCustomGroup(group)}
-                            className={`w-full px-3 py-3 rounded-xl text-left flex items-center gap-3 transition-all group ${
+                            className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all duration-200 group ${
                               isActive
-                                ? 'bg-blue-50/40 dark:bg-blue-950/20'
-                                : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+                                ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 shadow-sm border-l-4 border-[#507DB4] dark:border-[#6B9DD8]'
+                                : 'hover:bg-slate-100/80 dark:hover:bg-slate-900/50 border-l-4 border-transparent'
                             }`}
                           >
-                            <div className={`w-10 h-10 bg-gradient-to-br ${colorClass} rounded-xl flex items-center justify-center shadow-lg`}>
-                              <Users className="w-5 h-5 text-white" />
+                            <div className={`w-12 h-12 bg-gradient-to-br ${colorClass} rounded-2xl flex items-center justify-center shadow-md ${isActive ? 'scale-105' : 'group-hover:scale-105'} transition-transform`}>
+                              <Users className="w-6 h-6 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={`font-semibold text-sm truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                              <p className={`font-bold text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5 truncate">
                                 {group.members.length} members
                               </p>
                             </div>
@@ -665,14 +665,16 @@ export default function Chat() {
                         );
                       })}
                     {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
-                      <div className="text-center py-6 text-slate-500 dark:text-slate-400">
-                        <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm mb-2">No groups yet</p>
+                      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                        <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                          <Users className="w-10 h-10 opacity-40" />
+                        </div>
+                        <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">No groups yet</p>
+                        <p className="text-sm mb-4">Create a group to start collaborating</p>
                         <Button
                           size="sm"
-                          variant="outline"
                           onClick={() => setShowCreateGroup(true)}
-                          className="h-8 text-xs"
+                          className="h-10 px-6 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg rounded-xl font-bold"
                         >
                           Create Group
                         </Button>
@@ -770,27 +772,30 @@ export default function Chat() {
                 {isLoading && (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-3"></div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">Loading messages...</p>
+                      <div className="w-16 h-16 border-4 border-blue-500/20 border-t-[#507DB4] rounded-full animate-spin mx-auto mb-4 shadow-lg"></div>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">Loading messages...</p>
                     </div>
                   </div>
                 )}
                 {!isLoading && filteredMessages.length === 0 && !searchTerm && (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center max-w-sm">
-                      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="w-10 h-10 text-slate-400 dark:text-slate-600" />
+                      <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <MessageSquare className="w-12 h-12 text-slate-400 dark:text-slate-600" />
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Start the conversation!</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No messages yet. Be the first to write.</p>
+                      <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Start the conversation!</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No messages yet. Be the first to write something.</p>
                     </div>
                   </div>
                 )}
                 {!isLoading && filteredMessages.length === 0 && searchTerm && (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <Search className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No messages found with "{searchTerm}"</p>
+                      <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <Search className="w-10 h-10 text-slate-400 dark:text-slate-600" />
+                      </div>
+                      <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">No results found</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No messages found with "<span className="font-semibold">{searchTerm}</span>"</p>
                     </div>
                   </div>
                 )}
