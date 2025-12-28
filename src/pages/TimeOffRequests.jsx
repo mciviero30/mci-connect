@@ -26,20 +26,28 @@ export default function TimeOffRequests() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const isAdmin = user?.role === 'admin';
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['timeOffRequests'],
     queryFn: () => base44.entities.TimeOffRequest.list('-created_date'),
-    initialData: []
+    initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('full_name'),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const approveMutation = useMutation({
