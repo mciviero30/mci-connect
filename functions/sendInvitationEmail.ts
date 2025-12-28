@@ -242,7 +242,7 @@ Deno.serve(async (req) => {
                 <tr>
                   <td align="center">
                     <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-size: 18px; font-weight: bold; box-shadow: 0 6px 20px rgba(80, 125, 180, 0.4); text-align: center;">
-                      🚀 Join MCI Connect Now
+                      Join MCI Connect Now
                     </a>
                   </td>
                 </tr>
