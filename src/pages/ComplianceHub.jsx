@@ -14,7 +14,10 @@ export default function ComplianceHub() {
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const isAdmin = user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator';
@@ -23,19 +26,28 @@ export default function ComplianceHub() {
   const { data: employees = [] } = useQuery({
     queryKey: ['employees-compliance'],
     queryFn: () => base44.entities.User.list(),
-    enabled: isAdmin
+    enabled: isAdmin,
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: allCertifications = [] } = useQuery({
     queryKey: ['all-certifications'],
     queryFn: () => base44.entities.Certification.list(),
-    enabled: isAdmin
+    enabled: isAdmin,
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['all-onboarding'],
     queryFn: () => base44.entities.OnboardingForm.list(),
-    enabled: isAdmin
+    enabled: isAdmin,
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Calculate compliance metrics
