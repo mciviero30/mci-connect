@@ -158,7 +158,6 @@ export default function Clientes() {
     return firstNameA.localeCompare(firstNameB);
   });
 
-  const activeCustomers = sortedCustomers.filter(c => c.status === 'active');
   const isAdmin = user?.role === 'admin';
 
   const toggleCustomerSelection = (customer) => {
@@ -188,7 +187,7 @@ export default function Clientes() {
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title={t('customers')}
-          description={`${activeCustomers.length} ${t('active').toLowerCase()} ${t('customers').toLowerCase()}`}
+          description={`${sortedCustomers.length} ${t('customers').toLowerCase()}`}
           icon={Users}
           actions={
             isAdmin && (
