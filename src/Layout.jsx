@@ -135,9 +135,11 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         setFocusedIndex(prev => {
           const next = prev < allItems.length - 1 ? prev + 1 : 0;
           itemRefs.current[next]?.focus();
-          // Navigate to the page automatically
-          navigate(allItems[next].url);
-          setOpenMobile(false);
+          // Navigate to the page automatically (defer to avoid render warning)
+          setTimeout(() => {
+            navigate(allItems[next].url);
+            setOpenMobile(false);
+          }, 0);
           return next;
         });
       } else if (e.key === 'ArrowUp') {
@@ -145,9 +147,11 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         setFocusedIndex(prev => {
           const next = prev > 0 ? prev - 1 : allItems.length - 1;
           itemRefs.current[next]?.focus();
-          // Navigate to the page automatically
-          navigate(allItems[next].url);
-          setOpenMobile(false);
+          // Navigate to the page automatically (defer to avoid render warning)
+          setTimeout(() => {
+            navigate(allItems[next].url);
+            setOpenMobile(false);
+          }, 0);
           return next;
         });
       }
