@@ -152,6 +152,11 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         e.preventDefault();
         const selectedItem = allItems[focusedIndex];
         if (selectedItem?.url) {
+          // Guardar posición antes de navegar
+          const element = itemRefs.current[focusedIndex];
+          const scrollPosition = element?.offsetTop || 0;
+          sessionStorage.setItem('sidebarFocusPosition', scrollPosition.toString());
+          
           navigate(selectedItem.url);
           setOpenMobile(false);
         }
@@ -381,7 +386,15 @@ const LayoutContent = ({ children, currentPageName }) => {
     const sidebar = sidebarContentRef.current;
     if (sidebar) {
       const savedPosition = sessionStorage.getItem('sidebarScrollPosition');
-      if (savedPosition) {
+      const focusPosition = sessionStorage.getItem('sidebarFocusPosition');
+      
+      if (focusPosition) {
+        // Restaurar posición de foco si existe
+        setTimeout(() => {
+          sidebar.scrollTop = parseInt(focusPosition, 10) - 100;
+          sessionStorage.removeItem('sidebarFocusPosition');
+        }, 50);
+      } else if (savedPosition) {
         sidebar.scrollTop = parseInt(savedPosition, 10);
       }
     }
