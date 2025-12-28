@@ -152,10 +152,11 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         e.preventDefault();
         const selectedItem = allItems[focusedIndex];
         if (selectedItem?.url) {
-          // Guardar posición antes de navegar
-          const element = itemRefs.current[focusedIndex];
-          const scrollPosition = element?.offsetTop || 0;
-          sessionStorage.setItem('sidebarFocusPosition', scrollPosition.toString());
+          // Guardar posición actual del scroll antes de navegar
+          const sidebar = sidebarContentRef.current;
+          if (sidebar) {
+            sessionStorage.setItem('sidebarScrollPosition', sidebar.scrollTop.toString());
+          }
           
           navigate(selectedItem.url);
           setOpenMobile(false);
@@ -385,14 +386,14 @@ const LayoutContent = ({ children, currentPageName }) => {
   useEffect(() => {
     const sidebar = sidebarContentRef.current;
     if (sidebar) {
-      const focusPosition = sessionStorage.getItem('sidebarFocusPosition');
+      const savedScrollPosition = sessionStorage.getItem('sidebarScrollPosition');
       
-      if (focusPosition) {
-        // Restaurar posición solo si vino de navegación por teclado
-        setTimeout(() => {
-          sidebar.scrollTop = parseInt(focusPosition, 10) - 100;
-          sessionStorage.removeItem('sidebarFocusPosition');
-        }, 50);
+      if (savedScrollPosition) {
+        // Restaurar posición exacta del scroll
+        requestAnimationFrame(() => {
+          sidebar.scrollTop = parseInt(savedScrollPosition, 10);
+          sessionStorage.removeItem('sidebarScrollPosition');
+        });
       }
     }
   }, [location.pathname]);
