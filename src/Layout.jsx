@@ -127,19 +127,20 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
     return navigation.flatMap(section => section.items);
   }, [navigation]);
 
-  // Keyboard navigation
+  // Keyboard navigation - only moves focus, user presses Enter to navigate
   React.useEffect(() => {
     const handleKeyDown = (e) => {
+      // Only handle arrow keys when focus is on a sidebar item
+      const activeElement = document.activeElement;
+      const isSidebarItem = activeElement && activeElement.closest('[data-sidebar-item]');
+
+      if (!isSidebarItem) return;
+
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setFocusedIndex(prev => {
           const next = prev < allItems.length - 1 ? prev + 1 : 0;
           itemRefs.current[next]?.focus();
-          // Navigate to the page automatically (defer to avoid render warning)
-          setTimeout(() => {
-            navigate(allItems[next].url);
-            setOpenMobile(false);
-          }, 0);
           return next;
         });
       } else if (e.key === 'ArrowUp') {
@@ -147,11 +148,6 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         setFocusedIndex(prev => {
           const next = prev > 0 ? prev - 1 : allItems.length - 1;
           itemRefs.current[next]?.focus();
-          // Navigate to the page automatically (defer to avoid render warning)
-          setTimeout(() => {
-            navigate(allItems[next].url);
-            setOpenMobile(false);
-          }, 0);
           return next;
         });
       }
@@ -159,7 +155,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedIndex, allItems, navigate, setOpenMobile]);
+  }, [focusedIndex, allItems]);
   
   let itemIndex = 0;
   
@@ -193,6 +189,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
                         to={item.url} 
                         onClick={() => setOpenMobile(false)} 
                         className="flex items-center gap-3 px-3 py-2.5 relative group"
+                        data-sidebar-item
                         tabIndex={0}>
                         <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
                           isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
