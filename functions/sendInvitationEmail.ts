@@ -228,17 +228,25 @@ Deno.serve(async (req) => {
                 Sincerely,
               </p>
 
+              <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #333333;">
+                Sincerely,
+              </p>
+
               <!-- Signature -->
-              <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 15px; display: inline-block;">
+              <p style="margin: 20px 0 30px 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 15px; display: inline-block;">
                 The MCI Team
               </p>
 
               <!-- CTA Button -->
-              <div style="text-align: center; margin: 40px 0 20px 0;">
-                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
-                  Join MCI Connect Now
-                </a>
-              </div>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-size: 18px; font-weight: bold; box-shadow: 0 6px 20px rgba(80, 125, 180, 0.4); text-align: center;">
+                      🚀 Join MCI Connect Now
+                    </a>
+                  </td>
+                </tr>
+              </table>
 
             </td>
           </tr>
