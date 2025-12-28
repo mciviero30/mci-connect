@@ -947,7 +947,7 @@ const LayoutContent = ({ children, currentPageName }) => {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="min-h-full w-full"
               >
-                <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0">
+                <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0 pb-20 md:pb-0">
                   {children}
                 </div>
               </motion.div>
