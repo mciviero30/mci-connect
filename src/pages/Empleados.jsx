@@ -374,8 +374,11 @@ export default function Empleados() {
   };
 
   const handleViewOnboarding = (employee) => {
-    setSelectedEmployee(employee);
-    setShowOnboardingModal(true);
+    // Only show modal if employee has progress data (active employees)
+    if (employeeProgress[employee.id]) {
+      setSelectedEmployee(employee);
+      setShowOnboardingModal(true);
+    }
   };
 
   return (
