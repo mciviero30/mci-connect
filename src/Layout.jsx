@@ -385,32 +385,19 @@ const LayoutContent = ({ children, currentPageName }) => {
   useEffect(() => {
     const sidebar = sidebarContentRef.current;
     if (sidebar) {
-      const savedPosition = sessionStorage.getItem('sidebarScrollPosition');
       const focusPosition = sessionStorage.getItem('sidebarFocusPosition');
       
       if (focusPosition) {
-        // Restaurar posición de foco si existe
+        // Restaurar posición solo si vino de navegación por teclado
         setTimeout(() => {
           sidebar.scrollTop = parseInt(focusPosition, 10) - 100;
           sessionStorage.removeItem('sidebarFocusPosition');
         }, 50);
-      } else if (savedPosition) {
-        sidebar.scrollTop = parseInt(savedPosition, 10);
       }
     }
   }, [location.pathname]);
 
-  useEffect(() => {
-    const sidebar = sidebarContentRef.current;
-    if (!sidebar) return;
 
-    const handleScroll = () => {
-      sessionStorage.setItem('sidebarScrollPosition', sidebar.scrollTop.toString());
-    };
-
-    sidebar.addEventListener('scroll', handleScroll);
-    return () => sidebar.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Redirect client-only users to ClientPortal
   useEffect(() => {
