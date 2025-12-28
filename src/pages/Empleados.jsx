@@ -172,12 +172,13 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
             });
           }}
           className="w-full min-h-[44px] px-3 py-2 border rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+          style={{ color: '#0f172a' }}
         >
-          <option value="">Select Team</option>
-          {teamsLoading && <option disabled>Loading teams...</option>}
-          {!teamsLoading && teams.length === 0 && <option disabled>No teams available</option>}
+          <option value="" style={{ color: '#0f172a' }}>Select Team</option>
+          {teamsLoading && <option disabled style={{ color: '#64748b' }}>Loading teams...</option>}
+          {!teamsLoading && teams.length === 0 && <option disabled style={{ color: '#64748b' }}>No teams available</option>}
           {teams.map(team => (
-            <option key={team.id} value={team.id}>{team.name}</option>
+            <option key={team.id} value={team.id} style={{ color: '#0f172a' }}>{team.name}</option>
           ))}
         </select>
       </div>
