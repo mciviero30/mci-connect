@@ -1,348 +1,368 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import PageHeader from '../components/shared/PageHeader';
-import { Shield, Plus, Edit, Trash2, Users, Lock, Check, X } from 'lucide-react';
-import { useLanguage } from '@/components/i18n/LanguageContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Shield, Plus, Edit, Trash2, Users, Lock } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
-import { Badge } from '@/components/ui/badge';
+import PageHeader from '@/components/shared/PageHeader';
 
-const MODULE_LABELS = {
-  dashboard: 'Dashboard',
-  finance: 'Finance',
-  hr: 'Human Resources',
-  projects: 'Projects',
-  time_tracking: 'Time Tracking',
-  expenses: 'Expenses',
-  reports: 'Reports',
-  settings: 'Settings'
-};
+const permissionSections = [
+  {
+    key: 'dashboard',
+    label: 'Dashboard',
+    permissions: [
+      { key: 'view', label: 'View Dashboard' },
+      { key: 'view_all_stats', label: 'View All Statistics' }
+    ]
+  },
+  {
+    key: 'jobs',
+    label: 'Projects & Jobs',
+    permissions: [
+      { key: 'view', label: 'View Jobs' },
+      { key: 'create', label: 'Create Jobs' },
+      { key: 'edit', label: 'Edit Jobs' },
+      { key: 'delete', label: 'Delete Jobs' },
+      { key: 'view_all', label: 'View All Jobs' },
+      { key: 'view_financials', label: 'View Financial Data' }
+    ]
+  },
+  {
+    key: 'field',
+    label: 'MCI Field',
+    permissions: [
+      { key: 'view', label: 'Access Field App' },
+      { key: 'edit', label: 'Edit Projects' },
+      { key: 'upload_photos', label: 'Upload Photos' },
+      { key: 'manage_tasks', label: 'Manage Tasks' }
+    ]
+  },
+  {
+    key: 'employees',
+    label: 'Employees',
+    permissions: [
+      { key: 'view', label: 'View Employees' },
+      { key: 'create', label: 'Create Employees' },
+      { key: 'edit', label: 'Edit Employees' },
+      { key: 'delete', label: 'Delete Employees' },
+      { key: 'view_salary', label: 'View Salary Information' }
+    ]
+  },
+  {
+    key: 'finance',
+    label: 'Finance',
+    permissions: [
+      { key: 'view_accounting', label: 'View Accounting' },
+      { key: 'edit_accounting', label: 'Edit Accounting' },
+      { key: 'view_quotes', label: 'View Quotes' },
+      { key: 'create_quotes', label: 'Create Quotes' },
+      { key: 'edit_quotes', label: 'Edit Quotes' },
+      { key: 'delete_quotes', label: 'Delete Quotes' },
+      { key: 'view_invoices', label: 'View Invoices' },
+      { key: 'create_invoices', label: 'Create Invoices' },
+      { key: 'edit_invoices', label: 'Edit Invoices' },
+      { key: 'delete_invoices', label: 'Delete Invoices' },
+      { key: 'approve_expenses', label: 'Approve Expenses' }
+    ]
+  },
+  {
+    key: 'time_tracking',
+    label: 'Time Tracking',
+    permissions: [
+      { key: 'view_own', label: 'View Own Hours' },
+      { key: 'view_all', label: 'View All Hours' },
+      { key: 'approve', label: 'Approve Hours' },
+      { key: 'edit_own', label: 'Edit Own Hours' },
+      { key: 'edit_all', label: 'Edit All Hours' }
+    ]
+  },
+  {
+    key: 'payroll',
+    label: 'Payroll',
+    permissions: [
+      { key: 'view_own', label: 'View Own Payroll' },
+      { key: 'view_all', label: 'View All Payroll' },
+      { key: 'manage', label: 'Manage Payroll' }
+    ]
+  },
+  {
+    key: 'documents',
+    label: 'Documents',
+    permissions: [
+      { key: 'view', label: 'View Documents' },
+      { key: 'upload', label: 'Upload Documents' },
+      { key: 'delete', label: 'Delete Documents' }
+    ]
+  },
+  {
+    key: 'customers',
+    label: 'Customers',
+    permissions: [
+      { key: 'view', label: 'View Customers' },
+      { key: 'create', label: 'Create Customers' },
+      { key: 'edit', label: 'Edit Customers' },
+      { key: 'delete', label: 'Delete Customers' }
+    ]
+  },
+  {
+    key: 'reports',
+    label: 'Reports',
+    permissions: [
+      { key: 'view_basic', label: 'View Basic Reports' },
+      { key: 'view_financial', label: 'View Financial Reports' },
+      { key: 'export', label: 'Export Reports' }
+    ]
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    permissions: [
+      { key: 'view', label: 'View Settings' },
+      { key: 'manage_roles', label: 'Manage Roles' },
+      { key: 'manage_company', label: 'Manage Company Settings' }
+    ]
+  }
+];
 
-const PERMISSION_LABELS = {
-  view: 'View',
-  edit: 'Edit',
-  view_all: 'View All Data',
-  view_team_only: 'View Team Only',
-  view_assigned_only: 'View Assigned Only',
-  view_own_only: 'View Own Only',
-  approve_expenses: 'Approve Expenses',
-  manage_invoices: 'Manage Invoices',
-  manage_quotes: 'Manage Quotes',
-  view_reports: 'View Reports',
-  manage_employees: 'Manage Employees',
-  approve_time_off: 'Approve Time Off',
-  view_payroll: 'View Payroll',
-  manage_performance: 'Manage Performance',
-  manage_jobs: 'Manage Jobs',
-  assign_employees: 'Assign Employees',
-  view_financials: 'View Financials',
-  approve_hours: 'Approve Hours',
-  submit: 'Submit',
-  approve: 'Approve',
-  view_financial: 'View Financial Reports',
-  view_analytics: 'View Analytics Reports',
-  view_hr: 'View HR Reports',
-  export: 'Export Data',
-  edit_company: 'Edit Company Settings',
-  manage_roles: 'Manage Roles',
-  manage_integrations: 'Manage Integrations'
-};
-
-const DEFAULT_PERMISSIONS = {
-  dashboard: { view: true, edit: false },
-  finance: { view: false, edit: false, view_all: false, view_team_only: false, approve_expenses: false, manage_invoices: false, manage_quotes: false, view_reports: false },
-  hr: { view: false, edit: false, view_all: false, view_team_only: false, manage_employees: false, approve_time_off: false, view_payroll: false, manage_performance: false },
-  projects: { view: false, edit: false, view_all: false, view_assigned_only: false, manage_jobs: false, assign_employees: false, view_financials: false },
-  time_tracking: { view: false, edit: false, view_all: false, view_own_only: true, approve_hours: false },
-  expenses: { view: false, submit: true, view_all: false, view_own_only: true, approve: false },
-  reports: { view: false, view_financial: false, view_analytics: false, view_hr: false, export: false },
-  settings: { view: false, edit_company: false, manage_roles: false, manage_integrations: false }
-};
-
-export default function RoleManagement() {
-  const { t, language } = useLanguage();
+function RoleDialog({ role, onClose }) {
+  const [formData, setFormData] = useState(role || {
+    name: '',
+    description: '',
+    permissions: {},
+    active: true
+  });
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    permissions: DEFAULT_PERMISSIONS
-  });
-
-  const { data: roles, isLoading } = useQuery({
-    queryKey: ['roles'],
-    queryFn: () => base44.entities.Role.list(),
-    initialData: []
-  });
-
-  const { data: users } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => base44.entities.User.list(),
-    initialData: []
-  });
-
-  const createRoleMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Role.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['roles']);
-      toast.success('Role created successfully');
-      setDialogOpen(false);
-      resetForm();
-    },
-    onError: () => toast.error('Failed to create role')
+      toast.success(role ? 'Role updated' : 'Role created');
+      onClose();
+    }
   });
 
-  const updateRoleMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Role.update(id, data),
+  const updateMutation = useMutation({
+    mutationFn: (data) => base44.entities.Role.update(role.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['roles']);
-      toast.success('Role updated successfully');
-      setDialogOpen(false);
-      resetForm();
-    },
-    onError: () => toast.error('Failed to update role')
+      toast.success('Role updated');
+      onClose();
+    }
   });
 
-  const deleteRoleMutation = useMutation({
-    mutationFn: (id) => base44.entities.Role.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['roles']);
-      toast.success('Role deleted successfully');
-    },
-    onError: () => toast.error('Failed to delete role')
-  });
-
-  const resetForm = () => {
-    setFormData({ name: '', description: '', permissions: DEFAULT_PERMISSIONS });
-    setEditingRole(null);
-  };
-
-  const handleOpenDialog = (role = null) => {
-    if (role) {
-      setEditingRole(role);
-      setFormData({
-        name: role.name,
-        description: role.description || '',
-        permissions: role.permissions
-      });
-    } else {
-      resetForm();
-    }
-    setDialogOpen(true);
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name.trim()) {
-      toast.error('Role name is required');
-      return;
-    }
-
-    if (editingRole) {
-      updateRoleMutation.mutate({ id: editingRole.id, data: formData });
-    } else {
-      createRoleMutation.mutate(formData);
-    }
-  };
-
-  const handlePermissionChange = (module, permission, value) => {
+  const handlePermissionToggle = (section, permission) => {
     setFormData(prev => ({
       ...prev,
       permissions: {
         ...prev.permissions,
-        [module]: {
-          ...prev.permissions[module],
-          [permission]: value
+        [section]: {
+          ...(prev.permissions?.[section] || {}),
+          [permission]: !(prev.permissions?.[section]?.[permission])
         }
       }
     }));
   };
 
-  const handleDelete = (role) => {
-    if (role.is_system_role) {
-      toast.error('Cannot delete system roles');
-      return;
+  const handleSubmit = () => {
+    if (role) {
+      updateMutation.mutate(formData);
+    } else {
+      createMutation.mutate(formData);
     }
-    
-    if (window.confirm(`Are you sure you want to delete role "${role.name}"?`)) {
-      deleteRoleMutation.mutate(role.id);
-    }
-  };
-
-  const getUsersWithRole = (roleId) => {
-    return users.filter(u => u.custom_role_id === roleId).length;
   };
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
-        <PageHeader
-          title="Role Management"
-          description="Create and manage custom roles with granular permissions"
-          icon={Shield}
-          actions={
-            <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-              <Plus className="w-4 h-4 mr-2" />
-              New Role
-            </Button>
-          }
-        />
+    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>{role ? 'Edit Role' : 'Create New Role'}</DialogTitle>
+      </DialogHeader>
+      
+      <div className="space-y-6 py-4">
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Role Name</label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g., Project Manager, Finance Admin"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">Description</label>
+            <Textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe what this role can do..."
+            />
+          </div>
+        </div>
 
-        {/* Roles List */}
-        <div className="grid gap-4">
-          {roles.map(role => {
-            const userCount = getUsersWithRole(role.id);
-            
-            return (
-              <Card key={role.id} className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-lg shadow-md">
-                          <Shield className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{role.name}</h3>
-                          {role.description && (
-                            <p className="text-sm text-slate-600 dark:text-slate-400">{role.description}</p>
-                          )}
-                        </div>
-                        {role.is_system_role && (
-                          <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
-                            System Role
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-4 mt-3">
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                          <Users className="w-4 h-4" />
-                          <span>{userCount} {userCount === 1 ? 'user' : 'users'}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                          <Lock className="w-4 h-4" />
-                          <span>
-                            {Object.values(role.permissions || {}).reduce((sum, module) => 
-                              sum + Object.values(module).filter(Boolean).length, 0
-                            )} permissions
-                          </span>
-                        </div>
-                      </div>
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">Permissions</h3>
+          {permissionSections.map(section => (
+            <Card key={section.key}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">{section.label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {section.permissions.map(perm => (
+                    <div key={perm.key} className="flex items-center justify-between">
+                      <label className="text-sm">{perm.label}</label>
+                      <Switch
+                        checked={formData.permissions?.[section.key]?.[perm.key] || false}
+                        onCheckedChange={() => handlePermissionToggle(section.key, perm.key)}
+                      />
                     </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-                    <div className="flex gap-2">
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!formData.name}>
+            {role ? 'Update' : 'Create'} Role
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  );
+}
+
+export default function RoleManagement() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me()
+  });
+
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => base44.entities.Role.list()
+  });
+
+  const { data: usersWithRoles = [] } = useQuery({
+    queryKey: ['users-with-custom-roles'],
+    queryFn: async () => {
+      const users = await base44.entities.User.list();
+      return users.filter(u => u.custom_role_id);
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Role.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['roles']);
+      toast.success('Role deleted');
+    }
+  });
+
+  const isAdmin = user?.role === 'admin';
+
+  if (!isAdmin) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Lock className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-600">Access denied</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <PageHeader
+        title="Role Management"
+        description="Create and manage custom roles with granular permissions"
+        icon={Shield}
+      />
+
+      <div className="p-6 space-y-6">
+        <div className="flex justify-end">
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => { setSelectedRole(null); setDialogOpen(true); }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Role
+              </Button>
+            </DialogTrigger>
+            {dialogOpen && <RoleDialog role={selectedRole} onClose={() => setDialogOpen(false)} />}
+          </Dialog>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {roles.map(role => {
+            const assignedUsers = usersWithRoles.filter(u => u.custom_role_id === role.id);
+            return (
+              <Card key={role.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-blue-600" />
+                        {role.name}
+                      </CardTitle>
+                      <p className="text-sm text-slate-500 mt-1">{role.description}</p>
+                    </div>
+                    {role.is_system_role && (
+                      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">System</span>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-2 text-sm text-slate-600 mb-4">
+                    <Users className="w-4 h-4" />
+                    <span>{assignedUsers.length} users assigned</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        setSelectedRole(role);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                    {!role.is_system_role && (
                       <Button
                         variant="outline"
-                        size="icon"
-                        onClick={() => handleOpenDialog(role)}
-                        className="border-slate-300 dark:border-slate-600"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm('Delete this role?')) {
+                            deleteMutation.mutate(role.id);
+                          }
+                        }}
                       >
-                        <Edit className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                      {!role.is_system_role && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleDelete(role)}
-                          className="border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
-
-        {/* Role Dialog */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white">
-                {editingRole ? 'Edit Role' : 'Create New Role'}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-6">
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-slate-700 dark:text-slate-300">Role Name</Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., Financial Supervisor"
-                    className="bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-slate-700 dark:text-slate-300">Description</Label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Describe the role and its responsibilities"
-                    className="bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Permissions */}
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Permissions</h3>
-                
-                <div className="space-y-4">
-                  {Object.entries(formData.permissions).map(([module, perms]) => (
-                    <Card key={module} className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
-                          {MODULE_LABELS[module]}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <div className="grid grid-cols-2 gap-3">
-                          {Object.entries(perms).map(([permission, enabled]) => (
-                            <div key={permission} className="flex items-center justify-between">
-                              <Label className="text-sm text-slate-700 dark:text-slate-300">
-                                {PERMISSION_LABELS[permission]}
-                              </Label>
-                              <Switch
-                                checked={enabled}
-                                onCheckedChange={(checked) => handlePermissionChange(module, permission, checked)}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmit} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                {editingRole ? 'Update Role' : 'Create Role'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

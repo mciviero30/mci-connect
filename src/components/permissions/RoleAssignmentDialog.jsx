@@ -1,81 +1,57 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { base44 } from '@/api/base44Client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Shield, User } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
-import { Shield, Check } from 'lucide-react';
 
-export default function RoleAssignmentDialog({ employee, open, onOpenChange }) {
+export default function RoleAssignmentDialog({ user, open, onClose }) {
+  const [selectedRoleId, setSelectedRoleId] = useState(user?.custom_role_id || '');
   const queryClient = useQueryClient();
   const toast = useToast();
-  const [selectedRoleId, setSelectedRoleId] = useState(employee?.custom_role_id || '');
 
-  const { data: roles } = useQuery({
+  const { data: roles = [] } = useQuery({
     queryKey: ['roles'],
-    queryFn: () => base44.entities.Role.list(),
-    initialData: []
+    queryFn: () => base44.entities.Role.filter({ active: true })
   });
 
-  const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, roleId }) => {
-      return await base44.auth.updateMe({ custom_role_id: roleId || null });
-    },
+  const updateMutation = useMutation({
+    mutationFn: (roleId) => base44.entities.User.update(user.id, { custom_role_id: roleId || null }),
     onSuccess: () => {
+      queryClient.invalidateQueries(['users']);
       queryClient.invalidateQueries(['currentUser']);
-      queryClient.invalidateQueries(['employees']);
-      toast.success('Role assigned successfully');
-      onOpenChange(false);
-    },
-    onError: () => toast.error('Failed to assign role')
+      toast.success('Role updated');
+      onClose();
+    }
   });
 
-  const handleAssign = () => {
-    if (!employee) return;
-    assignRoleMutation.mutate({ 
-      userId: employee.id, 
-      roleId: selectedRoleId 
-    });
+  const handleSubmit = () => {
+    updateMutation.mutate(selectedRoleId);
   };
 
-  const activeRoles = roles.filter(r => r.is_active);
-  const currentRole = roles.find(r => r.id === employee?.custom_role_id);
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-slate-900 dark:text-white">
-            Assign Role to {employee?.full_name}
+          <DialogTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-blue-600" />
+            Assign Role to {user?.full_name}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {currentRole && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
-                  Current Role: {currentRole.name}
-                </span>
-              </div>
-            </div>
-          )}
-
           <div>
-            <Label className="text-slate-700 dark:text-slate-300">Select Role</Label>
+            <label className="text-sm font-medium mb-2 block">Custom Role</label>
             <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
-              <SelectTrigger className="bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
-                <SelectValue placeholder="Select a role" />
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role..." />
               </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                <SelectItem value={null} className="text-slate-900 dark:text-white">
-                  No Custom Role (Default Permissions)
-                </SelectItem>
-                {activeRoles.map(role => (
-                  <SelectItem key={role.id} value={role.id} className="text-slate-900 dark:text-white">
+              <SelectContent>
+                <SelectItem value={null}>No custom role (use default permissions)</SelectItem>
+                {roles.map(role => (
+                  <SelectItem key={role.id} value={role.id}>
                     {role.name}
                   </SelectItem>
                 ))}
@@ -83,24 +59,22 @@ export default function RoleAssignmentDialog({ employee, open, onOpenChange }) {
             </Select>
           </div>
 
-          {selectedRoleId && (
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {roles.find(r => r.id === selectedRoleId)?.description || 'No description'}
-              </p>
-            </div>
-          )}
-        </div>
+          <div className="bg-slate-50 p-3 rounded-lg text-sm">
+            <p className="text-slate-600">
+              <strong>Current role:</strong> {user?.role || 'user'}
+            </p>
+            <p className="text-slate-500 mt-1">
+              Custom roles add granular permissions on top of the base role.
+            </p>
+          </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleAssign} className="bg-blue-600 hover:bg-blue-700">
-            <Check className="w-4 h-4 mr-2" />
-            Assign Role
-          </Button>
-        </DialogFooter>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button onClick={handleSubmit} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? 'Saving...' : 'Save Role'}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

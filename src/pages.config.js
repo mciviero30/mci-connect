@@ -5,6 +5,7 @@ import Calendario from './pages/Calendario';
 import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
 import Chat from './pages/Chat';
+import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import Clientes from './pages/Clientes';
 import CompanyInfo from './pages/CompanyInfo';
@@ -70,7 +71,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import ClientManagement from './pages/ClientManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +82,7 @@ export const PAGES = {
     "Capacitacion": Capacitacion,
     "CashFlowReport": CashFlowReport,
     "Chat": Chat,
+    "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
     "Clientes": Clientes,
     "CompanyInfo": CompanyInfo,
@@ -147,7 +148,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "ClientManagement": ClientManagement,
 }
 
 export const pagesConfig = {
