@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import JobImporter from "../sync/JobImporter";
+import { MapPin } from "lucide-react";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const { t } = useLanguage();
@@ -51,7 +52,8 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     status: job?.status || 'active',
     show_on_website: job?.show_on_website || false,
     hero_photo_url: job?.hero_photo_url || '',
-    website_description: job?.website_description || ''
+    website_description: job?.website_description || '',
+    geofence_radius: job?.geofence_radius || 100
   });
 
   const handleCustomerChange = (customerId) => {
@@ -213,6 +215,44 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
               className="bg-slate-50 border-slate-200"
               placeholder="30303"
             />
+          </div>
+        </div>
+
+        {/* Geofence Configuration */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-2xl border-2 border-green-300 dark:border-green-700 shadow-md">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <MapPin className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <Label className="text-slate-900 dark:text-white font-bold text-base">
+                {language === 'es' ? 'Radio de Geofencing' : 'Geofence Radius'}
+              </Label>
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                {language === 'es' 
+                  ? 'Distancia máxima permitida para fichar entrada/salida' 
+                  : 'Maximum allowed distance for clock in/out'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <input
+              type="range"
+              min="50"
+              max="500"
+              step="10"
+              value={formData.geofence_radius}
+              onChange={(e) => setFormData({...formData, geofence_radius: parseInt(e.target.value)})}
+              className="flex-1 h-3 bg-green-200 dark:bg-green-800 rounded-lg appearance-none cursor-pointer accent-green-600"
+            />
+            <div className="text-center min-w-[100px]">
+              <p className="text-3xl font-black text-green-700 dark:text-green-400">{formData.geofence_radius}</p>
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-400">metros</p>
+            </div>
+          </div>
+          <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mt-2">
+            <span>50m (Estricto)</span>
+            <span>500m (Flexible)</span>
           </div>
         </div>
 
