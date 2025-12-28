@@ -181,27 +181,30 @@ export default function TimeTracking() {
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white flex items-center gap-4 tracking-tight">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <Clock className="w-7 h-7 text-white" />
-              </div>
-              {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 mt-2 ml-[72px] font-medium flex items-center gap-2">
-              <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
-              {language === 'es' ? 'Con geofencing y prevención de fraude' : 'With geofencing & fraud prevention'}
-            </p>
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
+        {/* Header - Mobile Optimized */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
+              <Clock className="w-5 h-5 md:w-7 md:h-7 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
+              </h1>
+              <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-0.5 md:mt-1 font-medium flex items-center gap-1.5">
+                <Shield className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <span className="truncate">{language === 'es' ? 'Con geofencing' : 'With geofencing'}</span>
+              </p>
+            </div>
           </div>
 
           {isManager && (
-            <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-12 px-6 rounded-xl font-bold shadow-md">
-              <Users className="w-5 h-5 mr-2" />
-              {language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}
+            <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-10 md:h-12 px-3 md:px-6 rounded-xl font-bold shadow-md w-full md:w-auto min-h-[44px]">
+              <Users className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}</span>
+              <span className="sm:hidden">{language === 'es' ? 'Aprobar' : 'Approve'}</span>
             </Button>
           )}
         </div>
@@ -215,24 +218,31 @@ export default function TimeTracking() {
           isLoading={clockInMutation.isPending}
         />
 
-        {/* Week Summary */}
+        {/* Week Summary - Mobile Optimized */}
         <Card className="bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-700/60 shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl font-black tracking-tight">{language === 'es' ? 'Resumen Semanal' : 'Weekly Summary'}</CardTitle>
+          <CardHeader className="pb-3 md:pb-4">
+            <CardTitle className="text-base md:text-xl font-black tracking-tight">{language === 'es' ? 'Resumen Semanal' : 'Weekly Summary'}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900/50 rounded-2xl border border-blue-200/40 dark:border-blue-800/40 shadow-md">
-                <p className="text-4xl font-black text-[#507DB4] dark:text-[#6B9DD8] tracking-tight">{weekTotal.toFixed(2)}</p>
-                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-2">{language === 'es' ? 'Horas Totales' : 'Total Hours'}</p>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-3 gap-2 md:gap-6">
+              <div className="text-center p-2 md:p-4 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900/50 rounded-xl md:rounded-2xl border border-blue-200/40 dark:border-blue-800/40 shadow-md">
+                <p className="text-2xl md:text-4xl font-black text-[#507DB4] dark:text-[#6B9DD8] tracking-tight leading-tight">{weekTotal.toFixed(2)}</p>
+                <p className="text-[10px] md:text-sm font-bold text-slate-600 dark:text-slate-400 mt-1 md:mt-2 leading-tight">
+                  {language === 'es' ? 'Total' : 'Total'}<br className="md:hidden" />
+                  <span className="hidden md:inline"> </span>{language === 'es' ? 'Horas' : 'Hours'}
+                </p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-slate-900/50 rounded-2xl border border-green-200/40 dark:border-green-800/40 shadow-md">
-                <p className="text-4xl font-black text-green-600 dark:text-green-400 tracking-tight">{weekEntries.filter(e => e.status === 'approved').length}</p>
-                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-2">{language === 'es' ? 'Aprobadas' : 'Approved'}</p>
+              <div className="text-center p-2 md:p-4 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-slate-900/50 rounded-xl md:rounded-2xl border border-green-200/40 dark:border-green-800/40 shadow-md">
+                <p className="text-2xl md:text-4xl font-black text-green-600 dark:text-green-400 tracking-tight leading-tight">{weekEntries.filter(e => e.status === 'approved').length}</p>
+                <p className="text-[10px] md:text-sm font-bold text-slate-600 dark:text-slate-400 mt-1 md:mt-2 leading-tight">
+                  {language === 'es' ? 'Aprobadas' : 'Approved'}
+                </p>
               </div>
-              <div className="text-center p-4 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-slate-900/50 rounded-2xl border border-amber-200/40 dark:border-amber-800/40 shadow-md">
-                <p className="text-4xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{weekEntries.filter(e => e.status === 'pending').length}</p>
-                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 mt-2">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
+              <div className="text-center p-2 md:p-4 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-slate-900/50 rounded-xl md:rounded-2xl border border-amber-200/40 dark:border-amber-800/40 shadow-md">
+                <p className="text-2xl md:text-4xl font-black text-amber-600 dark:text-amber-400 tracking-tight leading-tight">{weekEntries.filter(e => e.status === 'pending').length}</p>
+                <p className="text-[10px] md:text-sm font-bold text-slate-600 dark:text-slate-400 mt-1 md:mt-2 leading-tight">
+                  {language === 'es' ? 'Pendientes' : 'Pending'}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -240,29 +250,29 @@ export default function TimeTracking() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="daily">{language === 'es' ? 'Diario' : 'Daily'}</TabsTrigger>
-            <TabsTrigger value="weekly">{language === 'es' ? 'Semanal' : 'Weekly'}</TabsTrigger>
-            <TabsTrigger value="reports">{language === 'es' ? 'Reportes' : 'Reports'}</TabsTrigger>
+          <TabsList className={`grid w-full ${isManager ? 'grid-cols-4' : 'grid-cols-3'} gap-1`}>
+            <TabsTrigger value="daily" className="text-xs md:text-sm min-h-[40px]">{language === 'es' ? 'Diario' : 'Daily'}</TabsTrigger>
+            <TabsTrigger value="weekly" className="text-xs md:text-sm min-h-[40px]">{language === 'es' ? 'Semanal' : 'Weekly'}</TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs md:text-sm min-h-[40px]">{language === 'es' ? 'Reportes' : 'Reports'}</TabsTrigger>
             {isManager && (
-              <TabsTrigger value="approvals">{language === 'es' ? 'Aprobar' : 'Approve'}</TabsTrigger>
+              <TabsTrigger value="approvals" className="text-xs md:text-sm min-h-[40px]">{language === 'es' ? 'Aprobar' : 'Approve'}</TabsTrigger>
             )}
           </TabsList>
 
-          <TabsContent value="daily" className="mt-6">
+          <TabsContent value="daily" className="mt-4 md:mt-6">
             <DailyTimeView user={user} selectedDate={selectedDate} onDateChange={setSelectedDate} />
           </TabsContent>
 
-          <TabsContent value="weekly" className="mt-6">
+          <TabsContent value="weekly" className="mt-4 md:mt-6">
             <WeeklyTimeView user={user} selectedDate={selectedDate} onDateChange={setSelectedDate} />
           </TabsContent>
 
-          <TabsContent value="reports" className="mt-6">
+          <TabsContent value="reports" className="mt-4 md:mt-6">
             <TimeReportsView user={user} />
           </TabsContent>
 
           {isManager && (
-            <TabsContent value="approvals" className="mt-6">
+            <TabsContent value="approvals" className="mt-4 md:mt-6">
               <ManagerApprovalView />
             </TabsContent>
           )}
