@@ -116,7 +116,7 @@ const ThemeToggle = () => {
   );
 };
 
-const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
+const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarContentRef }) => {
   const { setOpenMobile } = useSidebar();
   const navigate = useNavigate();
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
@@ -797,7 +797,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             className="px-3 pt-0 pb-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-transparent"
             data-scrollable="true"
           >
-            <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} />
+            <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} sidebarContentRef={sidebarContentRef} />
           </SidebarContent>
 
           <SidebarFooter className="p-4 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
