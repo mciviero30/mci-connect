@@ -377,10 +377,18 @@ export default function Empleados() {
   const excludeOwner = (list) => list.filter(e => e.email !== OWNER_EMAIL);
 
   const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status)));
-  const pendingList = filterEmployees(excludeOwner(pendingEmployees.map(pe => ({ 
+  
+  // Debug pending employees filtering
+  const rawPending = pendingEmployees.filter(e => e.email !== OWNER_EMAIL);
+  console.log('🔎 Raw pending after owner filter:', rawPending.length);
+  
+  const pendingList = filterEmployees(rawPending.map(pe => ({ 
     ...pe, 
     entity_name: 'PendingEmployee'
-  }))));
+  })));
+  
+  console.log('✅ Final pendingList:', pendingList.length, 'employees');
+  
   const invitedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited')));
   const archivedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'archived')));
   const deletedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')));
