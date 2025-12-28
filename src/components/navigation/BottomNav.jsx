@@ -60,31 +60,31 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
     <>
       {/* Bottom Navigation Bar - Fixed at bottom */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg pb-safe">
-        <div className="grid grid-cols-5 h-16">
+        <div className="grid grid-cols-5 h-16 px-1">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);
             return (
               <Link
                 key={item.title}
                 to={item.url}
-                className={`flex flex-col items-center justify-center gap-1 relative transition-all ${
+                className={`flex flex-col items-center justify-center gap-0.5 relative transition-all min-w-0 ${
                   active 
                     ? 'text-[#507DB4] dark:text-[#6B9DD8]' 
                     : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
                 {active && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-b-full" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-b-full" />
                 )}
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${active ? 'scale-110' : ''} transition-transform`} />
+                  <item.icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} />
                   {item.badge && (
-                    <Badge className="absolute -top-2 -right-2 h-4 min-w-4 px-1 text-[10px] bg-red-500 text-white border-0 flex items-center justify-center">
+                    <Badge className="absolute -top-1.5 -right-1.5 h-3.5 min-w-3.5 px-0.5 text-[9px] bg-red-500 text-white border-0 flex items-center justify-center">
                       {item.badge}
                     </Badge>
                   )}
                 </div>
-                <span className={`text-[10px] font-medium ${active ? 'font-bold' : ''}`}>
+                <span className={`text-[9px] font-medium ${active ? 'font-bold' : ''} truncate max-w-full px-0.5 text-center`}>
                   {item.title}
                 </span>
               </Link>
@@ -94,9 +94,9 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
           {/* More Menu */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400">
-                <Menu className="w-6 h-6" />
-                <span className="text-[10px] font-medium">More</span>
+              <button className="flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400 min-w-0">
+                <Menu className="w-5 h-5" />
+                <span className="text-[9px] font-medium truncate max-w-full px-0.5">More</span>
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="bg-white dark:bg-slate-900 h-[85vh] rounded-t-3xl">
