@@ -14,7 +14,9 @@ import {
   AlertCircle,
   Download,
   ChevronRight,
-  LogOut
+  LogOut,
+  MessageSquare,
+  Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +24,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format } from 'date-fns';
 import AvatarCreator from '@/components/avatar/AvatarCreator';
+import ClientComments from '@/components/client/ClientComments';
+import PhotoGalleryEnhanced from '@/components/client/PhotoGalleryEnhanced';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -79,6 +83,12 @@ export default function ClientPortal() {
   const { data: reports = [] } = useQuery({
     queryKey: ['client-reports', selectedJob?.id],
     queryFn: () => base44.entities.Report.filter({ job_id: selectedJob.id }, '-created_date'),
+    enabled: !!selectedJob?.id,
+  });
+
+  const { data: activityLog = [] } = useQuery({
+    queryKey: ['client-activity', selectedJob?.id],
+    queryFn: () => base44.entities.FieldActivityLog.filter({ job_id: selectedJob.id }, '-created_at', 20),
     enabled: !!selectedJob?.id,
   });
 
@@ -235,7 +245,7 @@ export default function ClientPortal() {
 
         {/* Tabs Content */}
         <Tabs defaultValue="progress" className="space-y-6">
-          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl">
+          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl flex-wrap h-auto">
             <TabsTrigger value="progress" className="rounded-lg">
               <BarChart3 className="w-4 h-4 mr-2" />
               Progreso
@@ -243,6 +253,14 @@ export default function ClientPortal() {
             <TabsTrigger value="photos" className="rounded-lg">
               <Camera className="w-4 h-4 mr-2" />
               Fotos ({photos.length})
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="rounded-lg">
+              <Activity className="w-4 h-4 mr-2" />
+              Actividad
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="rounded-lg">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Comentarios
             </TabsTrigger>
             <TabsTrigger value="documents" className="rounded-lg">
               <FileText className="w-4 h-4 mr-2" />
@@ -304,29 +322,38 @@ export default function ClientPortal() {
           {/* Photos Tab */}
           <TabsContent value="photos">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-900 mb-4">Galería de Fotos</h3>
-              {photos.length === 0 ? (
+              <h3 className="font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                <Camera className="w-5 h-5 text-blue-600" />
+                Galería de Fotos del Proyecto
+              </h3>
+              <PhotoGalleryEnhanced photos={photos} />
+            </div>
+          </TabsContent>
+
+          {/* Activity Tab */}
+          <TabsContent value="activity">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <h3 className="font-semibold text-slate-900 mb-6 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-600" />
+                Actividad Reciente
+              </h3>
+              {activityLog.length === 0 ? (
                 <div className="text-center py-12">
-                  <Camera className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500">No hay fotos disponibles</p>
+                  <Activity className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-500">No hay actividad registrada</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {photos.map((photo) => (
-                    <div 
-                      key={photo.id}
-                      onClick={() => setSelectedPhoto(photo)}
-                      className="aspect-square rounded-xl overflow-hidden cursor-pointer group relative"
-                    >
-                      <img 
-                        src={photo.file_url}
-                        alt={photo.caption || 'Foto del proyecto'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                        <p className="text-xs text-white">
-                          {format(new Date(photo.created_date), 'dd MMM yyyy')}
+                <div className="space-y-4">
+                  {activityLog.map((activity) => (
+                    <div key={activity.id} className="flex gap-4 p-4 bg-slate-50 rounded-xl">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-slate-900 font-medium">{activity.action}</p>
+                        {activity.details && (
+                          <p className="text-sm text-slate-600 mt-1">{activity.details}</p>
+                        )}
+                        <p className="text-xs text-slate-500 mt-2">
+                          {format(new Date(activity.created_at), 'dd MMM yyyy, HH:mm')} • {activity.user_name}
                         </p>
                       </div>
                     </div>
@@ -334,6 +361,11 @@ export default function ClientPortal() {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Comments Tab */}
+          <TabsContent value="comments">
+            <ClientComments jobId={selectedJob?.id} />
           </TabsContent>
 
           {/* Documents Tab */}
