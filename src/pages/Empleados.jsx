@@ -263,12 +263,24 @@ export default function Empleados() {
     select: (data) => data // Full data, we'll paginate in UI
   });
 
-  const { data: pendingEmployees = [] } = useQuery({
+  const { data: pendingEmployees = [], refetch: refetchPending } = useQuery({
     queryKey: ['pendingEmployees'],
-    queryFn: () => base44.entities.PendingEmployee.list('-created_date'),
-    staleTime: 30000,
+    queryFn: async () => {
+      const result = await base44.entities.PendingEmployee.list('-created_date');
+      console.log('🔍 PendingEmployees fetched:', result.length, 'employees');
+      console.log('📋 PendingEmployees data:', result);
+      return result;
+    },
+    staleTime: 5000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     initialData: []
   });
+
+  // Debug log whenever pendingEmployees changes
+  React.useEffect(() => {
+    console.log('📊 PendingEmployees state updated:', pendingEmployees.length, 'employees');
+  }, [pendingEmployees]);
 
   // Listen for profile updates
   React.useEffect(() => {
