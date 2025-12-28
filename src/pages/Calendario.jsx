@@ -454,8 +454,8 @@ export default function Calendario() {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="p-2 md:p-8 min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
+        <div className="max-w-7xl mx-auto p-2 md:p-8">
           <PageHeader
             title={t('calendar')}
             description={language === 'es' 
@@ -465,20 +465,20 @@ export default function Calendario() {
           />
 
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
             <Card 
               className="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setEventTypeFilter('all')}
             >
-              <CardContent className="p-1.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[8px] md:text-[9px] font-medium opacity-90">
-                      {language === 'es' ? 'Total Turnos' : 'Total Shifts'}
-                    </p>
-                    <p className="text-sm md:text-lg font-bold">{workload.totalEvents}</p>
+              <CardContent className="p-2 md:p-3">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xl md:text-2xl font-bold leading-tight">{workload.totalEvents}</p>
+                    <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 opacity-60" />
                   </div>
-                  <CalendarIcon className="w-3.5 h-3.5 md:w-4 md:h-4 opacity-60" />
+                  <p className="text-[10px] md:text-xs font-medium opacity-90 leading-tight">
+                    {language === 'es' ? 'Total' : 'Total'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -487,15 +487,15 @@ export default function Calendario() {
               className="bg-white shadow-sm border-slate-200 cursor-pointer hover:shadow-md hover:border-[#1E3A8A]/40 transition-all"
               onClick={() => setEventTypeFilter('job_work')}
             >
-              <CardContent className="p-1.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[8px] md:text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                      {language === 'es' ? 'Trabajo' : 'Job Work'}
-                    </p>
-                    <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.jobWork}</p>
+              <CardContent className="p-2 md:p-3">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.jobWork}</p>
+                    <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] opacity-60" />
                   </div>
-                  <Briefcase className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#507DB4] opacity-60" />
+                  <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight">
+                    {language === 'es' ? 'Trabajo' : 'Work'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -504,29 +504,29 @@ export default function Calendario() {
               className="bg-white shadow-sm border-slate-200 cursor-pointer hover:shadow-md hover:border-[#1E3A8A]/40 transition-all"
               onClick={() => setEventTypeFilter('appointment')}
             >
-              <CardContent className="p-1.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[8px] md:text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                      {language === 'es' ? 'Citas' : 'Appointments'}
-                    </p>
-                    <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.appointments}</p>
+              <CardContent className="p-2 md:p-3">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.appointments}</p>
+                    <CalendarClock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] opacity-60" />
                   </div>
-                  <CalendarClock className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#507DB4] opacity-60" />
+                  <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight">
+                    {language === 'es' ? 'Citas' : 'Appts'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="bg-white shadow-sm border-slate-200 col-span-2 md:col-span-1">
-              <CardContent className="p-1.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[8px] md:text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                      {language === 'es' ? 'Horas Totales' : 'Total Hours'}
-                    </p>
-                    <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white">{workload.totalEstimatedHours.toFixed(1)}h</p>
+              <CardContent className="p-2 md:p-3">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] opacity-60" />
                   </div>
-                  <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#507DB4] opacity-60" />
+                  <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight">
+                    {language === 'es' ? 'Horas' : 'Hours'}
+                  </p>
                 </div>
               </CardContent>
             </Card>
