@@ -250,6 +250,13 @@ export default function Empleados() {
     select: (data) => data // Full data, we'll paginate in UI
   });
 
+  const { data: pendingEmployees = [] } = useQuery({
+    queryKey: ['pendingEmployees'],
+    queryFn: () => base44.entities.PendingEmployee.list('-created_date'),
+    staleTime: 30000,
+    initialData: []
+  });
+
   // Listen for profile updates
   React.useEffect(() => {
     const handleProfileUpdate = () => {
@@ -341,7 +348,10 @@ export default function Empleados() {
   };
 
   const activeEmployees = filterEmployees(employees.filter(e => e.employment_status === 'active' || !e.employment_status));
-  const invitedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'invited'));
+  const invitedEmployees = filterEmployees([
+    ...employees.filter(e => e.employment_status === 'invited'),
+    ...pendingEmployees.map(pe => ({ ...pe, employment_status: 'pending' }))
+  ]);
   const deletedEmployees = filterEmployees(employees.filter(e => e.employment_status === 'deleted'));
 
   // Paginate current tab employees
