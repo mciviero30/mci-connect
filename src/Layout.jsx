@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard,
@@ -118,6 +118,7 @@ const ThemeToggle = () => {
 
 const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
   const { setOpenMobile } = useSidebar();
+  const navigate = useNavigate();
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const itemRefs = React.useRef([]);
   
@@ -134,6 +135,9 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         setFocusedIndex(prev => {
           const next = prev < allItems.length - 1 ? prev + 1 : 0;
           itemRefs.current[next]?.focus();
+          // Navigate to the page automatically
+          navigate(allItems[next].url);
+          setOpenMobile(false);
           return next;
         });
       } else if (e.key === 'ArrowUp') {
@@ -141,17 +145,17 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses }) => {
         setFocusedIndex(prev => {
           const next = prev > 0 ? prev - 1 : allItems.length - 1;
           itemRefs.current[next]?.focus();
+          // Navigate to the page automatically
+          navigate(allItems[next].url);
+          setOpenMobile(false);
           return next;
         });
-      } else if (e.key === 'Enter' && focusedIndex >= 0) {
-        e.preventDefault();
-        itemRefs.current[focusedIndex]?.click();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusedIndex, allItems.length]);
+  }, [focusedIndex, allItems, navigate, setOpenMobile]);
   
   let itemIndex = 0;
   
