@@ -151,7 +151,8 @@ export default function Field() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6 pb-safe overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto">
+      <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
       <div className="px-3 sm:px-6 md:px-10 py-4 sm:py-5 md:py-6 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-4 sm:mb-5 md:mb-6 flex flex-col sm:flex-row items-center justify-between text-white gap-3 sm:gap-0 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <Link to={createPageUrl('Dashboard')} className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2">
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
@@ -197,8 +198,8 @@ export default function Field() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+      {/* Stats Cards - Mobile Optimized */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4 md:mb-6">
         <StatsCard 
           label="ACTIVE PROJECTS"
           value={activeProjects}
@@ -225,20 +226,20 @@ export default function Field() {
         />
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="bg-slate-800 dark:bg-slate-800/50 border border-slate-700 dark:border-slate-700">
-          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
-            <Briefcase className="w-4 h-4 mr-2" />
-            Projects
+      {/* Tabs - Mobile Optimized */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4 md:mb-6">
+        <TabsList className="bg-slate-800 dark:bg-slate-800/50 border border-slate-700 dark:border-slate-700 w-full grid grid-cols-3 gap-1">
+          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-xs md:text-sm min-h-[40px]">
+            <Briefcase className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Projects</span>
           </TabsTrigger>
-          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
-            <FileText className="w-4 h-4 mr-2" />
-            Field Dimensions
+          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-xs md:text-sm min-h-[40px]">
+            <FileText className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Dimensions</span>
           </TabsTrigger>
-          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
-            <ClipboardList className="w-4 h-4 mr-2" />
-            Checklists
+          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-xs md:text-sm min-h-[40px]">
+            <ClipboardList className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden sm:inline">Checklists</span>
           </TabsTrigger>
         </TabsList>
 
@@ -357,31 +358,30 @@ export default function Field() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
 
 function StatsCard({ label, value, icon: Icon, color }) {
-  const colorClasses = {
-    orange: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
-    yellow: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/30',
-  };
-
-  const iconColors = {
-    orange: 'bg-orange-500/20 text-orange-400',
-    yellow: 'bg-yellow-500/20 text-yellow-400',
-  };
-
   return (
-    <div className="bg-[#1e293b] border border-slate-700/50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 shadow-lg">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-[10px] sm:text-xs font-bold text-white uppercase tracking-wider">{label}</p>
-          <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white mt-1 sm:mt-2">{value}</p>
+    <div className="bg-[#1e293b] border border-slate-700/50 rounded-lg md:rounded-xl p-2 md:p-4 shadow-lg">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <p className="text-2xl md:text-3xl font-bold text-white leading-tight">{value}</p>
+          <div className="p-1.5 md:p-2 rounded-full bg-white">
+            <Icon className="w-4 h-4 md:w-5 md:h-5 text-black" />
+          </div>
         </div>
-        <div className="p-2 sm:p-2.5 md:p-3 rounded-full bg-white">
-          <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black" />
-        </div>
+        <p className="text-[9px] md:text-xs font-bold text-slate-400 uppercase tracking-wider leading-tight">
+          {label.split(' ').map((word, i) => (
+            <React.Fragment key={i}>
+              {word}
+              {i < label.split(' ').length - 1 && <br className="md:hidden" />}
+              {i < label.split(' ').length - 1 && <span className="hidden md:inline"> </span>}
+            </React.Fragment>
+          ))}
+        </p>
       </div>
     </div>
   );

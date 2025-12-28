@@ -84,7 +84,7 @@ export default function Formularios() {
           icon={ClipboardList}
         />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
           {availableTemplates.map(template => {
             const mySubmissionsForThisForm = mySubmissions.filter(s => s.template_id === template.id);
 
