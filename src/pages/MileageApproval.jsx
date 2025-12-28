@@ -33,25 +33,36 @@ export default function MileageApproval() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: employees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: drivingLogs, isLoading } = useQuery({
     queryKey: ['drivingLogs'],
     queryFn: () => base44.entities.DrivingLog.list('-date'),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const [mileageFormData, setMileageFormData] = useState({
