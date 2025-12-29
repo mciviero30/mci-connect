@@ -357,9 +357,33 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
     setFormData({ ...formData, items: newItems });
   };
 
+  const calculateQuantity = (item) => {
+    const techCount = parseInt(item.tech_count) || 1;
+    const durationValue = parseFloat(item.duration_value) || 1;
+
+    if (item.calculation_type === 'hotel') {
+      // Hotel: Math.ceil(tech_count / 2) × nights
+      const rooms = Math.ceil(techCount / 2);
+      return rooms * durationValue;
+    } else if (item.calculation_type === 'per_diem') {
+      // Per-diem: tech_count × days
+      return techCount * durationValue;
+    } else if (item.calculation_type === 'hours') {
+      // Hours (driving, normal, overtime): tech_count × hours
+      return techCount * durationValue;
+    }
+    
+    return item.quantity || 1;
+  };
+
   const updateItem = (index, field, value) => {
     const newItems = [...formData.items];
     newItems[index][field] = value;
+    
+    // Auto-calculate quantity for special items
+    if (field === 'tech_count' || field === 'duration_value' || field === 'calculation_type') {
+      newItems[index].quantity = calculateQuantity(newItems[index]);
+    }
     
     if (field === 'quantity' || field === 'unit_price') {
       newItems[index].total = (newItems[index].quantity || 0) * (newItems[index].unit_price || 0);
@@ -372,6 +396,15 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         newItems[index].unit = selectedItem.unit || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
         newItems[index].installation_time = selectedItem.installation_time || 0;
+        newItems[index].calculation_type = selectedItem.calculation_type || 'none';
+        
+        // Set default values based on calculation type
+        if (selectedItem.calculation_type && selectedItem.calculation_type !== 'none') {
+          newItems[index].tech_count = 1;
+          newItems[index].duration_value = 1;
+          newItems[index].quantity = calculateQuantity(newItems[index]);
+        }
+        
         newItems[index].total = (newItems[index].quantity || 0) * (selectedItem.unit_price || 0);
         
         toast({
