@@ -45,7 +45,7 @@ export default function CrearEstimado() {
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
-    queryFn: () => base44.entities.QuoteItem.filter({ status: 'active' }),
+    queryFn: () => base44.entities.QuoteItem.list(),
     initialData: [],
   });
 
