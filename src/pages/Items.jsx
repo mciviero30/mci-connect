@@ -473,7 +473,8 @@ export default function Items() {
       // AUTO-CALCULATE: Cost for labor/services
       if (data.category === 'labor' || data.category === 'services') {
         const materialCost = parseFloat(data.material_cost) || 0;
-        const laborCost = (parseFloat(data.installation_time) || 0) * STANDARD_LABOR_RATE;
+        const laborRate = data.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE;
+        const laborCost = (parseFloat(data.installation_time) || 0) * laborRate;
         data.cost_per_unit = materialCost + laborCost;
       } else {
         data.cost_per_unit = parseFloat(data.cost_per_unit) || 0;
