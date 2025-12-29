@@ -265,69 +265,77 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
     setCalculatingTravel(false);
   };
 
-  const handleOutOfAreaToggle = (enabled) => {
-    setFormData(prev => {
-      let newItems = [...prev.items];
-
-      if (enabled) {
-        // Remove existing travel items first
-        newItems = newItems.filter(item => !item.is_travel_item);
-
-        // Add travel items at the end
-        const travelItems = [
-          {
-            description: language === 'es' ? 'Hotel / Alojamiento' : 'Hotel / Lodging',
-            quantity: 2,
-            unit: 'nights',
-            unit_price: 100,
-            total: 200,
-            is_travel_item: true,
-            travel_item_type: 'hotel'
-          },
-          {
-            description: 'Per Diem / Viáticos',
-            quantity: 2,
-            unit: 'days',
-            unit_price: 40,
-            total: 80,
-            is_travel_item: true,
-            travel_item_type: 'per_diem'
-          },
-          {
-            description: language === 'es' ? 'Millas (Ida y Vuelta)' : 'Mileage (Round Trip)',
-            quantity: 0,
-            unit: 'miles',
-            unit_price: 0.60,
-            total: 0,
-            is_travel_item: true,
-            travel_item_type: 'mileage'
-          },
-          {
-            description: language === 'es' ? 'Tiempo de Viaje (Ida y Vuelta)' : 'Travel Time (Round Trip)',
-            quantity: 0,
-            unit: 'hours',
-            unit_price: 25,
-            total: 0,
-            is_travel_item: true,
-            travel_item_type: 'travel_time'
-          }
-        ];
-
-        newItems = [...newItems, ...travelItems];
-      } else {
-        // Remove travel items
-        newItems = newItems.filter(item => !item.is_travel_item);
+  const handleOutOfAreaToggle = async (enabled) => {
+    if (enabled) {
+      // Find hotel, per-diem, driving time, and per-diem items from catalog
+      const hotelItem = quoteItems.find(qi => qi.calculation_type === 'hotel');
+      const perDiemItem = quoteItems.find(qi => qi.calculation_type === 'per_diem');
+      const drivingHoursItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('driving') && qi.calculation_type === 'hours');
+      
+      let newItems = [...formData.items.filter(item => !item.is_travel_item)];
+      
+      // Add travel items from catalog if they exist
+      if (hotelItem) {
+        newItems.push({
+          item_name: hotelItem.name,
+          description: hotelItem.description || 'Hotel / Lodging',
+          quantity: 2,
+          unit: hotelItem.unit || 'nights',
+          unit_price: hotelItem.unit_price || 100,
+          total: 2 * (hotelItem.unit_price || 100),
+          is_travel_item: true,
+          calculation_type: 'hotel',
+          tech_count: 2,
+          duration_value: 1,
+        });
       }
-
-      return { ...prev, out_of_area: enabled, items: newItems };
-    });
-
-    // Calculate travel if we have the necessary data
-    if (enabled && formData.team_id && formData.job_address) {
-      const team = teams.find(t => t.id === formData.team_id);
-      if (team?.base_address) {
-        calculateTravelDistance(team.base_address, formData.job_address);
+      
+      if (perDiemItem) {
+        newItems.push({
+          item_name: perDiemItem.name,
+          description: perDiemItem.description || 'Per Diem',
+          quantity: 2,
+          unit: perDiemItem.unit || 'days',
+          unit_price: perDiemItem.unit_price || 40,
+          total: 2 * (perDiemItem.unit_price || 40),
+          is_travel_item: true,
+          calculation_type: 'per_diem',
+          tech_count: 2,
+          duration_value: 1,
+        });
       }
+      
+      if (drivingHoursItem) {
+        newItems.push({
+          item_name: drivingHoursItem.name,
+          description: drivingHoursItem.description || 'Driving Time',
+          quantity: 0,
+          unit: drivingHoursItem.unit || 'hours',
+          unit_price: drivingHoursItem.unit_price || 25,
+          total: 0,
+          is_travel_item: true,
+          calculation_type: 'hours',
+          tech_count: 2,
+          duration_value: 0,
+        });
+      }
+      
+      setFormData(prev => ({ ...prev, out_of_area: true, items: newItems }));
+      
+      // Calculate travel distance if we have data
+      if (formData.team_ids.length > 0 && formData.job_address) {
+        const firstTeam = teams.find(t => t.id === formData.team_ids[0]);
+        if (firstTeam?.base_address) {
+          await calculateTravelDistance(firstTeam.base_address, formData.job_address);
+        }
+      }
+    } else {
+      // Remove travel items
+      setFormData(prev => ({
+        ...prev,
+        out_of_area: false,
+        items: prev.items.filter(item => !item.is_travel_item)
+      }));
     }
   };
 
