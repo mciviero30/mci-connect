@@ -802,64 +802,26 @@ export default function Items() {
           </div>
 
           {/* CRITICAL ALERTS */}
-          {(lowStockItems.length > 0 || outOfStockItems.length > 0 || negativeMarginItems.length > 0) && (
+          {negativeMarginItems.length > 0 && (
             <div className="mb-6 space-y-3">
-              {outOfStockItems.length > 0 && (
-                <Alert className="bg-red-50 border-red-300">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <AlertTitle className="font-bold text-red-900">
-                    {language === 'es' ? '🚫 Items Sin Stock' : '🚫 Out of Stock Items'}
-                  </AlertTitle>
-                  <AlertDescription className="text-red-800">
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {outOfStockItems.map(item => (
-                        <Badge key={item.id} className="bg-red-600 text-white">
-                          {item.name}
+              <Alert className="bg-orange-50 border-orange-300">
+                <TrendingDown className="h-5 w-5 text-orange-600" />
+                <AlertTitle className="font-bold text-orange-900">
+                  {language === 'es' ? '💸 Margen Negativo Detectado' : '💸 Negative Margin Detected'}
+                </AlertTitle>
+                <AlertDescription className="text-orange-800">
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {negativeMarginItems.map(item => {
+                      const loss = (item.cost_per_unit - item.unit_price).toFixed(2);
+                      return (
+                        <Badge key={item.id} className="bg-orange-600 text-white">
+                          {item.name} (-${loss})
                         </Badge>
-                      ))}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {lowStockItems.length > 0 && (
-                <Alert className="bg-amber-50 border-amber-300">
-                  <AlertTriangle className="h-5 w-5 text-amber-600" />
-                  <AlertTitle className="font-bold text-amber-900">
-                    {language === 'es' ? '⚠️ Stock Bajo - Reordenar Ahora' : '⚠️ Low Stock - Reorder Now'}
-                  </AlertTitle>
-                  <AlertDescription className="text-amber-800">
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {lowStockItems.map(item => (
-                        <Badge key={item.id} className="bg-amber-600 text-white">
-                          {item.name} ({item.in_stock_quantity} {language === 'es' ? 'restantes' : 'remaining'})
-                        </Badge>
-                      ))}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {negativeMarginItems.length > 0 && (
-                <Alert className="bg-orange-50 border-orange-300">
-                  <TrendingDown className="h-5 w-5 text-orange-600" />
-                  <AlertTitle className="font-bold text-orange-900">
-                    {language === 'es' ? '💸 Margen Negativo Detectado' : '💸 Negative Margin Detected'}
-                  </AlertTitle>
-                  <AlertDescription className="text-orange-800">
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {negativeMarginItems.map(item => {
-                        const loss = (item.cost_per_unit - item.unit_price).toFixed(2);
-                        return (
-                          <Badge key={item.id} className="bg-orange-600 text-white">
-                            {item.name} (-${loss})
-                          </Badge>
-                        );
-                      })}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
+                      );
+                    })}
+                  </div>
+                </AlertDescription>
+              </Alert>
             </div>
           )}
 
