@@ -683,25 +683,24 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-600 rounded-lg">
-                        <MapPin className="w-5 h-5 text-white" />
-                      </div>
+                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       <div>
-                        <Label className="text-slate-900 dark:text-white font-semibold">
+                        <Label className="text-slate-900 dark:text-white font-medium text-sm cursor-pointer">
                           {language === 'es' ? 'Trabajo Fuera del Área' : 'Out-of-Area Job'}
                         </Label>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
                           {language === 'es' 
-                            ? 'Agrega costos de viaje automáticamente (hotel, per diem, millas, tiempo de viaje)' 
-                            : 'Automatically adds travel costs (hotel, per diem, mileage, travel time)'}
+                            ? 'Hotel, per diem, millas, tiempo de viaje' 
+                            : 'Hotel, per diem, miles, travel time'}
                         </p>
                       </div>
                     </div>
                     <Switch
                       checked={formData.out_of_area}
                       onCheckedChange={handleOutOfAreaToggle}
+                      className="data-[state=checked]:bg-blue-600"
                     />
                   </div>
                   {calculatingTravel && (
