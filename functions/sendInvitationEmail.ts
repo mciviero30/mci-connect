@@ -58,69 +58,65 @@ Deno.serve(async (req) => {
                 Hola <strong>${fullName}</strong>,
               </p>
 
-              <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #333333;">
-                Nos complace darle la bienvenida al equipo. Ha sido invitado a unirse a <strong>MCI Connect</strong>, nuestra plataforma integral diseñada para optimizar la gestión empresarial y sus actividades diarias.
+              <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">
+                Nos complace darle la bienvenida al equipo. Ha sido invitado a unirse a <strong style="color: #507DB4;">MCI Connect</strong>, nuestra plataforma integral diseñada para optimizar la gestión empresarial y sus actividades diarias.
               </p>
 
               <!-- Key Features Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
+              <h2 style="margin: 25px 0 12px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #E0E7FF; padding-bottom: 8px;">
                 Características Clave de MCI Connect
               </h2>
 
-              <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 8px 0 12px 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 La plataforma MCI Connect le otorgará acceso a las siguientes herramientas y recursos esenciales:
               </p>
 
-              <ul style="margin: 0 0 30px 0; padding-left: 25px; font-size: 15px; line-height: 1.8; color: #333333;">
-                <li style="margin-bottom: 10px;"><strong>Control de Tiempo:</strong> Entrada/salida inteligente con geolocalización y aprobación de horas.</li>
-                <li style="margin-bottom: 10px;"><strong>Gestión de Gastos:</strong> Categorización AI de gastos, per diem y reembolsos automatizados.</li>
-                <li style="margin-bottom: 10px;"><strong>Nómina Automatizada:</strong> Cálculo automático de pago con bonos y reportes detallados.</li>
-                <li style="margin-bottom: 10px;"><strong>Calendario Inteligente:</strong> Asignaciones, disponibilidad de equipo y sincronización con Google Calendar.</li>
-                <li style="margin-bottom: 10px;"><strong style="color: #FF8C00;">MCI Field:</strong> Gestión completa de proyectos en campo - planos, fotos, tareas y progreso en tiempo real.</li>
-                <li style="margin-bottom: 10px;"><strong>Facturación y Estimados:</strong> Creación de quotes e invoices con inteligencia artificial.</li>
-                <li style="margin-bottom: 10px;"><strong>Chat y Colaboración:</strong> Comunicación en tiempo real con equipos, GIFs y compartir archivos.</li>
-                <li style="margin-bottom: 10px;"><strong>Reconocimientos y Metas:</strong> Sistema de puntos, premios y OKRs para el equipo.</li>
-                <li style="margin-bottom: 10px;"><strong>Capacitación:</strong> Cursos, certificaciones y compliance tracking automatizado.</li>
-                <li style="margin-bottom: 10px;"><strong>Analytics y Reportes:</strong> Cash flow, forecasting presupuestario y análisis de rentabilidad.</li>
+              <ul style="margin: 12px 0; padding-left: 20px; list-style-position: outside; font-size: 14px; line-height: 1.6; color: #333333;">
+                <li style="margin-bottom: 6px;"><strong>Control de Tiempo:</strong> Entrada/salida inteligente con geolocalización y aprobación de horas.</li>
+                <li style="margin-bottom: 6px;"><strong>Gestión de Gastos:</strong> Categorización AI de gastos, per diem y reembolsos automatizados.</li>
+                <li style="margin-bottom: 6px;"><strong>Nómina Automatizada:</strong> Cálculo automático de pago con bonos y reportes detallados.</li>
+                <li style="margin-bottom: 6px;"><strong>Calendario Inteligente:</strong> Asignaciones, disponibilidad de equipo y sincronización con Google Calendar.</li>
+                <li style="margin-bottom: 6px;"><strong style="color: #FF8C00;">MCI Field:</strong> Gestión completa de proyectos en campo - planos, fotos, tareas y progreso en tiempo real.</li>
+                <li style="margin-bottom: 6px;"><strong>Facturación y Estimados:</strong> Creación de quotes e invoices con inteligencia artificial.</li>
               </ul>
 
               <!-- Steps Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
+              <h2 style="margin: 25px 0 12px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #E0E7FF; padding-bottom: 8px;">
                 Pasos para Comenzar
               </h2>
 
-              <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 8px 0 12px 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 Para activar su cuenta y comenzar a usar la plataforma, siga estos sencillos pasos:
               </p>
 
-              <ol style="margin: 0 0 30px 0; padding-left: 25px; font-size: 15px; line-height: 1.8; color: #333333;">
-                <li style="margin-bottom: 10px;">Revise su bandeja de entrada en: <strong>${to}</strong></li>
-                <li style="margin-bottom: 10px;">Busque el correo electrónico de <strong>Base44</strong> (revise su carpeta de spam si no lo ve de inmediato).</li>
-                <li style="margin-bottom: 10px;">Haga clic en <strong>"Aceptar Invitación"</strong>.</li>
-                <li style="margin-bottom: 10px;">Cree su contraseña y complete su perfil.</li>
-                <li style="margin-bottom: 10px;">¡Comience a usar la plataforma!</li>
+              <ol style="margin: 12px 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #333333;">
+                <li style="margin-bottom: 6px;">Revise su bandeja de entrada en: <a href="mailto:${to}" style="color: #507DB4; text-decoration: none; font-weight: 600;">${to}</a></li>
+                <li style="margin-bottom: 6px;">Busque el correo electrónico de <strong>Base44</strong> (revise su carpeta de spam si no lo ve de inmediato).</li>
+                <li style="margin-bottom: 6px;">Haga clic en "<strong>Aceptar Invitación</strong>".</li>
+                <li style="margin-bottom: 6px;">Cree su contraseña y complete su perfil.</li>
+                <li style="margin-bottom: 6px;">¡Comience a usar la plataforma!</li>
               </ol>
 
-              <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 20px 0 15px 0; font-size: 14px; line-height: 1.5; color: #555555;">
                 Si encuentra alguna dificultad o tiene preguntas durante el proceso de configuración, no dude en contactar a nuestro equipo de soporte.
               </p>
 
-              <p style="margin: 0 0 10px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 15px 0 8px 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 Le deseamos mucho éxito usando MCI Connect.
               </p>
 
-              <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 Atentamente,
               </p>
 
               <!-- Signature -->
-              <p style="margin: 20px 0 0 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 15px; display: inline-block;">
+              <p style="margin: 15px 0 20px 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 12px; display: inline-block;">
                 El Equipo MCI
               </p>
 
               <!-- CTA Button -->
-              <div style="text-align: center; margin: 40px 0 20px 0;">
-                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
+              <div style="text-align: center; margin: 20px 0;">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
                   Únete a MCI Connect Ahora
                 </a>
               </div>
@@ -132,7 +128,7 @@ Deno.serve(async (req) => {
           <tr>
             <td style="background-color: #f9f9f9; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
               <p style="margin: 0; font-size: 13px; color: #666666; line-height: 1.5;">
-                © 2025 MCI Connect. Todos los derechos reservados.
+                © ${new Date().getFullYear()} MCI Connect. Todos los derechos reservados.
               </p>
             </td>
           </tr>
@@ -173,88 +169,68 @@ Deno.serve(async (req) => {
                 Hi <strong>${fullName}</strong>,
               </p>
 
-              <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #333333;">
-                We are delighted to welcome you to the team. You have been invited to join <strong>MCI Connect</strong>, our comprehensive platform designed to streamline your business management and daily activities.
+              <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.5; color: #333333;">
+                We are delighted to welcome you to the team. You have been invited to join <strong style="color: #507DB4;">MCI Connect</strong>, our comprehensive platform designed to streamline your business management and daily activities.
               </p>
 
               <!-- Key Features Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
+              <h2 style="margin: 25px 0 12px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #E0E7FF; padding-bottom: 8px;">
                 Key Features of MCI Connect
               </h2>
 
-              <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 8px 0 12px 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 The MCI Connect platform will grant you access to the following essential tools and resources:
               </p>
 
-              <ul style="margin: 0 0 30px 0; padding-left: 25px; font-size: 15px; line-height: 1.8; color: #333333;">
-                <li style="margin-bottom: 10px;"><strong>Time Tracking:</strong> Smart clock in/out with geolocation and hours approval.</li>
-                <li style="margin-bottom: 10px;"><strong>Expense Management:</strong> AI categorization, per diem and automated reimbursements.</li>
-                <li style="margin-bottom: 10px;"><strong>Automated Payroll:</strong> Automatic pay calculation with bonuses and detailed reports.</li>
-                <li style="margin-bottom: 10px;"><strong>Smart Calendar:</strong> Job assignments, team availability and Google Calendar sync.</li>
-                <li style="margin-bottom: 10px;"><strong style="color: #FF8C00;">MCI Field:</strong> Complete field project management - blueprints, photos, tasks and real-time progress.</li>
-                <li style="margin-bottom: 10px;"><strong>Invoicing & Estimates:</strong> AI-powered quote and invoice creation.</li>
-                <li style="margin-bottom: 10px;"><strong>Chat & Collaboration:</strong> Real-time team communication with GIFs and file sharing.</li>
-                <li style="margin-bottom: 10px;"><strong>Recognition & Goals:</strong> Points system, awards and team OKRs.</li>
-                <li style="margin-bottom: 10px;"><strong>Training:</strong> Courses, certifications and automated compliance tracking.</li>
-                <li style="margin-bottom: 10px;"><strong>Analytics & Reports:</strong> Cash flow, budget forecasting and profitability analysis.</li>
+              <ul style="margin: 12px 0; padding-left: 20px; list-style-position: outside; font-size: 14px; line-height: 1.6; color: #333333;">
+                <li style="margin-bottom: 6px;"><strong>Time Tracking:</strong> Smart clock in/out with geolocation and hours approval.</li>
+                <li style="margin-bottom: 6px;"><strong>Expense Management:</strong> AI categorization, per diem and automated reimbursements.</li>
+                <li style="margin-bottom: 6px;"><strong>Automated Payroll:</strong> Automatic pay calculation with bonuses and detailed reports.</li>
+                <li style="margin-bottom: 6px;"><strong>Smart Calendar:</strong> Job assignments, team availability and Google Calendar sync.</li>
+                <li style="margin-bottom: 6px;"><strong style="color: #FF8C00;">MCI Field:</strong> Complete field project management - blueprints, photos, tasks and real-time progress.</li>
+                <li style="margin-bottom: 6px;"><strong>Invoicing & Estimates:</strong> AI-powered quote and invoice creation.</li>
               </ul>
 
               <!-- Steps Section -->
-              <h2 style="margin: 40px 0 20px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #507DB4; padding-bottom: 10px;">
+              <h2 style="margin: 25px 0 12px 0; font-size: 20px; font-weight: bold; color: #507DB4; border-bottom: 2px solid #E0E7FF; padding-bottom: 8px;">
                 Steps to Get Started
               </h2>
 
-              <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 8px 0 12px 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 To activate your account and begin using the platform, please follow these simple steps:
               </p>
 
-              <ol style="margin: 0 0 30px 0; padding-left: 25px; font-size: 15px; line-height: 1.8; color: #333333;">
-                <li style="margin-bottom: 10px;">Check your inbox at: <strong>${to}</strong></li>
-                <li style="margin-bottom: 10px;">Look for the email from <strong>Base44</strong> (please check your spam folder if you do not see it immediately).</li>
-                <li style="margin-bottom: 10px;">Click <strong>"Accept Invitation"</strong>.</li>
-                <li style="margin-bottom: 10px;">Create your password and complete your profile.</li>
-                <li style="margin-bottom: 10px;">Start using the platform!</li>
+              <ol style="margin: 12px 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #333333;">
+                <li style="margin-bottom: 6px;">Check your inbox at: <a href="mailto:${to}" style="color: #507DB4; text-decoration: none; font-weight: 600;">${to}</a></li>
+                <li style="margin-bottom: 6px;">Look for the email from <strong>Base44</strong> (please check your spam folder if you do not see it immediately).</li>
+                <li style="margin-bottom: 6px;">Click "<strong>Accept Invitation</strong>".</li>
+                <li style="margin-bottom: 6px;">Create your password and complete your profile.</li>
+                <li style="margin-bottom: 6px;">Start using the platform!</li>
               </ol>
 
-              <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 20px 0 15px 0; font-size: 14px; line-height: 1.5; color: #555555;">
                 Should you encounter any difficulties or have questions during the setup process, please do not hesitate to contact our support team.
               </p>
 
-              <p style="margin: 0 0 10px 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 15px 0 8px 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 We wish you great success using MCI Connect.
               </p>
 
-              <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #333333;">
-                Sincerely,
-              </p>
-
-              <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #333333;">
+              <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.5; color: #333333;">
                 Sincerely,
               </p>
 
               <!-- Signature -->
-              <p style="margin: 20px 0 30px 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 15px; display: inline-block;">
+              <p style="margin: 15px 0 20px 0; font-size: 18px; font-weight: bold; color: #507DB4; border-top: 2px solid #507DB4; padding-top: 12px; display: inline-block;">
                 The MCI Team
               </p>
 
               <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
-                <tr>
-                  <td align="center">
-                    <!--[if mso]>
-                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${setupPasswordUrl}" style="height:54px;v-text-anchor:middle;width:300px;" arcsize="19%" strokecolor="#507DB4" fillcolor="#507DB4">
-                      <w:anchorlock/>
-                      <center style="color:#ffffff;font-family:sans-serif;font-size:18px;font-weight:bold;">Join MCI Connect Now</center>
-                    </v:roundrect>
-                    <![endif]-->
-                    <!--[if !mso]><!-->
-                    <a href="${setupPasswordUrl}" style="display: inline-block; background: #507DB4; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-size: 18px; font-weight: bold; box-shadow: 0 6px 20px rgba(80, 125, 180, 0.4); text-align: center; mso-hide: all;">
-                      Join MCI Connect Now
-                    </a>
-                    <!--<![endif]-->
-                  </td>
-                </tr>
-              </table>
+              <div style="text-align: center; margin: 20px 0;">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
+                  Join MCI Connect Now
+                </a>
+              </div>
 
             </td>
           </tr>
@@ -263,7 +239,7 @@ Deno.serve(async (req) => {
           <tr>
             <td style="background-color: #f9f9f9; padding: 30px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
               <p style="margin: 0; font-size: 13px; color: #666666; line-height: 1.5;">
-                © 2025 MCI Connect. All rights reserved.
+                © ${new Date().getFullYear()} MCI Connect. All rights reserved.
               </p>
             </td>
           </tr>
