@@ -200,10 +200,11 @@ export default function Items() {
 
     const materialCost = parseFloat(formData.material_cost) || 0;
     const installationTime = parseFloat(formData.installation_time) || 0;
-    const laborCost = installationTime * STANDARD_LABOR_RATE;
+    const laborRate = formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE;
+    const laborCost = installationTime * laborRate;
 
     return (materialCost + laborCost).toFixed(2);
-  }, [formData.category, formData.material_cost, formData.installation_time, STANDARD_LABOR_RATE, isLaborOrService]);
+  }, [formData.category, formData.material_cost, formData.installation_time, formData.is_overtime, STANDARD_LABOR_RATE, isLaborOrService]);
 
   // ============================================
   // EXPORT PRICE LIST TO PDF (Professional Layout)
