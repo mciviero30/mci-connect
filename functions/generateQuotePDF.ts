@@ -1,6 +1,5 @@
-// PDF Profesional - Versión Corregida para QUOTE
+// PDF Profesional usando Puppeteer para renderizado exacto
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
-import { jsPDF } from 'npm:jspdf@2.5.1';
 
 Deno.serve(async (req) => {
     try {
@@ -18,180 +17,32 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Quote not found' }, { status: 404 });
         }
 
-        const doc = new jsPDF();
+        // Generate HTML that matches QuoteDocument component
+        const html = generateQuoteHTML(quote);
 
-        // ==========================================
-        // HEADER BANNER (SOLID BLACK - NO GRADIENT)
-        // ==========================================
-        doc.setFillColor(0, 0, 0);
-        doc.setDrawColor(0, 0, 0);
-        doc.rect(0, 0, 210, 40, 'FD');
-
-        // Logo - SVG/Text fallback approach
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('MODERN', 20, 17);
-        doc.text('COMPONENTS', 20, 22);
-        doc.text('INSTALLATIONS', 20, 27);
+        // Use Puppeteer to render HTML to PDF with exact styling
+        const puppeteer = await import('https://deno.land/x/puppeteer@16.2.0/mod.ts');
         
-        // Logo frame
-        doc.setDrawColor(255, 255, 255);
-        doc.setLineWidth(0.5);
-        doc.rect(15, 10, 8, 8);
-        doc.line(19, 14, 23, 14);
-        doc.line(19, 18, 23, 18);
-        doc.line(15, 14, 23, 14);
-        doc.line(15, 18, 23, 18);
-
-        // Title
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(32);
-        doc.setFont(undefined, 'bold');
-        doc.text('QUOTE', 195, 25, { align: 'right' });
-
-        // ==========================================
-        // COMPANY & CLIENT INFO
-        // ==========================================
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text('Modern Components Installation', 15, 50);
+        const browser = await puppeteer.default.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
         
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(8);
-        doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 55);
-
-        // Quote Info (Right side)
-        const infoX = 150;
-        doc.setTextColor(100, 116, 139);
-        doc.text('Quote#:', infoX, 50);
-        doc.text('Quote Date:', infoX, 55);
-        doc.text('Valid Until:', infoX, 60);
-
-        doc.setTextColor(15, 23, 42);
-        doc.setFont(undefined, 'bold');
-        doc.text(quote.quote_number || '', 195, 50, { align: 'right' });
-        doc.text(quote.quote_date || '', 195, 55, { align: 'right' });
-        doc.text(quote.expiration_date || '', 195, 60, { align: 'right' });
-
-        // Bill To
-        doc.setFontSize(12);
-        doc.text('Bill To', 15, 75);
-        doc.setFont(undefined, 'bold');
-        doc.text(quote.customer_name || 'Customer', 15, 82);
-
-        // Job Details
-        let currentY = 95;
-        if (quote.job_name) {
-            doc.setFontSize(8);
-            doc.setTextColor(100, 116, 139);
-            doc.text('Job Details:', 15, currentY);
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'bold');
-            doc.setTextColor(15, 23, 42);
-            doc.text(quote.job_name, 15, currentY + 5);
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(8);
-            doc.text(quote.job_address || '', 15, currentY + 9);
-            currentY += 20;
-        }
-
-        // ==========================================
-        // TABLE HEADER
-        // ==========================================
-        doc.setFillColor(0, 0, 0);
-        doc.rect(15, currentY, 180, 10, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'bold');
-        doc.text('#', 18, currentY + 6.5);
-        doc.text('ITEM & DESCRIPTION', 30, currentY + 6.5);
-        doc.text('QTY', 140, currentY + 6.5, { align: 'right' });
-        doc.text('RATE', 165, currentY + 6.5, { align: 'right' });
-        doc.text('AMOUNT', 190, currentY + 6.5, { align: 'right' });
-
-        // ==========================================
-        // ITEMS
-        // ==========================================
-        currentY += 10;
-        doc.setTextColor(15, 23, 42);
-        let itemIndex = 1;
-
-        for (const item of quote.items || []) {
-            if (currentY > 260) { doc.addPage(); currentY = 20; }
-
-            // Multi-line text wrapping
-            const desc = item.item_name || item.description || '';
-            const wrappedText = doc.splitTextToSize(desc, 95);
-            const lineHeight = 4;
-            const rowHeight = Math.max(8, wrappedText.length * lineHeight + 2);
-
-            // Row background (zebra striping)
-            if (itemIndex % 2 === 0) {
-                doc.setFillColor(249, 250, 251);
-                doc.rect(15, currentY, 180, rowHeight, 'F');
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+        
+        const pdfBytes = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: {
+                top: '1cm',
+                right: '1cm',
+                bottom: '1cm',
+                left: '1cm'
             }
-
-            // Column 1: # (fixed at x=18)
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(8);
-            doc.text(itemIndex.toString(), 18, currentY + 5.5);
-            
-            // Column 2: ITEM & DESCRIPTION (fixed at x=30, width=95)
-            doc.setFont(undefined, 'bold');
-            doc.setFontSize(8);
-            doc.text(wrappedText, 30, currentY + 5.5);
-
-            // Column 3: QTY (fixed at x=135, right-aligned)
-            doc.setFont(undefined, 'normal');
-            const qtyText = `${item.quantity || 0} ${item.unit || ''}`;
-            doc.text(qtyText, 135, currentY + 5.5, { align: 'right' });
-            
-            // Column 4: RATE (fixed at x=165, right-aligned)
-            doc.text('$' + (item.unit_price || 0).toFixed(2), 165, currentY + 5.5, { align: 'right' });
-            
-            // Column 5: AMOUNT (fixed at x=190, right-aligned)
-            doc.setFont(undefined, 'bold');
-            doc.text('$' + (item.total || 0).toFixed(2), 190, currentY + 5.5, { align: 'right' });
-
-            // Border line
-            doc.setDrawColor(241, 245, 249);
-            doc.line(15, currentY + rowHeight, 195, currentY + rowHeight);
-            currentY += rowHeight;
-            itemIndex++;
-        }
-
-        // ==========================================
-        // TOTALS
-        // ==========================================
-        currentY += 10;
-        const totalX = 140;
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        doc.text('Sub Total', totalX, currentY);
-        doc.text(quote.subtotal.toFixed(2), 195, currentY, { align: 'right' });
+        });
         
-        currentY += 8;
-        doc.setFillColor(241, 245, 249);
-        doc.roundedRect(totalX - 2, currentY - 5, 57, 10, 1, 1, 'F');
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'bold');
-        doc.text('TOTAL', totalX + 2, currentY + 1.5);
-        doc.text('$' + quote.total.toLocaleString('en-US', { minimumFractionDigits: 2 }), 195, currentY + 1.5, { align: 'right' });
-
-        // ==========================================
-        // FOOTER
-        // ==========================================
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(7);
-            doc.setTextColor(150);
-            doc.text(`Page ${i} of ${pageCount} | Modern Components Installation`, 105, 285, { align: 'center' });
-        }
-
-        const pdfBytes = doc.output('arraybuffer');
+        await browser.close();
         return new Response(pdfBytes, {
             headers: { 
                 'Content-Type': 'application/pdf',
@@ -199,6 +50,180 @@ Deno.serve(async (req) => {
             }
         });
     } catch (error) {
+        console.error('PDF Generation Error:', error);
         return Response.json({ error: error.message }, { status: 500 });
     }
 });
+
+function generateQuoteHTML(quote) {
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = String(date.getFullYear()).slice(-2);
+        return `${month}.${day}.${year}`;
+    };
+
+    const items = quote.items || [];
+    
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+            padding: 40px;
+            color: #000;
+        }
+        .header {
+            background: linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%);
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -40px -40px 24px -40px;
+        }
+        .logo { height: 56px; }
+        .title { color: white; font-size: 48px; font-weight: bold; letter-spacing: 0.05em; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 32px; }
+        .company-info { font-size: 14px; line-height: 1.6; }
+        .company-name { font-weight: bold; color: #0f172a; }
+        .bill-to-label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-top: 16px; margin-bottom: 4px; }
+        .customer-name { font-size: 18px; font-weight: bold; color: #0f172a; }
+        .quote-info { text-align: right; font-size: 14px; }
+        .info-row { display: flex; justify-content: space-between; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; margin-bottom: 4px; }
+        .info-label { color: #64748b; }
+        .info-value { font-weight: bold; }
+        .job-section { margin-bottom: 32px; }
+        .job-label { font-size: 14px; color: #475569; margin-bottom: 4px; }
+        .job-name { font-size: 16px; font-weight: bold; color: #0f172a; margin-bottom: 4px; }
+        .job-address { font-size: 14px; color: #334155; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+        thead { background: linear-gradient(to right, #000000 0%, #4a4a4a 100%); color: white; }
+        th { text-align: left; padding: 8px 12px; font-size: 12px; text-transform: uppercase; font-weight: bold; }
+        th:nth-child(1) { width: 40px; }
+        th:nth-child(3), th:nth-child(4), th:nth-child(5) { text-align: right; }
+        th:nth-child(3) { width: 80px; }
+        th:nth-child(4) { width: 96px; }
+        th:nth-child(5) { width: 112px; }
+        td { padding: 16px 12px; vertical-align: top; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        td:nth-child(1) { color: #94a3b8; }
+        td:nth-child(3), td:nth-child(4), td:nth-child(5) { text-align: right; }
+        .item-name { font-weight: bold; color: #0f172a; margin-bottom: 4px; }
+        .item-desc { font-size: 12px; color: #475569; }
+        .totals { display: flex; justify-content: flex-end; margin-top: 16px; }
+        .totals-box { width: 256px; }
+        .subtotal-row { display: flex; justify-content: space-between; font-size: 14px; padding: 0 8px; margin-bottom: 8px; }
+        .subtotal-label { color: #64748b; }
+        .total-row { 
+            background: linear-gradient(to right, #f1f5f9 0%, #cbd5e1 100%);
+            padding: 12px 16px;
+            border-radius: 4px;
+            border-top: 2px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .total-label { font-weight: bold; color: #0f172a; }
+        .total-value { font-weight: bold; font-size: 20px; color: #0f172a; }
+        .terms { margin-top: 32px; }
+        .terms-title { font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 8px; }
+        .terms-content { font-size: 14px; color: #334155; line-height: 1.8; }
+        .terms-content p { margin-bottom: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png" class="logo" alt="MCI Logo">
+        <div class="title">QUOTE</div>
+    </div>
+
+    <div class="info-grid">
+        <div class="company-info">
+            <div class="company-name">Modern Components Installation</div>
+            <div>2414 Meadow Isle Ln, Lawrenceville GA 30043</div>
+            <div>Phone: 470-209-3783</div>
+            <div class="bill-to-label">BILL TO:</div>
+            <div class="customer-name">${quote.customer_name || 'Customer'}</div>
+        </div>
+
+        <div class="quote-info">
+            <div class="info-row">
+                <span class="info-label">Quote#</span>
+                <span class="info-value">${quote.quote_number || ''}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date</span>
+                <span class="info-value">${formatDate(quote.quote_date)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Valid Until</span>
+                <span class="info-value">${formatDate(quote.valid_until)}</span>
+            </div>
+        </div>
+    </div>
+
+    ${quote.job_name ? `
+    <div class="job-section">
+        <div class="job-label">Job Details :</div>
+        <div class="job-name">${quote.job_name}</div>
+        ${quote.job_address ? `<div class="job-address">${quote.job_address}</div>` : ''}
+    </div>
+    ` : ''}
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ITEM & DESCRIPTION</th>
+                <th>QTY</th>
+                <th>RATE</th>
+                <th>AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${items.map((item, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="item-name">${item.item_name || item.description || ''}</div>
+                        ${item.item_name && item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+                    </td>
+                    <td>${item.quantity || 0} ${item.unit || ''}</td>
+                    <td>$${(item.unit_price || 0).toFixed(2)}</td>
+                    <td style="font-weight: bold;">$${(item.total || 0).toFixed(2)}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="totals-box">
+            <div class="subtotal-row">
+                <span class="subtotal-label">Sub Total</span>
+                <span style="font-weight: bold;">$${(quote.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">TOTAL</span>
+                <span class="total-value">$${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="terms">
+        <div class="terms-title">Terms & Conditions</div>
+        <div class="terms-content">
+            <p><strong>Approval:</strong> PO required to schedule work.</p>
+            <p><strong>Offload:</strong> Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment (forklift or lull). Site access issues may require revised quote.</p>
+            <p><strong>Hours:</strong> Regular hours only. OT/after-hours billed separately via Change Order unless otherwise specified.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+}
