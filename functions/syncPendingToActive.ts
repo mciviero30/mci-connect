@@ -16,8 +16,8 @@ Deno.serve(async (req) => {
     let deletedCount = 0;
     
     for (const pending of pendingEmployees) {
-      // Check if there's a matching active user
-      const matchingUser = activeUsers.find(u => u.email === pending.email);
+      // Check if there's a matching active user (case-insensitive email comparison)
+      const matchingUser = activeUsers.find(u => u.email?.toLowerCase() === pending.email?.toLowerCase());
       
       if (matchingUser) {
         console.log(`✅ Found active user for pending employee: ${pending.email}`);

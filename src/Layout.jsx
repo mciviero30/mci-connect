@@ -344,10 +344,11 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         console.log('🔄 Auto-activating invited user:', user.email);
         
-        // Check if there's a PendingEmployee with this email
+        // Check if there's a PendingEmployee with this email (case-insensitive)
         let pendingData = {};
         try {
-          const pendingEmployees = await base44.entities.PendingEmployee.filter({ email: user.email });
+          const allPendingEmployees = await base44.entities.PendingEmployee.list();
+          const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
           if (pendingEmployees.length > 0) {
             const pending = pendingEmployees[0];
             
