@@ -308,25 +308,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      // Placeholder for Driving Time - will be updated after mileage calculation
-      const drivingTimeIndex = newItems.length;
-      newItems.push({
-        item_name: drivingHoursItem?.name || 'Driving Time',
-        description: '', // No description for travel items
-        quantity: 0,
-        unit: drivingHoursItem?.unit || 'hours',
-        unit_price: drivingHoursItem?.unit_price || 60,
-        total: 0,
-        is_travel_item: true,
-        calculation_type: 'hours',
-        tech_count: 2,
-        duration_value: 0,
-        installation_time: 0,
-      });
-      
-      // Calculate and add mileage for each selected team
-      let totalDrivingHours = 0;
-      
+      // Calculate and add mileage + driving time for each selected team
       if (formData.team_ids.length > 0 && formData.job_address) {
         setCalculatingTravel(true);
         
@@ -375,9 +357,22 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 };
                 
                 const roundedHours = roundToHalfHour(hoursWithBuffer);
-                totalDrivingHours += roundedHours;
-                
                 const teamName = team.team_name || 'Team';
+                
+                // Add Driving Time item for this team
+                newItems.push({
+                  item_name: drivingHoursItem?.name || 'Driving Time',
+                  description: `${teamName}`,
+                  quantity: 2 * roundedHours, // 2 techs by default
+                  unit: drivingHoursItem?.unit || 'hours',
+                  unit_price: drivingHoursItem?.unit_price || 60,
+                  total: 2 * roundedHours * (drivingHoursItem?.unit_price || 60),
+                  is_travel_item: true,
+                  calculation_type: 'hours',
+                  tech_count: 2,
+                  duration_value: roundedHours,
+                  installation_time: 0,
+                });
                 
                 // Add mileage item for this team
                 newItems.push({
@@ -396,13 +391,6 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
               console.error(`Error calculating mileage for team ${team.team_name}:`, error);
             }
           }
-        }
-        
-        // Update Driving Time item with calculated hours
-        if (totalDrivingHours > 0) {
-          newItems[drivingTimeIndex].duration_value = totalDrivingHours;
-          newItems[drivingTimeIndex].quantity = newItems[drivingTimeIndex].tech_count * totalDrivingHours;
-          newItems[drivingTimeIndex].total = newItems[drivingTimeIndex].quantity * (drivingHoursItem?.unit_price || 60);
         }
         
         setCalculatingTravel(false);
