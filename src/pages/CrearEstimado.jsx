@@ -770,19 +770,53 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                     />
                   </div>
 
-                  {/* Quantity */}
-                  <div className="md:col-span-1">
-                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('quantity')}</Label>
-                    <Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      min="0"
-                      step="0.01"
-                      required
-                      className="bg-white border-slate-300 text-slate-900 h-9 text-sm text-center"
-                    />
-                  </div>
+                  {/* Quantity - Dynamic based on calculation type */}
+                  {item.calculation_type !== 'none' ? (
+                    <>
+                      <div className="md:col-span-1">
+                        <Label className="text-slate-700 text-xs mb-1 block">
+                          {language === 'es' ? 'Techs' : 'Techs'}
+                        </Label>
+                        <Input
+                          type="number"
+                          value={item.tech_count || 1}
+                          onChange={(e) => updateItem(index, 'tech_count', parseInt(e.target.value) || 1)}
+                          min="1"
+                          required
+                          className="bg-amber-50 border-amber-300 text-slate-900 h-9 text-sm text-center font-semibold"
+                        />
+                      </div>
+                      <div className="md:col-span-1">
+                        <Label className="text-slate-700 text-xs mb-1 block">
+                          {item.calculation_type === 'hotel' ? (language === 'es' ? 'Noches' : 'Nights') :
+                           item.calculation_type === 'per_diem' ? (language === 'es' ? 'Días' : 'Days') :
+                           (language === 'es' ? 'Horas' : 'Hours')}
+                        </Label>
+                        <Input
+                          type="number"
+                          value={item.duration_value || 1}
+                          onChange={(e) => updateItem(index, 'duration_value', parseFloat(e.target.value) || 1)}
+                          min="0.01"
+                          step="0.01"
+                          required
+                          className="bg-amber-50 border-amber-300 text-slate-900 h-9 text-sm text-center font-semibold"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="md:col-span-2">
+                      <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('quantity')}</Label>
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        min="0"
+                        step="0.01"
+                        required
+                        className="bg-white border-slate-300 text-slate-900 h-9 text-sm text-center"
+                      />
+                    </div>
+                  )}
 
                   {/* Unit */}
                   <div className="md:col-span-1">
