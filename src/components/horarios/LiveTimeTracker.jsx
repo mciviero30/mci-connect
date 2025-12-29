@@ -171,7 +171,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     setShowWorkTypeDialog(true); // NEW: Show work type dialog
   };
 
-  // GEOFENCING - Strict enforcement with 100m radius
+  // GEOFENCING - Strict enforcement with 100m radius (EXCEPT for driving hours)
   const handleStartSession = async () => {
     if (!selectedJobForStart) return;
     if (!user) {
@@ -185,6 +185,34 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     try {
       const location = await getLocation();
       const job = jobs.find(j => j.id === selectedJobForStart);
+      
+      // Skip geofence validation for driving hours (they are traveling)
+      if (workType === 'driving') {
+        const session = {
+          startTime: Date.now(),
+          checkIn: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          jobId: selectedJobForStart,
+          jobName: job.name,
+          location,
+          onBreak: false,
+          breakDuration: 0,
+          workType,
+          taskDetails,
+          geofenceValidated: false, // Not applicable for driving
+          distanceMeters: 0,
+          requiresReview: false,
+        };
+        
+        localStorage.setItem(storageKey, JSON.stringify(session));
+        setActiveSession(session);
+        setLocationError(null);
+        setShowWorkTypeDialog(false);
+        
+        // Reset form
+        setWorkType('normal');
+        setTaskDetails('');
+        return;
+      }
       
       if (!job.latitude || !job.longitude) {
         alert(language === 'es' 
@@ -326,57 +354,60 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         return;
       }
 
-      // STRICT GEOFENCING for clock-out: Use job's configured radius
-      const job = jobs.find(j => j.id === activeSession.jobId);
-      const MAX_DISTANCE = job?.geofence_radius || 100;
+      // Skip geofence validation for driving hours (they were traveling)
+      if (activeSession.workType !== 'driving') {
+        // STRICT GEOFENCING for clock-out: Use job's configured radius
+        const job = jobs.find(j => j.id === activeSession.jobId);
+        const MAX_DISTANCE = job?.geofence_radius || 100;
 
-      if (job?.latitude && job?.longitude) {
-        const checkOutDistanceMeters = calculateDistance(
-          location.lat,
-          location.lng,
-          job.latitude,
-          job.longitude
-        );
+        if (job?.latitude && job?.longitude) {
+          const checkOutDistanceMeters = calculateDistance(
+            location.lat,
+            location.lng,
+            job.latitude,
+            job.longitude
+          );
 
-        if (checkOutDistanceMeters > MAX_DISTANCE) {
-          setLocationError(language === 'es' 
-            ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(checkOutDistanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar salida.`
-            : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
-          
-          // Notify admins
-          const admins = await base44.entities.User.filter({ role: 'admin' });
-          for (const admin of admins) {
-            sendNotification({
-              recipientEmail: admin.email,
-              recipientName: admin.full_name,
-              type: 'security_alert',
-              priority: 'urgent',
-              title: language === 'es' ? '🚨 Intento de Salida Fuera de Geofence' : '🚨 Clock-Out Attempt Outside Geofence',
-              message: language === 'es'
-                ? `${user.full_name} intentó fichar salida a ${Math.round(checkOutDistanceMeters)}m de ${job.name} (límite: ${MAX_DISTANCE}m)`
-                : `${user.full_name} attempted to clock out ${Math.round(checkOutDistanceMeters)}m from ${job.name} (limit: ${MAX_DISTANCE}m)`,
-              actionUrl: '/Horarios',
-              relatedEntityType: 'timeentry',
-              sendEmail: true
-            });
+          if (checkOutDistanceMeters > MAX_DISTANCE) {
+            setLocationError(language === 'es' 
+              ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(checkOutDistanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar salida.`
+              : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
+            
+            // Notify admins
+            const admins = await base44.entities.User.filter({ role: 'admin' });
+            for (const admin of admins) {
+              sendNotification({
+                recipientEmail: admin.email,
+                recipientName: admin.full_name,
+                type: 'security_alert',
+                priority: 'urgent',
+                title: language === 'es' ? '🚨 Intento de Salida Fuera de Geofence' : '🚨 Clock-Out Attempt Outside Geofence',
+                message: language === 'es'
+                  ? `${user.full_name} intentó fichar salida a ${Math.round(checkOutDistanceMeters)}m de ${job.name} (límite: ${MAX_DISTANCE}m)`
+                  : `${user.full_name} attempted to clock out ${Math.round(checkOutDistanceMeters)}m from ${job.name} (limit: ${MAX_DISTANCE}m)`,
+                actionUrl: '/Horarios',
+                relatedEntityType: 'timeentry',
+                sendEmail: true
+              });
+            }
+            return;
           }
-          return;
-        }
 
-        // SUCCESS: Within geofence
-        sendNotification({
-          recipientEmail: user.email,
-          recipientName: user.full_name,
-          type: 'clock_out',
-          priority: 'low',
-          title: language === 'es' ? '✅ Salida Registrada' : '✅ Clock Out Successful',
-          message: language === 'es'
-            ? `Salida registrada en ${job.name}. Tiempo trabajado: ${totalHours.toFixed(1)}h`
-            : `Clocked out at ${job.name}. Time worked: ${totalHours.toFixed(1)}h`,
-          actionUrl: '/MisHoras',
-          relatedEntityType: 'job',
-          relatedEntityId: job.id
-        });
+          // SUCCESS: Within geofence
+          sendNotification({
+            recipientEmail: user.email,
+            recipientName: user.full_name,
+            type: 'clock_out',
+            priority: 'low',
+            title: language === 'es' ? '✅ Salida Registrada' : '✅ Clock Out Successful',
+            message: language === 'es'
+              ? `Salida registrada en ${job.name}. Tiempo trabajado: ${totalHours.toFixed(1)}h`
+              : `Clocked out at ${job.name}. Time worked: ${totalHours.toFixed(1)}h`,
+            actionUrl: '/MisHoras',
+            relatedEntityType: 'job',
+            relatedEntityId: job.id
+          });
+        }
       }
 
       onSave({
@@ -393,7 +424,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         lunch_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
         work_type: activeSession.workType,
         task_details: activeSession.taskDetails,
-        geofence_validated: true, // Always true if we reached here
+        geofence_validated: activeSession.workType === 'driving' ? false : true,
         geofence_distance_meters: activeSession.distanceMeters,
         requires_location_review: false,
         exceeds_max_hours: false,
