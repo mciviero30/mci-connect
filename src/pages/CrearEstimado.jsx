@@ -759,7 +759,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                   </div>
 
                   {/* Description */}
-                  <div className="md:col-span-3">
+                  <div>
                     <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('description')}</Label>
                     <Input
                       value={item.description}
