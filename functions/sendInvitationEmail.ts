@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
 
               <!-- CTA Button -->
               <div style="text-align: center; margin: 20px 0;">
-                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background-color: #507DB4; color: #ffffff !important; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3); border: none;">
                   Únete a MCI Connect Ahora
                 </a>
               </div>
@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
 
               <!-- CTA Button -->
               <div style="text-align: center; margin: 20px 0;">
-                <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3);">
+                <a href="${setupPasswordUrl}" style="display: inline-block; background-color: #507DB4; color: #ffffff !important; text-decoration: none; padding: 16px 45px; border-radius: 8px; font-size: 17px; font-weight: bold; box-shadow: 0 4px 12px rgba(80, 125, 180, 0.3); border: none;">
                   Join MCI Connect Now
                 </a>
               </div>
