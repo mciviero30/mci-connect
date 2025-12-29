@@ -449,10 +449,10 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       return;
     }
 
-    if (!formData.team_id) {
+    if (formData.team_ids.length === 0) {
       toast({
         title: 'Error',
-        description: language === 'es' ? 'Por favor selecciona un equipo' : 'Please select a team',
+        description: language === 'es' ? 'Por favor selecciona al menos un equipo' : 'Please select at least one team',
         variant: 'destructive',
       });
       return;
