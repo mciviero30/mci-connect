@@ -673,20 +673,22 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                           variant="outline"
                           role="combobox"
                           disabled={item.is_travel_item}
-                          className={`w-full justify-between h-9 font-normal text-sm truncate ${
+                          className={`w-full justify-between h-10 font-normal text-sm truncate ${
                             item.is_travel_item 
                               ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-300 cursor-not-allowed' 
-                              : 'bg-white border-slate-300 text-slate-900'
+                              : 'bg-gradient-to-r from-indigo-50 to-blue-50 border-2 border-indigo-300 text-indigo-900 hover:from-indigo-100 hover:to-blue-100'
                           }`}
                         >
-                          <span className="truncate">{item.item_name || (item.is_travel_item ? item.description : "Select item")}</span>
-                          {!item.is_travel_item && <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />}
+                          <span className="truncate font-semibold">{item.item_name || (item.is_travel_item ? item.description : "🔍 Select item from catalog")}</span>
+                          {!item.is_travel_item && <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-70" />}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0 bg-white border-slate-200">
+                      <PopoverContent className="w-[350px] p-0 bg-white border-2 border-indigo-300 shadow-2xl">
                         <Command className="bg-white">
-                          <CommandInput placeholder="Search items..." className="text-slate-900" />
-                          <CommandEmpty className="text-slate-500 p-4 text-sm">No items found.</CommandEmpty>
+                          <CommandInput placeholder="Search items..." className="text-slate-900 border-b-2 border-indigo-200" />
+                          <CommandEmpty className="text-slate-500 p-4 text-sm">
+                            No items found. Go to <span className="font-bold text-indigo-600">Items Catalog</span> to add items.
+                          </CommandEmpty>
                           <CommandGroup className="max-h-[300px] overflow-y-auto">
                             {[...quoteItems]
                               .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
@@ -695,12 +697,16 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                                   key={qi.id}
                                   value={qi.name}
                                   onSelect={() => updateItem(index, 'item_name', qi.name)}
-                                  className="text-slate-900 cursor-pointer"
+                                  className="text-slate-900 cursor-pointer hover:bg-indigo-100 py-3 border-b border-slate-100"
                                 >
                                   <Check
-                                    className={`mr-2 h-4 w-4 ${item.item_name === qi.name ? 'opacity-100' : 'opacity-0'}`}
+                                    className={`mr-2 h-5 w-5 text-indigo-600 ${item.item_name === qi.name ? 'opacity-100' : 'opacity-0'}`}
                                   />
-                                  {qi.name} - ${qi.unit_price}
+                                  <div className="flex-1">
+                                    <div className="font-semibold text-sm">{qi.name}</div>
+                                    <div className="text-xs text-slate-500 truncate">{qi.description}</div>
+                                    <div className="text-xs text-indigo-600 font-bold mt-0.5">${qi.unit_price} / {qi.unit}</div>
+                                  </div>
                                 </CommandItem>
                               ))}
                           </CommandGroup>
