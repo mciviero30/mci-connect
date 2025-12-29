@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2 } from "lucide-react";
+import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -270,21 +270,21 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
 
   const handleOutOfAreaToggle = async (enabled) => {
     if (enabled) {
-      // Find hotel, per-diem, driving time items from catalog
-      const hotelItem = quoteItems.find(qi => qi.calculation_type === 'hotel');
-      const perDiemItem = quoteItems.find(qi => qi.calculation_type === 'per_diem');
-      const drivingHoursItem = quoteItems.find(qi => qi.calculation_type === 'hours');
+      // Find exact items from catalog by name
+      const hotelItem = quoteItems.find(qi => qi.name === 'Hotel Rooms');
+      const perDiemItem = quoteItems.find(qi => qi.name === 'Per-Diem');
+      const drivingHoursItem = quoteItems.find(qi => qi.name === 'Driving Time');
       
       let newItems = [...formData.items.filter(item => !item.is_travel_item)];
       
-      // Always add hotel item (from catalog or default)
+      // Add Hotel Rooms (no description)
       newItems.push({
-        item_name: hotelItem?.name || 'Hotel',
-        description: hotelItem?.description || 'Hotel / Lodging',
+        item_name: hotelItem?.name || 'Hotel Rooms',
+        description: '', // No description for travel items
         quantity: 1,
         unit: hotelItem?.unit || 'nights',
-        unit_price: hotelItem?.unit_price || 100,
-        total: 1 * (hotelItem?.unit_price || 100),
+        unit_price: hotelItem?.unit_price || 200,
+        total: 1 * (hotelItem?.unit_price || 200),
         is_travel_item: true,
         calculation_type: 'hotel',
         tech_count: 2,
@@ -292,14 +292,14 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      // Always add per diem item (from catalog or default)
+      // Add Per-Diem (no description)
       newItems.push({
-        item_name: perDiemItem?.name || 'Per Diem',
-        description: perDiemItem?.description || 'Per Diem',
+        item_name: perDiemItem?.name || 'Per-Diem',
+        description: '', // No description for travel items
         quantity: 2,
         unit: perDiemItem?.unit || 'days',
-        unit_price: perDiemItem?.unit_price || 40,
-        total: 2 * (perDiemItem?.unit_price || 40),
+        unit_price: perDiemItem?.unit_price || 55,
+        total: 2 * (perDiemItem?.unit_price || 55),
         is_travel_item: true,
         calculation_type: 'per_diem',
         tech_count: 2,
@@ -307,13 +307,13 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      // Always add driving hours item (from catalog or default)
+      // Add Driving Time (no description)
       newItems.push({
         item_name: drivingHoursItem?.name || 'Driving Time',
-        description: drivingHoursItem?.description || 'Driving Time',
+        description: '', // No description for travel items
         quantity: 0,
         unit: drivingHoursItem?.unit || 'hours',
-        unit_price: drivingHoursItem?.unit_price || 25,
+        unit_price: drivingHoursItem?.unit_price || 60,
         total: 0,
         is_travel_item: true,
         calculation_type: 'hours',
@@ -342,20 +342,48 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
   };
 
   const addItem = () => {
+    // Separate travel and regular items
+    const regularItems = formData.items.filter(item => !item.is_travel_item);
+    const travelItems = formData.items.filter(item => item.is_travel_item);
+    
+    // Add new item at the end of regular items, before travel items
     setFormData({
       ...formData,
-      items: [...formData.items, { 
-        description: '', 
-        quantity: 1, 
-        unit: 'pcs', 
-        unit_price: 0, 
-        total: 0, 
-        installation_time: 0,
-        tech_count: 1,
-        duration_value: 1,
-        calculation_type: 'none'
-      }],
+      items: [
+        ...regularItems,
+        { 
+          description: '', 
+          quantity: 1, 
+          unit: 'pcs', 
+          unit_price: 0, 
+          total: 0, 
+          installation_time: 0,
+          tech_count: 1,
+          duration_value: 1,
+          calculation_type: 'none'
+        },
+        ...travelItems
+      ],
     });
+  };
+
+  const moveItem = (index, direction) => {
+    const newItems = [...formData.items];
+    const item = newItems[index];
+    
+    // Can't move travel items or move into travel items section
+    if (item.is_travel_item) return;
+    
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    // Check boundaries and don't move into travel items
+    if (targetIndex < 0 || targetIndex >= newItems.length) return;
+    if (newItems[targetIndex].is_travel_item) return;
+    
+    // Swap items
+    [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
+    
+    setFormData({ ...formData, items: newItems });
   };
 
   const removeItem = (index) => {
@@ -735,7 +763,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               {/* Table Header */}
-              <div className="hidden md:grid md:grid-cols-[2fr,2fr,1.5fr,0.7fr,1fr,1fr,0.5fr] gap-2 px-4 py-2 bg-slate-100 rounded-t-lg border border-slate-200 text-xs font-semibold text-slate-600">
+              <div className="hidden md:grid md:grid-cols-[2fr,2fr,1.5fr,0.7fr,1fr,1fr,0.7fr] gap-2 px-4 py-2 bg-slate-100 rounded-t-lg border border-slate-200 text-xs font-semibold text-slate-600">
                 <div>Item</div>
                 <div>{t('description')}</div>
                 <div className="text-center">{language === 'es' ? 'Techs/Qty • Días/Hrs' : 'Techs/Qty • Days/Hrs'}</div>
@@ -748,7 +776,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
               {formData.items.map((item, index) => (
                 <div 
                   key={index} 
-                  className={`grid md:grid-cols-[2fr,2fr,1.5fr,0.7fr,1fr,1fr,0.5fr] gap-2 px-4 py-3 ${item.is_travel_item ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : 'bg-white'} border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
+                  className={`grid md:grid-cols-[2fr,2fr,1.5fr,0.7fr,1fr,1fr,0.7fr] gap-2 px-4 py-3 ${item.is_travel_item ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : 'bg-white'} border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
                 >
                   {/* Item Selector */}
                   <div>
@@ -809,9 +837,14 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                     <Input
                       value={item.description}
                       onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      required
-                      placeholder="Description"
-                      className="bg-white border-slate-300 text-slate-900 h-9 text-sm"
+                      required={!item.is_travel_item}
+                      disabled={item.is_travel_item}
+                      placeholder={item.is_travel_item ? '' : 'Description'}
+                      className={`h-9 text-sm ${
+                        item.is_travel_item 
+                          ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' 
+                          : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
@@ -913,15 +946,39 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                     )}
                   </div>
 
-                  {/* Delete Button */}
-                  <div className="flex justify-end">
+                  {/* Move and Delete Buttons */}
+                  <div className="flex justify-end gap-1">
+                    {!item.is_travel_item && (
+                      <>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => moveItem(index, 'up')}
+                          disabled={index === 0 || formData.items[index - 1]?.is_travel_item}
+                          className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => moveItem(index, 'down')}
+                          disabled={index === formData.items.length - 1 || formData.items[index + 1]?.is_travel_item}
+                          className="text-slate-500 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => removeItem(index)}
                       disabled={formData.items.length === 1}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
