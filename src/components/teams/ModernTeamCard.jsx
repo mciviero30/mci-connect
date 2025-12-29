@@ -36,11 +36,11 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(createPageUrl(`TeamDetails?id=${team.id}`))}
+            onClick={() => onViewDetails(team)}
             className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0"
           >
             <Building2 className="w-3 h-3" />
-            <span className="text-[10px] font-medium">View Team</span>
+            <span className="text-[10px] font-medium">Edit</span>
           </Button>
         </div>
 
