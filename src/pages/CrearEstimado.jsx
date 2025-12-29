@@ -274,7 +274,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       const hotelItem = quoteItems.find(qi => qi.name === 'Hotel Rooms');
       const perDiemItem = quoteItems.find(qi => qi.name === 'Per-Diem');
       const drivingHoursItem = quoteItems.find(qi => qi.name === 'Driving Time');
-      const mileageItem = quoteItems.find(qi => qi.name === 'Mileage' || qi.name === 'Millas');
+      const mileageItem = quoteItems.find(qi => qi.name === 'Miles Per Vehicle');
       
       let newItems = [...formData.items.filter(item => !item.is_travel_item)];
       
@@ -359,7 +359,7 @@ Use realistic driving estimates. Round distance to 1 decimal place.`,
                 
                 // Add mileage item for this team
                 newItems.push({
-                  item_name: mileageItem?.name || 'Mileage',
+                  item_name: mileageItem?.name || 'Miles Per Vehicle',
                   description: `${teamName} (${response.distance_miles} mi each way)`,
                   quantity: totalMiles,
                   unit: mileageItem?.unit || 'miles',
