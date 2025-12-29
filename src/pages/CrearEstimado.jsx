@@ -703,7 +703,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
               {formData.items.map((item, index) => (
                 <div 
                   key={index} 
-                  className={`grid md:grid-cols-12 gap-2 px-4 py-3 ${item.is_travel_item ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : 'bg-white'} border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
+                  className={`grid md:grid-cols-[2fr,2fr,1.5fr,0.7fr,1fr,1fr,0.5fr] gap-2 px-4 py-3 ${item.is_travel_item ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800' : 'bg-white'} border-x border-b border-slate-200 items-center ${index === 0 ? 'md:border-t-0 border-t rounded-t-lg md:rounded-t-none' : ''} ${index === formData.items.length - 1 ? 'rounded-b-lg' : ''}`}
                 >
                   {/* Item Selector */}
                   <div className="md:col-span-3">
