@@ -338,10 +338,32 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   useEffect(() => {
     if (!user) return;
-    if (user.employment_status !== 'invited') return;
+    if (user.employment_status !== 'invited') {
+      // If user is already active, check if we need to clean up pending record
+      if (user.employment_status === 'active') {
+        const cleanupFlag = sessionStorage.getItem(`cleanup_${user.id}`);
+        if (cleanupFlag === 'done') return;
+        
+        base44.entities.PendingEmployee.list().then(allPendingEmployees => {
+          const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
+          if (pendingEmployees.length > 0) {
+            console.log('🧹 Cleaning up pending employee record for active user');
+            base44.entities.PendingEmployee.delete(pendingEmployees[0].id).then(() => {
+              console.log('✅ Pending record cleaned up');
+              sessionStorage.setItem(`cleanup_${user.id}`, 'done');
+            }).catch(err => console.error('Error cleaning pending:', err));
+          }
+        }).catch(err => console.error('Error fetching pending:', err));
+      }
+      return;
+    }
     
-    // Prevent infinite loops - only run once
+    // Prevent infinite loops - only run once per session
     const activationFlag = sessionStorage.getItem(`activation_${user.id}`);
+    if (activationFlag === 'done') {
+      console.log('✅ Activation already completed this session');
+      return;
+    }
     if (activationFlag === 'processing') {
       console.log('⏳ Activation already in progress, skipping...');
       return;
@@ -349,12 +371,10 @@ const LayoutContent = ({ children, currentPageName }) => {
 
     const autoActivateUser = async () => {
       try {
-        // Set flag to prevent multiple executions
         sessionStorage.setItem(`activation_${user.id}`, 'processing');
         
         console.log('🔄 Auto-activating invited user:', user.email);
         
-        // Check if there's a PendingEmployee with this email (case-insensitive)
         let pendingData = {};
         try {
           const allPendingEmployees = await base44.entities.PendingEmployee.list();
@@ -362,7 +382,6 @@ const LayoutContent = ({ children, currentPageName }) => {
           if (pendingEmployees.length > 0) {
             const pending = pendingEmployees[0];
             
-            // Sync data from PendingEmployee
             if (pending.first_name) pendingData.first_name = pending.first_name;
             if (pending.last_name) pendingData.last_name = pending.last_name;
             if (pending.phone) pendingData.phone = pending.phone;
@@ -376,33 +395,25 @@ const LayoutContent = ({ children, currentPageName }) => {
             if (pending.tshirt_size) pendingData.tshirt_size = pending.tshirt_size;
             if (pending.hourly_rate) pendingData.hourly_rate = pending.hourly_rate;
             
-            // Update full_name if we have first and last name
             if (pending.first_name && pending.last_name) {
               pendingData.full_name = `${pending.first_name} ${pending.last_name}`.trim();
             }
             
-            console.log('📋 Found pending employee data, syncing:', pendingData);
-            
-            // Delete the pending employee record
+            console.log('📋 Syncing pending employee data');
             await base44.entities.PendingEmployee.delete(pending.id);
             console.log('🗑️ Deleted pending employee record');
           }
         } catch (error) {
-          console.error('Error fetching/deleting pending employee:', error);
+          console.error('Error with pending employee:', error);
         }
         
-        // Get team info if team_id exists but no team_name
         let teamData = {};
         const finalTeamId = pendingData.team_id || user.team_id;
         if (finalTeamId && !pendingData.team_name && !user.team_name) {
           try {
             const teams = await base44.entities.Team.list();
             const userTeam = teams.find(t => t.id === finalTeamId);
-            if (userTeam) {
-              teamData = {
-                team_name: userTeam.team_name
-              };
-            }
+            if (userTeam) teamData.team_name = userTeam.team_name;
           } catch (error) {
             console.error('Error fetching team:', error);
           }
@@ -415,17 +426,12 @@ const LayoutContent = ({ children, currentPageName }) => {
           ...teamData
         });
         
-        console.log('✅ User activated successfully with synced data');
+        console.log('✅ User activated successfully');
+        sessionStorage.setItem(`activation_${user.id}`, 'done');
         
-        // Clear flag before reload
-        sessionStorage.removeItem(`activation_${user.id}`);
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        window.location.reload();
       } catch (error) {
         console.error('❌ Error auto-activating user:', error);
-        // Clear flag on error to allow retry
         sessionStorage.removeItem(`activation_${user.id}`);
       }
     };
