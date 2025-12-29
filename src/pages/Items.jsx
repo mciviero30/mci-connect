@@ -1224,8 +1224,8 @@ export default function Items() {
                             <TooltipContent className="bg-slate-900 text-white">
                               <p className="max-w-xs">
                                 {language === 'es'
-                                  ? `Fórmula: Costo de Materiales + (Tiempo de Instalación × $${STANDARD_LABOR_RATE.toFixed(2)}/hora)`
-                                  : `Formula: Material Cost + (Installation Time × $${STANDARD_LABOR_RATE.toFixed(2)}/hour)`}
+                                  ? `Fórmula: Costo de Materiales + (Tiempo de Instalación × $${(formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE).toFixed(2)}/hora)${formData.is_overtime ? ' [Overtime 1.5x]' : ''}`
+                                  : `Formula: Material Cost + (Installation Time × $${(formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE).toFixed(2)}/hour)${formData.is_overtime ? ' [Overtime 1.5x]' : ''}`}
                               </p>
                             </TooltipContent>
                           </Tooltip>
