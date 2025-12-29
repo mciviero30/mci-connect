@@ -605,24 +605,52 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                 </div>
 
                 <div>
-                  <Label className="text-slate-700">Team *</Label>
-                  <Select value={formData.team_id} onValueChange={handleTeamChange}>
-                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                      <SelectValue placeholder="Select team (required)" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200">
-                      {teams.map(team => (
-                        <SelectItem key={team.id} value={team.id} className="text-slate-900">
-                          {team.team_name}
-                          {team.base_address && <span className="text-xs text-slate-500 ml-2">📍 {team.base_address}</span>}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-slate-700">Teams * {formData.team_ids.length > 0 && <span className="text-blue-600">({formData.team_ids.length} selected)</span>}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between bg-white border-slate-300 text-slate-900 h-10"
+                      >
+                        <span className="truncate">
+                          {formData.team_ids.length === 0 
+                            ? (language === 'es' ? 'Seleccionar equipos (requerido)' : 'Select teams (required)')
+                            : formData.team_names.join(', ')}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-2 bg-white border-slate-200" align="start">
+                      <div className="space-y-1 max-h-60 overflow-y-auto">
+                        {teams.map(team => {
+                          const isSelected = formData.team_ids.includes(team.id);
+                          return (
+                            <div
+                              key={team.id}
+                              onClick={() => handleTeamToggle(team.id)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                                isSelected 
+                                  ? 'bg-blue-100 text-blue-900' 
+                                  : 'hover:bg-slate-100'
+                              }`}
+                            >
+                              <Check className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm">{team.team_name}</div>
+                                {team.base_address && (
+                                  <div className="text-xs text-slate-500">📍 {team.base_address}</div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   <p className="text-xs text-slate-500 mt-1">
                     {language === 'es' 
-                      ? 'Equipo responsable del proyecto' 
-                      : 'Team responsible for the project'}
+                      ? 'Equipos responsables del proyecto (puedes seleccionar múltiples)' 
+                      : 'Teams responsible for the project (you can select multiple)'}
                   </p>
                 </div>
 
