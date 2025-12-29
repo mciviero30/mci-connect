@@ -710,7 +710,8 @@ export default function Items() {
     if (isLaborOrService) {
       const materialCost = parseFloat(formData.material_cost) || 0;
       const installationTime = parseFloat(formData.installation_time) || 0;
-      const laborCost = installationTime * STANDARD_LABOR_RATE;
+      const laborRate = formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE;
+      const laborCost = installationTime * laborRate;
       cost = materialCost + laborCost;
     } else {
       cost = parseFloat(formData.cost_per_unit) || 0;
@@ -726,7 +727,7 @@ export default function Items() {
       profit: (price - cost).toFixed(2),
       totalCost: cost.toFixed(2)
     };
-  }, [formData.unit_price, formData.cost_per_unit, formData.material_cost, formData.installation_time, isLaborOrService, STANDARD_LABOR_RATE]);
+  }, [formData.unit_price, formData.cost_per_unit, formData.material_cost, formData.installation_time, formData.is_overtime, isLaborOrService, STANDARD_LABOR_RATE]);
 
   return (
     <TooltipProvider>
