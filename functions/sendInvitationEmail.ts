@@ -238,12 +238,20 @@ Deno.serve(async (req) => {
               </p>
 
               <!-- CTA Button -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${setupPasswordUrl}" style="display: inline-block; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-size: 18px; font-weight: bold; box-shadow: 0 6px 20px rgba(80, 125, 180, 0.4); text-align: center;">
+                    <!--[if mso]>
+                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${setupPasswordUrl}" style="height:54px;v-text-anchor:middle;width:300px;" arcsize="19%" strokecolor="#507DB4" fillcolor="#507DB4">
+                      <w:anchorlock/>
+                      <center style="color:#ffffff;font-family:sans-serif;font-size:18px;font-weight:bold;">Join MCI Connect Now</center>
+                    </v:roundrect>
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                    <a href="${setupPasswordUrl}" style="display: inline-block; background: #507DB4; background: linear-gradient(135deg, #507DB4 0%, #6B9DD8 100%); color: #ffffff !important; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-size: 18px; font-weight: bold; box-shadow: 0 6px 20px rgba(80, 125, 180, 0.4); text-align: center; mso-hide: all;">
                       Join MCI Connect Now
                     </a>
+                    <!--<![endif]-->
                   </td>
                 </tr>
               </table>
