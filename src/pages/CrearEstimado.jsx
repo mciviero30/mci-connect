@@ -428,6 +428,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
     // Auto-calculate quantity for special items
     if (field === 'tech_count' || field === 'duration_value' || field === 'calculation_type') {
       newItems[index].quantity = calculateQuantity(newItems[index]);
+      newItems[index].total = (newItems[index].quantity || 0) * (newItems[index].unit_price || 0);
     }
     
     if (field === 'quantity' || field === 'unit_price') {
