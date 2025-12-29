@@ -339,9 +339,19 @@ const LayoutContent = ({ children, currentPageName }) => {
   useEffect(() => {
     if (!user) return;
     if (user.employment_status !== 'invited') return;
+    
+    // Prevent infinite loops - only run once
+    const activationFlag = sessionStorage.getItem(`activation_${user.id}`);
+    if (activationFlag === 'processing') {
+      console.log('⏳ Activation already in progress, skipping...');
+      return;
+    }
 
     const autoActivateUser = async () => {
       try {
+        // Set flag to prevent multiple executions
+        sessionStorage.setItem(`activation_${user.id}`, 'processing');
+        
         console.log('🔄 Auto-activating invited user:', user.email);
         
         // Check if there's a PendingEmployee with this email (case-insensitive)
@@ -378,7 +388,7 @@ const LayoutContent = ({ children, currentPageName }) => {
             console.log('🗑️ Deleted pending employee record');
           }
         } catch (error) {
-          console.error('Error fetching pending employee:', error);
+          console.error('Error fetching/deleting pending employee:', error);
         }
         
         // Get team info if team_id exists but no team_name
@@ -407,11 +417,16 @@ const LayoutContent = ({ children, currentPageName }) => {
         
         console.log('✅ User activated successfully with synced data');
         
+        // Clear flag before reload
+        sessionStorage.removeItem(`activation_${user.id}`);
+        
         setTimeout(() => {
           window.location.reload();
         }, 500);
       } catch (error) {
         console.error('❌ Error auto-activating user:', error);
+        // Clear flag on error to allow retry
+        sessionStorage.removeItem(`activation_${user.id}`);
       }
     };
 
