@@ -34,13 +34,13 @@ export default function Estimados() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const { data: quotes, isLoading } = useQuery({
+  const { data: quotes, isLoading, refetch } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => base44.entities.Quote.list('-created_date'),
     initialData: [],
     staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: teams = [] } = useQuery({
