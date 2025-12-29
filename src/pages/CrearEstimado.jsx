@@ -819,17 +819,22 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                   )}
 
                   {/* Unit */}
-                  <div className="md:col-span-1">
+                  <div>
                     <Label className="text-slate-700 text-xs md:hidden mb-1 block">Unit</Label>
                     <Input
                       value={item.unit}
                       onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                      className="bg-white border-slate-300 text-slate-900 h-9 text-sm text-center"
+                      disabled={item.calculation_type !== 'none'}
+                      className={`h-9 text-sm text-center ${
+                        item.calculation_type !== 'none' 
+                          ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed' 
+                          : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   {/* Unit Price */}
-                  <div className="md:col-span-1">
+                  <div>
                     <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('unitPrice')}</Label>
                     <div className="relative">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
@@ -846,11 +851,16 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                   </div>
 
                   {/* Total */}
-                  <div className="md:col-span-1 text-right">
+                  <div className="text-right">
                     <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('total')}</Label>
                     <div className="text-[#3B9FF3] font-bold text-sm">
                       ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </div>
+                    {item.calculation_type !== 'none' && (
+                      <div className="text-[10px] text-emerald-600 font-semibold" title="Auto-calculated">
+                        = {item.quantity} {item.unit}
+                      </div>
+                    )}
                     {item.installation_time > 0 && (
                       <div className="text-[10px] text-amber-600" title="Solo referencia interna MCI">
                         ⏱ {((item.installation_time || 0) * (item.quantity || 0)).toFixed(1)}h
@@ -859,7 +869,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                   </div>
 
                   {/* Delete Button */}
-                  <div className="md:col-span-1 flex justify-end">
+                  <div className="flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"
