@@ -1180,6 +1180,18 @@ export default function Items() {
                         <p className="text-xs text-slate-500 mt-1">
                           {language === 'es' ? 'Horas requeridas para completar' : 'Hours required to complete'}
                         </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <input
+                            type="checkbox"
+                            id="is_overtime"
+                            checked={formData.is_overtime}
+                            onChange={(e) => setFormData({ ...formData, is_overtime: e.target.checked })}
+                            className="w-4 h-4 rounded border-slate-300"
+                          />
+                          <label htmlFor="is_overtime" className="text-sm text-slate-700 cursor-pointer">
+                            {language === 'es' ? 'Tarifa de Overtime (1.5x)' : 'Overtime Rate (1.5x)'}
+                          </label>
+                        </div>
                       </div>
 
                       <div>
