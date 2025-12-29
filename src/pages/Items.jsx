@@ -180,13 +180,14 @@ export default function Items() {
     unit_price: '',
     cost_per_unit: '',
     material_cost: '', // NEW: For labor/services with material components
-    supplier: '',
+    supplier: 'Branch',
     installation_time: '',
     category: 'materials',
     account_category: 'revenue_materials',
     in_stock_quantity: 0,
     min_stock_quantity: 5,
-    status: 'active'
+    status: 'active',
+    is_overtime: false // NEW: For overtime rate calculation
   });
 
   // ============================================
