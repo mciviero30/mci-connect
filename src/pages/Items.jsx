@@ -1024,11 +1024,45 @@ export default function Items() {
           }}>
             <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] max-h-[90vh] overflow-y-auto border-slate-200 dark:border-slate-700">
               <DialogHeader>
-                <DialogTitle className="text-2xl text-slate-900 dark:text-white">
-                  {editingItem
-                    ? (language === 'es' ? 'Editar Item' : 'Edit Item')
-                    : (language === 'es' ? 'Nuevo Item' : 'New Item')}
-                </DialogTitle>
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-2xl text-slate-900 dark:text-white">
+                    {editingItem
+                      ? (language === 'es' ? 'Editar Item' : 'Edit Item')
+                      : (language === 'es' ? 'Nuevo Item' : 'New Item')}
+                  </DialogTitle>
+                  {editingItem && (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const currentIndex = filteredItems.findIndex(i => i.id === editingItem.id);
+                          const prevItem = filteredItems[currentIndex - 1];
+                          if (prevItem) handleEdit(prevItem);
+                        }}
+                        disabled={!editingItem || filteredItems.findIndex(i => i.id === editingItem.id) === 0}
+                        className="text-slate-700"
+                      >
+                        ← {language === 'es' ? 'Anterior' : 'Previous'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const currentIndex = filteredItems.findIndex(i => i.id === editingItem.id);
+                          const nextItem = filteredItems[currentIndex + 1];
+                          if (nextItem) handleEdit(nextItem);
+                        }}
+                        disabled={!editingItem || filteredItems.findIndex(i => i.id === editingItem.id) === filteredItems.length - 1}
+                        className="text-slate-700"
+                      >
+                        {language === 'es' ? 'Siguiente' : 'Next'} →
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 {editingItem && (
                   <DialogDescription className="flex items-center gap-2 text-amber-600">
                     <Shield className="w-4 h-4" />
