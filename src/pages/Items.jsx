@@ -644,7 +644,8 @@ export default function Items() {
       material_cost: parseFloat(formData.material_cost) || 0,
       installation_time: parseFloat(formData.installation_time) || 0,
       in_stock_quantity: parseInt(formData.in_stock_quantity) || 0,
-      min_stock_quantity: parseInt(formData.min_stock_quantity) || 5
+      min_stock_quantity: parseInt(formData.min_stock_quantity) || 5,
+      is_overtime: formData.is_overtime || false
     };
 
     // Don't include cost_per_unit in submission for labor/services (will be calculated by backend mutation)
