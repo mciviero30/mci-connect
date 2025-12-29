@@ -885,7 +885,6 @@ export default function Items() {
                     <TableRow className="bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700">
                       <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Nombre' : 'Name'}</TableHead>
                       <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Categoría' : 'Category'}</TableHead>
-                      <TableHead className="text-slate-700 dark:text-slate-300">{language === 'es' ? 'Stock' : 'Stock'}</TableHead>
                       <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Precio Venta' : 'Sale Price'}</TableHead>
                       <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Costo Interno' : 'Internal Cost'}</TableHead>
                       <TableHead className="text-right text-slate-700 dark:text-slate-300">{language === 'es' ? 'Margen' : 'Profit Margin'}</TableHead>
@@ -895,13 +894,13 @@ export default function Items() {
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center h-24 text-slate-500 dark:text-slate-400">
+                        <TableCell colSpan={6} className="text-center h-24 text-slate-500 dark:text-slate-400">
                           {language === 'es' ? 'Cargando...' : 'Loading...'}
                         </TableCell>
                       </TableRow>
                     ) : filteredItems.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center h-24 text-slate-500 dark:text-slate-400">
+                        <TableCell colSpan={6} className="text-center h-24 text-slate-500 dark:text-slate-400">
                           {language === 'es' ? 'No se encontraron items' : 'No items found'}
                         </TableCell>
                       </TableRow>
@@ -950,33 +949,6 @@ export default function Items() {
                               <Badge className="bg-blue-50/60 text-[#507DB4] border border-blue-200/40 px-2 py-0.5 rounded-full text-xs font-semibold">
                                 {categoryLabel}
                               </Badge>
-                            </TableCell>
-
-                            <TableCell>
-                              {item.category === 'materials' ? (
-                                <div className="flex items-center gap-1">
-                                  <span className={`font-semibold ${
-                                    stockStatus === 'out_of_stock' ? 'text-red-600' :
-                                      stockStatus === 'low_stock' ? 'text-amber-600' :
-                                        'text-green-600'
-                                    }`}>
-                                    {item.in_stock_quantity || 0}
-                                  </span>
-                                  <span className="text-xs text-slate-500">{item.unit}</span>
-                                  {stockStatus === 'out_of_stock' && (
-                                    <Badge className="bg-red-100 text-red-700 text-xs">
-                                      {language === 'es' ? 'Sin Stock' : 'Out'}
-                                    </Badge>
-                                  )}
-                                  {stockStatus === 'low_stock' && (
-                                    <Badge className="bg-amber-100 text-amber-700 text-xs">
-                                      {language === 'es' ? 'Bajo' : 'Low'}
-                                    </Badge>
-                                  )}
-                                </div>
-                              ) : (
-                                <span className="text-slate-500 text-sm">-</span>
-                              )}
                             </TableCell>
 
                             <TableCell className="text-right font-bold text-[#507DB4] dark:text-[#6B9DD8]">
