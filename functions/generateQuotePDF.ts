@@ -26,25 +26,28 @@ Deno.serve(async (req) => {
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 0, 210, 40, 'F');
 
-        // Logo - Fixed with chunked conversion
+        // Logo - High quality MCI logo
         try {
-            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
+            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png';
             const logoResponse = await fetch(logoUrl);
-            const arrayBuffer = await logoResponse.arrayBuffer();
-            const bytes = new Uint8Array(arrayBuffer);
             
-            // Convert to base64 in chunks to avoid stack overflow
-            let binary = '';
-            const chunkSize = 8192;
-            const len = bytes.byteLength;
-            
-            for (let i = 0; i < len; i += chunkSize) {
-                const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
-                binary += String.fromCharCode.apply(null, Array.from(chunk));
+            if (logoResponse.ok) {
+                const arrayBuffer = await logoResponse.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuffer);
+                
+                // Convert to base64 in chunks to avoid stack overflow
+                let binary = '';
+                const chunkSize = 8192;
+                const len = bytes.byteLength;
+                
+                for (let i = 0; i < len; i += chunkSize) {
+                    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+                    binary += String.fromCharCode.apply(null, Array.from(chunk));
+                }
+                
+                const logoBase64 = btoa(binary);
+                doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 60, 20);
             }
-            
-            const logoBase64 = btoa(binary);
-            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
         } catch (err) {
             console.log('Logo load error:', err);
         }
@@ -105,7 +108,7 @@ Deno.serve(async (req) => {
         // ==========================================
         // TABLE HEADER
         // ==========================================
-        doc.setFillColor(51, 65, 85);
+        doc.setFillColor(0, 0, 0);
         doc.rect(15, currentY, 180, 10, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(9);
