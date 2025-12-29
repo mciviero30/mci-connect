@@ -772,8 +772,8 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
 
                   {/* Quantity - Dynamic based on calculation type */}
                   {item.calculation_type !== 'none' ? (
-                    <>
-                      <div className="md:col-span-1">
+                    <div className="flex gap-1">
+                      <div className="flex-1">
                         <Label className="text-slate-700 text-xs mb-1 block">
                           {language === 'es' ? 'Techs' : 'Techs'}
                         </Label>
@@ -786,7 +786,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                           className="bg-amber-50 border-amber-300 text-slate-900 h-9 text-sm text-center font-semibold"
                         />
                       </div>
-                      <div className="md:col-span-1">
+                      <div className="flex-1">
                         <Label className="text-slate-700 text-xs mb-1 block">
                           {item.calculation_type === 'hotel' ? (language === 'es' ? 'Noches' : 'Nights') :
                            item.calculation_type === 'per_diem' ? (language === 'es' ? 'Días' : 'Days') :
@@ -802,9 +802,9 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                           className="bg-amber-50 border-amber-300 text-slate-900 h-9 text-sm text-center font-semibold"
                         />
                       </div>
-                    </>
+                    </div>
                   ) : (
-                    <div className="md:col-span-2">
+                    <div>
                       <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('quantity')}</Label>
                       <Input
                         type="number"
