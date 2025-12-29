@@ -344,12 +344,49 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         console.log('🔄 Auto-activating invited user:', user.email);
         
-        // Get team info if team_id exists
+        // Check if there's a PendingEmployee with this email
+        let pendingData = {};
+        try {
+          const pendingEmployees = await base44.entities.PendingEmployee.filter({ email: user.email });
+          if (pendingEmployees.length > 0) {
+            const pending = pendingEmployees[0];
+            
+            // Sync data from PendingEmployee
+            if (pending.first_name) pendingData.first_name = pending.first_name;
+            if (pending.last_name) pendingData.last_name = pending.last_name;
+            if (pending.phone) pendingData.phone = pending.phone;
+            if (pending.position) pendingData.position = pending.position;
+            if (pending.department) pendingData.department = pending.department;
+            if (pending.team_id) pendingData.team_id = pending.team_id;
+            if (pending.team_name) pendingData.team_name = pending.team_name;
+            if (pending.address) pendingData.address = pending.address;
+            if (pending.dob) pendingData.dob = pending.dob;
+            if (pending.ssn_tax_id) pendingData.ssn_tax_id = pending.ssn_tax_id;
+            if (pending.tshirt_size) pendingData.tshirt_size = pending.tshirt_size;
+            if (pending.hourly_rate) pendingData.hourly_rate = pending.hourly_rate;
+            
+            // Update full_name if we have first and last name
+            if (pending.first_name && pending.last_name) {
+              pendingData.full_name = `${pending.first_name} ${pending.last_name}`.trim();
+            }
+            
+            console.log('📋 Found pending employee data, syncing:', pendingData);
+            
+            // Delete the pending employee record
+            await base44.entities.PendingEmployee.delete(pending.id);
+            console.log('🗑️ Deleted pending employee record');
+          }
+        } catch (error) {
+          console.error('Error fetching pending employee:', error);
+        }
+        
+        // Get team info if team_id exists but no team_name
         let teamData = {};
-        if (user.team_id && !user.team_name) {
+        const finalTeamId = pendingData.team_id || user.team_id;
+        if (finalTeamId && !pendingData.team_name && !user.team_name) {
           try {
             const teams = await base44.entities.Team.list();
-            const userTeam = teams.find(t => t.id === user.team_id);
+            const userTeam = teams.find(t => t.id === finalTeamId);
             if (userTeam) {
               teamData = {
                 team_name: userTeam.team_name
@@ -363,10 +400,11 @@ const LayoutContent = ({ children, currentPageName }) => {
         await base44.auth.updateMe({ 
           employment_status: 'active',
           hire_date: user.hire_date || new Date().toISOString().split('T')[0],
+          ...pendingData,
           ...teamData
         });
         
-        console.log('✅ User activated successfully');
+        console.log('✅ User activated successfully with synced data');
         
         setTimeout(() => {
           window.location.reload();
