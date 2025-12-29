@@ -176,8 +176,8 @@ export default function CrearEstimado() {
         job_address: job.address || '',
         customer_id: job.customer_id || formData.customer_id,
         customer_name: job.customer_name || formData.customer_name,
-        team_id: job.team_id || formData.team_id,
-        team_name: job.team_name || formData.team_name,
+        team_ids: job.team_id ? [job.team_id] : formData.team_ids,
+        team_names: job.team_name ? [job.team_name] : formData.team_names,
       });
     }
   };
