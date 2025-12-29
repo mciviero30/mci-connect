@@ -1106,12 +1106,8 @@ export default function Items() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const currentIndex = filteredItems.findIndex(i => i.id === editingItem.id);
-                      const prevItem = filteredItems[currentIndex - 1];
-                      if (prevItem) handleEdit(prevItem);
-                    }}
-                    disabled={!editingItem || filteredItems.findIndex(i => i.id === editingItem.id) === 0}
+                    onClick={() => saveAndNavigate('prev')}
+                    disabled={!editingItem || filteredItems.findIndex(i => i.id === editingItem.id) === 0 || updateMutation.isPending}
                     className="text-slate-700"
                   >
                     ← {language === 'es' ? 'Anterior' : 'Previous'}
@@ -1120,12 +1116,8 @@ export default function Items() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const currentIndex = filteredItems.findIndex(i => i.id === editingItem.id);
-                      const nextItem = filteredItems[currentIndex + 1];
-                      if (nextItem) handleEdit(nextItem);
-                    }}
-                    disabled={!editingItem || filteredItems.findIndex(i => i.id === editingItem.id) === filteredItems.length - 1}
+                    onClick={() => saveAndNavigate('next')}
+                    disabled={!editingItem || filteredItems.findIndex(i => i.id === editingItem.id) === filteredItems.length - 1 || updateMutation.isPending}
                     className="text-slate-700"
                   >
                     {language === 'es' ? 'Siguiente' : 'Next'} →
