@@ -274,6 +274,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       const hotelItem = quoteItems.find(qi => qi.name === 'Hotel Rooms');
       const perDiemItem = quoteItems.find(qi => qi.name === 'Per-Diem');
       const drivingHoursItem = quoteItems.find(qi => qi.name === 'Driving Time');
+      const mileageItem = quoteItems.find(qi => qi.name === 'Mileage' || qi.name === 'Millas');
       
       let newItems = [...formData.items.filter(item => !item.is_travel_item)];
       
@@ -322,15 +323,63 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      setFormData(prev => ({ ...prev, out_of_area: true, items: newItems }));
-      
-      // Calculate travel distance if we have data
+      // Calculate and add mileage for each selected team
       if (formData.team_ids.length > 0 && formData.job_address) {
-        const firstTeam = teams.find(t => t.id === formData.team_ids[0]);
-        if (firstTeam?.base_address) {
-          await calculateTravelDistance(firstTeam.base_address, formData.job_address);
+        setCalculatingTravel(true);
+        
+        for (const teamId of formData.team_ids) {
+          const team = teams.find(t => t.id === teamId);
+          if (team?.base_address) {
+            try {
+              const response = await base44.integrations.Core.InvokeLLM({
+                prompt: `Calculate the driving distance between these two addresses:
+Origin: ${team.base_address}
+Destination: ${formData.job_address}
+
+Return ONLY a JSON object with this exact structure (no additional text):
+{
+  "distance_miles": <number>
+}
+
+Use realistic driving estimates. Round distance to 1 decimal place.`,
+                add_context_from_internet: true,
+                response_json_schema: {
+                  type: "object",
+                  properties: {
+                    distance_miles: { type: "number" }
+                  }
+                }
+              });
+
+              if (response?.distance_miles) {
+                // Calculate: round trip (x2) + 10% extra
+                const roundTripMiles = response.distance_miles * 2;
+                const totalMiles = Math.round(roundTripMiles * 1.1);
+                const teamName = team.team_name || 'Team';
+                
+                // Add mileage item for this team
+                newItems.push({
+                  item_name: mileageItem?.name || 'Mileage',
+                  description: `${teamName} (${response.distance_miles} mi each way)`,
+                  quantity: totalMiles,
+                  unit: mileageItem?.unit || 'miles',
+                  unit_price: mileageItem?.unit_price || 0.60,
+                  total: totalMiles * (mileageItem?.unit_price || 0.60),
+                  is_travel_item: true,
+                  calculation_type: 'none',
+                  installation_time: 0,
+                });
+              }
+            } catch (error) {
+              console.error(`Error calculating mileage for team ${team.team_name}:`, error);
+            }
+          }
         }
+        
+        setCalculatingTravel(false);
       }
+      
+      setFormData(prev => ({ ...prev, out_of_area: true, items: newItems }));
     } else {
       // Remove travel items
       setFormData(prev => ({

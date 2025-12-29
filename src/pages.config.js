@@ -12,7 +12,6 @@ import CompanyInfo from './pages/CompanyInfo';
 import ComplianceHub from './pages/ComplianceHub';
 import Configuracion from './pages/Configuracion';
 import Contabilidad from './pages/Contabilidad';
-import CrearEstimado from './pages/CrearEstimado';
 import CrearFactura from './pages/CrearFactura';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
@@ -71,6 +70,7 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import CrearEstimado from './pages/CrearEstimado';
 import __Layout from './Layout.jsx';
 
 
@@ -89,7 +89,6 @@ export const PAGES = {
     "ComplianceHub": ComplianceHub,
     "Configuracion": Configuracion,
     "Contabilidad": Contabilidad,
-    "CrearEstimado": CrearEstimado,
     "CrearFactura": CrearFactura,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
@@ -148,6 +147,7 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "CrearEstimado": CrearEstimado,
 }
 
 export const pagesConfig = {
