@@ -308,7 +308,8 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      // Add Driving Time (no description)
+      // Placeholder for Driving Time - will be updated after mileage calculation
+      const drivingTimeIndex = newItems.length;
       newItems.push({
         item_name: drivingHoursItem?.name || 'Driving Time',
         description: '', // No description for travel items
@@ -324,6 +325,8 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       });
       
       // Calculate and add mileage for each selected team
+      let totalDrivingHours = 0;
+      
       if (formData.team_ids.length > 0 && formData.job_address) {
         setCalculatingTravel(true);
         
@@ -358,13 +361,28 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 const roundTripMiles = response.distance_miles * 2;
                 const totalMiles = Math.round(roundTripMiles * 1.1);
                 const roundTripHours = response.driving_hours * 2;
-                const totalHours = Math.round(roundTripHours * 1.1 * 10) / 10;
+                const hoursWithBuffer = roundTripHours * 1.1;
+                
+                // Custom rounding: if decimal < 0.5, round to .5, else round up to next integer
+                const roundToHalfHour = (hours) => {
+                  const integer = Math.floor(hours);
+                  const decimal = hours - integer;
+                  if (decimal < 0.5) {
+                    return integer + 0.5;
+                  } else {
+                    return integer + 1;
+                  }
+                };
+                
+                const roundedHours = roundToHalfHour(hoursWithBuffer);
+                totalDrivingHours += roundedHours;
+                
                 const teamName = team.team_name || 'Team';
                 
                 // Add mileage item for this team
                 newItems.push({
                   item_name: mileageItem?.name || 'Miles Per Vehicle',
-                  description: `${teamName} (${response.distance_miles} mi • ${response.driving_hours}h each way)`,
+                  description: `${teamName} (${response.distance_miles} mi each way)`,
                   quantity: totalMiles,
                   unit: mileageItem?.unit || 'miles',
                   unit_price: mileageItem?.unit_price || 0.60,
@@ -372,13 +390,19 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   is_travel_item: true,
                   calculation_type: 'none',
                   installation_time: 0,
-                  estimated_driving_hours: totalHours,
                 });
               }
             } catch (error) {
               console.error(`Error calculating mileage for team ${team.team_name}:`, error);
             }
           }
+        }
+        
+        // Update Driving Time item with calculated hours
+        if (totalDrivingHours > 0) {
+          newItems[drivingTimeIndex].duration_value = totalDrivingHours;
+          newItems[drivingTimeIndex].quantity = newItems[drivingTimeIndex].tech_count * totalDrivingHours;
+          newItems[drivingTimeIndex].total = newItems[drivingTimeIndex].quantity * (drivingHoursItem?.unit_price || 60);
         }
         
         setCalculatingTravel(false);
@@ -900,12 +924,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                          : 'bg-white border-slate-300 text-slate-900'
                      }`}
                    />
-                   {item.estimated_driving_hours && (
-                     <div className="text-[10px] text-blue-600 mt-0.5">
-                       🚗 {item.estimated_driving_hours}h driving time
-                     </div>
-                   )}
-                  </div>
+                   </div>
 
                   {/* Quantity - Dynamic based on calculation type */}
                   {item.calculation_type !== 'none' ? (
