@@ -126,6 +126,7 @@ export default function Teams() {
     team_name: '',
     location: '',
     state: '',
+    base_address: '',
     is_headquarters: false,
     maximum_headcount: 10,
     status: 'active',
@@ -162,6 +163,7 @@ export default function Teams() {
       team_name: '',
       location: '',
       state: '',
+      base_address: '',
       is_headquarters: false,
       maximum_headcount: 10,
       status: 'active',
@@ -287,6 +289,17 @@ export default function Teams() {
                   />
                   <p className="text-xs text-slate-500 mt-1">Maximum number of employees in this team</p>
                 </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Base Address</Label>
+                <Input
+                  value={formData.base_address}
+                  onChange={(e) => setFormData({...formData, base_address: e.target.value})}
+                  placeholder="e.g., 123 Main St, Atlanta, GA 30303"
+                  className="bg-slate-50 border-slate-200 text-slate-900"
+                />
+                <p className="text-xs text-slate-500 mt-1">Full address for calculating mileage to jobs</p>
               </div>
 
               <div>
