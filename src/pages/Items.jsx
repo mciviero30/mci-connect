@@ -618,6 +618,62 @@ export default function Items() {
     setShowForm(true);
   };
 
+  const saveAndNavigate = (direction) => {
+    // Validate required fields
+    if (!formData.name || !formData.unit_price || !formData.supplier) {
+      toast.error(language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.');
+      return;
+    }
+
+    if (isLaborOrService && !formData.installation_time) {
+      toast.error(language === 'es' ? 'El tiempo de instalación es requerido para items de Labor/Servicio.' : 'Installation time is required for Labor/Service items.');
+      return;
+    }
+
+    if (!isLaborOrService && !formData.cost_per_unit) {
+      toast.error(language === 'es' ? 'El costo por unidad es requerido.' : 'Cost per unit is required.');
+      return;
+    }
+
+    const dataToSubmit = {
+      ...formData,
+      unit_price: parseFloat(formData.unit_price) || 0,
+      material_cost: parseFloat(formData.material_cost) || 0,
+      installation_time: parseFloat(formData.installation_time) || 0,
+      in_stock_quantity: parseInt(formData.in_stock_quantity) || 0,
+      min_stock_quantity: parseInt(formData.min_stock_quantity) || 5,
+      is_overtime: formData.is_overtime || false
+    };
+
+    if (!isLaborOrService) {
+      dataToSubmit.cost_per_unit = parseFloat(formData.cost_per_unit) || 0;
+    } else {
+      delete dataToSubmit.cost_per_unit;
+    }
+
+    // Find next/previous item
+    const currentIndex = filteredItems.findIndex(i => i.id === editingItem.id);
+    const targetItem = direction === 'next' 
+      ? filteredItems[currentIndex + 1] 
+      : filteredItems[currentIndex - 1];
+
+    if (!targetItem) return;
+
+    // Save current and navigate to target
+    updateMutation.mutate(
+      { id: editingItem.id, data: dataToSubmit },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['quoteItems'] });
+          queryClient.invalidateQueries({ queryKey: ['quoteItemPriceLogs'] });
+          // Navigate to next/previous item without closing dialog
+          handleEdit(targetItem);
+          toast.success(language === 'es' ? 'Item guardado' : 'Item saved');
+        }
+      }
+    );
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
