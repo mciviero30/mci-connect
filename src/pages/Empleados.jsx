@@ -268,13 +268,35 @@ export default function Empleados() {
     queryFn: async () => {
       const result = await base44.entities.PendingEmployee.list('-created_date');
       console.log('🔍 PendingEmployees fetched:', result.length, 'employees');
-      console.log('📋 PendingEmployees data:', result);
+      
+      // Auto-cleanup: Delete pending employees that are already active
+      const activeEmails = employees.map(e => e.email?.toLowerCase()).filter(Boolean);
+      const toDelete = result.filter(p => 
+        p.email && activeEmails.includes(p.email.toLowerCase())
+      );
+      
+      if (toDelete.length > 0) {
+        console.log('🧹 Auto-cleaning', toDelete.length, 'pending employees that are already active');
+        for (const pending of toDelete) {
+          try {
+            await base44.entities.PendingEmployee.delete(pending.id);
+            console.log('✅ Cleaned up:', pending.email);
+          } catch (err) {
+            console.error('Error cleaning pending:', pending.email, err);
+          }
+        }
+        // Refetch after cleanup
+        const cleanedResult = await base44.entities.PendingEmployee.list('-created_date');
+        return cleanedResult;
+      }
+      
       return result;
     },
     staleTime: 5000,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
-    initialData: []
+    initialData: [],
+    enabled: employees.length > 0
   });
 
   // Debug log whenever pendingEmployees changes
