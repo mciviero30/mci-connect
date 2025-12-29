@@ -179,19 +179,26 @@ export default function CrearEstimado() {
     }
   };
 
-  const handleTeamChange = async (teamId) => {
+  const handleTeamToggle = (teamId) => {
     const team = teams.find(t => t.id === teamId);
     if (!team) return;
 
-    setFormData({
-      ...formData,
-      team_id: teamId,
-      team_name: team.team_name,
-    });
-
-    // If out-of-area is enabled and we have addresses, calculate travel
-    if (formData.out_of_area && team.base_address && formData.job_address) {
-      await calculateTravelDistance(team.base_address, formData.job_address);
+    const isSelected = formData.team_ids.includes(teamId);
+    
+    if (isSelected) {
+      // Remove team
+      setFormData({
+        ...formData,
+        team_ids: formData.team_ids.filter(id => id !== teamId),
+        team_names: formData.team_names.filter(name => name !== team.team_name),
+      });
+    } else {
+      // Add team
+      setFormData({
+        ...formData,
+        team_ids: [...formData.team_ids, teamId],
+        team_names: [...formData.team_names, team.team_name],
+      });
     }
   };
 
