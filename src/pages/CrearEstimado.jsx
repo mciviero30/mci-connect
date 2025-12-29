@@ -100,6 +100,9 @@ export default function CrearEstimado() {
         total,
         estimated_hours,
         status: 'draft',
+        // Store first team for backwards compatibility
+        team_id: quoteData.team_ids?.[0] || '',
+        team_name: quoteData.team_names?.[0] || '',
       };
 
       console.log('Final quote data:', finalData);
