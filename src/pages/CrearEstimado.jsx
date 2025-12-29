@@ -332,35 +332,39 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
           if (team?.base_address) {
             try {
               const response = await base44.integrations.Core.InvokeLLM({
-                prompt: `Calculate the driving distance between these two addresses:
+                prompt: `Calculate the driving distance and time between these two addresses:
 Origin: ${team.base_address}
 Destination: ${formData.job_address}
 
 Return ONLY a JSON object with this exact structure (no additional text):
 {
-  "distance_miles": <number>
+  "distance_miles": <number>,
+  "driving_hours": <number>
 }
 
-Use realistic driving estimates. Round distance to 1 decimal place.`,
+Use realistic driving estimates. Round distance to 1 decimal place, hours to nearest 0.5.`,
                 add_context_from_internet: true,
                 response_json_schema: {
                   type: "object",
                   properties: {
-                    distance_miles: { type: "number" }
+                    distance_miles: { type: "number" },
+                    driving_hours: { type: "number" }
                   }
                 }
               });
 
-              if (response?.distance_miles) {
+              if (response?.distance_miles && response?.driving_hours) {
                 // Calculate: round trip (x2) + 10% extra
                 const roundTripMiles = response.distance_miles * 2;
                 const totalMiles = Math.round(roundTripMiles * 1.1);
+                const roundTripHours = response.driving_hours * 2;
+                const totalHours = Math.round(roundTripHours * 1.1 * 10) / 10;
                 const teamName = team.team_name || 'Team';
                 
                 // Add mileage item for this team
                 newItems.push({
                   item_name: mileageItem?.name || 'Miles Per Vehicle',
-                  description: `${teamName} (${response.distance_miles} mi each way)`,
+                  description: `${teamName} (${response.distance_miles} mi • ${response.driving_hours}h each way)`,
                   quantity: totalMiles,
                   unit: mileageItem?.unit || 'miles',
                   unit_price: mileageItem?.unit_price || 0.60,
@@ -368,6 +372,7 @@ Use realistic driving estimates. Round distance to 1 decimal place.`,
                   is_travel_item: true,
                   calculation_type: 'none',
                   installation_time: 0,
+                  estimated_driving_hours: totalHours,
                 });
               }
             } catch (error) {
@@ -882,19 +887,24 @@ Use realistic driving estimates. Round distance to 1 decimal place.`,
 
                   {/* Description */}
                   <div>
-                    <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('description')}</Label>
-                    <Input
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      required={!item.is_travel_item}
-                      disabled={item.is_travel_item}
-                      placeholder={item.is_travel_item ? '' : 'Description'}
-                      className={`h-9 text-sm ${
-                        item.is_travel_item 
-                          ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' 
-                          : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                    />
+                   <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('description')}</Label>
+                   <Input
+                     value={item.description}
+                     onChange={(e) => updateItem(index, 'description', e.target.value)}
+                     required={!item.is_travel_item}
+                     disabled={item.is_travel_item}
+                     placeholder={item.is_travel_item ? '' : 'Description'}
+                     className={`h-9 text-sm ${
+                       item.is_travel_item 
+                         ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed' 
+                         : 'bg-white border-slate-300 text-slate-900'
+                     }`}
+                   />
+                   {item.estimated_driving_hours && (
+                     <div className="text-[10px] text-blue-600 mt-0.5">
+                       🚗 {item.estimated_driving_hours}h driving time
+                     </div>
+                   )}
                   </div>
 
                   {/* Quantity - Dynamic based on calculation type */}
