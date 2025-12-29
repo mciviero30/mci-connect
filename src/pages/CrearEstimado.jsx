@@ -327,7 +327,17 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
+      items: [...formData.items, { 
+        description: '', 
+        quantity: 1, 
+        unit: 'pcs', 
+        unit_price: 0, 
+        total: 0, 
+        installation_time: 0,
+        tech_count: 1,
+        duration_value: 1,
+        calculation_type: 'none'
+      }],
     });
   };
 
