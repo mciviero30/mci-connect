@@ -608,9 +608,10 @@ export default function Items() {
       installation_time: item.installation_time != null ? item.installation_time.toString() : '',
       in_stock_quantity: item.in_stock_quantity != null ? item.in_stock_quantity : 0,
       min_stock_quantity: item.min_stock_quantity != null ? item.min_stock_quantity : 5,
-      supplier: item.supplier || '',
+      supplier: item.supplier || 'Branch',
       description: item.description || '',
-      account_category: item.account_category || 'revenue_materials'
+      account_category: item.account_category || 'revenue_materials',
+      is_overtime: item.is_overtime || false
     });
     setShowForm(true);
   };
