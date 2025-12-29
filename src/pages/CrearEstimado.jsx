@@ -829,7 +829,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
                   </div>
 
                   {/* Unit Price */}
-                  <div className="md:col-span-2">
+                  <div className="md:col-span-1">
                     <Label className="text-slate-700 text-xs md:hidden mb-1 block">{t('unitPrice')}</Label>
                     <div className="relative">
                       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
