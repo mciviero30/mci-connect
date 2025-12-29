@@ -57,8 +57,8 @@ export default function CrearEstimado() {
     job_name: '',
     job_id: '',
     job_address: '',
-    team_id: '',
-    team_name: '',
+    team_ids: [], // Changed to array for multiple teams
+    team_names: [], // Changed to array for multiple team names
     quote_date: format(new Date(), 'yyyy-MM-dd'),
     valid_until: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
     install_date: '',
