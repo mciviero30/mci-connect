@@ -270,58 +270,57 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
 
   const handleOutOfAreaToggle = async (enabled) => {
     if (enabled) {
-      // Find hotel, per-diem, driving time, and per-diem items from catalog
+      // Find hotel, per-diem, driving time items from catalog
       const hotelItem = quoteItems.find(qi => qi.calculation_type === 'hotel');
       const perDiemItem = quoteItems.find(qi => qi.calculation_type === 'per_diem');
-      const drivingHoursItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('driving') && qi.calculation_type === 'hours');
+      const drivingHoursItem = quoteItems.find(qi => qi.calculation_type === 'hours');
       
       let newItems = [...formData.items.filter(item => !item.is_travel_item)];
       
-      // Add travel items from catalog if they exist
-      if (hotelItem) {
-        newItems.push({
-          item_name: hotelItem.name,
-          description: hotelItem.description || 'Hotel / Lodging',
-          quantity: 2,
-          unit: hotelItem.unit || 'nights',
-          unit_price: hotelItem.unit_price || 100,
-          total: 2 * (hotelItem.unit_price || 100),
-          is_travel_item: true,
-          calculation_type: 'hotel',
-          tech_count: 2,
-          duration_value: 1,
-        });
-      }
+      // Always add hotel item (from catalog or default)
+      newItems.push({
+        item_name: hotelItem?.name || 'Hotel',
+        description: hotelItem?.description || 'Hotel / Lodging',
+        quantity: 1,
+        unit: hotelItem?.unit || 'nights',
+        unit_price: hotelItem?.unit_price || 100,
+        total: 1 * (hotelItem?.unit_price || 100),
+        is_travel_item: true,
+        calculation_type: 'hotel',
+        tech_count: 2,
+        duration_value: 1,
+        installation_time: 0,
+      });
       
-      if (perDiemItem) {
-        newItems.push({
-          item_name: perDiemItem.name,
-          description: perDiemItem.description || 'Per Diem',
-          quantity: 2,
-          unit: perDiemItem.unit || 'days',
-          unit_price: perDiemItem.unit_price || 40,
-          total: 2 * (perDiemItem.unit_price || 40),
-          is_travel_item: true,
-          calculation_type: 'per_diem',
-          tech_count: 2,
-          duration_value: 1,
-        });
-      }
+      // Always add per diem item (from catalog or default)
+      newItems.push({
+        item_name: perDiemItem?.name || 'Per Diem',
+        description: perDiemItem?.description || 'Per Diem',
+        quantity: 2,
+        unit: perDiemItem?.unit || 'days',
+        unit_price: perDiemItem?.unit_price || 40,
+        total: 2 * (perDiemItem?.unit_price || 40),
+        is_travel_item: true,
+        calculation_type: 'per_diem',
+        tech_count: 2,
+        duration_value: 1,
+        installation_time: 0,
+      });
       
-      if (drivingHoursItem) {
-        newItems.push({
-          item_name: drivingHoursItem.name,
-          description: drivingHoursItem.description || 'Driving Time',
-          quantity: 0,
-          unit: drivingHoursItem.unit || 'hours',
-          unit_price: drivingHoursItem.unit_price || 25,
-          total: 0,
-          is_travel_item: true,
-          calculation_type: 'hours',
-          tech_count: 2,
-          duration_value: 0,
-        });
-      }
+      // Always add driving hours item (from catalog or default)
+      newItems.push({
+        item_name: drivingHoursItem?.name || 'Driving Time',
+        description: drivingHoursItem?.description || 'Driving Time',
+        quantity: 0,
+        unit: drivingHoursItem?.unit || 'hours',
+        unit_price: drivingHoursItem?.unit_price || 25,
+        total: 0,
+        is_travel_item: true,
+        calculation_type: 'hours',
+        tech_count: 2,
+        duration_value: 0,
+        installation_time: 0,
+      });
       
       setFormData(prev => ({ ...prev, out_of_area: true, items: newItems }));
       
