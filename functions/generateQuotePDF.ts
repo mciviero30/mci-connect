@@ -21,36 +21,28 @@ Deno.serve(async (req) => {
         const doc = new jsPDF();
 
         // ==========================================
-        // HEADER BANNER (BLACK)
+        // HEADER BANNER (SOLID BLACK - NO GRADIENT)
         // ==========================================
         doc.setFillColor(0, 0, 0);
-        doc.rect(0, 0, 210, 40, 'F');
+        doc.setDrawColor(0, 0, 0);
+        doc.rect(0, 0, 210, 40, 'FD');
 
-        // Logo - High quality MCI logo
-        try {
-            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png';
-            const logoResponse = await fetch(logoUrl);
-            
-            if (logoResponse.ok) {
-                const arrayBuffer = await logoResponse.arrayBuffer();
-                const bytes = new Uint8Array(arrayBuffer);
-                
-                // Convert to base64 in chunks to avoid stack overflow
-                let binary = '';
-                const chunkSize = 8192;
-                const len = bytes.byteLength;
-                
-                for (let i = 0; i < len; i += chunkSize) {
-                    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
-                    binary += String.fromCharCode.apply(null, Array.from(chunk));
-                }
-                
-                const logoBase64 = btoa(binary);
-                doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 60, 20);
-            }
-        } catch (err) {
-            console.log('Logo load error:', err);
-        }
+        // Logo - SVG/Text fallback approach
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('MODERN', 20, 17);
+        doc.text('COMPONENTS', 20, 22);
+        doc.text('INSTALLATIONS', 20, 27);
+        
+        // Logo frame
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.5);
+        doc.rect(15, 10, 8, 8);
+        doc.line(19, 14, 23, 14);
+        doc.line(19, 18, 23, 18);
+        doc.line(15, 14, 23, 14);
+        doc.line(15, 18, 23, 18);
 
         // Title
         doc.setTextColor(255, 255, 255);
