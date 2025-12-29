@@ -233,17 +233,13 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       });
 
       if (response?.distance_miles && response?.travel_time_hours) {
-        // Calculate miles: round trip + 10%
-        const totalMiles = Math.round(response.distance_miles * 2 * 1.10);
-        const totalHours = response.travel_time_hours * 2;
-        
         // Update travel items with calculated values
         const updatedItems = formData.items.map(item => {
           if (item.travel_item_type === 'mileage') {
-            return { ...item, quantity: totalMiles, total: totalMiles * (item.unit_price || 0.60) };
+            return { ...item, quantity: response.distance_miles * 2, total: response.distance_miles * 2 * (item.unit_price || 0.60) };
           }
           if (item.travel_item_type === 'travel_time') {
-            return { ...item, quantity: totalHours, total: totalHours * (item.unit_price || 60) };
+            return { ...item, quantity: response.travel_time_hours * 2, total: response.travel_time_hours * 2 * (item.unit_price || 25) };
           }
           return item;
         });
@@ -257,7 +253,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
 
         toast({
           title: language === 'es' ? '✓ Distancia Calculada' : '✓ Distance Calculated',
-          description: `${totalMiles} mi (${response.distance_miles} × 2 + 10%) • ${totalHours} hrs`,
+          description: `${response.distance_miles} mi • ${response.travel_time_hours} hrs`,
           variant: 'success'
         });
       }
@@ -278,7 +274,6 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       const hotelItem = quoteItems.find(qi => qi.name === 'Hotel Rooms');
       const perDiemItem = quoteItems.find(qi => qi.name === 'Per-Diem');
       const drivingHoursItem = quoteItems.find(qi => qi.name === 'Driving Time');
-      const mileageItem = quoteItems.find(qi => qi.name === 'Mileage');
       
       let newItems = [...formData.items.filter(item => !item.is_travel_item)];
       
@@ -312,19 +307,6 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      // Add Mileage (round trip + 10%)
-      newItems.push({
-        item_name: mileageItem?.name || 'Mileage',
-        description: '', // No description for travel items
-        quantity: 0,
-        unit: mileageItem?.unit || 'miles',
-        unit_price: mileageItem?.unit_price || 0.60,
-        total: 0,
-        is_travel_item: true,
-        travel_item_type: 'mileage',
-        installation_time: 0,
-      });
-      
       // Add Driving Time (no description)
       newItems.push({
         item_name: drivingHoursItem?.name || 'Driving Time',
@@ -337,7 +319,6 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         calculation_type: 'hours',
         tech_count: 2,
         duration_value: 0,
-        travel_item_type: 'travel_time',
         installation_time: 0,
       });
       
