@@ -53,6 +53,13 @@ function renderItemsTableHeader(doc, y) {
  * @returns {jsPDF} - PDF document
  */
 export function generateQuotePDF(quote) {
+  // Defensive validation
+  if (!quote) {
+    throw new Error('Cannot generate PDF: Quote data is missing');
+  }
+  if (!quote.id) {
+    throw new Error('Cannot generate PDF: Quote ID is required');
+  }
   if (!quote.items || quote.items.length === 0) {
     throw new Error('Cannot generate PDF: Quote has no items');
   }

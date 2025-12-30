@@ -18,11 +18,21 @@ export default function PDFDownloadButton({
 }) {
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Guard: Don't render if no data or no ID
+  if (!data || !data.id) {
+    return null;
+  }
+
   const handleDownload = async () => {
+    // Additional safety check before generating
+    if (!data || !data.id) {
+      console.warn('Cannot generate PDF: Missing data or ID');
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
-      // Small delay to show loading state
       await new Promise(resolve => setTimeout(resolve, 100));
       
       if (type === 'quote') {
