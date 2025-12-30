@@ -52,9 +52,15 @@ export async function generateQuotePDF(quote) {
   const contentWidth = pageWidth - (margin * 2);
   let y = margin;
 
-  // ========== HEADER: Black with MCI logo and QUOTE title ==========
-  doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, pageWidth, 25, 'F');
+  // ========== HEADER: Black to gray gradient with MCI logo and QUOTE title ==========
+  // Simulate gradient with multiple rectangles
+  const headerHeight = 25;
+  const gradientSteps = 50;
+  for (let i = 0; i < gradientSteps; i++) {
+    const gray = Math.floor((i / gradientSteps) * 80); // 0 to 80
+    doc.setFillColor(gray, gray, gray);
+    doc.rect(0, (i * headerHeight) / gradientSteps, pageWidth, headerHeight / gradientSteps, 'F');
+  }
   
   // Load and add MCI logo
   const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
@@ -176,8 +182,14 @@ export async function generateQuotePDF(quote) {
 
   // ========== ITEMS TABLE ==========
   const tableHeaderY = y;
-  doc.setFillColor(0, 0, 0);
-  doc.rect(margin, tableHeaderY, contentWidth, 7, 'F');
+  // Black to gray gradient for table header
+  const tableHeaderHeight = 7;
+  const tableGradientSteps = 20;
+  for (let i = 0; i < tableGradientSteps; i++) {
+    const gray = Math.floor((i / tableGradientSteps) * 100); // 0 to 100
+    doc.setFillColor(gray, gray, gray);
+    doc.rect(margin, tableHeaderY + (i * tableHeaderHeight) / tableGradientSteps, contentWidth, tableHeaderHeight / tableGradientSteps, 'F');
+  }
   
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
@@ -215,9 +227,12 @@ export async function generateQuotePDF(quote) {
     if (y + rowHeight > 270) {
       doc.addPage();
       y = margin;
-      // Re-render header
-      doc.setFillColor(0, 0, 0);
-      doc.rect(margin, y, contentWidth, 7, 'F');
+      // Re-render header with gradient
+      for (let i = 0; i < tableGradientSteps; i++) {
+        const gray = Math.floor((i / tableGradientSteps) * 100);
+        doc.setFillColor(gray, gray, gray);
+        doc.rect(margin, y + (i * 7) / tableGradientSteps, contentWidth, 7 / tableGradientSteps, 'F');
+      }
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
       doc.setTextColor(255, 255, 255);
