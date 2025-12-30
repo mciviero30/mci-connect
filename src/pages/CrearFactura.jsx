@@ -220,7 +220,16 @@ export default function CrearFactura() {
       
       // Step 2: Generate invoice number via backend function (thread-safe)
       const response = await generateInvoiceNumber({});
-      const invoice_number = response.data.invoice_number;
+      console.log("generateInvoiceNumber response:", response);
+
+      const invoice_number =
+        response?.data?.invoice_number ||
+        response?.invoice_number ||
+        response?.data?.data?.invoice_number || "";
+
+      if (!invoice_number) {
+        throw new Error("Invoice number missing from generateInvoiceNumber response");
+      }
 
       // Step 3: Build final data with generated number
       const finalData = {
@@ -387,7 +396,16 @@ export default function CrearFactura() {
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
         const response = await generateInvoiceNumber({});
-        invoice_number = response.data.invoice_number;
+        console.log("generateInvoiceNumber response:", response);
+
+        invoice_number =
+          response?.data?.invoice_number ||
+          response?.invoice_number ||
+          response?.data?.data?.invoice_number || "";
+
+        if (!invoice_number) {
+          throw new Error("Invoice number missing from generateInvoiceNumber response");
+        }
       }
 
       const invoiceData = {
