@@ -20,6 +20,16 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { toast } from 'sonner';
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 
+// Helper to extract invoice number from various response structures
+function extractInvoiceNumber(res) {
+  if (!res) return '';
+  if (typeof res === 'string') return res;                       // "INV-00001"
+  if (typeof res?.invoice_number === 'string') return res.invoice_number;
+  if (typeof res?.data?.invoice_number === 'string') return res.data.invoice_number;
+  if (typeof res?.data === 'string') return res.data;            // por si data = "INV-00001"
+  return '';
+}
+
 export default function CrearFactura() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
@@ -219,22 +229,12 @@ export default function CrearFactura() {
       const normalizedData = normalizeInvoiceForSave(invoiceData);
       
       // Step 2: Generate invoice number via backend function (thread-safe)
-      const response = await generateInvoiceNumber({});
-      console.log("🧾 generateInvoiceNumber raw response:", response);
-
-      const invoiceNumber =
-        response?.invoice_number ??
-        response?.data?.invoice_number ??
-        response?.data?.invoiceNumber ??
-        response?.invoiceNumber ??
-        response?.result?.invoice_number ??
-        response?.result?.data?.invoice_number;
+      const raw = await generateInvoiceNumber({});
+      const invoiceNumber = extractInvoiceNumber(raw);
 
       if (!invoiceNumber) {
-        throw new Error(
-          "Invoice number missing from generateInvoiceNumber response. Raw response: " +
-            JSON.stringify(response)
-        );
+        if (import.meta.env.DEV) console.log('🧾 generateInvoiceNumber raw response:', raw);
+        throw new Error(`Invoice number missing from generateInvoiceNumber response. Raw response: ${JSON.stringify(raw)}`);
       }
 
       const invoice_number = invoiceNumber;
@@ -403,22 +403,12 @@ export default function CrearFactura() {
       // Ensure we have an invoice number
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
-        const response = await generateInvoiceNumber({});
-        console.log("🧾 generateInvoiceNumber raw response:", response);
-
-        const invoiceNumber =
-          response?.invoice_number ??
-          response?.data?.invoice_number ??
-          response?.data?.invoiceNumber ??
-          response?.invoiceNumber ??
-          response?.result?.invoice_number ??
-          response?.result?.data?.invoice_number;
+        const raw = await generateInvoiceNumber({});
+        const invoiceNumber = extractInvoiceNumber(raw);
 
         if (!invoiceNumber) {
-          throw new Error(
-            "Invoice number missing from generateInvoiceNumber response. Raw response: " +
-              JSON.stringify(response)
-          );
+          if (import.meta.env.DEV) console.log('🧾 generateInvoiceNumber raw response:', raw);
+          throw new Error(`Invoice number missing from generateInvoiceNumber response. Raw response: ${JSON.stringify(raw)}`);
         }
 
         invoice_number = invoiceNumber;
