@@ -220,16 +220,24 @@ export default function CrearFactura() {
       
       // Step 2: Generate invoice number via backend function (thread-safe)
       const response = await generateInvoiceNumber({});
-      console.log("generateInvoiceNumber response:", response);
+      console.log("🧾 generateInvoiceNumber raw response:", response);
 
-      const invoice_number =
-        response?.data?.invoice_number ||
-        response?.invoice_number ||
-        response?.data?.data?.invoice_number || "";
+      const invoiceNumber =
+        response?.invoice_number ??
+        response?.data?.invoice_number ??
+        response?.data?.invoiceNumber ??
+        response?.invoiceNumber ??
+        response?.result?.invoice_number ??
+        response?.result?.data?.invoice_number;
 
-      if (!invoice_number) {
-        throw new Error("Invoice number missing from generateInvoiceNumber response");
+      if (!invoiceNumber) {
+        throw new Error(
+          "Invoice number missing from generateInvoiceNumber response. Raw response: " +
+            JSON.stringify(response)
+        );
       }
+
+      const invoice_number = invoiceNumber;
 
       // Step 3: Build final data with generated number
       const finalData = {
@@ -396,16 +404,24 @@ export default function CrearFactura() {
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
         const response = await generateInvoiceNumber({});
-        console.log("generateInvoiceNumber response:", response);
+        console.log("🧾 generateInvoiceNumber raw response:", response);
 
-        invoice_number =
-          response?.data?.invoice_number ||
-          response?.invoice_number ||
-          response?.data?.data?.invoice_number || "";
+        const invoiceNumber =
+          response?.invoice_number ??
+          response?.data?.invoice_number ??
+          response?.data?.invoiceNumber ??
+          response?.invoiceNumber ??
+          response?.result?.invoice_number ??
+          response?.result?.data?.invoice_number;
 
-        if (!invoice_number) {
-          throw new Error("Invoice number missing from generateInvoiceNumber response");
+        if (!invoiceNumber) {
+          throw new Error(
+            "Invoice number missing from generateInvoiceNumber response. Raw response: " +
+              JSON.stringify(response)
+          );
         }
+
+        invoice_number = invoiceNumber;
       }
 
       const invoiceData = {
