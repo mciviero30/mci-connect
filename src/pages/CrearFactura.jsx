@@ -221,20 +221,25 @@ export default function CrearFactura() {
       
       // Step 2: Generate invoice number via backend function (thread-safe)
       if (import.meta.env.DEV) {
-        console.log('[InvoiceNumber] using backend function', typeof generateInvoiceNumber);
+        console.log('[InvoiceNumber] calling backend generateInvoiceNumber()');
       }
       const raw = await generateInvoiceNumber({});
+      
+      if (import.meta.env.DEV) {
+        console.log('[InvoiceNumber] raw response:', raw);
+      }
+      
       const invoiceNumber = extractInvoiceNumber(raw);
 
       if (!invoiceNumber) {
-        if (import.meta.env.DEV) console.log('🧾 generateInvoiceNumber raw response:', raw);
-        throw new Error(`Invoice number missing from generateInvoiceNumber response. Raw response: ${JSON.stringify(raw)}`);
+        console.error('❌ Invoice number missing from generateInvoiceNumber response. Raw:', raw);
+        throw new Error('Invoice number missing from generateInvoiceNumber response');
       }
 
       const invoice_number = invoiceNumber;
       
       if (import.meta.env.DEV) {
-        console.log('[invoice_number resolved]', invoiceNumber, raw);
+        console.log('[InvoiceNumber] ✅ resolved:', invoice_number);
       }
 
       // Step 3: Build final data with generated number
@@ -407,20 +412,25 @@ export default function CrearFactura() {
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
         if (import.meta.env.DEV) {
-          console.log('[InvoiceNumber] using backend function', typeof generateInvoiceNumber);
+          console.log('[InvoiceNumber] calling backend generateInvoiceNumber()');
         }
         const raw = await generateInvoiceNumber({});
+        
+        if (import.meta.env.DEV) {
+          console.log('[InvoiceNumber] raw response:', raw);
+        }
+        
         const invoiceNumber = extractInvoiceNumber(raw);
 
         if (!invoiceNumber) {
-          if (import.meta.env.DEV) console.log('🧾 generateInvoiceNumber raw response:', raw);
-          throw new Error(`Invoice number missing from generateInvoiceNumber response. Raw response: ${JSON.stringify(raw)}`);
+          console.error('❌ Invoice number missing from generateInvoiceNumber response. Raw:', raw);
+          throw new Error('Invoice number missing from generateInvoiceNumber response');
         }
 
         invoice_number = invoiceNumber;
         
         if (import.meta.env.DEV) {
-          console.log('[invoice_number resolved]', invoiceNumber, raw);
+          console.log('[InvoiceNumber] ✅ resolved:', invoice_number);
         }
       }
 

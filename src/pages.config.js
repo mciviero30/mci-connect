@@ -1,4 +1,5 @@
 import AdminCleanup from './pages/AdminCleanup';
+import AgreementSignatures from './pages/AgreementSignatures';
 import BonusConfiguration from './pages/BonusConfiguration';
 import BudgetForecasting from './pages/BudgetForecasting';
 import Calendario from './pages/Calendario';
@@ -71,12 +72,12 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import AgreementSignatures from './pages/AgreementSignatures';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AdminCleanup": AdminCleanup,
+    "AgreementSignatures": AgreementSignatures,
     "BonusConfiguration": BonusConfiguration,
     "BudgetForecasting": BudgetForecasting,
     "Calendario": Calendario,
@@ -149,7 +150,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "AgreementSignatures": AgreementSignatures,
 }
 
 export const pagesConfig = {
