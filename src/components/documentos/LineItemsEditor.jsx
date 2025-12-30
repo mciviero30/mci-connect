@@ -52,9 +52,10 @@ export default function LineItemsEditor({
 
   const updateItem = (index, field, value) => {
     // Guard: Never allow clearing item_name
-    if (field === 'item_name' && !value) return;
+    if (field === 'item_name' && (value === null || value === undefined)) return;
     
     const newItems = [...items];
+    const itemBefore = { ...newItems[index] };
     newItems[index][field] = value;
     
     // Auto-calculate quantity for special items
@@ -69,9 +70,10 @@ export default function LineItemsEditor({
     
     // If selecting from catalog
     if (field === 'item_name' && catalogItems.length > 0) {
-      const selectedItem = catalogItems.find(ci => ci.name === value);
+      const selectedItem = catalogItems.find(ci => ci.name === value || ci.item_name === value);
       if (selectedItem) {
-        newItems[index].item_name = selectedItem.name;
+        // CRITICAL: Canonical mapping for both QuoteItem and ItemCatalog
+        newItems[index].item_name = selectedItem.name || selectedItem.item_name || '';
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || selectedItem.uom || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
@@ -86,14 +88,33 @@ export default function LineItemsEditor({
         
         newItems[index].total = (newItems[index].quantity || 0) * (selectedItem.unit_price || 0);
         
+        // DEV LOG
+        if (import.meta.env.DEV) {
+          console.log("[Invoice select]", {
+            selected: selectedItem.name || selectedItem.item_name,
+            before: { item_name: itemBefore.item_name, description: itemBefore.description },
+            after: { item_name: newItems[index].item_name, description: newItems[index].description }
+          });
+        }
+        
         if (onToast) {
           onToast({
-            title: `Item "${selectedItem.name}" loaded`,
+            title: `Item "${selectedItem.name || selectedItem.item_name}" loaded`,
             description: `Unit price: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Time: ${selectedItem.installation_time}h` : ''}`,
             variant: 'success',
           });
         }
       }
+    }
+    
+    // DEV LOG for manual edits
+    if (import.meta.env.DEV && (field === 'item_name' || field === 'description')) {
+      console.log("[Invoice updateItem]", {
+        field,
+        value,
+        before: { item_name: itemBefore.item_name, description: itemBefore.description },
+        after: { item_name: newItems[index].item_name, description: newItems[index].description }
+      });
     }
     
     onItemsChange(newItems);

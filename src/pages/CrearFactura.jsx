@@ -84,8 +84,17 @@ export default function CrearFactura() {
 
   useEffect(() => {
     if (existingInvoice && !loadingInvoice) {
+      // Ensure items have item_name (migrate from legacy name/description fields)
+      const itemsWithItemName = (existingInvoice.items || []).map(item => ({
+        ...item,
+        item_name: (item.item_name ?? item.name ?? ''),
+        description: (item.description ?? ''),
+        unit: (item.unit ?? item.uom ?? 'pcs'),
+      }));
+
       setFormData({
         ...existingInvoice,
+        items: itemsWithItemName,
         // Ensure date formats are correct for input type="date"
         invoice_date: format(new Date(existingInvoice.invoice_date), 'yyyy-MM-dd'),
         due_date: format(new Date(existingInvoice.due_date), 'yyyy-MM-dd'),
@@ -97,17 +106,25 @@ export default function CrearFactura() {
     if (quoteId && quotes.length > 0) {
       const quote = quotes.find(q => q.id === quoteId);
       if (quote) {
+        // Ensure items have item_name preserved from quote
+        const itemsWithItemName = (quote.items || []).map(item => ({
+          ...item,
+          item_name: (item.item_name ?? item.name ?? ''),
+          description: (item.description ?? ''),
+          unit: (item.unit ?? item.uom ?? 'pcs'),
+        }));
+
         setFormData(prevFormData => ({
           ...prevFormData,
           quote_id: quoteId,
-          customer_id: quote.customer_id || prevFormData.customer_id, // Populate customer_id from quote if available
+          customer_id: quote.customer_id || prevFormData.customer_id,
           customer_name: quote.customer_name,
           customer_email: quote.customer_email,
           customer_phone: quote.customer_phone,
           job_name: quote.job_name,
           job_id: quote.job_id,
           job_address: quote.job_address,
-          items: quote.items,
+          items: itemsWithItemName,
           tax_rate: quote.tax_rate,
           notes: quote.notes,
           terms: quote.terms
@@ -187,6 +204,16 @@ export default function CrearFactura() {
   const createMutation = useMutation({
     mutationFn: async (invoiceData) => {
       console.log('Creating invoice with data:', invoiceData);
+      
+      // DEV LOG
+      if (import.meta.env.DEV) {
+        console.log("[Invoice before normalize]", invoiceData.items.map(i => ({
+          item_name: i.item_name,
+          description: i.description,
+          unit: i.unit,
+          unit_price: i.unit_price
+        })));
+      }
       
       // Step 1: Normalize and validate data
       const normalizedData = normalizeInvoiceForSave(invoiceData);
@@ -284,6 +311,16 @@ export default function CrearFactura() {
       }
       
       console.log('Updating invoice with data:', data);
+      
+      // DEV LOG
+      if (import.meta.env.DEV) {
+        console.log("[Invoice before normalize]", data.items.map(i => ({
+          item_name: i.item_name,
+          description: i.description,
+          unit: i.unit,
+          unit_price: i.unit_price
+        })));
+      }
       
       // Normalize and validate data (preserves payment info)
       const normalizedData = normalizeInvoiceForSave({

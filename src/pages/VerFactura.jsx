@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,16 @@ export default function VerFactura() {
     queryFn: () => base44.entities.Invoice.get(invoiceId),
     enabled: !!invoiceId,
   });
+
+  // DEV LOG
+  useEffect(() => {
+    if (invoice && import.meta.env.DEV) {
+      console.log("[Invoice loaded]", invoice.items?.map(i => ({
+        item_name: i.item_name,
+        description: i.description
+      })));
+    }
+  }, [invoice]);
 
   const recordPaymentMutation = useMutation({
     mutationFn: async (amount) => {
