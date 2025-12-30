@@ -52,14 +52,13 @@ export async function generateQuotePDF(quote) {
   const contentWidth = pageWidth - (margin * 2);
   let y = margin;
 
-  // ========== HEADER: Black to gray gradient with MCI logo and QUOTE title ==========
-  // Simulate gradient with multiple rectangles
+  // ========== HEADER: Black to gray gradient (horizontal left to right) ==========
   const headerHeight = 25;
   const gradientSteps = 50;
   for (let i = 0; i < gradientSteps; i++) {
-    const gray = Math.floor((i / gradientSteps) * 80); // 0 to 80
+    const gray = Math.floor((i / gradientSteps) * 100); // 0 to 100 (negro a gris)
     doc.setFillColor(gray, gray, gray);
-    doc.rect(0, (i * headerHeight) / gradientSteps, pageWidth, headerHeight / gradientSteps, 'F');
+    doc.rect((i * pageWidth) / gradientSteps, 0, pageWidth / gradientSteps, headerHeight, 'F');
   }
   
   // Load and add MCI logo
@@ -182,13 +181,13 @@ export async function generateQuotePDF(quote) {
 
   // ========== ITEMS TABLE ==========
   const tableHeaderY = y;
-  // Black to gray gradient for table header
+  // Black to gray gradient (horizontal left to right)
   const tableHeaderHeight = 7;
-  const tableGradientSteps = 20;
+  const tableGradientSteps = 30;
   for (let i = 0; i < tableGradientSteps; i++) {
-    const gray = Math.floor((i / tableGradientSteps) * 100); // 0 to 100
+    const gray = Math.floor((i / tableGradientSteps) * 120); // 0 to 120
     doc.setFillColor(gray, gray, gray);
-    doc.rect(margin, tableHeaderY + (i * tableHeaderHeight) / tableGradientSteps, contentWidth, tableHeaderHeight / tableGradientSteps, 'F');
+    doc.rect(margin + (i * contentWidth) / tableGradientSteps, tableHeaderY, contentWidth / tableGradientSteps, tableHeaderHeight, 'F');
   }
   
   doc.setFont('helvetica', 'bold');
@@ -229,9 +228,9 @@ export async function generateQuotePDF(quote) {
       y = margin;
       // Re-render header with gradient
       for (let i = 0; i < tableGradientSteps; i++) {
-        const gray = Math.floor((i / tableGradientSteps) * 100);
+        const gray = Math.floor((i / tableGradientSteps) * 120);
         doc.setFillColor(gray, gray, gray);
-        doc.rect(margin, y + (i * 7) / tableGradientSteps, contentWidth, 7 / tableGradientSteps, 'F');
+        doc.rect(margin + (i * contentWidth) / tableGradientSteps, y, contentWidth / tableGradientSteps, 7, 'F');
       }
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
