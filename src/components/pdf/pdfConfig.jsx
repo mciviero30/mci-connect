@@ -1,110 +1,119 @@
 /**
  * PDF CONFIGURATION - MCI CONNECT
- * Branding, colors, and assets for professional PDF generation
+ * Centralized config for PDF generation (colors, fonts, layout)
+ * NO CSS, NO Tailwind, NO remote resources
  */
 
-// MCI Connect Brand Colors (HEX values - no CSS variables)
-export const COLORS = {
-  // Primary Brand
-  primary: '#000000',      // Black
-  secondary: '#4a4a4a',    // Gray
-  accent: '#FFB800',       // Yellow/Gold
-  
-  // Document Colors
-  text: {
-    primary: '#000000',
-    secondary: '#4a4a4a',
-    light: '#6b7280',
-  },
-  
-  // Backgrounds
-  bg: {
-    header: '#000000',
-    tableHeader: '#1e293b',
-    row: '#f8fafc',
-    total: '#e2e8f0',
-  },
-  
-  // Status Colors
-  status: {
-    paid: '#10b981',
-    pending: '#f59e0b',
-    overdue: '#ef4444',
-    draft: '#6b7280',
-  }
-};
-
-// Typography
-export const FONTS = {
-  regular: 'helvetica',
-  bold: 'helvetica-bold',
-  sizes: {
-    title: 24,
-    subtitle: 16,
-    heading: 14,
-    body: 10,
-    small: 8,
-  }
-};
-
-// Layout
-export const LAYOUT = {
+// PAGE LAYOUT (A4 Portrait)
+export const PAGE = {
+  width: 210,  // mm
+  height: 297, // mm
   margin: {
     top: 20,
     right: 20,
     bottom: 20,
-    left: 20,
-  },
-  pageWidth: 210, // A4
-  pageHeight: 297, // A4
-  lineHeight: 1.5,
+    left: 20
+  }
 };
 
-// Company Information
+// BRAND COLORS (HEX fixed values)
+export const COLORS = {
+  // Primary
+  black: '#000000',
+  darkGray: '#4a4a4a',
+  lightGray: '#e5e7eb',
+  white: '#ffffff',
+  
+  // Text
+  textPrimary: '#111827',
+  textSecondary: '#6b7280',
+  textLight: '#9ca3af',
+  
+  // Backgrounds
+  headerBg: '#000000',
+  tableBg: '#f9fafb',
+  tableHeaderBg: '#f3f4f6',
+  totalsBg: '#e5e7eb',
+  
+  // Accent
+  accent: '#FFB800',
+  
+  // Status
+  green: '#10b981',
+  red: '#ef4444',
+  amber: '#f59e0b',
+  blue: '#3b82f6'
+};
+
+// FONTS (jsPDF built-in)
+export const FONTS = {
+  regular: 'helvetica',
+  bold: 'helvetica-bold',
+  sizes: {
+    title: 20,
+    subtitle: 14,
+    heading: 12,
+    body: 10,
+    small: 8
+  }
+};
+
+// COMPANY INFORMATION
 export const COMPANY_INFO = {
   name: 'Modern Components Installation',
+  shortName: 'MCI',
   address: '2414 Meadow Isle Ln',
   city: 'Lawrenceville',
   state: 'GA',
   zip: '30043',
   phone: '470-209-3783',
-  email: 'info@mci-us.com',
+  email: 'info@mci-us.com'
 };
 
-// MCI Logo - Base64 PNG (fallback to text if needed)
-export const MCI_LOGO_BASE64 = null; // Will render text logo if null
+// DEFAULT DIMENSIONS
+export const DEFAULTS = {
+  rowHeight: 8,
+  headerHeight: 35,
+  footerHeight: 40,
+  lineSpacing: 5,
+  tablePadding: 3
+};
 
 /**
- * Add gradient to PDF
- */
-export function addGradient(doc, x, y, width, height) {
-  // Simulate gradient with rectangles (jsPDF doesn't support real gradients)
-  doc.setFillColor(COLORS.primary);
-  doc.rect(x, y, width * 0.4, height, 'F');
-  doc.setFillColor(COLORS.secondary);
-  doc.rect(x + width * 0.4, y, width * 0.6, height, 'F');
-}
-
-/**
- * Format currency
+ * FORMAT CURRENCY
  */
 export function formatCurrency(amount) {
-  return `$${parseFloat(amount || 0).toFixed(2)}`;
+  if (amount === null || amount === undefined) return '$0.00';
+  return `$${parseFloat(amount).toFixed(2)}`;
 }
 
 /**
- * Format date
+ * FORMAT DATE
  */
 export function formatDate(dateString) {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: '2-digit', 
-      day: '2-digit', 
-      year: '2-digit' 
+    return date.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
     });
   } catch {
     return dateString;
   }
+}
+
+/**
+ * CALCULATE CONTENT WIDTH
+ */
+export function getContentWidth() {
+  return PAGE.width - PAGE.margin.left - PAGE.margin.right;
+}
+
+/**
+ * CALCULATE MAX Y POSITION
+ */
+export function getMaxY() {
+  return PAGE.height - PAGE.margin.bottom;
 }

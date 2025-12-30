@@ -1,345 +1,395 @@
 /**
- * PDF HELPERS - Shared Components
- * Reusable functions for PDF generation
+ * PDF HELPERS - Reusable Functions
+ * Shared components for Quote and Invoice PDF generation
  */
 
-import { COLORS, FONTS, LAYOUT, COMPANY_INFO, addGradient, formatCurrency, formatDate } from './pdfConfig';
+import { jsPDF } from 'jspdf';
+import { 
+  PAGE, 
+  COLORS, 
+  FONTS, 
+  COMPANY_INFO, 
+  DEFAULTS,
+  formatCurrency,
+  formatDate,
+  getContentWidth,
+  getMaxY
+} from './pdfConfig';
 
 /**
- * Add MCI header with gradient background
+ * INIT DOCUMENT
+ * Creates and returns a jsPDF instance with default settings
  */
-export function addHeader(doc, documentType = 'QUOTE') {
-  const { margin, pageWidth } = LAYOUT;
+export function initDocument() {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
   
-  // Black gradient header
-  addGradient(doc, 0, 0, pageWidth, 40);
+  // Set default font
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.body);
+  
+  return doc;
+}
+
+/**
+ * ADD HEADER
+ * Dark header with logo text and document title
+ * @returns {number} Y position after header
+ */
+export function addHeader(doc, title = 'DOCUMENT') {
+  const { margin } = PAGE;
+  
+  // Dark background
+  doc.setFillColor(COLORS.headerBg);
+  doc.rect(0, 0, PAGE.width, DEFAULTS.headerHeight, 'F');
   
   // MCI Logo (text-based)
   doc.setFont(FONTS.bold);
-  doc.setFontSize(20);
-  doc.setTextColor(255, 255, 255);
-  doc.text('MCI', margin, 20);
-  
-  // Document Type
   doc.setFontSize(FONTS.sizes.title);
-  doc.text(documentType, pageWidth - margin, 20, { align: 'right' });
+  doc.setTextColor(COLORS.white);
+  doc.text(COMPANY_INFO.shortName, margin, 15);
   
-  return 45; // Return Y position after header
+  // Document Title (right aligned)
+  doc.setFontSize(FONTS.sizes.title);
+  doc.text(title, PAGE.width - margin, 15, { align: 'right' });
+  
+  return DEFAULTS.headerHeight + 5;
 }
 
 /**
- * Add company info section
+ * ADD COMPANY INFO
+ * Renders MCI company information
+ * @returns {number} New Y position
  */
 export function addCompanyInfo(doc, startY) {
-  const { margin } = LAYOUT;
+  const { margin } = PAGE;
+  let y = startY;
   
+  // Company name
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.body);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text(COMPANY_INFO.name, margin, startY);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text(COMPANY_INFO.name, margin, y);
+  y += DEFAULTS.lineSpacing;
   
+  // Address
   doc.setFont(FONTS.regular);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.text.light);
-  
-  let y = startY + 5;
+  doc.setTextColor(COLORS.textSecondary);
   doc.text(COMPANY_INFO.address, margin, y);
   y += 4;
+  
+  // City, State, Zip
   doc.text(`${COMPANY_INFO.city}, ${COMPANY_INFO.state} ${COMPANY_INFO.zip}`, margin, y);
   y += 4;
+  
+  // Phone
   doc.text(`Phone: ${COMPANY_INFO.phone}`, margin, y);
+  y += 4;
   
-  return y + 10;
-}
-
-/**
- * Add customer info section
- */
-export function addCustomerInfo(doc, customer, startY) {
-  const { margin } = LAYOUT;
-  
-  doc.setFont(FONTS.regular);
-  doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.text.secondary);
-  doc.text('BILL TO:', margin, startY);
-  
-  doc.setFont(FONTS.bold);
-  doc.setFontSize(FONTS.sizes.subtitle);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text(customer.name || 'N/A', margin, startY + 6);
-  
-  return startY + 12;
-}
-
-/**
- * Add document info (quote/invoice details)
- */
-export function addDocumentInfo(doc, data, startY) {
-  const { pageWidth, margin } = LAYOUT;
-  const rightX = pageWidth - margin;
-  
-  doc.setFont(FONTS.regular);
-  doc.setFontSize(FONTS.sizes.small);
-  
-  let y = startY;
-  const lineHeight = 5;
-  
-  // Document Number
-  doc.setTextColor(COLORS.text.secondary);
-  doc.text(data.numberLabel, rightX - 50, y);
-  doc.setFont(FONTS.bold);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text(data.number, rightX, y, { align: 'right' });
-  
-  // Date
-  y += lineHeight;
-  doc.setFont(FONTS.regular);
-  doc.setTextColor(COLORS.text.secondary);
-  doc.text('Date:', rightX - 50, y);
-  doc.setFont(FONTS.bold);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text(formatDate(data.date), rightX, y, { align: 'right' });
-  
-  // Valid Until / Due Date
-  if (data.secondDateLabel && data.secondDate) {
-    y += lineHeight;
-    doc.setFont(FONTS.regular);
-    doc.setTextColor(COLORS.text.secondary);
-    doc.text(data.secondDateLabel, rightX - 50, y);
-    doc.setFont(FONTS.bold);
-    doc.setTextColor(COLORS.text.primary);
-    doc.text(formatDate(data.secondDate), rightX, y, { align: 'right' });
-  }
-  
-  return y + 10;
-}
-
-/**
- * Add job details section
- */
-export function addJobDetails(doc, job, startY) {
-  const { margin } = LAYOUT;
-  
-  if (!job.name) return startY;
-  
-  doc.setFont(FONTS.regular);
-  doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.text.secondary);
-  doc.text('JOB DETAILS:', margin, startY);
-  
-  doc.setFont(FONTS.bold);
-  doc.setFontSize(FONTS.sizes.body);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text(job.name, margin, startY + 5);
-  
-  let y = startY + 10;
-  
-  if (job.address) {
-    doc.setFont(FONTS.regular);
-    doc.setFontSize(FONTS.sizes.small);
-    doc.setTextColor(COLORS.text.light);
-    const addressLines = doc.splitTextToSize(job.address, 180);
-    doc.text(addressLines, margin, y);
-    y += addressLines.length * 4;
-  }
-  
-  return y + 5;
-}
-
-/**
- * Add items table
- */
-export function addItemsTable(doc, items, startY) {
-  const { margin, pageWidth } = LAYOUT;
-  const tableWidth = pageWidth - (margin * 2);
-  
-  // Table header
-  doc.setFillColor(COLORS.bg.tableHeader);
-  doc.rect(margin, startY, tableWidth, 8, 'F');
-  
-  doc.setFont(FONTS.bold);
-  doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(255, 255, 255);
-  
-  // Column headers
-  const colX = {
-    num: margin + 2,
-    desc: margin + 10,
-    qty: pageWidth - 80,
-    rate: pageWidth - 55,
-    amount: pageWidth - margin - 2,
-  };
-  
-  doc.text('#', colX.num, startY + 5);
-  doc.text('ITEM & DESCRIPTION', colX.desc, startY + 5);
-  doc.text('QTY', colX.qty, startY + 5);
-  doc.text('RATE', colX.rate, startY + 5);
-  doc.text('AMOUNT', colX.amount, startY + 5, { align: 'right' });
-  
-  let y = startY + 12;
-  
-  // Items
-  doc.setFont(FONTS.regular);
-  doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.text.primary);
-  
-  items.forEach((item, index) => {
-    // Check page break
-    if (y > 250) {
-      doc.addPage();
-      y = 30;
-    }
-    
-    // Row number
-    doc.setTextColor(COLORS.text.light);
-    doc.text(`${index + 1}`, colX.num, y);
-    
-    // Description
-    doc.setTextColor(COLORS.text.primary);
-    doc.setFont(FONTS.bold);
-    const desc = item.item_name || item.description || '';
-    const descLines = doc.splitTextToSize(desc, 100);
-    doc.text(descLines[0], colX.desc, y);
-    
-    // Quantity
-    doc.setFont(FONTS.regular);
-    doc.text(`${item.quantity} ${item.unit || ''}`, colX.qty, y);
-    
-    // Rate
-    doc.text(formatCurrency(item.unit_price), colX.rate, y);
-    
-    // Amount
-    doc.setFont(FONTS.bold);
-    doc.text(formatCurrency(item.total), colX.amount, y, { align: 'right' });
-    
-    y += 8;
-    
-    // Separator line
-    doc.setDrawColor(COLORS.bg.total);
-    doc.line(margin, y - 2, pageWidth - margin, y - 2);
-  });
-  
-  return y + 5;
-}
-
-/**
- * Add totals section
- */
-export function addTotals(doc, totals, startY) {
-  const { pageWidth, margin } = LAYOUT;
-  const rightX = pageWidth - margin;
-  const labelX = rightX - 60;
-  
-  let y = startY;
-  
-  doc.setFont(FONTS.regular);
-  doc.setFontSize(FONTS.sizes.body);
-  
-  // Subtotal
-  doc.setTextColor(COLORS.text.secondary);
-  doc.text('Subtotal:', labelX, y);
-  doc.setFont(FONTS.bold);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text(formatCurrency(totals.subtotal), rightX, y, { align: 'right' });
-  
-  // Tax
-  if (totals.tax_amount > 0) {
-    y += 6;
-    doc.setFont(FONTS.regular);
-    doc.setTextColor(COLORS.text.secondary);
-    doc.text(`Tax (${totals.tax_rate || 0}%):`, labelX, y);
-    doc.setFont(FONTS.bold);
-    doc.setTextColor(COLORS.text.primary);
-    doc.text(formatCurrency(totals.tax_amount), rightX, y, { align: 'right' });
-  }
-  
-  // Total
-  y += 10;
-  doc.setFillColor(COLORS.bg.total);
-  doc.rect(labelX - 5, y - 5, 65, 10, 'F');
-  
-  doc.setFont(FONTS.bold);
-  doc.setFontSize(FONTS.sizes.subtitle);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text('TOTAL:', labelX, y + 2);
-  doc.text(formatCurrency(totals.total), rightX, y + 2, { align: 'right' });
-  
-  y += 12;
-  
-  // Amount Paid (invoices only)
-  if (totals.amount_paid !== undefined && totals.amount_paid > 0) {
-    doc.setFont(FONTS.regular);
-    doc.setFontSize(FONTS.sizes.body);
-    doc.setTextColor(COLORS.status.paid);
-    doc.text('Amount Paid:', labelX, y);
-    doc.text(`-${formatCurrency(totals.amount_paid)}`, rightX, y, { align: 'right' });
-    y += 6;
-  }
-  
-  // Balance Due (invoices only)
-  if (totals.balance !== undefined && totals.balance > 0) {
-    doc.setFillColor(COLORS.primary);
-    doc.rect(labelX - 5, y - 4, 65, 10, 'F');
-    
-    doc.setFont(FONTS.bold);
-    doc.setFontSize(FONTS.sizes.subtitle);
-    doc.setTextColor(255, 255, 255);
-    doc.text('Balance Due:', labelX, y + 2);
-    doc.text(formatCurrency(totals.balance), rightX, y + 2, { align: 'right' });
-    y += 10;
-  }
+  // Email
+  doc.text(`Email: ${COMPANY_INFO.email}`, margin, y);
+  y += DEFAULTS.lineSpacing + 3;
   
   return y;
 }
 
 /**
- * Add notes section
+ * ADD CUSTOMER INFO
+ * Renders billing information
+ * @param {object} customer - { name, address, phone, email }
+ * @returns {number} New Y position
+ */
+export function addCustomerInfo(doc, customer, startY) {
+  const { margin } = PAGE;
+  let y = startY;
+  
+  // "BILL TO:" label
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.small);
+  doc.setTextColor(COLORS.textSecondary);
+  doc.text('BILL TO:', margin, y);
+  y += 5;
+  
+  // Customer name
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.subtitle);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text(customer.name || 'N/A', margin, y);
+  y += 6;
+  
+  // Address (if provided)
+  if (customer.address) {
+    doc.setFont(FONTS.regular);
+    doc.setFontSize(FONTS.sizes.small);
+    doc.setTextColor(COLORS.textSecondary);
+    const addressLines = doc.splitTextToSize(customer.address, getContentWidth() * 0.5);
+    doc.text(addressLines, margin, y);
+    y += addressLines.length * 4;
+  }
+  
+  // Phone (if provided)
+  if (customer.phone) {
+    doc.text(`Phone: ${customer.phone}`, margin, y);
+    y += 4;
+  }
+  
+  // Email (if provided)
+  if (customer.email) {
+    doc.text(`Email: ${customer.email}`, margin, y);
+    y += 4;
+  }
+  
+  y += DEFAULTS.lineSpacing;
+  return y;
+}
+
+/**
+ * ADD TABLE HEADER
+ * Renders table column headers with background
+ * @param {array} columns - Array of column labels
+ * @returns {number} New Y position
+ */
+export function addTableHeader(doc, columns, startY) {
+  const { margin } = PAGE;
+  const contentWidth = getContentWidth();
+  const colWidth = contentWidth / columns.length;
+  
+  // Header background
+  doc.setFillColor(COLORS.tableHeaderBg);
+  doc.rect(margin, startY - 2, contentWidth, DEFAULTS.rowHeight, 'F');
+  
+  // Header text
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.small);
+  doc.setTextColor(COLORS.textPrimary);
+  
+  columns.forEach((col, index) => {
+    const x = margin + (colWidth * index) + DEFAULTS.tablePadding;
+    doc.text(col, x, startY + 3);
+  });
+  
+  // Border line
+  doc.setDrawColor(COLORS.lightGray);
+  doc.line(margin, startY + DEFAULTS.rowHeight - 2, PAGE.width - margin, startY + DEFAULTS.rowHeight - 2);
+  
+  return startY + DEFAULTS.rowHeight;
+}
+
+/**
+ * ADD TABLE ROW
+ * Renders a single table row with text wrapping
+ * @param {array} row - Array of cell values
+ * @param {array} columnWidths - Width in mm for each column
+ * @returns {number} New Y position
+ */
+export function addTableRow(doc, row, columnWidths, startY) {
+  const { margin } = PAGE;
+  let y = startY;
+  let maxRowHeight = DEFAULTS.rowHeight;
+  
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.small);
+  doc.setTextColor(COLORS.textPrimary);
+  
+  // Calculate row height based on text wrapping
+  row.forEach((cell, index) => {
+    const cellText = String(cell || '');
+    const lines = doc.splitTextToSize(cellText, columnWidths[index] - (DEFAULTS.tablePadding * 2));
+    const cellHeight = lines.length * 4 + 4;
+    if (cellHeight > maxRowHeight) {
+      maxRowHeight = cellHeight;
+    }
+  });
+  
+  // Zebra striping (optional light background)
+  if (Math.floor(startY / DEFAULTS.rowHeight) % 2 === 0) {
+    doc.setFillColor(COLORS.tableBg);
+    doc.rect(margin, y, getContentWidth(), maxRowHeight, 'F');
+  }
+  
+  // Render cells
+  let xPos = margin;
+  row.forEach((cell, index) => {
+    const cellText = String(cell || '');
+    const lines = doc.splitTextToSize(cellText, columnWidths[index] - (DEFAULTS.tablePadding * 2));
+    doc.text(lines, xPos + DEFAULTS.tablePadding, y + 5);
+    xPos += columnWidths[index];
+  });
+  
+  // Bottom border
+  doc.setDrawColor(COLORS.lightGray);
+  doc.line(margin, y + maxRowHeight, PAGE.width - margin, y + maxRowHeight);
+  
+  return y + maxRowHeight;
+}
+
+/**
+ * CHECK PAGE BREAK
+ * Adds new page if Y position exceeds threshold
+ * @returns {number} New Y position (reset if page added)
+ */
+export function checkPageBreak(doc, currentY, requiredSpace = 30) {
+  const maxY = getMaxY();
+  
+  if (currentY + requiredSpace > maxY) {
+    doc.addPage();
+    // Re-add header on new page
+    return addHeader(doc, 'CONTINUED') + 5;
+  }
+  
+  return currentY;
+}
+
+/**
+ * ADD TOTALS
+ * Renders subtotal, tax, and total with background
+ * @param {object} totals - { subtotal, tax_rate, tax_amount, total }
+ * @returns {number} New Y position
+ */
+export function addTotals(doc, totals, startY) {
+  const { margin } = PAGE;
+  const rightX = PAGE.width - margin;
+  const labelX = rightX - 60;
+  let y = startY + 5;
+  
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.body);
+  
+  // Subtotal
+  doc.setTextColor(COLORS.textSecondary);
+  doc.text('Subtotal:', labelX, y);
+  doc.setFont(FONTS.bold);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text(formatCurrency(totals.subtotal), rightX, y, { align: 'right' });
+  
+  // Tax (if applicable)
+  if (totals.tax_amount && totals.tax_amount > 0) {
+    y += 6;
+    doc.setFont(FONTS.regular);
+    doc.setTextColor(COLORS.textSecondary);
+    doc.text(`Tax (${totals.tax_rate || 0}%):`, labelX, y);
+    doc.setFont(FONTS.bold);
+    doc.setTextColor(COLORS.textPrimary);
+    doc.text(formatCurrency(totals.tax_amount), rightX, y, { align: 'right' });
+  }
+  
+  // Total (with background)
+  y += 8;
+  doc.setFillColor(COLORS.totalsBg);
+  doc.rect(labelX - 5, y - 5, 65, 10, 'F');
+  
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.subtitle);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text('TOTAL:', labelX, y + 2);
+  doc.text(formatCurrency(totals.total), rightX, y + 2, { align: 'right' });
+  
+  return y + 12;
+}
+
+/**
+ * ADD NOTES SECTION
+ * Renders notes with word wrap
+ * @returns {number} New Y position
  */
 export function addNotes(doc, notes, startY) {
   if (!notes || notes.trim() === '') return startY;
   
-  const { margin, pageWidth } = LAYOUT;
+  const { margin } = PAGE;
+  let y = startY + 5;
   
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.body);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text('NOTES:', margin, startY);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text('NOTES:', margin, y);
+  y += 5;
   
   doc.setFont(FONTS.regular);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.text.secondary);
+  doc.setTextColor(COLORS.textSecondary);
+  const noteLines = doc.splitTextToSize(notes, getContentWidth());
+  doc.text(noteLines, margin, y);
   
-  const noteLines = doc.splitTextToSize(notes, pageWidth - (margin * 2));
-  doc.text(noteLines, margin, startY + 5);
-  
-  return startY + 5 + (noteLines.length * 4) + 5;
+  return y + (noteLines.length * 4) + 5;
 }
 
 /**
- * Add terms section
+ * ADD TERMS SECTION
+ * Renders terms and conditions
+ * @returns {number} New Y position
  */
 export function addTerms(doc, terms, startY) {
-  const { margin, pageWidth } = LAYOUT;
+  const { margin } = PAGE;
+  let y = startY + 5;
   
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.body);
-  doc.setTextColor(COLORS.text.primary);
-  doc.text('TERMS & CONDITIONS:', margin, startY);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text('TERMS & CONDITIONS:', margin, y);
+  y += 5;
   
   doc.setFont(FONTS.regular);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.text.secondary);
+  doc.setTextColor(COLORS.textSecondary);
   
   const termsText = terms || getDefaultTerms();
-  const termsLines = doc.splitTextToSize(termsText, pageWidth - (margin * 2));
-  doc.text(termsLines, margin, startY + 5);
+  const termsLines = doc.splitTextToSize(termsText, getContentWidth());
+  doc.text(termsLines, margin, y);
   
-  return startY + 5 + (termsLines.length * 4);
+  return y + (termsLines.length * 4);
 }
 
 /**
- * Get default terms
+ * DEFAULT TERMS
  */
 function getDefaultTerms() {
-  return `Payment due in 30 days unless otherwise specified. Late payments subject to 1.5% monthly interest. Client responsible for collection costs. Report discrepancies within 5 days in writing.`;
+  return 'Payment due in 30 days unless otherwise specified. Late payments subject to 1.5% monthly interest. Client responsible for collection costs. Report discrepancies within 5 days in writing.';
+}
+
+/**
+ * ADD DOCUMENT INFO (top-right corner)
+ * Renders document number, dates, etc.
+ * @param {object} info - { label, number, date, secondLabel, secondDate }
+ * @returns {number} New Y position
+ */
+export function addDocumentInfo(doc, info, startY) {
+  const rightX = PAGE.width - PAGE.margin.right;
+  const labelX = rightX - 50;
+  let y = startY;
+  
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.small);
+  
+  // Document number
+  doc.setTextColor(COLORS.textSecondary);
+  doc.text(info.label || 'Number:', labelX, y);
+  doc.setFont(FONTS.bold);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text(info.number || 'N/A', rightX, y, { align: 'right' });
+  
+  // Date
+  y += 5;
+  doc.setFont(FONTS.regular);
+  doc.setTextColor(COLORS.textSecondary);
+  doc.text('Date:', labelX, y);
+  doc.setFont(FONTS.bold);
+  doc.setTextColor(COLORS.textPrimary);
+  doc.text(formatDate(info.date), rightX, y, { align: 'right' });
+  
+  // Second date (if provided)
+  if (info.secondLabel && info.secondDate) {
+    y += 5;
+    doc.setFont(FONTS.regular);
+    doc.setTextColor(COLORS.textSecondary);
+    doc.text(info.secondLabel, labelX, y);
+    doc.setFont(FONTS.bold);
+    doc.setTextColor(COLORS.textPrimary);
+    doc.text(formatDate(info.secondDate), rightX, y, { align: 'right' });
+  }
+  
+  return y + 8;
 }
