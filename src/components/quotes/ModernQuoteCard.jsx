@@ -137,9 +137,13 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
         <div className="text-[10px] text-[#666666] mb-3">
           <div className="flex items-center justify-between">
             <span>{quote.quote_number}</span>
-            {quote.quote_date && (
-              <span>{format(new Date(quote.quote_date), 'MMM d, yyyy')}</span>
-            )}
+            {quote.quote_date && (() => {
+              try {
+                return <span>{format(new Date(quote.quote_date), 'MMM d, yyyy')}</span>;
+              } catch {
+                return null;
+              }
+            })()}
           </div>
         </div>
 
