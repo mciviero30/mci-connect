@@ -278,10 +278,10 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       
       let newItems = [...formData.items.filter(item => !item.is_travel_item)];
       
-      // Add Hotel Rooms (no description)
+      // Add Hotel Rooms
       newItems.push({
-        item_name: hotelItem?.name || 'Hotel Rooms',
-        description: '', // No description for travel items
+        item_name: 'Hotel Rooms',
+        description: 'Hotel Rooms',
         quantity: 1,
         unit: hotelItem?.unit || 'nights',
         unit_price: hotelItem?.unit_price || 200,
@@ -293,10 +293,10 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         installation_time: 0,
       });
       
-      // Add Per-Diem (no description)
+      // Add Per-Diem
       newItems.push({
-        item_name: perDiemItem?.name || 'Per-Diem',
-        description: '', // No description for travel items
+        item_name: 'Per-Diem',
+        description: 'Per-Diem',
         quantity: 2,
         unit: perDiemItem?.unit || 'days',
         unit_price: perDiemItem?.unit_price || 55,
