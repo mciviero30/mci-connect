@@ -943,13 +943,13 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <Input
+                    <Textarea
                       value={item.description}
                       onChange={(e) => updateItem(index, 'description', e.target.value)}
                       required={!item.is_travel_item}
                       disabled={item.is_travel_item}
                       placeholder="Description"
-                      className={`h-7 text-[11px] text-slate-600 ${
+                      className={`min-h-[60px] text-xs text-slate-600 resize-none ${
                         item.is_travel_item 
                           ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
                           : 'bg-white border-slate-200'
@@ -958,39 +958,22 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   </div>
 
                   {/* Quantity Column */}
-                  {item.calculation_type !== 'none' ? (
-                    <div className="space-y-1">
-                      <Input
-                        type="number"
-                        value={item.tech_count || 1}
-                        onChange={(e) => updateItem(index, 'tech_count', parseInt(e.target.value) || 1)}
-                        min="1"
-                        required
-                        className="bg-amber-50 border-amber-300 text-slate-900 h-7 text-[11px] text-center font-semibold"
-                      />
-                      <Input
-                        type="number"
-                        value={item.duration_value || 1}
-                        onChange={(e) => updateItem(index, 'duration_value', parseFloat(e.target.value) || 1)}
-                        min="0.01"
-                        step="0.01"
-                        required
-                        className="bg-amber-50 border-amber-300 text-slate-900 h-7 text-[11px] text-center font-semibold"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                        min="0"
-                        step="0.01"
-                        required
-                        className="bg-white border-slate-200 text-slate-900 h-7 text-[11px] text-center font-semibold"
-                      />
-                    </div>
-                  )}
+                  <div className="flex items-center justify-center">
+                    <Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      min="0"
+                      step="0.01"
+                      required
+                      disabled={item.calculation_type !== 'none'}
+                      className={`h-7 text-[11px] text-center font-semibold ${
+                        item.calculation_type !== 'none'
+                          ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
+                          : 'bg-white border-slate-200 text-slate-900'
+                      }`}
+                    />
+                  </div>
 
                   {/* Unit */}
                   <div className="flex items-center justify-center">
