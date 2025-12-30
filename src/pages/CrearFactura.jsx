@@ -21,6 +21,8 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { toast } from 'sonner';
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
+import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Helper to extract invoice number from various response structures
 function extractInvoiceNumber(res) {
@@ -70,6 +72,12 @@ export default function CrearFactura() {
     initialData: [],
   });
 
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list('team_name'),
+    initialData: []
+  });
+
   const { data: existingInvoice, isLoading: loadingInvoice } = useQuery({
     queryKey: ['invoice', editId],
     queryFn: () => base44.entities.Invoice.get(editId),
@@ -84,6 +92,10 @@ export default function CrearFactura() {
     job_name: "",
     job_id: "",
     job_address: "",
+    team_id: "",
+    team_name: "",
+    team_ids: [],
+    team_names: [],
     invoice_date: format(new Date(), 'yyyy-MM-dd'),
     due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
     items: [{ item_name: "", description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }],
@@ -93,6 +105,24 @@ export default function CrearFactura() {
     status: "draft",
     quote_id: quoteId || null
   });
+
+  const [outOfAreaEnabled, setOutOfAreaEnabled] = useState(false);
+  const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+
+  const handleAddTravelItems = (travelItems) => {
+    // Remove existing travel items first
+    const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
+    
+    // Add new travel items
+    const updatedItems = [...nonTravelItems, ...travelItems];
+    
+    setFormData(prev => ({
+      ...prev,
+      items: updatedItems
+    }));
+
+    toast.success(language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`);
+  };
 
   useEffect(() => {
     if (existingInvoice && !loadingInvoice) {
@@ -181,9 +211,42 @@ export default function CrearFactura() {
         ...formData,
         job_id: jobId,
         job_name: job.name,
-        job_address: job.address || ""
+        job_address: job.address || "",
+        team_id: job.team_id || "",
+        team_name: job.team_name || ""
       });
     }
+  };
+
+  const handleTeamToggle = (teamId) => {
+    const team = teams.find(t => t.id === teamId);
+    if (!team) return;
+
+    setFormData(prev => {
+      const currentIds = prev.team_ids || [];
+      const currentNames = prev.team_names || [];
+      const isSelected = currentIds.includes(teamId);
+
+      if (isSelected) {
+        // Remove team
+        return {
+          ...prev,
+          team_ids: currentIds.filter(id => id !== teamId),
+          team_names: currentNames.filter(name => name !== team.team_name),
+          team_id: currentIds[0] === teamId ? (currentIds[1] || '') : prev.team_id,
+          team_name: currentNames[0] === team.team_name ? (currentNames[1] || '') : prev.team_name
+        };
+      } else {
+        // Add team
+        return {
+          ...prev,
+          team_ids: [...currentIds, teamId],
+          team_names: [...currentNames, team.team_name],
+          team_id: currentIds.length === 0 ? teamId : prev.team_id,
+          team_name: currentNames.length === 0 ? team.team_name : prev.team_name
+        };
+      }
+    });
   };
 
   const handleCustomerSelect = (customerId) => {
@@ -640,6 +703,70 @@ export default function CrearFactura() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Team Selection Card */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle>{language === 'es' ? 'Equipos Asignados' : 'Assigned Teams'}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {teams.map(team => (
+                  <div
+                    key={team.id}
+                    onClick={() => handleTeamToggle(team.id)}
+                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      (formData.team_ids || []).includes(team.id)
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={(formData.team_ids || []).includes(team.id)}
+                        onCheckedChange={() => handleTeamToggle(team.id)}
+                        className="pointer-events-none"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                          {team.team_name}
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                          {team.location}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Out of Area Travel Section */}
+          {formData.job_address && (formData.team_ids || []).length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="out-of-area"
+                  checked={outOfAreaEnabled}
+                  onCheckedChange={setOutOfAreaEnabled}
+                />
+                <Label htmlFor="out-of-area" className="text-sm font-medium cursor-pointer">
+                  {language === 'es' ? 'Calcular viaje fuera de área' : 'Calculate out of area travel'}
+                </Label>
+              </div>
+
+              {outOfAreaEnabled && (
+                <OutOfAreaCalculator
+                  jobAddress={formData.job_address}
+                  selectedTeamIds={formData.team_ids || []}
+                  onAddTravelItems={handleAddTravelItems}
+                  isCalculating={isCalculatingTravel}
+                  setIsCalculating={setIsCalculatingTravel}
+                />
+              )}
+            </div>
+          )}
 
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b flex flex-row items-center justify-between py-3">
