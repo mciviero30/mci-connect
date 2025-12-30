@@ -219,15 +219,20 @@ export async function generateQuotePDF(quote) {
   // Table rows - Zebra striping
   quote.items.forEach((item, index) => {
     const itemNum = String(index + 1);
-    const itemName = String(item.item_name || ''); // Nombre del ítem (bold)
-    const itemDesc = String(item.description || ''); // Descripción (normal)
+    
+    // Lógica: mostrar item_name en bold, description debajo si existe y es diferente
+    const itemName = item.item_name || item.description || '';
+    const itemDesc = (item.item_name && item.description && item.item_name !== item.description) 
+      ? item.description 
+      : '';
+    
     const qty = `${item.quantity || 0} ${item.unit || ''}`;
     const rate = `$${Number(item.unit_price || 0).toFixed(2)}`;
     const total = `$${Number(item.total || 0).toFixed(2)}`;
 
     // Calculate row height
-    const nameLines = itemName ? doc.splitTextToSize(itemName, contentWidth - 80) : [];
-    const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 80) : [];
+    const nameLines = itemName ? doc.splitTextToSize(String(itemName), contentWidth - 80) : [];
+    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), contentWidth - 80) : [];
     const rowHeight = Math.max(8, (nameLines.length + descLines.length) * 4 + 6);
 
     // Check page break
