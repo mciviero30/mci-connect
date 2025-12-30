@@ -89,7 +89,7 @@ export default function CrearEstimado() {
       // Ensure all items have item_name field (for backwards compatibility)
       const itemsWithItemName = (existingQuote.items || []).map(item => ({
         ...item,
-        item_name: item.item_name || '',
+        item_name: item.item_name ?? item.catalog_name ?? item.name ?? undefined,
       }));
 
       setFormData({
