@@ -88,12 +88,32 @@ export const ToastViewport = ({ children }) => (
   </div>
 );
 
+// Sanitize error messages - prevent code snippets from showing in UI
+const sanitizeMessage = (msg) => {
+  if (!msg) return 'An error occurred';
+  
+  const str = String(msg);
+  
+  // If message is too long or contains code patterns, replace with generic message
+  if (str.length > 200 || 
+      /\bconst\b|\bfunction\b|\bimport\b|\/\/|=>|\{|\}/.test(str)) {
+    // Log full error in console (DEV only)
+    if (import.meta.env?.DEV) {
+      console.error('🚨 Sanitized error message:', str);
+    }
+    return 'Something went wrong. Check console for details.';
+  }
+  
+  return str;
+};
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
   const addToast = useCallback((message, type = 'info') => {
     const id = Date.now() + Math.random();
-    const toast = { id, message, type };
+    const sanitizedMessage = sanitizeMessage(message);
+    const toast = { id, message: sanitizedMessage, type };
     
     setToasts(prev => [...prev, toast]);
     
