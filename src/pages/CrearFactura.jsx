@@ -20,6 +20,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { toast } from 'sonner';
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
+import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 
 // Helper to extract invoice number from various response structures
 function extractInvoiceNumber(res) {
@@ -300,7 +301,7 @@ export default function CrearFactura() {
     },
     onError: (error) => {
       console.error('Error creating invoice:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(safeErrorMessage(error));
     }
   });
 
@@ -380,7 +381,7 @@ export default function CrearFactura() {
     },
     onError: (error) => {
       console.error('Error updating invoice:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(safeErrorMessage(error));
     }
   });
 
@@ -446,7 +447,7 @@ export default function CrearFactura() {
     },
     onError: (error) => {
       console.error('Error sending invoice:', error);
-      toast.error(`Error: ${error.message || 'Failed to send invoice'}`);
+      toast.error(safeErrorMessage(error, 'Failed to send invoice'));
     }
   });
 
