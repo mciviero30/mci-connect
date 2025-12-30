@@ -216,6 +216,12 @@ export async function generateQuotePDF(quote) {
   
   y = tableHeaderY + 9;
 
+  // DEBUG: Check what data arrives to PDF generation
+  console.log('🔍 PDF ITEMS DEBUG (generateQuotePDF):', quote.items.map(i => ({
+    item_name: i.item_name,
+    description: i.description
+  })));
+
   // Table rows - Zebra striping
   quote.items.forEach((item, index) => {
     const itemNum = String(index + 1);

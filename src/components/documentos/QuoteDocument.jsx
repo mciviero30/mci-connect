@@ -4,6 +4,12 @@ import { format } from 'date-fns';
 export default function QuoteDocument({ quote }) {
     if (!quote) return null;
 
+    // DEBUG: Check what data arrives to PDF render
+    console.log('🔍 PDF ITEMS DEBUG (QuoteDocument):', quote.items?.map(i => ({
+        item_name: i.item_name,
+        description: i.description
+    })));
+
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
             <style jsx global>{`
