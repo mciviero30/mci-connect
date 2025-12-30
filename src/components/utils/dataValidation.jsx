@@ -18,7 +18,11 @@ export function normalizeQuoteForSave(quoteData) {
   const validItems = normalizedItems.filter(item => 
     item.quantity > 0 &&
     (item.description?.trim() || item.item_name?.trim())
-  );
+  ).map(item => ({
+    ...item,
+    item_name: item.item_name || '', // CRITICAL: Explicitly preserve item_name
+    description: item.description || ''
+  }));
 
   if (validItems.length === 0) {
     throw new Error('Quote must have at least one valid item');
