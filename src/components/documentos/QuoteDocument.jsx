@@ -1,5 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
+import LineItemsTable from './LineItemsTable';
 
 export default function QuoteDocument({ quote }) {
     if (!quote) return null;
@@ -98,44 +99,9 @@ export default function QuoteDocument({ quote }) {
             )}
 
             {/* Tabla con Alineación Superior (CRÍTICO) */}
-            <table className="w-full border-collapse mb-8">
-                <thead>
-                    <tr className="text-white text-xs uppercase" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
-                        <th className="text-left px-3 py-2 w-10">#</th>
-                        <th className="text-left px-3 py-2">Item & Description</th>
-                        <th className="text-right px-3 py-2 w-20">Qty</th>
-                        <th className="text-right px-3 py-2 w-24">Rate</th>
-                        <th className="text-right px-3 py-2 w-28">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {quote.items && quote.items.length > 0 ? quote.items.map((item, index) => (
-                        <tr key={index} className="border-b border-slate-200">
-                            {/* align-top asegura que el número y precios no floten si hay mucho texto */}
-                            <td className="px-3 py-4 align-top text-sm text-slate-400">{index + 1}</td>
-                            <td className="px-3 py-4 align-top">
-                                {item.item_name && (
-                                    <div className="font-bold text-slate-900 text-sm">{item.item_name}</div>
-                                )}
-                                {item.description && (
-                                    <div className="text-xs text-slate-600 print-word-wrap mt-1 leading-normal">
-                                        {item.description}
-                                    </div>
-                                )}
-                            </td>
-                            <td className="px-3 py-4 align-top text-right text-sm">{item.quantity} {item.unit}</td>
-                            <td className="px-3 py-4 align-top text-right text-sm">${item.unit_price.toFixed(2)}</td>
-                            <td className="px-3 py-4 align-top text-right text-sm font-bold text-slate-900">
-                                ${item.total.toFixed(2)}
-                            </td>
-                        </tr>
-                    )) : (
-                        <tr>
-                            <td colSpan="5" className="p-4 text-center text-slate-500">No items</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+            <div className="mb-8">
+                <LineItemsTable items={quote.items || []} variant="quote" />
+            </div>
 
             {/* Notes Section */}
             {quote.notes && (

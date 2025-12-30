@@ -1,5 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
+import LineItemsTable from './LineItemsTable';
 
 export default function InvoiceDocument({ invoice }) {
     if (!invoice) return null;
