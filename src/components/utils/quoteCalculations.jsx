@@ -98,28 +98,52 @@ export function calculateInvoiceTotals(items = [], tax_rate = 0, amount_paid = 0
 
 /**
  * Normalize quote item totals (ensures item.total matches quantity × unit_price)
+ * CRITICAL: Preserves ALL existing fields using spread operator first
+ * PROTECTION: Never loses item_name if it exists
  * @param {Array} items - Quote items
  * @returns {Array} - Normalized items
  */
 export function normalizeQuoteItems(items = []) {
-  return items.map(item => ({
-    ...item, // Preserve ALL fields including item_name
-    quantity: parseFloat(item.quantity) || 0,
-    unit_price: parseFloat(item.unit_price) || 0,
-    total: parseFloat(((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)),
-  }));
+  return items.map(item => {
+    // CRITICAL: Spread first to preserve ALL fields
+    const normalized = { ...item };
+    
+    // Only normalize numeric fields (never recreate the object)
+    normalized.quantity = parseFloat(normalized.quantity) || 0;
+    normalized.unit_price = parseFloat(normalized.unit_price) || 0;
+    normalized.total = parseFloat(((normalized.quantity || 0) * (normalized.unit_price || 0)).toFixed(2));
+    
+    // PROTECTION: Never lose item_name if it exists
+    if (item.item_name && !normalized.item_name) {
+      normalized.item_name = item.item_name;
+    }
+    
+    return normalized;
+  });
 }
 
 /**
  * Normalize invoice item totals
+ * CRITICAL: Preserves ALL existing fields using spread operator first
+ * PROTECTION: Never loses item_name if it exists
  * @param {Array} items - Invoice items
  * @returns {Array} - Normalized items
  */
 export function normalizeInvoiceItems(items = []) {
-  return items.map(item => ({
-    ...item, // Preserve ALL fields including item_name
-    quantity: parseFloat(item.quantity) || 0,
-    unit_price: parseFloat(item.unit_price) || 0,
-    total: parseFloat(((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)),
-  }));
+  return items.map(item => {
+    // CRITICAL: Spread first to preserve ALL fields
+    const normalized = { ...item };
+    
+    // Only normalize numeric fields (never recreate the object)
+    normalized.quantity = parseFloat(normalized.quantity) || 0;
+    normalized.unit_price = parseFloat(normalized.unit_price) || 0;
+    normalized.total = parseFloat(((normalized.quantity || 0) * (normalized.unit_price || 0)).toFixed(2));
+    
+    // PROTECTION: Never lose item_name if it exists
+    if (item.item_name && !normalized.item_name) {
+      normalized.item_name = item.item_name;
+    }
+    
+    return normalized;
+  });
 }
