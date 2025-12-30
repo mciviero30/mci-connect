@@ -527,9 +527,16 @@ export default function CrearFactura() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <Label>{t('selectCustomer')} ({t('optional')})</Label>
-                  <Select value={formData.customer_id} onValueChange={handleCustomerSelect}>
+                  <Select value={formData.customer_id || ""} onValueChange={handleCustomerSelect}>
                     <SelectTrigger>
-                      <SelectValue placeholder={t('selectExistingCustomer')} />
+                      <SelectValue placeholder={t('selectExistingCustomer')}>
+                        {formData.customer_id ? (() => {
+                          const selected = customers.find(c => c.id === formData.customer_id);
+                          if (!selected) return t('selectExistingCustomer');
+                          const personName = selected.name || `${selected.first_name || ''} ${selected.last_name || ''}`.trim();
+                          return selected.company ? `${selected.company} - ${personName}` : personName;
+                        })() : t('selectExistingCustomer')}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {customers.filter(c => c.status === 'active').map(customer => {
