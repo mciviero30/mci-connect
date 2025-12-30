@@ -58,7 +58,7 @@ export async function generateQuotePDF(quote) {
   
   // Parte 1: Negro sólido para cubrir el logo
   doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, logoEndX, headerHeight, 'F');
+  doc.rect(0, 0, Number(logoEndX), Number(headerHeight), 'F');
   
   // Parte 2: Gradiente de negro a gris desde el logo hasta el final
   const gradientWidth = pageWidth - logoEndX;
@@ -66,7 +66,9 @@ export async function generateQuotePDF(quote) {
   for (let i = 0; i < gradientSteps; i++) {
     const gray = Math.floor((i / gradientSteps) * 130); // 0 a 130 (negro a gris claro)
     doc.setFillColor(gray, gray, gray);
-    doc.rect(logoEndX + (i * gradientWidth) / gradientSteps, 0, gradientWidth / gradientSteps, headerHeight, 'F');
+    const rectX = Number(logoEndX + (i * gradientWidth) / gradientSteps);
+    const rectWidth = Number(gradientWidth / gradientSteps);
+    doc.rect(rectX, 0, rectWidth, Number(headerHeight), 'F');
   }
   
   // Load and add MCI logo
@@ -195,7 +197,9 @@ export async function generateQuotePDF(quote) {
   for (let i = 0; i < tableGradientSteps; i++) {
     const gray = Math.floor((i / tableGradientSteps) * 120); // 0 to 120
     doc.setFillColor(gray, gray, gray);
-    doc.rect(margin + (i * contentWidth) / tableGradientSteps, tableHeaderY, contentWidth / tableGradientSteps, tableHeaderHeight, 'F');
+    const rectX = Number(margin + (i * contentWidth) / tableGradientSteps);
+    const rectWidth = Number(contentWidth / tableGradientSteps);
+    doc.rect(rectX, Number(tableHeaderY), rectWidth, Number(tableHeaderHeight), 'F');
   }
   
   doc.setFont('helvetica', 'bold');
@@ -247,7 +251,9 @@ export async function generateQuotePDF(quote) {
       for (let i = 0; i < tableGradientSteps; i++) {
         const gray = Math.floor((i / tableGradientSteps) * 120);
         doc.setFillColor(gray, gray, gray);
-        doc.rect(margin + (i * contentWidth) / tableGradientSteps, y, contentWidth / tableGradientSteps, 7, 'F');
+        const rectX = Number(margin + (i * contentWidth) / tableGradientSteps);
+        const rectWidth = Number(contentWidth / tableGradientSteps);
+        doc.rect(rectX, Number(y), rectWidth, 7, 'F');
       }
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7);
@@ -263,7 +269,7 @@ export async function generateQuotePDF(quote) {
     // Zebra striping (light gray for even rows)
     if (index % 2 === 0) {
       doc.setFillColor(250, 250, 250);
-      doc.rect(margin, y, contentWidth, rowHeight, 'F');
+      doc.rect(Number(margin), Number(y), Number(contentWidth), Number(rowHeight), 'F');
     }
 
     // Item number (light gray)
@@ -337,7 +343,7 @@ export async function generateQuotePDF(quote) {
   // TOTAL (with gray background and top border)
   y += 8;
   doc.setFillColor(220, 225, 230);
-  doc.rect(totalsLabelX - 8, y - 6, 58, 12, 'F');
+  doc.rect(Number(totalsLabelX - 8), Number(y - 6), 58, 12, 'F');
   doc.setDrawColor(30, 30, 30);
   doc.setLineWidth(0.8);
   doc.line(totalsLabelX - 8, y - 6, totalsLabelX + 50, y - 6);
