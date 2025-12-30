@@ -52,13 +52,21 @@ export async function generateQuotePDF(quote) {
   const contentWidth = pageWidth - (margin * 2);
   let y = margin;
 
-  // ========== HEADER: Black to gray gradient (horizontal left to right) ==========
+  // ========== HEADER: Black solid until logo ends, then gradient to gray ==========
   const headerHeight = 25;
+  const logoEndX = 60; // Negro sólido hasta donde termina el logo
+  
+  // Parte 1: Negro sólido para cubrir el logo
+  doc.setFillColor(0, 0, 0);
+  doc.rect(0, 0, logoEndX, headerHeight, 'F');
+  
+  // Parte 2: Gradiente de negro a gris desde el logo hasta el final
+  const gradientWidth = pageWidth - logoEndX;
   const gradientSteps = 50;
   for (let i = 0; i < gradientSteps; i++) {
-    const gray = Math.floor((i / gradientSteps) * 100); // 0 to 100 (negro a gris)
+    const gray = Math.floor((i / gradientSteps) * 130); // 0 a 130 (negro a gris claro)
     doc.setFillColor(gray, gray, gray);
-    doc.rect((i * pageWidth) / gradientSteps, 0, pageWidth / gradientSteps, headerHeight, 'F');
+    doc.rect(logoEndX + (i * gradientWidth) / gradientSteps, 0, gradientWidth / gradientSteps, headerHeight, 'F');
   }
   
   // Load and add MCI logo
