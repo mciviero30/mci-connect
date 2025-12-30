@@ -74,9 +74,13 @@ export function normalizeDocumentBase(data) {
   normalized.tax_amount = Math.round(normalized.tax_amount * 100) / 100;
   normalized.total = Math.round(normalized.total * 100) / 100;
   
-  // Normalize items array
+  // Normalize items array with item_name guard
   if (Array.isArray(normalized.items)) {
-    normalized.items = normalized.items.map(item => normalizeLineItem(item));
+    // GUARD TEST: Protect item_name from being lost (temporary validation)
+    normalized.items = normalized.items.map(item => {
+      const protected = { ...item, item_name: item.item_name ?? '' };
+      return normalizeLineItem(protected);
+    });
   } else {
     normalized.items = [];
   }
