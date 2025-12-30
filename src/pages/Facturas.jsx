@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import PageHeader from "../components/shared/PageHeader";
 import { Dialog } from "@/components/ui/dialog";
 import ModernInvoiceCard from "../components/invoices/ModernInvoiceCard";
+import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
@@ -201,13 +202,16 @@ export default function Facturas() {
           icon={FileCheck}
           actions={
             isAdmin && (
-              <Link to={createPageUrl("CrearFactura")} className="w-full sm:w-auto">
-                <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
-                  <span className="hidden sm:inline">{t('newInvoice')}</span>
-                  <span className="sm:hidden">{language === 'es' ? 'Nueva' : 'New'}</span>
-                </Button>
-              </Link>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <InvoicePDFImporter onSuccess={() => queryClient.invalidateQueries({ queryKey: ['invoices'] })} />
+                <Link to={createPageUrl("CrearFactura")} className="flex-1 sm:flex-none">
+                  <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                    <span className="hidden sm:inline">{t('newInvoice')}</span>
+                    <span className="sm:hidden">{language === 'es' ? 'Nueva' : 'New'}</span>
+                  </Button>
+                </Link>
+              </div>
             )
           }
         />
