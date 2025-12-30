@@ -21,16 +21,16 @@ import { PAGE, COLORS, FONTS, DEFAULTS, formatCurrency, getContentWidth } from '
  * Render items table header (reusable after page breaks)
  */
 function renderItemsTableHeader(doc, y) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left;
   const contentWidth = getContentWidth();
   const columnWidths = [90, 20, 30, 30];
 
-  doc.setFillColor(COLORS.tableHeaderBg);
+  doc.setFillColor(243, 244, 246); // tableHeaderBg
   doc.rect(margin, y - 2, contentWidth, DEFAULTS.rowHeight, 'F');
 
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
 
   let xPos = margin + DEFAULTS.tablePadding;
   doc.text('DESCRIPTION', xPos, y + 3);
@@ -41,7 +41,7 @@ function renderItemsTableHeader(doc, y) {
   xPos += columnWidths[2];
   doc.text('TOTAL', xPos, y + 3);
 
-  doc.setDrawColor(COLORS.lightGray);
+  doc.setDrawColor(229, 231, 235); // lightGray
   doc.line(margin, y + DEFAULTS.rowHeight - 2, PAGE.width - margin, y + DEFAULTS.rowHeight - 2);
 
   return y + DEFAULTS.rowHeight;
@@ -125,12 +125,12 @@ export function generateInvoicePDF(invoice) {
     const itemName = item.item_name || '';
     const itemDesc = item.description || '';
     
-    const nameLines = itemName ? doc.splitTextToSize(String(itemName), columnWidths[0] - (DEFAULTS.tablePadding * 2)) : [];
-    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), columnWidths[0] - (DEFAULTS.tablePadding * 2)) : [];
+    const nameLines = itemName ? doc.splitTextToSize(itemName, columnWidths[0] - (DEFAULTS.tablePadding * 2)) : [];
+    const descLines = itemDesc ? doc.splitTextToSize(itemDesc, columnWidths[0] - (DEFAULTS.tablePadding * 2)) : [];
     const rowHeight = Math.max(DEFAULTS.rowHeight, (nameLines.length + descLines.length) * 4 + 6);
 
     if (index % 2 === 0) {
-      doc.setFillColor(COLORS.tableBg);
+      doc.setFillColor(249, 250, 251); // tableBg
       doc.rect(margin, y, contentWidth, rowHeight, 'F');
     }
 
@@ -141,7 +141,7 @@ export function generateInvoicePDF(invoice) {
     if (nameLines.length > 0) {
       doc.setFont(FONTS.bold);
       doc.setFontSize(FONTS.sizes.small);
-      doc.setTextColor(COLORS.textPrimary);
+      doc.setTextColor(17, 24, 39); // textPrimary
       doc.text(nameLines, xPos, textY);
       textY += nameLines.length * 4;
     }
@@ -166,7 +166,7 @@ export function generateInvoicePDF(invoice) {
     doc.setFont(FONTS.bold);
     doc.text(formatCurrency(item.total), xPos, y + 5);
 
-    doc.setDrawColor(COLORS.lightGray);
+    doc.setDrawColor(229, 231, 235); // lightGray
     doc.line(margin, y + rowHeight, PAGE.width - margin, y + rowHeight);
 
     y += rowHeight;
@@ -183,30 +183,30 @@ export function generateInvoicePDF(invoice) {
   doc.setFontSize(FONTS.sizes.body);
   
   // Subtotal
-  doc.setTextColor(COLORS.textSecondary);
+  doc.setTextColor(107, 114, 128); // textSecondary
   doc.text('Subtotal:', labelX, y);
   doc.setFont(FONTS.bold);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
   doc.text(formatCurrency(invoice.subtotal), rightX, y, { align: 'right' });
   
   // Tax
   if (invoice.tax_amount && invoice.tax_amount > 0) {
     y += 6;
     doc.setFont(FONTS.regular);
-    doc.setTextColor(COLORS.textSecondary);
+    doc.setTextColor(107, 114, 128); // textSecondary
     doc.text(`Tax (${invoice.tax_rate || 0}%):`, labelX, y);
     doc.setFont(FONTS.bold);
-    doc.setTextColor(COLORS.textPrimary);
+    doc.setTextColor(17, 24, 39); // textPrimary
     doc.text(formatCurrency(invoice.tax_amount), rightX, y, { align: 'right' });
   }
   
   // Total
   y += 8;
-  doc.setFillColor(COLORS.totalsBg);
+  doc.setFillColor(229, 231, 235); // totalsBg
   doc.rect(labelX - 5, y - 5, 65, 10, 'F');
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.subtitle);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
   doc.text('TOTAL:', labelX, y + 2);
   doc.text(formatCurrency(invoice.total), rightX, y + 2, { align: 'right' });
   
@@ -215,7 +215,7 @@ export function generateInvoicePDF(invoice) {
     y += 8;
     doc.setFont(FONTS.regular);
     doc.setFontSize(FONTS.sizes.body);
-    doc.setTextColor(COLORS.textSecondary);
+    doc.setTextColor(107, 114, 128); // textSecondary
     doc.text('Amount Paid:', labelX, y);
     doc.setFont(FONTS.bold);
     doc.setTextColor(34, 197, 94); // green-500
@@ -227,9 +227,9 @@ export function generateInvoicePDF(invoice) {
     y += 6;
     doc.setFont(FONTS.bold);
     doc.setFontSize(FONTS.sizes.body);
-    doc.setTextColor(COLORS.textSecondary);
+    doc.setTextColor(107, 114, 128); // textSecondary
     doc.text('Balance Due:', labelX, y);
-    doc.setTextColor(invoice.balance > 0 ? COLORS.textPrimary : COLORS.textSecondary);
+    doc.setTextColor(invoice.balance > 0 ? 17 : 107, invoice.balance > 0 ? 24 : 114, invoice.balance > 0 ? 39 : 128);
     doc.text(formatCurrency(invoice.balance), rightX, y, { align: 'right' });
   }
   

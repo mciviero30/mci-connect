@@ -40,26 +40,25 @@ export function initDocument() {
  * @returns {number} Y position after header
  */
 export function addHeader(doc, title = 'DOCUMENT') {
-  const margin = Number(PAGE.margin?.left || 20);
-  const width = Number(PAGE.width || 210);
-  const height = Number(DEFAULTS.headerHeight || 35);
-  const titleSize = Number(FONTS.sizes?.title || 20);
+  const margin = PAGE.margin.left;
+  const width = PAGE.width;
+  const height = DEFAULTS.headerHeight;
   
   // Dark background
-  doc.setFillColor(COLORS.headerBg || '#000000');
+  doc.setFillColor(0, 0, 0); // Black
   doc.rect(0, 0, width, height, 'F');
   
   // MCI Logo (text-based)
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setFontSize(titleSize);
-  doc.setTextColor(COLORS.white || '#ffffff');
-  doc.text(String(COMPANY_INFO.shortName || 'MCI'), margin, 15);
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.title);
+  doc.setTextColor(255, 255, 255); // White
+  doc.text(COMPANY_INFO.shortName, margin, 15);
   
   // Document Title (right aligned)
-  doc.setFontSize(titleSize);
-  doc.text(String(title || 'DOCUMENT'), width - margin, 15, { align: 'right' });
+  doc.setFontSize(FONTS.sizes.title);
+  doc.text(title, width - margin, 15, { align: 'right' });
   
-  return Number(height + 5);
+  return height + 5;
 }
 
 /**
@@ -68,37 +67,36 @@ export function addHeader(doc, title = 'DOCUMENT') {
  * @returns {number} New Y position
  */
 export function addCompanyInfo(doc, startY) {
-  const margin = Number(PAGE.margin?.left || 20);
-  let y = Number(startY || 40);
-  const lineSpacing = Number(DEFAULTS.lineSpacing || 5);
+  const margin = PAGE.margin.left;
+  let y = startY;
   
   // Company name
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setFontSize(Number(FONTS.sizes?.body || 10));
-  doc.setTextColor(COLORS.textPrimary || '#111827');
-  doc.text(String(COMPANY_INFO.name || ''), margin, y);
-  y += lineSpacing;
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.body);
+  doc.setTextColor(17, 24, 39); // textPrimary
+  doc.text(COMPANY_INFO.name, margin, y);
+  y += DEFAULTS.lineSpacing;
   
   // Address
-  doc.setFont(FONTS.regular || 'helvetica');
-  doc.setFontSize(Number(FONTS.sizes?.small || 8));
-  doc.setTextColor(COLORS.textSecondary || '#6b7280');
-  doc.text(String(COMPANY_INFO.address || ''), margin, y);
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.small);
+  doc.setTextColor(107, 114, 128); // textSecondary
+  doc.text(COMPANY_INFO.address, margin, y);
   y += 4;
   
   // City, State, Zip
-  doc.text(String(`${COMPANY_INFO.city || ''}, ${COMPANY_INFO.state || ''} ${COMPANY_INFO.zip || ''}`), margin, y);
+  doc.text(`${COMPANY_INFO.city}, ${COMPANY_INFO.state} ${COMPANY_INFO.zip}`, margin, y);
   y += 4;
   
   // Phone
-  doc.text(String(`Phone: ${COMPANY_INFO.phone || ''}`), margin, y);
+  doc.text(`Phone: ${COMPANY_INFO.phone}`, margin, y);
   y += 4;
   
   // Email
-  doc.text(String(`Email: ${COMPANY_INFO.email || ''}`), margin, y);
-  y += lineSpacing + 3;
+  doc.text(`Email: ${COMPANY_INFO.email}`, margin, y);
+  y += DEFAULTS.lineSpacing + 3;
   
-  return Number(y);
+  return y;
 }
 
 /**
@@ -108,49 +106,48 @@ export function addCompanyInfo(doc, startY) {
  * @returns {number} New Y position
  */
 export function addCustomerInfo(doc, customer, startY) {
-  const margin = Number(PAGE.margin?.left || 20);
-  let y = Number(startY || 40);
-  const lineSpacing = Number(DEFAULTS.lineSpacing || 5);
+  const margin = PAGE.margin.left;
+  let y = startY;
   const customerData = customer || {};
   
   // "BILL TO:" label
-  doc.setFont(FONTS.regular || 'helvetica');
-  doc.setFontSize(Number(FONTS.sizes?.small || 8));
-  doc.setTextColor(COLORS.textSecondary || '#6b7280');
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.small);
+  doc.setTextColor(107, 114, 128); // textSecondary
   doc.text('BILL TO:', margin, y);
   y += 5;
   
   // Customer name
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setFontSize(Number(FONTS.sizes?.subtitle || 14));
-  doc.setTextColor(COLORS.textPrimary || '#111827');
-  doc.text(String(customerData.name || 'N/A'), margin, y);
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.subtitle);
+  doc.setTextColor(17, 24, 39); // textPrimary
+  doc.text(customerData.name || 'N/A', margin, y);
   y += 6;
   
   // Address (if provided)
   if (customerData.address) {
-    doc.setFont(FONTS.regular || 'helvetica');
-    doc.setFontSize(Number(FONTS.sizes?.small || 8));
-    doc.setTextColor(COLORS.textSecondary || '#6b7280');
-    const addressLines = doc.splitTextToSize(String(customerData.address), getContentWidth() * 0.5);
+    doc.setFont(FONTS.regular);
+    doc.setFontSize(FONTS.sizes.small);
+    doc.setTextColor(107, 114, 128); // textSecondary
+    const addressLines = doc.splitTextToSize(customerData.address, getContentWidth() * 0.5);
     doc.text(addressLines, margin, y);
     y += addressLines.length * 4;
   }
   
   // Phone (if provided)
   if (customerData.phone) {
-    doc.text(String(`Phone: ${customerData.phone}`), margin, y);
+    doc.text(`Phone: ${customerData.phone}`, margin, y);
     y += 4;
   }
   
   // Email (if provided)
   if (customerData.email) {
-    doc.text(String(`Email: ${customerData.email}`), margin, y);
+    doc.text(`Email: ${customerData.email}`, margin, y);
     y += 4;
   }
   
-  y += lineSpacing;
-  return Number(y);
+  y += DEFAULTS.lineSpacing;
+  return y;
 }
 
 /**
@@ -257,46 +254,44 @@ export function checkPageBreak(doc, currentY, requiredSpace = 30) {
  * @returns {number} New Y position
  */
 export function addTotals(doc, totals, startY) {
-  const width = Number(PAGE.width || 210);
-  const margin = Number(PAGE.margin?.right || 20);
-  const rightX = width - margin;
+  const rightX = PAGE.width - PAGE.margin.right;
   const labelX = rightX - 60;
-  let y = Number(startY || 100) + 5;
+  let y = startY + 5;
   const totalsData = totals || {};
   
-  doc.setFont(FONTS.regular || 'helvetica');
-  doc.setFontSize(Number(FONTS.sizes?.body || 10));
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.body);
   
   // Subtotal
-  doc.setTextColor(COLORS.textSecondary || '#6b7280');
+  doc.setTextColor(107, 114, 128); // textSecondary
   doc.text('Subtotal:', labelX, y);
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setTextColor(COLORS.textPrimary || '#111827');
-  doc.text(String(formatCurrency(totalsData.subtotal)), rightX, y, { align: 'right' });
+  doc.setFont(FONTS.bold);
+  doc.setTextColor(17, 24, 39); // textPrimary
+  doc.text(formatCurrency(totalsData.subtotal), rightX, y, { align: 'right' });
   
   // Tax (if applicable)
   if (totalsData.tax_amount && totalsData.tax_amount > 0) {
     y += 6;
-    doc.setFont(FONTS.regular || 'helvetica');
-    doc.setTextColor(COLORS.textSecondary || '#6b7280');
-    doc.text(String(`Tax (${totalsData.tax_rate || 0}%):`), labelX, y);
-    doc.setFont(FONTS.bold || 'helvetica-bold');
-    doc.setTextColor(COLORS.textPrimary || '#111827');
-    doc.text(String(formatCurrency(totalsData.tax_amount)), rightX, y, { align: 'right' });
+    doc.setFont(FONTS.regular);
+    doc.setTextColor(107, 114, 128); // textSecondary
+    doc.text(`Tax (${totalsData.tax_rate || 0}%):`, labelX, y);
+    doc.setFont(FONTS.bold);
+    doc.setTextColor(17, 24, 39); // textPrimary
+    doc.text(formatCurrency(totalsData.tax_amount), rightX, y, { align: 'right' });
   }
   
   // Total (with background)
   y += 8;
-  doc.setFillColor(COLORS.totalsBg || '#e5e7eb');
+  doc.setFillColor(229, 231, 235); // totalsBg
   doc.rect(labelX - 5, y - 5, 65, 10, 'F');
   
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setFontSize(Number(FONTS.sizes?.subtitle || 14));
-  doc.setTextColor(COLORS.textPrimary || '#111827');
+  doc.setFont(FONTS.bold);
+  doc.setFontSize(FONTS.sizes.subtitle);
+  doc.setTextColor(17, 24, 39); // textPrimary
   doc.text('TOTAL:', labelX, y + 2);
-  doc.text(String(formatCurrency(totalsData.total)), rightX, y + 2, { align: 'right' });
+  doc.text(formatCurrency(totalsData.total), rightX, y + 2, { align: 'right' });
   
-  return Number(y + 12);
+  return y + 12;
 }
 
 /**
@@ -365,42 +360,40 @@ function getDefaultTerms() {
  * @returns {number} New Y position
  */
 export function addDocumentInfo(doc, info, startY) {
-  const width = Number(PAGE.width || 210);
-  const marginRight = Number(PAGE.margin?.right || 20);
-  const rightX = width - marginRight;
+  const rightX = PAGE.width - PAGE.margin.right;
   const labelX = rightX - 50;
-  let y = Number(startY || 40);
+  let y = startY;
   const infoData = info || {};
   
-  doc.setFont(FONTS.regular || 'helvetica');
-  doc.setFontSize(Number(FONTS.sizes?.small || 8));
+  doc.setFont(FONTS.regular);
+  doc.setFontSize(FONTS.sizes.small);
   
   // Document number
-  doc.setTextColor(COLORS.textSecondary || '#6b7280');
-  doc.text(String(infoData.label || 'Number:'), labelX, y);
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setTextColor(COLORS.textPrimary || '#111827');
-  doc.text(String(infoData.number || 'N/A'), rightX, y, { align: 'right' });
+  doc.setTextColor(107, 114, 128); // textSecondary
+  doc.text(infoData.label || 'Number:', labelX, y);
+  doc.setFont(FONTS.bold);
+  doc.setTextColor(17, 24, 39); // textPrimary
+  doc.text(infoData.number || 'N/A', rightX, y, { align: 'right' });
   
   // Date
   y += 5;
-  doc.setFont(FONTS.regular || 'helvetica');
-  doc.setTextColor(COLORS.textSecondary || '#6b7280');
+  doc.setFont(FONTS.regular);
+  doc.setTextColor(107, 114, 128); // textSecondary
   doc.text('Date:', labelX, y);
-  doc.setFont(FONTS.bold || 'helvetica-bold');
-  doc.setTextColor(COLORS.textPrimary || '#111827');
-  doc.text(String(formatDate(infoData.date) || ''), rightX, y, { align: 'right' });
+  doc.setFont(FONTS.bold);
+  doc.setTextColor(17, 24, 39); // textPrimary
+  doc.text(formatDate(infoData.date) || '', rightX, y, { align: 'right' });
   
   // Second date (if provided)
   if (infoData.secondLabel && infoData.secondDate) {
     y += 5;
-    doc.setFont(FONTS.regular || 'helvetica');
-    doc.setTextColor(COLORS.textSecondary || '#6b7280');
-    doc.text(String(infoData.secondLabel), labelX, y);
-    doc.setFont(FONTS.bold || 'helvetica-bold');
-    doc.setTextColor(COLORS.textPrimary || '#111827');
-    doc.text(String(formatDate(infoData.secondDate) || ''), rightX, y, { align: 'right' });
+    doc.setFont(FONTS.regular);
+    doc.setTextColor(107, 114, 128); // textSecondary
+    doc.text(infoData.secondLabel, labelX, y);
+    doc.setFont(FONTS.bold);
+    doc.setTextColor(17, 24, 39); // textPrimary
+    doc.text(formatDate(infoData.secondDate) || '', rightX, y, { align: 'right' });
   }
   
-  return Number(y + 8);
+  return y + 8;
 }
