@@ -87,6 +87,25 @@ export default function CrearEstimado() {
   });
 
   const [calculatingTravel, setCalculatingTravel] = useState(false);
+  const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+
+  const handleAddTravelItems = (travelItems) => {
+    // Remove existing travel items first
+    const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
+    
+    // Add new travel items
+    const updatedItems = [...nonTravelItems, ...travelItems];
+    
+    setFormData(prev => ({
+      ...prev,
+      items: updatedItems
+    }));
+
+    toast({
+      title: language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`,
+      variant: 'success'
+    });
+  };
 
   // Load existing quote data when editing
   useEffect(() => {
