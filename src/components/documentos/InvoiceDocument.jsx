@@ -9,7 +9,7 @@ export default function InvoiceDocument({ invoice }) {
 
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
-            <style jsx global>{`
+            <style>{`
                 @page {
                     size: A4 portrait;
                     margin: 1cm;
