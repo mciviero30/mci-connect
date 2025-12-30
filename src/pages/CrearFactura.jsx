@@ -220,6 +220,9 @@ export default function CrearFactura() {
       const normalizedData = normalizeInvoiceForSave(invoiceData);
       
       // Step 2: Generate invoice number via backend function (thread-safe)
+      if (import.meta.env.DEV) {
+        console.log('[InvoiceNumber] using backend function', typeof generateInvoiceNumber);
+      }
       const raw = await generateInvoiceNumber({});
       const invoiceNumber = extractInvoiceNumber(raw);
 
@@ -399,6 +402,9 @@ export default function CrearFactura() {
       // Ensure we have an invoice number
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
+        if (import.meta.env.DEV) {
+          console.log('[InvoiceNumber] using backend function', typeof generateInvoiceNumber);
+        }
         const raw = await generateInvoiceNumber({});
         const invoiceNumber = extractInvoiceNumber(raw);
 
