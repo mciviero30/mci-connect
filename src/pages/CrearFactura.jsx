@@ -143,17 +143,6 @@ export default function CrearFactura() {
     }
   }, [quoteId, quotes]);
 
-  const generateInvoiceNumber = () => {
-    const existingNumbers = invoices
-      .map(inv => inv.invoice_number)
-      .filter(n => n?.startsWith('INV-'))
-      .map(n => parseInt(n.replace('INV-', '')))
-      .filter(n => !isNaN(n));
-    
-    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-    return `INV-${String(nextNumber).padStart(5, '0')}`;
-  };
-
   const calculateTotals = () => {
     return calculateInvoiceTotals(formData.items, formData.tax_rate, formData.amount_paid || 0);
   };
@@ -238,6 +227,10 @@ export default function CrearFactura() {
       }
 
       const invoice_number = invoiceNumber;
+      
+      if (import.meta.env.DEV) {
+        console.log('[invoice_number resolved]', invoiceNumber, raw);
+      }
 
       // Step 3: Build final data with generated number
       const finalData = {
@@ -412,6 +405,10 @@ export default function CrearFactura() {
         }
 
         invoice_number = invoiceNumber;
+        
+        if (import.meta.env.DEV) {
+          console.log('[invoice_number resolved]', invoiceNumber, raw);
+        }
       }
 
       const invoiceData = {
