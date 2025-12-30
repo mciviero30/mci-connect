@@ -1,5 +1,6 @@
-// PDF Profesional usando Puppeteer para renderizado exacto
+// PDF Profesional con jsPDF - Gradiente y Logo Mejorados
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { jsPDF } from 'npm:jspdf@2.5.1';
 
 Deno.serve(async (req) => {
     try {
@@ -17,32 +18,195 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Quote not found' }, { status: 404 });
         }
 
-        // Generate HTML that matches QuoteDocument component
-        const html = generateQuoteHTML(quote);
+        const doc = new jsPDF();
 
-        // Use Puppeteer to render HTML to PDF with exact styling
-        const puppeteer = await import('https://deno.land/x/puppeteer@16.2.0/mod.ts');
-        
-        const browser = await puppeteer.default.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-        
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-        
-        const pdfBytes = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            margin: {
-                top: '1cm',
-                right: '1cm',
-                bottom: '1cm',
-                left: '1cm'
+        // HEADER CON GRADIENTE NEGRO A GRIS
+        const headerHeight = 40;
+        const steps = 100;
+        for (let i = 0; i < steps; i++) {
+            const x = (210 / steps) * i;
+            const width = 210 / steps;
+            const gray = Math.floor(i * (74 / steps)); // 0 negro a 74 gris
+            doc.setFillColor(gray, gray, gray);
+            doc.rect(x, 0, width, headerHeight, 'F');
+        }
+
+        // Logo blanco
+        try {
+            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
+            const logoResponse = await fetch(logoUrl);
+            
+            if (logoResponse.ok) {
+                const arrayBuffer = await logoResponse.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuffer);
+                
+                let binary = '';
+                const chunkSize = 8192;
+                const len = bytes.byteLength;
+                
+                for (let i = 0; i < len; i += chunkSize) {
+                    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+                    binary += String.fromCharCode.apply(null, Array.from(chunk));
+                }
+                
+                const logoBase64 = btoa(binary);
+                doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 60, 20);
             }
-        });
+        } catch (err) {
+            console.log('Logo error:', err);
+        }
+        // Title
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(40);
+        doc.setFont(undefined, 'bold');
+        doc.text('QUOTE', 195, 25, { align: 'right' });
+
+        // COMPANY INFO
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('Modern Components Installation', 15, 50);
         
-        await browser.close();
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(8);
+        doc.text(['2414 Meadow Isle Ln, Lawrenceville GA 30043', 'Phone: 470-209-3783'], 15, 55);
+
+        // Quote Info
+        const infoX = 130;
+        doc.setTextColor(100, 116, 139);
+        doc.text('Quote#', infoX, 50);
+        doc.text('Date', infoX, 55);
+        doc.text('Valid Until', infoX, 60);
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFont(undefined, 'bold');
+        doc.text(quote.quote_number || '', 195, 50, { align: 'right' });
+        doc.text(quote.quote_date?.split('-').slice(1).concat(quote.quote_date.split('-')[0].slice(-2)).join('.') || '', 195, 55, { align: 'right' });
+        doc.text(quote.valid_until?.split('-').slice(1).concat(quote.valid_until.split('-')[0].slice(-2)).join('.') || '', 195, 60, { align: 'right' });
+
+        // Bill To
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.setFont(undefined, 'bold');
+        doc.text('BILL TO:', 15, 70);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(quote.customer_name || 'Customer', 15, 77);
+
+        // Job Details
+        let currentY = 90;
+        if (quote.job_name) {
+            doc.setFontSize(8);
+            doc.setTextColor(71, 85, 105);
+            doc.text('Job Details :', 15, currentY);
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(quote.job_name, 15, currentY + 5);
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+            doc.text(quote.job_address || '', 15, currentY + 10);
+            currentY += 20;
+        }
+
+        // TABLE HEADER con gradiente
+        const tableHeaderY = currentY;
+        const headerSteps = 50;
+        for (let i = 0; i < headerSteps; i++) {
+            const x = 15 + (180 / headerSteps) * i;
+            const width = 180 / headerSteps;
+            const gray = Math.floor(i * (74 / headerSteps));
+            doc.setFillColor(gray, gray, gray);
+            doc.rect(x, tableHeaderY, width, 10, 'F');
+        }
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'bold');
+        doc.text('#', 18, tableHeaderY + 6.5);
+        doc.text('ITEM & DESCRIPTION', 30, tableHeaderY + 6.5);
+        doc.text('QTY', 135, tableHeaderY + 6.5, { align: 'right' });
+        doc.text('RATE', 165, tableHeaderY + 6.5, { align: 'right' });
+        doc.text('AMOUNT', 190, tableHeaderY + 6.5, { align: 'right' });
+
+        // ITEMS
+        currentY = tableHeaderY + 10;
+        doc.setTextColor(0, 0, 0);
+        
+        for (let i = 0; i < quote.items.length; i++) {
+            const item = quote.items[i];
+            if (currentY > 260) { doc.addPage(); currentY = 20; }
+
+            const desc = item.item_name || item.description || '';
+            const wrappedText = doc.splitTextToSize(desc, 95);
+            const rowHeight = Math.max(10, wrappedText.length * 4 + 4);
+
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text((i + 1).toString(), 18, currentY + 5);
+            
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(wrappedText, 30, currentY + 5);
+
+            doc.setFont(undefined, 'normal');
+            doc.text(`${item.quantity || 0} ${item.unit || ''}`, 135, currentY + 5, { align: 'right' });
+            doc.text(`$${(item.unit_price || 0).toFixed(2)}`, 165, currentY + 5, { align: 'right' });
+            
+            doc.setFont(undefined, 'bold');
+            doc.text(`$${(item.total || 0).toFixed(2)}`, 190, currentY + 5, { align: 'right' });
+
+            doc.setDrawColor(226, 232, 240);
+            doc.line(15, currentY + rowHeight, 195, currentY + rowHeight);
+            currentY += rowHeight;
+        }
+
+        // TOTALS
+        currentY += 10;
+        const totalX = 130;
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(100, 116, 139);
+        doc.text('Sub Total', totalX, currentY);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont(undefined, 'bold');
+        doc.text(`$${(quote.subtotal || 0).toFixed(2)}`, 195, currentY, { align: 'right' });
+        
+        currentY += 8;
+        const totalSteps = 30;
+        for (let i = 0; i < totalSteps; i++) {
+            const x = totalX + (65 / totalSteps) * i;
+            const width = 65 / totalSteps;
+            const gray = 241 - Math.floor(i * (36 / totalSteps));
+            doc.setFillColor(gray, gray, gray);
+            doc.rect(x, currentY - 4, width, 10, 'F');
+        }
+        
+        doc.setDrawColor(30, 41, 59);
+        doc.setLineWidth(0.5);
+        doc.line(totalX, currentY - 4, totalX + 65, currentY - 4);
+        
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text('TOTAL', totalX + 2, currentY + 1.5);
+        doc.setFontSize(14);
+        doc.text(`$${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 195, currentY + 1.5, { align: 'right' });
+
+        // TERMS
+        currentY += 20;
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'bold');
+        doc.text('Terms & Conditions', 15, currentY);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(8);
+        doc.text('Approval: PO required to schedule work.', 15, currentY + 5);
+        doc.text('Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides', 15, currentY + 9);
+        doc.text('equipment (forklift or lull). Site access issues may require revised quote.', 15, currentY + 13);
+        doc.text('Hours: Regular hours only. OT/after-hours billed separately via Change Order unless', 15, currentY + 17);
+        doc.text('otherwise specified.', 15, currentY + 21);
+
+        const pdfBytes = doc.output('arraybuffer');
         return new Response(pdfBytes, {
             headers: { 
                 'Content-Type': 'application/pdf',
@@ -50,180 +214,7 @@ Deno.serve(async (req) => {
             }
         });
     } catch (error) {
-        console.error('PDF Generation Error:', error);
+        console.error('PDF Error:', error);
         return Response.json({ error: error.message }, { status: 500 });
     }
 });
-
-function generateQuoteHTML(quote) {
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const year = String(date.getFullYear()).slice(-2);
-        return `${month}.${day}.${year}`;
-    };
-
-    const items = quote.items || [];
-    
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: white;
-            padding: 40px;
-            color: #000;
-        }
-        .header {
-            background: linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%);
-            padding: 24px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: -40px -40px 24px -40px;
-        }
-        .logo { height: 56px; }
-        .title { color: white; font-size: 48px; font-weight: bold; letter-spacing: 0.05em; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 32px; }
-        .company-info { font-size: 14px; line-height: 1.6; }
-        .company-name { font-weight: bold; color: #0f172a; }
-        .bill-to-label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold; margin-top: 16px; margin-bottom: 4px; }
-        .customer-name { font-size: 18px; font-weight: bold; color: #0f172a; }
-        .quote-info { text-align: right; font-size: 14px; }
-        .info-row { display: flex; justify-content: space-between; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; margin-bottom: 4px; }
-        .info-label { color: #64748b; }
-        .info-value { font-weight: bold; }
-        .job-section { margin-bottom: 32px; }
-        .job-label { font-size: 14px; color: #475569; margin-bottom: 4px; }
-        .job-name { font-size: 16px; font-weight: bold; color: #0f172a; margin-bottom: 4px; }
-        .job-address { font-size: 14px; color: #334155; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-        thead { background: linear-gradient(to right, #000000 0%, #4a4a4a 100%); color: white; }
-        th { text-align: left; padding: 8px 12px; font-size: 12px; text-transform: uppercase; font-weight: bold; }
-        th:nth-child(1) { width: 40px; }
-        th:nth-child(3), th:nth-child(4), th:nth-child(5) { text-align: right; }
-        th:nth-child(3) { width: 80px; }
-        th:nth-child(4) { width: 96px; }
-        th:nth-child(5) { width: 112px; }
-        td { padding: 16px 12px; vertical-align: top; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-        td:nth-child(1) { color: #94a3b8; }
-        td:nth-child(3), td:nth-child(4), td:nth-child(5) { text-align: right; }
-        .item-name { font-weight: bold; color: #0f172a; margin-bottom: 4px; }
-        .item-desc { font-size: 12px; color: #475569; }
-        .totals { display: flex; justify-content: flex-end; margin-top: 16px; }
-        .totals-box { width: 256px; }
-        .subtotal-row { display: flex; justify-content: space-between; font-size: 14px; padding: 0 8px; margin-bottom: 8px; }
-        .subtotal-label { color: #64748b; }
-        .total-row { 
-            background: linear-gradient(to right, #f1f5f9 0%, #cbd5e1 100%);
-            padding: 12px 16px;
-            border-radius: 4px;
-            border-top: 2px solid #1e293b;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .total-label { font-weight: bold; color: #0f172a; }
-        .total-value { font-weight: bold; font-size: 20px; color: #0f172a; }
-        .terms { margin-top: 32px; }
-        .terms-title { font-size: 14px; font-weight: bold; color: #0f172a; margin-bottom: 8px; }
-        .terms-content { font-size: 14px; color: #334155; line-height: 1.8; }
-        .terms-content p { margin-bottom: 6px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png" class="logo" alt="MCI Logo">
-        <div class="title">QUOTE</div>
-    </div>
-
-    <div class="info-grid">
-        <div class="company-info">
-            <div class="company-name">Modern Components Installation</div>
-            <div>2414 Meadow Isle Ln, Lawrenceville GA 30043</div>
-            <div>Phone: 470-209-3783</div>
-            <div class="bill-to-label">BILL TO:</div>
-            <div class="customer-name">${quote.customer_name || 'Customer'}</div>
-        </div>
-
-        <div class="quote-info">
-            <div class="info-row">
-                <span class="info-label">Quote#</span>
-                <span class="info-value">${quote.quote_number || ''}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Date</span>
-                <span class="info-value">${formatDate(quote.quote_date)}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Valid Until</span>
-                <span class="info-value">${formatDate(quote.valid_until)}</span>
-            </div>
-        </div>
-    </div>
-
-    ${quote.job_name ? `
-    <div class="job-section">
-        <div class="job-label">Job Details :</div>
-        <div class="job-name">${quote.job_name}</div>
-        ${quote.job_address ? `<div class="job-address">${quote.job_address}</div>` : ''}
-    </div>
-    ` : ''}
-
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>ITEM & DESCRIPTION</th>
-                <th>QTY</th>
-                <th>RATE</th>
-                <th>AMOUNT</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${items.map((item, index) => `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>
-                        <div class="item-name">${item.item_name || item.description || ''}</div>
-                        ${item.item_name && item.description ? `<div class="item-desc">${item.description}</div>` : ''}
-                    </td>
-                    <td>${item.quantity || 0} ${item.unit || ''}</td>
-                    <td>$${(item.unit_price || 0).toFixed(2)}</td>
-                    <td style="font-weight: bold;">$${(item.total || 0).toFixed(2)}</td>
-                </tr>
-            `).join('')}
-        </tbody>
-    </table>
-
-    <div class="totals">
-        <div class="totals-box">
-            <div class="subtotal-row">
-                <span class="subtotal-label">Sub Total</span>
-                <span style="font-weight: bold;">$${(quote.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-            <div class="total-row">
-                <span class="total-label">TOTAL</span>
-                <span class="total-value">$${(quote.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="terms">
-        <div class="terms-title">Terms & Conditions</div>
-        <div class="terms-content">
-            <p><strong>Approval:</strong> PO required to schedule work.</p>
-            <p><strong>Offload:</strong> Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment (forklift or lull). Site access issues may require revised quote.</p>
-            <p><strong>Hours:</strong> Regular hours only. OT/after-hours billed separately via Change Order unless otherwise specified.</p>
-        </div>
-    </div>
-</body>
-</html>
-    `;
-}
