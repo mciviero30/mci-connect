@@ -20,10 +20,28 @@ export function normalizeQuoteForSave(quoteData) {
   // Step 1: Normalize common document fields (preserves ALL fields)
   const normalized = normalizeDocumentBase(quoteData);
   
-  // Step 2: Normalize items using quote-specific logic
+  // Step 2: Filter out invalid items BEFORE normalization
+  // Valid = quantity > 0 AND (description OR item_name exists)
+  normalized.items = (normalized.items || []).filter(item => {
+    const hasQuantity = item && parseFloat(item.quantity) > 0;
+    const hasContent = (item.description && item.description.trim()) || 
+                       (item.item_name && item.item_name.trim());
+    return hasQuantity && hasContent;
+  });
+  
+  // Step 3: Normalize remaining valid items
   normalized.items = normalizeQuoteItems(normalized.items);
   
-  // Step 3: Recalculate totals
+  // DEV LOG - Remove after validation
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 QUOTE PRE-SAVE:', normalized.items.map(i => ({ 
+      item_name: i.item_name, 
+      description: i.description, 
+      quantity: i.quantity 
+    })));
+  }
+  
+  // Step 4: Recalculate totals
   const totals = calculateQuoteTotals(normalized.items, normalized.tax_rate);
   normalized.subtotal = totals.subtotal;
   normalized.tax_amount = totals.tax_amount;
@@ -31,7 +49,7 @@ export function normalizeQuoteForSave(quoteData) {
   normalized.estimated_hours = totals.estimated_hours;
   normalized.estimated_cost = totals.estimated_cost;
   
-  // Step 4: Validate (throws if invalid)
+  // Step 5: Validate (throws if invalid)
   const validation = validateDocument(normalized);
   if (!validation.valid) {
     throw new Error(`Quote validation failed: ${validation.errors.join(', ')}`);
@@ -51,10 +69,28 @@ export function normalizeInvoiceForSave(invoiceData) {
   // Step 1: Normalize common document fields (preserves ALL fields)
   const normalized = normalizeDocumentBase(invoiceData);
   
-  // Step 2: Normalize items using invoice-specific logic
+  // Step 2: Filter out invalid items BEFORE normalization
+  // Valid = quantity > 0 AND (description OR item_name exists)
+  normalized.items = (normalized.items || []).filter(item => {
+    const hasQuantity = item && parseFloat(item.quantity) > 0;
+    const hasContent = (item.description && item.description.trim()) || 
+                       (item.item_name && item.item_name.trim());
+    return hasQuantity && hasContent;
+  });
+  
+  // Step 3: Normalize remaining valid items
   normalized.items = normalizeInvoiceItems(normalized.items);
   
-  // Step 3: Recalculate totals (invoice-specific with amount_paid)
+  // DEV LOG - Remove after validation
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 INVOICE PRE-SAVE:', normalized.items.map(i => ({ 
+      item_name: i.item_name, 
+      description: i.description, 
+      quantity: i.quantity 
+    })));
+  }
+  
+  // Step 4: Recalculate totals (invoice-specific with amount_paid)
   const totals = calculateInvoiceTotals(
     normalized.items, 
     normalized.tax_rate,
@@ -66,7 +102,7 @@ export function normalizeInvoiceForSave(invoiceData) {
   normalized.amount_paid = totals.amount_paid;
   normalized.balance = totals.balance;
   
-  // Step 4: Validate (throws if invalid)
+  // Step 5: Validate (throws if invalid)
   const validation = validateDocument(normalized);
   if (!validation.valid) {
     throw new Error(`Invoice validation failed: ${validation.errors.join(', ')}`);
