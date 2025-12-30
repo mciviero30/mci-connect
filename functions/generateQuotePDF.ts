@@ -127,8 +127,9 @@ Deno.serve(async (req) => {
             const item = quote.items[i];
             if (currentY > 260) { doc.addPage(); currentY = 20; }
 
-            const desc = item.item_name || item.description || '';
-            const wrappedText = doc.splitTextToSize(desc, 95);
+            // Use item_name first, fallback to description
+            const itemTitle = item.item_name || item.description || '';
+            const wrappedText = doc.splitTextToSize(itemTitle, 95);
             const rowHeight = Math.max(10, wrappedText.length * 4 + 4);
 
             doc.setFont(undefined, 'normal');
