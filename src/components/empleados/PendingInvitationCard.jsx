@@ -51,14 +51,15 @@ export default function PendingInvitationCard({ employee }) {
     mutationFn: async () => {
       const fullName = displayName;
       
+      // Send welcome email from our app
       await base44.functions.invoke('sendInvitationEmail', {
         to: employee.email,
         fullName,
         language
       });
 
-      await navigator.clipboard.writeText(employee.email);
-      window.open('https://app.base44.com/dashboard', '_blank');
+      // Invite user to Base44 system (sends Base44 invitation email automatically)
+      await base44.users.inviteUser(employee.email, 'user');
       
       // Update status to invited
       await base44.entities.PendingEmployee.update(employee.id, { 
@@ -70,8 +71,15 @@ export default function PendingInvitationCard({ employee }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       alert(language === 'es' 
-        ? '✅ Email enviado. Ahora invita desde Dashboard → "Invite User"'
-        : '✅ Email sent. Now invite from Dashboard → "Invite User"'
+        ? '✅ Invitación enviada! El empleado recibirá 2 emails: bienvenida + invitación de Base44'
+        : '✅ Invitation sent! Employee will receive 2 emails: welcome + Base44 system invite'
+      );
+    },
+    onError: (error) => {
+      console.error('Error sending invitation:', error);
+      alert(language === 'es' 
+        ? '❌ Error al enviar invitación: ' + error.message
+        : '❌ Error sending invitation: ' + error.message
       );
     }
   });
