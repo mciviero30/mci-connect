@@ -13,14 +13,19 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('🚨 INVOICE CRASH DETECTED:', {
-      error,
-      message: error?.message,
-      stack: error?.stack,
-      errorInfo,
-      componentStack: errorInfo?.componentStack
-    });
-    this.setState({ error, errorInfo });
+    // Log full error details ONLY in DEV mode
+    if (import.meta.env?.DEV) {
+      console.error('🚨 ERROR BOUNDARY CAUGHT:', {
+        error,
+        message: error?.message,
+        stack: error?.stack,
+        errorInfo,
+        componentStack: errorInfo?.componentStack
+      });
+    }
+    
+    // Don't store error details in state to prevent leaking in UI
+    this.setState({ error: null, errorInfo: null });
   }
 
   render() {
