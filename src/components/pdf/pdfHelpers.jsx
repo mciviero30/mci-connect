@@ -157,18 +157,18 @@ export function addCustomerInfo(doc, customer, startY) {
  * @returns {number} New Y position
  */
 export function addTableHeader(doc, columns, startY) {
-  const margin = PAGE.margin.left || 20;
+  const margin = PAGE.margin.left;
   const contentWidth = getContentWidth();
   const colWidth = contentWidth / columns.length;
   
   // Header background
-  doc.setFillColor(COLORS.tableHeaderBg);
+  doc.setFillColor(243, 244, 246); // tableHeaderBg
   doc.rect(margin, startY - 2, contentWidth, DEFAULTS.rowHeight, 'F');
   
   // Header text
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
   
   columns.forEach((col, index) => {
     const x = margin + (colWidth * index) + DEFAULTS.tablePadding;
@@ -176,7 +176,7 @@ export function addTableHeader(doc, columns, startY) {
   });
   
   // Border line
-  doc.setDrawColor(COLORS.lightGray);
+  doc.setDrawColor(229, 231, 235); // lightGray
   doc.line(margin, startY + DEFAULTS.rowHeight - 2, PAGE.width - margin, startY + DEFAULTS.rowHeight - 2);
   
   return startY + DEFAULTS.rowHeight;
@@ -190,13 +190,13 @@ export function addTableHeader(doc, columns, startY) {
  * @returns {number} New Y position
  */
 export function addTableRow(doc, row, columnWidths, startY) {
-  const margin = PAGE.margin.left || 20;
+  const margin = PAGE.margin.left;
   let y = startY;
   let maxRowHeight = DEFAULTS.rowHeight;
   
   doc.setFont(FONTS.regular);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
   
   // Calculate row height based on text wrapping
   row.forEach((cell, index) => {
@@ -210,7 +210,7 @@ export function addTableRow(doc, row, columnWidths, startY) {
   
   // Zebra striping (optional light background)
   if (Math.floor(startY / DEFAULTS.rowHeight) % 2 === 0) {
-    doc.setFillColor(COLORS.tableBg);
+    doc.setFillColor(249, 250, 251); // tableBg
     doc.rect(margin, y, getContentWidth(), maxRowHeight, 'F');
   }
   
@@ -224,7 +224,7 @@ export function addTableRow(doc, row, columnWidths, startY) {
   });
   
   // Bottom border
-  doc.setDrawColor(COLORS.lightGray);
+  doc.setDrawColor(229, 231, 235); // lightGray
   doc.line(margin, y + maxRowHeight, PAGE.width - margin, y + maxRowHeight);
   
   return y + maxRowHeight;
@@ -302,18 +302,18 @@ export function addTotals(doc, totals, startY) {
 export function addNotes(doc, notes, startY) {
   if (!notes || notes.trim() === '') return startY;
   
-  const margin = PAGE.margin.left || 20;
+  const margin = PAGE.margin.left;
   let y = startY + 5;
   
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.body);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
   doc.text('NOTES:', margin, y);
   y += 5;
   
   doc.setFont(FONTS.regular);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.textSecondary);
+  doc.setTextColor(107, 114, 128); // textSecondary
   const noteLines = doc.splitTextToSize(notes, getContentWidth());
   doc.text(noteLines, margin, y);
   
@@ -326,18 +326,18 @@ export function addNotes(doc, notes, startY) {
  * @returns {number} New Y position
  */
 export function addTerms(doc, terms, startY) {
-  const margin = PAGE.margin.left || 20;
+  const margin = PAGE.margin.left;
   let y = startY + 5;
   
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.body);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setTextColor(17, 24, 39); // textPrimary
   doc.text('TERMS & CONDITIONS:', margin, y);
   y += 5;
   
   doc.setFont(FONTS.regular);
   doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.textSecondary);
+  doc.setTextColor(107, 114, 128); // textSecondary
   
   const termsText = terms || getDefaultTerms();
   const termsLines = doc.splitTextToSize(termsText, getContentWidth());
