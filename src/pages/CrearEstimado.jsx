@@ -116,8 +116,8 @@ export default function CrearEstimado() {
       const normalizedData = normalizeQuoteForSave(quoteData);
       
       // Step 2: Generate quote number via backend function (thread-safe)
-      const { data: numberResponse } = await generateQuoteNumber({});
-      const quote_number = numberResponse.quote_number;
+      const response = await generateQuoteNumber({});
+      const quote_number = response.data.quote_number;
 
       // Step 3: Build final data with generated number
       const finalData = {

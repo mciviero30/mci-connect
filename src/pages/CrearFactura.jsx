@@ -185,8 +185,8 @@ export default function CrearFactura() {
       const normalizedData = normalizeInvoiceForSave(invoiceData);
       
       // Step 2: Generate invoice number via backend function (thread-safe)
-      const { data: numberResponse } = await generateInvoiceNumber({});
-      const invoice_number = numberResponse.invoice_number;
+      const response = await generateInvoiceNumber({});
+      const invoice_number = response.data.invoice_number;
 
       // Step 3: Build final data with generated number
       const finalData = {
@@ -285,8 +285,8 @@ export default function CrearFactura() {
       // Ensure we have an invoice number
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
-        const { data: numberResponse } = await generateInvoiceNumber({});
-        invoice_number = numberResponse.invoice_number;
+        const response = await generateInvoiceNumber({});
+        invoice_number = response.data.invoice_number;
       }
 
       const invoiceData = {
