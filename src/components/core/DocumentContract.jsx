@@ -78,8 +78,8 @@ export function normalizeDocumentBase(data) {
   if (Array.isArray(normalized.items)) {
     // GUARD TEST: Protect item_name from being lost (temporary validation)
     normalized.items = normalized.items.map(item => {
-      const protected = { ...item, item_name: item.item_name ?? '' };
-      return normalizeLineItem(protected);
+      const guardedItem = { ...item, item_name: item.item_name ?? '' };
+      return normalizeLineItem(guardedItem);
     });
   } else {
     normalized.items = [];
