@@ -121,21 +121,39 @@ export function generateInvoicePDF(invoice) {
       y = renderItemsTableHeader(doc, y);
     }
 
-    const description = item.item_name || item.description || '';
-    const descLines = doc.splitTextToSize(description, columnWidths[0] - (DEFAULTS.tablePadding * 2));
-    const rowHeight = Math.max(DEFAULTS.rowHeight, descLines.length * 4 + 4);
+    // Siempre mostrar item_name arriba (bold) y description debajo (normal)
+    const itemName = item.item_name || '';
+    const itemDesc = item.description || '';
+    
+    const nameLines = itemName ? doc.splitTextToSize(String(itemName), columnWidths[0] - (DEFAULTS.tablePadding * 2)) : [];
+    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), columnWidths[0] - (DEFAULTS.tablePadding * 2)) : [];
+    const rowHeight = Math.max(DEFAULTS.rowHeight, (nameLines.length + descLines.length) * 4 + 6);
 
     if (index % 2 === 0) {
       doc.setFillColor(COLORS.tableBg);
       doc.rect(margin, y, contentWidth, rowHeight, 'F');
     }
 
-    doc.setFont(FONTS.regular);
-    doc.setFontSize(FONTS.sizes.small);
-    doc.setTextColor(COLORS.textPrimary);
-
     let xPos = margin + DEFAULTS.tablePadding;
-    doc.text(descLines, xPos, y + 5);
+    let textY = y + 5;
+    
+    // Item Name (bold, black) - solo si existe
+    if (nameLines.length > 0) {
+      doc.setFont(FONTS.bold);
+      doc.setFontSize(FONTS.sizes.small);
+      doc.setTextColor(COLORS.textPrimary);
+      doc.text(nameLines, xPos, textY);
+      textY += nameLines.length * 4;
+    }
+    
+    // Description below (normal, dark gray) - solo si existe
+    if (descLines.length > 0) {
+      doc.setFont(FONTS.regular);
+      doc.setFontSize(FONTS.sizes.small - 1);
+      doc.setTextColor(100, 100, 100);
+      doc.text(descLines, xPos, textY);
+    }
+    
     xPos += columnWidths[0];
 
     const qtyText = `${item.quantity || 0} ${item.unit || ''}`;

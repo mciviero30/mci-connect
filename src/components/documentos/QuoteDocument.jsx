@@ -108,8 +108,10 @@ export default function QuoteDocument({ quote }) {
                             {/* align-top asegura que el número y precios no floten si hay mucho texto */}
                             <td className="px-3 py-4 align-top text-sm text-slate-400">{index + 1}</td>
                             <td className="px-3 py-4 align-top">
-                                <div className="font-bold text-slate-900 text-sm">{item.item_name || item.description}</div>
-                                {item.item_name && item.description && (
+                                {item.item_name && (
+                                    <div className="font-bold text-slate-900 text-sm">{item.item_name}</div>
+                                )}
+                                {item.description && (
                                     <div className="text-xs text-slate-600 print-word-wrap mt-1 leading-normal">
                                         {item.description}
                                     </div>

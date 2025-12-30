@@ -121,10 +121,17 @@ export default function InvoiceDocument({ invoice }) {
                                 <td className="px-3 py-2 align-middle">
                                     <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                                 </td>
-                                <td className="px-3 py-2 align-middle">
-                                   <p className="font-semibold text-sm text-slate-900 print-word-wrap">
-                                       {(item.item_name || item.description || '').replace(/\n/g, ' ').trim()}
-                                   </p>
+                                <td className="px-3 py-2 align-top">
+                                   {item.item_name && (
+                                       <p className="font-bold text-sm text-slate-900 print-word-wrap">
+                                           {item.item_name.replace(/\n/g, ' ').trim()}
+                                       </p>
+                                   )}
+                                   {item.description && (
+                                       <p className="text-xs text-slate-600 print-word-wrap mt-1">
+                                           {item.description.replace(/\n/g, ' ').trim()}
+                                       </p>
+                                   )}
                                 </td>
                                 <td className="px-3 py-2 align-middle text-right text-sm text-slate-700">
                                     {item.quantity} {item.unit || ''}
