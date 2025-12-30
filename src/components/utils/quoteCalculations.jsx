@@ -103,17 +103,10 @@ export function calculateInvoiceTotals(items = [], tax_rate = 0, amount_paid = 0
  */
 export function normalizeQuoteItems(items = []) {
   return items.map(item => ({
-    item_name: item.item_name || '',
-    description: item.description || '',
+    ...item, // Preserve ALL fields including item_name
     quantity: parseFloat(item.quantity) || 0,
-    unit: item.unit || 'pcs',
     unit_price: parseFloat(item.unit_price) || 0,
     total: parseFloat(((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)),
-    installation_time: item.installation_time || 0,
-    is_travel_item: item.is_travel_item || false,
-    calculation_type: item.calculation_type || 'none',
-    tech_count: item.tech_count,
-    duration_value: item.duration_value,
   }));
 }
 
@@ -124,12 +117,9 @@ export function normalizeQuoteItems(items = []) {
  */
 export function normalizeInvoiceItems(items = []) {
   return items.map(item => ({
-    item_name: item.item_name || '',
-    description: item.description || '',
+    ...item, // Preserve ALL fields including item_name
     quantity: parseFloat(item.quantity) || 0,
-    unit: item.unit || 'pcs',
     unit_price: parseFloat(item.unit_price) || 0,
     total: parseFloat(((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)),
-    account_category: item.account_category || '',
   }));
 }
