@@ -86,6 +86,12 @@ export default function CrearEstimado() {
   // Load existing quote data when editing
   useEffect(() => {
     if (existingQuote) {
+      // Ensure all items have item_name field (for backwards compatibility)
+      const itemsWithItemName = (existingQuote.items || []).map(item => ({
+        ...item,
+        item_name: item.item_name || '',
+      }));
+
       setFormData({
         customer_id: existingQuote.customer_id || '',
         customer_name: existingQuote.customer_name || '',
@@ -100,7 +106,7 @@ export default function CrearEstimado() {
         valid_until: existingQuote.valid_until || format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         install_date: existingQuote.install_date || '',
         out_of_area: existingQuote.out_of_area || false,
-        items: existingQuote.items || [{ item_name: '', description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
+        items: itemsWithItemName.length > 0 ? itemsWithItemName : [{ item_name: '', description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
         tax_rate: existingQuote.tax_rate || 0,
         notes: existingQuote.notes || '',
         terms: existingQuote.terms || '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
