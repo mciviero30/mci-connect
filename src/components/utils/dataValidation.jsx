@@ -14,11 +14,10 @@ export function normalizeQuoteForSave(quoteData) {
   // Normalize items first
   const normalizedItems = normalizeQuoteItems(quoteData.items || []);
   
-  // Filter out empty/invalid items
+  // Filter out empty/invalid items (keep item_name requirement)
   const validItems = normalizedItems.filter(item => 
-    item.description && 
-    item.description.trim().length > 0 &&
-    item.quantity > 0
+    item.quantity > 0 &&
+    (item.description?.trim() || item.item_name?.trim())
   );
 
   if (validItems.length === 0) {
@@ -89,11 +88,10 @@ export function normalizeInvoiceForSave(invoiceData) {
   // Normalize items first
   const normalizedItems = normalizeInvoiceItems(invoiceData.items || []);
   
-  // Filter out empty/invalid items
+  // Filter out empty/invalid items (keep item_name requirement)
   const validItems = normalizedItems.filter(item => 
-    item.description && 
-    item.description.trim().length > 0 &&
-    item.quantity > 0
+    item.quantity > 0 &&
+    (item.description?.trim() || item.item_name?.trim())
   );
 
   if (validItems.length === 0) {
