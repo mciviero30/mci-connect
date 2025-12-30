@@ -21,30 +21,34 @@ import { PAGE, COLORS, FONTS, DEFAULTS, formatCurrency, getContentWidth } from '
  * Render items table header (reusable after page breaks)
  */
 function renderItemsTableHeader(doc, y) {
-  const { margin } = PAGE;
-  const contentWidth = getContentWidth();
+  const margin = Number(PAGE.margin?.left || 20);
+  const width = Number(PAGE.width || 210);
+  const contentWidth = Number(getContentWidth() || 170);
+  const rowHeight = Number(DEFAULTS.rowHeight || 8);
+  const tablePadding = Number(DEFAULTS.tablePadding || 3);
   const columnWidths = [90, 20, 30, 30];
+  const yPos = Number(y || 50);
 
-  doc.setFillColor(COLORS.tableHeaderBg);
-  doc.rect(margin, y - 2, contentWidth, DEFAULTS.rowHeight, 'F');
+  doc.setFillColor(COLORS.tableHeaderBg || '#f3f4f6');
+  doc.rect(margin, yPos - 2, contentWidth, rowHeight, 'F');
 
-  doc.setFont(FONTS.bold);
-  doc.setFontSize(FONTS.sizes.small);
-  doc.setTextColor(COLORS.textPrimary);
+  doc.setFont(FONTS.bold || 'helvetica-bold');
+  doc.setFontSize(Number(FONTS.sizes?.small || 8));
+  doc.setTextColor(COLORS.textPrimary || '#111827');
 
-  let xPos = margin + DEFAULTS.tablePadding;
-  doc.text('DESCRIPTION', xPos, y + 3);
+  let xPos = margin + tablePadding;
+  doc.text('DESCRIPTION', xPos, yPos + 3);
   xPos += columnWidths[0];
-  doc.text('QTY', xPos, y + 3);
+  doc.text('QTY', xPos, yPos + 3);
   xPos += columnWidths[1];
-  doc.text('UNIT PRICE', xPos, y + 3);
+  doc.text('UNIT PRICE', xPos, yPos + 3);
   xPos += columnWidths[2];
-  doc.text('TOTAL', xPos, y + 3);
+  doc.text('TOTAL', xPos, yPos + 3);
 
-  doc.setDrawColor(COLORS.lightGray);
-  doc.line(margin, y + DEFAULTS.rowHeight - 2, PAGE.width - margin, y + DEFAULTS.rowHeight - 2);
+  doc.setDrawColor(COLORS.lightGray || '#e5e7eb');
+  doc.line(margin, yPos + rowHeight - 2, width - margin, yPos + rowHeight - 2);
 
-  return y + DEFAULTS.rowHeight;
+  return Number(yPos + rowHeight);
 }
 
 /**
@@ -91,9 +95,12 @@ export function generateQuotePDF(quote) {
 
   y += 5;
 
-  const { margin } = PAGE;
-  const contentWidth = getContentWidth();
+  const margin = Number(PAGE.margin?.left || 20);
+  const width = Number(PAGE.width || 210);
+  const contentWidth = Number(getContentWidth() || 170);
   const columnWidths = [90, 20, 30, 30];
+  const tablePadding = Number(DEFAULTS.tablePadding || 3);
+  const defaultRowHeight = Number(DEFAULTS.rowHeight || 8);
 
   y = renderItemsTableHeader(doc, y);
 
@@ -106,35 +113,35 @@ export function generateQuotePDF(quote) {
       y = renderItemsTableHeader(doc, y);
     }
 
-    const description = item.item_name || item.description || '';
-    const descLines = doc.splitTextToSize(description, columnWidths[0] - (DEFAULTS.tablePadding * 2));
-    const rowHeight = Math.max(DEFAULTS.rowHeight, descLines.length * 4 + 4);
+    const description = String(item.item_name || item.description || '');
+    const descLines = doc.splitTextToSize(description, columnWidths[0] - (tablePadding * 2));
+    const rowHeight = Math.max(defaultRowHeight, descLines.length * 4 + 4);
 
     if (index % 2 === 0) {
-      doc.setFillColor(COLORS.tableBg);
+      doc.setFillColor(COLORS.tableBg || '#f9fafb');
       doc.rect(margin, y, contentWidth, rowHeight, 'F');
     }
 
-    doc.setFont(FONTS.regular);
-    doc.setFontSize(FONTS.sizes.small);
-    doc.setTextColor(COLORS.textPrimary);
+    doc.setFont(FONTS.regular || 'helvetica');
+    doc.setFontSize(Number(FONTS.sizes?.small || 8));
+    doc.setTextColor(COLORS.textPrimary || '#111827');
 
-    let xPos = margin + DEFAULTS.tablePadding;
+    let xPos = margin + tablePadding;
     doc.text(descLines, xPos, y + 5);
     xPos += columnWidths[0];
 
-    const qtyText = `${item.quantity || 0} ${item.unit || ''}`;
+    const qtyText = String(`${item.quantity || 0} ${item.unit || ''}`);
     doc.text(qtyText, xPos, y + 5);
     xPos += columnWidths[1];
 
-    doc.text(formatCurrency(item.unit_price), xPos, y + 5);
+    doc.text(String(formatCurrency(item.unit_price)), xPos, y + 5);
     xPos += columnWidths[2];
 
-    doc.setFont(FONTS.bold);
-    doc.text(formatCurrency(item.total), xPos, y + 5);
+    doc.setFont(FONTS.bold || 'helvetica-bold');
+    doc.text(String(formatCurrency(item.total)), xPos, y + 5);
 
-    doc.setDrawColor(COLORS.lightGray);
-    doc.line(margin, y + rowHeight, PAGE.width - margin, y + rowHeight);
+    doc.setDrawColor(COLORS.lightGray || '#e5e7eb');
+    doc.line(margin, y + rowHeight, width - margin, y + rowHeight);
 
     y += rowHeight;
   });
