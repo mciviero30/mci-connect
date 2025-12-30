@@ -465,6 +465,15 @@ Lawrenceville, Georgia 30043, U.S.A`
               {updateStatusMutation.isPending ? t('sending') : t('sendToCustomer')}
             </Button>
 
+            <PDFDownloadButton 
+              data={quote} 
+              type="quote" 
+              variant="outline"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+            >
+              {language === 'es' ? 'PDF' : 'PDF'}
+            </PDFDownloadButton>
+
             {quote.status !== 'converted_to_invoice' && (
               <Button
                 size="sm"
@@ -493,7 +502,7 @@ Lawrenceville, Georgia 30043, U.S.A`
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer text-white hover:bg-slate-800">
                   <Download className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
+                  {language === 'es' ? 'Descargar PDF (Backend)' : 'Download PDF (Backend)'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-800" />
                 <DropdownMenuItem onClick={handleShare} className="cursor-pointer text-white hover:bg-slate-800">

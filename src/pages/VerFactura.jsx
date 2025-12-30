@@ -303,6 +303,15 @@ export default function VerFactura() {
               {sendInvoiceMutation.isPending ? t('sending') : t('sendToCustomer')}
             </Button>
 
+            <PDFDownloadButton 
+              data={invoice} 
+              type="invoice" 
+              variant="outline"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+            >
+              {language === 'es' ? 'PDF' : 'PDF'}
+            </PDFDownloadButton>
+
             {canRecordPayment && (
               <Button
                 variant="default"
@@ -328,7 +337,7 @@ export default function VerFactura() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer text-white hover:bg-slate-800">
                   <Download className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
+                  {language === 'es' ? 'Descargar PDF (Backend)' : 'Download PDF (Backend)'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-800" />
                 <DropdownMenuItem onClick={handleShare} className="cursor-pointer text-white hover:bg-slate-800">
