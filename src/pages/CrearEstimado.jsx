@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2, ChevronUp, ChevronDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,6 +24,8 @@ export default function CrearEstimado() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('id');
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -49,6 +51,13 @@ export default function CrearEstimado() {
     initialData: [],
   });
 
+  // Fetch existing quote if editing
+  const { data: existingQuote } = useQuery({
+    queryKey: ['quote', editId],
+    queryFn: () => base44.entities.Quote.filter({ id: editId }).then(res => res[0]),
+    enabled: !!editId,
+  });
+
   const [formData, setFormData] = useState({
     customer_id: '',
     customer_name: '',
@@ -70,6 +79,31 @@ export default function CrearEstimado() {
   });
 
   const [calculatingTravel, setCalculatingTravel] = useState(false);
+
+  // Load existing quote data when editing
+  useEffect(() => {
+    if (existingQuote) {
+      setFormData({
+        customer_id: existingQuote.customer_id || '',
+        customer_name: existingQuote.customer_name || '',
+        customer_email: existingQuote.customer_email || '',
+        customer_phone: existingQuote.customer_phone || '',
+        job_name: existingQuote.job_name || '',
+        job_id: existingQuote.job_id || '',
+        job_address: existingQuote.job_address || '',
+        team_ids: existingQuote.team_ids || (existingQuote.team_id ? [existingQuote.team_id] : []),
+        team_names: existingQuote.team_names || (existingQuote.team_name ? [existingQuote.team_name] : []),
+        quote_date: existingQuote.quote_date || format(new Date(), 'yyyy-MM-dd'),
+        valid_until: existingQuote.valid_until || format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+        install_date: existingQuote.install_date || '',
+        out_of_area: existingQuote.out_of_area || false,
+        items: existingQuote.items || [{ description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
+        tax_rate: existingQuote.tax_rate || 0,
+        notes: existingQuote.notes || '',
+        terms: existingQuote.terms || '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
+      });
+    }
+  }, [existingQuote]);
 
   const createMutation = useMutation({
     mutationFn: async (quoteData) => {
@@ -123,6 +157,48 @@ export default function CrearEstimado() {
     },
     onError: (error) => {
       console.error('Error creating quote:', error);
+      toast({
+        title: 'Error',
+        description: `Error: ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async (quoteData) => {
+      const subtotal = quoteData.items.reduce((sum, item) => sum + (item.total || 0), 0);
+      const tax_amount = subtotal * (quoteData.tax_rate / 100);
+      const total = subtotal + tax_amount;
+      const estimated_hours = quoteData.items.reduce((sum, item) => {
+        return sum + ((item.installation_time || 0) * (item.quantity || 0));
+      }, 0);
+
+      const finalData = {
+        ...quoteData,
+        subtotal,
+        tax_amount,
+        total,
+        estimated_hours,
+        team_id: quoteData.team_ids?.[0] || '',
+        team_name: quoteData.team_names?.[0] || '',
+      };
+
+      return await base44.entities.Quote.update(editId, finalData);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['quote', editId] });
+      toast({
+        title: language === 'es' ? 'Estimado actualizado exitosamente' : 'Quote updated successfully',
+        variant: 'success',
+      });
+      setTimeout(() => {
+        navigate(createPageUrl(`VerEstimado?id=${editId}`));
+      }, 500);
+    },
+    onError: (error) => {
+      console.error('Error updating quote:', error);
       toast({
         title: 'Error',
         description: `Error: ${error.message}`,
@@ -564,7 +640,11 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return;
     }
 
-    createMutation.mutate(formData);
+    if (editId) {
+      updateMutation.mutate(formData);
+    } else {
+      createMutation.mutate(formData);
+    }
   };
 
   // Calculate totals
@@ -576,7 +656,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-5xl mx-auto">
         <PageHeader
-          title={t('newQuote')}
+          title={editId ? t('editQuote') : t('newQuote')}
           showBack={true}
         />
 
@@ -1063,11 +1143,11 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
             </Button>
             <Button
               type="submit"
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || updateMutation.isPending}
               className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
             >
               <Save className="w-4 h-4 mr-2" />
-              {createMutation.isPending ? t('saving') : t('save')}
+              {(createMutation.isPending || updateMutation.isPending) ? t('saving') : t('save')}
             </Button>
           </div>
         </form>
