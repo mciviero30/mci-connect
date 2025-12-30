@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { normalizeQuoteForSave } from "../components/utils/dataValidation";
+import { calculateQuoteTotals } from "../components/utils/quoteCalculations";
+import { generateQuoteNumber } from "@/functions/generateQuoteNumber";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,37 +112,21 @@ export default function CrearEstimado() {
     mutationFn: async (quoteData) => {
       console.log('Creating quote with data:', quoteData);
       
-      const quotes = await base44.entities.Quote.list();
-      const existingNumbers = quotes
-        .map(q => q.quote_number)
-        .filter(n => n?.startsWith('EST-'))
-        .map(n => parseInt(n.replace('EST-', '')))
-        .filter(n => !isNaN(n));
+      // Step 1: Normalize and validate data
+      const normalizedData = normalizeQuoteForSave(quoteData);
+      
+      // Step 2: Generate quote number via backend function (thread-safe)
+      const { data: numberResponse } = await generateQuoteNumber({});
+      const quote_number = numberResponse.quote_number;
 
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const quote_number = `EST-${String(nextNumber).padStart(5, '0')}`;
-
-      const subtotal = quoteData.items.reduce((sum, item) => sum + (item.total || 0), 0);
-      const tax_amount = subtotal * (quoteData.tax_rate / 100);
-      const total = subtotal + tax_amount;
-      const estimated_hours = quoteData.items.reduce((sum, item) => {
-        return sum + ((item.installation_time || 0) * (item.quantity || 0));
-      }, 0);
-
+      // Step 3: Build final data with generated number
       const finalData = {
-        ...quoteData,
+        ...normalizedData,
         quote_number,
-        subtotal,
-        tax_amount,
-        total,
-        estimated_hours,
         status: 'draft',
-        // Store first team for backwards compatibility
-        team_id: quoteData.team_ids?.[0] || '',
-        team_name: quoteData.team_names?.[0] || '',
       };
 
-      console.log('Final quote data:', finalData);
+      console.log('Final quote data (normalized):', finalData);
       const result = await base44.entities.Quote.create(finalData);
       console.log('Quote created successfully:', result);
       return result;
@@ -168,24 +155,13 @@ export default function CrearEstimado() {
 
   const updateMutation = useMutation({
     mutationFn: async (quoteData) => {
-      const subtotal = quoteData.items.reduce((sum, item) => sum + (item.total || 0), 0);
-      const tax_amount = subtotal * (quoteData.tax_rate / 100);
-      const total = subtotal + tax_amount;
-      const estimated_hours = quoteData.items.reduce((sum, item) => {
-        return sum + ((item.installation_time || 0) * (item.quantity || 0));
-      }, 0);
+      console.log('Updating quote with data:', quoteData);
+      
+      // Normalize and validate data
+      const normalizedData = normalizeQuoteForSave(quoteData);
 
-      const finalData = {
-        ...quoteData,
-        subtotal,
-        tax_amount,
-        total,
-        estimated_hours,
-        team_id: quoteData.team_ids?.[0] || '',
-        team_name: quoteData.team_names?.[0] || '',
-      };
-
-      return await base44.entities.Quote.update(editId, finalData);
+      console.log('Final quote data (normalized):', normalizedData);
+      return await base44.entities.Quote.update(editId, normalizedData);
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -649,10 +625,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     }
   };
 
-  // Calculate totals
-  const subtotal = formData.items.reduce((sum, item) => sum + (item.total || 0), 0);
-  const taxAmount = subtotal * (formData.tax_rate / 100);
-  const total = subtotal + taxAmount;
+  // Calculate totals using centralized function
+  const { subtotal, tax_amount: taxAmount, total } = calculateQuoteTotals(formData.items, formData.tax_rate);
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">

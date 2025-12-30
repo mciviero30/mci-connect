@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { normalizeInvoiceForSave } from "../components/utils/dataValidation";
+import { calculateInvoiceTotals } from "../components/utils/quoteCalculations";
+import { generateInvoiceNumber } from "@/functions/generateInvoiceNumber";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -118,10 +121,7 @@ export default function CrearFactura() {
   };
 
   const calculateTotals = () => {
-    const subtotal = formData.items.reduce((sum, item) => sum + (item.total || 0), 0);
-    const tax_amount = subtotal * (formData.tax_rate / 100);
-    const total = subtotal + tax_amount;
-    return { subtotal, tax_amount, total };
+    return calculateInvoiceTotals(formData.items, formData.tax_rate, formData.amount_paid || 0);
   };
 
   const handleItemChange = (index, field, value) => {
@@ -181,32 +181,21 @@ export default function CrearFactura() {
     mutationFn: async (invoiceData) => {
       console.log('Creating invoice with data:', invoiceData);
       
-      const invoices = await base44.entities.Invoice.list();
-      const existingNumbers = invoices
-        .map(inv => inv.invoice_number)
-        .filter(n => n?.startsWith('INV-'))
-        .map(n => parseInt(n.replace('INV-', '')))
-        .filter(n => !isNaN(n));
+      // Step 1: Normalize and validate data
+      const normalizedData = normalizeInvoiceForSave(invoiceData);
+      
+      // Step 2: Generate invoice number via backend function (thread-safe)
+      const { data: numberResponse } = await generateInvoiceNumber({});
+      const invoice_number = numberResponse.invoice_number;
 
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
-
-      const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.total || 0), 0);
-      const tax_amount = subtotal * (invoiceData.tax_rate / 100);
-      const total = subtotal + tax_amount;
-
+      // Step 3: Build final data with generated number
       const finalData = {
-        ...invoiceData,
+        ...normalizedData,
         invoice_number,
-        subtotal,
-        tax_amount,
-        total,
-        amount_paid: 0,
-        balance: total,
-        status: 'draft', // Explicitly setting status to draft
+        status: 'draft',
       };
 
-      console.log('Final invoice data for creation:', finalData);
+      console.log('Final invoice data (normalized):', finalData);
       const result = await base44.entities.Invoice.create(finalData);
       console.log('Invoice created successfully:', result);
       return result;
@@ -251,29 +240,22 @@ export default function CrearFactura() {
   };
 
   // Modified existing saveMutation to now only handle UPDATES of existing invoices.
-  const updateMutation = useMutation({ // Renamed from saveMutation for clarity
+  const updateMutation = useMutation({
     mutationFn: async (data) => {
       if (!editId) {
-        // This mutation is now intended only for updates.
-        // Initial creation as draft should go through handleSubmit -> createMutation.
-        throw new Error("updateMutation called without editId. Use the 'Save Draft' button for new invoices.");
+        throw new Error("updateMutation called without editId");
       }
       
-      const { subtotal, tax_amount, total } = calculateTotals();
-      const invoiceData = {
+      console.log('Updating invoice with data:', data);
+      
+      // Normalize and validate data (preserves payment info)
+      const normalizedData = normalizeInvoiceForSave({
         ...data,
-        subtotal,
-        tax_amount,
-        total,
-        // The balance and amount_paid fields in the original `saveMutation`
-        // were incorrectly resetting to total and 0 on update.
-        // For this implementation, we preserve them as they were in the original code,
-        // but note this requires careful handling in a production app if payments are involved.
-        balance: total, 
-        amount_paid: 0,
-      };
+        amount_paid: existingInvoice?.amount_paid || 0, // Preserve existing payments
+      });
 
-      return base44.entities.Invoice.update(editId, invoiceData);
+      console.log('Final invoice data (normalized):', normalizedData);
+      return base44.entities.Invoice.update(editId, normalizedData);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
@@ -289,49 +271,46 @@ export default function CrearFactura() {
     }
   });
 
-  // Existing sendMutation, now with added validation before proceeding
+  // Send mutation with normalization
   const sendMutation = useMutation({
     mutationFn: async (data) => {
-      const { subtotal, tax_amount, total } = calculateTotals();
-      const invoiceData = {
+      console.log('Sending invoice with data:', data);
+      
+      // Normalize and validate
+      const normalizedData = normalizeInvoiceForSave({
         ...data,
-        invoice_number: data.invoice_number || generateInvoiceNumber(),
-        subtotal,
-        tax_amount,
-        total,
-        // The balance and amount_paid fields in the original `sendMutation`
-        // were incorrectly resetting to total and 0 on update/create.
-        // For this implementation, we preserve them as they were in the original code,
-        // but note this requires careful handling in a production app if payments are involved.
-        balance: total,
-        amount_paid: 0,
+        amount_paid: editId ? existingInvoice?.amount_paid || 0 : 0,
+      });
+
+      // Ensure we have an invoice number
+      let invoice_number = normalizedData.invoice_number;
+      if (!invoice_number) {
+        const { data: numberResponse } = await generateInvoiceNumber({});
+        invoice_number = numberResponse.invoice_number;
+      }
+
+      const invoiceData = {
+        ...normalizedData,
+        invoice_number,
         status: 'sent'
       };
-
-      // Critical validation for sending
-      if (!invoiceData.customer_name || !invoiceData.job_name || !invoiceData.customer_email) {
-        throw new Error(language === 'es' ? 'Nombre de cliente, nombre de trabajo y email de cliente son requeridos para enviar.' : 'Customer name, job name, and customer email are required to send.');
-      }
-      if (invoiceData.items.length === 0 || invoiceData.items.some(item => !item.description.trim())) {
-        throw new Error(language === 'es' ? 'Agrega al menos un item con una descripción para enviar.' : 'Add at least one item with a description to send.');
-      }
 
       let savedInvoice;
       if (editId) {
         savedInvoice = await base44.entities.Invoice.update(editId, invoiceData);
       } else {
-        // This path handles creating a new invoice and sending it immediately.
         savedInvoice = await base44.entities.Invoice.create(invoiceData);
       }
 
-      const itemsList = data.items.map(item => 
+      // Send email
+      const itemsList = invoiceData.items.map(item => 
         `${item.quantity}${item.unit ? ` ${item.unit}` : ''}x ${item.description} - $${item.unit_price.toFixed(2)} = $${item.total.toFixed(2)}`
       ).join('\n');
 
       await base44.integrations.Core.SendEmail({
-        to: data.customer_email,
-        subject: `${t('invoice')} ${savedInvoice.invoice_number} - ${data.job_name}`,
-        body: `Dear ${data.customer_name},\n\nPlease find your invoice for: ${data.job_name}\n\nInvoice #: ${savedInvoice.invoice_number}\nDate: ${format(new Date(data.invoice_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\nDue Date: ${format(new Date(data.due_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${subtotal.toFixed(2)}\nTax (${data.tax_rate}%): $${tax_amount.toFixed(2)}\nTOTAL: $${total.toFixed(2)}\n\nNotes:\n${data.notes}\n\nTerms:\n${data.terms}\n\nThank you for your business.`
+        to: invoiceData.customer_email,
+        subject: `${t('invoice')} ${invoice_number} - ${invoiceData.job_name}`,
+        body: `Dear ${invoiceData.customer_name},\n\nPlease find your invoice for: ${invoiceData.job_name}\n\nInvoice #: ${invoice_number}\nDate: ${format(new Date(invoiceData.invoice_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\nDue Date: ${format(new Date(invoiceData.due_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${invoiceData.subtotal.toFixed(2)}\nTax (${invoiceData.tax_rate}%): $${invoiceData.tax_amount.toFixed(2)}\nTOTAL: $${invoiceData.total.toFixed(2)}\n\nNotes:\n${invoiceData.notes}\n\nTerms:\n${invoiceData.terms}\n\nThank you for your business.`
       });
 
       return savedInvoice;

@@ -43,13 +43,34 @@ export function SyncQueueProvider({ children }) {
     }
   }, [queue]);
 
-  // Add item to queue
+  // Add item to queue (with normalization for financial entities)
   const addToQueue = useCallback((operation) => {
+    // Pre-normalize Quote/Invoice data before queueing
+    let normalizedData = operation.data;
+    
+    if (operation.entity === 'Quote' || operation.entity === 'Invoice') {
+      try {
+        // Ensure items are valid before queueing
+        if (normalizedData.items && normalizedData.items.length > 0) {
+          normalizedData.items = normalizedData.items.filter(item => 
+            item.description && 
+            item.description.trim() &&
+            item.quantity > 0
+          );
+        }
+        
+        console.log(`📦 Normalized ${operation.entity} before queueing`);
+      } catch (error) {
+        console.warn('Could not pre-normalize data:', error);
+      }
+    }
+
     const item = {
       id: Date.now() + Math.random(),
       timestamp: new Date().toISOString(),
       retries: 0,
-      ...operation
+      ...operation,
+      data: normalizedData,
     };
 
     setQueue(prev => [...prev, item]);
@@ -119,12 +140,45 @@ export function SyncQueueProvider({ children }) {
   const executeOperation = async (item) => {
     const { entity, operation, data, id } = item;
 
+    // CRITICAL: Recalculate totals for financial entities before replay
+    let finalData = data;
+    if (entity === 'Quote' || entity === 'Invoice') {
+      try {
+        // Import normalization functions dynamically
+        const { normalizeQuoteForSave, normalizeInvoiceForSave } = await import('../utils/dataValidation.js');
+        
+        if (entity === 'Quote') {
+          finalData = normalizeQuoteForSave(data);
+          
+          // Generate quote number if creating
+          if (operation === 'create' && !finalData.quote_number) {
+            const { generateQuoteNumber } = await import('../../functions/generateQuoteNumber.js');
+            const { data: numberResponse } = await generateQuoteNumber({});
+            finalData.quote_number = numberResponse.quote_number;
+          }
+        } else if (entity === 'Invoice') {
+          finalData = normalizeInvoiceForSave(data);
+          
+          // Generate invoice number if creating
+          if (operation === 'create' && !finalData.invoice_number) {
+            const { generateInvoiceNumber } = await import('../../functions/generateInvoiceNumber.js');
+            const { data: numberResponse } = await generateInvoiceNumber({});
+            finalData.invoice_number = numberResponse.invoice_number;
+          }
+        }
+        
+        console.log(`✅ Normalized ${entity} for offline replay:`, finalData);
+      } catch (error) {
+        console.warn(`⚠️ Could not normalize ${entity}, using original data:`, error);
+      }
+    }
+
     switch (operation) {
       case 'create':
-        return await base44.entities[entity].create(data);
+        return await base44.entities[entity].create(finalData);
       
       case 'update':
-        return await base44.entities[entity].update(id, data);
+        return await base44.entities[entity].update(id, finalData);
       
       case 'delete':
         return await base44.entities[entity].delete(id);
