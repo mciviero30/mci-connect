@@ -125,67 +125,46 @@ Lawrenceville, Georgia 30043, U.S.A`
       let wasJobCreated = false;
       let mciFieldSyncSuccess = false;
       
-      // Step 1: Create Job in MCI Connect if it doesn't exist
+      // CRITICAL: Create Job in MCI Connect when converting to Invoice
       if (!jobId) {
-        console.log('📁 No job_id found, creating new job in MCI Connect...');
+        console.log('📁 Creating new job in MCI Connect...');
         
-        const jobData = {
+        const newJob = await base44.entities.Job.create({
           name: quote.job_name,
           address: quote.job_address,
           customer_id: quote.customer_id,
           customer_name: quote.customer_name,
           contract_amount: quote.total,
+          estimated_cost: quote.estimated_cost || 0,
+          estimated_hours: quote.estimated_hours || 0,
           status: 'active',
           team_id: quote.team_id,
           team_name: quote.team_name,
-          description: `Auto-created from quote ${quote.quote_number}`
-        };
-        
-        console.log('Creating job with data:', jobData);
-        const newJob = await base44.entities.Job.create(jobData);
-        console.log('✅ Job created successfully in MCI Connect:', newJob);
+          color: 'blue',
+          description: `Created from Quote ${quote.quote_number}`
+        });
         
         jobId = newJob.id;
         wasJobCreated = true;
-        
-        // Step 2: Sync with MCI Field
-        try {
-          console.log('🔗 Syncing job with MCI Field...');
-          
-          const mciFieldResponse = await fetch('https://mci-field.com/api/jobs/sync', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer MCISync_2024_SecureToken_abc123xyz789`
-            },
-            body: JSON.stringify({
-              job_name: quote.job_name,
-              job_address: quote.job_address,
-              source: 'mci_connect',
-              mci_connect_job_id: jobId
-            })
-          });
-
-          if (mciFieldResponse.ok) {
-            const mciFieldData = await mciFieldResponse.json();
-            console.log('✅ Job synced with MCI Field:', mciFieldData);
-            mciFieldSyncSuccess = true;
-          } else {
-            console.warn('⚠️ MCI Field sync failed but continuing with invoice creation');
-          }
-        } catch (syncError) {
-          console.error('⚠️ Error syncing with MCI Field:', syncError);
-          // Continue with invoice creation even if sync fails
-        }
+        console.log('✅ Job created:', jobId);
         
         // Update quote with job_id
-        console.log('Updating quote with job_id:', jobId);
-        await base44.entities.Quote.update(quote.id, {
-          job_id: jobId
-        });
-        console.log('Quote updated with job_id');
+        await base44.entities.Quote.update(quote.id, { job_id: jobId });
+        
+        // Sync to MCI Field (use internal function)
+        try {
+          await base44.functions.invoke('syncJobToMCIField', { jobId });
+          mciFieldSyncSuccess = true;
+        } catch (err) {
+          console.warn('MCI Field sync failed:', err);
+        }
       } else {
-        console.log('Using existing job_id:', jobId);
+        console.log('✅ Using existing job:', jobId);
+        // Update existing job with contract amount
+        await base44.entities.Job.update(jobId, {
+          contract_amount: quote.total,
+          status: 'active'
+        });
       }
 
       // Step 3: Create invoice
