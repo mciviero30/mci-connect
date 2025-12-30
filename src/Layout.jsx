@@ -245,6 +245,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
 
 const LayoutContent = ({ children, currentPageName }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -326,16 +327,16 @@ const LayoutContent = ({ children, currentPageName }) => {
     user.employment_status !== 'deleted' &&
     !onboardingCompleted;
 
-  // HARD REDIRECT: Block access to dashboard until onboarding is complete
+  // Soft redirect to onboarding - no full page reload
   useEffect(() => {
     if (!user) return;
     if (isOnboardingPage) return;
-    
+
     if (shouldBlockForOnboarding) {
       console.log('🚫 ONBOARDING REQUIRED: Redirecting to wizard');
-      window.location.href = createPageUrl('OnboardingWizard');
+      navigate(createPageUrl('OnboardingWizard'), { replace: true });
     }
-  }, [user, shouldBlockForOnboarding, isOnboardingPage]);
+  }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate]);
 
   useEffect(() => {
     if (!user) return;
