@@ -21,25 +21,37 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
   const navigate = useNavigate();
   const { language } = useLanguage();
 
+  // Defensive guards - never trust invoice data
+  const invoiceNumber = invoice?.invoice_number || 'DRAFT';
+  const customer = invoice?.customer_name || 'N/A';
+  const total = Number(invoice?.total) || 0;
+  const status = invoice?.status || 'draft';
+  const itemsCount = Array.isArray(invoice?.items) ? invoice.items.length : 0;
+  const balance = Number(invoice?.balance) || 0;
+
   const formatCurrency = (value) => {
-    if (value === null || value === undefined) return '$0';
-    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    const num = Number(value) || 0;
+    return `$${num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
   const getDaysOverdue = (invoice) => {
-    if (invoice.status === 'paid' || invoice.status === 'cancelled' || !invoice.due_date) return 0;
+    if (!invoice?.due_date || status === 'paid' || status === 'cancelled') return 0;
     
-    const dueDate = new Date(invoice.due_date);
-    const today = new Date();
-    dueDate.setHours(0,0,0,0);
-    today.setHours(0,0,0,0);
+    try {
+      const dueDate = new Date(invoice.due_date);
+      const today = new Date();
+      dueDate.setHours(0,0,0,0);
+      today.setHours(0,0,0,0);
 
-    const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
-    return daysDiff > 0 ? daysDiff : 0;
+      const daysDiff = Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+      return daysDiff > 0 ? daysDiff : 0;
+    } catch {
+      return 0;
+    }
   };
 
   const daysOverdue = getDaysOverdue(invoice);
-  const statusMeta = getInvoiceStatusMeta(invoice.status, language);
+  const statusMeta = getInvoiceStatusMeta(status, language);
 
   return (
     <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
@@ -48,9 +60,9 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
             <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5 line-clamp-2">
-              {invoice.customer_name}
+              {customer}
             </h3>
-            {invoice.job_name && (
+            {invoice?.job_name && (
               <div className="flex items-center gap-1 mt-1">
                 <Users className="w-3 h-3 text-[#666666]" />
                 <p className="text-[11px] text-[#666666] leading-tight truncate">
@@ -146,12 +158,12 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
         {/* Invoice Number & Date */}
         <div className="text-[10px] text-[#666666] mb-3">
           <div className="flex items-center justify-between">
-            <span>{invoice.invoice_number}</span>
-            {invoice.invoice_date && (
+            <span>{invoiceNumber}</span>
+            {invoice?.invoice_date && (
               <span>{format(new Date(invoice.invoice_date), 'MMM d, yyyy')}</span>
             )}
           </div>
-          {invoice.due_date && (
+          {invoice?.due_date && (
             <div className="flex items-center justify-between mt-1">
               <span>{language === 'es' ? 'Vence:' : 'Due:'}</span>
               <span className={daysOverdue > 0 ? 'text-red-600 font-semibold' : ''}>
@@ -179,17 +191,17 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                 {language === 'es' ? 'Total' : 'Total'}
               </span>
               <span className="text-[14px] font-bold text-[#00C48C]">
-                {formatCurrency(invoice.total)}
+                {formatCurrency(total)}
               </span>
             </div>
             
-            {invoice.status === 'partial' && (
+            {status === 'partial' && (
               <div className="flex items-center justify-between pt-2 border-t border-green-100 mt-2">
                 <span className="text-[10px] text-[#666666] font-semibold">
                   {language === 'es' ? 'Saldo' : 'Balance'}
                 </span>
                 <span className="text-[12px] font-bold text-amber-600">
-                  {formatCurrency(invoice.balance || 0)}
+                  {formatCurrency(balance)}
                 </span>
               </div>
             )}
@@ -197,7 +209,7 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
         </div>
 
         {/* Action Buttons - Only for Admin */}
-        {isAdmin && invoice.status !== 'paid' && invoice.status !== 'cancelled' && onRegisterPayment && (
+        {isAdmin && status !== 'paid' && status !== 'cancelled' && onRegisterPayment && (
           <div className="flex gap-1.5 mt-3">
             <Button
               variant="outline"

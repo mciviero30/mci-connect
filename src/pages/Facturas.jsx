@@ -144,7 +144,30 @@ export default function Facturas() {
     });
   };
 
-  const filteredInvoices = invoices.filter(invoice => {
+  // Defensive normalization - prevent crashes from legacy invoices
+  const safeInvoices = (invoices || []).map(inv => ({
+    ...inv,
+    invoice_number: inv?.invoice_number || inv?.number || 'DRAFT',
+    customer_name: inv?.customer_name || 'N/A',
+    status: inv?.status || 'draft',
+    total: Number(inv?.total) || 0,
+    subtotal: Number(inv?.subtotal) || 0,
+    tax_amount: Number(inv?.tax_amount) || 0,
+    tax_rate: Number(inv?.tax_rate) || 0,
+    amount_paid: Number(inv?.amount_paid) || 0,
+    balance: Number(inv?.balance) || Math.max(0, (Number(inv?.total)||0) - (Number(inv?.amount_paid)||0)),
+    items: Array.isArray(inv?.items) ? inv.items : []
+  }));
+
+  // Log bad invoices in DEV
+  if (import.meta.env.DEV) {
+    safeInvoices.forEach(inv => {
+      const bad = !inv.invoice_number || !Array.isArray(inv.items);
+      if (bad) console.warn("[Bad invoice record]", inv?.id, inv);
+    });
+  }
+
+  const filteredInvoices = safeInvoices.filter(invoice => {
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = !searchTerm ||
       invoice.customer_name?.toLowerCase().includes(searchLower) ||

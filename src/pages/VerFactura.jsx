@@ -52,11 +52,26 @@ export default function VerFactura() {
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
 
-  const { data: invoice, isLoading } = useQuery({
+  const { data: rawInvoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
     queryFn: () => base44.entities.Invoice.get(invoiceId),
     enabled: !!invoiceId,
   });
+
+  // Defensive normalization - prevent crashes
+  const invoice = rawInvoice ? {
+    ...rawInvoice,
+    invoice_number: rawInvoice?.invoice_number || 'DRAFT',
+    customer_name: rawInvoice?.customer_name || 'N/A',
+    status: rawInvoice?.status || 'draft',
+    total: Number(rawInvoice?.total) || 0,
+    subtotal: Number(rawInvoice?.subtotal) || 0,
+    tax_amount: Number(rawInvoice?.tax_amount) || 0,
+    tax_rate: Number(rawInvoice?.tax_rate) || 0,
+    amount_paid: Number(rawInvoice?.amount_paid) || 0,
+    balance: Number(rawInvoice?.balance) || Math.max(0, (Number(rawInvoice?.total)||0) - (Number(rawInvoice?.amount_paid)||0)),
+    items: Array.isArray(rawInvoice?.items) ? rawInvoice.items : []
+  } : null;
 
   // DEV LOG
   useEffect(() => {
@@ -70,8 +85,8 @@ export default function VerFactura() {
 
   const recordPaymentMutation = useMutation({
     mutationFn: async (amount) => {
-      const newAmountPaid = (invoice.amount_paid || 0) + amount;
-      const newBalance = invoice.total - newAmountPaid;
+      const newAmountPaid = (Number(invoice?.amount_paid) || 0) + amount;
+      const newBalance = (Number(invoice?.total) || 0) - newAmountPaid;
       const newStatus = newBalance <= 0 ? 'paid' : 'partial';
 
       await base44.entities.Invoice.update(invoiceId, {
@@ -90,11 +105,13 @@ export default function VerFactura() {
         payment_method: 'bank_transfer'
       });
 
-      await base44.integrations.Core.SendEmail({
-        to: invoice.customer_email,
-        subject: `Payment Received - Invoice ${invoice.invoice_number}`,
-        body: `Dear ${invoice.customer_name},\n\nWe have received your payment of $${amount.toFixed(2)} for invoice ${invoice.invoice_number}.\n\nNew balance: $${newBalance.toFixed(2)}\n\nThank you for your payment.`
-      });
+      if (invoice?.customer_email) {
+        await base44.integrations.Core.SendEmail({
+          to: invoice.customer_email,
+          subject: `Payment Received - Invoice ${invoice.invoice_number}`,
+          body: `Dear ${invoice.customer_name},\n\nWe have received your payment of $${amount.toFixed(2)} for invoice ${invoice.invoice_number}.\n\nNew balance: $${newBalance.toFixed(2)}\n\nThank you for your payment.`
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
@@ -108,8 +125,9 @@ export default function VerFactura() {
 
   const sendInvoiceMutation = useMutation({
     mutationFn: async () => {
-      const itemsList = invoice.items.map(item =>
-        `${item.quantity}x ${item.description} - $${item.unit_price.toFixed(2)} = $${item.total.toFixed(2)}`
+      const items = Array.isArray(invoice?.items) ? invoice.items : [];
+      const itemsList = items.map(item =>
+        `${Number(item?.quantity)||0}x ${item?.description||'Item'} - $${(Number(item?.unit_price)||0).toFixed(2)} = $${(Number(item?.total)||0).toFixed(2)}`
       ).join('\n');
 
       await base44.integrations.Core.SendEmail({
@@ -450,7 +468,7 @@ export default function VerFactura() {
             <div>
               <p className="text-sm text-slate-600">{t('balanceDue')}</p>
               <p className="text-2xl font-bold text-amber-700">
-                ${(invoice.balance || invoice.total).toFixed(2)}
+                ${((Number(invoice?.balance) || Number(invoice?.total) || 0)).toFixed(2)}
               </p>
             </div>
             <div className="space-y-2">
