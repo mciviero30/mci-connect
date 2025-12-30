@@ -86,7 +86,6 @@ export default function CrearEstimado() {
     terms: '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
   });
 
-  const [calculatingTravel, setCalculatingTravel] = useState(false);
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
 
   const handleAddTravelItems = (travelItems) => {
