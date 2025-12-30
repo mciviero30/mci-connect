@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import { useEffect } from "react";
 import {
   DropdownMenu,
@@ -270,7 +271,7 @@ export default function VerFactura() {
       toast.success('PDF downloaded successfully');
     } catch (error) {
       console.error('PDF generation error:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(safeErrorMessage(error, 'Failed to generate PDF'));
     }
   };
 

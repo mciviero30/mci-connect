@@ -23,6 +23,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
+import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -155,7 +156,7 @@ export default function CrearEstimado() {
       console.error('Error creating quote:', error);
       toast({
         title: 'Error',
-        description: `Error: ${error.message}`,
+        description: safeErrorMessage(error),
         variant: 'destructive',
       });
     }
@@ -187,7 +188,7 @@ export default function CrearEstimado() {
       console.error('Error updating quote:', error);
       toast({
         title: 'Error',
-        description: `Error: ${error.message}`,
+        description: safeErrorMessage(error),
         variant: 'destructive',
       });
     }
