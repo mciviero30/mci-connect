@@ -10,6 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Admin-only: Generating paystubs is an admin operation
+    if (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const payload = await req.json();
     const {
       employeeEmail,

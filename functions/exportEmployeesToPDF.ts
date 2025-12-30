@@ -10,6 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Admin-only: Exporting employee data is an admin operation
+    if (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     // Get all employees
     const employees = await base44.entities.User.list();
     const pendingEmployees = await base44.entities.PendingEmployee.list();
