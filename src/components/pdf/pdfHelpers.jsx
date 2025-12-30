@@ -40,7 +40,7 @@ export function initDocument() {
  * @returns {number} Y position after header
  */
 export function addHeader(doc, title = 'DOCUMENT') {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   
   // Dark background
   doc.setFillColor(COLORS.headerBg);
@@ -65,7 +65,7 @@ export function addHeader(doc, title = 'DOCUMENT') {
  * @returns {number} New Y position
  */
 export function addCompanyInfo(doc, startY) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   let y = startY;
   
   // Company name
@@ -104,7 +104,7 @@ export function addCompanyInfo(doc, startY) {
  * @returns {number} New Y position
  */
 export function addCustomerInfo(doc, customer, startY) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   let y = startY;
   
   // "BILL TO:" label
@@ -154,7 +154,7 @@ export function addCustomerInfo(doc, customer, startY) {
  * @returns {number} New Y position
  */
 export function addTableHeader(doc, columns, startY) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   const contentWidth = getContentWidth();
   const colWidth = contentWidth / columns.length;
   
@@ -187,7 +187,7 @@ export function addTableHeader(doc, columns, startY) {
  * @returns {number} New Y position
  */
 export function addTableRow(doc, row, columnWidths, startY) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   let y = startY;
   let maxRowHeight = DEFAULTS.rowHeight;
   
@@ -251,7 +251,7 @@ export function checkPageBreak(doc, currentY, requiredSpace = 30) {
  * @returns {number} New Y position
  */
 export function addTotals(doc, totals, startY) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.right || 20;
   const rightX = PAGE.width - margin;
   const labelX = rightX - 60;
   let y = startY + 5;
@@ -299,7 +299,7 @@ export function addTotals(doc, totals, startY) {
 export function addNotes(doc, notes, startY) {
   if (!notes || notes.trim() === '') return startY;
   
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   let y = startY + 5;
   
   doc.setFont(FONTS.bold);
@@ -323,7 +323,7 @@ export function addNotes(doc, notes, startY) {
  * @returns {number} New Y position
  */
 export function addTerms(doc, terms, startY) {
-  const { margin } = PAGE;
+  const margin = PAGE.margin.left || 20;
   let y = startY + 5;
   
   doc.setFont(FONTS.bold);
