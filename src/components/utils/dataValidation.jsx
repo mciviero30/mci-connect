@@ -8,6 +8,7 @@
 
 import { calculateQuoteTotals, calculateInvoiceTotals, normalizeQuoteItems, normalizeInvoiceItems } from './quoteCalculations';
 import { normalizeDocumentBase, validateDocument } from '../core/DocumentContract';
+import { isValidLineItem } from '../core/documentItemRules';
 
 /**
  * Normalize and validate quote data before saving
@@ -21,25 +22,10 @@ export function normalizeQuoteForSave(quoteData) {
   const normalized = normalizeDocumentBase(quoteData);
   
   // Step 2: Filter out invalid items BEFORE normalization
-  // Valid = quantity > 0 AND (description OR item_name exists)
-  normalized.items = (normalized.items || []).filter(item => {
-    const hasQuantity = item && parseFloat(item.quantity) > 0;
-    const hasContent = (item.description && item.description.trim()) || 
-                       (item.item_name && item.item_name.trim());
-    return hasQuantity && hasContent;
-  });
+  normalized.items = (normalized.items || []).filter(isValidLineItem);
   
   // Step 3: Normalize remaining valid items
   normalized.items = normalizeQuoteItems(normalized.items);
-  
-  // DEV LOG - Remove after validation
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 QUOTE PRE-SAVE:', normalized.items.map(i => ({ 
-      item_name: i.item_name, 
-      description: i.description, 
-      quantity: i.quantity 
-    })));
-  }
   
   // Step 4: Recalculate totals
   const totals = calculateQuoteTotals(normalized.items, normalized.tax_rate);
@@ -70,25 +56,10 @@ export function normalizeInvoiceForSave(invoiceData) {
   const normalized = normalizeDocumentBase(invoiceData);
   
   // Step 2: Filter out invalid items BEFORE normalization
-  // Valid = quantity > 0 AND (description OR item_name exists)
-  normalized.items = (normalized.items || []).filter(item => {
-    const hasQuantity = item && parseFloat(item.quantity) > 0;
-    const hasContent = (item.description && item.description.trim()) || 
-                       (item.item_name && item.item_name.trim());
-    return hasQuantity && hasContent;
-  });
+  normalized.items = (normalized.items || []).filter(isValidLineItem);
   
   // Step 3: Normalize remaining valid items
   normalized.items = normalizeInvoiceItems(normalized.items);
-  
-  // DEV LOG - Remove after validation
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 INVOICE PRE-SAVE:', normalized.items.map(i => ({ 
-      item_name: i.item_name, 
-      description: i.description, 
-      quantity: i.quantity 
-    })));
-  }
   
   // Step 4: Recalculate totals (invoice-specific with amount_paid)
   const totals = calculateInvoiceTotals(
