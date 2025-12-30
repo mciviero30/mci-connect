@@ -31,6 +31,17 @@ export function normalizeQuoteForSave(quoteData) {
   normalized.estimated_hours = totals.estimated_hours;
   normalized.estimated_cost = totals.estimated_cost;
   
+  // DEV SMOKE TEST - Remove after validation
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 QUOTE NORMALIZE CHECK:', {
+      first_item: normalized.items[0] ? {
+        item_name: normalized.items[0].item_name,
+        description: normalized.items[0].description
+      } : 'no items',
+      totals: { subtotal: normalized.subtotal, tax_amount: normalized.tax_amount, total: normalized.total }
+    });
+  }
+  
   // Step 4: Validate (throws if invalid)
   const validation = validateDocument(normalized);
   if (!validation.valid) {
@@ -65,6 +76,17 @@ export function normalizeInvoiceForSave(invoiceData) {
   normalized.total = totals.total;
   normalized.amount_paid = totals.amount_paid;
   normalized.balance = totals.balance;
+  
+  // DEV SMOKE TEST - Remove after validation
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 INVOICE NORMALIZE CHECK:', {
+      first_item: normalized.items[0] ? {
+        item_name: normalized.items[0].item_name,
+        description: normalized.items[0].description
+      } : 'no items',
+      totals: { subtotal: normalized.subtotal, tax_amount: normalized.tax_amount, total: normalized.total, balance: normalized.balance }
+    });
+  }
   
   // Step 4: Validate (throws if invalid)
   const validation = validateDocument(normalized);
