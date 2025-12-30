@@ -211,13 +211,14 @@ export default function CrearFactura() {
       console.log('Invoice created successfully:', result);
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('Invoice creation successful, invalidating queries...');
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      await queryClient.refetchQueries({ queryKey: ['invoices'] });
       toast.success(language === 'es' ? 'Factura creada exitosamente' : 'Invoice created successfully');
       setTimeout(() => {
-        navigate(createPageUrl(`VerFactura?id=${data.id}`)); // Navigate to view the newly created invoice
-      }, 500);
+        navigate(createPageUrl(`VerFactura?id=${data.id}`));
+      }, 800);
     },
     onError: (error) => {
       console.error('Error creating invoice:', error);
@@ -274,10 +275,13 @@ export default function CrearFactura() {
 
       return base44.entities.Invoice.update(editId, invoiceData);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      await queryClient.refetchQueries({ queryKey: ['invoices'] });
       toast.success(language === 'es' ? 'Factura actualizada exitosamente' : 'Invoice updated successfully');
-      navigate(createPageUrl('Facturas')); // Navigate to list view
+      setTimeout(() => {
+        navigate(createPageUrl(`VerFactura?id=${editId}`));
+      }, 800);
     },
     onError: (error) => {
       console.error('Error updating invoice:', error);

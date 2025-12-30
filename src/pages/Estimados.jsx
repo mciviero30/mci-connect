@@ -39,7 +39,7 @@ export default function Estimados() {
     queryKey: ['quotes'],
     queryFn: () => base44.entities.Quote.list('-created_date'),
     initialData: [],
-    staleTime: 300000,
+    staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: true
   });

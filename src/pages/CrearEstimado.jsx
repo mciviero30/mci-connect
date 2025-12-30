@@ -144,16 +144,17 @@ export default function CrearEstimado() {
       console.log('Quote created successfully:', result);
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('Quote creation successful, invalidating queries...');
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      await queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      await queryClient.refetchQueries({ queryKey: ['quotes'] });
       toast({
         title: language === 'es' ? 'Estimado creado exitosamente' : 'Quote created successfully',
         variant: 'success',
       });
       setTimeout(() => {
         navigate(createPageUrl(`VerEstimado?id=${data.id}`));
-      }, 500);
+      }, 800);
     },
     onError: (error) => {
       console.error('Error creating quote:', error);
@@ -186,16 +187,17 @@ export default function CrearEstimado() {
 
       return await base44.entities.Quote.update(editId, finalData);
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      queryClient.invalidateQueries({ queryKey: ['quote', editId] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      await queryClient.invalidateQueries({ queryKey: ['quote', editId] });
+      await queryClient.refetchQueries({ queryKey: ['quotes'] });
       toast({
         title: language === 'es' ? 'Estimado actualizado exitosamente' : 'Quote updated successfully',
         variant: 'success',
       });
       setTimeout(() => {
         navigate(createPageUrl(`VerEstimado?id=${editId}`));
-      }, 500);
+      }, 800);
     },
     onError: (error) => {
       console.error('Error updating quote:', error);
