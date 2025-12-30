@@ -68,10 +68,12 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
         });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      toast.success(employee ? 'Employee updated!' : 'Employee created! Now invite them from Dashboard.');
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+      await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      // Force immediate refetch
+      await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
+      toast.success(employee ? 'Employee updated!' : 'Employee created! Check "Pending" tab to invite them.');
       onClose();
     },
     onError: (error) => {
