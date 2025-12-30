@@ -351,29 +351,45 @@ export async function generateQuotePDF(quote) {
   
   y += 6;
   doc.setFontSize(8);
+  doc.setTextColor(0, 0, 0);
   
-  // Approval
+  // Approval (una sola línea)
   doc.setFont('helvetica', 'bold');
-  const approvalText = doc.splitTextToSize('Approval: PO required to schedule work.', contentWidth);
-  doc.text(approvalText, margin, y);
-  y += approvalText.length * 4 + 2;
+  doc.text('Approval: ', margin, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text('PO required to schedule work.', margin + 20, y);
+  y += 6;
   
-  // Offload
+  // Offload (título bold, descripción continúa en la misma línea)
   doc.setFont('helvetica', 'bold');
-  doc.text('Offload: ', margin, y);
+  doc.text('Offload:', margin, y);
   doc.setFont('helvetica', 'normal');
   const offloadDesc = 'Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment (forklift or lull). Site access issues may require revised quote.';
-  const offloadLines = doc.splitTextToSize(offloadDesc, contentWidth - 20);
-  doc.text(offloadLines, margin + 18, y);
-  y += offloadLines.length * 4 + 2;
+  const offloadLines = doc.splitTextToSize(offloadDesc, contentWidth - 28);
+  doc.text(offloadLines[0], margin + 22, y);
+  y += 4;
+  if (offloadLines.length > 1) {
+    for (let i = 1; i < offloadLines.length; i++) {
+      doc.text(offloadLines[i], margin + 22, y);
+      y += 4;
+    }
+  }
+  y += 2;
   
-  // Hours
+  // Hours (título bold, descripción continúa en la misma línea)
   doc.setFont('helvetica', 'bold');
-  doc.text('Hours: ', margin, y);
+  doc.text('Hours:', margin, y);
   doc.setFont('helvetica', 'normal');
   const hoursDesc = 'Regular hours only. OT/after-hours billed separately via Change Order unless otherwise specified.';
-  const hoursLines = doc.splitTextToSize(hoursDesc, contentWidth - 20);
-  doc.text(hoursLines, margin + 15, y);
+  const hoursLines = doc.splitTextToSize(hoursDesc, contentWidth - 22);
+  doc.text(hoursLines[0], margin + 18, y);
+  y += 4;
+  if (hoursLines.length > 1) {
+    for (let i = 1; i < hoursLines.length; i++) {
+      doc.text(hoursLines[i], margin + 18, y);
+      y += 4;
+    }
+  }
 
   return doc;
 }
