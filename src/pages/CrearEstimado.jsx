@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { normalizeQuoteForSave } from "../components/utils/dataValidation";
 import { calculateQuoteTotals } from "../components/utils/quoteCalculations";
 import { generateQuoteNumber } from "@/functions/generateQuoteNumber";
+import { isValidLineItem } from "@/components/core/documentItemRules";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -622,10 +623,12 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return;
     }
 
-    if (formData.items.length === 0 || !formData.items[0].description) {
+    // Unified validation using isValidLineItem
+    const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
+    if (invalid.length > 0) {
       toast({
         title: 'Error',
-        description: language === 'es' ? 'Agrega al menos un item' : 'Add at least one item',
+        description: language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields',
         variant: 'destructive',
       });
       return;

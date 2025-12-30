@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { normalizeInvoiceForSave } from "../components/utils/dataValidation";
 import { calculateInvoiceTotals } from "../components/utils/quoteCalculations";
 import { generateInvoiceNumber } from "@/functions/generateInvoiceNumber";
+import { isValidLineItem } from "@/components/core/documentItemRules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -318,9 +319,10 @@ export default function CrearFactura() {
       return;
     }
 
-    // Ensure at least one item and its description is not empty
-    if (formData.items.length === 0 || formData.items.some(item => !item.description.trim())) {
-      toast.error(language === 'es' ? 'Agrega al menos un item con una descripción.' : 'Add at least one item with a description.');
+    // Unified validation using isValidLineItem
+    const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
+    if (invalid.length > 0) {
+      toast.error(language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields');
       return;
     }
 
@@ -674,7 +676,7 @@ export default function CrearFactura() {
                 // If creating a new invoice, "Save Draft" triggers form submission via handleSubmit -> createMutation
                 <Button
                   type="submit" // This button will trigger the form's onSubmit handler
-                  disabled={createMutation.isPending || !formData.customer_name || !formData.job_name || formData.items.length === 0 || formData.items.some(item => !item.description.trim())}
+                  disabled={createMutation.isPending || !formData.customer_name || !formData.job_name || (formData.items || []).some(i => !isValidLineItem(i))}
                   variant="outline"
                 >
                   <Save className="w-4 h-4 mr-2" />
@@ -683,7 +685,7 @@ export default function CrearFactura() {
               )}
               <Button
                 onClick={() => sendMutation.mutate(formData)}
-                disabled={sendMutation.isPending || !formData.customer_name || !formData.customer_email || !formData.job_name || formData.items.length === 0 || formData.items.some(item => !item.description.trim())}
+                disabled={sendMutation.isPending || !formData.customer_name || !formData.customer_email || !formData.job_name || (formData.items || []).some(i => !isValidLineItem(i))}
                 className="bg-gradient-to-r from-emerald-600 to-emerald-700"
                 type="button" // Added type="button"
               >
