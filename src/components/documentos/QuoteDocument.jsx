@@ -32,9 +32,7 @@ export default function QuoteDocument({ quote }) {
                     alt="MCI Logo"
                     className="h-14 object-contain"
                     style={{ 
-                        imageRendering: 'crisp-edges',
                         imageRendering: '-webkit-optimize-contrast',
-                        imageRendering: 'high-quality',
                         shapeRendering: 'geometricPrecision',
                         filter: 'contrast(1.05) brightness(1.02)'
                     }}

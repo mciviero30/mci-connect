@@ -915,9 +915,7 @@ const LayoutContent = ({ children, currentPageName }) => {
               alt="MCI Connect"
               className="w-full h-full object-contain"
               style={{ 
-                imageRendering: 'crisp-edges',
-                imageRendering: '-webkit-optimize-contrast',
-                imageRendering: 'high-quality'
+                imageRendering: '-webkit-optimize-contrast'
               }}
             />
           </SidebarHeader>

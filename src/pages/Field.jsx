@@ -164,9 +164,7 @@ export default function Field() {
           alt="MCI Field"
           className="h-12 sm:h-16 md:h-20 object-contain"
           style={{ 
-            imageRendering: 'crisp-edges',
-            imageRendering: '-webkit-optimize-contrast',
-            imageRendering: 'high-quality'
+            imageRendering: '-webkit-optimize-contrast'
           }}
         />
         <div className="text-center sm:text-right">

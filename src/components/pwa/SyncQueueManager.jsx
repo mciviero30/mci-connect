@@ -145,14 +145,14 @@ export function SyncQueueProvider({ children }) {
     if (entity === 'Quote' || entity === 'Invoice') {
       try {
         // Import normalization functions dynamically
-        const { normalizeQuoteForSave, normalizeInvoiceForSave } = await import('../utils/dataValidation.js');
+        const { normalizeQuoteForSave, normalizeInvoiceForSave } = await import('@/components/utils/dataValidation.js');
         
         if (entity === 'Quote') {
           finalData = normalizeQuoteForSave(data);
           
           // Generate quote number if creating
           if (operation === 'create' && !finalData.quote_number) {
-            const { generateQuoteNumber } = await import('../../functions/generateQuoteNumber.js');
+            const { generateQuoteNumber } = await import('@/functions/generateQuoteNumber.js');
             const { data: numberResponse } = await generateQuoteNumber({});
             finalData.quote_number = numberResponse.quote_number;
           }
@@ -161,7 +161,7 @@ export function SyncQueueProvider({ children }) {
           
           // Generate invoice number if creating
           if (operation === 'create' && !finalData.invoice_number) {
-            const { generateInvoiceNumber } = await import('../../functions/generateInvoiceNumber.js');
+            const { generateInvoiceNumber } = await import('@/functions/generateInvoiceNumber.js');
             const { data: numberResponse } = await generateInvoiceNumber({});
             finalData.invoice_number = numberResponse.invoice_number;
           }
