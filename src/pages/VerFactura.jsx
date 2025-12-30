@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import InvoiceDocument from "../components/documentos/InvoiceDocument";
+import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -303,14 +304,15 @@ export default function VerFactura() {
               {sendInvoiceMutation.isPending ? t('sending') : t('sendToCustomer')}
             </Button>
 
-            <PDFDownloadButton 
-              data={invoice} 
-              type="invoice" 
+            <Button
               variant="outline"
+              size="sm"
+              onClick={() => downloadInvoicePDF(invoice)}
               className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
             >
+              <Download className="w-4 h-4 mr-2" />
               {language === 'es' ? 'PDF' : 'PDF'}
-            </PDFDownloadButton>
+            </Button>
 
             {canRecordPayment && (
               <Button
