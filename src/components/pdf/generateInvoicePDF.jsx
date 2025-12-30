@@ -26,7 +26,7 @@ function renderItemsTableHeader(doc, y) {
   const columnWidths = [90, 20, 30, 30];
 
   doc.setFillColor(243, 244, 246); // tableHeaderBg
-  doc.rect(margin, y - 2, contentWidth, DEFAULTS.rowHeight, 'F');
+  doc.rect(Number(margin), Number(y - 2), Number(contentWidth), Number(DEFAULTS.rowHeight), 'F');
 
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.small);
@@ -131,7 +131,7 @@ export function generateInvoicePDF(invoice) {
 
     if (index % 2 === 0) {
       doc.setFillColor(249, 250, 251); // tableBg
-      doc.rect(margin, y, contentWidth, rowHeight, 'F');
+      doc.rect(Number(margin), Number(y), Number(contentWidth), Number(rowHeight), 'F');
     }
 
     let xPos = margin + DEFAULTS.tablePadding;
@@ -203,7 +203,7 @@ export function generateInvoicePDF(invoice) {
   // Total
   y += 8;
   doc.setFillColor(229, 231, 235); // totalsBg
-  doc.rect(labelX - 5, y - 5, 65, 10, 'F');
+  doc.rect(Number(labelX - 5), Number(y - 5), 65, 10, 'F');
   doc.setFont(FONTS.bold);
   doc.setFontSize(FONTS.sizes.subtitle);
   doc.setTextColor(17, 24, 39); // textPrimary
