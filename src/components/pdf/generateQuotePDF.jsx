@@ -263,15 +263,18 @@ export async function generateQuotePDF(quote) {
     doc.setTextColor(180, 180, 180);
     doc.text(itemNum, numCol, y + 4);
 
-    // Item Name (bold, black)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    doc.text(nameLines, itemCol, y + 4);
+    let textY = y + 4;
     
-    let textY = y + 4 + (nameLines.length * 4);
+    // Item Name (bold, black) - solo si existe
+    if (nameLines.length > 0) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      doc.text(nameLines, itemCol, textY);
+      textY += nameLines.length * 4;
+    }
     
-    // Description below (normal, dark gray)
+    // Description below (normal, dark gray) - solo si existe
     if (descLines.length > 0) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
