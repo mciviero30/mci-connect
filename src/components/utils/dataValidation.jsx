@@ -24,8 +24,20 @@ export function normalizeQuoteForSave(quoteData) {
   // Step 2: Filter out invalid items BEFORE normalization
   normalized.items = (normalized.items || []).filter(isValidLineItem);
   
+  // Sanity check: Must have at least one valid item
+  if (normalized.items.length === 0) {
+    throw new Error('Quote must have at least one valid line item');
+  }
+  
   // Step 3: Normalize remaining valid items
   normalized.items = normalizeQuoteItems(normalized.items);
+  
+  // Sanity check: Ensure item_name and description are strings (never null)
+  normalized.items = normalized.items.map(item => ({
+    ...item,
+    item_name: String(item.item_name || ''),
+    description: String(item.description || '')
+  }));
   
   // Step 4: Recalculate totals
   const totals = calculateQuoteTotals(normalized.items, normalized.tax_rate);
@@ -58,8 +70,20 @@ export function normalizeInvoiceForSave(invoiceData) {
   // Step 2: Filter out invalid items BEFORE normalization
   normalized.items = (normalized.items || []).filter(isValidLineItem);
   
+  // Sanity check: Must have at least one valid item
+  if (normalized.items.length === 0) {
+    throw new Error('Invoice must have at least one valid line item');
+  }
+  
   // Step 3: Normalize remaining valid items
   normalized.items = normalizeInvoiceItems(normalized.items);
+  
+  // Sanity check: Ensure item_name and description are strings (never null)
+  normalized.items = normalized.items.map(item => ({
+    ...item,
+    item_name: String(item.item_name || ''),
+    description: String(item.description || '')
+  }));
   
   // Step 4: Recalculate totals (invoice-specific with amount_paid)
   const totals = calculateInvoiceTotals(
