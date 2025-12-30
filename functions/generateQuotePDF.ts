@@ -31,30 +31,20 @@ Deno.serve(async (req) => {
             doc.rect(x, 0, width, headerHeight, 'F');
         }
 
-        // Logo blanco
-        try {
-            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
-            const logoResponse = await fetch(logoUrl);
-            
-            if (logoResponse.ok) {
-                const arrayBuffer = await logoResponse.arrayBuffer();
-                const bytes = new Uint8Array(arrayBuffer);
-                
-                let binary = '';
-                const chunkSize = 8192;
-                const len = bytes.byteLength;
-                
-                for (let i = 0; i < len; i += chunkSize) {
-                    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
-                    binary += String.fromCharCode.apply(null, Array.from(chunk));
-                }
-                
-                const logoBase64 = btoa(binary);
-                doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 60, 20);
-            }
-        } catch (err) {
-            console.log('Logo error:', err);
-        }
+        // Logo como texto (MCI logo style)
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('MODERN', 20, 17);
+        doc.text('COMPONENTS', 20, 22);
+        doc.text('INSTALLATIONS', 20, 27);
+        
+        // Logo frame
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.8);
+        doc.rect(15, 10, 8, 8);
+        doc.line(19, 14, 23, 14);
+        doc.line(19, 18, 23, 18);
         // Title
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(40);
