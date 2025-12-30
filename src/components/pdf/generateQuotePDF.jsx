@@ -353,36 +353,36 @@ export async function generateQuotePDF(quote) {
   doc.setFontSize(8);
   doc.setTextColor(0, 0, 0);
   
-  const labelX = margin; // Columna de títulos
-  const contentX = margin + 25; // Columna de contenido (alineada)
-  const contentMaxWidth = contentWidth - 25;
+  const termsLabelX = margin; // Columna de títulos
+  const termsContentX = margin + 25; // Columna de contenido (alineada)
+  const termsMaxWidth = contentWidth - 25;
   
   // Approval
   doc.setFont('helvetica', 'bold');
-  doc.text('Approval:', labelX, y);
+  doc.text('Approval:', termsLabelX, y);
   doc.setFont('helvetica', 'normal');
-  doc.text('PO required to schedule work.', contentX, y);
+  doc.text('PO required to schedule work.', termsContentX, y);
   y += 6;
   
   // Offload
   doc.setFont('helvetica', 'bold');
-  doc.text('Offload:', labelX, y);
+  doc.text('Offload:', termsLabelX, y);
   doc.setFont('helvetica', 'normal');
   const offloadDesc = 'Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment (forklift or lull). Site access issues may require revised quote.';
-  const offloadLines = doc.splitTextToSize(offloadDesc, contentMaxWidth);
+  const offloadLines = doc.splitTextToSize(offloadDesc, termsMaxWidth);
   offloadLines.forEach((line, i) => {
-    doc.text(line, contentX, y + (i * 4));
+    doc.text(line, termsContentX, y + (i * 4));
   });
   y += offloadLines.length * 4 + 2;
   
   // Hours
   doc.setFont('helvetica', 'bold');
-  doc.text('Hours:', labelX, y);
+  doc.text('Hours:', termsLabelX, y);
   doc.setFont('helvetica', 'normal');
   const hoursDesc = 'Regular hours only. OT/after-hours billed separately via Change Order unless otherwise specified.';
-  const hoursLines = doc.splitTextToSize(hoursDesc, contentMaxWidth);
+  const hoursLines = doc.splitTextToSize(hoursDesc, termsMaxWidth);
   hoursLines.forEach((line, i) => {
-    doc.text(line, contentX, y + (i * 4));
+    doc.text(line, termsContentX, y + (i * 4));
   });
   y += hoursLines.length * 4;
 
