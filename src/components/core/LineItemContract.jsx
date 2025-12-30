@@ -54,19 +54,20 @@ export function normalizeLineItem(item) {
   // CRITICAL: Spread FIRST to preserve ALL fields (extended properties, etc.)
   const normalized = { ...item };
   
-  // Only set defaults for undefined core fields (never overwrite existing)
-  if (normalized.item_name === undefined) normalized.item_name = '';
-  if (normalized.description === undefined) normalized.description = '';
-  if (normalized.unit === undefined) normalized.unit = '';
+  // Only set defaults for null/undefined core fields (never overwrite existing)
+  if (normalized.item_name == null) normalized.item_name = '';
+  if (normalized.description == null) normalized.description = '';
+  if (normalized.unit == null) normalized.unit = '';
   
   // Normalize numeric fields
-  normalized.quantity = parseFloat(normalized.quantity) || 0;
-  normalized.unit_price = parseFloat(normalized.unit_price) || 0;
-  normalized.total = parseFloat(normalized.total) || 0;
+  normalized.quantity = Number(normalized.quantity) || 0;
+  normalized.unit_price = Number(normalized.unit_price) || 0;
   
-  // Round prices to 2 decimals
+  // Round price to 2 decimals
   normalized.unit_price = Math.round(normalized.unit_price * 100) / 100;
-  normalized.total = Math.round(normalized.total * 100) / 100;
+  
+  // CRITICAL: Recalculate total from quantity * unit_price (source of truth)
+  normalized.total = Math.round((normalized.quantity * normalized.unit_price) * 100) / 100;
   
   return normalized;
 }
