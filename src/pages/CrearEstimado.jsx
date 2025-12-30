@@ -827,17 +827,6 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 {t('addItem')}
               </Button>
             </CardHeader>
-            <CardContent className="p-6 space-y-0">
-              {/* Table Header */}
-              <div className="hidden md:grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
-                <div>ITEM DETAILS</div>
-                <div className="text-center">QUANTITY</div>
-                <div className="text-center">UNIT</div>
-                <div className="text-center">RATE</div>
-                <div className="text-right">AMOUNT</div>
-                <div></div>
-              </div>
-
             <CardContent className="p-0">
               {/* Table Header */}
               <div className="hidden md:grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
