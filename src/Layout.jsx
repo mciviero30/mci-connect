@@ -282,15 +282,14 @@ const LayoutContent = ({ children, currentPageName }) => {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    retry: false,
-    staleTime: 300000, // 5 minutes
-    cacheTime: 600000, // 10 minutes
+    retry: 1,
+    staleTime: Infinity, // Never auto-refetch
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
-    refetchInterval: false, // No polling
+    refetchInterval: false,
   });
 
-  // Check if user is a client member (for redirect to ClientPortal)
   const { data: clientMemberships = [] } = useQuery({
     queryKey: ['client-memberships-check', user?.email],
     queryFn: () => base44.entities.ProjectMember.filter({ 
@@ -298,20 +297,21 @@ const LayoutContent = ({ children, currentPageName }) => {
       role: 'client'
     }),
     enabled: !!user?.email && user?.role !== 'admin',
-    staleTime: 600000, // 10 minutes
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
 
-  // CRITICAL: Onboarding Blocker - Block ALL access until 3 forms completed
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms', user?.email],
     queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user?.email }),
     enabled: !!user?.email && !isClientOnly && user?.employment_status !== 'deleted',
     initialData: [],
-    staleTime: 600000, // 10 minutes cache
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -457,7 +457,8 @@ const LayoutContent = ({ children, currentPageName }) => {
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 600000, // 10 minutes
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
