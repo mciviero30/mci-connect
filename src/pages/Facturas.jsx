@@ -17,6 +17,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { Dialog } from "@/components/ui/dialog";
 import ModernInvoiceCard from "../components/invoices/ModernInvoiceCard";
 import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
+import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
@@ -173,26 +174,7 @@ export default function Facturas() {
   const paidInvoices = filteredInvoices.filter(inv => inv.status === 'paid');
   const overdueInvoices = filteredInvoices.filter(inv => getDaysOverdue(inv) > 0);
 
-  const statusColors = {
-    draft: "bg-slate-100 text-slate-700 border-slate-200",
-    sent: "bg-blue-50 text-blue-700 border-blue-200",
-    paid: "bg-green-50 text-green-700 border-green-200",
-    partial: "bg-amber-50 text-amber-700 border-amber-200",
-    overdue: "bg-red-50 text-red-700 border-red-200",
-    cancelled: "bg-slate-100 text-slate-500 border-slate-200"
-  };
 
-  const getStatusLabel = (status) => {
-    const labels = {
-      draft: language === 'es' ? 'Borrador' : 'Draft',
-      sent: language === 'es' ? 'Enviado' : 'Sent',
-      paid: language === 'es' ? 'Pagado' : 'Paid',
-      partial: language === 'es' ? 'Parcial' : 'Partial',
-      overdue: language === 'es' ? 'Vencido' : 'Overdue',
-      cancelled: language === 'es' ? 'Cancelado' : 'Cancelled',
-    };
-    return labels[status] || status;
-  };
 
   const isAdmin = user?.role === 'admin';
 
@@ -254,32 +236,32 @@ export default function Facturas() {
                     </SelectItem>
                     <SelectItem value="draft">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-slate-500" />
-                        {language === 'es' ? 'Borrador' : 'Draft'}
+                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('draft', language).dotClass}`} />
+                        {getInvoiceStatusMeta('draft', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="sent">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        {language === 'es' ? 'Enviado' : 'Sent'}
+                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('sent', language).dotClass}`} />
+                        {getInvoiceStatusMeta('sent', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="paid">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        {language === 'es' ? 'Pagado' : 'Paid'}
+                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('paid', language).dotClass}`} />
+                        {getInvoiceStatusMeta('paid', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="partial">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
-                        {language === 'es' ? 'Parcial' : 'Partial'}
+                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('partial', language).dotClass}`} />
+                        {getInvoiceStatusMeta('partial', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="overdue">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-red-500" />
-                        {language === 'es' ? 'Vencido' : 'Overdue'}
+                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('overdue', language).dotClass}`} />
+                        {getInvoiceStatusMeta('overdue', language).label}
                       </div>
                     </SelectItem>
                   </SelectContent>

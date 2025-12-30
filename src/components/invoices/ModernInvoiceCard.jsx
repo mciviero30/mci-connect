@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
+import { getInvoiceStatusMeta } from "../core/statusConfig";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,24 +39,7 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
   };
 
   const daysOverdue = getDaysOverdue(invoice);
-
-  const statusColors = {
-    draft: "soft-slate-gradient",
-    sent: "soft-blue-gradient",
-    paid: "soft-green-gradient",
-    partial: "soft-amber-gradient",
-    overdue: "soft-red-gradient",
-    cancelled: "soft-slate-gradient"
-  };
-
-  const statusLabels = {
-    draft: language === 'es' ? 'Borrador' : 'Draft',
-    sent: language === 'es' ? 'Enviado' : 'Sent',
-    paid: language === 'es' ? 'Pagado' : 'Paid',
-    partial: language === 'es' ? 'Parcial' : 'Partial',
-    overdue: language === 'es' ? 'Vencido' : 'Overdue',
-    cancelled: language === 'es' ? 'Cancelado' : 'Cancelled'
-  };
+  const statusMeta = getInvoiceStatusMeta(invoice.status, language);
 
   return (
     <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
@@ -135,8 +119,8 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className={`${statusColors[invoice.status]} px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center`}>
-            {statusLabels[invoice.status] || invoice.status}
+          <Badge className={`${statusMeta.cardBadgeClass} px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center`}>
+            {statusMeta.label}
           </Badge>
           {invoice.team_name && (
             <Badge 

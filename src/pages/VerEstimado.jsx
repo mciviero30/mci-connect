@@ -44,6 +44,7 @@ import QuoteVersions from "@/components/quotes/QuoteVersions";
 import QuoteCompare from "@/components/quotes/QuoteCompare";
 import { SaveAsTemplateButton } from "@/components/quotes/QuoteTemplates";
 import PDFDownloadButton from "@/components/pdf/PDFDownloadButton";
+import { getQuoteStatusMeta } from "../components/core/statusConfig";
 
 export default function VerEstimado() {
   const { t, language } = useLanguage();
@@ -388,15 +389,7 @@ Lawrenceville, Georgia 30043, U.S.A`
     );
   }
 
-  const statusConfig = {
-    draft: { label: t('draft'), color: "bg-slate-700 text-slate-300" },
-    sent: { label: t('sent'), color: "bg-blue-500 text-white" },
-    approved: { label: t('approved'), color: "bg-green-500 text-white" },
-    rejected: { label: t('rejected'), color: "bg-red-500 text-white" },
-    converted_to_invoice: { label: t('converted'), color: "bg-purple-500 text-white" }
-  };
-
-  const config = statusConfig[quote.status];
+  const statusMeta = getQuoteStatusMeta(quote.status, language);
   const canDelete = ['draft', 'sent', 'rejected'].includes(quote.status);
   const canEdit = quote.status === 'draft';
 
@@ -417,7 +410,7 @@ Lawrenceville, Georgia 30043, U.S.A`
             </Button>
             <div>
               <h1 className="text-xl font-bold text-white">{quote.quote_number}</h1>
-              <Badge className={config.color === "bg-purple-500 text-white" ? "bg-slate-900 text-white mt-1" : `${config.color} mt-1`}>{config.label}</Badge>
+              <Badge className={quote.status === 'converted_to_invoice' ? "bg-slate-900 text-white mt-1" : `${statusMeta.badgeClass} mt-1`}>{statusMeta.label}</Badge>
             </div>
           </div>
 

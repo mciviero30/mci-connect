@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { format } from "date-fns";
 import ModernQuoteCard from "../components/quotes/ModernQuoteCard";
 import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
+import { getQuoteStatusMeta } from "../components/core/statusConfig";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -156,24 +157,7 @@ export default function Estimados() {
   const approvedQuotes = filteredQuotes.filter(q => q.status === 'approved');
   const convertedQuotes = filteredQuotes.filter(q => q.status === 'converted_to_invoice');
 
-  const statusColors = {
-    draft: "bg-slate-100 text-slate-700 border-slate-200",
-    sent: "bg-blue-50 text-blue-700 border-blue-200",
-    approved: "bg-green-50 text-green-700 border-green-200",
-    rejected: "bg-red-50 text-red-700 border-red-200",
-    converted_to_invoice: "bg-purple-50 text-purple-700 border-purple-200"
-  };
 
-  const getStatusLabel = (status) => {
-    const labels = {
-      draft: language === 'es' ? 'Borrador' : 'Draft',
-      sent: language === 'es' ? 'Enviado' : 'Sent',
-      approved: language === 'es' ? 'Aprobado' : 'Approved',
-      rejected: language === 'es' ? 'Rechazado' : 'Rejected',
-      converted_to_invoice: language === 'es' ? 'Convertido' : 'Converted',
-    };
-    return labels[status] || status;
-  };
 
   const isAdmin = user?.role === 'admin';
 
@@ -245,26 +229,26 @@ export default function Estimados() {
                     </SelectItem>
                     <SelectItem value="draft">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-slate-500" />
-                        {language === 'es' ? 'Borrador' : 'Draft'}
+                        <div className={`w-2 h-2 rounded-full ${getQuoteStatusMeta('draft', language).dotClass}`} />
+                        {getQuoteStatusMeta('draft', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="sent">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        {language === 'es' ? 'Enviado' : 'Sent'}
+                        <div className={`w-2 h-2 rounded-full ${getQuoteStatusMeta('sent', language).dotClass}`} />
+                        {getQuoteStatusMeta('sent', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="approved">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        {language === 'es' ? 'Aprobado' : 'Approved'}
+                        <div className={`w-2 h-2 rounded-full ${getQuoteStatusMeta('approved', language).dotClass}`} />
+                        {getQuoteStatusMeta('approved', language).label}
                       </div>
                     </SelectItem>
                     <SelectItem value="converted_to_invoice">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-[#507DB4]" />
-                        {language === 'es' ? 'Convertido' : 'Converted'}
+                        <div className={`w-2 h-2 rounded-full ${getQuoteStatusMeta('converted_to_invoice', language).dotClass}`} />
+                        {getQuoteStatusMeta('converted_to_invoice', language).label}
                       </div>
                     </SelectItem>
                   </SelectContent>

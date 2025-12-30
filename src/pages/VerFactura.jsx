@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import InvoiceDocument from "../components/documentos/InvoiceDocument";
 import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
+import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -287,16 +288,7 @@ export default function VerFactura() {
     );
   }
 
-  const statusConfig = {
-    draft: { label: t('draft'), color: "badge-soft-slate" },
-    sent: { label: t('sent'), color: "badge-soft-blue" },
-    paid: { label: t('paid'), color: "badge-soft-green" },
-    partial: { label: t('partialPayment'), color: "badge-soft-amber" },
-    overdue: { label: t('overdue'), color: "badge-soft-red" },
-    cancelled: { label: t('cancelled'), color: "badge-soft-slate" }
-  };
-
-  const config = statusConfig[invoice.status];
+  const statusMeta = getInvoiceStatusMeta(invoice.status, language);
   const canEdit = invoice.status === 'draft';
   const canDelete = invoice.status === 'draft';
   const canRecordPayment = !['paid', 'cancelled'].includes(invoice.status);
@@ -318,7 +310,7 @@ export default function VerFactura() {
             </Button>
             <div>
               <h1 className="text-xl font-bold text-white">{invoice.invoice_number}</h1>
-              <Badge className={`${config.color} mt-1`}>{config.label}</Badge>
+              <Badge className={`${statusMeta.badgeClass} mt-1`}>{statusMeta.label}</Badge>
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
+import { getQuoteStatusMeta } from "../core/statusConfig";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,21 +26,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
-  const statusColors = {
-    draft: "soft-slate-gradient",
-    sent: "soft-blue-gradient",
-    approved: "soft-green-gradient",
-    rejected: "soft-red-gradient",
-    converted_to_invoice: "soft-purple-gradient"
-  };
-
-  const statusLabels = {
-    draft: language === 'es' ? 'Borrador' : 'Draft',
-    sent: language === 'es' ? 'Enviado' : 'Sent',
-    approved: language === 'es' ? 'Aprobado' : 'Approved',
-    rejected: language === 'es' ? 'Rechazado' : 'Rejected',
-    converted_to_invoice: language === 'es' ? 'Convertido' : 'Converted'
-  };
+  const statusMeta = getQuoteStatusMeta(quote.status, language);
 
   return (
     <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
@@ -119,8 +106,8 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className={`${statusColors[quote.status]} px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center`}>
-            {statusLabels[quote.status] || quote.status}
+          <Badge className={`${statusMeta.cardBadgeClass} px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center`}>
+            {statusMeta.label}
           </Badge>
           {quote.team_name && (
             <Badge 
