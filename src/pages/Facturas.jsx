@@ -38,6 +38,9 @@ export default function Facturas() {
     queryKey: ['invoices'],
     queryFn: () => base44.entities.Invoice.list('-created_date'),
     initialData: [],
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: teams = [] } = useQuery({
