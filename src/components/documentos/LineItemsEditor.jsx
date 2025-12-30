@@ -34,6 +34,9 @@ export default function LineItemsEditor({
   onToast
 }) {
   
+  // Helper: Get catalog item name (supports both QuoteItem.name and ItemCatalog.item_name)
+  const getCatalogName = (ci) => String(ci?.name || ci?.item_name || '').trim();
+  
   const calculateQuantity = (item) => {
     const techCount = parseInt(item.tech_count) || 1;
     const durationValue = parseFloat(item.duration_value) || 1;
@@ -70,9 +73,10 @@ export default function LineItemsEditor({
     
     // If selecting from catalog
     if (field === 'item_name' && catalogItems.length > 0) {
-      const selectedItem = catalogItems.find(ci => ci.item_name === value || ci.name === value);
+      const v = String(value || '').trim();
+      const selectedItem = catalogItems.find(ci => getCatalogName(ci) === v);
       if (selectedItem) {
-        const itemName = selectedItem.item_name || selectedItem.name || '';
+        const itemName = getCatalogName(selectedItem);
         newItems[index].item_name = itemName;
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || selectedItem.uom || 'pcs';
@@ -96,16 +100,6 @@ export default function LineItemsEditor({
           });
         }
       }
-    }
-    
-    // DEV LOG for manual edits
-    if (import.meta.env.DEV && (field === 'item_name' || field === 'description')) {
-      console.log("[Invoice updateItem]", {
-        field,
-        value,
-        before: { item_name: itemBefore.item_name, description: itemBefore.description },
-        after: { item_name: newItems[index].item_name, description: newItems[index].description }
-      });
     }
     
     onItemsChange(newItems);
@@ -193,16 +187,12 @@ export default function LineItemsEditor({
                       <CommandEmpty className="text-slate-500 p-4 text-xs">No items found</CommandEmpty>
                       <CommandGroup className="max-h-[300px] overflow-y-auto">
                         {[...catalogItems]
-                          .sort((a, b) => {
-                            const nameA = a.item_name || a.name || '';
-                            const nameB = b.item_name || b.name || '';
-                            return nameA.localeCompare(nameB);
-                          })
-                          .map(ci => {
-                            const itemName = ci.item_name || ci.name || '';
+                          .sort((a, b) => getCatalogName(a).localeCompare(getCatalogName(b)))
+                          .map((ci, idx) => {
+                            const itemName = getCatalogName(ci);
                             return (
                               <CommandItem
-                                key={ci.id || itemName}
+                                key={ci.id || itemName || idx}
                                 value={itemName}
                                 onSelect={() => updateItem(index, 'item_name', itemName)}
                                 className="text-slate-900 cursor-pointer hover:bg-slate-100 py-2 border-b border-slate-100"
