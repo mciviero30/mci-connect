@@ -67,7 +67,7 @@ export default function CrearFactura() {
     job_address: "",
     invoice_date: format(new Date(), 'yyyy-MM-dd'),
     due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-    items: [{ description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }],
+    items: [{ item_name: "", description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }],
     tax_rate: 0,
     notes: "",
     terms: "• Payment: Due 30 days from invoice date (unless otherwise specified).\n• Late Fee: 1.5% monthly interest on overdue balance.\n• Collection: Client responsible for all collection costs including attorney fees.\n• Disputes: Report discrepancies within 5 days in writing. Undisputed amounts due by due date.\n• Scope: Final cost includes all approved Change Orders.",
@@ -126,7 +126,7 @@ export default function CrearFactura() {
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
-    newItems[index][field] = (field === 'description' || field === 'unit') ? value : parseFloat(value) || 0;
+    newItems[index][field] = (field === 'description' || field === 'unit' || field === 'item_name') ? value : parseFloat(value) || 0;
     
     if (field === 'quantity' || field === 'unit_price') {
       newItems[index].total = newItems[index].quantity * newItems[index].unit_price;
@@ -138,7 +138,7 @@ export default function CrearFactura() {
   const addItem = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }]
+      items: [...formData.items, { item_name: "", description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }]
     });
   };
 
