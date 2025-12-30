@@ -885,7 +885,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
             </CardHeader>
             <CardContent className="p-0">
               {/* Table Header */}
-              <div className="hidden md:grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+              <div className="hidden md:grid md:grid-cols-[2fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                 <div>ITEM DETAILS</div>
                 <div className="text-center">QUANTITY</div>
                 <div className="text-center">UNIT</div>
@@ -897,10 +897,10 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
               {formData.items.map((item, index) => (
                 <div 
                   key={index} 
-                  className={`grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-3 border-b border-slate-200 hover:bg-slate-50/50 transition-colors ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'}`}
+                  className={`border-b border-slate-200 ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'}`}
                 >
-                  {/* Item Details Column - Item Name + Description */}
-                  <div className="space-y-1">
+                  {/* Row 1: Item Selector spanning full width */}
+                  <div className="px-3 pt-3 pb-1">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -943,55 +943,60 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <Textarea
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      required={!item.is_travel_item}
-                      disabled={item.is_travel_item}
-                      placeholder="Description"
-                      className={`min-h-[60px] text-xs text-slate-600 resize-none ${
-                        item.is_travel_item 
-                          ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
-                          : 'bg-white border-slate-200'
-                      }`}
-                    />
                   </div>
 
-                  {/* Quantity Column */}
-                  <div className="flex items-center justify-center">
-                    <Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      min="0"
-                      step="0.01"
-                      required
-                      disabled={item.calculation_type !== 'none'}
-                      className={`h-7 text-[11px] text-center font-semibold ${
-                        item.calculation_type !== 'none'
-                          ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
-                          : 'bg-white border-slate-200 text-slate-900'
-                      }`}
-                    />
-                  </div>
+                  {/* Row 2: Description and aligned fields */}
+                  <div className="grid md:grid-cols-[2fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 pb-3 hover:bg-slate-50/50 transition-colors">
+                    {/* Description */}
+                    <div>
+                      <Textarea
+                        value={item.description}
+                        onChange={(e) => updateItem(index, 'description', e.target.value)}
+                        required={!item.is_travel_item}
+                        disabled={item.is_travel_item}
+                        placeholder="Description"
+                        className={`min-h-[60px] text-xs text-slate-600 resize-none ${
+                          item.is_travel_item 
+                            ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
+                            : 'bg-white border-slate-200'
+                        }`}
+                      />
+                    </div>
 
-                  {/* Unit */}
-                  <div className="flex items-center justify-center">
-                    <Input
-                      value={item.unit}
-                      onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                      disabled={item.calculation_type !== 'none'}
-                      className={`h-7 text-[10px] text-center ${
-                        item.calculation_type !== 'none' 
-                          ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed' 
-                          : 'bg-white border-slate-200 text-slate-900'
-                      }`}
-                    />
-                  </div>
+                    {/* Quantity */}
+                    <div className="flex items-start justify-center pt-1">
+                      <Input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        min="0"
+                        step="0.01"
+                        required
+                        disabled={item.calculation_type !== 'none'}
+                        className={`h-9 text-sm text-center font-semibold ${
+                          item.calculation_type !== 'none'
+                            ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
+                            : 'bg-white border-slate-200 text-slate-900'
+                        }`}
+                      />
+                    </div>
 
-                  {/* Unit Price */}
-                  <div className="flex items-center justify-center">
-                    <div className="relative w-full">
+                    {/* Unit */}
+                    <div className="flex items-start justify-center pt-1">
+                      <Input
+                        value={item.unit}
+                        onChange={(e) => updateItem(index, 'unit', e.target.value)}
+                        disabled={item.calculation_type !== 'none'}
+                        className={`h-9 text-xs text-center ${
+                          item.calculation_type !== 'none' 
+                            ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed' 
+                            : 'bg-white border-slate-200 text-slate-900'
+                        }`}
+                      />
+                    </div>
+
+                    {/* Rate */}
+                    <div className="flex items-start justify-center pt-1">
                       <Input
                         type="number"
                         value={item.unit_price}
@@ -999,59 +1004,61 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         min="0"
                         step="0.01"
                         required
-                        className="bg-white border-slate-200 text-slate-900 h-7 text-[11px] text-center font-semibold"
+                        className="bg-white border-slate-200 text-slate-900 h-9 text-sm text-center font-semibold"
                       />
                     </div>
-                  </div>
 
-                  {/* Total */}
-                  <div className="text-right space-y-0.5">
-                    <div className="text-slate-900 font-bold text-sm">
-                      ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </div>
-                    {item.calculation_type !== 'none' && (
-                      <div className="text-[9px] text-blue-600 font-medium">
-                        = {item.quantity} {item.unit}
+                    {/* Amount */}
+                    <div className="flex items-start justify-end pt-1">
+                      <div className="text-right space-y-0.5">
+                        <div className="text-slate-900 font-bold text-base">
+                          ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        {item.calculation_type !== 'none' && (
+                          <div className="text-[9px] text-blue-600 font-medium">
+                            = {item.quantity} {item.unit}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
 
-                  {/* Actions */}
-                  <div className="flex justify-end gap-0.5">
-                    {!item.is_travel_item && index > 0 && (
+                    {/* Actions */}
+                    <div className="flex justify-end gap-0.5 items-start pt-1">
+                      {!item.is_travel_item && index > 0 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => moveItem(index, 'up')}
+                          disabled={formData.items[index - 1]?.is_travel_item}
+                          className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </Button>
+                      )}
+                      {!item.is_travel_item && index < formData.items.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => moveItem(index, 'down')}
+                          disabled={formData.items[index + 1]?.is_travel_item}
+                          className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </Button>
+                      )}
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={() => moveItem(index, 'up')}
-                        disabled={formData.items[index - 1]?.is_travel_item}
-                        className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-6 w-6"
+                        onClick={() => removeItem(index)}
+                        disabled={formData.items.length === 1}
+                        className="text-red-400 hover:text-red-700 hover:bg-red-50 h-7 w-7"
                       >
-                        <ChevronUp className="w-3 h-3" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
-                    )}
-                    {!item.is_travel_item && index < formData.items.length - 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => moveItem(index, 'down')}
-                        disabled={formData.items[index + 1]?.is_travel_item}
-                        className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-6 w-6"
-                      >
-                        <ChevronDown className="w-3 h-3" />
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeItem(index)}
-                      disabled={formData.items.length === 1}
-                      className="text-red-400 hover:text-red-700 hover:bg-red-50 h-6 w-6"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                    </div>
                   </div>
                 </div>
               ))}
