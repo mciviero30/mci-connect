@@ -85,6 +85,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 import BottomNav from "@/components/navigation/BottomNav";
+import AgreementGate from "@/components/agreements/AgreementGate";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -576,6 +577,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
+        { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
       ]
     },
     {
