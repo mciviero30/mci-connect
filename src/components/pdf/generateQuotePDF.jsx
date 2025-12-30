@@ -220,11 +220,9 @@ export async function generateQuotePDF(quote) {
   quote.items.forEach((item, index) => {
     const itemNum = String(index + 1);
     
-    // Lógica: mostrar item_name en bold, description debajo si existe y es diferente
-    const itemName = item.item_name || item.description || '';
-    const itemDesc = (item.item_name && item.description && item.item_name !== item.description) 
-      ? item.description 
-      : '';
+    // Siempre mostrar item_name arriba (bold) y description debajo (normal)
+    const itemName = item.item_name || '';
+    const itemDesc = item.description || '';
     
     const qty = `${item.quantity || 0} ${item.unit || ''}`;
     const rate = `$${Number(item.unit_price || 0).toFixed(2)}`;
