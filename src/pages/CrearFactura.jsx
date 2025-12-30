@@ -17,7 +17,8 @@ import { es } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import { toast } from 'sonner'; // Added toast import
+import { toast } from 'sonner';
+import LineItemsEditor from "../components/documentos/LineItemsEditor";
 
 export default function CrearFactura() {
   const { t, language } = useLanguage();
@@ -48,6 +49,12 @@ export default function CrearFactura() {
   const { data: customers } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list(),
+    initialData: [],
+  });
+
+  const { data: itemCatalog = [] } = useQuery({
+    queryKey: ['itemCatalog'],
+    queryFn: () => base44.entities.ItemCatalog.list(),
     initialData: [],
   });
 
@@ -497,87 +504,14 @@ export default function CrearFactura() {
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-              {/* Table Header */}
-              <div className="hidden md:grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
-                <div>ITEM DETAILS</div>
-                <div className="text-center">QUANTITY</div>
-                <div className="text-center">UNIT</div>
-                <div className="text-center">RATE</div>
-                <div className="text-right">AMOUNT</div>
-                <div></div>
-              </div>
-
-              {formData.items.map((item, index) => (
-                <div 
-                  key={index} 
-                  className="grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-3 border-b border-slate-200 hover:bg-slate-50/50 transition-colors"
-                >
-                  {/* Item Details Column - Description only for invoices */}
-                  <div className="space-y-1">
-                    <Textarea
-                      value={item.description}
-                      onChange={e => handleItemChange(index, 'description', e.target.value)}
-                      placeholder={t('serviceDescription')}
-                      className="h-16 text-[11px] text-slate-700 resize-none bg-white border-slate-200"
-                    />
-                  </div>
-
-                  {/* Quantity */}
-                  <div className="flex items-center justify-center">
-                    <Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={e => handleItemChange(index, 'quantity', e.target.value)}
-                      min="0"
-                      step="0.01"
-                      className="h-7 text-[11px] text-center font-semibold bg-white border-slate-200"
-                    />
-                  </div>
-
-                  {/* Unit */}
-                  <div className="flex items-center justify-center">
-                    <Input
-                      value={item.unit}
-                      onChange={e => handleItemChange(index, 'unit', e.target.value)}
-                      placeholder="pcs"
-                      className="h-7 text-[10px] text-center bg-white border-slate-200"
-                    />
-                  </div>
-
-                  {/* Unit Price */}
-                  <div className="flex items-center justify-center">
-                    <Input
-                      type="number"
-                      value={item.unit_price}
-                      onChange={e => handleItemChange(index, 'unit_price', e.target.value)}
-                      min="0"
-                      step="0.01"
-                      className="h-7 text-[11px] text-center font-semibold bg-white border-slate-200"
-                    />
-                  </div>
-
-                  {/* Total */}
-                  <div className="flex items-center justify-end">
-                    <div className="text-slate-900 font-bold text-sm">
-                      ${item.total.toFixed(2)}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-end">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeItem(index)}
-                      disabled={formData.items.length === 1}
-                      className="text-red-400 hover:text-red-700 hover:bg-red-50 h-6 w-6"
-                      type="button"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+              <LineItemsEditor 
+                items={formData.items}
+                onItemsChange={(newItems) => setFormData({ ...formData, items: newItems })}
+                catalogItems={itemCatalog}
+                allowCatalogSelect={true}
+                allowReorder={false}
+                onToast={(toastData) => toast[toastData.variant || 'success'](toastData.title, { description: toastData.description })}
+              />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto">
                 <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
