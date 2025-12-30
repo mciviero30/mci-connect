@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
 import { Dialog } from "@/components/ui/dialog";
@@ -55,6 +56,10 @@ export default function Facturas() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success(t('deletedSuccessfully'));
+    },
+    onError: (error) => {
+      console.error('Error deleting invoice:', error);
+      toast.error(safeErrorMessage(error, 'Failed to delete invoice'));
     }
   });
 
@@ -92,6 +97,10 @@ export default function Facturas() {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success(language === 'es' ? '✅ Factura duplicada' : '✅ Invoice duplicated');
     },
+    onError: (error) => {
+      console.error('Error duplicating invoice:', error);
+      toast.error(safeErrorMessage(error, 'Failed to duplicate invoice'));
+    }
   });
 
   const registerPaymentMutation = useMutation({
@@ -130,6 +139,10 @@ export default function Facturas() {
       setPaymentInvoice(null);
       setPaymentAmount("");
     },
+    onError: (error) => {
+      console.error('Error recording payment:', error);
+      toast.error(safeErrorMessage(error, 'Failed to record payment'));
+    }
   });
 
   const handleRegisterPayment = () => {
