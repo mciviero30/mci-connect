@@ -46,40 +46,29 @@ export function SyncQueueProvider({ children }) {
     }
   }, [queue]);
 
-  // Add item to queue (with normalization for financial entities)
+  // Add item to queue ONLY if offline
   const addToQueue = useCallback((operation) => {
-    // Pre-normalize Quote/Invoice data before queueing
-    let normalizedData = operation.data;
-    
-    if (operation.entity === 'Quote' || operation.entity === 'Invoice') {
-      try {
-        // Ensure items are valid before queueing
-        if (normalizedData.items && normalizedData.items.length > 0) {
-          normalizedData.items = normalizedData.items.filter(item => 
-            item.description && 
-            item.description.trim() &&
-            item.quantity > 0
-          );
-        }
-        
-        console.log(`📦 Normalized ${operation.entity} before queueing`);
-      } catch (error) {
-        console.warn('Could not pre-normalize data:', error);
-      }
+    // CRITICAL: Only queue if offline, otherwise execute immediately
+    if (navigator.onLine) {
+      console.log('🌐 Online: executing operation directly (not queueing)');
+      return null;
     }
 
-    const item = {
-      id: Date.now() + Math.random(),
+    // Store entity ID separately from queue ID
+    const queueItem = {
+      queueId: Date.now() + Math.random(),
+      entityId: operation.entityId, // REAL entity ID for update/delete
       timestamp: new Date().toISOString(),
       retries: 0,
-      ...operation,
-      data: normalizedData,
+      entity: operation.entity,
+      operation: operation.operation,
+      data: operation.data,
     };
 
-    setQueue(prev => [...prev, item]);
-    console.log('➕ Added to sync queue:', item);
+    setQueue(prev => [...prev, queueItem]);
+    console.log('📴 Offline: Added to sync queue:', queueItem);
     
-    return item.id;
+    return queueItem.queueId;
   }, []);
 
   // Process queue
@@ -100,11 +89,11 @@ export function SyncQueueProvider({ children }) {
     for (const item of queue) {
       try {
         await executeOperation(item);
-        
+
         // Remove from queue on success
-        setQueue(prev => prev.filter(i => i.id !== item.id));
+        setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
         results.success++;
-        
+
         console.log('✅ Synced:', item.entity, item.operation);
       } catch (error) {
         console.error('❌ Sync failed:', item, error);
@@ -112,13 +101,13 @@ export function SyncQueueProvider({ children }) {
         // Increment retry count
         if (item.retries < MAX_RETRIES) {
           setQueue(prev => prev.map(i => 
-            i.id === item.id 
+            i.queueId === item.queueId 
               ? { ...i, retries: i.retries + 1, lastError: error.message }
               : i
           ));
         } else {
           // Remove after max retries
-          setQueue(prev => prev.filter(i => i.id !== item.id));
+          setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
           results.failed++;
           results.errors.push({ item, error: error.message });
         }
@@ -139,36 +128,20 @@ export function SyncQueueProvider({ children }) {
     console.log('📊 Sync results:', results);
   }, [queue, isSyncing, toast]);
 
-  // Execute a single operation
+  // Execute a single operation (replay from offline queue)
   const executeOperation = async (item) => {
-    const { entity, operation, data, id } = item;
+    const { entity, operation, data, entityId } = item;
 
-    // CRITICAL: Recalculate totals for financial entities before replay
+    // Use stored data AS-IS (already normalized before queueing)
     let finalData = data;
-    if (entity === 'Quote' || entity === 'Invoice') {
-      try {
-        if (entity === 'Quote') {
-          finalData = normalizeQuoteForSave(data);
-          
-          // Generate quote number if creating
-          if (operation === 'create' && !finalData.quote_number) {
-            const response = await generateQuoteNumber({});
-            finalData.quote_number = response.data.quote_number;
-          }
-        } else if (entity === 'Invoice') {
-          finalData = normalizeInvoiceForSave(data);
-          
-          // Generate invoice number if creating
-          if (operation === 'create' && !finalData.invoice_number) {
-            const response = await generateInvoiceNumber({});
-            finalData.invoice_number = response.data.invoice_number;
-          }
-        }
-        
-        console.log(`✅ Normalized ${entity} for offline replay:`, finalData);
-      } catch (error) {
-        console.warn(`⚠️ Could not normalize ${entity}, using original data:`, error);
-      }
+
+    // ONLY generate numbers if missing (prevent duplicates)
+    if (entity === 'Quote' && operation === 'create' && !finalData.quote_number) {
+      const response = await generateQuoteNumber({});
+      finalData = { ...finalData, quote_number: response.data.quote_number };
+    } else if (entity === 'Invoice' && operation === 'create' && !finalData.invoice_number) {
+      const response = await generateInvoiceNumber({});
+      finalData = { ...finalData, invoice_number: response.data.invoice_number };
     }
 
     switch (operation) {
@@ -176,10 +149,12 @@ export function SyncQueueProvider({ children }) {
         return await base44.entities[entity].create(finalData);
       
       case 'update':
-        return await base44.entities[entity].update(id, finalData);
+        if (!entityId) throw new Error('entityId required for update');
+        return await base44.entities[entity].update(entityId, finalData);
       
       case 'delete':
-        return await base44.entities[entity].delete(id);
+        if (!entityId) throw new Error('entityId required for delete');
+        return await base44.entities[entity].delete(entityId);
       
       default:
         throw new Error(`Unknown operation: ${operation}`);
