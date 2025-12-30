@@ -6,11 +6,30 @@
 import { jsPDF } from 'jspdf';
 
 /**
+ * Load image and convert to base64
+ */
+async function loadImageAsBase64(url) {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error loading image:', error);
+    return null;
+  }
+}
+
+/**
  * Generate Quote PDF
  * @param {Object} quote - Quote data
- * @returns {jsPDF} - PDF document
+ * @returns {Promise<jsPDF>} - PDF document
  */
-export function generateQuotePDF(quote) {
+export async function generateQuotePDF(quote) {
   // Defensive validation
   if (!quote) {
     throw new Error('Cannot generate PDF: Quote data is missing');
@@ -33,27 +52,37 @@ export function generateQuotePDF(quote) {
   const contentWidth = pageWidth - (margin * 2);
   let y = margin;
 
-  // ========== HEADER: Black gradient with logo and QUOTE title ==========
+  // ========== HEADER: Black with MCI logo and QUOTE title ==========
   doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, pageWidth, 35, 'F');
+  doc.rect(0, 0, pageWidth, 25, 'F');
   
-  // Logo text "MCI" (placeholder for actual logo)
+  // Load and add MCI logo
+  const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
+  const logoBase64 = await loadImageAsBase64(logoUrl);
+  
+  if (logoBase64) {
+    doc.addImage(logoBase64, 'PNG', margin, 5, 35, 15);
+  } else {
+    // Fallback to text if logo fails
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(255, 255, 255);
+    doc.text('MCI', margin, 15);
+  }
+  
+  // QUOTE title (right aligned, white)
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
+  doc.setFontSize(28);
   doc.setTextColor(255, 255, 255);
-  doc.text('MCI', margin, 15);
+  doc.text('QUOTE', pageWidth - margin, 17, { align: 'right' });
   
-  // QUOTE title (right aligned)
-  doc.setFontSize(24);
-  doc.text('QUOTE', pageWidth - margin, 20, { align: 'right' });
-  
-  y = 45;
+  y = 35;
 
-  // ========== TWO COLUMN LAYOUT: Company Info + Quote Details ==========
+  // ========== TWO COLUMN LAYOUT ==========
   const col1Width = contentWidth * 0.5;
   const col2X = margin + col1Width + 10;
 
-  // LEFT COLUMN: Company info + Bill To
+  // LEFT COLUMN: Company info
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
@@ -61,7 +90,7 @@ export function generateQuotePDF(quote) {
   
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(80, 80, 80);
   y += 5;
   doc.text('2414 Meadow Isle Ln, Lawrenceville GA 30043', margin, y);
   y += 4;
@@ -70,33 +99,35 @@ export function generateQuotePDF(quote) {
   y += 8;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(59, 130, 246);
   doc.text('BILL TO:', margin, y);
   
   y += 5;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
+  doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.text(String(quote.customer_name || 'N/A'), margin, y);
 
-  // RIGHT COLUMN: Quote#, Date, Valid Until
+  // RIGHT COLUMN: Quote details
   const labelX = col2X;
   const valueX = pageWidth - margin;
-  let rightY = 45;
+  let rightY = 35;
   
+  // Quote #
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Quote #', labelX, rightY);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Quote#', labelX, rightY);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
   doc.text(String(quote.quote_number || 'DRAFT'), valueX, rightY, { align: 'right' });
-  doc.setDrawColor(220, 220, 220);
+  doc.setDrawColor(230, 230, 230);
   doc.line(labelX, rightY + 1, valueX, rightY + 1);
   
-  rightY += 7;
+  // Date
+  rightY += 6;
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(120, 120, 120);
   doc.text('Date', labelX, rightY);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -104,9 +135,10 @@ export function generateQuotePDF(quote) {
   doc.text(String(quoteDate), valueX, rightY, { align: 'right' });
   doc.line(labelX, rightY + 1, valueX, rightY + 1);
   
-  rightY += 7;
+  // Valid Until
+  rightY += 6;
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(120, 120, 120);
   doc.text('Valid Until', labelX, rightY);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -114,15 +146,14 @@ export function generateQuotePDF(quote) {
   doc.text(String(validDate), valueX, rightY, { align: 'right' });
   doc.line(labelX, rightY + 1, valueX, rightY + 1);
 
-  y += 15;
+  y += 20;
 
   // ========== JOB DETAILS ==========
   if (quote.job_name) {
-    y += 5;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(100, 100, 100);
-    doc.text('Job Details:', margin, y);
+    doc.text('Job Details :', margin, y);
     
     y += 5;
     doc.setFont('helvetica', 'bold');
@@ -134,40 +165,39 @@ export function generateQuotePDF(quote) {
       y += 5;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-      doc.setTextColor(60, 60, 60);
+      doc.setTextColor(70, 70, 70);
       const addressLines = doc.splitTextToSize(String(quote.job_address), contentWidth);
       doc.text(addressLines, margin, y);
       y += addressLines.length * 4;
     }
     
-    y += 5;
+    y += 8;
   }
 
   // ========== ITEMS TABLE ==========
-  // Table header with black gradient
   const tableHeaderY = y;
   doc.setFillColor(0, 0, 0);
-  doc.rect(margin, tableHeaderY, contentWidth, 8, 'F');
+  doc.rect(margin, tableHeaderY, contentWidth, 7, 'F');
   
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
   
-  const colX1 = margin + 2;
-  const colX2 = margin + 10;
-  const colX3 = margin + contentWidth - 55;
-  const colX4 = margin + contentWidth - 35;
-  const colX5 = margin + contentWidth - 2;
+  const numCol = margin + 3;
+  const itemCol = margin + 12;
+  const qtyCol = pageWidth - margin - 55;
+  const rateCol = pageWidth - margin - 35;
+  const amountCol = pageWidth - margin - 3;
   
-  doc.text('#', colX1, tableHeaderY + 5);
-  doc.text('ITEM & DESCRIPTION', colX2, tableHeaderY + 5);
-  doc.text('QTY', colX3, tableHeaderY + 5, { align: 'right' });
-  doc.text('RATE', colX4, tableHeaderY + 5, { align: 'right' });
-  doc.text('AMOUNT', colX5, tableHeaderY + 5, { align: 'right' });
+  doc.text('#', numCol, tableHeaderY + 4.5);
+  doc.text('ITEM & DESCRIPTION', itemCol, tableHeaderY + 4.5);
+  doc.text('QTY', qtyCol, tableHeaderY + 4.5, { align: 'right' });
+  doc.text('RATE', rateCol, tableHeaderY + 4.5, { align: 'right' });
+  doc.text('AMOUNT', amountCol, tableHeaderY + 4.5, { align: 'right' });
   
-  y = tableHeaderY + 10;
+  y = tableHeaderY + 9;
 
-  // Table rows
+  // Table rows - Zebra striping
   quote.items.forEach((item, index) => {
     const itemNum = String(index + 1);
     const itemName = String(item.item_name || item.description || '');
@@ -176,133 +206,117 @@ export function generateQuotePDF(quote) {
     const rate = `$${Number(item.unit_price || 0).toFixed(2)}`;
     const total = `$${Number(item.total || 0).toFixed(2)}`;
 
-    // Calculate row height based on text
-    const nameLines = doc.splitTextToSize(itemName, contentWidth - 70);
-    const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 70) : [];
-    const totalLines = nameLines.length + (descLines.length > 0 ? descLines.length + 1 : 0);
-    const rowHeight = Math.max(10, totalLines * 4 + 4);
+    // Calculate row height
+    const nameLines = doc.splitTextToSize(itemName, contentWidth - 80);
+    const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 80) : [];
+    const rowHeight = Math.max(8, (nameLines.length + descLines.length) * 4 + 6);
 
-    // Check if we need a new page
+    // Check page break
     if (y + rowHeight > 270) {
       doc.addPage();
       y = margin;
-      // Re-render table header
+      // Re-render header
       doc.setFillColor(0, 0, 0);
-      doc.rect(margin, y, contentWidth, 8, 'F');
+      doc.rect(margin, y, contentWidth, 7, 'F');
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       doc.setTextColor(255, 255, 255);
-      doc.text('#', colX1, y + 5);
-      doc.text('ITEM & DESCRIPTION', colX2, y + 5);
-      doc.text('QTY', colX3, y + 5, { align: 'right' });
-      doc.text('RATE', colX4, y + 5, { align: 'right' });
-      doc.text('AMOUNT', colX5, y + 5, { align: 'right' });
-      y += 10;
+      doc.text('#', numCol, y + 4.5);
+      doc.text('ITEM & DESCRIPTION', itemCol, y + 4.5);
+      doc.text('QTY', qtyCol, y + 4.5, { align: 'right' });
+      doc.text('RATE', rateCol, y + 4.5, { align: 'right' });
+      doc.text('AMOUNT', amountCol, y + 4.5, { align: 'right' });
+      y += 9;
     }
 
-    const rowStartY = y;
+    // Zebra striping (light gray for even rows)
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(margin, y, contentWidth, rowHeight, 'F');
+    }
 
-    // Item number (gray)
+    // Item number (light gray)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(itemNum, colX1, y + 3);
+    doc.setTextColor(180, 180, 180);
+    doc.text(itemNum, numCol, y + 4);
 
-    // Item Name (bold)
+    // Item Name (bold, black)
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(nameLines, colX2, y + 3);
+    doc.text(nameLines, itemCol, y + 4);
     
-    let descY = y + 3 + (nameLines.length * 4);
+    let textY = y + 4 + (nameLines.length * 4);
     
-    // Description (normal, smaller)
+    // Description below (normal, dark gray)
     if (descLines.length > 0) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      doc.setTextColor(80, 80, 80);
-      doc.text(descLines, colX2, descY);
+      doc.setTextColor(100, 100, 100);
+      doc.text(descLines, itemCol, textY);
     }
 
-    // Qty, Rate, Amount (aligned top)
+    // Qty, Rate, Amount (top-aligned)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(qty, colX3, y + 3, { align: 'right' });
-    doc.text(rate, colX4, y + 3, { align: 'right' });
+    doc.text(qty, qtyCol, y + 4, { align: 'right' });
+    doc.text(rate, rateCol, y + 4, { align: 'right' });
     
     doc.setFont('helvetica', 'bold');
-    doc.text(total, colX5, y + 3, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+    doc.text(total, amountCol, y + 4, { align: 'right' });
 
-    // Bottom border
-    doc.setDrawColor(220, 220, 220);
+    // Row border
+    doc.setDrawColor(230, 230, 230);
     doc.line(margin, y + rowHeight, pageWidth - margin, y + rowHeight);
 
     y += rowHeight;
   });
 
-  // ========== NOTES (if present) ==========
-  if (quote.notes && quote.notes.trim()) {
-    y += 8;
-    if (y > 240) {
-      doc.addPage();
-      y = margin;
-    }
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Notes', margin, y);
-    
-    y += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
-    const notesLines = doc.splitTextToSize(String(quote.notes), contentWidth);
-    doc.text(notesLines, margin, y);
-    y += notesLines.length * 4 + 5;
-  }
-
-  // ========== TOTALS (right aligned) ==========
-  y += 5;
-  const totalsX = pageWidth - margin - 60;
-  const valuesX = pageWidth - margin;
+  // ========== TOTALS ==========
+  y += 8;
+  const totalsLabelX = pageWidth - margin - 50;
+  const totalsValueX = pageWidth - margin;
   
+  // Sub Total
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(100, 100, 100);
-  doc.text('Sub Total', totalsX, y);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Sub Total', totalsLabelX, y);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text(`$${Number(quote.subtotal || 0).toFixed(2)}`, valuesX, y, { align: 'right' });
+  doc.text(`$${Number(quote.subtotal || 0).toFixed(2)}`, totalsValueX, y, { align: 'right' });
   
+  // Tax (if applicable)
   if ((quote.tax_amount || 0) > 0) {
     y += 6;
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Tax (${quote.tax_rate || 0}%)`, totalsX, y);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Tax (${quote.tax_rate || 0}%)`, totalsLabelX, y);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text(`$${Number(quote.tax_amount || 0).toFixed(2)}`, valuesX, y, { align: 'right' });
+    doc.text(`$${Number(quote.tax_amount || 0).toFixed(2)}`, totalsValueX, y, { align: 'right' });
   }
   
+  // TOTAL (with gray background and top border)
   y += 8;
-  // TOTAL box with light gradient background
-  doc.setFillColor(240, 245, 250);
-  doc.rect(totalsX - 5, y - 5, 65, 10, 'F');
-  doc.setDrawColor(50, 50, 50);
-  doc.setLineWidth(0.5);
-  doc.line(totalsX - 5, y - 5, totalsX + 60, y - 5);
+  doc.setFillColor(220, 225, 230);
+  doc.rect(totalsLabelX - 8, y - 6, 58, 12, 'F');
+  doc.setDrawColor(30, 30, 30);
+  doc.setLineWidth(0.8);
+  doc.line(totalsLabelX - 8, y - 6, totalsLabelX + 50, y - 6);
   
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(0, 0, 0);
-  doc.text('TOTAL', totalsX, y + 2);
-  doc.setFontSize(13);
-  doc.text(`$${Number(quote.total || 0).toFixed(2)}`, valuesX, y + 2, { align: 'right' });
+  doc.text('TOTAL', totalsLabelX, y + 2);
+  doc.setFontSize(14);
+  doc.text(`$${Number(quote.total || 0).toFixed(2)}`, totalsValueX, y + 2, { align: 'right' });
 
   // ========== TERMS & CONDITIONS ==========
-  y += 15;
+  y += 18;
   if (y > 240) {
     doc.addPage();
     y = margin;
@@ -313,22 +327,31 @@ export function generateQuotePDF(quote) {
   doc.setTextColor(0, 0, 0);
   doc.text('Terms & Conditions', margin, y);
   
-  y += 5;
-  doc.setFont('helvetica', 'normal');
+  y += 6;
   doc.setFontSize(8);
-  doc.setTextColor(60, 60, 60);
   
-  const terms = [
-    '• PO required to schedule work.',
-    '• Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.',
-    '• Regular hours only. OT/after-hours billed separately via Change Order.'
-  ];
+  // Approval
+  doc.setFont('helvetica', 'bold');
+  const approvalText = doc.splitTextToSize('Approval: PO required to schedule work.', contentWidth);
+  doc.text(approvalText, margin, y);
+  y += approvalText.length * 4 + 2;
   
-  terms.forEach(term => {
-    const termLines = doc.splitTextToSize(term, contentWidth);
-    doc.text(termLines, margin, y);
-    y += termLines.length * 4 + 1;
-  });
+  // Offload
+  doc.setFont('helvetica', 'bold');
+  doc.text('Offload: ', margin, y);
+  doc.setFont('helvetica', 'normal');
+  const offloadDesc = 'Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment (forklift or lull). Site access issues may require revised quote.';
+  const offloadLines = doc.splitTextToSize(offloadDesc, contentWidth - 20);
+  doc.text(offloadLines, margin + 18, y);
+  y += offloadLines.length * 4 + 2;
+  
+  // Hours
+  doc.setFont('helvetica', 'bold');
+  doc.text('Hours: ', margin, y);
+  doc.setFont('helvetica', 'normal');
+  const hoursDesc = 'Regular hours only. OT/after-hours billed separately via Change Order unless otherwise specified.';
+  const hoursLines = doc.splitTextToSize(hoursDesc, contentWidth - 20);
+  doc.text(hoursLines, margin + 15, y);
 
   return doc;
 }
@@ -352,8 +375,8 @@ function formatDateShort(dateString) {
 /**
  * Download Quote PDF
  */
-export function downloadQuotePDF(quote) {
-  const doc = generateQuotePDF(quote);
+export async function downloadQuotePDF(quote) {
+  const doc = await generateQuotePDF(quote);
   const customerName = (quote.customer_name || 'Customer').replace(/[^a-zA-Z0-9]/g, '-');
   const quoteNumber = (quote.quote_number || 'DRAFT').replace(/[^a-zA-Z0-9]/g, '-');
   const filename = `Quote-${quoteNumber}-${customerName}.pdf`;
@@ -363,15 +386,15 @@ export function downloadQuotePDF(quote) {
 /**
  * Get Quote PDF as blob
  */
-export function getQuotePDFBlob(quote) {
-  const doc = generateQuotePDF(quote);
+export async function getQuotePDFBlob(quote) {
+  const doc = await generateQuotePDF(quote);
   return doc.output('blob');
 }
 
 /**
  * Get Quote PDF as data URI
  */
-export function getQuotePDFDataURI(quote) {
-  const doc = generateQuotePDF(quote);
+export async function getQuotePDFDataURI(quote) {
+  const doc = await generateQuotePDF(quote);
   return doc.output('dataurlstring');
 }
