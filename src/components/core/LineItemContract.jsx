@@ -51,23 +51,20 @@ export function validateLineItem(item) {
 export function normalizeLineItem(item) {
   if (!item) return { ...LineItemContract };
   
-  // CRITICAL: Preserve ALL existing fields first
+  // CRITICAL: Spread FIRST to preserve ALL fields (extended properties, etc.)
   const normalized = { ...item };
   
-  // Ensure core fields exist with safe defaults (but NEVER overwrite existing values)
+  // Only set defaults for undefined core fields (never overwrite existing)
   if (normalized.item_name === undefined) normalized.item_name = '';
   if (normalized.description === undefined) normalized.description = '';
-  if (normalized.quantity === undefined) normalized.quantity = 0;
   if (normalized.unit === undefined) normalized.unit = '';
-  if (normalized.unit_price === undefined) normalized.unit_price = 0;
-  if (normalized.total === undefined) normalized.total = 0;
   
-  // Ensure numeric fields are numbers (but preserve if already set)
-  normalized.quantity = Number(normalized.quantity) || 0;
-  normalized.unit_price = Number(normalized.unit_price) || 0;
-  normalized.total = Number(normalized.total) || 0;
+  // Normalize numeric fields
+  normalized.quantity = parseFloat(normalized.quantity) || 0;
+  normalized.unit_price = parseFloat(normalized.unit_price) || 0;
+  normalized.total = parseFloat(normalized.total) || 0;
   
-  // Round to 2 decimals
+  // Round prices to 2 decimals
   normalized.unit_price = Math.round(normalized.unit_price * 100) / 100;
   normalized.total = Math.round(normalized.total * 100) / 100;
   
