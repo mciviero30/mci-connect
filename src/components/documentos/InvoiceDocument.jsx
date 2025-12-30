@@ -105,48 +105,8 @@ export default function InvoiceDocument({ invoice }) {
             )}
 
             {/* Items Table */}
-            <div className="mb-8 overflow-x-auto">
-                <table className="w-full border-collapse">
-                    <thead>
-                        <tr className="text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
-                            <th className="text-left px-3 py-2 text-sm font-semibold w-12">#</th>
-                            <th className="text-left px-3 py-2 text-sm font-semibold">ITEM & DESCRIPTION</th>
-                            <th className="text-right px-3 py-2 text-sm font-semibold w-20">QTY</th>
-                            <th className="text-right px-3 py-2 text-sm font-semibold w-24">RATE</th>
-                            <th className="text-right px-3 py-2 text-sm font-semibold w-28">AMOUNT</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white">
-                        {invoice.items.map((item, index) => (
-                            <tr key={index} className="border-b border-slate-200 page-break-inside-avoid">
-                                <td className="px-3 py-2 align-middle">
-                                    <span className="text-sm font-medium text-slate-700">{index + 1}</span>
-                                </td>
-                                <td className="px-3 py-2 align-top">
-                                   {item.item_name && (
-                                       <p className="font-bold text-sm text-slate-900 print-word-wrap">
-                                           {item.item_name.replace(/\n/g, ' ').trim()}
-                                       </p>
-                                   )}
-                                   {item.description && (
-                                       <p className="text-xs text-slate-600 print-word-wrap mt-1">
-                                           {item.description.replace(/\n/g, ' ').trim()}
-                                       </p>
-                                   )}
-                                </td>
-                                <td className="px-3 py-2 align-middle text-right text-sm text-slate-700">
-                                    {item.quantity} {item.unit || ''}
-                                </td>
-                                <td className="px-3 py-2 align-middle text-right text-sm text-slate-700">
-                                    ${item.unit_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </td>
-                                <td className="px-3 py-2 align-middle text-right text-base font-semibold text-slate-900">
-                                    ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <div className="mb-8">
+                <LineItemsTable items={invoice.items || []} variant="invoice" />
             </div>
 
             {/* Notes Section */}
