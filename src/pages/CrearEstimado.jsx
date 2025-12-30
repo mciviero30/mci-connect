@@ -24,6 +24,8 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
+import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -779,7 +781,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   />
                 </div>
 
-                <div>
+                <div className="md:col-span-2">
                   <Label className="text-slate-700">Teams * {formData.team_ids.length > 0 && <span className="text-blue-600">({formData.team_ids.length} selected)</span>}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -830,38 +832,25 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <div>
-                        <Label className="text-slate-900 dark:text-white font-medium text-sm cursor-pointer">
-                          {language === 'es' ? 'Trabajo Fuera del Área' : 'Out-of-Area Job'}
-                        </Label>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                          {language === 'es' 
-                            ? 'Hotel, per diem, millas, tiempo de viaje' 
-                            : 'Hotel, per diem, miles, travel time'}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
+                  <div className="flex items-center gap-2 mb-3">
+                    <Checkbox
+                      id="out-of-area"
                       checked={formData.out_of_area}
-                      onCheckedChange={handleOutOfAreaToggle}
-                      className="data-[state=checked]:bg-blue-600"
+                      onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
                     />
+                    <Label htmlFor="out-of-area" className="cursor-pointer text-slate-900 dark:text-white font-medium">
+                      {language === 'es' ? 'Trabajo Fuera de Área' : 'Out of Area Job'}
+                    </Label>
                   </div>
-                  {calculatingTravel && (
-                    <div className="mt-2 flex items-center gap-2 text-blue-600 text-sm">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      {language === 'es' ? 'Calculando distancia con Google Maps...' : 'Calculating distance with Google Maps...'}
-                    </div>
-                  )}
-                  {formData.travel_distance_miles && formData.travel_time_hours && (
-                    <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <p className="text-sm text-green-800 dark:text-green-300 font-medium">
-                        ✓ {language === 'es' ? 'Distancia calculada' : 'Distance calculated'}: {formData.travel_distance_miles} mi • {formData.travel_time_hours} hrs {language === 'es' ? '(ida y vuelta)' : '(round trip)'}
-                      </p>
-                    </div>
+                  
+                  {formData.out_of_area && (
+                    <OutOfAreaCalculator
+                      jobAddress={formData.job_address}
+                      selectedTeamIds={formData.team_ids}
+                      onAddTravelItems={handleAddTravelItems}
+                      isCalculating={isCalculatingTravel}
+                      setIsCalculating={setIsCalculatingTravel}
+                    />
                   )}
                 </div>
 
