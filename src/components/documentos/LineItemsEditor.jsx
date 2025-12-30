@@ -70,10 +70,10 @@ export default function LineItemsEditor({
     
     // If selecting from catalog
     if (field === 'item_name' && catalogItems.length > 0) {
-      const selectedItem = catalogItems.find(ci => ci.name === value || ci.item_name === value);
+      const selectedItem = catalogItems.find(ci => ci.item_name === value || ci.name === value);
       if (selectedItem) {
-        // CRITICAL: Canonical mapping for both QuoteItem and ItemCatalog
-        newItems[index].item_name = selectedItem.name || selectedItem.item_name || '';
+        const itemName = selectedItem.item_name || selectedItem.name || '';
+        newItems[index].item_name = itemName;
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || selectedItem.uom || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
@@ -88,18 +88,9 @@ export default function LineItemsEditor({
         
         newItems[index].total = (newItems[index].quantity || 0) * (selectedItem.unit_price || 0);
         
-        // DEV LOG
-        if (import.meta.env.DEV) {
-          console.log("[Invoice select]", {
-            selected: selectedItem.name || selectedItem.item_name,
-            before: { item_name: itemBefore.item_name, description: itemBefore.description },
-            after: { item_name: newItems[index].item_name, description: newItems[index].description }
-          });
-        }
-        
         if (onToast) {
           onToast({
-            title: `Item "${selectedItem.name || selectedItem.item_name}" loaded`,
+            title: `Item "${itemName}" loaded`,
             description: `Unit price: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Time: ${selectedItem.installation_time}h` : ''}`,
             variant: 'success',
           });
@@ -202,22 +193,29 @@ export default function LineItemsEditor({
                       <CommandEmpty className="text-slate-500 p-4 text-xs">No items found</CommandEmpty>
                       <CommandGroup className="max-h-[300px] overflow-y-auto">
                         {[...catalogItems]
-                          .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-                          .map(ci => (
-                            <CommandItem
-                              key={ci.id || ci.name}
-                              value={ci.name}
-                              onSelect={() => updateItem(index, 'item_name', ci.name)}
-                              className="text-slate-900 cursor-pointer hover:bg-slate-100 py-2 border-b border-slate-100"
-                            >
-                              <Check className={`mr-2 h-4 w-4 text-blue-600 ${item.item_name === ci.name ? 'opacity-100' : 'opacity-0'}`} />
-                              <div className="flex-1">
-                                <div className="font-semibold text-xs">{ci.name}</div>
-                                <div className="text-[10px] text-slate-500 truncate">{ci.description}</div>
-                                <div className="text-[10px] text-blue-600 font-bold">${ci.unit_price} / {ci.unit || ci.uom}</div>
-                              </div>
-                            </CommandItem>
-                          ))}
+                          .sort((a, b) => {
+                            const nameA = a.item_name || a.name || '';
+                            const nameB = b.item_name || b.name || '';
+                            return nameA.localeCompare(nameB);
+                          })
+                          .map(ci => {
+                            const itemName = ci.item_name || ci.name || '';
+                            return (
+                              <CommandItem
+                                key={ci.id || itemName}
+                                value={itemName}
+                                onSelect={() => updateItem(index, 'item_name', itemName)}
+                                className="text-slate-900 cursor-pointer hover:bg-slate-100 py-2 border-b border-slate-100"
+                              >
+                                <Check className={`mr-2 h-4 w-4 text-blue-600 ${item.item_name === itemName ? 'opacity-100' : 'opacity-0'}`} />
+                                <div className="flex-1">
+                                  <div className="font-semibold text-xs">{itemName}</div>
+                                  <div className="text-[10px] text-slate-500 truncate">{ci.description}</div>
+                                  <div className="text-[10px] text-blue-600 font-bold">${ci.unit_price} / {ci.unit || ci.uom}</div>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
                       </CommandGroup>
                     </Command>
                   </PopoverContent>
