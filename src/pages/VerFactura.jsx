@@ -17,7 +17,8 @@ import {
   XCircle,
   Download,
   ArrowLeft,
-  FileText
+  FileText,
+  Briefcase
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -170,6 +171,47 @@ export default function VerFactura() {
     }
   });
 
+  const createJobMutation = useMutation({
+    mutationFn: async () => {
+      // Create job from invoice data
+      const jobData = {
+        name: invoice.job_name,
+        description: `Job created from Invoice ${invoice.invoice_number}`,
+        customer_id: invoice.customer_id || '',
+        customer_name: invoice.customer_name,
+        address: invoice.job_address || '',
+        contract_amount: invoice.total,
+        team_id: invoice.team_id || '',
+        team_name: invoice.team_name || '',
+        status: 'active',
+        color: 'blue',
+      };
+
+      const newJob = await base44.entities.Job.create(jobData);
+
+      // Update invoice with job_id
+      await base44.entities.Invoice.update(invoiceId, { 
+        job_id: newJob.id,
+        job_name: newJob.name 
+      });
+
+      // Sync to MCI Field
+      try {
+        await base44.functions.invoke('syncJobToMCIField', { jobData: newJob });
+      } catch (err) {
+        console.log('Field sync failed (non-critical):', err);
+      }
+
+      return newJob;
+    },
+    onSuccess: (newJob) => {
+      queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      toast.success('Job created and linked to invoice');
+    }
+  });
+
   const handlePrint = () => {
     window.print();
   };
@@ -313,6 +355,19 @@ export default function VerFactura() {
               <Download className="w-4 h-4 mr-2" />
               {language === 'es' ? 'PDF' : 'PDF'}
             </Button>
+
+            {!invoice.job_id && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => createJobMutation.mutate()}
+                disabled={createJobMutation.isPending}
+                className="bg-blue-800 border-blue-700 text-white hover:bg-blue-700 hover:text-white disabled:opacity-50"
+              >
+                <Briefcase className="w-4 h-4 mr-2" />
+                {createJobMutation.isPending ? (language === 'es' ? 'Creando...' : 'Creating...') : (language === 'es' ? 'Crear Job' : 'Create Job')}
+              </Button>
+            )}
 
             {canRecordPayment && (
               <Button
