@@ -476,77 +476,95 @@ export default function CrearFactura() {
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b flex flex-row items-center justify-between">
-              <CardTitle>{t('invoiceItems')}</CardTitle>
-              <Button onClick={addItem} size="sm" variant="outline" type="button"> {/* Added type="button" to prevent form submission */}
-                <Plus className="w-4 h-4 mr-2" />
-                {t('addItem')}
+            <CardHeader className="border-b flex flex-row items-center justify-between py-3">
+              <CardTitle className="text-base">{t('invoiceItems')}</CardTitle>
+              <Button onClick={addItem} size="sm" variant="outline" type="button">
+                <Plus className="w-3 h-3 mr-1" />
+                <span className="text-xs">{t('addItem')}</span>
               </Button>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {formData.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-4 items-end p-4 bg-slate-50 rounded-lg">
-                    <div className="col-span-12 md:col-span-4">
-                      <Label>{t('description')}</Label>
-                       <Textarea
-                        value={item.description}
-                        onChange={e => handleItemChange(index, 'description', e.target.value)}
-                        placeholder={t('serviceDescription')}
-                        className="h-24"
-                      />
-                    </div>
-                    <div className="col-span-4 md:col-span-2">
-                      <Label>{t('quantity')}</Label>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={e => handleItemChange(index, 'quantity', e.target.value)}
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <div className="col-span-4 md:col-span-1">
-                      <Label>Unit</Label>
-                      <Input
-                        value={item.unit}
-                        onChange={e => handleItemChange(index, 'unit', e.target.value)}
-                        placeholder="pcs"
-                      />
-                    </div>
-                    <div className="col-span-4 md:col-span-2">
-                      <Label>{t('unitPrice')}</Label>
-                      <Input
-                        type="number"
-                        value={item.unit_price}
-                        onChange={e => handleItemChange(index, 'unit_price', e.target.value)}
-                        min="0"
-                        step="0.01"
-                      />
-                    </div>
-                    <div className="col-span-3 md:col-span-2">
-                      <Label>{t('total')}</Label>
-                      <Input
-                        value={`$${item.total.toFixed(2)}`}
-                        readOnly
-                        className="bg-white font-bold"
-                      />
-                    </div>
-                    <div className="col-span-1 flex items-end">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeItem(index)}
-                        disabled={formData.items.length === 1}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        type="button" // Added type="button" to prevent form submission
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+            <CardContent className="p-0">
+              {/* Table Header */}
+              <div className="hidden md:grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                <div>ITEM DETAILS</div>
+                <div className="text-center">QUANTITY</div>
+                <div className="text-center">UNIT</div>
+                <div className="text-center">RATE</div>
+                <div className="text-right">AMOUNT</div>
+                <div></div>
+              </div>
+
+              {formData.items.map((item, index) => (
+                <div 
+                  key={index} 
+                  className="grid md:grid-cols-[3fr,1fr,0.6fr,0.8fr,1fr,0.5fr] gap-2 px-3 py-3 border-b border-slate-200 hover:bg-slate-50/50 transition-colors"
+                >
+                  {/* Item Details Column - Description only for invoices */}
+                  <div className="space-y-1">
+                    <Textarea
+                      value={item.description}
+                      onChange={e => handleItemChange(index, 'description', e.target.value)}
+                      placeholder={t('serviceDescription')}
+                      className="h-16 text-[11px] text-slate-700 resize-none bg-white border-slate-200"
+                    />
+                  </div>
+
+                  {/* Quantity */}
+                  <div className="flex items-center justify-center">
+                    <Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={e => handleItemChange(index, 'quantity', e.target.value)}
+                      min="0"
+                      step="0.01"
+                      className="h-7 text-[11px] text-center font-semibold bg-white border-slate-200"
+                    />
+                  </div>
+
+                  {/* Unit */}
+                  <div className="flex items-center justify-center">
+                    <Input
+                      value={item.unit}
+                      onChange={e => handleItemChange(index, 'unit', e.target.value)}
+                      placeholder="pcs"
+                      className="h-7 text-[10px] text-center bg-white border-slate-200"
+                    />
+                  </div>
+
+                  {/* Unit Price */}
+                  <div className="flex items-center justify-center">
+                    <Input
+                      type="number"
+                      value={item.unit_price}
+                      onChange={e => handleItemChange(index, 'unit_price', e.target.value)}
+                      min="0"
+                      step="0.01"
+                      className="h-7 text-[11px] text-center font-semibold bg-white border-slate-200"
+                    />
+                  </div>
+
+                  {/* Total */}
+                  <div className="flex items-center justify-end">
+                    <div className="text-slate-900 font-bold text-sm">
+                      ${item.total.toFixed(2)}
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeItem(index)}
+                      disabled={formData.items.length === 1}
+                      className="text-red-400 hover:text-red-700 hover:bg-red-50 h-6 w-6"
+                      type="button"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
 
               <div className="mt-6 space-y-3 max-w-md ml-auto">
                 <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
