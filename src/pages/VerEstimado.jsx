@@ -43,6 +43,7 @@ import QuoteSignature from "@/components/quotes/QuoteSignature";
 import QuoteVersions from "@/components/quotes/QuoteVersions";
 import QuoteCompare from "@/components/quotes/QuoteCompare";
 import { SaveAsTemplateButton } from "@/components/quotes/QuoteTemplates";
+import PDFDownloadButton from "@/components/pdf/PDFDownloadButton";
 
 export default function VerEstimado() {
   const { t, language } = useLanguage();
