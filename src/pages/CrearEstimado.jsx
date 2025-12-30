@@ -627,6 +627,14 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return;
     }
 
+    // DEBUG: Log items before save to check if item_name exists
+    console.log('🔍 ITEMS BEFORE SAVE:', formData.items.map(i => ({
+      item_name: i.item_name,
+      description: i.description,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+    })));
+
     if (editId) {
       updateMutation.mutate(formData);
     } else {
