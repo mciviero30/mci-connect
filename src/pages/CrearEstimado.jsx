@@ -899,24 +899,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   key={index} 
                   className={`border-b border-slate-200 ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'}`}
                 >
-                  {/* Row 1: Description spanning full width */}
-                  <div className="px-3 pt-3 pb-1">
-                    <Textarea
-                      value={item.description}
-                      onChange={(e) => updateItem(index, 'description', e.target.value)}
-                      required={!item.is_travel_item}
-                      disabled={item.is_travel_item}
-                      placeholder="Description"
-                      className={`min-h-[60px] text-xs text-slate-600 resize-none ${
-                        item.is_travel_item 
-                          ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
-                          : 'bg-white border-slate-200'
-                      }`}
-                    />
-                  </div>
-
-                  {/* Row 2: Select Item and aligned fields */}
-                  <div className="grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 pb-3 hover:bg-slate-50/50 transition-colors">
+                  {/* Row 1: Select Item and aligned fields */}
+                  <div className="grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 pt-3 pb-1 hover:bg-slate-50/50 transition-colors">
                     {/* Select Item */}
                     <div>
                       <Popover>
@@ -1059,6 +1043,22 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Row 2: Description spanning full width */}
+                  <div className="px-3 pb-3">
+                    <Textarea
+                      value={item.description}
+                      onChange={(e) => updateItem(index, 'description', e.target.value)}
+                      required={!item.is_travel_item}
+                      disabled={item.is_travel_item}
+                      placeholder="Description"
+                      className={`min-h-[60px] text-xs text-slate-600 resize-none ${
+                        item.is_travel_item 
+                          ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
+                          : 'bg-white border-slate-200'
+                      }`}
+                    />
                   </div>
                 </div>
               ))}
