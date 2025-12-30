@@ -198,11 +198,41 @@ export default function CrearFactura() {
       console.log('Final invoice data (normalized):', finalData);
       const result = await base44.entities.Invoice.create(finalData);
       console.log('Invoice created successfully:', result);
+      
+      // Step 4: Auto-create Job if it doesn't exist
+      if (!finalData.job_id && finalData.job_name) {
+        console.log('🏗️ Auto-creating Job from invoice...');
+        try {
+          const newJob = await base44.entities.Job.create({
+            name: finalData.job_name,
+            address: finalData.job_address || '',
+            customer_id: finalData.customer_id || '',
+            customer_name: finalData.customer_name || '',
+            contract_amount: finalData.total || 0,
+            estimated_cost: 0,
+            estimated_hours: 0,
+            status: 'active',
+            team_id: finalData.team_id || '',
+            team_name: finalData.team_name || '',
+            color: 'blue',
+            description: `Created from Invoice ${invoice_number}`
+          });
+          
+          // Update invoice with job_id
+          await base44.entities.Invoice.update(result.id, { job_id: newJob.id });
+          console.log('✅ Job created and linked:', newJob.id);
+        } catch (jobError) {
+          console.error('⚠️ Error creating job:', jobError);
+          // Don't fail the whole operation if job creation fails
+        }
+      }
+      
       return result;
     },
     onSuccess: async (data) => {
       console.log('Invoice creation successful, invalidating queries...');
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
       await queryClient.refetchQueries({ queryKey: ['invoices'] });
       toast.success(language === 'es' ? 'Factura creada exitosamente' : 'Invoice created successfully');
       setTimeout(() => {
