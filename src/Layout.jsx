@@ -1041,12 +1041,20 @@ const LayoutContent = ({ children, currentPageName }) => {
           };
 
           export default function Layout({ children, currentPageName }) {
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    retry: false,
+  });
+
   return (
     <ToastProvider>
       <ErrorBoundary>
         <LanguageProvider>
           <PermissionsProvider>
-            <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
+            <AgreementGate user={user}>
+              <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
+            </AgreementGate>
           </PermissionsProvider>
         </LanguageProvider>
       </ErrorBoundary>
