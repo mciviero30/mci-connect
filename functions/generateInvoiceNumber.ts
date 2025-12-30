@@ -34,18 +34,19 @@ Deno.serve(async (req) => {
     const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
     const nextNumber = maxNumber + 1;
     
-    // Generate simple sequential number
-    const invoice_number = String(nextNumber);
+    // Generate formatted invoice number (INV-00001)
+    const invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
 
     console.log('Generated invoice number:', invoice_number, 'from', existingNumbers.length, 'existing invoices');
 
     return Response.json({ 
-      invoice_number,
-      next_sequence: nextNumber
+      invoice_number
     });
 
   } catch (error) {
     console.error('Error generating invoice number:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ 
+      error: `Failed to generate invoice number: ${error.message}` 
+    }, { status: 500 });
   }
 });
