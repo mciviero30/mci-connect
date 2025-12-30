@@ -549,6 +549,9 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
   };
 
   const updateItem = (index, field, value) => {
+    // Guard: Never allow clearing item_name
+    if (field === 'item_name' && !value) return;
+    
     const newItems = [...formData.items];
     newItems[index][field] = value;
     
