@@ -38,11 +38,12 @@ export default function Estimados() {
   });
   const { data: quotes, isLoading, refetch } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list('-created_date'),
+    queryFn: () => base44.entities.Quote.list('-created_date', 500),
     initialData: [],
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: teams = [] } = useQuery({

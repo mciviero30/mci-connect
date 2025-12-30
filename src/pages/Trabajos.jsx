@@ -58,13 +58,14 @@ export default function Trabajos() {
     queryKey: ['jobs'],
     queryFn: async () => {
       console.log('🔍 Fetching jobs for user:', user?.email, 'role:', user?.role);
-      const allJobs = await base44.entities.Job.list('-created_date');
+      const allJobs = await base44.entities.Job.list('-created_date', 500);
       console.log('✅ Jobs fetched:', allJobs.length, 'total jobs');
       return allJobs;
     },
     initialData: [],
     enabled: !!user,
-    staleTime: 300000,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    gcTime: 10 * 60 * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });

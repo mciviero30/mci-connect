@@ -20,8 +20,10 @@ export default function Horarios() {
 
   const { data: timeEntries, isLoading } = useQuery({
     queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date'),
+    queryFn: () => base44.entities.TimeEntry.list('-date', 500),
     initialData: [],
+    staleTime: 3 * 60 * 1000, // 3 minutes cache
+    gcTime: 10 * 60 * 1000,
   });
 
   const pendingEntries = timeEntries.filter(e => e.status === 'pending');
