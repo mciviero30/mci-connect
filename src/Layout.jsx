@@ -345,7 +345,7 @@ const LayoutContent = ({ children, currentPageName }) => {
       if (user.employment_status === 'active') {
         const cleanupFlag = sessionStorage.getItem(`cleanup_${user.id}`);
         if (cleanupFlag === 'done') return;
-        
+
         base44.entities.PendingEmployee.list().then(allPendingEmployees => {
           const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
           if (pendingEmployees.length > 0) {
@@ -359,7 +359,7 @@ const LayoutContent = ({ children, currentPageName }) => {
       }
       return;
     }
-    
+
     // Prevent infinite loops - only run once per session
     const activationFlag = sessionStorage.getItem(`activation_${user.id}`);
     if (activationFlag === 'done') {
@@ -374,16 +374,16 @@ const LayoutContent = ({ children, currentPageName }) => {
     const autoActivateUser = async () => {
       try {
         sessionStorage.setItem(`activation_${user.id}`, 'processing');
-        
+
         console.log('🔄 Auto-activating invited user:', user.email);
-        
+
         let pendingData = {};
         try {
           const allPendingEmployees = await base44.entities.PendingEmployee.list();
           const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
           if (pendingEmployees.length > 0) {
             const pending = pendingEmployees[0];
-            
+
             if (pending.first_name) pendingData.first_name = pending.first_name;
             if (pending.last_name) pendingData.last_name = pending.last_name;
             if (pending.phone) pendingData.phone = pending.phone;
@@ -396,11 +396,11 @@ const LayoutContent = ({ children, currentPageName }) => {
             if (pending.ssn_tax_id) pendingData.ssn_tax_id = pending.ssn_tax_id;
             if (pending.tshirt_size) pendingData.tshirt_size = pending.tshirt_size;
             if (pending.hourly_rate) pendingData.hourly_rate = pending.hourly_rate;
-            
+
             if (pending.first_name && pending.last_name) {
               pendingData.full_name = `${pending.first_name} ${pending.last_name}`.trim();
             }
-            
+
             console.log('📋 Syncing pending employee data');
             await base44.entities.PendingEmployee.delete(pending.id);
             console.log('🗑️ Deleted pending employee record');
@@ -408,7 +408,7 @@ const LayoutContent = ({ children, currentPageName }) => {
         } catch (error) {
           console.error('Error with pending employee:', error);
         }
-        
+
         let teamData = {};
         const finalTeamId = pendingData.team_id || user.team_id;
         if (finalTeamId && !pendingData.team_name && !user.team_name) {
@@ -420,18 +420,19 @@ const LayoutContent = ({ children, currentPageName }) => {
             console.error('Error fetching team:', error);
           }
         }
-        
+
         await base44.auth.updateMe({ 
           employment_status: 'active',
           hire_date: user.hire_date || new Date().toISOString().split('T')[0],
           ...pendingData,
           ...teamData
         });
-        
+
         console.log('✅ User activated successfully');
         sessionStorage.setItem(`activation_${user.id}`, 'done');
-        
-        window.location.reload();
+
+        // Invalidate queries instead of reload
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       } catch (error) {
         console.error('❌ Error auto-activating user:', error);
         sessionStorage.removeItem(`activation_${user.id}`);
