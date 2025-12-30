@@ -36,9 +36,9 @@ export default function PDFDownloadButton({
       await new Promise(resolve => setTimeout(resolve, 100));
       
       if (type === 'quote') {
-        downloadQuotePDF(data);
+        await downloadQuotePDF(data);
       } else if (type === 'invoice') {
-        downloadInvoicePDF(data);
+        await downloadInvoicePDF(data);
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
