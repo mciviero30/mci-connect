@@ -61,11 +61,23 @@ export default function QuoteDocument({ quote }) {
                     </div>
                     <div className="flex justify-between border-b border-slate-100 pb-1">
                         <span className="text-slate-500">Date</span>
-                        <span className="font-bold">{quote.quote_date ? format(new Date(quote.quote_date), 'MM.dd.yy') : ''}</span>
+                        <span className="font-bold">{(() => {
+                          try {
+                            return quote.quote_date ? format(new Date(quote.quote_date), 'MM.dd.yy') : '';
+                          } catch {
+                            return quote.quote_date || '';
+                          }
+                        })()}</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-100 pb-1">
                         <span className="text-slate-500">Valid Until</span>
-                        <span className="font-bold">{quote.valid_until ? format(new Date(quote.valid_until), 'MM.dd.yy') : ''}</span>
+                        <span className="font-bold">{(() => {
+                          try {
+                            return quote.valid_until ? format(new Date(quote.valid_until), 'MM.dd.yy') : '';
+                          } catch {
+                            return quote.valid_until || '';
+                          }
+                        })()}</span>
                     </div>
                 </div>
             </div>
