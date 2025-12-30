@@ -17,6 +17,7 @@ import AIEstimateInput from "../components/quotes/AIEstimateInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import ModernQuoteCard from "../components/quotes/ModernQuoteCard";
+import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -186,6 +187,7 @@ export default function Estimados() {
           actions={
             isAdmin && (
               <div className="flex gap-2 w-full sm:w-auto">
+                <QuotePDFImporter onSuccess={() => refetch()} />
                 <Button
                   onClick={() => setShowAIWizard(true)}
                   className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] px-3 sm:px-4 flex-1 sm:flex-none"

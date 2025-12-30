@@ -1,560 +1,268 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  Upload, 
-  FileText, 
-  CheckCircle, 
-  XCircle, 
-  Loader2, 
-  Download,
-  Eye,
-  Trash2,
-  Sparkles,
-  FolderOpen,
-  FileSpreadsheet,
-  Copy
-} from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { useToast } from '@/components/ui/toast';
 
-export default function InvoicePDFImporter({ onComplete }) {
+export default function InvoicePDFImporter({ onSuccess }) {
+  const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [file, setFile] = useState(null);
   const { language } = useLanguage();
-  const queryClient = useQueryClient();
-  const [files, setFiles] = useState([]);
-  const [processing, setProcessing] = useState(false);
-  const [currentFile, setCurrentFile] = useState(0);
-  const [extractedInvoices, setExtractedInvoices] = useState([]);
-  const [errors, setErrors] = useState([]);
-
-  const { data: customers = [] } = useQuery({
-    queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
-    initialData: []
-  });
+  const navigate = useNavigate();
+  const toast = useToast();
 
   const handleFileSelect = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    console.log('📁 Files selected:', selectedFiles.length);
-    setFiles(selectedFiles);
-    setExtractedInvoices([]);
-    setErrors([]);
-    setCurrentFile(0);
-  };
-
-  const removeFile = (index) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const exportToExcel = () => {
-    if (extractedInvoices.length === 0) {
-      alert(language === 'es' ? '⚠️ No hay datos para exportar' : '⚠️ No data to export');
-      return;
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.type === 'application/pdf') {
+      setFile(selectedFile);
+    } else {
+      toast.error('Please select a PDF file');
     }
-
-    const headers = [
-      'Archivo',
-      'Número de Factura',
-      'Cliente',
-      'Email Cliente',
-      'Teléfono Cliente',
-      'Proyecto',
-      'Dirección',
-      'Fecha Factura',
-      'Vencimiento',
-      'Subtotal',
-      'Impuesto %',
-      'Monto Impuesto',
-      'Total',
-      'Notas'
-    ];
-
-    const rows = extractedInvoices.map(invoice => [
-      invoice.fileName || '',
-      invoice.invoice_number || '',
-      invoice.customer_name || '',
-      invoice.customer_email || '',
-      invoice.customer_phone || '',
-      invoice.job_name || '',
-      invoice.job_address || '',
-      invoice.invoice_date || '',
-      invoice.due_date || '',
-      invoice.subtotal || 0,
-      invoice.tax_rate || 0,
-      invoice.tax_amount || 0,
-      invoice.total || 0,
-      (invoice.notes || '').replace(/\n/g, ' ')
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => {
-        const cellStr = String(cell);
-        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-          return `"${cellStr.replace(/"/g, '""')}"`;
-        }
-        return cellStr;
-      }).join(','))
-    ].join('\n');
-
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `facturas-extraidas-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    alert('✅ ' + (language === 'es' 
-      ? 'Archivo CSV descargado! Ábrelo con Excel.' 
-      : 'CSV file downloaded! Open it with Excel.'));
   };
 
-  const copyToClipboard = () => {
-    if (extractedInvoices.length === 0) {
-      alert(language === 'es' ? '⚠️ No hay datos para copiar' : '⚠️ No data to copy');
-      return;
-    }
+  const handleImport = async () => {
+    if (!file) return;
 
-    const headers = [
-      'Archivo',
-      'Número',
-      'Cliente',
-      'Email',
-      'Teléfono',
-      'Proyecto',
-      'Dirección',
-      'Fecha',
-      'Total'
-    ];
+    try {
+      setUploading(true);
+      
+      // Upload PDF
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      
+      setUploading(false);
+      setExtracting(true);
 
-    const rows = extractedInvoices.map(invoice => [
-      invoice.fileName || '',
-      invoice.invoice_number || '',
-      invoice.customer_name || '',
-      invoice.customer_email || '',
-      invoice.customer_phone || '',
-      invoice.job_name || '',
-      invoice.job_address || '',
-      invoice.invoice_date || '',
-      `$${invoice.total?.toFixed(2) || '0.00'}`
-    ]);
+      // Extract data with AI
+      const extractedData = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are an expert at extracting invoice data from PDFs. Extract ALL information from this invoice PDF and convert it to MCI Connect format.
 
-    const tsvContent = [
-      headers.join('\t'),
-      ...rows.map(row => row.join('\t'))
-    ].join('\n');
+CRITICAL RULES:
+1. Keep ALL quantities and prices EXACTLY as shown in the PDF - DO NOT modify them
+2. Only translate/adapt item names and descriptions to match MCI Connect format
+3. Extract EVERY line item, do not skip anything
 
-    navigator.clipboard.writeText(tsvContent).then(() => {
-      alert('✅ ' + (language === 'es' 
-        ? 'Datos copiados! Ahora pégalos en Excel con Ctrl+V' 
-        : 'Data copied! Now paste in Excel with Ctrl+V'));
-    }).catch(err => {
-      console.error('Failed to copy:', err);
-      alert('❌ ' + (language === 'es' ? 'Error al copiar' : 'Failed to copy'));
-    });
-  };
+Item name mappings (use these when you see similar items):
+- "millas" or "miles" → "Miles Per Vehicle"
+- "hotel" or "habitaciones" → "Hotel Rooms"
+- "per diem" or "viáticos" → "Per-Diem"
+- "horas de manejo" or "driving hours" → "Driving Time"
+- "paredes sólidas" or "solid wall" → "Solid Wall Installation"
+- "paredes de vidrio" or "glass wall" → "Glass Wall Installation"
 
-  const processFiles = async () => {
-    if (files.length === 0) {
-      alert(language === 'es' ? '⚠️ No hay archivos seleccionados' : '⚠️ No files selected');
-      return;
-    }
-
-    setProcessing(true);
-    setExtractedInvoices([]);
-    setErrors([]);
-    
-    const invoices = [];
-    const fileErrors = [];
-
-    for (let i = 0; i < files.length; i++) {
-      setCurrentFile(i + 1);
-      const file = files[i];
-
-      console.log(`📄 Processing file ${i + 1}/${files.length}: ${file.name}`);
-
-      try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        console.log(`✅ Uploaded: ${file.name}`);
-
-        const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-          file_url,
-          json_schema: {
-            type: "object",
-            properties: {
-              invoice_number: { type: "string", description: "Invoice number" },
-              customer_name: { type: "string", description: "Customer full name or company name" },
-              customer_email: { type: "string", description: "Customer email address" },
-              customer_phone: { type: "string", description: "Customer phone number" },
-              job_name: { type: "string", description: "Project or job name" },
-              job_address: { type: "string", description: "Project address" },
-              invoice_date: { type: "string", description: "Date of invoice in YYYY-MM-DD format" },
-              due_date: { type: "string", description: "Due date in YYYY-MM-DD format" },
+Extract and return this EXACT JSON structure:`,
+        file_urls: [file_url],
+        response_json_schema: {
+          type: "object",
+          properties: {
+            customer_name: { type: "string" },
+            customer_email: { type: "string" },
+            customer_phone: { type: "string" },
+            job_name: { type: "string" },
+            job_address: { type: "string" },
+            invoice_date: { type: "string" },
+            due_date: { type: "string" },
+            items: {
+              type: "array",
               items: {
-                type: "array",
-                description: "List of items/services in the invoice",
-                items: {
-                  type: "object",
-                  properties: {
-                    description: { type: "string" },
-                    quantity: { type: "number" },
-                    unit: { type: "string" },
-                    unit_price: { type: "number" },
-                    total: { type: "number" }
-                  }
+                type: "object",
+                properties: {
+                  item_name: { type: "string" },
+                  description: { type: "string" },
+                  quantity: { type: "number" },
+                  unit: { type: "string" },
+                  unit_price: { type: "number" },
+                  total: { type: "number" }
                 }
-              },
-              subtotal: { type: "number", description: "Subtotal amount" },
-              tax_rate: { type: "number", description: "Tax rate percentage" },
-              tax_amount: { type: "number", description: "Tax amount" },
-              total: { type: "number", description: "Total amount" },
-              amount_paid: { type: "number", description: "Amount already paid" },
-              notes: { type: "string", description: "Additional notes or terms" }
-            }
+              }
+            },
+            tax_rate: { type: "number" },
+            notes: { type: "string" },
+            terms: { type: "string" },
+            amount_paid: { type: "number" }
           }
-        });
-
-        if (result.status === 'success' && result.output) {
-          console.log(`✅ Extracted: ${file.name}`, result.output);
-          
-          const invoice = {
-            ...result.output,
-            fileName: file.name,
-            status: 'extracted',
-            originalFile: file_url,
-            balance: (result.output.total || 0) - (result.output.amount_paid || 0)
-          };
-          
-          invoices.push(invoice);
-        } else {
-          console.error(`❌ Failed to extract: ${file.name}`, result);
-          fileErrors.push({
-            fileName: file.name,
-            error: result.details || 'Failed to extract data'
-          });
         }
-      } catch (error) {
-        console.error(`❌ Error processing ${file.name}:`, error);
-        fileErrors.push({
-          fileName: file.name,
-          error: error.message
-        });
-      }
-    }
+      });
 
-    console.log(`✅ Processing complete. Success: ${invoices.length}, Errors: ${fileErrors.length}`);
-    setExtractedInvoices(invoices);
-    setErrors(fileErrors);
-    setProcessing(false);
-    setCurrentFile(0);
-  };
+      console.log('Extracted data:', extractedData);
 
-  const importMutation = useMutation({
-    mutationFn: async () => {
-      const results = {
-        success: 0,
-        failed: 0,
-        errors: []
+      // Create invoice with extracted data
+      const invoices = await base44.entities.Invoice.list();
+      const existingNumbers = invoices
+        .map(inv => inv.invoice_number)
+        .filter(n => n?.startsWith('INV-'))
+        .map(n => parseInt(n.replace('INV-', '')))
+        .filter(n => !isNaN(n));
+
+      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+      const invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
+
+      const subtotal = extractedData.items.reduce((sum, item) => sum + (item.total || 0), 0);
+      const tax_amount = subtotal * ((extractedData.tax_rate || 0) / 100);
+      const total = subtotal + tax_amount;
+      const amount_paid = extractedData.amount_paid || 0;
+      const balance = total - amount_paid;
+
+      const invoiceData = {
+        invoice_number,
+        customer_name: extractedData.customer_name || '',
+        customer_email: extractedData.customer_email || '',
+        customer_phone: extractedData.customer_phone || '',
+        job_name: extractedData.job_name || 'Imported Job',
+        job_address: extractedData.job_address || '',
+        invoice_date: extractedData.invoice_date || new Date().toISOString().split('T')[0],
+        due_date: extractedData.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        items: extractedData.items.map(item => ({
+          item_name: item.item_name || '',
+          description: item.description || '',
+          quantity: item.quantity || 0,
+          unit: item.unit || 'pcs',
+          unit_price: item.unit_price || 0,
+          total: item.total || 0
+        })),
+        subtotal,
+        tax_rate: extractedData.tax_rate || 0,
+        tax_amount,
+        total,
+        amount_paid,
+        balance,
+        notes: extractedData.notes || '',
+        terms: extractedData.terms || '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
+        status: balance === 0 ? 'paid' : (amount_paid > 0 ? 'partial' : 'draft')
       };
 
-      for (const invoice of extractedInvoices) {
-        try {
-          let customer = customers.find(c => 
-            c.email?.toLowerCase() === invoice.customer_email?.toLowerCase() ||
-            c.first_name?.toLowerCase() === invoice.customer_name?.toLowerCase() ||
-            c.company?.toLowerCase() === invoice.customer_name?.toLowerCase()
-          );
+      const newInvoice = await base44.entities.Invoice.create(invoiceData);
 
-          let customer_id = customer?.id;
-
-          if (!customer && invoice.customer_name) {
-            const nameParts = invoice.customer_name.split(' ');
-            const newCustomer = await base44.entities.Customer.create({
-              first_name: nameParts[0] || '',
-              last_name: nameParts.slice(1).join(' ') || '',
-              email: invoice.customer_email || '',
-              phone: invoice.customer_phone || '',
-              company: invoice.customer_name,
-              status: 'active'
-            });
-            customer_id = newCustomer.id;
-          }
-
-          const invoiceStatus = (invoice.amount_paid >= invoice.total) ? 'paid' : 
-                                (invoice.amount_paid > 0) ? 'partial' : 'sent';
-
-          await base44.entities.Invoice.create({
-            invoice_number: invoice.invoice_number || `INV-${Date.now()}`,
-            customer_id,
-            customer_name: invoice.customer_name || '',
-            customer_email: invoice.customer_email || '',
-            customer_phone: invoice.customer_phone || '',
-            job_name: invoice.job_name || '',
-            job_address: invoice.job_address || '',
-            invoice_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
-            due_date: invoice.due_date || '',
-            items: invoice.items || [],
-            subtotal: invoice.subtotal || 0,
-            tax_rate: invoice.tax_rate || 0,
-            tax_amount: invoice.tax_amount || 0,
-            total: invoice.total || 0,
-            amount_paid: invoice.amount_paid || 0,
-            balance: invoice.balance || invoice.total || 0,
-            notes: invoice.notes || '',
-            status: invoiceStatus
-          });
-
-          results.success++;
-        } catch (error) {
-          console.error('Error importing invoice:', error);
-          results.failed++;
-          results.errors.push({
-            invoice: invoice.invoice_number || invoice.fileName,
-            error: error.message
-          });
-        }
+      setExtracting(false);
+      toast.success(language === 'es' ? '✅ Factura importada exitosamente' : '✅ Invoice imported successfully');
+      
+      if (onSuccess) {
+        onSuccess(newInvoice);
       }
+      
+      setTimeout(() => {
+        navigate(createPageUrl(`VerFactura?id=${newInvoice.id}`));
+      }, 500);
 
-      return results;
-    },
-    onSuccess: (results) => {
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
-      
-      alert(`✅ ${language === 'es' ? 'Importación completada' : 'Import completed'}!\n\n${language === 'es' ? 'Exitosos' : 'Success'}: ${results.success}\n${language === 'es' ? 'Fallidos' : 'Failed'}: ${results.failed}`);
-      
-      if (onComplete) onComplete();
-      setExtractedInvoices([]);
-      setFiles([]);
-      setErrors([]);
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error(`Error: ${error.message}`);
+      setUploading(false);
+      setExtracting(false);
     }
-  });
-
-  const removeInvoice = (index) => {
-    setExtractedInvoices(prev => prev.filter((_, i) => i !== index));
   };
 
-  const progress = files.length > 0 ? (currentFile / files.length) * 100 : 0;
-
   return (
-    <div className="space-y-6">
-      <Card className="bg-white shadow-xl border-slate-200">
-        <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <CardTitle className="flex items-center gap-2 text-slate-900">
-            <Sparkles className="w-5 h-5 text-blue-500" />
-            {language === 'es' ? 'Importar desde PDFs (con IA)' : 'Import from PDFs (with AI)'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div>
-              <Label className="text-slate-700 font-medium mb-2 block">
-                {language === 'es' ? 'Selecciona archivos PDF' : 'Select PDF files'}
-              </Label>
-              <Input
-                type="file"
-                accept=".pdf"
-                multiple
-                onChange={handleFileSelect}
-                disabled={processing}
-                className="bg-white border-slate-300 text-slate-900 cursor-pointer"
-              />
-              <p className="text-xs text-slate-500 mt-2">
-                {language === 'es' 
-                  ? '💡 Puedes seleccionar TODOS los archivos a la vez (Ctrl+A o Cmd+A)'
-                  : '💡 You can select ALL files at once (Ctrl+A or Cmd+A)'}
-              </p>
-            </div>
+    <>
+      <Button
+        onClick={() => setOpen(true)}
+        variant="outline"
+        className="border-[#507DB4]/30 text-[#507DB4] hover:bg-blue-50/30"
+      >
+        <Upload className="w-4 h-4 mr-2" />
+        {language === 'es' ? 'Importar PDF' : 'Import PDF'}
+      </Button>
 
-            {files.length > 0 && !processing && extractedInvoices.length === 0 && (
-              <Alert className="bg-blue-50 border-blue-200">
-                <FolderOpen className="w-4 h-4 text-blue-600" />
-                <AlertTitle className="text-blue-900 font-bold">
-                  ✅ {files.length} {language === 'es' ? 'archivos cargados' : 'files loaded'}
-                </AlertTitle>
-                <AlertDescription className="text-blue-900 text-sm">
-                  {language === 'es' 
-                    ? 'Haz clic en "Procesar con IA" para extraer los datos'
-                    : 'Click "Process with AI" to extract data'}
-                </AlertDescription>
-              </Alert>
-            )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-md bg-white dark:bg-[#282828]">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-slate-900 dark:text-white">
+              {language === 'es' ? 'Importar Factura desde PDF' : 'Import Invoice from PDF'}
+            </DialogTitle>
+          </DialogHeader>
 
-            {files.length > 0 && !processing && extractedInvoices.length === 0 && (
-              <Button
-                onClick={processFiles}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
-                size="lg"
-              >
-                <Sparkles className="w-5 h-5 mr-2" />
-                {language === 'es' ? `Procesar ${files.length} Archivos con IA` : `Process ${files.length} Files with AI`}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {processing && (
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-              {language === 'es' ? 'Procesando...' : 'Processing...'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm text-slate-700 mb-2">
-                  <span>{language === 'es' ? 'Progreso' : 'Progress'}</span>
-                  <span className="font-bold">{currentFile} / {files.length}</span>
+          <div className="space-y-4 py-4">
+            {!uploading && !extracting && (
+              <>
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center">
+                  <FileText className="w-12 h-12 mx-auto mb-3 text-slate-400" />
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                    {language === 'es' 
+                      ? 'Selecciona el PDF de tu otro software. La AI lo convertirá automáticamente al formato MCI Connect.'
+                      : 'Select the PDF from your other software. AI will automatically convert it to MCI Connect format.'}
+                  </p>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="pdf-upload"
+                  />
+                  <label htmlFor="pdf-upload">
+                    <Button variant="outline" className="cursor-pointer" asChild>
+                      <span>
+                        <Upload className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Seleccionar PDF' : 'Select PDF'}
+                      </span>
+                    </Button>
+                  </label>
                 </div>
-                <Progress value={progress} className="h-3" />
-                <p className="text-xs text-slate-500 mt-1">
-                  {progress.toFixed(0)}% {language === 'es' ? 'completado' : 'complete'}
+
+                {file && (
+                  <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="text-sm text-green-800 dark:text-green-300 font-medium">
+                      {file.name}
+                    </span>
+                  </div>
+                )}
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                  <p className="text-xs text-blue-800 dark:text-blue-300">
+                    <strong>{language === 'es' ? '⚠️ Importante:' : '⚠️ Important:'}</strong>
+                    {' '}
+                    {language === 'es'
+                      ? 'Las cantidades y precios se mantendrán EXACTOS. Solo se adaptarán los nombres de items al formato MCI Connect.'
+                      : 'Quantities and prices will remain EXACT. Only item names will be adapted to MCI Connect format.'}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {uploading && (
+              <div className="text-center py-8">
+                <Loader2 className="w-12 h-12 animate-spin mx-auto mb-3 text-blue-600" />
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {language === 'es' ? 'Subiendo PDF...' : 'Uploading PDF...'}
                 </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            )}
 
-      {extractedInvoices.length > 0 && (
-        <Card className="bg-white shadow-xl border-slate-200">
-          <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardTitle className="flex items-center justify-between text-slate-900">
-              <span className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                {language === 'es' ? 'Datos Extraídos' : 'Extracted Data'}
-              </span>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={copyToClipboard}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  <Copy className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Copiar' : 'Copy'}
-                </Button>
-                <Button
-                  onClick={exportToExcel}
-                  variant="outline"
-                  size="sm"
-                  className="bg-white border-green-300 text-green-700 hover:bg-green-50"
-                >
-                  <FileSpreadsheet className="w-4 h-4 mr-2" />
-                  Excel
-                </Button>
-                <Badge className="bg-green-100 text-green-700 border-green-300">
-                  {extractedInvoices.length} {language === 'es' ? 'extraídos' : 'extracted'}
-                </Badge>
+            {extracting && (
+              <div className="text-center py-8">
+                <Loader2 className="w-12 h-12 animate-spin mx-auto mb-3 text-purple-600" />
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-1">
+                  {language === 'es' ? 'Extrayendo datos con AI...' : 'Extracting data with AI...'}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-500">
+                  {language === 'es' ? 'Esto puede tomar 10-20 segundos' : 'This may take 10-20 seconds'}
+                </p>
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50 border-slate-200">
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Archivo' : 'File'}</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Cliente' : 'Customer'}</TableHead>
-                    <TableHead className="text-slate-700 font-semibold">{language === 'es' ? 'Proyecto' : 'Project'}</TableHead>
-                    <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Total' : 'Total'}</TableHead>
-                    <TableHead className="text-right text-slate-700 font-semibold">{language === 'es' ? 'Acciones' : 'Actions'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {extractedInvoices.map((invoice, index) => (
-                    <TableRow key={index} className="hover:bg-slate-50 border-slate-200">
-                      <TableCell className="text-slate-900 text-sm font-medium max-w-xs truncate">{invoice.fileName}</TableCell>
-                      <TableCell className="text-slate-700">{invoice.customer_name || '-'}</TableCell>
-                      <TableCell className="text-slate-700">{invoice.job_name || '-'}</TableCell>
-                      <TableCell className="text-right font-bold text-[#3B9FF3]">
-                        ${invoice.total?.toFixed(2) || '0.00'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => window.open(invoice.originalFile, '_blank')}
-                            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeInvoice(index)}
-                            className="text-slate-600 hover:text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            
-            <div className="p-6 border-t border-slate-200 bg-slate-50">
+            )}
+          </div>
+
+          {!uploading && !extracting && (
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                {language === 'es' ? 'Cancelar' : 'Cancel'}
+              </Button>
               <Button
-                onClick={() => importMutation.mutate()}
-                disabled={importMutation.isPending}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg"
-                size="lg"
+                onClick={handleImport}
+                disabled={!file}
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
               >
-                {importMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {language === 'es' ? 'Importando...' : 'Importing...'}
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-5 h-5 mr-2" />
-                    {language === 'es' ? `Importar ${extractedInvoices.length} Facturas` : `Import ${extractedInvoices.length} Invoices`}
-                  </>
-                )}
+                <Upload className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Importar' : 'Import'}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {errors.length > 0 && (
-        <Card className="bg-white shadow-xl border-red-300">
-          <CardHeader className="border-b border-slate-200 bg-red-50">
-            <CardTitle className="flex items-center gap-2 text-slate-900">
-              <XCircle className="w-5 h-5 text-red-500" />
-              {language === 'es' ? 'Errores' : 'Errors'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-2">
-              {errors.map((err, index) => (
-                <Alert key={index} className="bg-red-50 border-red-200">
-                  <AlertDescription className="text-red-900">
-                    <strong>{err.fileName}:</strong> {err.error}
-                  </AlertDescription>
-                </Alert>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
