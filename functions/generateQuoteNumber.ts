@@ -13,29 +13,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Simple atomic increment: create new counter record each time
-    const timestamp = Date.now();
-    const randomSuffix = Math.floor(Math.random() * 1000);
-    const uniqueKey = `est-${timestamp}-${randomSuffix}`;
-    
-    // Create counter record to claim this number
-    const newCounter = await base44.asServiceRole.entities.Counter.create({
-      counter_key: uniqueKey,
-      current_value: timestamp,
+    // Create unique claim record (atomic operation)
+    const claim = await base44.asServiceRole.entities.Counter.create({
+      counter_key: `quote-claim-${Date.now()}-${Math.random()}`,
+      current_value: 1,
       last_increment_date: new Date().toISOString()
     });
     
-    // Count all quote counters created
-    const allQuoteCounters = await base44.asServiceRole.entities.Counter.filter({
-      counter_key: { $regex: '^est-' }
+    // Count all quote claims to get sequence number
+    const allClaims = await base44.asServiceRole.entities.Counter.filter({
+      counter_key: { $regex: '^quote-claim-' }
     });
     
-    const nextNumber = allQuoteCounters.length;
-    const formattedNumber = `EST-${String(nextNumber).padStart(5, '0')}`;
+    const sequenceNumber = allClaims.length;
+    const formattedNumber = `EST-${String(sequenceNumber).padStart(5, '0')}`;
 
     return Response.json({ 
       quote_number: formattedNumber,
-      next_sequence: nextNumber
+      next_sequence: sequenceNumber
     });
   } catch (error) {
     if (error instanceof Response) throw error;

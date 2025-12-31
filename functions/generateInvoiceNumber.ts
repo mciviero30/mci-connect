@@ -13,25 +13,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Simple atomic increment: create new counter record each time
-    const timestamp = Date.now();
-    const randomSuffix = Math.floor(Math.random() * 1000);
-    const uniqueKey = `inv-${timestamp}-${randomSuffix}`;
-    
-    // Create counter record to claim this number
-    const newCounter = await base44.asServiceRole.entities.Counter.create({
-      counter_key: uniqueKey,
-      current_value: timestamp, // Use timestamp as unique identifier
+    // Create unique claim record (atomic operation)
+    const claim = await base44.asServiceRole.entities.Counter.create({
+      counter_key: `invoice-claim-${Date.now()}-${Math.random()}`,
+      current_value: 1,
       last_increment_date: new Date().toISOString()
     });
     
-    // Count all invoice counters created (each invoice gets one)
-    const allInvoiceCounters = await base44.asServiceRole.entities.Counter.filter({
-      counter_key: { $regex: '^inv-' }
+    // Count all invoice claims to get sequence number
+    const allClaims = await base44.asServiceRole.entities.Counter.filter({
+      counter_key: { $regex: '^invoice-claim-' }
     });
     
-    const nextNumber = allInvoiceCounters.length;
-    const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
+    const sequenceNumber = allClaims.length;
+    const formattedNumber = `INV-${String(sequenceNumber).padStart(5, '0')}`;
 
     return Response.json({ invoice_number: formattedNumber });
   } catch (error) {
