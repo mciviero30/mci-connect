@@ -37,35 +37,29 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
 
       if (data?.ok) {
         toast.success(language === 'es' 
-          ? '✅ Provisioning completado exitosamente' 
-          : '✅ Provisioning completed successfully');
+          ? '✅ Provisioning completado' 
+          : '✅ Provisioning completed');
         onSuccess?.();
+      } else if (data?.provisioning_status === 'partial') {
+        toast.info(language === 'es' 
+          ? '⚠️ Parcial. Puedes reintentar.' 
+          : '⚠️ Partial. You can retry.');
       } else {
         toast.error(language === 'es' 
-          ? '⚠️ Provisioning completado con errores' 
-          : '⚠️ Provisioning completed with errors');
+          ? '❌ Falló. Revisa errores.' 
+          : '❌ Failed. Check errors.');
       }
     } catch (error) {
       console.error('Retry provisioning error:', error);
       toast.error(language === 'es' 
-        ? '❌ Error al reintentar provisioning' 
-        : '❌ Error retrying provisioning');
+        ? 'Factura guardada. Falta Drive/Field. Puedes reintentar.' 
+        : 'Invoice saved. Drive/Field pending. You can retry.');
       setResults({ ok: false, error: error.message });
       setShowResults(true);
     } finally {
       setIsRetrying(false);
     }
   };
-
-  const needsProvisioning = !job || 
-    job.provisioning_status === 'error' || 
-    job.provisioning_status === 'not_started' ||
-    !job.drive_folder_url ||
-    !job.field_project_id;
-
-  if (!needsProvisioning) {
-    return null;
-  }
 
   return (
     <>
@@ -133,16 +127,31 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
               </Badge>
             </div>
 
-            {results?.drive_folder_url && (
-              <a 
-                href={results.drive_folder_url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-              >
-                <Link2 className="w-3 h-3" />
-                {language === 'es' ? 'Abrir carpeta Drive' : 'Open Drive folder'}
-              </a>
+            {/* Quick Links */}
+            {(results?.drive_folder_url || results?.job_id) && (
+              <div className="space-y-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                {results.drive_folder_url && (
+                  <a 
+                    href={results.drive_folder_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                  >
+                    <Folder className="w-4 h-4" />
+                    {language === 'es' ? 'Abrir carpeta Drive' : 'Open Drive folder'}
+                  </a>
+                )}
+                {results.job_id && (
+                  <a 
+                    href={`${window.location.origin}${createPageUrl('JobDetails')}?id=${results.job_id}`}
+                    target="_blank"
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                  >
+                    <Link2 className="w-4 h-4" />
+                    {language === 'es' ? 'Abrir Job' : 'Open Job'}
+                  </a>
+                )}
+              </div>
             )}
 
             {/* Field Sync Status */}
