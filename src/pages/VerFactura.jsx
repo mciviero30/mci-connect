@@ -41,6 +41,7 @@ import {
 import InvoiceDocument from "../components/documentos/InvoiceDocument";
 import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
+import RetryProvisioningButton from "../components/invoices/RetryProvisioningButton";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -57,6 +58,12 @@ export default function VerFactura() {
     queryKey: ['invoice', invoiceId],
     queryFn: () => base44.entities.Invoice.get(invoiceId),
     enabled: !!invoiceId,
+  });
+
+  const { data: job } = useQuery({
+    queryKey: ['job', rawInvoice?.job_id],
+    queryFn: () => base44.entities.Job.get(rawInvoice.job_id),
+    enabled: !!rawInvoice?.job_id,
   });
 
   // Defensive normalization - prevent crashes
@@ -410,6 +417,15 @@ export default function VerFactura() {
                 {t('recordPayment')}
               </Button>
             )}
+
+            <RetryProvisioningButton 
+              invoice={invoice} 
+              job={job}
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ['job', invoice?.job_id] });
+                queryClient.invalidateQueries({ queryKey: ['jobs'] });
+              }}
+            />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
