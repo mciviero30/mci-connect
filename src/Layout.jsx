@@ -38,6 +38,7 @@ import {
   Zap,
   Shield,
   Bell,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Sidebar,
