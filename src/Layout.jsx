@@ -76,6 +76,7 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
+import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 
@@ -256,6 +257,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   // Check if we're on a Field page
   const isFieldPage = location.pathname.toLowerCase().includes('field');
 
+  // Merge auth user with Employee entity data
+  const { profile: displayUser } = useEmployeeProfile(user?.email, user);
+
   // Initialize theme on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -368,7 +372,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       return;
     }
 
-    // Auto-activate invited users
+    // Auto-activate invited users with safe merge
     const activationFlag = sessionStorage.getItem(`activation_${user.id}`);
     if (activationFlag === 'done') {
       if (import.meta.env.DEV) {
@@ -391,6 +395,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           console.log('🔄 Auto-activating invited user:', user.email);
         }
 
+        // Safe merge: only add fields if they're missing in user
         let pendingData = {};
         try {
           const allPendingEmployees = await base44.entities.PendingEmployee.list();
@@ -398,25 +403,26 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           if (pendingEmployees.length > 0) {
             const pending = pendingEmployees[0];
 
-            if (pending.first_name) pendingData.first_name = pending.first_name;
-            if (pending.last_name) pendingData.last_name = pending.last_name;
-            if (pending.phone) pendingData.phone = pending.phone;
-            if (pending.position) pendingData.position = pending.position;
-            if (pending.department) pendingData.department = pending.department;
-            if (pending.team_id) pendingData.team_id = pending.team_id;
-            if (pending.team_name) pendingData.team_name = pending.team_name;
-            if (pending.address) pendingData.address = pending.address;
-            if (pending.dob) pendingData.dob = pending.dob;
-            if (pending.ssn_tax_id) pendingData.ssn_tax_id = pending.ssn_tax_id;
-            if (pending.tshirt_size) pendingData.tshirt_size = pending.tshirt_size;
-            if (pending.hourly_rate) pendingData.hourly_rate = pending.hourly_rate;
+            // SAFE MERGE: Only add if user doesn't have it
+            if (pending.first_name && !user.first_name) pendingData.first_name = pending.first_name;
+            if (pending.last_name && !user.last_name) pendingData.last_name = pending.last_name;
+            if (pending.phone && !user.phone) pendingData.phone = pending.phone;
+            if (pending.position && !user.position) pendingData.position = pending.position;
+            if (pending.department && !user.department) pendingData.department = pending.department;
+            if (pending.team_id && !user.team_id) pendingData.team_id = pending.team_id;
+            if (pending.team_name && !user.team_name) pendingData.team_name = pending.team_name;
+            if (pending.address && !user.address) pendingData.address = pending.address;
+            if (pending.dob && !user.dob) pendingData.dob = pending.dob;
+            if (pending.ssn_tax_id && !user.ssn_tax_id) pendingData.ssn_tax_id = pending.ssn_tax_id;
+            if (pending.tshirt_size && !user.tshirt_size) pendingData.tshirt_size = pending.tshirt_size;
+            if (pending.hourly_rate && !user.hourly_rate) pendingData.hourly_rate = pending.hourly_rate;
 
-            if (pending.first_name && pending.last_name) {
-              pendingData.full_name = `${pending.first_name} ${pending.last_name}`.trim();
+            if ((pending.first_name || pending.last_name) && !user.full_name) {
+              pendingData.full_name = `${pending.first_name || ''} ${pending.last_name || ''}`.trim();
             }
 
             if (import.meta.env.DEV) {
-              console.log('📋 Syncing pending employee data');
+              console.log('📋 Merging pending employee data (safe):', Object.keys(pendingData));
             }
             await base44.entities.PendingEmployee.delete(pending.id);
           }
@@ -440,12 +446,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           }
         }
 
-        await base44.auth.updateMe({ 
+        // Only update if we have data to merge
+        const mergedData = {
           employment_status: 'active',
           hire_date: user.hire_date || new Date().toISOString().split('T')[0],
           ...pendingData,
           ...teamData
-        });
+        };
+
+        if (Object.keys(mergedData).length > 2) { // More than just employment_status + hire_date
+          await base44.auth.updateMe(mergedData);
+        } else {
+          await base44.auth.updateMe({ employment_status: 'active' });
+        }
 
         if (import.meta.env.DEV) {
           console.log('✅ User activated successfully');
@@ -454,6 +467,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
         // Invalidate queries to refresh user data
         queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        queryClient.invalidateQueries({ queryKey: ['employeeProfile'] });
       } catch (error) {
         if (import.meta.env.DEV) {
           console.error('❌ Error auto-activating user:', error);
@@ -516,12 +530,18 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // Permission-based navigation
   const getNavigationForUser = () => {
-    const position = user?.position;
-    const department = user?.department;
+    const position = (displayUser?.position || user?.position || '').toLowerCase();
+    const department = (displayUser?.department || user?.department || '').toLowerCase();
     const isAdmin = user?.role === 'admin';
 
+    // Normalize position variants
+    const isManager = position.includes('manager') || position.includes('supervisor');
+    const isCEO = position.includes('ceo');
+    const isAdministrator = position.includes('administrator') || position.includes('admin');
+    const isHR = department === 'hr' || department === 'human resources';
+
     // Full access: CEO, administrator, admin role, managers, and HR
-    const hasFullAccess = isAdmin || position === 'CEO' || position === 'administrator' || position === 'manager' || department === 'HR';
+    const hasFullAccess = isAdmin || isCEO || isAdministrator || isManager || isHR;
 
     if (hasFullAccess) {
       return adminNavigation;
@@ -773,7 +793,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   }
 
   const navigation = getNavigationForUser();
-  const isAdmin = user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator';
+  const position = (displayUser?.position || user?.position || '').toLowerCase();
+  const isAdmin = user?.role === 'admin' || position.includes('ceo') || position.includes('administrator');
 
   // If client only, render ClientPortal directly without sidebar
   if (isClientOnly) {
@@ -781,28 +802,29 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   }
 
   const getProfileImage = () => {
-    if (!user) return null;
+    const effectiveUser = displayUser || user;
+    if (!effectiveUser) return null;
     
     // Check preferred image first
-    if (user.preferred_profile_image === 'avatar' && user.avatar_image_url) {
-      return user.avatar_image_url;
+    if (effectiveUser.preferred_profile_image === 'avatar' && effectiveUser.avatar_image_url) {
+      return effectiveUser.avatar_image_url;
     }
     
     // Then check profile_photo_url
-    if (user.profile_photo_url) {
-      return user.profile_photo_url;
+    if (effectiveUser.profile_photo_url) {
+      return effectiveUser.profile_photo_url;
     }
     
     // Fallback to avatar if exists
-    if (user.avatar_image_url) {
-      return user.avatar_image_url;
+    if (effectiveUser.avatar_image_url) {
+      return effectiveUser.avatar_image_url;
     }
     
     return null;
   };
 
   const profileImage = getProfileImage();
-  const imageKey = user?.profile_last_updated || user?.id;
+  const imageKey = (displayUser || user)?.profile_last_updated || (displayUser || user)?.id;
 
   return (
     <SidebarProvider>
@@ -979,22 +1001,22 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
                   <img
                     key={imageKey}
                     src={`${profileImage}?v=${imageKey}`}
-                    alt={user.full_name}
+                    alt={(displayUser || user)?.full_name}
                     className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"
                   />
                 ) : (
                   <div className="w-11 h-11 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center ring-2 ring-[#507DB4]/30 shadow-md">
                     <span className="text-white font-bold text-base">
-                      {user?.full_name?.[0]?.toUpperCase() || 'U'}
+                      {(displayUser || user)?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm truncate text-slate-900 dark:text-slate-100">
-                    {user?.full_name || 'User'}
+                    {(displayUser || user)?.full_name || (displayUser || user)?.email || 'User'}
                   </p>
                   <p className="text-xs truncate text-[#507DB4] dark:text-[#6B9DD8] font-medium">
-                    {user?.role === 'admin' ? t('admin') : t('user')}
+                    {(displayUser || user)?.position || (user?.role === 'admin' ? t('admin') : t('user'))}
                   </p>
                 </div>
               </div>

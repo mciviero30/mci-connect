@@ -11,7 +11,13 @@
 export function canCreateFinancialDocs(user) {
   const pos = (user?.position || '').toLowerCase();
   const role = (user?.role || '').toLowerCase();
-  return role === 'admin' || pos === 'ceo' || pos === 'administrator' || pos === 'manager';
+  
+  // Normalize position variants
+  const isCEO = pos.includes('ceo');
+  const isAdministrator = pos.includes('administrator') || pos === 'admin';
+  const isManager = pos.includes('manager') || pos.includes('supervisor');
+  
+  return role === 'admin' || isCEO || isAdministrator || isManager;
 }
 
 /**
@@ -22,7 +28,13 @@ export function canCreateFinancialDocs(user) {
 export function needsApproval(user) {
   const pos = (user?.position || '').toLowerCase();
   const role = (user?.role || '').toLowerCase();
-  return pos === 'manager' && role !== 'admin';
+  
+  // Normalize: manager or supervisor position (but NOT admin role)
+  const isManager = pos.includes('manager') || pos.includes('supervisor');
+  const isCEO = pos.includes('ceo');
+  const isAdministrator = pos.includes('administrator');
+  
+  return isManager && !isCEO && !isAdministrator && role !== 'admin';
 }
 
 /**
@@ -33,7 +45,12 @@ export function needsApproval(user) {
 export function canApprove(user) {
   const pos = (user?.position || '').toLowerCase();
   const role = (user?.role || '').toLowerCase();
-  return role === 'admin' || pos === 'ceo' || pos === 'administrator';
+  
+  // Only CEO, Administrator position, or Admin role can approve
+  const isCEO = pos.includes('ceo');
+  const isAdministrator = pos.includes('administrator');
+  
+  return role === 'admin' || isCEO || isAdministrator;
 }
 
 /**

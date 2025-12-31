@@ -1261,13 +1261,31 @@ export const LanguageProvider = ({ children }) => {
     retry: false,
   });
 
-  const [language, setLanguage] = useState('en');
+  // Deterministic language resolution
+  const getInitialLanguage = () => {
+    // Priority 1: User preference from DB
+    if (user?.preferred_language) return user.preferred_language;
+    if (user?.language_preference) return user.language_preference;
+    
+    // Priority 2: localStorage
+    const stored = localStorage.getItem('language');
+    if (stored === 'en' || stored === 'es') return stored;
+    
+    // Priority 3: Browser language
+    const browserLang = navigator.language?.toLowerCase();
+    if (browserLang?.startsWith('es')) return 'es';
+    
+    // Default: English
+    return 'en';
+  };
+
+  const [language, setLanguage] = useState(getInitialLanguage);
 
   useEffect(() => {
-    if (user?.preferred_language) {
-      setLanguage(user.preferred_language);
-    }
-  }, [user]);
+    const resolved = getInitialLanguage();
+    setLanguage(resolved);
+    localStorage.setItem('language', resolved);
+  }, [user?.preferred_language, user?.language_preference]);
 
   const updateLanguageMutation = useMutation({
     mutationFn: (lang) => base44.auth.updateMe({ preferred_language: lang }),
@@ -1275,6 +1293,7 @@ export const LanguageProvider = ({ children }) => {
 
   const changeLanguage = (lang) => {
     setLanguage(lang);
+    localStorage.setItem('language', lang);
     if (user) {
       updateLanguageMutation.mutate(lang);
     }
