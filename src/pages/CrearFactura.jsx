@@ -348,11 +348,10 @@ export default function CrearFactura() {
       const result = await base44.entities.Invoice.create(finalData);
       console.log('Invoice created successfully:', result);
       
-      // Provision job (Drive + Field) - non-blocking
+      // TRIGGER 2: Manual Invoice Creation Provisioning
       try {
         await base44.functions.invoke('provisionJobFromInvoice', {
-          invoice_id: result.id,
-          mode: 'create'
+          invoice_id: result.id
         });
       } catch (provisionError) {
         console.warn('Provisioning failed (non-critical):', provisionError);
@@ -549,12 +548,13 @@ export default function CrearFactura() {
         savedInvoice = await base44.entities.Invoice.update(editId, invoiceData);
       } else {
         savedInvoice = await base44.entities.Invoice.create(invoiceData);
-        
-        // Provision job (Drive + Field) for new invoices - non-blocking
+      }
+      
+      // TRIGGER 3: Invoice Send Provisioning (for new invoices)
+      if (!editId) {
         try {
           await base44.functions.invoke('provisionJobFromInvoice', {
-            invoice_id: savedInvoice.id,
-            mode: 'send'
+            invoice_id: savedInvoice.id
           });
         } catch (provisionError) {
           console.warn('Provisioning failed (non-critical):', provisionError);

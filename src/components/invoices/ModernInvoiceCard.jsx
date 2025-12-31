@@ -9,6 +9,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { format } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import { getInvoiceStatusMeta } from "../core/statusConfig";
+import ProvisioningStatusBadge from "./ProvisioningStatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -153,6 +154,16 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
             </Badge>
           )}
         </div>
+
+        {/* Provisioning Status Badge */}
+        {invoice.job_id && (
+          <ProvisioningStatusBadge 
+            provisioningStatus={invoice.provisioning_status}
+            driveFolderUrl={invoice.drive_folder_url}
+            fieldProjectId={invoice.field_project_id}
+            language={language}
+          />
+        )}
 
         {/* Overdue Alert */}
         {daysOverdue > 0 && (
