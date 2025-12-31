@@ -141,11 +141,22 @@ export default function Estimados() {
         invoice_id: newInvoice.id 
       });
 
+      // Provision job (Drive + Field) - non-blocking
+      try {
+        await base44.functions.invoke('provisionJobFromInvoice', {
+          invoice_id: newInvoice.id,
+          mode: 'convert'
+        });
+      } catch (provisionError) {
+        console.warn('Provisioning failed (non-critical):', provisionError);
+      }
+
       return newInvoice;
     },
     onSuccess: (newInvoice) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
       toast.success(t('convertedToInvoice'));
       window.open(createPageUrl(`VerFactura?id=${newInvoice.id}`), '_blank');
     },

@@ -224,7 +224,19 @@ Lawrenceville, Georgia 30043, U.S.A`
         invoice_id: newInvoice.id
       });
 
-      return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess };
+      // Provision job (Drive + Field) - non-blocking
+      let provisionSuccess = false;
+      try {
+        const provisionResult = await base44.functions.invoke('provisionJobFromInvoice', {
+          invoice_id: newInvoice.id,
+          mode: 'convert'
+        });
+        provisionSuccess = provisionResult?.ok || false;
+      } catch (provisionError) {
+        console.warn('Provisioning failed (non-critical):', provisionError);
+      }
+
+      return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess, provisionSuccess };
     },
     onSuccess: ({ newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess }) => {
       console.log('✅ Conversion successful, invalidating queries...');
