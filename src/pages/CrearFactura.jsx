@@ -23,6 +23,8 @@ import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { canCreateFinancialDocs, needsApproval, canSendDocument } from "@/components/core/roleRules";
+import ApprovalBanner from "@/components/shared/ApprovalBanner";
 
 // Helper to extract invoice number from various response structures
 function extractInvoiceNumber(res) {
@@ -305,11 +307,18 @@ export default function CrearFactura() {
         console.log('[InvoiceNumber] ✅ resolved:', invoice_number);
       }
 
-      // Step 3: Build final data with generated number
+      // Step 3: Build final data with generated number + approval workflow
+      const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
       const finalData = {
         ...normalizedData,
         invoice_number,
         status: 'draft',
+        approval_status: approvalStatus,
+        created_by_role: user?.position || user?.role || '',
+        ...(approvalStatus === 'approved' && {
+          approved_by: user.email,
+          approved_at: new Date().toISOString()
+        })
       };
 
       console.log('Final invoice data (normalized):', finalData);
@@ -348,13 +357,15 @@ export default function CrearFactura() {
       const result = await base44.entities.Invoice.create(finalData);
       console.log('Invoice created successfully:', result);
       
-      // TRIGGER 2: Manual Invoice Creation Provisioning
-      try {
-        await base44.functions.invoke('provisionJobFromInvoice', {
-          invoice_id: result.id
-        });
-      } catch (provisionError) {
-        console.warn('Provisioning failed (non-critical):', provisionError);
+      // TRIGGER 2: Manual Invoice Creation Provisioning (ONLY IF APPROVED)
+      if (finalData.approval_status === 'approved') {
+        try {
+          await base44.functions.invoke('provisionJobFromInvoice', {
+            invoice_id: result.id
+          });
+        } catch (provisionError) {
+          console.warn('Provisioning failed (non-critical):', provisionError);
+        }
       }
       
       return result;
@@ -472,6 +483,19 @@ export default function CrearFactura() {
   // Send mutation with normalization
   const sendMutation = useMutation({
     mutationFn: async (data) => {
+      // APPROVAL GATE: Cannot send if pending approval
+      const effectiveStatus = editId && existingInvoice 
+        ? (existingInvoice.approval_status || 'approved')
+        : (requiresApproval ? 'pending_approval' : 'approved');
+
+      if (effectiveStatus !== 'approved') {
+        throw new Error(
+          language === 'es'
+            ? 'Este documento está pendiente de aprobación. Pide a un administrador que lo apruebe primero.'
+            : 'This document is pending approval. Ask an admin to approve it first.'
+        );
+      }
+
       console.log('Sending invoice with data:', data);
       
       // Normalize and validate
@@ -550,8 +574,8 @@ export default function CrearFactura() {
         savedInvoice = await base44.entities.Invoice.create(invoiceData);
       }
       
-      // TRIGGER 3: Invoice Send Provisioning (for new invoices)
-      if (!editId) {
+      // TRIGGER 3: Invoice Send Provisioning (ONLY IF APPROVED)
+      if (!editId && effectiveStatus === 'approved') {
         try {
           await base44.functions.invoke('provisionJobFromInvoice', {
             invoice_id: savedInvoice.id
@@ -591,6 +615,38 @@ export default function CrearFactura() {
     return <div className="p-8">{t('loading')}...</div>;
   }
 
+  // Block non-authorized users
+  if (user && !canCreate) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-red-900 mb-2">
+              {language === 'es' ? 'Acceso Denegado' : 'Access Denied'}
+            </h2>
+            <p className="text-red-700">
+              {language === 'es' 
+                ? 'No tienes permisos para crear facturas. Solo CEO, Administrator, Admin, o Manager pueden crear documentos financieros.'
+                : 'You do not have permission to create invoices. Only CEO, Administrator, Admin, or Manager can create financial documents.'}
+            </p>
+            <Button 
+              className="mt-4" 
+              onClick={() => navigate(createPageUrl('Facturas'))}
+            >
+              {language === 'es' ? 'Volver a Facturas' : 'Back to Invoices'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const effectiveApprovalStatus = editId && existingInvoice
+    ? (existingInvoice.approval_status || 'approved')
+    : (requiresApproval ? 'pending_approval' : 'approved');
+
+  const canSend = canSendDocument({ approval_status: effectiveApprovalStatus });
+
   return (
     <div className="p-4 md:p-8 min-h-screen">
       <div className="max-w-5xl mx-auto">
@@ -598,6 +654,16 @@ export default function CrearFactura() {
           title={editId ? t('editInvoice') : t('newInvoice')}
           showBack={true}
         />
+
+        {/* Approval Banner */}
+        {editId && existingInvoice && (
+          <ApprovalBanner
+            approval_status={existingInvoice.approval_status}
+            approved_by={existingInvoice.approved_by}
+            rejected_by={existingInvoice.rejected_by}
+            approval_notes={existingInvoice.approval_notes}
+          />
+        )}
 
         {/* Wrap all content in a form. For existing invoices, prevent default submission, as buttons handle mutations. */}
         {/* For new invoices (editId is null), onSubmit will trigger handleSubmit for initial draft creation. */}
@@ -891,9 +957,10 @@ export default function CrearFactura() {
               )}
               <Button
                 onClick={() => sendMutation.mutate(formData)}
-                disabled={sendMutation.isPending || !formData.customer_name || !formData.customer_email || !formData.job_name || (formData.items || []).some(i => !isValidLineItem(i))}
+                disabled={!canSend || sendMutation.isPending || !formData.customer_name || !formData.customer_email || !formData.job_name || (formData.items || []).some(i => !isValidLineItem(i))}
                 className="bg-gradient-to-r from-emerald-600 to-emerald-700"
-                type="button" // Added type="button"
+                type="button"
+                title={!canSend ? (language === 'es' ? 'Pendiente de aprobación' : 'Pending approval') : ''}
               >
                 <Send className="w-4 h-4 mr-2" />
                 {sendMutation.isPending ? t('sending') : t('saveAndSend')}
