@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 /**
  * THREAD-SAFE QUOTE NUMBER GENERATOR
@@ -7,11 +8,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     // Call atomic counter service
     const counterResponse = await base44.asServiceRole.functions.invoke('getNextCounter', {
@@ -34,9 +31,10 @@ Deno.serve(async (req) => {
       next_sequence: nextNumber
     });
   } catch (error) {
+    if (error instanceof Response) throw error;
     if (import.meta.env?.DEV) {
       console.error('❌ Error generating quote number:', error);
     }
-    return Response.json({ error: 'Failed to generate quote number' }, { status: 500 });
+    return safeJsonError('Number generation failed', 500, error.message);
   }
 });
