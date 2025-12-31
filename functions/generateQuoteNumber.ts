@@ -13,17 +13,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all quotes to find max number
-    const quotes = await base44.asServiceRole.entities.Quote.list('-created_date', 2000);
+    // Simple atomic increment: create new counter record each time
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 1000);
+    const uniqueKey = `est-${timestamp}-${randomSuffix}`;
     
-    const existingNumbers = quotes
-      .map(q => q.quote_number)
-      .filter(num => num && num.startsWith('EST-'))
-      .map(num => parseInt(num.replace('EST-', '')))
-      .filter(num => !isNaN(num));
-
-    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
-    const nextNumber = maxNumber + 1;
+    // Create counter record to claim this number
+    const newCounter = await base44.asServiceRole.entities.Counter.create({
+      counter_key: uniqueKey,
+      current_value: timestamp,
+      last_increment_date: new Date().toISOString()
+    });
+    
+    // Count all quote counters created
+    const allQuoteCounters = await base44.asServiceRole.entities.Counter.filter({
+      counter_key: { $regex: '^est-' }
+    });
+    
+    const nextNumber = allQuoteCounters.length;
     const formattedNumber = `EST-${String(nextNumber).padStart(5, '0')}`;
 
     return Response.json({ 

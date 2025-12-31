@@ -13,17 +13,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all invoices to find max number
-    const invoices = await base44.asServiceRole.entities.Invoice.list('-created_date', 2000);
+    // Simple atomic increment: create new counter record each time
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 1000);
+    const uniqueKey = `inv-${timestamp}-${randomSuffix}`;
     
-    const existingNumbers = invoices
-      .map(inv => inv.invoice_number)
-      .filter(num => num && num.startsWith('INV-'))
-      .map(num => parseInt(num.replace('INV-', '')))
-      .filter(num => !isNaN(num));
-
-    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
-    const nextNumber = maxNumber + 1;
+    // Create counter record to claim this number
+    const newCounter = await base44.asServiceRole.entities.Counter.create({
+      counter_key: uniqueKey,
+      current_value: timestamp, // Use timestamp as unique identifier
+      last_increment_date: new Date().toISOString()
+    });
+    
+    // Count all invoice counters created (each invoice gets one)
+    const allInvoiceCounters = await base44.asServiceRole.entities.Counter.filter({
+      counter_key: { $regex: '^inv-' }
+    });
+    
+    const nextNumber = allInvoiceCounters.length;
     const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
 
     return Response.json({ invoice_number: formattedNumber });
