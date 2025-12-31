@@ -332,6 +332,8 @@ export default function Empleados() {
 
   // Calculate onboarding progress for each employee (memoized)
   const employeeProgress = useMemo(() => {
+    if (!employees.length || !onboardingForms.length) return {};
+    
     const progressMap = {};
     
     employees.forEach(emp => {

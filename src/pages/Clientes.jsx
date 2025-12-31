@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical, Eye, Send } from "lucide-react";
@@ -20,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import LoadMoreButton from "@/components/shared/LoadMoreButton";
 
 export default function Clientes() {
   const { t } = useLanguage();
@@ -38,10 +40,21 @@ export default function Clientes() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const { data: customers, isLoading } = useQuery({
-    queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
-    initialData: []
+  const { 
+    items: customers = [], 
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMore,
+    totalLoaded
+  } = usePaginatedEntityList({
+    queryKey: 'customers',
+    fetchFn: async ({ skip, limit }) => {
+      const allCustomers = await base44.entities.Customer.list('-created_date', limit + skip);
+      return allCustomers.slice(skip, skip + limit);
+    },
+    pageSize: 50,
+    staleTime: 5 * 60 * 1000,
   });
 
   const createMutation = useMutation({
@@ -133,27 +146,29 @@ export default function Clientes() {
     return customer.email?.split('@')[0] || 'Unknown';
   };
 
-  const filteredCustomers = customers.filter(c =>
-    c.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.company?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Memoize expensive filtering and sorting
+  const sortedCustomers = useMemo(() => {
+    const filtered = customers.filter(c =>
+      c.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.company?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-  // Sort alphabetically by last_name, then first_name
-  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
-    const lastNameA = (a.last_name || a.name || '').toLowerCase();
-    const lastNameB = (b.last_name || b.name || '').toLowerCase();
-    
-    if (lastNameA !== lastNameB) {
-      return lastNameA.localeCompare(lastNameB);
-    }
-    
-    const firstNameA = (a.first_name || '').toLowerCase();
-    const firstNameB = (b.first_name || '').toLowerCase();
-    return firstNameA.localeCompare(firstNameB);
-  });
+    return [...filtered].sort((a, b) => {
+      const lastNameA = (a.last_name || a.name || '').toLowerCase();
+      const lastNameB = (b.last_name || b.name || '').toLowerCase();
+      
+      if (lastNameA !== lastNameB) {
+        return lastNameA.localeCompare(lastNameB);
+      }
+      
+      const firstNameA = (a.first_name || '').toLowerCase();
+      const firstNameB = (b.first_name || '').toLowerCase();
+      return firstNameA.localeCompare(firstNameB);
+    });
+  }, [customers, searchTerm]);
 
   const isAdmin = user?.role === 'admin';
 
@@ -268,6 +283,16 @@ export default function Clientes() {
           onOpenChange={setShowInvitationModal}
           selectedCustomers={selectedCustomers}
         />
+
+        {hasNextPage && (
+          <LoadMoreButton 
+            onLoadMore={loadMore}
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            totalLoaded={totalLoaded}
+            language={language}
+          />
+        )}
 
         {sortedCustomers.length === 0 && !isLoading && (
           <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
