@@ -59,22 +59,20 @@ export default function Trabajos() {
   const { 
     items: jobs = [], 
     isLoading,
-    isFetchingNextPage,
-    hasNextPage,
     loadMore,
-    totalLoaded
+    hasMore,
+    totalLoaded,
+    refetch
   } = usePaginatedEntityList({
-    queryKey: 'jobs',
-    fetchFn: async ({ skip, limit }) => {
-      if (import.meta.env.DEV) {
-        console.log('🔍 Fetching jobs:', { skip, limit });
-      }
-      const allJobs = await base44.entities.Job.list('-created_date', limit + skip);
-      return allJobs.slice(skip, skip + limit);
-    },
+    entityName: 'Job',
+    filters: (() => {
+      const f = {};
+      if (statusFilter !== 'all') f.status = statusFilter;
+      if (teamFilter !== 'all') f.team_id = teamFilter;
+      return f;
+    })(),
     pageSize: 50,
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    queryOptions: { enabled: !!user }
   });
 
   const { data: teams = [] } = useQuery({
@@ -384,11 +382,11 @@ export default function Trabajos() {
           ))}
         </div>
 
-        {hasNextPage && (
+        {hasMore && (
           <LoadMoreButton 
             onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
+            hasMore={hasMore}
+            isLoading={isLoading}
             totalLoaded={totalLoaded}
             language={language}
           />

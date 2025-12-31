@@ -1,98 +1,109 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useState, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
- * Hook for paginated entity lists with "Load More" functionality
+ * TRUE SERVER-SIDE CURSOR-BASED PAGINATION HOOK
+ * Uses backend functions for real pagination (no client-side slice)
  * 
- * @param {string} entityName - Name of entity to fetch
- * @param {object} filters - Filter object (e.g., { status: 'active' })
- * @param {string} sort - Sort order (e.g., '-created_date')
+ * @param {string} entityName - Entity name (Invoice, Quote, Job)
+ * @param {object} filters - Server-side filters
  * @param {number} pageSize - Items per page (default: 50)
  * @param {object} queryOptions - Additional React Query options
- * @returns {object} { data, isLoading, error, loadMore, hasMore, totalDisplayed }
+ * @returns {object} { items, isLoading, loadMore, hasMore, totalLoaded, refetch }
  */
-export function usePaginatedEntityList(
-  entityName, 
-  filters = {}, 
-  sort = '-created_date', 
+export function usePaginatedEntityList({
+  entityName,
+  filters = {},
   pageSize = 50,
   queryOptions = {}
-) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const limit = pageSize * currentPage;
+}) {
+  const [pages, setPages] = useState([]);
+  const [cursors, setCursors] = useState([null]); // [null, cursor1, cursor2, ...]
+  const queryClient = useQueryClient();
 
-  const { data: items = [], isLoading, error } = useQuery({
-    queryKey: ['entity-list', entityName, filters, sort, limit],
-    queryFn: () => base44.entities[entityName].filter(filters, sort, limit),
-    staleTime: 3 * 60 * 1000, // 3 min cache for large lists
-    gcTime: 5 * 60 * 1000,
+  const currentPageIndex = pages.length;
+  const currentCursor = cursors[currentPageIndex] || null;
+
+  // Query key includes current cursor to trigger refetch on loadMore
+  const { data: pageData, isLoading, error, refetch } = useQuery({
+    queryKey: ['paginated', entityName, filters, currentCursor, pageSize],
+    queryFn: async () => {
+      // Call backend pagination function
+      const functionName = `list${entityName}sPaginated`;
+      const result = await base44.functions.invoke(functionName, {
+        limit: pageSize,
+        cursor: currentCursor,
+        filters
+      });
+
+      return result;
+    },
+    enabled: currentPageIndex === pages.length, // Only fetch if we need this page
+    staleTime: 5 * 60 * 1000, // 5 min cache
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
     ...queryOptions
   });
 
-  const hasMore = items.length === limit;
-  const totalDisplayed = items.length;
+  // When new page data arrives, add to pages
+  useState(() => {
+    if (pageData?.items && pageData.items.length > 0) {
+      setPages(prev => {
+        // Check if this page is already added (avoid duplicates)
+        const lastPage = prev[prev.length - 1];
+        if (lastPage && lastPage[0]?.id === pageData.items[0]?.id) {
+          return prev; // Already have this page
+        }
+        return [...prev, pageData.items];
+      });
 
-  const loadMore = () => {
-    if (hasMore && !isLoading) {
-      setCurrentPage(prev => prev + 1);
+      // Add next cursor
+      if (pageData.nextCursor) {
+        setCursors(prev => {
+          if (prev[prev.length - 1] !== pageData.nextCursor) {
+            return [...prev, pageData.nextCursor];
+          }
+          return prev;
+        });
+      }
     }
-  };
+  });
+
+  // Flatten all pages into single array
+  const allItems = pages.flat();
+
+  // Deduplicate by id (safety check)
+  const uniqueItems = Array.from(
+    new Map(allItems.map(item => [item.id, item])).values()
+  );
+
+  const hasMore = pageData?.hasMore || false;
+
+  const loadMore = useCallback(() => {
+    if (hasMore && !isLoading) {
+      // Trigger next page fetch by incrementing page count
+      queryClient.invalidateQueries({ 
+        queryKey: ['paginated', entityName, filters, cursors[pages.length], pageSize] 
+      });
+    }
+  }, [hasMore, isLoading, entityName, filters, pages.length, cursors, pageSize, queryClient]);
+
+  const resetPagination = useCallback(() => {
+    setPages([]);
+    setCursors([null]);
+    refetch();
+  }, [refetch]);
 
   return {
-    data: items,
+    items: uniqueItems,
     isLoading,
     error,
     loadMore,
     hasMore,
-    totalDisplayed,
-    pageSize
-  };
-}
-
-/**
- * Hook for simple paginated lists (discrete pages, not infinite scroll)
- * 
- * @param {string} entityName - Name of entity to fetch
- * @param {object} filters - Filter object
- * @param {string} sort - Sort order
- * @param {number} pageSize - Items per page (default: 50)
- * @returns {object} { data, isLoading, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev }
- */
-export function useSimplePaginatedList(
-  entityName,
-  filters = {},
-  sort = '-created_date',
-  pageSize = 50
-) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const skip = (currentPage - 1) * pageSize;
-
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ['entity-page', entityName, filters, sort, currentPage, pageSize],
-    queryFn: async () => {
-      // Fetch one extra to check if more exist
-      const results = await base44.entities[entityName].filter(filters, sort, pageSize + 1);
-      return results;
-    },
-    staleTime: 3 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
-  });
-
-  const hasNext = items.length > pageSize;
-  const displayItems = hasNext ? items.slice(0, pageSize) : items;
-
-  return {
-    data: displayItems,
-    isLoading,
-    currentPage,
-    totalDisplayed: displayItems.length,
-    hasNext,
-    hasPrev: currentPage > 1,
-    nextPage: () => hasNext && setCurrentPage(p => p + 1),
-    prevPage: () => currentPage > 1 && setCurrentPage(p => p - 1),
-    pageSize
+    totalLoaded: uniqueItems.length,
+    pageSize,
+    refetch: resetPagination
   };
 }

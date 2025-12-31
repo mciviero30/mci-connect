@@ -41,20 +41,19 @@ export default function Estimados() {
   const { 
     items: quotes = [], 
     isLoading,
-    isFetchingNextPage,
-    hasNextPage,
     loadMore,
-    refetch,
-    totalLoaded
+    hasMore,
+    totalLoaded,
+    refetch
   } = usePaginatedEntityList({
-    queryKey: 'quotes',
-    fetchFn: async ({ skip, limit }) => {
-      const allQuotes = await base44.entities.Quote.list('-created_date', limit + skip);
-      return allQuotes.slice(skip, skip + limit);
-    },
-    pageSize: 50,
-    orderBy: '-created_date',
-    staleTime: 5 * 60 * 1000,
+    entityName: 'Quote',
+    filters: (() => {
+      const f = {};
+      if (statusFilter !== 'all') f.status = statusFilter;
+      if (teamFilter !== 'all') f.team_id = teamFilter;
+      return f;
+    })(),
+    pageSize: 50
   });
 
   const { data: teams = [] } = useQuery({
@@ -342,11 +341,11 @@ export default function Estimados() {
           ))}
         </div>
 
-        {hasNextPage && (
+        {hasMore && (
           <LoadMoreButton 
             onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
+            hasMore={hasMore}
+            isLoading={isLoading}
             totalLoaded={totalLoaded}
             language={language}
           />

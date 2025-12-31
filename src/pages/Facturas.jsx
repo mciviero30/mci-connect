@@ -41,18 +41,19 @@ export default function Facturas() {
   const { 
     items: invoices = [], 
     isLoading,
-    isFetchingNextPage,
-    hasNextPage,
     loadMore,
-    totalLoaded
+    hasMore,
+    totalLoaded,
+    refetch
   } = usePaginatedEntityList({
-    queryKey: 'invoices',
-    fetchFn: async ({ skip, limit }) => {
-      const allInvoices = await base44.entities.Invoice.list('-created_date', limit + skip);
-      return allInvoices.slice(skip, skip + limit);
-    },
-    pageSize: 50,
-    staleTime: 5 * 60 * 1000,
+    entityName: 'Invoice',
+    filters: (() => {
+      const f = {};
+      if (statusFilter !== 'all') f.status = statusFilter;
+      if (teamFilter !== 'all') f.team_id = teamFilter;
+      return f;
+    })(),
+    pageSize: 50
   });
 
   const { data: teams = [] } = useQuery({
@@ -385,21 +386,11 @@ export default function Facturas() {
           ))}
         </div>
 
-        {hasNextPage && (
+        {hasMore && (
           <LoadMoreButton 
             onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
-            totalLoaded={totalLoaded}
-            language={language}
-          />
-        )}
-
-        {hasNextPage && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
+            hasMore={hasMore}
+            isLoading={isLoading}
             totalLoaded={totalLoaded}
             language={language}
           />

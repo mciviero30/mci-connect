@@ -1,0 +1,103 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
+
+/**
+ * TRUE SERVER-SIDE PAGINATION WITH CURSOR
+ * Returns only requested page (no client-side slice)
+ * Cursor: { created_date, id } for stable ordering
+ */
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const user = await requireUser(base44);
+
+    const { limit = 50, cursor = null, filters = {} } = await req.json();
+
+    if (limit > 200) {
+      return Response.json({ error: 'limit cannot exceed 200' }, { status: 400 });
+    }
+
+    const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
+
+    // Build query filters
+    let queryFilters = { ...filters };
+
+    // Security: Non-admin users only see jobs they're assigned to or in their team
+    if (!isAdmin) {
+      const userTeamId = user.team_id;
+      
+      // Get user's job assignments
+      const assignments = await base44.entities.JobAssignment.filter({ employee_email: user.email });
+      const assignedJobIds = assignments.map(a => a.job_id).filter(Boolean);
+
+      // Filter: team_id matches OR id in assignments OR assigned_team_field includes email
+      queryFilters.$or = [
+        { team_id: userTeamId },
+        { id: { $in: assignedJobIds } },
+        { assigned_team_field: { $elemMatch: user.email } }
+      ];
+    }
+
+    // Cursor-based filtering
+    if (cursor?.created_date && cursor?.id) {
+      // For descending order: created_date < cursor OR (created_date = cursor AND id < cursor.id)
+      const cursorFilter = {
+        $or: [
+          { created_date: { $lt: cursor.created_date } },
+          {
+            $and: [
+              { created_date: cursor.created_date },
+              { id: { $lt: cursor.id } }
+            ]
+          }
+        ]
+      };
+      
+      // Merge with security filters if non-admin
+      if (!isAdmin) {
+        const securityOr = queryFilters.$or;
+        delete queryFilters.$or;
+        
+        queryFilters.$and = [
+          { $or: securityOr },
+          cursorFilter
+        ];
+      } else {
+        Object.assign(queryFilters, cursorFilter);
+      }
+    }
+
+    // Fetch limit + 1 to check if more exist
+    const items = await base44.asServiceRole.entities.Job.filter(
+      queryFilters,
+      '-created_date',
+      limit + 1
+    );
+
+    // Determine if more pages exist
+    const hasMore = items.length > limit;
+    const pageItems = hasMore ? items.slice(0, limit) : items;
+
+    // Generate next cursor from last item
+    const nextCursor = hasMore && pageItems.length > 0
+      ? {
+          created_date: pageItems[pageItems.length - 1].created_date,
+          id: pageItems[pageItems.length - 1].id
+        }
+      : null;
+
+    return Response.json({
+      items: pageItems,
+      nextCursor,
+      hasMore,
+      count: pageItems.length
+    });
+
+  } catch (error) {
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error in listJobsPaginated:', error);
+    }
+    return safeJsonError('Pagination failed', 500, error.message);
+  }
+});
