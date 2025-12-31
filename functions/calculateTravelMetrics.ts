@@ -16,10 +16,14 @@ Deno.serve(async (req) => {
 
     const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
     if (!apiKey) {
+      console.error('GOOGLE_MAPS_API_KEY not found in environment');
+      console.error('Available env vars:', Object.keys(Deno.env.toObject()));
       return Response.json({ 
-        error: 'GOOGLE_MAPS_API_KEY not configured' 
+        error: 'GOOGLE_MAPS_API_KEY not configured. Please set it in Base44 Dashboard > Settings > Environment Variables' 
       }, { status: 500 });
     }
+    
+    console.log('API Key found, length:', apiKey.length);
 
     // Fetch team data
     const teams = await base44.entities.Team.list();
