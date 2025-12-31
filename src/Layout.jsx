@@ -31,13 +31,10 @@ import {
   Package,
   CalendarClock,
   MapPin,
-  Trash2,
   TrendingUp,
-  Sparkles,
   Wallet,
   Globe,
   Target,
-  Brain,
   Zap,
   Shield,
   Bell,
@@ -59,7 +56,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
@@ -72,14 +69,8 @@ import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistratio
 import { SyncQueueProvider } from "@/components/pwa/SyncQueueManager";
 import OfflineIndicator from "@/components/pwa/OfflineIndicator";
 import AIAssistant from "@/components/ai/AIAssistant";
-import CustomAvatar from "@/components/avatar/CustomAvatar";
 import NotificationService from "@/components/notifications/NotificationService";
 import NotificationEngine from "@/components/notifications/NotificationEngine";
-import { OfflineProvider } from "@/components/offline/OfflineManager";
-import CertificationMonitor from "@/components/certifications/CertificationMonitor";
-import DeadlineMonitor from "@/components/notifications/DeadlineMonitor";
-import RealTimeNotifications from "@/components/notifications/RealTimeNotifications";
-import PayrollReminderService from "@/components/payroll/PayrollReminderService";
 import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
@@ -134,6 +125,16 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
 
   // Keyboard navigation with useCallback to prevent recreation
   const handleKeyDown = React.useCallback((e) => {
+    // Ignore keyboard navigation when user is typing in inputs
+    const activeElement = document.activeElement;
+    const tagName = activeElement?.tagName?.toLowerCase();
+    if (
+      ['input', 'textarea', 'select'].includes(tagName) ||
+      activeElement?.isContentEditable
+    ) {
+      return;
+    }
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setFocusedIndex(prev => (prev + 1) % allItems.length);
@@ -243,9 +244,10 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
   );
 };
 
-const LayoutContent = ({ children, currentPageName }) => {
+const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -279,17 +281,6 @@ const LayoutContent = ({ children, currentPageName }) => {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
-
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    retry: 1,
-    staleTime: Infinity, // Never auto-refetch
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-  });
 
   const { data: clientMemberships = [] } = useQuery({
     queryKey: ['client-memberships-check', user?.email],
@@ -329,19 +320,23 @@ const LayoutContent = ({ children, currentPageName }) => {
 
   // Soft redirect to onboarding - no full page reload
   useEffect(() => {
-    if (!user) return;
+    if (isLoading || !user) return;
     if (isOnboardingPage) return;
 
     if (shouldBlockForOnboarding) {
-      console.log('🚫 ONBOARDING REQUIRED: Redirecting to wizard');
+      if (import.meta.env.DEV) {
+        console.log('🚫 ONBOARDING REQUIRED: Redirecting to wizard');
+      }
       navigate(createPageUrl('OnboardingWizard'), { replace: true });
     }
-  }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate]);
+  }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate, isLoading]);
 
+  // Auto-activate invited users and cleanup pending records
   useEffect(() => {
-    if (!user) return;
+    if (isLoading || !user) return;
+
     if (user.employment_status !== 'invited') {
-      // If user is already active, check if we need to clean up pending record
+      // Cleanup pending employee record for active users
       if (user.employment_status === 'active') {
         const cleanupFlag = sessionStorage.getItem(`cleanup_${user.id}`);
         if (cleanupFlag === 'done') return;
@@ -349,25 +344,41 @@ const LayoutContent = ({ children, currentPageName }) => {
         base44.entities.PendingEmployee.list().then(allPendingEmployees => {
           const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
           if (pendingEmployees.length > 0) {
-            console.log('🧹 Cleaning up pending employee record for active user');
+            if (import.meta.env.DEV) {
+              console.log('🧹 Cleaning up pending employee record');
+            }
             base44.entities.PendingEmployee.delete(pendingEmployees[0].id).then(() => {
-              console.log('✅ Pending record cleaned up');
+              if (import.meta.env.DEV) {
+                console.log('✅ Pending record cleaned up');
+              }
               sessionStorage.setItem(`cleanup_${user.id}`, 'done');
-            }).catch(err => console.error('Error cleaning pending:', err));
+            }).catch(err => {
+              if (import.meta.env.DEV) {
+                console.error('Error cleaning pending:', err);
+              }
+            });
           }
-        }).catch(err => console.error('Error fetching pending:', err));
+        }).catch(err => {
+          if (import.meta.env.DEV) {
+            console.error('Error fetching pending:', err);
+          }
+        });
       }
       return;
     }
 
-    // Prevent infinite loops - only run once per session
+    // Auto-activate invited users
     const activationFlag = sessionStorage.getItem(`activation_${user.id}`);
     if (activationFlag === 'done') {
-      console.log('✅ Activation already completed this session');
+      if (import.meta.env.DEV) {
+        console.log('✅ Activation already completed');
+      }
       return;
     }
     if (activationFlag === 'processing') {
-      console.log('⏳ Activation already in progress, skipping...');
+      if (import.meta.env.DEV) {
+        console.log('⏳ Activation in progress, skipping');
+      }
       return;
     }
 
@@ -375,7 +386,9 @@ const LayoutContent = ({ children, currentPageName }) => {
       try {
         sessionStorage.setItem(`activation_${user.id}`, 'processing');
 
-        console.log('🔄 Auto-activating invited user:', user.email);
+        if (import.meta.env.DEV) {
+          console.log('🔄 Auto-activating invited user:', user.email);
+        }
 
         let pendingData = {};
         try {
@@ -401,12 +414,15 @@ const LayoutContent = ({ children, currentPageName }) => {
               pendingData.full_name = `${pending.first_name} ${pending.last_name}`.trim();
             }
 
-            console.log('📋 Syncing pending employee data');
+            if (import.meta.env.DEV) {
+              console.log('📋 Syncing pending employee data');
+            }
             await base44.entities.PendingEmployee.delete(pending.id);
-            console.log('🗑️ Deleted pending employee record');
           }
         } catch (error) {
-          console.error('Error with pending employee:', error);
+          if (import.meta.env.DEV) {
+            console.error('Error with pending employee:', error);
+          }
         }
 
         let teamData = {};
@@ -417,7 +433,9 @@ const LayoutContent = ({ children, currentPageName }) => {
             const userTeam = teams.find(t => t.id === finalTeamId);
             if (userTeam) teamData.team_name = userTeam.team_name;
           } catch (error) {
-            console.error('Error fetching team:', error);
+            if (import.meta.env.DEV) {
+              console.error('Error fetching team:', error);
+            }
           }
         }
 
@@ -428,19 +446,23 @@ const LayoutContent = ({ children, currentPageName }) => {
           ...teamData
         });
 
-        console.log('✅ User activated successfully');
+        if (import.meta.env.DEV) {
+          console.log('✅ User activated successfully');
+        }
         sessionStorage.setItem(`activation_${user.id}`, 'done');
 
-        // Invalidate queries instead of reload
+        // Invalidate queries to refresh user data
         queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       } catch (error) {
-        console.error('❌ Error auto-activating user:', error);
+        if (import.meta.env.DEV) {
+          console.error('❌ Error auto-activating user:', error);
+        }
         sessionStorage.removeItem(`activation_${user.id}`);
       }
     };
 
     autoActivateUser();
-  }, [user?.id, user?.employment_status]);
+  }, [user?.id, user?.employment_status, isLoading, queryClient]);
 
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
@@ -483,12 +505,13 @@ const LayoutContent = ({ children, currentPageName }) => {
 
 
 
-  // Redirect client-only users to ClientPortal
+  // Soft redirect client-only users to ClientPortal
   useEffect(() => {
+    if (isLoading || !user) return;
     if (isClientOnly && currentPageName !== 'ClientPortal') {
-      window.location.href = createPageUrl('ClientPortal');
+      navigate(createPageUrl('ClientPortal'), { replace: true });
     }
-  }, [isClientOnly, currentPageName]);
+  }, [isClientOnly, currentPageName, navigate, isLoading, user]);
 
   // Permission-based navigation
   const getNavigationForUser = () => {
@@ -1046,10 +1069,15 @@ const LayoutContent = ({ children, currentPageName }) => {
           };
 
           export default function Layout({ children, currentPageName }) {
-  const { data: user } = useQuery({
+  const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    retry: false,
+    retry: 1,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
   });
 
   return (
@@ -1058,7 +1086,9 @@ const LayoutContent = ({ children, currentPageName }) => {
         <LanguageProvider>
           <PermissionsProvider>
             <AgreementGate user={user}>
-              <LayoutContent currentPageName={currentPageName}>{children}</LayoutContent>
+              <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                {children}
+              </LayoutContent>
             </AgreementGate>
           </PermissionsProvider>
         </LanguageProvider>
