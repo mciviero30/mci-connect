@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Plus, Eye, Trash2, Copy, Search, X, MapPin, Users, Sparkles, FileCheck } from "lucide-react";
@@ -19,6 +20,7 @@ import { format } from "date-fns";
 import ModernQuoteCard from "../components/quotes/ModernQuoteCard";
 import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
+import LoadMoreButton from "@/components/shared/LoadMoreButton";
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -36,14 +38,23 @@ export default function Estimados() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const { data: quotes, isLoading, refetch } = useQuery({
-    queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list('-created_date', 500),
-    initialData: [],
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    gcTime: 10 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+  const { 
+    items: quotes = [], 
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMore,
+    refetch,
+    totalLoaded
+  } = usePaginatedEntityList({
+    queryKey: 'quotes',
+    fetchFn: async ({ skip, limit }) => {
+      const allQuotes = await base44.entities.Quote.list('-created_date', limit + skip);
+      return allQuotes.slice(skip, skip + limit);
+    },
+    pageSize: 50,
+    orderBy: '-created_date',
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [] } = useQuery({
@@ -153,10 +164,13 @@ export default function Estimados() {
     return matchesSearch && matchesStatus && matchesTeam;
   });
 
-  const draftQuotes = filteredQuotes.filter(q => q.status === 'draft');
-  const sentQuotes = filteredQuotes.filter(q => q.status === 'sent');
-  const approvedQuotes = filteredQuotes.filter(q => q.status === 'approved');
-  const convertedQuotes = filteredQuotes.filter(q => q.status === 'converted_to_invoice');
+  // Memoize expensive filters
+  const { draftQuotes, sentQuotes, approvedQuotes, convertedQuotes } = useMemo(() => ({
+    draftQuotes: filteredQuotes.filter(q => q.status === 'draft'),
+    sentQuotes: filteredQuotes.filter(q => q.status === 'sent'),
+    approvedQuotes: filteredQuotes.filter(q => q.status === 'approved'),
+    convertedQuotes: filteredQuotes.filter(q => q.status === 'converted_to_invoice')
+  }), [filteredQuotes]);
 
 
 
@@ -316,6 +330,16 @@ export default function Estimados() {
             />
           ))}
         </div>
+
+        {hasNextPage && (
+          <LoadMoreButton 
+            onLoadMore={loadMore}
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            totalLoaded={totalLoaded}
+            language={language}
+          />
+        )}
 
         {filteredQuotes.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

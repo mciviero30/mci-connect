@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Plus, Eye, Edit, MapPin, DollarSign, MoreVertical, Archive, Trash2, Sparkles, Search, X, Users } from "lucide-react";
@@ -30,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
+import LoadMoreButton from "@/components/shared/LoadMoreButton";
 
 
 export default function Trabajos() {
@@ -53,21 +55,26 @@ export default function Trabajos() {
     refetchOnWindowFocus: false
   });
   
-  // ADMIN BYPASS: Admins see ALL jobs without filtering
-  const { data: jobs, isLoading } = useQuery({
-    queryKey: ['jobs'],
-    queryFn: async () => {
-      console.log('🔍 Fetching jobs for user:', user?.email, 'role:', user?.role);
-      const allJobs = await base44.entities.Job.list('-created_date', 500);
-      console.log('✅ Jobs fetched:', allJobs.length, 'total jobs');
-      return allJobs;
+  // Paginated jobs list
+  const { 
+    items: jobs = [], 
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMore,
+    totalLoaded
+  } = usePaginatedEntityList({
+    queryKey: 'jobs',
+    fetchFn: async ({ skip, limit }) => {
+      if (import.meta.env.DEV) {
+        console.log('🔍 Fetching jobs:', { skip, limit });
+      }
+      const allJobs = await base44.entities.Job.list('-created_date', limit + skip);
+      return allJobs.slice(skip, skip + limit);
     },
-    initialData: [],
+    pageSize: 50,
     enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    gcTime: 10 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [] } = useQuery({
@@ -209,8 +216,11 @@ export default function Trabajos() {
     return matchesSearch && matchesStatus && matchesTeam;
   });
 
-  const activeJobs = filteredJobs.filter(j => j.status === 'active');
-  const completedJobs = filteredJobs.filter(j => j.status === 'completed');
+  // Memoize expensive filters
+  const { activeJobs, completedJobs } = useMemo(() => ({
+    activeJobs: filteredJobs.filter(j => j.status === 'active'),
+    completedJobs: filteredJobs.filter(j => j.status === 'completed')
+  }), [filteredJobs]);
 
   const statusColors = {
     draft: "bg-slate-100 text-slate-700 border-slate-200",
@@ -373,6 +383,16 @@ export default function Trabajos() {
             <ModernJobCard key={job.id} job={job} />
           ))}
         </div>
+
+        {hasNextPage && (
+          <LoadMoreButton 
+            onLoadMore={loadMore}
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            totalLoaded={totalLoaded}
+            language={language}
+          />
+        )}
 
         {filteredJobs.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

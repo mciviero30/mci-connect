@@ -369,6 +369,16 @@ export default function Facturas() {
           ))}
         </div>
 
+        {hasNextPage && (
+          <LoadMoreButton 
+            onLoadMore={loadMore}
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            totalLoaded={totalLoaded}
+            language={language}
+          />
+        )}
+
         {filteredInvoices.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
