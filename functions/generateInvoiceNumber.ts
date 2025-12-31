@@ -62,9 +62,10 @@ Deno.serve(async (req) => {
     throw new Error('Max retries exceeded');
   } catch (error) {
     if (error instanceof Response) throw error;
-    if (import.meta.env?.DEV) {
-      console.error('❌ Error generating invoice number:', error);
-    }
-    return safeJsonError('Number generation failed', 500, error.message);
+    console.error('❌ Error generating invoice number:', error);
+    return Response.json({ 
+      error: 'Number generation failed',
+      details: error.message 
+    }, { status: 500 });
   }
 });
