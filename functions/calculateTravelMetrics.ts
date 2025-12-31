@@ -44,11 +44,13 @@ Deno.serve(async (req) => {
       const data = await response.json();
 
       if (data.status !== 'OK' || !data.rows?.[0]?.elements?.[0]) {
+        const errorDetails = data.error_message || data.status || 'Unknown error';
         results.push({
           teamId: team.id,
           teamName: team.team_name,
-          error: 'Failed to calculate distance'
+          error: `Failed to calculate distance: ${errorDetails}`
         });
+        console.error(`Google Maps API error for team ${team.team_name}:`, data);
         continue;
       }
 
