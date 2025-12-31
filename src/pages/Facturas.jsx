@@ -179,7 +179,10 @@ export default function Facturas() {
     tax_rate: Number(inv?.tax_rate) || 0,
     amount_paid: Number(inv?.amount_paid) || 0,
     balance: Number(inv?.balance) || Math.max(0, (Number(inv?.total)||0) - (Number(inv?.amount_paid)||0)),
-    items: Array.isArray(inv?.items) ? inv.items : []
+    items: Array.isArray(inv?.items) ? inv.items : [],
+    job_id: inv?.job_id || null,
+    drive_folder_url: inv?.drive_folder_url || null,
+    field_project_id: inv?.field_project_id || null
   }));
 
   // Log bad invoices in DEV

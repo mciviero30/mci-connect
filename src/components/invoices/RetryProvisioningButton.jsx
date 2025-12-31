@@ -8,6 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from '@/components/ui/badge';
 
 export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
+  // Guard: Only show button if something is missing
+  const needsProvisioning = invoice?.job_id && job && (
+    !job.drive_folder_url || 
+    !job.field_project_id || 
+    job.provisioning_status === 'error' ||
+    job.provisioning_status === 'partial'
+  );
+
+  if (!needsProvisioning) return null;
   const { language } = useLanguage();
   const toast = useToast();
   const [isRetrying, setIsRetrying] = useState(false);
