@@ -4,10 +4,17 @@ import { RefreshCw, CheckCircle, XCircle, Folder, Link2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/toast';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { createPageUrl } from '@/utils';
 
 export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
+  const { language } = useLanguage();
+  const toast = useToast();
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [results, setResults] = useState(null);
+
   // Guard: Only show button if something is missing
   const needsProvisioning = invoice?.job_id && job && (
     !job.drive_folder_url || 
@@ -15,13 +22,6 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
     job.provisioning_status === 'error' ||
     job.provisioning_status === 'partial'
   );
-
-  if (!needsProvisioning) return null;
-  const { language } = useLanguage();
-  const toast = useToast();
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [results, setResults] = useState(null);
 
   const handleRetry = async () => {
     setIsRetrying(true);
@@ -60,6 +60,10 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
       setIsRetrying(false);
     }
   };
+
+  if (!needsProvisioning) {
+    return null;
+  }
 
   return (
     <>
@@ -127,34 +131,6 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
               </Badge>
             </div>
 
-            {/* Quick Links */}
-            {(results?.drive_folder_url || results?.job_id) && (
-              <div className="space-y-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                {results.drive_folder_url && (
-                  <a 
-                    href={results.drive_folder_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
-                  >
-                    <Folder className="w-4 h-4" />
-                    {language === 'es' ? 'Abrir carpeta Drive' : 'Open Drive folder'}
-                  </a>
-                )}
-                {results.job_id && (
-                  <a 
-                    href={createLink(createPageUrl('JobDetails') + `?id=${results.job_id}`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
-                  >
-                    <Link2 className="w-4 h-4" />
-                    {language === 'es' ? 'Abrir Job' : 'Open Job'}
-                  </a>
-                )}
-              </div>
-            )}
-
             {/* Field Sync Status */}
             <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -172,6 +148,34 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
                  (language === 'es' ? 'Desconocido' : 'Unknown')}
               </Badge>
             </div>
+
+            {/* Quick Links */}
+            {(results?.drive_folder_url || results?.job_id) && (
+              <div className="space-y-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                {results.drive_folder_url && (
+                  <a 
+                    href={results.drive_folder_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                  >
+                    <Folder className="w-4 h-4" />
+                    {language === 'es' ? 'Abrir carpeta Drive' : 'Open Drive folder'}
+                  </a>
+                )}
+                {results.job_id && (
+                  <a 
+                    href={`${window.location.origin}${createPageUrl('JobDetails')}?id=${results.job_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                  >
+                    <Link2 className="w-4 h-4" />
+                    {language === 'es' ? 'Abrir Job' : 'Open Job'}
+                  </a>
+                )}
+              </div>
+            )}
 
             {/* Errors */}
             {results?.errors && results.errors.length > 0 && (
