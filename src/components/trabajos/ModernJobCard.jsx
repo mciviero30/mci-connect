@@ -57,6 +57,8 @@ export default function ModernJobCard({ job }) {
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
+  const lang = language || 'en';
+
   const statusColors = {
     active: "soft-green-gradient",
     completed: "soft-blue-gradient",
@@ -65,13 +67,11 @@ export default function ModernJobCard({ job }) {
   };
 
   const statusLabels = {
-    active: language === 'es' ? 'Activo' : 'Active',
-    completed: language === 'es' ? 'Completado' : 'Completed',
-    archived: language === 'es' ? 'Archivado' : 'Archived',
-    on_hold: language === 'es' ? 'En Espera' : 'On Hold'
+    active: lang === 'es' ? 'Activo' : 'Active',
+    completed: lang === 'es' ? 'Completado' : 'Completed',
+    archived: lang === 'es' ? 'Archivado' : 'Archived',
+    on_hold: lang === 'es' ? 'En Espera' : 'On Hold'
   };
-
-  const lang = language || 'en';
 
   const colorIndicator = job.color || 'blue';
 
