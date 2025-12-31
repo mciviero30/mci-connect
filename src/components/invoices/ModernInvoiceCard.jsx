@@ -168,18 +168,28 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
         <div className="text-[10px] text-[#666666] mb-3">
           <div className="flex items-center justify-between">
             <span>{invoiceNumber}</span>
-            {invoice?.invoice_date && (
-              <span>{format(new Date(invoice.invoice_date), 'MMM d, yyyy')}</span>
-            )}
+            {invoice?.invoice_date && (() => {
+              try {
+                return <span>{format(new Date(invoice.invoice_date), 'MMM d, yyyy')}</span>;
+              } catch {
+                return null;
+              }
+            })()}
           </div>
-          {invoice?.due_date && (
-            <div className="flex items-center justify-between mt-1">
-              <span>{language === 'es' ? 'Vence:' : 'Due:'}</span>
-              <span className={daysOverdue > 0 ? 'text-red-600 font-semibold' : ''}>
-                {format(new Date(invoice.due_date), 'MMM d, yyyy')}
-              </span>
-            </div>
-          )}
+          {invoice?.due_date && (() => {
+            try {
+              return (
+                <div className="flex items-center justify-between mt-1">
+                  <span>{language === 'es' ? 'Vence:' : 'Due:'}</span>
+                  <span className={daysOverdue > 0 ? 'text-red-600 font-semibold' : ''}>
+                    {format(new Date(invoice.due_date), 'MMM d, yyyy')}
+                  </span>
+                </div>
+              );
+            } catch {
+              return null;
+            }
+          })()}
         </div>
 
         {/* Address */}
