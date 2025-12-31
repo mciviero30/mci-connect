@@ -595,6 +595,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       section: 'COMPLIANCE',
       icon: Shield,
       items: [
+        { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
