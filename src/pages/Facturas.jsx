@@ -13,6 +13,8 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
+import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
+import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
 import { Dialog } from "@/components/ui/dialog";
@@ -36,13 +38,21 @@ export default function Facturas() {
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
-  const { data: invoices, isLoading } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list('-created_date'),
-    initialData: [],
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true
+  const { 
+    items: invoices = [], 
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMore,
+    totalLoaded
+  } = usePaginatedEntityList({
+    queryKey: 'invoices',
+    fetchFn: async ({ skip, limit }) => {
+      const allInvoices = await base44.entities.Invoice.list('-created_date', limit + skip);
+      return allInvoices.slice(skip, skip + limit);
+    },
+    pageSize: 50,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [] } = useQuery({
@@ -205,10 +215,13 @@ export default function Facturas() {
     return daysDiff > 0 ? daysDiff : 0;
   };
 
-  const draftInvoices = filteredInvoices.filter(inv => inv.status === 'draft');
-  const sentInvoices = filteredInvoices.filter(inv => inv.status === 'sent');
-  const paidInvoices = filteredInvoices.filter(inv => inv.status === 'paid');
-  const overdueInvoices = filteredInvoices.filter(inv => getDaysOverdue(inv) > 0);
+  // Memoize status filters
+  const { draftInvoices, sentInvoices, paidInvoices, overdueInvoices } = useMemo(() => ({
+    draftInvoices: filteredInvoices.filter(inv => inv.status === 'draft'),
+    sentInvoices: filteredInvoices.filter(inv => inv.status === 'sent'),
+    paidInvoices: filteredInvoices.filter(inv => inv.status === 'paid'),
+    overdueInvoices: filteredInvoices.filter(inv => getDaysOverdue(inv) > 0)
+  }), [filteredInvoices]);
 
 
 
@@ -368,6 +381,16 @@ export default function Facturas() {
             />
           ))}
         </div>
+
+        {hasNextPage && (
+          <LoadMoreButton 
+            onLoadMore={loadMore}
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            totalLoaded={totalLoaded}
+            language={language}
+          />
+        )}
 
         {hasNextPage && (
           <LoadMoreButton 
