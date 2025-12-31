@@ -2,14 +2,42 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Eye, Users, Calendar, TrendingUp } from "lucide-react";
+import { MapPin, DollarSign, Eye, Users, Calendar, TrendingUp, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { base44 } from "@/api/base44Client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/toast";
 
 export default function ModernJobCard({ job }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.Job.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      toast.success(language === 'es' ? 'Trabajo eliminado' : 'Job deleted');
+    },
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`);
+    }
+  });
+
+  const handleDelete = () => {
+    if (confirm(language === 'es' ? '¿Eliminar este trabajo?' : 'Delete this job?')) {
+      deleteMutation.mutate(job.id);
+    }
+  };
 
   // Calculate profit margin
   const contractAmount = job.contract_amount || 0;
@@ -64,15 +92,27 @@ export default function ModernJobCard({ job }) {
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(createPageUrl(`JobDetails?id=${job.id}`))}
-            className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-medium">{language === 'es' ? 'Ver' : 'View'}</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+              <DropdownMenuItem onClick={() => navigate(createPageUrl(`JobDetails?id=${job.id}`))}>
+                <Eye className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Ver Detalles' : 'View Details'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
+                <Trash2 className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Eliminar' : 'Delete'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Status Badges */}
