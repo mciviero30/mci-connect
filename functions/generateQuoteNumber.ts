@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { requireUser, safeJsonError } from './_auth.js';
 
 /**
  * THREAD-SAFE QUOTE NUMBER GENERATOR
@@ -8,7 +7,11 @@ import { requireUser, safeJsonError } from './_auth.js';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await requireUser(base44);
+    const user = await base44.auth.me();
+    
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Atomic increment with retry logic
     const MAX_RETRIES = 10;
