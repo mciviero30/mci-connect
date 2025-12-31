@@ -143,8 +143,9 @@ export default function RetryProvisioningButton({ invoice, job, onSuccess }) {
                 )}
                 {results.job_id && (
                   <a 
-                    href={`${window.location.origin}${createPageUrl('JobDetails')}?id=${results.job_id}`}
+                    href={createLink(createPageUrl('JobDetails') + `?id=${results.job_id}`)}
                     target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
                   >
                     <Link2 className="w-4 h-4" />
