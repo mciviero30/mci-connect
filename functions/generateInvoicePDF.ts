@@ -12,10 +12,25 @@ Deno.serve(async (req) => {
         }
 
         const { invoiceId } = await req.json();
+        
+        // Verify user has access to this invoice
+        const invoice = await base44.entities.Invoice.get(invoiceId);
+        
+        // Admin check OR user is assigned/created the invoice
+        const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
+        const isOwner = invoice.created_by === user.email;
+        
+        if (!isAdmin && !isOwner) {
+            return Response.json({ error: 'Forbidden: No access to this invoice' }, { status: 403 });
+        }
         const invoice = await base44.entities.Invoice.get(invoiceId);
 
         if (!invoice) {
             return Response.json({ error: 'Invoice not found' }, { status: 404 });
+        }
+        
+        if (!isAdmin && !isOwner) {
+            return Response.json({ error: 'Forbidden: No access to this invoice' }, { status: 403 });
         }
 
         const doc = new jsPDF();

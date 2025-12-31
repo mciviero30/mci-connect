@@ -17,6 +17,15 @@ Deno.serve(async (req) => {
         if (!quote) {
             return Response.json({ error: 'Quote not found' }, { status: 404 });
         }
+        
+        // Verify user has access to this quote
+        const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
+        const isOwner = quote.created_by === user.email;
+        const isAssigned = quote.assigned_to === user.email;
+        
+        if (!isAdmin && !isOwner && !isAssigned) {
+            return Response.json({ error: 'Forbidden: No access to this quote' }, { status: 403 });
+        }
 
         const doc = new jsPDF();
 

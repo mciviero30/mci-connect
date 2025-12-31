@@ -9,10 +9,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { folder_id } = await req.json();
+    const { folder_id, job_id } = await req.json();
 
     if (!folder_id) {
       return Response.json({ error: 'Missing folder_id' }, { status: 400 });
+    }
+    
+    // Verify user has access to the job associated with this folder
+    if (job_id) {
+      const job = await base44.entities.Job.get(job_id);
+      if (job) {
+        const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
+        const isAssigned = job.assigned_team_field?.includes(user.email);
+        
+        if (!isAdmin && !isAssigned) {
+          return Response.json({ error: 'Forbidden: No access to this job' }, { status: 403 });
+        }
+      }
     }
 
     // Get Google Drive access token
