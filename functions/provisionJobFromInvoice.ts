@@ -28,11 +28,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'invoice_id required' }, { status: 400 });
     }
 
-    // Log provisioning start
-    if (import.meta.env?.DEV) {
-      console.log(`🚀 Starting provisioning for invoice ${invoice_id} (mode: ${mode})`);
-    }
-
     // Load invoice
     const invoice = await base44.entities.Invoice.filter({ id: invoice_id }).then(r => r[0]);
     if (!invoice) {
@@ -47,29 +42,32 @@ Deno.serve(async (req) => {
       field: 'unknown'
     };
     const errors = [];
+    const startTime = Date.now();
 
     // ========================================
-    // STEP 1: Ensure Job Exists
+    // STEP 1: Ensure Job Exists (IDEMPOTENT)
     // ========================================
     try {
       if (jobId) {
-        // Load existing job
+        // Load existing job - NEVER create new if ID exists
         const jobs = await base44.asServiceRole.entities.Job.filter({ id: jobId });
         job = jobs[0];
         
         if (job) {
           steps.job = 'existing';
           if (import.meta.env?.DEV) {
-            console.log(`✅ Job exists: ${job.id}`);
+            console.log(`✅ Job exists: ${job.id} - using existing`);
           }
         } else {
-          // Job ID exists but job not found - clear it and create new
-          jobId = null;
+          // Job ID exists but job not found - data inconsistency
+          steps.job = 'error';
+          errors.push('Job ID references non-existent job');
+          if (import.meta.env?.DEV) {
+            console.error(`❌ Job ${jobId} not found - data integrity issue`);
+          }
         }
-      }
-      
-      if (!jobId && invoice.job_name) {
-        // Create new job
+      } else if (invoice.job_name) {
+        // No job_id - create new job
         if (import.meta.env?.DEV) {
           console.log('📁 Creating new Job from invoice...');
         }
@@ -85,13 +83,16 @@ Deno.serve(async (req) => {
           status: 'active',
           color: 'blue',
           description: `Created from Invoice ${invoice.invoice_number}`,
-          provisioning_status: 'in_progress'
+          provisioning_status: 'in_progress',
+          provisioning_attempts: 1,
+          provisioning_last_attempt_at: new Date().toISOString(),
+          provisioning_steps: { job: 'created', drive: 'unknown', field: 'unknown' }
         });
         
         jobId = job.id;
         steps.job = 'created';
         
-        // Update invoice with job_id
+        // Update invoice with job_id (atomic link)
         await base44.asServiceRole.entities.Invoice.update(invoice_id, { job_id: jobId });
         
         if (import.meta.env?.DEV) {
@@ -99,9 +100,10 @@ Deno.serve(async (req) => {
         }
       }
     } catch (error) {
-      errors.push(`Job creation failed: ${error.message}`);
+      steps.job = 'error';
+      errors.push(`Job: ${error.message}`);
       if (import.meta.env?.DEV) {
-        console.error('❌ Job creation error:', error);
+        console.error('❌ Job step error:', error);
       }
     }
 
@@ -116,14 +118,14 @@ Deno.serve(async (req) => {
     }
 
     // ========================================
-    // STEP 2: Ensure Drive Folder Exists
+    // STEP 2: Ensure Drive Folder Exists (IDEMPOTENT)
     // ========================================
     try {
       if (job.drive_folder_id && job.drive_folder_url) {
-        // Already has folder
+        // Drive folder already exists - NEVER create duplicate
         steps.drive = 'existing';
         if (import.meta.env?.DEV) {
-          console.log(`✅ Drive folder exists: ${job.drive_folder_id}`);
+          console.log(`✅ Drive folder exists: ${job.drive_folder_id} - skipping creation`);
         }
       } else {
         // Create folder via existing function
@@ -138,30 +140,33 @@ Deno.serve(async (req) => {
         
         if (driveResult?.folder_id) {
           steps.drive = 'created';
+          // Reload job to get updated drive info
+          const updatedJobs = await base44.asServiceRole.entities.Job.filter({ id: jobId });
+          job = updatedJobs[0];
           if (import.meta.env?.DEV) {
             console.log(`✅ Drive folder created: ${driveResult.folder_id}`);
           }
         } else {
-          throw new Error('Drive folder creation returned no folder_id');
+          throw new Error('No folder_id returned');
         }
       }
     } catch (error) {
-      errors.push(`Drive folder failed: ${error.message}`);
       steps.drive = 'error';
+      errors.push(`Drive: ${error.message}`);
       if (import.meta.env?.DEV) {
-        console.error('❌ Drive folder error:', error);
+        console.error('❌ Drive step error:', error);
       }
     }
 
     // ========================================
-    // STEP 3: Ensure MCI Field Sync
+    // STEP 3: Ensure MCI Field Sync (IDEMPOTENT)
     // ========================================
     try {
       if (job.field_project_id) {
-        // Already synced
+        // Field project already exists - NEVER create duplicate
         steps.field = 'existing';
         if (import.meta.env?.DEV) {
-          console.log(`✅ Field project exists: ${job.field_project_id}`);
+          console.log(`✅ Field project exists: ${job.field_project_id} - skipping sync`);
         }
       } else {
         // Sync to Field
@@ -180,45 +185,74 @@ Deno.serve(async (req) => {
           });
           
           steps.field = 'created';
+          // Reload job
+          const updatedJobs = await base44.asServiceRole.entities.Job.filter({ id: jobId });
+          job = updatedJobs[0];
           if (import.meta.env?.DEV) {
             console.log(`✅ Field sync completed: ${fieldResult.mci_field_job_id}`);
           }
         } else {
-          throw new Error(fieldResult?.error || 'Field sync returned no project ID');
+          throw new Error(fieldResult?.error || 'No project ID returned');
         }
       }
     } catch (error) {
-      errors.push(`Field sync failed: ${error.message}`);
       steps.field = 'error';
+      errors.push(`Field: ${error.message}`);
       if (import.meta.env?.DEV) {
-        console.error('❌ Field sync error:', error);
+        console.error('❌ Field step error:', error);
       }
     }
 
     // ========================================
-    // STEP 4: Update Job Provisioning Status
+    // STEP 4: Update Job Provisioning Status & Tracking
     // ========================================
-    const allSuccess = steps.drive !== 'error' && steps.field !== 'error';
-    const provisioningStatus = allSuccess ? 'completed' : 'error';
+    const hasErrors = steps.job === 'error' || steps.drive === 'error' || steps.field === 'error';
+    const allCompleted = steps.job !== 'unknown' && steps.drive !== 'unknown' && steps.field !== 'unknown';
+    const isPartial = allCompleted && hasErrors;
+    const isFullyComplete = allCompleted && !hasErrors;
+    
+    let provisioningStatus;
+    if (isFullyComplete) {
+      provisioningStatus = 'completed';
+    } else if (isPartial) {
+      provisioningStatus = 'partial';
+    } else if (hasErrors) {
+      provisioningStatus = 'error';
+    } else {
+      provisioningStatus = 'in_progress';
+    }
+    
+    // Increment attempt counter
+    const currentAttempts = (job?.provisioning_attempts || 0) + 1;
+    const duration = Date.now() - startTime;
     
     await base44.asServiceRole.entities.Job.update(jobId, {
       provisioning_status: provisioningStatus,
-      provisioning_last_error: errors.length > 0 ? errors.join('; ') : null,
-      provisioning_completed_at: allSuccess ? new Date().toISOString() : null
+      provisioning_last_error: errors.length > 0 ? errors.join('; ').substring(0, 200) : null,
+      provisioning_steps: steps,
+      provisioning_attempts: currentAttempts,
+      provisioning_last_attempt_at: new Date().toISOString(),
+      provisioning_completed_at: isFullyComplete ? new Date().toISOString() : job?.provisioning_completed_at || null
     });
 
     // Reload job to get final state
     const finalJob = await base44.asServiceRole.entities.Job.filter({ id: jobId }).then(r => r[0]);
 
+    if (import.meta.env?.DEV) {
+      console.log(`⏱️ Provisioning completed in ${duration}ms - Status: ${provisioningStatus}`);
+    }
+
     return Response.json({
-      ok: allSuccess,
+      ok: isFullyComplete,
       invoice_id,
       job_id: jobId,
       drive_folder_url: finalJob?.drive_folder_url || null,
       field_project_id: finalJob?.field_project_id || null,
       steps,
       errors: errors.length > 0 ? errors : null,
-      provisioning_status: provisioningStatus
+      provisioning_status: provisioningStatus,
+      duration_ms: duration,
+      attempts: currentAttempts
     });
 
   } catch (error) {
