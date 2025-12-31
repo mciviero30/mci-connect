@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * TRUE SERVER-SIDE CURSOR-BASED PAGINATION HOOK
@@ -48,7 +48,7 @@ export function usePaginatedEntityList({
   });
 
   // When new page data arrives, add to pages
-  useState(() => {
+  useEffect(() => {
     if (pageData?.items && pageData.items.length > 0) {
       setPages(prev => {
         // Check if this page is already added (avoid duplicates)
@@ -62,14 +62,19 @@ export function usePaginatedEntityList({
       // Add next cursor
       if (pageData.nextCursor) {
         setCursors(prev => {
-          if (prev[prev.length - 1] !== pageData.nextCursor) {
+          const lastCursor = prev[prev.length - 1];
+          const isSameCursor = lastCursor && 
+            lastCursor.created_date === pageData.nextCursor.created_date &&
+            lastCursor.id === pageData.nextCursor.id;
+          
+          if (!isSameCursor) {
             return [...prev, pageData.nextCursor];
           }
           return prev;
         });
       }
     }
-  });
+  }, [pageData]);
 
   // Flatten all pages into single array
   const allItems = pages.flat();
