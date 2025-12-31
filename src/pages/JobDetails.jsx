@@ -54,11 +54,19 @@ export default function JobDetails() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: job, isLoading: jobLoading } = useQuery({
+  const { data: rawJob, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
     queryFn: () => base44.entities.Job.get(jobId),
     enabled: !!jobId
   });
+
+  // Guard against crashes when Drive/Field URLs are null
+  const job = rawJob ? {
+    ...rawJob,
+    drive_folder_url: rawJob.drive_folder_url || null,
+    field_project_id: rawJob.field_project_id || null,
+    provisioning_status: rawJob.provisioning_status || 'not_started'
+  } : null;
 
   const updateWebSyncMutation = useMutation({
     mutationFn: (data) => base44.entities.Job.update(jobId, data),

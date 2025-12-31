@@ -406,6 +406,32 @@ export default function VerFactura() {
               </Button>
             )}
 
+            {/* Provisioning Status Badge */}
+            {job && (
+              <div className="flex items-center gap-2">
+                {job.provisioning_status === 'completed' && job.drive_folder_url && job.field_project_id && (
+                  <Badge className="bg-green-500 text-white">
+                    ✓ {language === 'es' ? 'Provisionado' : 'Provisioned'}
+                  </Badge>
+                )}
+                {job.provisioning_status === 'partial' && (
+                  <Badge className="bg-amber-500 text-white">
+                    ⚠ {language === 'es' ? 'Parcial' : 'Partial'}
+                  </Badge>
+                )}
+                {job.provisioning_status === 'error' && (
+                  <Badge className="bg-red-500 text-white">
+                    ✗ {language === 'es' ? 'Error' : 'Error'}
+                  </Badge>
+                )}
+                {(!job.provisioning_status || job.provisioning_status === 'not_started' || job.provisioning_status === 'pending') && (
+                  <Badge className="bg-slate-500 text-white">
+                    {language === 'es' ? 'Pendiente' : 'Pending'}
+                  </Badge>
+                )}
+              </div>
+            )}
+
             {canRecordPayment && (
               <Button
                 variant="default"
