@@ -78,18 +78,30 @@ export default function InvoiceDocument({ invoice }) {
                         <span className="text-slate-600">Invoice#</span>
                         <span className="font-semibold text-slate-900">{invoice.invoice_number}</span>
                     </div>
-                    {invoice.invoice_date && (
-                        <div className="flex justify-between">
-                            <span className="text-slate-600">Invoice Date</span>
-                            <span className="font-semibold text-slate-900">{format(new Date(invoice.invoice_date), 'MM.dd.yy')}</span>
-                        </div>
-                    )}
-                    {invoice.due_date && (
-                        <div className="flex justify-between">
-                            <span className="text-slate-600">Due Date</span>
-                            <span className="font-semibold text-slate-900">{format(new Date(invoice.due_date), 'MM.dd.yy')}</span>
-                        </div>
-                    )}
+                    {invoice.invoice_date && (() => {
+                        try {
+                            return (
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">Invoice Date</span>
+                                    <span className="font-semibold text-slate-900">{format(new Date(invoice.invoice_date), 'MM.dd.yy')}</span>
+                                </div>
+                            );
+                        } catch {
+                            return null;
+                        }
+                    })()}
+                    {invoice.due_date && (() => {
+                        try {
+                            return (
+                                <div className="flex justify-between">
+                                    <span className="text-slate-600">Due Date</span>
+                                    <span className="font-semibold text-slate-900">{format(new Date(invoice.due_date), 'MM.dd.yy')}</span>
+                                </div>
+                            );
+                        } catch {
+                            return null;
+                        }
+                    })()}
                 </div>
             </div>
 

@@ -131,10 +131,18 @@ export default function VerFactura() {
         `${Number(item?.quantity)||0}x ${item?.description||'Item'} - $${(Number(item?.unit_price)||0).toFixed(2)} = $${(Number(item?.total)||0).toFixed(2)}`
       ).join('\n');
 
+      const formatDateSafe = (dateStr) => {
+        try {
+          return dateStr ? format(new Date(dateStr), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined }) : 'N/A';
+        } catch {
+          return dateStr || 'N/A';
+        }
+      };
+
       await base44.integrations.Core.SendEmail({
         to: invoice.customer_email,
         subject: `Invoice ${invoice.invoice_number} - ${invoice.job_name}`,
-        body: `Dear ${invoice.customer_name},\n\nPlease find your invoice for: ${invoice.job_name}\n\nInvoice #: ${invoice.invoice_number}\nDate: ${format(new Date(invoice.invoice_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\nDue Date: ${format(new Date(invoice.due_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${invoice.subtotal.toFixed(2)}\nTax (${invoice.tax_rate}%): $${invoice.tax_amount.toFixed(2)}\nTOTAL: $${invoice.total.toFixed(2)}\n\nAmount Paid: $${(invoice.amount_paid || 0).toFixed(2)}\nBalance Due: $${(invoice.balance || invoice.total).toFixed(2)}\n\nNotes:\n${invoice.notes}\n\nTerms:\n${invoice.terms}\n\nThank you for your business.`
+        body: `Dear ${invoice.customer_name},\n\nPlease find your invoice for: ${invoice.job_name}\n\nInvoice #: ${invoice.invoice_number}\nDate: ${formatDateSafe(invoice.invoice_date)}\nDue Date: ${formatDateSafe(invoice.due_date)}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${invoice.subtotal.toFixed(2)}\nTax (${invoice.tax_rate}%): $${invoice.tax_amount.toFixed(2)}\nTOTAL: $${invoice.total.toFixed(2)}\n\nAmount Paid: $${(invoice.amount_paid || 0).toFixed(2)}\nBalance Due: $${(invoice.balance || invoice.total).toFixed(2)}\n\nNotes:\n${invoice.notes}\n\nTerms:\n${invoice.terms}\n\nThank you for your business.`
       });
 
       await base44.entities.Invoice.update(invoiceId, { status: 'sent' });

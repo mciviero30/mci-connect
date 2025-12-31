@@ -81,6 +81,14 @@ export default function VerEstimado() {
           return `${item.quantity} ${item.unit} - ${itemDisplay} @ $${item.unit_price.toFixed(2)} = $${item.total.toFixed(2)}`;
         }).join('\n\n');
 
+        const formatDateSafe = (dateStr, formatStr = 'd MMMM yyyy') => {
+          try {
+            return dateStr ? format(new Date(dateStr), formatStr, { locale: language === 'es' ? es : undefined }) : 'N/A';
+          } catch {
+            return dateStr || 'N/A';
+          }
+        };
+
         await base44.integrations.Core.SendEmail({
           to: quote.customer_email,
           subject: `${t('quote')} ${quote.quote_number} - ${quote.job_name}`,
@@ -90,8 +98,8 @@ ${t('quoteEmailBody')} ${quote.job_name}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${t('quoteNumber')}: ${quote.quote_number}
-${t('date')}: ${format(new Date(quote.quote_date), language === 'es' ? 'd MMMM yyyy' : 'MMMM d, yyyy', { locale: language === 'es' ? es : undefined })}
-${t('validUntil')}: ${format(new Date(quote.valid_until), language === 'es' ? 'd MMMM yyyy' : 'MMMM d, yyyy', { locale: language === 'es' ? es : undefined })}
+${t('date')}: ${formatDateSafe(quote.quote_date, language === 'es' ? 'd MMMM yyyy' : 'MMMM d, yyyy')}
+${t('validUntil')}: ${formatDateSafe(quote.valid_until, language === 'es' ? 'd MMMM yyyy' : 'MMMM d, yyyy')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${t('items').toUpperCase()}:
