@@ -13,56 +13,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Atomic increment with retry logic
-    const MAX_RETRIES = 10;
-    let attempt = 0;
+    // Get all invoices to find max number
+    const invoices = await base44.asServiceRole.entities.Invoice.list('-created_date', 2000);
     
-    while (attempt < MAX_RETRIES) {
-      try {
-        const counters = await base44.asServiceRole.entities.Counter.filter({ 
-          counter_key: 'invoice_number' 
-        });
-        
-        let counter;
-        if (counters.length === 0) {
-          counter = await base44.asServiceRole.entities.Counter.create({
-            counter_key: 'invoice_number',
-            current_value: 0,
-            last_increment_date: new Date().toISOString()
-          });
-        } else {
-          counter = counters[0];
-        }
+    const existingNumbers = invoices
+      .map(inv => inv.invoice_number)
+      .filter(num => num && num.startsWith('INV-'))
+      .map(num => parseInt(num.replace('INV-', '')))
+      .filter(num => !isNaN(num));
 
-        const nextValue = counter.current_value + 1;
-        
-        await base44.asServiceRole.entities.Counter.update(counter.id, {
-          current_value: nextValue,
-          last_increment_date: new Date().toISOString()
-        });
-        
-        const verification = await base44.asServiceRole.entities.Counter.get(counter.id);
-        
-        if (verification.current_value === nextValue) {
-          const formattedNumber = `INV-${String(nextValue).padStart(5, '0')}`;
-          
-          if (import.meta.env?.DEV) {
-            console.log('[InvoiceNumber] ✅ Generated:', formattedNumber);
-          }
-          
-          return Response.json({ invoice_number: formattedNumber });
-        }
-        
-        attempt++;
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 50));
-      } catch (updateError) {
-        attempt++;
-        if (attempt >= MAX_RETRIES) throw updateError;
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 50));
-      }
-    }
-    
-    throw new Error('Max retries exceeded');
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    const nextNumber = maxNumber + 1;
+    const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
+
+    return Response.json({ invoice_number: formattedNumber });
   } catch (error) {
     if (error instanceof Response) throw error;
     console.error('❌ Error generating invoice number:', error);
