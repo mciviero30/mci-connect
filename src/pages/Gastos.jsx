@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
 import { Receipt, CheckCircle, XCircle, Plus, AlertTriangle } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import StatsCard from "../components/shared/StatsCard";
@@ -15,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import AIExpenseAnalyzer from "../components/gastos/AIExpenseAnalyzer";
 import SmartExpenseApproval from "../components/gastos/SmartExpenseApproval";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import LoadMoreButton from "@/components/shared/LoadMoreButton";
 
 export default function Gastos() {
   const { t } = useLanguage();
@@ -47,11 +49,36 @@ export default function Gastos() {
     staleTime: 30000, // Cache for 30 seconds
   });
 
-  const { data: expenses, isLoading } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date'),
-    initialData: [],
+  const { 
+    items: expenses = [], 
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMore,
+    totalLoaded
+  } = usePaginatedEntityList({
+    queryKey: 'expenses',
+    fetchFn: async ({ skip, limit }) => {
+      const allExpenses = await base44.entities.Expense.list('-date', limit + skip);
+      return allExpenses.slice(skip, skip + limit);
+    },
+    pageSize: 50,
+    staleTime: 5 * 60 * 1000,
   });
+
+  // Memoize expensive filters
+  const { pendingExpenses, approvedExpenses, rejectedExpenses, totalPending, totalApproved } = useMemo(() => {
+    const pending = expenses.filter(e => e.status === 'pending');
+    const approved = expenses.filter(e => e.status === 'approved');
+    const rejected = expenses.filter(e => e.status === 'rejected');
+    return {
+      pendingExpenses: pending,
+      approvedExpenses: approved,
+      rejectedExpenses: rejected,
+      totalPending: pending.reduce((sum, e) => sum + (e.amount || 0), 0),
+      totalApproved: approved.reduce((sum, e) => sum + (e.amount || 0), 0)
+    };
+  }, [expenses]);
 
   const createExpenseMutation = useMutation({
     mutationFn: (data) => base44.entities.Expense.create({
@@ -90,14 +117,10 @@ export default function Gastos() {
     }
   };
 
-  const activeEmployees = employees.filter(e => !e.employment_status || e.employment_status === 'active');
-
-  const pendingExpenses = expenses.filter(e => e.status === 'pending');
-  const approvedExpenses = expenses.filter(e => e.status === 'approved');
-  const rejectedExpenses = expenses.filter(e => e.status === 'rejected');
-
-  const totalPending = pendingExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  const totalApproved = approvedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const activeEmployees = useMemo(() => 
+    employees.filter(e => !e.employment_status || e.employment_status === 'active'),
+    [employees]
+  );
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
@@ -150,6 +173,16 @@ export default function Gastos() {
             <SmartExpenseApproval expense={expense} onAction={() => {}} />
           )}
         />
+
+        {hasNextPage && (
+          <LoadMoreButton 
+            onLoadMore={loadMore}
+            hasMore={hasNextPage}
+            isLoading={isFetchingNextPage}
+            totalLoaded={totalLoaded}
+            language={t('language')}
+          />
+        )}
 
         {/* Select Employee Dialog */}
         <Dialog open={showCreateDialog && !showExpenseForm} onOpenChange={(open) => {
