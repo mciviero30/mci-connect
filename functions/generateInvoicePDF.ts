@@ -1,36 +1,29 @@
 // PDF Profesional - Versión Corregida para Invoice
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import { jsPDF } from 'npm:jspdf@2.5.1';
+import { requireUser, verifyOwnership, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const user = await requireUser(base44);
 
         const { invoiceId } = await req.json();
         
-        // Verify user has access to this invoice
-        const invoice = await base44.entities.Invoice.get(invoiceId);
-        
-        // Admin check OR user is assigned/created the invoice
-        const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
-        const isOwner = invoice.created_by === user.email;
-        
-        if (!isAdmin && !isOwner) {
-            return Response.json({ error: 'Forbidden: No access to this invoice' }, { status: 403 });
+        if (!invoiceId) {
+            return Response.json({ error: 'invoiceId required' }, { status: 400 });
         }
+
+        // Fetch invoice
         const invoice = await base44.entities.Invoice.get(invoiceId);
 
         if (!invoice) {
             return Response.json({ error: 'Invoice not found' }, { status: 404 });
         }
         
-        if (!isAdmin && !isOwner) {
-            return Response.json({ error: 'Forbidden: No access to this invoice' }, { status: 403 });
+        // Verify access (admin OR owner)
+        if (!verifyOwnership(invoice, user, 'created_by')) {
+            return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const doc = new jsPDF();
@@ -240,6 +233,7 @@ Deno.serve(async (req) => {
             }
         });
     } catch (error) {
-        return Response.json({ error: error.message }, { status: 500 });
+        if (error instanceof Response) throw error;
+        return safeJsonError('Failed to generate PDF', 500, error.message);
     }
 });

@@ -1,14 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Verify admin access
-    const user = await base44.auth.me();
-    if (!user || (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator')) {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const user = await requireAdmin(base44);
 
     // Fetch all files from different sources
     const [expenses, jobFiles, employeeDocuments, aiDocuments] = await Promise.all([
@@ -37,6 +33,7 @@ Deno.serve(async (req) => {
       lastScanned: new Date().toISOString()
     });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    return safeJsonError('Metrics fetch failed', 500, error.message);
   }
 });

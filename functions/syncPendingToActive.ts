@@ -1,8 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await requireAdmin(base44);
     
     // Get all pending employees
     const pendingEmployees = await base44.asServiceRole.entities.PendingEmployee.list();
@@ -92,9 +94,10 @@ Deno.serve(async (req) => {
     });
     
   } catch (error) {
-    console.error('Error syncing pending employees:', error);
-    return Response.json({ 
-      error: error.message 
-    }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error syncing pending employees:', error);
+    }
+    return safeJsonError('Sync failed', 500, error.message);
   }
 });

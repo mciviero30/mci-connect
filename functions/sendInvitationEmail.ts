@@ -1,13 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { requireUser, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     const { to, fullName, language = 'en' } = await req.json();
 
@@ -291,9 +288,10 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return Response.json({ 
-      error: error.message 
-    }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error sending email:', error);
+    }
+    return safeJsonError('Email failed', 500, error.message);
   }
 });

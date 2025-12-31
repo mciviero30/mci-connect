@@ -1,13 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     const formData = await req.formData();
     const file = formData.get('file');
@@ -18,7 +15,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing file or folder_id' }, { status: 400 });
     }
     
-    // Verify user has access to the job associated with this folder
+    // Verify user has access to job
     if (jobId) {
       const job = await base44.entities.Job.get(jobId);
       if (job) {
@@ -26,7 +23,7 @@ Deno.serve(async (req) => {
         const isAssigned = job.assigned_team_field?.includes(user.email);
         
         if (!isAdmin && !isAssigned) {
-          return Response.json({ error: 'Forbidden: No access to this job' }, { status: 403 });
+          return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
       }
     }
@@ -68,7 +65,10 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error uploading to Drive:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error uploading to Drive:', error);
+    }
+    return safeJsonError('Upload failed', 500, error.message);
   }
 });

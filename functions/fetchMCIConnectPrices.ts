@@ -1,14 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { requireUser, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        
-        // Validate user is authenticated
-        const user = await base44.auth.me();
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const user = await requireUser(base44);
 
         // Get MCI Connect URL and token from secrets
         const mciConnectUrl = Deno.env.get('MCI_CONNECT_URL');
@@ -44,8 +40,7 @@ Deno.serve(async (req) => {
         });
 
     } catch (error) {
-        return Response.json({ 
-            error: error.message 
-        }, { status: 500 });
+        if (error instanceof Response) throw error;
+        return safeJsonError('Fetch failed', 500, error.message);
     }
 });

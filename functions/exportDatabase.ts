@@ -1,14 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Verify admin access
-    const user = await base44.auth.me();
-    if (!user || (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator')) {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const user = await requireAdmin(base44);
 
     // Fetch all main entities
     const [jobs, employees, invoices, quotes, expenses, timeEntries, customers, teams] = await Promise.all([
@@ -59,6 +55,7 @@ Deno.serve(async (req) => {
 
     return Response.json(exportData);
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    return safeJsonError('Export failed', 500, error.message);
   }
 });

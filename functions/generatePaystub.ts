@@ -1,19 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import { jsPDF } from 'npm:jspdf@2.5.2';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Admin-only: Generating paystubs is an admin operation
-    if (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    const user = await requireAdmin(base44);
 
     const payload = await req.json();
     const {
@@ -164,7 +156,10 @@ Deno.serve(async (req) => {
       }
     });
   } catch (error) {
-    console.error('Error generating paystub:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error generating paystub:', error);
+    }
+    return safeJsonError('Paystub generation failed', 500, error.message);
   }
 });

@@ -1,30 +1,31 @@
 // PDF Profesional con jsPDF - Gradiente y Logo Mejorados
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import { jsPDF } from 'npm:jspdf@2.5.1';
+import { requireUser, verifyOwnership, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const user = await requireUser(base44);
 
         const { quoteId } = await req.json();
+        
+        if (!quoteId) {
+            return Response.json({ error: 'quoteId required' }, { status: 400 });
+        }
+
         const quote = await base44.entities.Quote.get(quoteId);
 
         if (!quote) {
             return Response.json({ error: 'Quote not found' }, { status: 404 });
         }
         
-        // Verify user has access to this quote
+        // Verify access (admin, owner, or assigned)
         const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
-        const isOwner = quote.created_by === user.email;
         const isAssigned = quote.assigned_to === user.email;
         
-        if (!isAdmin && !isOwner && !isAssigned) {
-            return Response.json({ error: 'Forbidden: No access to this quote' }, { status: 403 });
+        if (!isAdmin && !verifyOwnership(quote, user, 'created_by') && !isAssigned) {
+            return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const doc = new jsPDF();
@@ -214,7 +215,10 @@ Deno.serve(async (req) => {
             }
         });
     } catch (error) {
-        console.error('PDF Error:', error);
-        return Response.json({ error: error.message }, { status: 500 });
+        if (error instanceof Response) throw error;
+        if (import.meta.env?.DEV) {
+            console.error('PDF Error:', error);
+        }
+        return safeJsonError('Failed to generate PDF', 500, error.message);
     }
 });

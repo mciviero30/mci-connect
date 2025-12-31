@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 /**
  * THREAD-SAFE ATOMIC COUNTER INCREMENT
@@ -8,11 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     const { counter_key } = await req.json();
 
@@ -104,11 +101,10 @@ Deno.serve(async (req) => {
     }, { status: 500 });
 
   } catch (error) {
+    if (error instanceof Response) throw error;
     if (import.meta.env?.DEV) {
       console.error('❌ Error in getNextCounter:', error);
     }
-    return Response.json({ 
-      error: 'Failed to generate counter value' 
-    }, { status: 500 });
+    return safeJsonError('Counter generation failed', 500, error.message);
   }
 });

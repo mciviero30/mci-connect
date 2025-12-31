@@ -1,13 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireAdmin(base44);
 
     const { job_id } = await req.json();
 
@@ -79,8 +76,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'CROSS_APP_TOKEN not configured' }, { status: 500 });
     }
 
-    console.log('Syncing to MCI Web:', mciWebUrl);
-    console.log('Portfolio data:', JSON.stringify(portfolioData, null, 2));
+    if (import.meta.env?.DEV) {
+      console.log('Syncing to MCI Web:', mciWebUrl);
+      console.log('Portfolio data:', JSON.stringify(portfolioData, null, 2));
+    }
 
     let response;
     try {
@@ -93,11 +92,15 @@ Deno.serve(async (req) => {
         body: JSON.stringify(portfolioData)
       });
 
-      console.log('Response status:', response.status);
+      if (import.meta.env?.DEV) {
+        console.log('Response status:', response.status);
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('MCI Web error:', errorText);
+        if (import.meta.env?.DEV) {
+          console.error('MCI Web error:', errorText);
+        }
         return Response.json({ 
           error: 'Failed to sync to MCI Web', 
           status: response.status,
@@ -106,7 +109,9 @@ Deno.serve(async (req) => {
       }
 
       const result = await response.json();
-      console.log('Sync successful:', result);
+      if (import.meta.env?.DEV) {
+        console.log('Sync successful:', result);
+      }
 
       return Response.json({ 
         success: true, 
@@ -115,7 +120,9 @@ Deno.serve(async (req) => {
       });
 
     } catch (fetchError) {
-      console.error('Fetch error:', fetchError);
+      if (import.meta.env?.DEV) {
+        console.error('Fetch error:', fetchError);
+      }
       return Response.json({ 
         error: 'Network error connecting to MCI Web', 
         details: fetchError.message 
@@ -123,7 +130,10 @@ Deno.serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Error syncing job to website:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error syncing job to website:', error);
+    }
+    return safeJsonError('Sync failed', 500, error.message);
   }
 });

@@ -1,19 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireAdmin(base44);
 
     // Get all items without descriptions or with empty descriptions
     const allItems = await base44.asServiceRole.entities.QuoteItem.list();
     const itemsNeedingDescriptions = allItems.filter(item => !item.description || item.description.trim() === '');
 
-    console.log(`Found ${itemsNeedingDescriptions.length} items needing descriptions`);
+    if (import.meta.env?.DEV) {
+      console.log(`Found ${itemsNeedingDescriptions.length} items needing descriptions`);
+    }
 
     let updatedCount = 0;
     const batchSize = 10;
@@ -66,7 +65,9 @@ Make descriptions:
         updatedCount++;
       }
 
-      console.log(`Processed batch ${Math.floor(i / batchSize) + 1}: ${batch.length} items`);
+      if (import.meta.env?.DEV) {
+        console.log(`Processed batch ${Math.floor(i / batchSize) + 1}: ${batch.length} items`);
+      }
     }
 
     return Response.json({
@@ -76,9 +77,12 @@ Make descriptions:
     });
 
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error generating descriptions:', error);
+    }
     return Response.json({ 
-      error: error.message,
+      error: 'Generation failed',
       success: false 
     }, { status: 500 });
   }

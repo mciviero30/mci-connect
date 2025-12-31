@@ -1,13 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireAdmin(base44);
 
     const { job_id, job_name } = await req.json();
 
@@ -70,7 +67,10 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error creating Drive folder:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error creating Drive folder:', error);
+    }
+    return safeJsonError('Failed to create folder', 500, error.message);
   }
 });

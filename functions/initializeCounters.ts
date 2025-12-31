@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 /**
  * ADMIN-ONLY: Initialize counters from existing data
@@ -8,16 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Admin-only operation
-    if (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    const user = await requireAdmin(base44);
 
     const results = {};
 
@@ -119,12 +111,10 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
+    if (error instanceof Response) throw error;
     if (import.meta.env?.DEV) {
       console.error('❌ Error initializing counters:', error);
     }
-    return Response.json({ 
-      error: 'Failed to initialize counters',
-      details: import.meta.env?.DEV ? error.message : undefined
-    }, { status: 500 });
+    return safeJsonError('Initialization failed', 500, error.message);
   }
 });

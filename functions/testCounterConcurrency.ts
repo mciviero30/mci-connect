@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 /**
  * DEV-ONLY: Concurrency stress test for counter system
@@ -8,15 +9,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     // Admin-only in production, anyone in DEV
-    if (!import.meta.env?.DEV && user.role !== 'admin') {
-      return Response.json({ error: 'This endpoint is only available in DEV mode' }, { status: 403 });
+    const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
+    if (!import.meta.env?.DEV && !isAdmin) {
+      return Response.json({ error: 'DEV or admin only' }, { status: 403 });
     }
 
     console.log('🧪 Starting concurrency test...');
@@ -85,10 +83,8 @@ Deno.serve(async (req) => {
     return Response.json(report);
 
   } catch (error) {
+    if (error instanceof Response) throw error;
     console.error('❌ Test failed:', error);
-    return Response.json({ 
-      error: error.message,
-      verdict: '❌ ERROR'
-    }, { status: 500 });
+    return safeJsonError('Test failed', 500, error.message);
   }
 });

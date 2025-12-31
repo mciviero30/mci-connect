@@ -1,13 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     const { jobAddress, teamIds } = await req.json();
     
@@ -106,7 +103,10 @@ Deno.serve(async (req) => {
 
     return Response.json({ results });
   } catch (error) {
-    console.error('Error calculating travel metrics:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error calculating travel metrics:', error);
+    }
+    return safeJsonError('Calculation failed', 500, error.message);
   }
 });

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 /**
  * Sincroniza el perfil de usuario (foto y datos) con MCI Web
@@ -8,12 +9,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Verificar autenticación
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     const { userId, userData } = await req.json();
 
@@ -22,7 +18,9 @@ Deno.serve(async (req) => {
     const MCI_WEB_TOKEN = Deno.env.get("CROSS_APP_TOKEN");
 
     if (!MCI_WEB_URL || !MCI_WEB_TOKEN) {
-      console.warn('MCI Web credentials not configured');
+      if (import.meta.env?.DEV) {
+        console.warn('MCI Web credentials not configured');
+      }
       return Response.json({ 
         success: false, 
         message: 'MCI Web not configured' 
@@ -67,7 +65,9 @@ Deno.serve(async (req) => {
 
     if (!syncResponse.ok) {
       const errorText = await syncResponse.text();
-      console.error('Failed to sync with MCI Web:', errorText);
+      if (import.meta.env?.DEV) {
+        console.error('Failed to sync with MCI Web:', errorText);
+      }
       return Response.json({ 
         success: false, 
         error: 'Failed to sync with MCI Web',
@@ -84,9 +84,12 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error syncing user profile:', error);
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error syncing user profile:', error);
+    }
     return Response.json({ 
-      error: error.message,
+      error: 'Profile sync failed',
       success: false 
     }, { status: 500 });
   }

@@ -1,13 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { requireUser, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const user = await requireUser(base44);
 
     const { job_id, event_type, additional_data } = await req.json();
 
@@ -88,7 +85,9 @@ Deno.serve(async (req) => {
 
           notifiedCount++;
         } catch (error) {
-          console.error(`Error notifying ${member.user_email}:`, error);
+          if (import.meta.env?.DEV) {
+            console.error(`Error notifying ${member.user_email}:`, error);
+          }
         }
       }
     }
@@ -100,7 +99,10 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in notifyClientsOnEvent:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error in notifyClientsOnEvent:', error);
+    }
+    return safeJsonError('Notification failed', 500, error.message);
   }
 });

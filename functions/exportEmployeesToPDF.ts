@@ -1,19 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import { jsPDF } from 'npm:jspdf@2.5.2';
+import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Admin-only: Exporting employee data is an admin operation
-    if (user.role !== 'admin' && user.position !== 'CEO' && user.position !== 'administrator') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    const user = await requireAdmin(base44);
 
     // Get all employees
     const employees = await base44.entities.User.list();

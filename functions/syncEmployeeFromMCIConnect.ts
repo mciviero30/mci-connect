@@ -1,16 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { requireToken, safeJsonError, checkRateLimit } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
+    requireToken(req, 'MCI_CONNECT_TOKEN');
+    
     const base44 = createClientFromRequest(req);
-    
-    // Verify token from MCI Connect
-    const authHeader = req.headers.get('authorization');
-    const expectedToken = Deno.env.get('MCI_CONNECT_TOKEN');
-    
-    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const { 
       email, 
@@ -35,6 +30,9 @@ Deno.serve(async (req) => {
     if (!email) {
       return Response.json({ error: 'Email is required' }, { status: 400 });
     }
+
+    // Rate limit: max 20 employee syncs per minute
+    checkRateLimit(`sync-employee-${email}`, 20, 60000);
 
     // Check if employee already exists
     const existing = await base44.asServiceRole.entities.PendingEmployee.filter({ email });
@@ -96,9 +94,12 @@ Deno.serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('Error syncing employee:', error);
+    if (error instanceof Response) throw error;
+    if (import.meta.env?.DEV) {
+      console.error('Error syncing employee:', error);
+    }
     return Response.json({ 
-      error: error.message,
+      error: 'Sync failed',
       success: false 
     }, { status: 500 });
   }
