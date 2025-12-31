@@ -1,105 +1,98 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { useState, useMemo } from 'react';
 
 /**
- * Reusable paginated entity list hook
- * Handles infinite loading with consistent caching
+ * Hook for paginated entity lists with "Load More" functionality
  * 
- * @param {string} queryKey - Unique query identifier
- * @param {Function} fetchFn - Function to fetch data (receives pageParam)
- * @param {Object} options - Additional options
- * @returns {Object} - Paginated data with controls
+ * @param {string} entityName - Name of entity to fetch
+ * @param {object} filters - Filter object (e.g., { status: 'active' })
+ * @param {string} sort - Sort order (e.g., '-created_date')
+ * @param {number} pageSize - Items per page (default: 50)
+ * @param {object} queryOptions - Additional React Query options
+ * @returns {object} { data, isLoading, error, loadMore, hasMore, totalDisplayed }
  */
-export function usePaginatedEntityList({
-  queryKey,
-  fetchFn,
+export function usePaginatedEntityList(
+  entityName, 
+  filters = {}, 
+  sort = '-created_date', 
   pageSize = 50,
-  orderBy = '-created_date',
-  filters = {},
-  enabled = true,
-  staleTime = 5 * 60 * 1000, // 5 minutes default
-}) {
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-    refetch,
-    error
-  } = useInfiniteQuery({
-    queryKey: [queryKey, filters, orderBy],
-    queryFn: async ({ pageParam = 0 }) => {
-      const skip = pageParam * pageSize;
-      const items = await fetchFn({ skip, limit: pageSize, orderBy, filters });
-      
-      return {
-        items,
-        nextCursor: items.length === pageSize ? pageParam + 1 : undefined
-      };
-    },
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    initialPageParam: 0,
-    enabled,
-    staleTime,
-    gcTime: 10 * 60 * 1000,
+  queryOptions = {}
+) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = pageSize * currentPage;
+
+  const { data: items = [], isLoading, error } = useQuery({
+    queryKey: ['entity-list', entityName, filters, sort, limit],
+    queryFn: () => base44.entities[entityName].filter(filters, sort, limit),
+    staleTime: 3 * 60 * 1000, // 3 min cache for large lists
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    keepPreviousData: true
+    ...queryOptions
   });
 
-  // Flatten all pages into single array
-  const allItems = useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.items);
-  }, [data?.pages]);
+  const hasMore = items.length === limit;
+  const totalDisplayed = items.length;
+
+  const loadMore = () => {
+    if (hasMore && !isLoading) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
 
   return {
-    items: allItems,
+    data: items,
     isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    loadMore: fetchNextPage,
-    refetch,
     error,
-    totalLoaded: allItems.length
+    loadMore,
+    hasMore,
+    totalDisplayed,
+    pageSize
   };
 }
 
 /**
- * Simple paginated list (non-infinite, for smaller datasets)
+ * Hook for simple paginated lists (discrete pages, not infinite scroll)
+ * 
+ * @param {string} entityName - Name of entity to fetch
+ * @param {object} filters - Filter object
+ * @param {string} sort - Sort order
+ * @param {number} pageSize - Items per page (default: 50)
+ * @returns {object} { data, isLoading, currentPage, totalPages, nextPage, prevPage, hasNext, hasPrev }
  */
-export function useSimplePaginatedList({
-  queryKey,
-  fetchFn,
-  pageSize = 50,
-  orderBy = '-created_date',
+export function useSimplePaginatedList(
+  entityName,
   filters = {},
-  enabled = true,
-  staleTime = 5 * 60 * 1000,
-}) {
-  const [page, setPage] = useState(0);
+  sort = '-created_date',
+  pageSize = 50
+) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const skip = (currentPage - 1) * pageSize;
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: [queryKey, filters, orderBy, page],
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['entity-page', entityName, filters, sort, currentPage, pageSize],
     queryFn: async () => {
-      const skip = page * pageSize;
-      return await fetchFn({ skip, limit: pageSize, orderBy, filters });
+      // Fetch one extra to check if more exist
+      const results = await base44.entities[entityName].filter(filters, sort, pageSize + 1);
+      return results;
     },
-    enabled,
-    staleTime,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    keepPreviousData: true
+    staleTime: 3 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 
+  const hasNext = items.length > pageSize;
+  const displayItems = hasNext ? items.slice(0, pageSize) : items;
+
   return {
-    items: data || [],
+    data: displayItems,
     isLoading,
-    refetch,
-    page,
-    nextPage: () => setPage(p => p + 1),
-    prevPage: () => setPage(p => Math.max(0, p - 1)),
-    resetPage: () => setPage(0),
-    hasMore: (data || []).length === pageSize
+    currentPage,
+    totalDisplayed: displayItems.length,
+    hasNext,
+    hasPrev: currentPage > 1,
+    nextPage: () => hasNext && setCurrentPage(p => p + 1),
+    prevPage: () => currentPage > 1 && setCurrentPage(p => p - 1),
+    pageSize
   };
 }

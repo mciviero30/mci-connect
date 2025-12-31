@@ -48,6 +48,31 @@ export async function requireAdmin(base44) {
 }
 
 /**
+ * Require manager or admin access
+ * @throws {Response} 403 if not manager/admin
+ */
+export async function requireManagerOrAdmin(base44) {
+  const user = await requireUser(base44);
+  
+  const isAuthorized = user.role === 'admin' || 
+                       user.position === 'CEO' || 
+                       user.position === 'administrator' ||
+                       user.position === 'manager';
+  
+  if (!isAuthorized) {
+    throw new Response(
+      JSON.stringify({ error: 'Forbidden: Manager or Admin access required' }), 
+      { 
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+  
+  return user;
+}
+
+/**
  * Require specific role(s)
  * @param {string[]} allowedRoles - Array of allowed roles/positions
  * @throws {Response} 403 if user doesn't have required role
