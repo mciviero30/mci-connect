@@ -26,7 +26,7 @@ export default function ModernJobCard({ job }) {
     mutationFn: (id) => base44.entities.Job.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success(language === 'es' ? 'Trabajo eliminado' : 'Job deleted');
+      toast.success(lang === 'es' ? 'Trabajo eliminado' : 'Job deleted');
     },
     onError: (error) => {
       toast.error(`Error: ${error.message}`);
@@ -34,7 +34,7 @@ export default function ModernJobCard({ job }) {
   });
 
   const handleDelete = () => {
-    if (confirm(language === 'es' ? '¿Eliminar este trabajo?' : 'Delete this job?')) {
+    if (confirm(lang === 'es' ? '¿Eliminar este trabajo?' : 'Delete this job?')) {
       deleteMutation.mutate(job.id);
     }
   };
@@ -71,6 +71,8 @@ export default function ModernJobCard({ job }) {
     on_hold: language === 'es' ? 'En Espera' : 'On Hold'
   };
 
+  const lang = language || 'en';
+
   const colorIndicator = job.color || 'blue';
 
   return (
@@ -105,11 +107,11 @@ export default function ModernJobCard({ job }) {
             <DropdownMenuContent align="end" className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
               <DropdownMenuItem onClick={() => navigate(createPageUrl(`JobDetails?id=${job.id}`))}>
                 <Eye className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Ver Detalles' : 'View Details'}
+                {lang === 'es' ? 'Ver Detalles' : 'View Details'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
                 <Trash2 className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Eliminar' : 'Delete'}
+                {lang === 'es' ? 'Eliminar' : 'Delete'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -156,7 +158,7 @@ export default function ModernJobCard({ job }) {
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] text-[#666666] font-semibold">
-                {language === 'es' ? 'Valor Contrato' : 'Contract Value'}
+                {lang === 'es' ? 'Valor Contrato' : 'Contract Value'}
               </span>
               <span className="text-[14px] font-bold text-[#1E6FE8]">
                 {formatCurrency(contractAmount)}
@@ -168,7 +170,7 @@ export default function ModernJobCard({ job }) {
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-3 h-3 text-slate-500" />
                   <span className="text-[10px] text-[#666666] font-semibold">
-                    {language === 'es' ? 'Margen' : 'Margin'}
+                    {lang === 'es' ? 'Margen' : 'Margin'}
                   </span>
                 </div>
                 <span className={`text-[12px] font-bold ${getProfitMarginColor(profitMargin)}`}>
