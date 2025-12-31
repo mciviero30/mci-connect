@@ -50,8 +50,7 @@ export default function OnboardingWizard() {
           account_number: variables.formData.account_number,
           emergency_contact_name: variables.formData.emergency_contact_name,
           emergency_contact_phone: variables.formData.emergency_contact_phone,
-          emergency_contact_relationship: variables.formData.emergency_contact_relationship,
-          onboarding_completed: true
+          emergency_contact_relationship: variables.formData.emergency_contact_relationship
         });
       }
       
@@ -59,8 +58,20 @@ export default function OnboardingWizard() {
       if (currentStep < 3) {
         setCurrentStep(currentStep + 1);
       } else {
-        // ✅ ONBOARDING COMPLETE - Redirect to dashboard
-        console.log('✅ All 3 forms completed. Unlocking MCI Connect...');
+        // ✅ ONBOARDING COMPLETE - Set definitive flag
+        await base44.auth.updateMe({ 
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString()
+        });
+        
+        if (import.meta.env.DEV) {
+          console.log('✅ All 3 forms completed. Unlocking MCI Connect...');
+        }
+        
+        // Invalidate queries to refresh user
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        queryClient.invalidateQueries({ queryKey: ['onboardingForms'] });
+        
         setTimeout(() => {
           window.location.href = '/';
         }, 1500);
@@ -91,11 +102,11 @@ export default function OnboardingWizard() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl">
+          <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl p-2">
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
               alt="MCI Connect"
-              className="w-20 h-20 rounded-xl"
+              className="w-full h-full object-contain"
             />
           </div>
           <h1 className="text-4xl font-bold text-slate-900 mb-2">Welcome to MCI Connect</h1>

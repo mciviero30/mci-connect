@@ -46,9 +46,12 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
       const lastName = data.last_name ? 
         data.last_name.charAt(0).toUpperCase() + data.last_name.slice(1).toLowerCase() : '';
       
+      // Build full_name ONLY from real name data (never from email-local-part)
       const fullName = firstName && lastName 
         ? `${firstName} ${lastName}`.trim()
-        : data.full_name || data.email.split('@')[0];
+        : (employee?.full_name && !employee.full_name.includes('@')) 
+          ? employee.full_name  // Preserve existing good name
+          : '';
 
       const payload = {
         ...data,

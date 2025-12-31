@@ -58,7 +58,15 @@ export const AGREEMENTS = {
       `
     },
     appliesTo: (user) => {
-      return user?.position === 'manager' || user?.position === 'supervisor';
+      const pos = (user?.position || '').toLowerCase();
+      const role = (user?.role || '').toLowerCase();
+      
+      // Apply to managers, supervisors, and administrators (normalize variants)
+      return pos.includes('manager') || 
+             pos.includes('supervisor') || 
+             pos.includes('administrator') || 
+             pos === 'admin' ||
+             (role === 'admin' && pos !== 'ceo');
     }
   },
 
@@ -114,7 +122,8 @@ export const AGREEMENTS = {
       `
     },
     appliesTo: (user) => {
-      return user?.position === 'foreman';
+      const pos = (user?.position || '').toLowerCase();
+      return pos.includes('foreman');
     }
   }
 };

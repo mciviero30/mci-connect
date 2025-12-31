@@ -8,11 +8,11 @@ export default function WelcomeMessage() {
       <Card className="max-w-2xl w-full shadow-xl">
         <CardContent className="p-8 space-y-6">
           <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg p-2">
               <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6d6129877_Gemini_Generated_Image_qrppo5qrppo5qrpp.png"
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                 alt="MCI Connect"
-                className="w-16 h-16 rounded-xl"
+                className="w-full h-full object-contain"
               />
             </div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">

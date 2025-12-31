@@ -77,6 +77,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
+import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 
@@ -316,12 +317,14 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const onboardingCompleted = onboardingForms.length >= 3;
   const isOnboardingPage = currentPageName === 'OnboardingWizard';
   
-  // Determine if user should be blocked
+  // Determine if user should be blocked for onboarding
+  // CRITICAL: Check flag first (definitive), then fallback to count
   const shouldBlockForOnboarding = user && 
     !isClientOnly && 
     user.role !== 'admin' && 
     user.employment_status !== 'deleted' &&
-    !onboardingCompleted;
+    user.onboarding_completed !== true &&  // Definitive flag wins
+    !onboardingCompleted;  // Count-based fallback
 
   // Soft redirect to onboarding - no full page reload
   useEffect(() => {
@@ -395,40 +398,39 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           console.log('🔄 Auto-activating invited user:', user.email);
         }
 
-        // Safe merge: only add fields if they're missing in user
-        let pendingData = {};
+        // SAFE MERGE: Migrate PendingEmployee → User with ZERO data loss
+        let migratedData = {};
+        let pendingRecord = null;
+        
         try {
           const allPendingEmployees = await base44.entities.PendingEmployee.list();
-          const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
+          const pendingEmployees = allPendingEmployees.filter(
+            p => normalizeEmail(p.email) === normalizeEmail(user.email)
+          );
+          
           if (pendingEmployees.length > 0) {
-            const pending = pendingEmployees[0];
-
-            // SAFE MERGE: Only add if user doesn't have it
-            if (pending.first_name && !user.first_name) pendingData.first_name = pending.first_name;
-            if (pending.last_name && !user.last_name) pendingData.last_name = pending.last_name;
-            if (pending.phone && !user.phone) pendingData.phone = pending.phone;
-            if (pending.position && !user.position) pendingData.position = pending.position;
-            if (pending.department && !user.department) pendingData.department = pending.department;
-            if (pending.team_id && !user.team_id) pendingData.team_id = pending.team_id;
-            if (pending.team_name && !user.team_name) pendingData.team_name = pending.team_name;
-            if (pending.address && !user.address) pendingData.address = pending.address;
-            if (pending.dob && !user.dob) pendingData.dob = pending.dob;
-            if (pending.ssn_tax_id && !user.ssn_tax_id) pendingData.ssn_tax_id = pending.ssn_tax_id;
-            if (pending.tshirt_size && !user.tshirt_size) pendingData.tshirt_size = pending.tshirt_size;
-            if (pending.hourly_rate && !user.hourly_rate) pendingData.hourly_rate = pending.hourly_rate;
-
-            if ((pending.first_name || pending.last_name) && !user.full_name) {
-              pendingData.full_name = `${pending.first_name || ''} ${pending.last_name || ''}`.trim();
-            }
-
+            pendingRecord = pendingEmployees[0];
+            
+            // Use profileMerge helper for COMPLETE migration
+            migratedData = migratePendingToUser(user, pendingRecord);
+            
             if (import.meta.env.DEV) {
-              console.log('📋 Merging pending employee data (safe):', Object.keys(pendingData));
+              console.log('📋 Migrating PendingEmployee data:', Object.keys(migratedData).filter(k => !k.startsWith('_')));
             }
-            await base44.entities.PendingEmployee.delete(pending.id);
+            
+            // Mark as migrated BEFORE deleting (for audit trail)
+            await base44.entities.PendingEmployee.update(pendingRecord.id, {
+              migrated_at: new Date().toISOString(),
+              migrated_to_user_id: user.id,
+              migration_status: 'completed'
+            });
+            
+            // Delete after successful migration
+            await base44.entities.PendingEmployee.delete(pendingRecord.id);
           }
         } catch (error) {
           if (import.meta.env.DEV) {
-            console.error('Error with pending employee:', error);
+            console.error('Error with pending employee migration:', error);
           }
         }
 
@@ -446,19 +448,16 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           }
         }
 
-        // Only update if we have data to merge
-        const mergedData = {
+        // Build final update payload
+        const finalData = {
           employment_status: 'active',
           hire_date: user.hire_date || new Date().toISOString().split('T')[0],
-          ...pendingData,
+          ...migratedData,
           ...teamData
         };
 
-        if (Object.keys(mergedData).length > 2) { // More than just employment_status + hire_date
-          await base44.auth.updateMe(mergedData);
-        } else {
-          await base44.auth.updateMe({ employment_status: 'active' });
-        }
+        // Always update (even if just status change)
+        await base44.auth.updateMe(finalData);
 
         if (import.meta.env.DEV) {
           console.log('✅ User activated successfully');

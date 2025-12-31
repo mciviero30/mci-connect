@@ -52,16 +52,13 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validation
+    // Validation - ONLY REQUIRED: personal info, bank, emergency
     if (!formData.legal_full_name || !formData.ssn_or_itin || !formData.date_of_birth) {
       alert('Please fill in all required personal information');
       return;
     }
     
-    if (!formData.drivers_license_url || !formData.social_security_card_url) {
-      alert('Please upload both Driver\'s License and Social Security Card');
-      return;
-    }
+    // REMOVED: Document upload requirements (optional now)
     
     if (!formData.bank_name || !formData.routing_number || !formData.account_number) {
       alert('Please fill in all bank information for direct deposit');
@@ -131,16 +128,16 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
             </div>
           </div>
 
-          {/* Document Uploads */}
+          {/* Document Uploads - OPTIONAL */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <Upload className="w-5 h-5 text-green-600" />
-              Required Documents
+              Optional Documents
             </h3>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-700">Driver's License / State ID *</Label>
+                <Label className="text-slate-700">Driver's License / State ID (Optional)</Label>
                 <div className="mt-2">
                   {formData.drivers_license_url ? (
                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
@@ -172,7 +169,7 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
               </div>
 
               <div>
-                <Label className="text-slate-700">Social Security Card / Work Permit *</Label>
+                <Label className="text-slate-700">Social Security Card / Work Permit (Optional)</Label>
                 <div className="mt-2">
                   {formData.social_security_card_url ? (
                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
