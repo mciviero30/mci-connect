@@ -26,6 +26,8 @@ import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { canCreateFinancialDocs, needsApproval } from "@/components/core/roleRules";
+import ApprovalBanner from "@/components/shared/ApprovalBanner";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -34,6 +36,15 @@ export default function CrearEstimado() {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('id');
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: 30000
+  });
+
+  const canCreate = user ? canCreateFinancialDocs(user) : false;
+  const requiresApproval = user ? needsApproval(user) : false;
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
@@ -148,11 +159,18 @@ export default function CrearEstimado() {
       const response = await generateQuoteNumber({});
       const quote_number = response.data.quote_number;
 
-      // Step 3: Build final data with generated number
+      // Step 3: Build final data with generated number + approval workflow
+      const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
       const finalData = {
         ...normalizedData,
         quote_number,
         status: 'draft',
+        approval_status: approvalStatus,
+        created_by_role: user?.position || user?.role || '',
+        ...(approvalStatus === 'approved' && {
+          approved_by: user.email,
+          approved_at: new Date().toISOString()
+        })
       };
 
       console.log('Final quote data (normalized):', finalData);
@@ -673,6 +691,32 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
   // Calculate totals using centralized function
   const { subtotal, tax_amount: taxAmount, total } = calculateQuoteTotals(formData.items, formData.tax_rate);
 
+  // Block non-authorized users
+  if (user && !canCreate) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-red-900 mb-2">
+              {language === 'es' ? 'Acceso Denegado' : 'Access Denied'}
+            </h2>
+            <p className="text-red-700">
+              {language === 'es' 
+                ? 'No tienes permisos para crear estimados. Solo CEO, Administrator, Admin, o Manager pueden crear documentos financieros.'
+                : 'You do not have permission to create quotes. Only CEO, Administrator, Admin, or Manager can create financial documents.'}
+            </p>
+            <Button 
+              className="mt-4" 
+              onClick={() => navigate(createPageUrl('Estimados'))}
+            >
+              {language === 'es' ? 'Volver a Estimados' : 'Back to Quotes'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-5xl mx-auto">
@@ -680,6 +724,16 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           title={editId ? t('editQuote') : t('newQuote')}
           showBack={true}
         />
+
+        {/* Approval Banner */}
+        {editId && existingQuote && (
+          <ApprovalBanner
+            approval_status={existingQuote.approval_status}
+            approved_by={existingQuote.approved_by}
+            rejected_by={existingQuote.rejected_by}
+            approval_notes={existingQuote.approval_notes}
+          />
+        )}
 
         {/* NEW: Fixed Total Bar */}
         <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-[#3B9FF3] to-blue-600 rounded-2xl shadow-xl border-2 border-blue-300">

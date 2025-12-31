@@ -34,6 +34,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invoice not found' }, { status: 404 });
     }
 
+    // APPROVAL GATE: Skip provisioning if not approved
+    const approval_status = invoice.approval_status || 'approved'; // Legacy: missing = approved
+    if (approval_status !== 'approved') {
+      if (import.meta.env?.DEV) {
+        console.log(`⏸️ Provisioning skipped: Invoice ${invoice_id} is ${approval_status}`);
+      }
+      return Response.json({
+        ok: false,
+        skipped: true,
+        reason: 'Invoice not approved',
+        approval_status: approval_status,
+        invoice_id
+      });
+    }
+
     let jobId = invoice.job_id;
     let job = null;
     const steps = {
