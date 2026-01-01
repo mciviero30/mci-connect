@@ -10,6 +10,7 @@ import Chat from './pages/Chat';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import Clientes from './pages/Clientes';
+import CodebaseExport from './pages/CodebaseExport';
 import CompanyInfo from './pages/CompanyInfo';
 import ComplianceHub from './pages/ComplianceHub';
 import Configuracion from './pages/Configuracion';
@@ -73,7 +74,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import CodebaseExport from './pages/CodebaseExport';
 import __Layout from './Layout.jsx';
 
 
@@ -90,6 +90,7 @@ export const PAGES = {
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
     "Clientes": Clientes,
+    "CodebaseExport": CodebaseExport,
     "CompanyInfo": CompanyInfo,
     "ComplianceHub": ComplianceHub,
     "Configuracion": Configuracion,
@@ -153,7 +154,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "CodebaseExport": CodebaseExport,
 }
 
 export const pagesConfig = {

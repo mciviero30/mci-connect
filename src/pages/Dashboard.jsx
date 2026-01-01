@@ -22,7 +22,8 @@ import {
   Settings as SettingsIcon,
   Save,
   X as XIcon,
-  Trophy
+  Trophy,
+  Download
 } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
@@ -721,6 +722,18 @@ export default function Dashboard() {
               </>
             ) : (
               <>
+                {isAdmin && (
+                  <Link to={createPageUrl('CodebaseExport')}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50/30 dark:hover:bg-green-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                    >
+                      <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Export ZIP</span>
+                    </Button>
+                  </Link>
+                )}
                 <Button
                   onClick={() => setShowKudosDialog(true)}
                   size="sm"
