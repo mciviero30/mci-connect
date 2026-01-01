@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileArchive, Folder, File, Download } from 'lucide-react';
-import JSZip from 'jszip';
+import { Upload, FileArchive, Folder, File } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 export default function ZipAnalyzer() {
   const [zipContent, setZipContent] = useState(null);
@@ -12,28 +12,19 @@ export default function ZipAnalyzer() {
   const analyzeZip = async (file) => {
     setLoading(true);
     try {
-      const zip = new JSZip();
-      const content = await zip.loadAsync(file);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
       
-      // Build file tree
-      const tree = {};
-      const files = [];
+      const response = await base44.functions.invoke('analyzeZip', { file_url });
       
-      content.forEach((relativePath, zipEntry) => {
-        files.push({
-          path: relativePath,
-          name: zipEntry.name,
-          dir: zipEntry.dir,
-          size: zipEntry._data?.uncompressedSize || 0
-        });
-      });
-      
-      setFileTree(files);
-      setZipContent(content);
-      
+      if (response.data.files) {
+        setFileTree(response.data.files);
+        setZipContent(response.data);
+      } else {
+        alert('Error al analizar el ZIP');
+      }
     } catch (error) {
       console.error('Error analyzing ZIP:', error);
-      alert('Error al analizar el ZIP');
+      alert('Error al analizar el ZIP: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -48,22 +39,7 @@ export default function ZipAnalyzer() {
     }
   };
 
-  const downloadFileContent = async (path) => {
-    if (!zipContent) return;
-    
-    try {
-      const fileContent = await zipContent.file(path).async('text');
-      const blob = new Blob([fileContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = path.split('/').pop();
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-    }
-  };
+
 
   const formatSize = (bytes) => {
     if (!bytes) return '0 B';
@@ -142,15 +118,6 @@ export default function ZipAnalyzer() {
                       <span className="text-xs text-slate-500">
                         {formatSize(item.size)}
                       </span>
-                      {!item.dir && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => downloadFileContent(item.path)}
-                        >
-                          <Download className="w-3 h-3" />
-                        </Button>
-                      )}
                     </div>
                   </div>
                 ))}
