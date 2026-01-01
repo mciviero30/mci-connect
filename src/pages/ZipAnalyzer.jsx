@@ -32,10 +32,40 @@ export default function ZipAnalyzer() {
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
-    if (file && file.name.endsWith('.zip')) {
+    if (!file) return;
+
+    const fileSizeKB = file.size / 1024;
+
+    if (file.name.endsWith('.zip')) {
       analyzeZip(file);
+    } else if (fileSizeKB >= 1 && fileSizeKB <= 15000) {
+      analyzeRegularFile(file);
     } else {
-      alert('Por favor sube un archivo ZIP');
+      alert(`Archivo muy grande (${fileSizeKB.toFixed(0)}KB). Límite: 1KB - 15MB`);
+    }
+  };
+
+  const analyzeRegularFile = async (file) => {
+    setLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        setFileTree([{
+          path: file.name,
+          name: file.name,
+          dir: false,
+          size: file.size,
+          content: content
+        }]);
+        setZipContent({ single_file: true });
+        setLoading(false);
+      };
+      reader.readAsText(file);
+    } catch (error) {
+      console.error('Error reading file:', error);
+      alert('Error al leer el archivo');
+      setLoading(false);
     }
   };
 
@@ -58,7 +88,7 @@ export default function ZipAnalyzer() {
             Analizador de ZIP
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-2">
-            Sube tu archivo ZIP para ver su contenido y estructura
+            Sube un archivo ZIP o archivos individuales (1KB - 15MB)
           </p>
         </div>
 
@@ -70,7 +100,7 @@ export default function ZipAnalyzer() {
             <div className="flex items-center gap-4">
               <input
                 type="file"
-                accept=".zip"
+                accept="*"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="zip-upload"
@@ -79,7 +109,7 @@ export default function ZipAnalyzer() {
                 <Button asChild disabled={loading}>
                   <span className="cursor-pointer">
                     <Upload className="w-4 h-4 mr-2" />
-                    {loading ? 'Analizando...' : 'Seleccionar ZIP'}
+                    {loading ? 'Analizando...' : 'Seleccionar Archivo'}
                   </span>
                 </Button>
               </label>
@@ -95,37 +125,41 @@ export default function ZipAnalyzer() {
         {fileTree && (
           <Card>
             <CardHeader>
-              <CardTitle>Contenido del ZIP</CardTitle>
+              <CardTitle>{zipContent?.single_file ? 'Contenido del Archivo' : 'Contenido del ZIP'}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-1 max-h-[600px] overflow-y-auto">
                 {fileTree.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {item.dir ? (
-                        <Folder className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      ) : (
-                        <File className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                      )}
-                      <span className="text-sm font-mono truncate">
-                        {item.path}
-                      </span>
+                  <div key={idx}>
+                    <div className="flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {item.dir ? (
+                          <Folder className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        ) : (
+                          <File className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        )}
+                        <span className="text-sm font-mono truncate">
+                          {item.path}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-xs text-slate-500">
+                          {formatSize(item.size)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-xs text-slate-500">
-                        {formatSize(item.size)}
-                      </span>
-                    </div>
+                    {item.content && (
+                      <pre className="mt-2 p-3 bg-slate-900 text-slate-100 rounded-lg text-xs overflow-x-auto max-h-96 font-mono">
+                        {item.content}
+                      </pre>
+                    )}
                   </div>
                 ))}
               </div>
 
               <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <p className="text-sm text-blue-900 dark:text-blue-300">
-                  💡 <strong>Para compartir con el asistente:</strong> Copia esta información y pégala en el chat para que pueda ver la estructura de tu ZIP.
+                  💡 <strong>Para compartir con el asistente:</strong> Copia esta información y pégala en el chat.
                 </p>
               </div>
             </CardContent>
