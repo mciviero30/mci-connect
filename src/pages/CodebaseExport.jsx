@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/toast';
 export default function CodebaseExport() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState(null);
-  const { toast } = useToast();
+  const { success, error: showError } = useToast();
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -31,11 +31,11 @@ export default function CodebaseExport() {
       window.URL.revokeObjectURL(url);
 
       setExportStatus('success');
-      toast.success('Export downloaded successfully!');
-    } catch (error) {
-      console.error('Export failed:', error);
+      success('Export downloaded successfully!');
+    } catch (err) {
+      console.error('Export failed:', err);
       setExportStatus('error');
-      toast.error('Export failed: ' + error.message);
+      showError('Export failed');
     } finally {
       setIsExporting(false);
     }
