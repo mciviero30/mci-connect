@@ -230,18 +230,17 @@ MCI Connect • Built on Base44
     // ========================================
     // GENERATE ZIP
     // ========================================
-    const zipBlob = await zip.generateAsync({ 
-      type: 'uint8array',
+    const zipBuffer = await zip.generateAsync({ 
+      type: 'arraybuffer',
       compression: 'DEFLATE',
-      compressionOptions: { level: 6 }
+      compressionOptions: { level: 9 }
     });
 
-    return new Response(zipBlob, {
+    return new Response(zipBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="mci-connect-entities-${new Date().toISOString().split('T')[0]}.zip"`,
-        'Content-Length': zipBlob.length.toString()
+        'Content-Disposition': `attachment; filename="mci-connect-export-${new Date().toISOString().split('T')[0]}.zip"`
       }
     });
 
