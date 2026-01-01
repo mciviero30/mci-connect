@@ -625,6 +625,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
+        { title: 'Project Import', url: createPageUrl("ProjectImport"), icon: Package },
       ]
     },
     {
