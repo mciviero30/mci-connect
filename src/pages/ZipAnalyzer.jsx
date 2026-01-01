@@ -50,7 +50,18 @@ export default function ZipAnalyzer() {
     try {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const content = e.target.result;
+        let content;
+        const isBinary = file.type.includes('pdf') || 
+                        file.type.includes('image') || 
+                        file.type.includes('zip') ||
+                        file.type.includes('application/octet-stream');
+        
+        if (isBinary) {
+          content = `[Archivo binario: ${file.type || 'tipo desconocido'}]\nTamaño: ${formatSize(file.size)}`;
+        } else {
+          content = e.target.result;
+        }
+        
         setFileTree([{
           path: file.name,
           name: file.name,
@@ -61,6 +72,12 @@ export default function ZipAnalyzer() {
         setZipContent({ single_file: true });
         setLoading(false);
       };
+      
+      reader.onerror = () => {
+        alert('Error al leer el archivo');
+        setLoading(false);
+      };
+      
       reader.readAsText(file);
     } catch (error) {
       console.error('Error reading file:', error);
@@ -100,7 +117,6 @@ export default function ZipAnalyzer() {
             <div className="flex items-center gap-4">
               <input
                 type="file"
-                accept="*"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="zip-upload"
