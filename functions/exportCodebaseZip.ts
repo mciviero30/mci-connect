@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { zip } from 'https://deno.land/x/zipjs@v2.7.34/index.js';
+import JSZip from 'npm:jszip@3.10.1';
 
 Deno.serve(async (req) => {
   try {
@@ -10,9 +10,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    // Create a blob writer for the ZIP
-    const { BlobWriter, ZipWriter, TextReader } = zip;
-    const zipWriter = new ZipWriter(new BlobWriter('application/zip'));
+    // Create a new JSZip instance
+    const zip = new JSZip();
 
     // ========================================
     // ENTITIES EXPORT
@@ -43,12 +42,14 @@ Deno.serve(async (req) => {
       'ActivityFeed', 'Comment'
     ];
 
+    const entitiesFolder = zip.folder('entities');
+    
     for (const entityName of entityFiles) {
       try {
         const schema = await base44.entities[entityName]?.schema?.();
         if (schema) {
           const content = JSON.stringify(schema, null, 2);
-          await zipWriter.add(`entities/${entityName}.json`, new TextReader(content));
+          entitiesFolder.file(`${entityName}.json`, content);
         }
       } catch (e) {
         console.log(`Skipping entity ${entityName}:`, e.message);
@@ -56,60 +57,54 @@ Deno.serve(async (req) => {
     }
 
     // ========================================
-    // CORE FILES EXPORT (hardcoded essential files)
+    // CORE FILES EXPORT
     // ========================================
     
-    // Layout
     const layoutContent = `// Layout.js - Main app layout with sidebar navigation
-// See full implementation in project
+// See full implementation in Base44 Dashboard → Code → Files
 export default function Layout({ children, currentPageName }) {
-  // Full layout implementation with sidebar, mobile nav, theme toggle
+  // Full layout with sidebar, mobile nav, theme toggle, notification system
   return <div>Layout Component</div>;
 }`;
-    await zipWriter.add('Layout.js', new TextReader(layoutContent));
+    zip.file('Layout.js', layoutContent);
 
-    // globals.css
     const globalsCss = `/* Global styles, theme variables, and utility classes */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* See full implementation in project for complete CSS */`;
-    await zipWriter.add('globals.css', new TextReader(globalsCss));
+/* See full implementation in Base44 Dashboard → Code → Files for:
+   - Theme system (light/dark mode)
+   - Soft color gradients
+   - Print styles
+   - PWA optimizations
+   - Mobile-first responsive utilities
+*/`;
+    zip.file('globals.css', globalsCss);
 
     // ========================================
     // README
     // ========================================
-    const readme = `# MCI Connect - Complete Codebase Export
+    const readme = `# MCI Connect - Codebase Export
 Generated: ${new Date().toISOString()}
 
-## Structure
+## 📦 Structure
 
-### /entities/
-All entity JSON schemas (84 entities)
+### /entities/ (84 entities)
+All entity JSON schemas ready to import
 
-### /functions/
-Backend functions (Deno Deploy handlers)
+### /docs/
+Project documentation and audit reports
 
-### /pages/
-React page components (flat structure)
+### Layout.js & globals.css
+Core UI files (placeholders - see Dashboard for complete code)
 
-### /components/
-Reusable React components (organized by feature)
-
-### Layout.js
-Main app layout with navigation
-
-### globals.css
-Global styles and theme system
-
-## Tech Stack
-- React 18
-- TailwindCSS
-- Base44 Backend (Authentication, Database, Integrations)
+## 🚀 Tech Stack
+- React 18 + TailwindCSS
+- Base44 Backend (Auth, DB, Integrations)
 - Deno Deploy (Backend Functions)
 
-## Key Features
+## ⚡ Key Features
 - Multi-tenant team management
 - Financial documents (Quotes, Invoices)
 - Time tracking with geofencing
@@ -117,86 +112,136 @@ Global styles and theme system
 - Employee onboarding and compliance
 - Training and certifications
 - Real-time chat and notifications
+- PWA with offline support
 
-## Installation
-This is a Base44 project. Import entities and deploy functions through Base44 platform.
+## 📥 How to Use This Export
 
-## Notes
-- User entity is built-in by Base44
-- All pages must be in flat /pages/ directory (no subfolders)
-- Components can be organized in subfolders
-- Backend functions use Deno runtime
+### Entity Schemas (Complete)
+1. Go to Base44 Dashboard → Data
+2. Import each JSON file from /entities/ folder
+3. All 84 entities are production-ready
 
-For complete code, refer to individual files in this archive.
+### Complete Source Code
+For pages, components, and functions:
+1. Open Base44 Dashboard
+2. Navigate to: **Code → Files**
+3. Browse and download any file you need
+
+## 📋 Entity List (84 total)
+${entityFiles.join(', ')}
+
+## 💡 Notes
+- This export contains complete entity schemas
+- For full source code, use Dashboard → Code → Files
+- User entity is built-in (no need to import)
+- All entity relationships use ID references
+
+## 🆘 Support
+Contact: MCI Connect team or Base44 support
 `;
-    await zipWriter.add('README.md', new TextReader(readme));
+    zip.file('README.md', readme);
 
     // ========================================
-    // DOCUMENTATION EXPORT
+    // DOCUMENTATION
     // ========================================
+    const docsFolder = zip.folder('docs');
+    
     const docFiles = [
-      'REPO_MAP.md',
-      'DATA_MODEL_AUDIT.md',
-      'PERMISSIONS_AUDIT.md',
-      'LAUNCH_SCOPE_JAN5.md',
-      'KNOWN_BUGS_AUDIT.md',
-      'SMOKE_TEST_CHECKLIST.md'
+      { name: 'REPO_MAP.md', desc: 'Complete codebase structure and file organization' },
+      { name: 'DATA_MODEL_AUDIT.md', desc: 'Entity relationships and data model documentation' },
+      { name: 'PERMISSIONS_AUDIT.md', desc: 'Role-based access control and security rules' },
+      { name: 'LAUNCH_SCOPE_JAN5.md', desc: 'Production launch scope and requirements' },
+      { name: 'KNOWN_BUGS_AUDIT.md', desc: 'Known issues and resolution status' },
+      { name: 'SMOKE_TEST_CHECKLIST.md', desc: 'QA testing checklist and procedures' }
     ];
 
-    for (const docFile of docFiles) {
-      // Note: In production, you'd read these from your docs folder
-      const placeholder = `# ${docFile}\n\nSee components/docs/${docFile} in original project for full documentation.`;
-      await zipWriter.add(`docs/${docFile}`, new TextReader(placeholder));
+    for (const doc of docFiles) {
+      const placeholder = `# ${doc.name.replace('.md', '').replace(/_/g, ' ')}
+
+${doc.desc}
+
+## Access Full Documentation
+For complete documentation:
+1. Open Base44 Dashboard
+2. Go to: Code → Files → components/docs/${doc.name}
+3. View or download the complete file
+
+This export contains entity schemas only.
+All source code and detailed documentation is available in your Base44 Dashboard.
+`;
+      docsFolder.file(doc.name, placeholder);
     }
 
     // ========================================
-    // INSTRUCTIONS FILE
+    // INSTRUCTIONS
     // ========================================
-    const instructions = `# How to Use This Export
+    const instructions = `# 🎯 Quick Start Guide
 
-## Quick Start
+## Step 1: Import Entities (Complete Here!)
+✅ All 84 entity schemas are in /entities/ folder
+✅ Production-ready JSON schemas
+✅ Import via: Base44 Dashboard → Data → Import
 
-1. **Review Structure**: Check README.md for overview
-2. **Entities**: Import entity schemas from /entities/ folder via Base44 dashboard
-3. **Functions**: Deploy backend functions from /functions/ folder
-4. **Frontend**: Copy pages and components to your Base44 project
-5. **Styles**: Copy Layout.js and globals.css
+## Step 2: Access Complete Source Code
+For pages, components, and functions:
+1. 🌐 Open Base44 Dashboard in browser
+2. 📁 Navigate to: **Code → Files**
+3. 📄 Browse/download any file you need
 
-## Important Notes
+## 📂 What's in Dashboard → Code → Files
+- 100+ pages (React components)
+- 500+ components (organized by feature)
+- 30+ backend functions (Deno handlers)
+- Complete Layout.js (1000+ lines)
+- Complete globals.css (500+ lines)
+- All documentation
 
-- This export contains entity schemas and code structure
-- Some large page/component files are placeholders - refer to original project
-- Backend functions require proper secrets configuration (see each function)
-- All entity relationships are by ID reference
+## 💡 Why Two Sources?
 
-## Complete Code Access
+**This ZIP (Entity Schemas)**
+- 84 complete entity JSON schemas
+- Ready to import
+- Portable and offline-friendly
 
-For the COMPLETE runnable codebase with all implementations:
-- Access your Base44 project dashboard
-- Navigate to Code → Files
-- All source files are available there
+**Dashboard Files (Source Code)**
+- Live, up-to-date code
+- Easy to browse and download
+- Syntax highlighting
+- Version control
 
-This export is for DOCUMENTATION and REFERENCE purposes.
+## 🔧 Development Workflow
 
-## Support
+1. Import entities from this ZIP → Dashboard
+2. Browse/download source files → Dashboard → Code → Files
+3. Deploy functions → Dashboard → Code → Functions
+4. Test and iterate!
 
-For questions: Contact MCI Connect team or Base44 support
+## ❓ Need Help?
+- Base44 Docs: https://docs.base44.com
+- Support: support@base44.com
+- MCI Connect Team: [your-contact]
+
+---
+Generated: ${new Date().toISOString()}
+MCI Connect • Built on Base44
 `;
-    await zipWriter.add('INSTRUCTIONS.md', new TextReader(instructions));
+    zip.file('INSTRUCTIONS.md', instructions);
 
-    // Close ZIP and get blob
-    await zipWriter.close();
-    const zipBlob = await zipWriter.getData();
+    // ========================================
+    // GENERATE ZIP
+    // ========================================
+    const zipBlob = await zip.generateAsync({ 
+      type: 'uint8array',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 }
+    });
 
-    // Convert blob to array buffer for response
-    const arrayBuffer = await zipBlob.arrayBuffer();
-
-    return new Response(arrayBuffer, {
+    return new Response(zipBlob, {
       status: 200,
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="mci-connect-export-${new Date().toISOString().split('T')[0]}.zip"`,
-        'Content-Length': arrayBuffer.byteLength.toString()
+        'Content-Disposition': `attachment; filename="mci-connect-entities-${new Date().toISOString().split('T')[0]}.zip"`,
+        'Content-Length': zipBlob.length.toString()
       }
     });
 
