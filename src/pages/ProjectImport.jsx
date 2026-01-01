@@ -93,13 +93,29 @@ export default function ProjectImport() {
     setDragActive(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      console.log('File dropped:', file.name, file.size, file.type);
+      
+      if (file.size === 0) {
+        alert('File appears to be empty (0 bytes). Please check the file and try again.');
+        return;
+      }
+      
+      setSelectedFile(file);
     }
   }, []);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      console.log('File selected:', file.name, file.size, file.type);
+      
+      if (file.size === 0) {
+        alert('File appears to be empty (0 bytes). Please check the file and try again.');
+        return;
+      }
+      
+      setSelectedFile(file);
     }
   };
 
