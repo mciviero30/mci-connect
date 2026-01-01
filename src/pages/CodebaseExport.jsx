@@ -17,23 +17,18 @@ export default function CodebaseExport() {
     try {
       const response = await base44.functions.invoke('exportCodebaseZip', {});
       
-      // Response.data is already an ArrayBuffer from the function
+      // Create blob from response
       const blob = new Blob([response.data], { type: 'application/zip' });
-      const url = URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob);
       
       // Trigger download
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `mci-connect-export-${new Date().toISOString().split('T')[0]}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `mci-connect-export-${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
       setExportStatus('success');
       success('Export downloaded successfully!');

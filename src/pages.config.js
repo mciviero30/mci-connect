@@ -19,6 +19,7 @@ import CrearEstimado from './pages/CrearEstimado';
 import CrearFactura from './pages/CrearFactura';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
+import Dashboard from './pages/Dashboard';
 import Directory from './pages/Directory';
 import EditarEstimado from './pages/EditarEstimado';
 import Empleados from './pages/Empleados';
@@ -73,8 +74,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import Dashboard from './pages/Dashboard';
-import ProjectImport from './pages/ProjectImport';
 import __Layout from './Layout.jsx';
 
 
@@ -100,6 +99,7 @@ export const PAGES = {
     "CrearFactura": CrearFactura,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
+    "Dashboard": Dashboard,
     "Directory": Directory,
     "EditarEstimado": EditarEstimado,
     "Empleados": Empleados,
@@ -154,8 +154,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "Dashboard": Dashboard,
-    "ProjectImport": ProjectImport,
 }
 
 export const pagesConfig = {
