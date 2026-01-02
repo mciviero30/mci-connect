@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
+import { canViewSensitiveEmployeeData, renderSensitiveField } from "@/components/utils/employeeSecurity";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -31,6 +33,12 @@ export default function MyProfile() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Merge auth user with Employee data for complete profile
+  const { profile: displayUser } = useEmployeeProfile(user?.email, user);
+  
+  // Check if user can view sensitive data (CEO/Admin/Administrator only)
+  const canViewSensitive = canViewSensitiveEmployeeData(user);
 
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['myCertifications', user?.email],
@@ -118,8 +126,8 @@ export default function MyProfile() {
         <div className="max-w-5xl mx-auto px-4 pt-8 pb-24">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white">Mi Perfil</h1>
-              <p className="text-blue-200 text-sm">Gestiona tu información personal</p>
+              <h1 className="text-2xl font-bold text-white">{t('myProfile')}</h1>
+              <p className="text-blue-200 text-sm">{t('information')}</p>
             </div>
             {!editing ? (
               <Button
@@ -128,7 +136,7 @@ export default function MyProfile() {
                 className="bg-white/10 border-white/30 text-white hover:bg-white/20"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                Editar
+                {t('edit')}
               </Button>
             ) : (
               <div className="flex gap-2">
@@ -136,18 +144,18 @@ export default function MyProfile() {
                   onClick={() => {
                     setEditing(false);
                     setFormData({
-                      phone: user?.phone || '',
-                      address: user?.address || '',
-                      emergency_contact_name: user?.emergency_contact_name || '',
-                      emergency_contact_phone: user?.emergency_contact_phone || '',
-                      emergency_contact_relationship: user?.emergency_contact_relationship || '',
+                      phone: displayUser?.phone || '',
+                      address: displayUser?.address || '',
+                      emergency_contact_name: displayUser?.emergency_contact_name || '',
+                      emergency_contact_phone: displayUser?.emergency_contact_phone || '',
+                      emergency_contact_relationship: displayUser?.emergency_contact_relationship || '',
                     });
                   }}
                   variant="outline"
                   className="bg-white/10 border-white/30 text-white hover:bg-white/20"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Cancelar
+                  {t('cancel')}
                 </Button>
                 <Button
                   onClick={handleSave}
@@ -155,7 +163,7 @@ export default function MyProfile() {
                   className="bg-white text-blue-700 hover:bg-blue-50"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {updateProfileMutation.isPending ? 'Guardando...' : 'Guardar'}
+                  {updateProfileMutation.isPending ? t('saving') : t('save')}
                 </Button>
               </div>
             )}
@@ -196,16 +204,16 @@ export default function MyProfile() {
                 </button>
                 
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white text-center">
-                  {getDisplayName(user)}
+                  {getDisplayName(displayUser)}
                 </h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">
-                  {user.position || 'Empleado'}
+                  {displayUser?.position || t('user')}
                 </p>
                 
-                {user.team_name && (
+                {displayUser?.team_name && (
                   <Badge className="bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border-0">
                     <MapPin className="w-3 h-3 mr-1" />
-                    {user.team_name}
+                    {displayUser.team_name}
                   </Badge>
                 )}
 
@@ -216,7 +224,7 @@ export default function MyProfile() {
                   className="mt-4 text-xs"
                 >
                   <Camera className="w-3 h-3 mr-1" />
-                  Cambiar foto
+                  {t('upload')}
                 </Button>
               </div>
 
@@ -227,17 +235,17 @@ export default function MyProfile() {
                   <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                     <Award className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalPoints}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Puntos</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('totalPoints')}</p>
                   </div>
                   <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
                     <Shield className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{myCertifications.length}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Certificaciones</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('certifications')}</p>
                   </div>
                   <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
                     <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{myRecognitions.length}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Reconocimientos</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('recognitions')}</p>
                   </div>
                 </div>
 
@@ -245,23 +253,23 @@ export default function MyProfile() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                     <Mail className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300 truncate">{user.email}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300 truncate">{displayUser?.email}</span>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                     <Phone className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.phone || 'No registrado'}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{displayUser?.phone || t('noData')}</span>
                   </div>
-                  {user.hire_date && (
+                  {displayUser?.hire_date && (
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                       <Calendar className="w-4 h-4 text-slate-400" />
                       <span className="text-sm text-slate-700 dark:text-slate-300">
-                        Desde {format(new Date(user.hire_date), 'MMM yyyy')}
+                        {format(new Date(displayUser.hire_date), 'MMM yyyy')}
                       </span>
                     </div>
                   )}
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                     <Briefcase className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.position || 'No asignado'}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{displayUser?.position || t('noData')}</span>
                   </div>
                 </div>
               </div>
@@ -301,20 +309,20 @@ export default function MyProfile() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <User className="w-4 h-4 text-blue-600" />
-                  Información Personal
+                  {t('information')}
                 </h3>
                 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{getDisplayName(user)}</p>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{getDisplayName(displayUser)}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.email}</p>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('email')}</Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.email}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Teléfono</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
                     {editing ? (
                       <PhoneInput
                         value={formData.phone}
@@ -322,25 +330,42 @@ export default function MyProfile() {
                         className="mt-1"
                       />
                     ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.phone || '—'}</p>
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.phone || '—'}</p>
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Posición</Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.position || '—'}</p>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('position')}</Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.position || '—'}</p>
                   </div>
                   <div className="md:col-span-2">
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dirección</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('address')}</Label>
                     {editing ? (
                       <Input
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        placeholder="Ingresa tu dirección"
+                        placeholder={t('address')}
                         className="mt-1"
                       />
                     ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.address || '—'}</p>
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.address || '—'}</p>
                     )}
+                  </div>
+                  
+                  {/* Sensitive Fields: DOB and SSN - Restricted Access */}
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('dateOfBirth')}
+                      {!canViewSensitive && <Shield className="w-3 h-3 text-amber-500" />}
+                    </Label>
+                    {renderSensitiveField(displayUser?.dob, 'dob', canViewSensitive, t)}
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('ssnTaxId')}
+                      {!canViewSensitive && <Shield className="w-3 h-3 text-amber-500" />}
+                    </Label>
+                    {renderSensitiveField(displayUser?.ssn_tax_id, 'ssn', canViewSensitive, t)}
                   </div>
                 </div>
               </CardContent>
@@ -351,25 +376,25 @@ export default function MyProfile() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCircle className="w-4 h-4 text-red-500" />
-                  Contacto de Emergencia
+                  {t('emergency_contact_name') || 'Emergency Contact'}
                 </h3>
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
                     {editing ? (
                       <Input
                         value={formData.emergency_contact_name}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-                        placeholder="Nombre del contacto"
+                        placeholder={t('fullName')}
                         className="mt-1"
                       />
                     ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_name || '—'}</p>
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.emergency_contact_name || '—'}</p>
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Teléfono</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
                     {editing ? (
                       <PhoneInput
                         value={formData.emergency_contact_phone}
@@ -377,20 +402,20 @@ export default function MyProfile() {
                         className="mt-1"
                       />
                     ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_phone || '—'}</p>
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.emergency_contact_phone || '—'}</p>
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Relación</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('reason') || 'Relationship'}</Label>
                     {editing ? (
                       <Input
                         value={formData.emergency_contact_relationship}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
-                        placeholder="Ej: Esposo/a, Padre"
+                        placeholder={t('reason')}
                         className="mt-1"
                       />
                     ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_relationship || '—'}</p>
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{displayUser?.emergency_contact_relationship || '—'}</p>
                     )}
                   </div>
                 </div>
@@ -403,7 +428,7 @@ export default function MyProfile() {
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                     <Award className="w-4 h-4 text-amber-500" />
-                    Reconocimientos Recientes
+                    {t('recentRecognitions')}
                   </h3>
                   
                   <div className="space-y-3">
@@ -434,7 +459,7 @@ export default function MyProfile() {
             <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">
-                  Acciones Rápidas
+                  {t('quickActions')}
                 </h3>
                 
                 <div className="space-y-2">
@@ -444,8 +469,8 @@ export default function MyProfile() {
                         <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Solicitar Tiempo</p>
-                        <p className="text-xs text-slate-500">Vacaciones o permisos</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('requestTimeOff')}</p>
+                        <p className="text-xs text-slate-500">{t('unpaidDaysOff')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
                     </div>
@@ -457,8 +482,8 @@ export default function MyProfile() {
                         <Receipt className="w-4 h-4 text-green-600 dark:text-green-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mis Gastos</p>
-                        <p className="text-xs text-slate-500">Subir recibos</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('my_expenses')}</p>
+                        <p className="text-xs text-slate-500">{t('uploadReceipt')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-green-600 transition-colors" />
                     </div>
@@ -470,8 +495,8 @@ export default function MyProfile() {
                         <Banknote className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mi Nómina</p>
-                        <p className="text-xs text-slate-500">Ver historial de pagos</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('myPayroll')}</p>
+                        <p className="text-xs text-slate-500">{t('details')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
                     </div>
@@ -483,8 +508,8 @@ export default function MyProfile() {
                         <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mis Horas</p>
-                        <p className="text-xs text-slate-500">Registrar tiempo</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('myHours')}</p>
+                        <p className="text-xs text-slate-500">{t('logHours')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
                     </div>
@@ -499,27 +524,27 @@ export default function MyProfile() {
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm flex items-center gap-2">
                     <Shield className="w-4 h-4 text-green-600" />
-                    Certificaciones
+                    {t('certifications')}
                   </h3>
-                  
+
                   <div className="space-y-2">
                     {myCertifications.slice(0, 4).map((cert) => {
                       const isExpired = cert.status === 'expired';
                       const daysLeft = cert.expiration_date 
                         ? differenceInDays(new Date(cert.expiration_date), new Date())
                         : null;
-                      
+
                       return (
                         <div key={cert.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                           <span className="text-sm text-slate-700 dark:text-slate-300 truncate flex-1">
                             {cert.certification_name}
                           </span>
                           {isExpired ? (
-                            <Badge className="bg-red-100 text-red-700 text-xs">Vencida</Badge>
+                            <Badge className="bg-red-100 text-red-700 text-xs">{t('rejected')}</Badge>
                           ) : daysLeft !== null && daysLeft <= 30 ? (
                             <Badge className="bg-amber-100 text-amber-700 text-xs">{daysLeft}d</Badge>
                           ) : (
-                            <Badge className="bg-green-100 text-green-700 text-xs">Activa</Badge>
+                            <Badge className="bg-green-100 text-green-700 text-xs">{t('active')}</Badge>
                           )}
                         </div>
                       );
