@@ -338,152 +338,57 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     }
   }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate, isLoading]);
 
-  // Auto-activate invited users and cleanup pending records
+  // ATOMIC MIGRATION: Sync employee data on first login
   useEffect(() => {
     if (isLoading || !user) return;
 
-    if (user.employment_status !== 'invited') {
-      // Cleanup pending employee record for active users
-      if (user.employment_status === 'active') {
-        const cleanupFlag = sessionStorage.getItem(`cleanup_${user.id}`);
-        if (cleanupFlag === 'done') return;
-
-        base44.entities.PendingEmployee.list().then(allPendingEmployees => {
-          const pendingEmployees = allPendingEmployees.filter(p => p.email?.toLowerCase() === user.email?.toLowerCase());
-          if (pendingEmployees.length > 0) {
-            if (import.meta.env.DEV) {
-              console.log('🧹 Cleaning up pending employee record');
-            }
-            base44.entities.PendingEmployee.delete(pendingEmployees[0].id).then(() => {
-              if (import.meta.env.DEV) {
-                console.log('✅ Pending record cleaned up');
-              }
-              sessionStorage.setItem(`cleanup_${user.id}`, 'done');
-            }).catch(err => {
-              if (import.meta.env.DEV) {
-                console.error('Error cleaning pending:', err);
-              }
-            });
-          }
-        }).catch(err => {
-          if (import.meta.env.DEV) {
-            console.error('Error fetching pending:', err);
-          }
-        });
-      }
+    // Skip if already migrated
+    const migrationFlag = sessionStorage.getItem(`migrated_${user.id}`);
+    if (migrationFlag === 'done') {
+      return;
+    }
+    if (migrationFlag === 'processing') {
       return;
     }
 
-    // Auto-activate invited users with safe merge
-    const activationFlag = sessionStorage.getItem(`activation_${user.id}`);
-    if (activationFlag === 'done') {
-      if (import.meta.env.DEV) {
-        console.log('✅ Activation already completed');
-      }
-      return;
-    }
-    if (activationFlag === 'processing') {
-      if (import.meta.env.DEV) {
-        console.log('⏳ Activation in progress, skipping');
-      }
-      return;
-    }
-
-    const autoActivateUser = async () => {
+    const performMigration = async () => {
       try {
-        sessionStorage.setItem(`activation_${user.id}`, 'processing');
+        sessionStorage.setItem(`migrated_${user.id}`, 'processing');
 
         if (import.meta.env.DEV) {
-          console.log('🔄 Auto-activating invited user:', user.email);
+          console.log('🔄 Running atomic migration for:', user.email);
         }
 
-        // SAFE MERGE: Migrate PendingEmployee → User with ZERO data loss
-        let migratedData = {};
-        let pendingRecord = null;
-
-        try {
-          const allPendingEmployees = await base44.entities.PendingEmployee.list();
-          const pendingEmployees = allPendingEmployees.filter(
-            p => normalizeEmail(p.email) === normalizeEmail(user.email)
-          );
-
-          if (pendingEmployees.length > 0) {
-            pendingRecord = pendingEmployees[0];
-
-            // Use profileMerge helper for COMPLETE migration
-            migratedData = migratePendingToUser(user, pendingRecord);
-
-            if (import.meta.env.DEV) {
-              console.log('📋 Migrating PendingEmployee data:', Object.keys(migratedData).filter(k => !k.startsWith('_')));
-            }
-
-            // Mark as migrated BEFORE deleting (audit trail)
-            await base44.entities.PendingEmployee.update(pendingRecord.id, {
-              data_migrated_to_user: true,
-              migrated_at: new Date().toISOString(),
-              status: 'active'
-            });
-
-            // Delete after successful migration
-            await base44.entities.PendingEmployee.delete(pendingRecord.id);
-          }
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error with pending employee migration:', error);
-          }
-        }
-
-        // Fetch team name if needed
-        let teamData = {};
-        const finalTeamId = migratedData.team_id || user.team_id;
-        if (finalTeamId && !migratedData.team_name && !user.team_name) {
-          try {
-            const teams = await base44.entities.Team.list();
-            const userTeam = teams.find(t => t.id === finalTeamId);
-            if (userTeam) teamData.team_name = userTeam.team_name;
-          } catch (error) {
-            if (import.meta.env.DEV) {
-              console.error('Error fetching team:', error);
-            }
-          }
-        }
-
-        // Build final update payload
-        const finalData = {
-          employment_status: 'active',
-          hire_date: user.hire_date || new Date().toISOString().split('T')[0],
-          onboarding_status: 'not_started',  // Will start onboarding
-          ...migratedData,
-          ...teamData
-        };
-
-        // CRITICAL: Never overwrite onboarding_completed if true
-        if (user.onboarding_completed === true) {
-          delete finalData.onboarding_status;
-          finalData.onboarding_completed = true;
-        }
-
-        // Always update (even if just status change)
-        await base44.auth.updateMe(finalData);
-
+        // Call backend migration function (idempotent)
+        const result = await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
+        
         if (import.meta.env.DEV) {
-          console.log('✅ User activated successfully');
+          console.log('✅ Migration result:', result.data);
+          if (result.data.steps) {
+            result.data.steps.forEach(step => console.log('  -', step));
+          }
+          if (result.data.warnings && result.data.warnings.length > 0) {
+            console.warn('⚠️ Migration warnings:', result.data.warnings);
+          }
         }
-        sessionStorage.setItem(`activation_${user.id}`, 'done');
 
-        // Invalidate queries to refresh user data
+        sessionStorage.setItem(`migrated_${user.id}`, 'done');
+
+        // Refresh all employee-related queries
         queryClient.invalidateQueries({ queryKey: ['currentUser'] });
         queryClient.invalidateQueries({ queryKey: ['employeeProfile'] });
+        queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
+
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.error('❌ Error auto-activating user:', error);
+          console.error('❌ Migration failed:', error);
         }
-        sessionStorage.removeItem(`activation_${user.id}`);
+        sessionStorage.removeItem(`migrated_${user.id}`);
       }
     };
 
-    autoActivateUser();
-  }, [user?.id, user?.employment_status, isLoading, queryClient]);
+    performMigration();
+  }, [user?.id, isLoading, queryClient]);
 
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],

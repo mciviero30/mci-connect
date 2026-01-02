@@ -18,6 +18,73 @@ import { canViewSensitiveEmployeeData } from "@/components/utils/employeeSecurit
 
 
 
+// Helper: Sync to EmployeeDirectory
+const syncToEmployeeDirectory = async (email, userData) => {
+  try {
+    const allDirectory = await base44.entities.EmployeeDirectory.list();
+    const existing = allDirectory.find(d => 
+      d.employee_email?.toLowerCase() === email.toLowerCase()
+    );
+
+    const directoryData = {
+      employee_email: email,
+      full_name: userData.full_name || '',
+      first_name: userData.first_name || '',
+      last_name: userData.last_name || '',
+      position: userData.position || '',
+      department: userData.department || '',
+      phone: userData.phone || '',
+      team_id: userData.team_id || '',
+      team_name: userData.team_name || '',
+      profile_photo_url: userData.profile_photo_url || '',
+      status: userData.employment_status === 'active' ? 'active' : 'inactive',
+      sync_source: 'user_direct',
+      last_synced_at: new Date().toISOString()
+    };
+
+    if (existing) {
+      await base44.entities.EmployeeDirectory.update(existing.id, directoryData);
+    } else {
+      await base44.entities.EmployeeDirectory.create(directoryData);
+    }
+  } catch (error) {
+    console.error('Failed to sync to EmployeeDirectory:', error);
+  }
+};
+
+// Helper: Create directory entry for new pending employee
+const createEmployeeDirectoryEntry = async (employeeData, status = 'pending') => {
+  try {
+    const allDirectory = await base44.entities.EmployeeDirectory.list();
+    const existing = allDirectory.find(d => 
+      d.employee_email?.toLowerCase() === employeeData.email.toLowerCase()
+    );
+
+    const directoryData = {
+      employee_email: employeeData.email,
+      full_name: employeeData.full_name || '',
+      first_name: employeeData.first_name || '',
+      last_name: employeeData.last_name || '',
+      position: employeeData.position || '',
+      department: employeeData.department || '',
+      phone: employeeData.phone || '',
+      team_id: employeeData.team_id || '',
+      team_name: employeeData.team_name || '',
+      status: status,
+      sync_source: 'pending_employee',
+      last_synced_at: new Date().toISOString()
+    };
+
+    if (existing) {
+      await base44.entities.EmployeeDirectory.update(existing.id, directoryData);
+    } else {
+      await base44.entities.EmployeeDirectory.create(directoryData);
+    }
+  } catch (error) {
+    console.error('Failed to create EmployeeDirectory entry:', error);
+  }
+};
+
 const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
@@ -65,13 +132,38 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       };
 
       if (employee) {
-        return await base44.entities.User.update(employee.id, payload);
+        // Update existing User
+        const result = await base44.entities.User.update(employee.id, payload);
+        
+        // Sync to EmployeeDirectory
+        await syncToEmployeeDirectory(employee.email, {
+          ...payload,
+          employment_status: employee.employment_status,
+          profile_photo_url: employee.profile_photo_url || employee.avatar_image_url
+        });
+        
+        return result;
       } else {
         // Create as PendingEmployee
-        return await base44.entities.PendingEmployee.create({
+        const newPending = await base44.entities.PendingEmployee.create({
           ...payload,
           status: 'pending'
         });
+        
+        // Create EmployeeDirectory entry for pending
+        await createEmployeeDirectoryEntry({
+          email: data.email,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: fullName,
+          position: data.position,
+          department: data.department,
+          phone: data.phone,
+          team_id: data.team_id,
+          team_name: data.team_name
+        }, 'pending');
+        
+        return newPending;
       }
     },
     onSuccess: async () => {
