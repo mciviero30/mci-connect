@@ -39,6 +39,7 @@ import {
   Shield,
   Bell,
   CheckCircle2,
+  Rocket,
 } from "lucide-react";
 import {
   Sidebar,
@@ -540,6 +541,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       section: 'COMPLIANCE',
       icon: Shield,
       items: [
+        { title: 'System Readiness', url: createPageUrl("SystemReadiness"), icon: Rocket },
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },

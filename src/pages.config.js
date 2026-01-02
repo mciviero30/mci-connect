@@ -82,6 +82,7 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import SystemReadiness from './pages/SystemReadiness';
 import __Layout from './Layout.jsx';
 
 
@@ -170,6 +171,7 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "SystemReadiness": SystemReadiness,
 }
 
 export const pagesConfig = {
