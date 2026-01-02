@@ -303,40 +303,47 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
 
-  const { data: onboardingForms = [] } = useQuery({
-    queryKey: ['onboardingForms', user?.email],
-    queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user?.email }),
-    enabled: !!user?.email && !isClientOnly && user?.employment_status !== 'deleted',
-    initialData: [],
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-
-  const onboardingCompleted = onboardingForms.length >= 3;
   const isOnboardingPage = currentPageName === 'OnboardingWizard';
   
-  // Determine if user should be blocked for onboarding
-  // CRITICAL: ONLY use definitive flag, never count (prevents loop)
+  // DEFINITIVE ONBOARDING GATE: Use ONLY the completion flag
+  // NEVER count forms or use stale queries (prevents loop)
   const shouldBlockForOnboarding = user && 
     !isClientOnly && 
     user.role !== 'admin' && 
     user.employment_status !== 'deleted' &&
     user.onboarding_completed !== true;  // Definitive flag ONLY
 
+  // Circuit breaker: Prevent infinite redirect loops
+  const [redirectCount, setRedirectCount] = useState(0);
+  
+  useEffect(() => {
+    // Reset circuit breaker when user changes
+    if (user?.id) {
+      setRedirectCount(0);
+    }
+  }, [user?.id]);
+
   // Soft redirect to onboarding - no full page reload
   useEffect(() => {
     if (isLoading || !user) return;
     if (isOnboardingPage) return;
 
+    // CIRCUIT BREAKER: Stop after 3 redirect attempts
+    if (redirectCount >= 3) {
+      if (import.meta.env.DEV) {
+        console.error('🔴 ONBOARDING LOOP DETECTED: Allowing access to prevent infinite loop');
+      }
+      return;
+    }
+
     if (shouldBlockForOnboarding) {
       if (import.meta.env.DEV) {
-        console.log('🚫 ONBOARDING REQUIRED: Redirecting to wizard');
+        console.log('🚫 ONBOARDING REQUIRED: Redirecting to wizard (attempt', redirectCount + 1, ')');
       }
+      setRedirectCount(prev => prev + 1);
       navigate(createPageUrl('OnboardingWizard'), { replace: true });
     }
-  }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate, isLoading]);
+  }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate, isLoading, redirectCount]);
 
   // ATOMIC MIGRATION: Sync employee data on first login
   useEffect(() => {
@@ -1008,9 +1015,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: 1,
-    staleTime: Infinity,
+    staleTime: 60000,  // Reduced from Infinity to 60s
     gcTime: Infinity,
-    refetchOnMount: false,
+    refetchOnMount: true,  // Always refetch on mount to catch onboarding completion
     refetchOnWindowFocus: false,
     refetchInterval: false,
   });

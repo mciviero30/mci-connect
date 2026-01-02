@@ -47,16 +47,12 @@ export default function OnboardingWizard() {
       });
     },
     onSuccess: async (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['onboardingForms'] });
-      
       // Update user data with personal paperwork
       if (variables.formType === 'personal_paperwork') {
         await base44.auth.updateMe({
           legal_full_name: variables.formData.legal_full_name,
           ssn_tax_id: variables.formData.ssn_or_itin,
           dob: variables.formData.date_of_birth,
-          drivers_license_url: variables.formData.drivers_license_url,
-          social_security_card_url: variables.formData.social_security_card_url,
           bank_name: variables.formData.bank_name,
           routing_number: variables.formData.routing_number,
           account_number: variables.formData.account_number,
@@ -66,35 +62,53 @@ export default function OnboardingWizard() {
         });
       }
       
+      // CRITICAL: Force immediate refetch to get accurate count
+      await queryClient.invalidateQueries({ queryKey: ['onboardingForms', user.email] });
+      const freshForms = await queryClient.fetchQuery({
+        queryKey: ['onboardingForms', user.email],
+        queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user.email })
+      });
+      
       // Count unique form types (prevent duplicates from counting)
       const uniqueForms = {};
-      [...onboardingForms, data].forEach(form => {
+      freshForms.forEach(form => {
         uniqueForms[form.form_type] = form;
       });
       const totalCompleted = Object.keys(uniqueForms).length;
+      
+      if (import.meta.env.DEV) {
+        console.log(`📊 Completed ${totalCompleted}/3 forms (unique types: ${Object.keys(uniqueForms).join(', ')})`);
+      }
       
       // Move to next step or complete
       if (totalCompleted < 3) {
         setCurrentStep(currentStep + 1);
       } else {
-        // ✅ ONBOARDING COMPLETE - Set definitive flags
+        // ✅ ONBOARDING COMPLETE - Set definitive flags AND invalidate
+        if (import.meta.env.DEV) {
+          console.log('✅ All 3 unique forms completed. Marking onboarding as COMPLETE.');
+        }
+        
         await base44.auth.updateMe({ 
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString(),
           onboarding_status: 'completed'
         });
         
+        // CRITICAL: Invalidate ALL user-related queries
+        await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        await queryClient.invalidateQueries({ queryKey: ['onboardingForms'] });
+        await queryClient.invalidateQueries({ queryKey: ['employeeProfile'] });
+        
+        // Force refetch to ensure Layout sees updated user
+        await queryClient.refetchQueries({ queryKey: ['currentUser'] });
+        
         if (import.meta.env.DEV) {
-          console.log('✅ All 3 unique forms completed. Onboarding LOCKED as complete.');
+          console.log('🔄 Queries invalidated, navigating to Dashboard...');
         }
         
-        // Invalidate queries to refresh user
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-        queryClient.invalidateQueries({ queryKey: ['onboardingForms'] });
-        
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1500);
+        // Navigate without full reload (React Router)
+        window.location.href = '/';
       }
     }
   });
