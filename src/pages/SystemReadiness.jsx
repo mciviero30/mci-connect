@@ -33,6 +33,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import SystemHealthMonitor from '@/components/admin/SystemHealthMonitor';
 
 export default function SystemReadiness() {
   const queryClient = useQueryClient();
@@ -422,6 +423,7 @@ export default function SystemReadiness() {
               <TabsTrigger value="payroll">Payroll</TabsTrigger>
               <TabsTrigger value="dashboards">Dashboards</TabsTrigger>
               <TabsTrigger value="human">Human Validation</TabsTrigger>
+              <TabsTrigger value="health">Health Monitor</TabsTrigger>
             </TabsList>
 
             <div className="flex-1 overflow-y-auto pb-32">
@@ -521,6 +523,10 @@ export default function SystemReadiness() {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="health" className="mt-0">
+                <SystemHealthMonitor />
               </TabsContent>
             </div>
           </Tabs>
