@@ -20,6 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { canViewSensitiveEmployeeData, maskSSN, getSensitiveFieldDisplay } from "@/components/utils/employeeSecurity";
+import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -27,10 +29,16 @@ export default function MyProfile() {
   const [editing, setEditing] = useState(false);
   const [showPhotoManager, setShowPhotoManager] = useState(false);
   
-  const { data: user } = useQuery({
+  const { data: authUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Merge auth user with EmployeeDirectory data
+  const { profile: user } = useEmployeeProfile(authUser?.email, authUser);
+  
+  // Check if user can view sensitive data
+  const canViewSensitive = canViewSensitiveEmployeeData(authUser);
 
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['myCertifications', user?.email],
@@ -119,7 +127,7 @@ export default function MyProfile() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-white">{t('myProfile')}</h1>
-              <p className="text-blue-200 text-sm">{t('managePersonalInfo')}</p>
+              <p className="text-blue-200 text-sm">{t('manageYourPersonalInformation')}</p>
             </div>
             {!editing ? (
               <Button
@@ -199,7 +207,7 @@ export default function MyProfile() {
                   {getDisplayName(user)}
                 </h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">
-                  {user.position || 'Empleado'}
+                  {user.position || t('employee')}
                 </p>
                 
                 {user.team_name && (
@@ -216,7 +224,7 @@ export default function MyProfile() {
                   className="mt-4 text-xs"
                 >
                   <Camera className="w-3 h-3 mr-1" />
-                  Cambiar foto
+                  {t('changePhoto')}
                 </Button>
               </div>
 
@@ -227,17 +235,17 @@ export default function MyProfile() {
                   <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                     <Award className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalPoints}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Puntos</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('totalPoints')}</p>
                   </div>
                   <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
                     <Shield className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{myCertifications.length}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Certificaciones</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('certifications')}</p>
                   </div>
                   <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
                     <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{myRecognitions.length}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Reconocimientos</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('recognitions')}</p>
                   </div>
                 </div>
 
@@ -249,19 +257,19 @@ export default function MyProfile() {
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                     <Phone className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.phone || 'No registrado'}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.phone || t('noData')}</span>
                   </div>
                   {user.hire_date && (
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                       <Calendar className="w-4 h-4 text-slate-400" />
                       <span className="text-sm text-slate-700 dark:text-slate-300">
-                        Desde {format(new Date(user.hire_date), 'MMM yyyy')}
+                        {t('since')} {format(new Date(user.hire_date), 'MMM yyyy')}
                       </span>
                     </div>
                   )}
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
                     <Briefcase className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.position || 'No asignado'}</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{user.position || t('noData')}</span>
                   </div>
                 </div>
               </div>
@@ -301,20 +309,20 @@ export default function MyProfile() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <User className="w-4 h-4 text-blue-600" />
-                  {t('personalInfo')}
+                  {t('personalInformation')}
                 </h3>
-                
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
                     <p className="text-slate-900 dark:text-white font-medium mt-1">{getDisplayName(user)}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('email')}</Label>
                     <p className="text-slate-900 dark:text-white font-medium mt-1">{user.email}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Teléfono</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
                     {editing ? (
                       <PhoneInput
                         value={formData.phone}
@@ -326,16 +334,62 @@ export default function MyProfile() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Posición</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('position')}</Label>
                     <p className="text-slate-900 dark:text-white font-medium mt-1">{user.position || '—'}</p>
                   </div>
+
+                  {/* Sensitive Data - DOB and SSN */}
+                  {canViewSensitive ? (
+                    <>
+                      <div>
+                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          {t('dateOfBirth')}
+                          <Shield className="w-3 h-3 text-green-600" />
+                        </Label>
+                        <p className="text-slate-900 dark:text-white font-medium mt-1">
+                          {user.dob ? format(new Date(user.dob), 'MMM dd, yyyy') : '—'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          {t('ssnTaxId')}
+                          <Shield className="w-3 h-3 text-green-600" />
+                        </Label>
+                        <p className="text-slate-900 dark:text-white font-medium mt-1">
+                          {user.ssn_tax_id || '—'}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          {t('dateOfBirth')}
+                          <Shield className="w-3 h-3 text-amber-500" />
+                        </Label>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 text-sm">
+                          {getSensitiveFieldDisplay('dob', user, authUser)}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                          {t('ssnTaxId')}
+                          <Shield className="w-3 h-3 text-amber-500" />
+                        </Label>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 text-sm">
+                          {getSensitiveFieldDisplay('ssn', user, authUser)}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
                   <div className="md:col-span-2">
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dirección</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('address')}</Label>
                     {editing ? (
                       <Input
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                        placeholder="Ingresa tu dirección"
+                        placeholder={t('enterAddress')}
                         className="mt-1"
                       />
                     ) : (
@@ -356,12 +410,12 @@ export default function MyProfile() {
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nombre</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
                     {editing ? (
                       <Input
                         value={formData.emergency_contact_name}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-                        placeholder="Nombre del contacto"
+                        placeholder={t('contactName')}
                         className="mt-1"
                       />
                     ) : (
@@ -369,7 +423,7 @@ export default function MyProfile() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Teléfono</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
                     {editing ? (
                       <PhoneInput
                         value={formData.emergency_contact_phone}
@@ -381,12 +435,12 @@ export default function MyProfile() {
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Relación</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('relationship')}</Label>
                     {editing ? (
                       <Input
                         value={formData.emergency_contact_relationship}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
-                        placeholder="Ej: Esposo/a, Padre"
+                        placeholder={t('exampleSpouseParent')}
                         className="mt-1"
                       />
                     ) : (
@@ -444,8 +498,8 @@ export default function MyProfile() {
                         <CalendarIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Solicitar Tiempo</p>
-                        <p className="text-xs text-slate-500">Vacaciones o permisos</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('requestTimeOff')}</p>
+                        <p className="text-xs text-slate-500">{t('vacationsOrLeave')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
                     </div>
@@ -457,8 +511,8 @@ export default function MyProfile() {
                         <Receipt className="w-4 h-4 text-green-600 dark:text-green-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mis Gastos</p>
-                        <p className="text-xs text-slate-500">Subir recibos</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('my_expenses')}</p>
+                        <p className="text-xs text-slate-500">{t('uploadReceipts')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-green-600 transition-colors" />
                     </div>
@@ -470,8 +524,8 @@ export default function MyProfile() {
                         <Banknote className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mi Nómina</p>
-                        <p className="text-xs text-slate-500">Ver historial de pagos</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('myPayroll')}</p>
+                        <p className="text-xs text-slate-500">{t('viewPaymentHistory')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
                     </div>
@@ -483,8 +537,8 @@ export default function MyProfile() {
                         <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">Mis Horas</p>
-                        <p className="text-xs text-slate-500">Registrar tiempo</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{t('myHours')}</p>
+                        <p className="text-xs text-slate-500">{t('logTime')}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
                     </div>
@@ -499,7 +553,7 @@ export default function MyProfile() {
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm flex items-center gap-2">
                     <Shield className="w-4 h-4 text-green-600" />
-                    Certificaciones
+                    {t('certifications')}
                   </h3>
                   
                   <div className="space-y-2">
@@ -515,11 +569,11 @@ export default function MyProfile() {
                             {cert.certification_name}
                           </span>
                           {isExpired ? (
-                            <Badge className="bg-red-100 text-red-700 text-xs">Vencida</Badge>
+                            <Badge className="bg-red-100 text-red-700 text-xs">{t('expired')}</Badge>
                           ) : daysLeft !== null && daysLeft <= 30 ? (
                             <Badge className="bg-amber-100 text-amber-700 text-xs">{daysLeft}d</Badge>
                           ) : (
-                            <Badge className="bg-green-100 text-green-700 text-xs">Activa</Badge>
+                            <Badge className="bg-green-100 text-green-700 text-xs">{t('active')}</Badge>
                           )}
                         </div>
                       );
