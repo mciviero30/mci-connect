@@ -16,14 +16,10 @@ Deno.serve(async (req) => {
 
     const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
     if (!apiKey) {
-      console.error('GOOGLE_MAPS_API_KEY not found in environment');
-      console.error('Available env vars:', Object.keys(Deno.env.toObject()));
       return Response.json({ 
         error: 'GOOGLE_MAPS_API_KEY not configured. Please set it in Base44 Dashboard > Settings > Environment Variables' 
-      }, { status: 500 });
+      }, { status: 400 });
     }
-    
-    console.log('API Key found, length:', apiKey.length);
 
     // Fetch team data
     const teams = await base44.entities.Team.list();
@@ -36,7 +32,8 @@ Deno.serve(async (req) => {
         results.push({
           teamId: team.id,
           teamName: team.team_name,
-          error: 'Team missing base_address'
+          error: 'Team missing base_address',
+          success: false
         });
         continue;
       }
@@ -45,6 +42,17 @@ Deno.serve(async (req) => {
       const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(team.base_address)}&destinations=${encodeURIComponent(jobAddress)}&key=${apiKey}`;
       
       const response = await fetch(url);
+      
+      if (!response.ok) {
+        results.push({
+          teamId: team.id,
+          teamName: team.team_name,
+          error: `HTTP error: ${response.status} ${response.statusText}`,
+          success: false
+        });
+        continue;
+      }
+      
       const data = await response.json();
 
       if (data.status !== 'OK' || !data.rows?.[0]?.elements?.[0]) {
@@ -52,9 +60,9 @@ Deno.serve(async (req) => {
         results.push({
           teamId: team.id,
           teamName: team.team_name,
-          error: `Failed to calculate distance: ${errorDetails}`
+          error: `Google Maps error: ${errorDetails}`,
+          success: false
         });
-        console.error(`Google Maps API error for team ${team.team_name}:`, data);
         continue;
       }
 
@@ -64,7 +72,8 @@ Deno.serve(async (req) => {
         results.push({
           teamId: team.id,
           teamName: team.team_name,
-          error: element.status
+          error: `Route error: ${element.status}`,
+          success: false
         });
         continue;
       }
