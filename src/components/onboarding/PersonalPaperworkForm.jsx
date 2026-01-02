@@ -25,9 +25,9 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validation - legal_full_name, dob REQUIRED; ssn OPTIONAL
-    if (!formData.legal_full_name || !formData.date_of_birth) {
-      alert('Please fill in all required personal information');
+    // Validation - ALL REQUIRED: legal_full_name, ssn, dob
+    if (!formData.legal_full_name || !formData.ssn_or_itin || !formData.date_of_birth) {
+      alert('Please fill in all required personal information including SSN/ITIN');
       return;
     }
     
@@ -76,15 +76,16 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-700">SSN or ITIN (Optional)</Label>
+                <Label className="text-slate-700">SSN or ITIN *</Label>
                 <Input
                   value={formData.ssn_or_itin}
                   onChange={(e) => setFormData({...formData, ssn_or_itin: e.target.value})}
                   placeholder="XXX-XX-XXXX"
                   className="bg-slate-50"
+                  required
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  You can provide this later if needed for payroll
+                  Required for payroll processing
                 </p>
               </div>
               
