@@ -29,21 +29,34 @@ export function usePaginatedEntityList({
   const { data: pageData, isLoading, error, refetch } = useQuery({
     queryKey: ['paginated', entityName, filters, currentCursor, pageSize],
     queryFn: async () => {
+      // Defensive check: ensure entityName is valid
+      if (!entityName || typeof entityName !== 'string') {
+        console.error('[usePaginatedEntityList] Invalid entityName:', entityName);
+        return { items: [], hasMore: false, nextCursor: null };
+      }
+
       // Call backend pagination function
       const functionName = `list${entityName}sPaginated`;
-      const result = await base44.functions.invoke(functionName, {
-        limit: pageSize,
-        cursor: currentCursor,
-        filters
-      });
-
-      return result;
+      
+      try {
+        const result = await base44.functions.invoke(functionName, {
+          limit: pageSize,
+          cursor: currentCursor,
+          filters
+        });
+        return result;
+      } catch (err) {
+        console.error(`[usePaginatedEntityList] Error calling ${functionName}:`, err);
+        // Return empty result on error to prevent crash
+        return { items: [], hasMore: false, nextCursor: null };
+      }
     },
-    enabled: currentPageIndex === pages.length, // Only fetch if we need this page
+    enabled: !!entityName && currentPageIndex === pages.length, // Only fetch if entityName valid and we need this page
     staleTime: 5 * 60 * 1000, // 5 min cache
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    retry: false, // Don't retry failed pagination calls
     ...queryOptions
   });
 
