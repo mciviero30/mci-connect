@@ -550,8 +550,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
-        ]
-        },</invoke>
+      ]
+    },
     {
       section: 'CLIENT ACCESS',
       icon: User,
