@@ -45,6 +45,7 @@ import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer
 import { getDisplayName, capitalizeName, formatPosition } from "@/components/utils/nameHelpers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EmployeeQRCode from "@/components/compliance/EmployeeQRCode";
+import { canViewSensitiveEmployeeData, maskSSN } from "@/components/utils/employeeSecurity";
 
 export default function EmployeeProfile() {
   const navigate = useNavigate();
@@ -646,12 +647,14 @@ export default function EmployeeProfile() {
 
   // Determine user permissions
   const isEditingSelf = currentUser && employee && currentUser.email === employee.email;
+  const canViewSensitive = canViewSensitiveEmployeeData(currentUser);
+  
   const isAdmin = currentUser?.role === 'admin';
   const isCEO = currentUser?.position === 'CEO';
   const isHR = currentUser?.department === 'HR' || currentUser?.department === 'hr';
   const isManager = currentUser?.position === 'manager';
   
-  const canEditSensitiveFields = isAdmin || isCEO || isHR;
+  const canEditSensitiveFields = canViewSensitive;
   const canEditPositionDepartment = isAdmin || isCEO || isHR || isManager;
   const canOnlyEditBasicInfo = isEditingSelf && !canEditSensitiveFields;
 
@@ -672,6 +675,11 @@ export default function EmployeeProfile() {
         console.log('🔧 Fixed team_name from team_id:', { team_id: employee.team_id, team_name: teamName });
       }
 
+      // Mask SSN if user doesn't have permission
+      const displaySSN = canViewSensitive 
+        ? (employee.ssn_tax_id || '')
+        : maskSSN(employee.ssn_tax_id);
+      
       setEditForm({
         full_name: properFullName,
         position: formatPosition(employee.position) || '',
@@ -681,7 +689,7 @@ export default function EmployeeProfile() {
         tshirt_size: employee.tshirt_size || '',
         department: employee.department || '',
         dob: employee.dob ? format(new Date(employee.dob), 'yyyy-MM-dd') : '',
-        ssn_tax_id: employee.ssn_tax_id || '',
+        ssn_tax_id: displaySSN,
         hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : '',
         team_id: employee.team_id || '',
         team_name: teamName
@@ -954,7 +962,7 @@ export default function EmployeeProfile() {
                   </div>
                 )}
 
-                {employee.dob && (
+                {employee.dob && canViewSensitive && (
                   <div className="flex items-center gap-2 text-gray-700">
                     <Calendar className="w-4 h-4 text-gray-500" />
                     <span>Born: {format(new Date(employee.dob), 'MMM dd, yyyy')}</span>
@@ -1396,30 +1404,31 @@ export default function EmployeeProfile() {
                     {!canEditPositionDepartment && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos Manager/HR/CEO/Admin</p>}
                   </div>
 
-                  <div>
-                    <Label htmlFor="dob" className="text-gray-900 font-medium">Date of Birth</Label>
-                    <Input
-                      id="dob"
-                      type="date"
-                      value={editForm.dob}
-                      onChange={(e) => setEditForm({...editForm, dob: e.target.value})}
-                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
-                      disabled={canOnlyEditBasicInfo}
-                    />
-                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
-                  </div>
+                  {canViewSensitive && (
+                    <div>
+                      <Label htmlFor="dob" className="text-gray-900 font-medium">Date of Birth</Label>
+                      <Input
+                        id="dob"
+                        type="date"
+                        value={editForm.dob}
+                        onChange={(e) => setEditForm({...editForm, dob: e.target.value})}
+                        className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      />
+                    </div>
+                  )}
 
-                  <div>
-                    <Label htmlFor="ssn_tax_id" className="text-gray-900 font-medium">SSN/Tax ID</Label>
-                    <Input
-                      id="ssn_tax_id"
-                      value={editForm.ssn_tax_id}
-                      onChange={(e) => setEditForm({...editForm, ssn_tax_id: e.target.value})}
-                      className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
-                      disabled={canOnlyEditBasicInfo}
-                    />
-                    {canOnlyEditBasicInfo && <p className="text-xs text-gray-500 mt-1">🔒 Requiere permisos HR/CEO/Admin</p>}
-                  </div>
+                  {canViewSensitive && (
+                    <div>
+                      <Label htmlFor="ssn_tax_id" className="text-gray-900 font-medium">SSN/Tax ID</Label>
+                      <Input
+                        id="ssn_tax_id"
+                        value={editForm.ssn_tax_id}
+                        onChange={(e) => setEditForm({...editForm, ssn_tax_id: e.target.value})}
+                        placeholder="XXX-XX-XXXX"
+                        className="bg-gray-50 border-gray-200 text-gray-900 mt-1"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1585,6 +1594,13 @@ export default function EmployeeProfile() {
                     team_id: editForm.team_id || null,
                     team_name: editForm.team_name || null
                   };
+                  
+                  // Strip sensitive fields if user can't edit them
+                  if (!canViewSensitive) {
+                    delete submitData.dob;
+                    delete submitData.ssn_tax_id;
+                  }
+                  
                   console.log('📤 Submitting form data:', submitData);
                   updateEmployeeMutation.mutate(submitData);
                 }}
