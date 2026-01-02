@@ -194,7 +194,7 @@ export default function ExecutiveDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-blue-700">
+              <p className="text-2xl font-bold text-yellow-700">
                 ${totalCommissionsCalculated.toLocaleString()}
               </p>
               <p className="text-xs text-slate-600 mt-1">
@@ -221,7 +221,7 @@ export default function ExecutiveDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-yellow-700">
+              <p className="text-2xl font-bold text-blue-700">
                 ${totalCommissionsApproved.toLocaleString()}
               </p>
               <p className="text-xs text-slate-600 mt-1">

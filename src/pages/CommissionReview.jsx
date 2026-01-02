@@ -62,6 +62,7 @@ export default function CommissionReview() {
       setSelectedResult(null);
       setAdjustedRate('');
       setNotes('');
+      alert('✅ Commission approved successfully. Payment can now be processed.');
     },
     onError: (error) => {
       alert(error?.response?.data?.error || 'Failed to approve commission');
@@ -178,13 +179,13 @@ export default function CommissionReview() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'calculated':
-        return <Badge className="bg-yellow-600">Pending Review</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 border border-yellow-300">Pending Review</Badge>;
       case 'approved':
-        return <Badge className="bg-green-600">Approved</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 border border-blue-300">Approved - Awaiting Payment</Badge>;
       case 'paid':
-        return <Badge className="bg-blue-600">Paid</Badge>;
+        return <Badge className="bg-green-100 text-green-800 border border-green-300">Paid</Badge>;
       case 'invalidated':
-        return <Badge variant="destructive">Invalidated</Badge>;
+        return <Badge className="bg-red-100 text-red-800 border border-red-300">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -238,10 +239,14 @@ export default function CommissionReview() {
         {/* Pending Review */}
         {calculatedResults.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-yellow-600" />
-              Pending Review
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-yellow-500 rounded-full"></div>
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-6 h-6 text-yellow-600" />
+                Pending Review
+                <Badge className="bg-yellow-100 text-yellow-800">{calculatedResults.length}</Badge>
+              </h2>
+            </div>
             <div className="grid gap-4">
               {calculatedResults.map((result) => (
                 <Card key={result.id}>
@@ -293,10 +298,14 @@ export default function CommissionReview() {
         {/* Approved (Ready to Pay) */}
         {approvedResults.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              Approved - Ready to Pay
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-blue-500 rounded-full"></div>
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <CheckCircle className="w-6 h-6 text-blue-600" />
+                Approved - Ready to Pay
+                <Badge className="bg-blue-100 text-blue-800">{approvedResults.length}</Badge>
+              </h2>
+            </div>
             <div className="grid gap-4">
               {approvedResults.map((result) => (
                 <Card key={result.id}>
@@ -350,10 +359,14 @@ export default function CommissionReview() {
         {/* Paid */}
         {paidResults.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-blue-600" />
-              Paid Commissions
-            </h2>
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-green-500 rounded-full"></div>
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <CreditCard className="w-6 h-6 text-green-600" />
+                Paid Commissions
+                <Badge className="bg-green-100 text-green-800">{paidResults.length}</Badge>
+              </h2>
+            </div>
             <div className="grid gap-4">
               {paidResults.slice(0, 10).map((result) => (
                 <Card key={result.id}>
@@ -411,6 +424,9 @@ export default function CommissionReview() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Review & Approve Commission</DialogTitle>
+            <p className="text-sm text-slate-600 mt-2">
+              Review the calculation and adjust the rate if needed. Approving will allow payment processing.
+            </p>
           </DialogHeader>
           {selectedResult && (
             <div className="space-y-4">
@@ -484,15 +500,14 @@ export default function CommissionReview() {
       <Dialog open={showPayDialog} onOpenChange={setShowPayDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Pay Commission</DialogTitle>
+            <DialogTitle className="text-red-600">⚠️ Pay Commission - Critical Action</DialogTitle>
           </DialogHeader>
           {selectedResult && (
             <div className="space-y-4">
               <Alert className="border-red-300 bg-red-50">
                 <AlertCircle className="w-4 h-4 text-red-600" />
                 <AlertDescription className="text-red-800">
-                  <strong>⚠️ Critical Action:</strong> This will create a payroll entry and accounting transaction. 
-                  This action is <strong>IRREVERSIBLE</strong> and will immediately process the payment.
+                  <strong>Warning:</strong> This will create a payroll entry and accounting transaction. This action cannot be undone.
                 </AlertDescription>
               </Alert>
 

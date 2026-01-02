@@ -1,69 +1,25 @@
+
 import * as React from "react"
+import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 import { cn } from "@/lib/utils"
 
-const TooltipProvider = ({ children }) => {
-  return <>{children}</>
-}
+const TooltipProvider = TooltipPrimitive.Provider
 
-const Tooltip = ({ children }) => {
-  const [open, setOpen] = React.useState(false)
-  
-  return (
-    <div 
-      className="relative inline-block"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      {React.Children.map(children, child => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child, { open })
-        }
-        return child
-      })}
-    </div>
-  )
-}
+const Tooltip = TooltipPrimitive.Root
 
-const TooltipTrigger = React.forwardRef(({ className, children, asChild, ...props }, ref) => {
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, {
-      ref,
-      className: cn("cursor-pointer", className, children.props.className),
-      ...props
-    });
-  }
-  
-  return (
-    <div ref={ref} className={cn("cursor-pointer", className)} {...props}>
-      {children}
-    </div>
-  );
-})
-TooltipTrigger.displayName = "TooltipTrigger"
+const TooltipTrigger = TooltipPrimitive.Trigger
 
-const TooltipContent = React.forwardRef(({ className, sideOffset = 4, children, open, ...props }, ref) => {
-  if (!open) return null
-  
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "absolute z-50 px-3 py-1.5 text-sm rounded-md shadow-md",
-        "bg-slate-900 text-white border border-slate-800",
-        "animate-in fade-in-0 zoom-in-95",
-        "pointer-events-none",
-        "left-1/2 -translate-x-1/2 bottom-full mb-2",
-        "whitespace-nowrap",
-        className
-      )}
-      style={{ marginBottom: sideOffset }}
-      {...props}
-    >
-      {children}
-      <div className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-slate-900 border-r border-b border-slate-800 rotate-45 -mt-1" />
-    </div>
-  )
-})
-TooltipContent.displayName = "TooltipContent"
+const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={cn(
+      "z-50 overflow-hidden rounded-md bg-slate-900 px-3 py-1.5 text-xs text-slate-50 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    )}
+    {...props}
+  />
+))
+TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }

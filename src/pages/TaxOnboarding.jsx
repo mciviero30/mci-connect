@@ -151,6 +151,8 @@ export default function TaxOnboarding() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['taxProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      alert('✅ Tax profile completed successfully. You now have full access to the system.');
       navigate(createPageUrl('Dashboard'), { replace: true });
     },
     onError: (error) => {

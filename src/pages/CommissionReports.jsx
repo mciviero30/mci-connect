@@ -206,13 +206,13 @@ export default function CommissionReports() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'calculated':
-        return <Badge className="bg-yellow-600">Calculated</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 border border-yellow-300">Pending Review</Badge>;
       case 'approved':
-        return <Badge className="bg-green-600">Approved</Badge>;
+        return <Badge className="bg-blue-100 text-blue-800 border border-blue-300">Approved - Awaiting Payment</Badge>;
       case 'paid':
-        return <Badge className="bg-blue-600">Paid</Badge>;
+        return <Badge className="bg-green-100 text-green-800 border border-green-300">Paid</Badge>;
       case 'invalidated':
-        return <Badge variant="destructive">Invalidated</Badge>;
+        return <Badge className="bg-red-100 text-red-800 border border-red-300">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -256,10 +256,10 @@ export default function CommissionReports() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600">Pending Payment</p>
-                  <p className="text-2xl font-bold text-yellow-600">${totalPending.toLocaleString()}</p>
+                  <p className="text-sm text-slate-600">Awaiting Payment</p>
+                  <p className="text-2xl font-bold text-blue-600">${totalPending.toLocaleString()}</p>
                 </div>
-                <Calendar className="w-8 h-8 text-yellow-600" />
+                <Calendar className="w-8 h-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -378,8 +378,8 @@ export default function CommissionReports() {
                             <p className="font-medium text-green-600">${group.total_paid.toLocaleString()}</p>
                           </div>
                           <div>
-                            <span className="text-slate-600">Pending:</span>
-                            <p className="font-medium text-yellow-600">${(group.total_commission - group.total_paid).toLocaleString()}</p>
+                            <span className="text-slate-600">Awaiting Payment:</span>
+                            <p className="font-medium text-blue-600">${(group.total_commission - group.total_paid).toLocaleString()}</p>
                           </div>
                         </div>
                       </div>
@@ -431,8 +431,8 @@ export default function CommissionReports() {
                             <p className="font-medium text-green-600">${group.total_paid.toLocaleString()}</p>
                           </div>
                           <div>
-                            <span className="text-slate-600">Pending:</span>
-                            <p className="font-medium text-yellow-600">${(group.total_commission - group.total_paid).toLocaleString()}</p>
+                            <span className="text-slate-600">Awaiting Payment:</span>
+                            <p className="font-medium text-blue-600">${(group.total_commission - group.total_paid).toLocaleString()}</p>
                           </div>
                         </div>
                       </div>
