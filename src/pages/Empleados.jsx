@@ -214,29 +214,28 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
         </div>
       )}
       {!canViewSensitive && (
-        <div>
-          <Alert className="bg-amber-50 border-amber-200">
-            <AlertDescription className="text-amber-800 text-sm">
-              🔒 DOB and SSN fields require CEO/Admin/Administrator permissions
-            </AlertDescription>
-          </Alert>
-        <div>
-          <Label>T-Shirt Size</Label>
-          <select 
-            value={formData.tshirt_size} 
-            onChange={(e) => setFormData({...formData, tshirt_size: e.target.value})}
-            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
-          >
-            <option value="">Select</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
-            <option value="XXXL">XXXL</option>
-          </select>
-        </div>
+        <Alert className="bg-amber-50 border-amber-200">
+          <AlertDescription className="text-amber-800 text-sm">
+            🔒 DOB and SSN fields require CEO/Admin/Administrator permissions
+          </AlertDescription>
+        </Alert>
       )}
+
+      <div>
+        <Label>T-Shirt Size</Label>
+        <select 
+          value={formData.tshirt_size} 
+          onChange={(e) => setFormData({...formData, tshirt_size: e.target.value})}
+          className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
+        >
+          <option value="">Select</option>
+          <option value="S">S</option>
+          <option value="M">M</option>
+          <option value="L">L</option>
+          <option value="XL">XL</option>
+          <option value="XXL">XXL</option>
+          <option value="XXXL">XXXL</option>
+        </select>
       </div>
 
       <div>
