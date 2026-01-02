@@ -80,6 +80,7 @@ import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
+import TaxProfileGate from "@/components/tax/TaxProfileGate";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -1037,11 +1038,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       <ErrorBoundary>
         <LanguageProvider>
           <PermissionsProvider>
-            <AgreementGate user={user}>
-              <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                {children}
-              </LayoutContent>
-            </AgreementGate>
+            <TaxProfileGate user={user}>
+              <AgreementGate user={user}>
+                <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                  {children}
+                </LayoutContent>
+              </AgreementGate>
+            </TaxProfileGate>
           </PermissionsProvider>
         </LanguageProvider>
       </ErrorBoundary>
