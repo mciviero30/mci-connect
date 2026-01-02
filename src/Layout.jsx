@@ -519,7 +519,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target },
         { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users },
         { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
-        { title: 'Bonuses', url: createPageUrl("BonusConfiguration"), icon: Award },
       ]
     },
     {
@@ -550,8 +549,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
-      ]
-    },
+        { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
+        ]
+        },</invoke>
     {
       section: 'CLIENT ACCESS',
       icon: User,
