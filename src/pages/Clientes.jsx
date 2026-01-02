@@ -51,7 +51,15 @@ export default function Clientes() {
     queryKey: 'customers',
     fetchFn: async ({ skip, limit }) => {
       const allCustomers = await base44.entities.Customer.list('-created_date', limit + skip);
-      return allCustomers.slice(skip, skip + limit);
+      // Normalize data structure - flatten data object to top level
+      const normalized = allCustomers.map(c => ({
+        ...c,
+        ...(c.data || {}),
+        id: c.id,
+        created_date: c.created_date,
+        updated_date: c.updated_date
+      }));
+      return normalized.slice(skip, skip + limit);
     },
     pageSize: 50,
     staleTime: 5 * 60 * 1000,
