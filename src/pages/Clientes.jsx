@@ -290,7 +290,6 @@ export default function Clientes() {
             hasMore={hasNextPage}
             isLoading={isFetchingNextPage}
             totalLoaded={totalLoaded}
-            language={language}
           />
         )}
 
