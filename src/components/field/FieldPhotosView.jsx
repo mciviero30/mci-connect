@@ -61,6 +61,13 @@ export default function FieldPhotosView({ jobId }) {
 
   const handleCreatePhoto = () => {
     if (!newPhoto.file_url) return;
+    
+    // CRITICAL: Always link photo to job
+    if (!jobId) {
+      console.error('Cannot create photo without job_id');
+      return;
+    }
+    
     createPhotoMutation.mutate({
       job_id: jobId,
       file_url: newPhoto.file_url,

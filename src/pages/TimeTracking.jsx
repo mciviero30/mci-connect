@@ -59,33 +59,27 @@ export default function TimeTracking() {
     enabled: !!user,
   });
 
-  // Clock In with geofencing - NOT USED, replaced by LiveTimeTracker
+  // Clock In mutation - used by LiveTimeTracker
   const clockInMutation = useMutation({
-    mutationFn: async (jobId) => {
+    mutationFn: async (timeEntryData) => {
       if (!user?.email || !user?.full_name) {
         throw new Error('User data not available');
       }
       
-      const now = new Date();
-      return await base44.entities.TimeEntry.create({
+      // CRITICAL: Ensure all required fields are present
+      const completeData = {
         employee_email: user.email,
         employee_name: user.full_name,
-        date: format(now, 'yyyy-MM-dd'),
-        check_in: format(now, 'HH:mm:ss'),
-        job_id: jobId || '',
-        job_name: '',
-        breaks: [],
-        total_break_minutes: 0,
-        status: 'pending',
-        geofence_validated: true,
-        requires_location_review: false,
-        exceeds_max_hours: false
-      });
+        ...timeEntryData,
+        status: 'pending'
+      };
+      
+      return await base44.entities.TimeEntry.create(completeData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
-      toast.success(language === 'es' ? '✅ Entrada registrada con geofencing' : '✅ Clocked in with geofencing');
+      toast.success(language === 'es' ? '✅ Entrada registrada' : '✅ Clocked in');
     },
     onError: (error) => {
       toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
@@ -212,8 +206,8 @@ export default function TimeTracking() {
         {/* Live Time Tracker with Geofencing */}
         <LiveTimeTracker 
           trackingType="work"
-          onSave={(data) => {
-            clockInMutation.mutate(data);
+          onSave={(timeEntryData) => {
+            clockInMutation.mutate(timeEntryData);
           }}
           isLoading={clockInMutation.isPending}
         />

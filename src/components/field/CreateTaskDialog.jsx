@@ -235,6 +235,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
           autoTitle = getNextWallNumber();
         }
         
+        // CRITICAL: Always link task to job
+        if (!jobId) {
+          console.error('Cannot create task without job_id');
+          return;
+        }
+        
         createTaskMutation.mutate({
           title: autoTitle,
           job_id: jobId,

@@ -108,9 +108,20 @@ export default function Field() {
     refetchOnWindowFocus: false
   });
 
+  // CRITICAL: Only fetch tasks linked to assigned jobs
   const { data: tasks = [] } = useQuery({
-    queryKey: ['field-tasks'],
-    queryFn: () => base44.entities.Task.list('-created_date'),
+    queryKey: ['field-tasks', jobs.map(j => j.id).join(',')],
+    queryFn: async () => {
+      if (jobs.length === 0) return [];
+      
+      // Fetch tasks only for jobs user has access to
+      const jobIds = jobs.map(j => j.id);
+      const allTasks = await base44.entities.Task.list('-created_date');
+      
+      // Filter: only tasks belonging to accessible jobs
+      return allTasks.filter(task => task.job_id && jobIds.includes(task.job_id));
+    },
+    enabled: jobs.length > 0,
     staleTime: 300000,
     refetchOnMount: false,
     refetchOnWindowFocus: false

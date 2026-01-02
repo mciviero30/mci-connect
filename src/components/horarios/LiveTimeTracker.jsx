@@ -195,6 +195,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           jobName: job.name,
           location,
           onBreak: false,
+          breaks: [],
           breakDuration: 0,
           workType,
           taskDetails,
@@ -281,6 +282,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         jobName: job.name,
         location,
         onBreak: false,
+        breaks: [],
         breakDuration: 0,
         workType,
         taskDetails,
@@ -410,7 +412,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         }
       }
 
+      // CRITICAL FIX: Include ALL required TimeEntry fields + Job linkage
       onSave({
+        employee_email: user.email,
+        employee_name: user.full_name,
         job_id: activeSession.jobId,
         job_name: activeSession.jobName,
         date: new Date().toISOString().split('T')[0],
@@ -420,10 +425,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         check_in_longitude: activeSession.location.lng,
         check_out_latitude: location.lat,
         check_out_longitude: location.lng,
-        hours_worked: totalHours,
-        lunch_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
-        work_type: activeSession.workType,
-        task_details: activeSession.taskDetails,
+        hours_worked: Number(totalHours.toFixed(2)),
+        breaks: activeSession.breaks || [],
+        total_break_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
+        hour_type: totalHours > 8 ? 'overtime' : 'normal',
+        work_type: activeSession.workType || 'normal',
+        task_details: activeSession.taskDetails || '',
+        status: 'pending',
         geofence_validated: activeSession.workType === 'driving' ? false : true,
         geofence_distance_meters: activeSession.distanceMeters,
         requires_location_review: false,
@@ -444,18 +452,40 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     let updatedSession;
 
     if (activeSession.onBreak) {
+      // End break
       const breakTime = now - activeSession.breakStartTime;
+      const durationMinutes = Math.floor(breakTime / (1000 * 60));
+      
+      // Update last break in breaks array
+      const breaks = [...(activeSession.breaks || [])];
+      const lastBreak = breaks[breaks.length - 1];
+      if (lastBreak && !lastBreak.end_time) {
+        lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        lastBreak.duration_minutes = durationMinutes;
+      }
+      
       updatedSession = {
         ...activeSession,
         onBreak: false,
         breakDuration: activeSession.breakDuration + breakTime,
         breakStartTime: null,
+        breaks
       };
     } else {
+      // Start break
+      const breaks = [...(activeSession.breaks || [])];
+      breaks.push({
+        type: 'lunch',
+        start_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        end_time: null,
+        duration_minutes: 0
+      });
+      
       updatedSession = {
         ...activeSession,
         onBreak: true,
         breakStartTime: now,
+        breaks
       };
     }
     localStorage.setItem(storageKey, JSON.stringify(updatedSession));
