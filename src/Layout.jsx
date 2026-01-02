@@ -551,6 +551,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
         { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
+        { title: 'Commission Totals (Gusto)', url: createPageUrl("CommissionTotalsGusto"), icon: Banknote },
       ]
     },
     {

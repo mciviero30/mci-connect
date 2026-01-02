@@ -11,6 +11,9 @@ import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import Clientes from './pages/Clientes';
 import CodebaseExport from './pages/CodebaseExport';
+import CommissionAgreements from './pages/CommissionAgreements';
+import CommissionReports from './pages/CommissionReports';
+import CommissionReview from './pages/CommissionReview';
 import CompanyInfo from './pages/CompanyInfo';
 import ComplianceHub from './pages/ComplianceHub';
 import Configuracion from './pages/Configuracion';
@@ -74,9 +77,7 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import CommissionAgreements from './pages/CommissionAgreements';
-import CommissionReview from './pages/CommissionReview';
-import CommissionReports from './pages/CommissionReports';
+import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import __Layout from './Layout.jsx';
 
 
@@ -94,6 +95,9 @@ export const PAGES = {
     "ClientPortal": ClientPortal,
     "Clientes": Clientes,
     "CodebaseExport": CodebaseExport,
+    "CommissionAgreements": CommissionAgreements,
+    "CommissionReports": CommissionReports,
+    "CommissionReview": CommissionReview,
     "CompanyInfo": CompanyInfo,
     "ComplianceHub": ComplianceHub,
     "Configuracion": Configuracion,
@@ -157,9 +161,7 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "CommissionAgreements": CommissionAgreements,
-    "CommissionReview": CommissionReview,
-    "CommissionReports": CommissionReports,
+    "CommissionTotalsGusto": CommissionTotalsGusto,
 }
 
 export const pagesConfig = {
