@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Search, Mail, Phone, MapPin, Building2, Edit, Trash2, MoreVertical, Eye, Send } from "lucide-react";
@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
+
 
 export default function Clientes() {
   const { t } = useLanguage();
@@ -40,17 +40,10 @@ export default function Clientes() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const { 
-    items: customers = [], 
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    loadMore,
-    totalLoaded
-  } = usePaginatedEntityList({
-    queryKey: 'customers',
-    fetchFn: async ({ skip, limit }) => {
-      const allCustomers = await base44.entities.Customer.list('-created_date', limit + skip);
+  const { data: customers = [], isLoading } = useQuery({
+    queryKey: ['customers'],
+    queryFn: async () => {
+      const allCustomers = await base44.entities.Customer.list('-created_date');
       // Normalize data structure - flatten data object to top level
       const normalized = allCustomers.map(c => ({
         ...c,
@@ -59,9 +52,8 @@ export default function Clientes() {
         created_date: c.created_date,
         updated_date: c.updated_date
       }));
-      return normalized.slice(skip, skip + limit);
+      return normalized;
     },
-    pageSize: 50,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -291,15 +283,6 @@ export default function Clientes() {
           onOpenChange={setShowInvitationModal}
           selectedCustomers={selectedCustomers}
         />
-
-        {hasNextPage && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
-            totalLoaded={totalLoaded}
-          />
-        )}
 
         {sortedCustomers.length === 0 && !isLoading && (
           <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
