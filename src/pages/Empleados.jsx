@@ -370,11 +370,11 @@ export default function Empleados() {
 
   const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
   
-  // GUARD: Only Admin can access Employee Management
+  // GUARD: Only Admin and CEO can access Employee Management
   const userRole = (userProfile?.role || currentUser?.role || 'employee').toLowerCase();
-  const isAdmin = userRole === 'admin';
+  const hasFullAccess = userRole === 'admin' || userRole === 'ceo';
 
-  if (currentUser && !isAdmin) {
+  if (currentUser && !hasFullAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6 flex items-center justify-center">
         <Card className="max-w-md">

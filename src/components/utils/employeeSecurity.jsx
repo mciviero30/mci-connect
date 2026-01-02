@@ -11,13 +11,24 @@
 export const canViewSensitiveEmployeeData = (user) => {
   if (!user) return false;
   
-  // GUARD: Only Admin role can view DOB/SSN
+  // GUARD: Only Admin and CEO roles can view DOB/SSN
   const role = (user.role || '').toLowerCase();
-  return role === 'admin';
+  return role === 'admin' || role === 'ceo';
 };
 
 // Alias for consistency
 export const canViewSensitiveData = canViewSensitiveEmployeeData;
+
+/**
+ * Checks if user has full admin access (Admin or CEO)
+ * @param {Object} user - Current authenticated user (merged profile)
+ * @returns {boolean}
+ */
+export const hasFullAccess = (user) => {
+  if (!user) return false;
+  const role = (user.role || '').toLowerCase();
+  return role === 'admin' || role === 'ceo';
+};
 
 /**
  * Masks SSN/Tax ID for display

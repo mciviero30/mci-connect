@@ -452,14 +452,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     const department = (displayUser?.department || user?.department || '').toLowerCase();
     const isAdmin = user?.role === 'admin';
 
-    // Normalize position variants
+    // Role-based access (source of truth: role field)
+    const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
+    const isCEORole = userRole === 'ceo';
+    const isAdminRole = userRole === 'admin';
+    const isManagerRole = userRole === 'manager';
+
+    // Legacy position-based checks (fallback only)
     const isManager = position.includes('manager') || position.includes('supervisor');
-    const isCEO = position.includes('ceo');
     const isAdministrator = position.includes('administrator') || position.includes('admin');
     const isHR = department === 'hr' || department === 'human resources';
 
-    // Full access: CEO, administrator, admin role, managers, and HR
-    const hasFullAccess = isAdmin || isCEO || isAdministrator || isManager || isHR;
+    // Full access: CEO role, Admin role, Manager role, or legacy position-based checks
+    const hasFullAccess = isCEORole || isAdminRole || isManagerRole || isManager || isAdministrator || isHR;
 
     if (hasFullAccess) {
       return adminNavigation;
@@ -711,8 +716,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   }
 
   const navigation = getNavigationForUser();
-  const position = (displayUser?.position || user?.position || '').toLowerCase();
-  const isAdmin = user?.role === 'admin' || position.includes('ceo') || position.includes('administrator');
+  const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
+  const isAdmin = userRole === 'admin' || userRole === 'ceo';
 
   // If client only, render ClientPortal directly without sidebar
   if (isClientOnly) {
