@@ -21,12 +21,38 @@ export default function Directory() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: employees, isLoading, refetch } = useQuery({
+  // Use EmployeeDirectory as primary source (safe, public data)
+  const { data: directoryEntries = [], isLoading: directoryLoading } = useQuery({
     queryKey: ['employeeDirectory'],
     queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
-    initialData: [],
+    staleTime: 30000,
     enabled: !!user,
   });
+
+  // Fallback to User entity if directory is empty
+  const { data: usersBackup = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['employees-backup'],
+    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
+    enabled: !!user && directoryEntries.length === 0 && !directoryLoading,
+    staleTime: 30000,
+  });
+
+  const employees = directoryEntries.length > 0 
+    ? directoryEntries.map(d => ({
+        id: d.id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        first_name: d.first_name,
+        last_name: d.last_name,
+        position: d.position,
+        department: d.department,
+        phone: d.phone,
+        team_name: d.team_name,
+        profile_photo_url: d.profile_photo_url
+      }))
+    : usersBackup;
+
+  const isLoading = directoryLoading || usersLoading;
 
   const filteredEmployees = employees.filter(emp =>
     getDisplayName(emp)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
