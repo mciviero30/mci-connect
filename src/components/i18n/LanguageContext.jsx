@@ -1129,11 +1129,11 @@ export const translations = {
     location: "Ubicación",
 
     // Employee features
-    myProfile: "My Profile",
-    directory: "Directory",
-    managePersonalInfo: "Manage your personal information",
-    personalInfo: "Personal Information",
-    emergencyContact: "Emergency Contact",
+    myProfile: "Mi Perfil",
+    directory: "Directorio",
+    managePersonalInfo: "Gestiona tu información personal",
+    personalInfo: "Información Personal",
+    emergencyContact: "Contacto de Emergencia",
     certifications: "Certificaciones",
     recognitions: "Reconocimientos",
     performance: "Desempeño",
