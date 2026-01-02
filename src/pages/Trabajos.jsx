@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Plus, Eye, Edit, MapPin, DollarSign, MoreVertical, Archive, Trash2, Sparkles, Search, X, Users } from "lucide-react";
@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
+
 
 
 export default function Trabajos() {
@@ -55,24 +55,21 @@ export default function Trabajos() {
     refetchOnWindowFocus: false
   });
   
-  // Paginated jobs list
-  const { 
-    items: jobs = [], 
-    isLoading,
-    loadMore,
-    hasMore,
-    totalLoaded,
-    refetch
-  } = usePaginatedEntityList({
-    entityName: 'Job',
-    filters: (() => {
-      const f = {};
-      if (statusFilter !== 'all') f.status = statusFilter;
-      if (teamFilter !== 'all') f.team_id = teamFilter;
-      return f;
-    })(),
-    pageSize: 50,
-    queryOptions: { enabled: !!user }
+  // Direct jobs list
+  const { data: jobs = [], isLoading } = useQuery({
+    queryKey: ['jobs', statusFilter, teamFilter],
+    queryFn: async () => {
+      const filters = {};
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (teamFilter !== 'all') filters.team_id = teamFilter;
+      
+      if (Object.keys(filters).length > 0) {
+        return base44.entities.Job.filter(filters, '-created_date');
+      }
+      return base44.entities.Job.list('-created_date');
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [] } = useQuery({
@@ -381,16 +378,6 @@ export default function Trabajos() {
             <ModernJobCard key={job.id} job={job} />
           ))}
         </div>
-
-        {hasMore && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasMore}
-            isLoading={isLoading}
-            totalLoaded={totalLoaded}
-            language={language}
-          />
-        )}
 
         {filteredJobs.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

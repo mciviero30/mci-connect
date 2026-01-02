@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Plus, Eye, Trash2, Copy, Search, X, MapPin, Users, Sparkles, FileCheck } from "lucide-react";
@@ -20,7 +20,7 @@ import { format } from "date-fns";
 import ModernQuoteCard from "../components/quotes/ModernQuoteCard";
 import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
+
 
 export default function Estimados() {
   const { t, language } = useLanguage();
@@ -38,22 +38,19 @@ export default function Estimados() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const { 
-    items: quotes = [], 
-    isLoading,
-    loadMore,
-    hasMore,
-    totalLoaded,
-    refetch
-  } = usePaginatedEntityList({
-    entityName: 'Quote',
-    filters: (() => {
-      const f = {};
-      if (statusFilter !== 'all') f.status = statusFilter;
-      if (teamFilter !== 'all') f.team_id = teamFilter;
-      return f;
-    })(),
-    pageSize: 50
+  const { data: quotes = [], isLoading } = useQuery({
+    queryKey: ['quotes', statusFilter, teamFilter],
+    queryFn: async () => {
+      const filters = {};
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (teamFilter !== 'all') filters.team_id = teamFilter;
+      
+      if (Object.keys(filters).length > 0) {
+        return base44.entities.Quote.filter(filters, '-created_date');
+      }
+      return base44.entities.Quote.list('-created_date');
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [] } = useQuery({
@@ -217,7 +214,7 @@ export default function Estimados() {
           actions={
             isAdmin && (
               <div className="flex gap-2 w-full sm:w-auto">
-                <QuotePDFImporter onSuccess={() => refetch()} />
+                <QuotePDFImporter onSuccess={() => queryClient.invalidateQueries({ queryKey: ['quotes'] })} />
                 <Button
                   onClick={() => setShowAIWizard(true)}
                   className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] px-3 sm:px-4 flex-1 sm:flex-none"
@@ -361,16 +358,6 @@ export default function Estimados() {
             />
           ))}
         </div>
-
-        {hasMore && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasMore}
-            isLoading={isLoading}
-            totalLoaded={totalLoaded}
-            language={language}
-          />
-        )}
 
         {filteredQuotes.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

@@ -13,8 +13,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
-import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
-import LoadMoreButton from "@/components/shared/LoadMoreButton";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
 import { Dialog } from "@/components/ui/dialog";
@@ -38,22 +37,19 @@ export default function Facturas() {
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
-  const { 
-    items: invoices = [], 
-    isLoading,
-    loadMore,
-    hasMore,
-    totalLoaded,
-    refetch
-  } = usePaginatedEntityList({
-    entityName: 'Invoice',
-    filters: (() => {
-      const f = {};
-      if (statusFilter !== 'all') f.status = statusFilter;
-      if (teamFilter !== 'all') f.team_id = teamFilter;
-      return f;
-    })(),
-    pageSize: 50
+  const { data: invoices = [], isLoading } = useQuery({
+    queryKey: ['invoices', statusFilter, teamFilter],
+    queryFn: async () => {
+      const filters = {};
+      if (statusFilter !== 'all') filters.status = statusFilter;
+      if (teamFilter !== 'all') filters.team_id = teamFilter;
+      
+      if (Object.keys(filters).length > 0) {
+        return base44.entities.Invoice.filter(filters, '-created_date');
+      }
+      return base44.entities.Invoice.list('-created_date');
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: teams = [] } = useQuery({
@@ -385,16 +381,6 @@ export default function Facturas() {
             />
           ))}
         </div>
-
-        {hasMore && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasMore}
-            isLoading={isLoading}
-            totalLoaded={totalLoaded}
-            language={language}
-          />
-        )}
 
         {filteredInvoices.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
