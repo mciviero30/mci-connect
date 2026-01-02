@@ -318,13 +318,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const isOnboardingPage = currentPageName === 'OnboardingWizard';
   
   // Determine if user should be blocked for onboarding
-  // CRITICAL: Check flag first (definitive), then fallback to count
+  // CRITICAL: ONLY use definitive flag, never count (prevents loop)
   const shouldBlockForOnboarding = user && 
     !isClientOnly && 
     user.role !== 'admin' && 
     user.employment_status !== 'deleted' &&
-    user.onboarding_completed !== true &&  // Definitive flag wins
-    !onboardingCompleted;  // Count-based fallback
+    user.onboarding_completed !== true;  // Definitive flag ONLY
 
   // Soft redirect to onboarding - no full page reload
   useEffect(() => {
@@ -401,30 +400,30 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         // SAFE MERGE: Migrate PendingEmployee → User with ZERO data loss
         let migratedData = {};
         let pendingRecord = null;
-        
+
         try {
           const allPendingEmployees = await base44.entities.PendingEmployee.list();
           const pendingEmployees = allPendingEmployees.filter(
             p => normalizeEmail(p.email) === normalizeEmail(user.email)
           );
-          
+
           if (pendingEmployees.length > 0) {
             pendingRecord = pendingEmployees[0];
-            
+
             // Use profileMerge helper for COMPLETE migration
             migratedData = migratePendingToUser(user, pendingRecord);
-            
+
             if (import.meta.env.DEV) {
               console.log('📋 Migrating PendingEmployee data:', Object.keys(migratedData).filter(k => !k.startsWith('_')));
             }
-            
-            // Mark as migrated BEFORE deleting (for audit trail)
+
+            // Mark as migrated BEFORE deleting (audit trail)
             await base44.entities.PendingEmployee.update(pendingRecord.id, {
+              data_migrated_to_user: true,
               migrated_at: new Date().toISOString(),
-              migrated_to_user_id: user.id,
-              migration_status: 'completed'
+              status: 'active'
             });
-            
+
             // Delete after successful migration
             await base44.entities.PendingEmployee.delete(pendingRecord.id);
           }
@@ -434,9 +433,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           }
         }
 
+        // Fetch team name if needed
         let teamData = {};
-        const finalTeamId = pendingData.team_id || user.team_id;
-        if (finalTeamId && !pendingData.team_name && !user.team_name) {
+        const finalTeamId = migratedData.team_id || user.team_id;
+        if (finalTeamId && !migratedData.team_name && !user.team_name) {
           try {
             const teams = await base44.entities.Team.list();
             const userTeam = teams.find(t => t.id === finalTeamId);
@@ -452,9 +452,16 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         const finalData = {
           employment_status: 'active',
           hire_date: user.hire_date || new Date().toISOString().split('T')[0],
+          onboarding_status: 'not_started',  // Will start onboarding
           ...migratedData,
           ...teamData
         };
+
+        // CRITICAL: Never overwrite onboarding_completed if true
+        if (user.onboarding_completed === true) {
+          delete finalData.onboarding_status;
+          finalData.onboarding_completed = true;
+        }
 
         // Always update (even if just status change)
         await base44.auth.updateMe(finalData);

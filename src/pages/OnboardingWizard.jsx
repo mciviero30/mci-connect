@@ -25,6 +25,18 @@ export default function OnboardingWizard() {
 
   const createFormMutation = useMutation({
     mutationFn: async ({ formType, formData }) => {
+      // Check if form already exists (prevent duplicates)
+      const existingForm = onboardingForms.find(f => f.form_type === formType);
+      if (existingForm) {
+        if (import.meta.env.DEV) {
+          console.log(`⚠️ Form ${formType} already exists, updating...`);
+        }
+        return base44.entities.OnboardingForm.update(existingForm.id, {
+          form_data: formData,
+          completed_date: new Date().toISOString()
+        });
+      }
+      
       return base44.entities.OnboardingForm.create({
         employee_email: user.email,
         employee_name: user.full_name,
@@ -54,18 +66,26 @@ export default function OnboardingWizard() {
         });
       }
       
+      // Count unique form types (prevent duplicates from counting)
+      const uniqueForms = {};
+      [...onboardingForms, data].forEach(form => {
+        uniqueForms[form.form_type] = form;
+      });
+      const totalCompleted = Object.keys(uniqueForms).length;
+      
       // Move to next step or complete
-      if (currentStep < 3) {
+      if (totalCompleted < 3) {
         setCurrentStep(currentStep + 1);
       } else {
-        // ✅ ONBOARDING COMPLETE - Set definitive flag
+        // ✅ ONBOARDING COMPLETE - Set definitive flags
         await base44.auth.updateMe({ 
           onboarding_completed: true,
-          onboarding_completed_at: new Date().toISOString()
+          onboarding_completed_at: new Date().toISOString(),
+          onboarding_status: 'completed'
         });
         
         if (import.meta.env.DEV) {
-          console.log('✅ All 3 forms completed. Unlocking MCI Connect...');
+          console.log('✅ All 3 unique forms completed. Onboarding LOCKED as complete.');
         }
         
         // Invalidate queries to refresh user
@@ -79,16 +99,36 @@ export default function OnboardingWizard() {
     }
   });
 
+  // GUARD: If onboarding already completed, redirect immediately
+  useEffect(() => {
+    if (user?.onboarding_completed === true) {
+      if (import.meta.env.DEV) {
+        console.log('🚫 Onboarding already completed, redirecting...');
+      }
+      window.location.href = '/';
+      return;
+    }
+  }, [user?.onboarding_completed]);
+
   // Determine which step to show based on completed forms
   useEffect(() => {
-    if (onboardingForms.length === 0) {
+    if (user?.onboarding_completed === true) return; // Never restart if completed
+    
+    const uniqueForms = {};
+    onboardingForms.forEach(form => {
+      uniqueForms[form.form_type] = form;
+    });
+    
+    const completedCount = Object.keys(uniqueForms).length;
+    
+    if (completedCount === 0) {
       setCurrentStep(1);
-    } else if (onboardingForms.length === 1) {
+    } else if (completedCount === 1) {
       setCurrentStep(2);
-    } else if (onboardingForms.length === 2) {
+    } else if (completedCount === 2) {
       setCurrentStep(3);
     }
-  }, [onboardingForms]);
+  }, [onboardingForms, user?.onboarding_completed]);
 
   const completedSteps = onboardingForms.length;
   const progressPercentage = Math.round((completedSteps / 3) * 100); // Exact 33.3% per step
