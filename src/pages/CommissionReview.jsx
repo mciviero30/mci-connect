@@ -46,21 +46,15 @@ export default function CommissionReview() {
     enabled: canManageAll,
   });
 
-  // Approve commission mutation
+  // Approve commission mutation (server-side validation)
   const approveMutation = useMutation({
     mutationFn: async ({ resultId, adjustedRate, notes }) => {
-      const result = results.find(r => r.id === resultId);
-      const newRate = adjustedRate ? parseFloat(adjustedRate) : result.base_commission_rate;
-      const newAmount = (result.net_profit * (newRate / 100));
-
-      return base44.entities.CommissionResult.update(resultId, {
-        adjusted_commission_rate: newRate,
-        commission_amount: Math.max(0, newAmount),
-        status: 'approved',
-        approved_by: userProfile.email,
-        approved_at: new Date().toISOString(),
+      const response = await base44.functions.invoke('approveCommission', {
+        commission_result_id: resultId,
+        adjusted_rate: adjustedRate ? parseFloat(adjustedRate) : undefined,
         notes,
       });
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commissionResults'] });
@@ -69,48 +63,35 @@ export default function CommissionReview() {
       setAdjustedRate('');
       setNotes('');
     },
+    onError: (error) => {
+      alert(error?.response?.data?.error || 'Failed to approve commission');
+    }
   });
 
-  // Pay commission mutation
+  // Pay commission mutation (atomic server-side transaction)
   const payMutation = useMutation({
     mutationFn: async (resultId) => {
-      const result = results.find(r => r.id === resultId);
-
-      // Create PayrollEntry
-      const payrollEntry = await base44.entities.WeeklyPayroll.create({
-        employee_email: result.employee_email,
-        employee_name: result.employee_name,
-        week_start: new Date().toISOString().split('T')[0],
-        commission_pay: result.commission_amount,
-        total_pay: result.commission_amount,
-        notes: `Commission for job: ${result.job_name}`,
+      const response = await base44.functions.invoke('payCommission', {
+        commission_result_id: resultId,
       });
-
-      // Create AccountingEntry
-      const accountingEntry = await base44.entities.Transaction.create({
-        type: 'expense',
-        amount: result.commission_amount,
-        category: 'salaries',
-        description: `Commission payment to ${result.employee_name} for job ${result.job_name}`,
-        date: new Date().toISOString().split('T')[0],
-        payment_method: 'bank_transfer',
-        notes: `Commission Result ID: ${result.id}`,
-      });
-
-      // Update CommissionResult
-      return base44.entities.CommissionResult.update(resultId, {
-        status: 'paid',
-        paid_by: userProfile.email,
-        paid_at: new Date().toISOString(),
-        payroll_entry_id: payrollEntry.id,
-        accounting_entry_id: accountingEntry.id,
-      });
+      
+      // Check for idempotency error
+      if (response.data?.already_paid) {
+        throw new Error('This commission has already been paid');
+      }
+      
+      return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['commissionResults'] });
       setShowPayDialog(false);
       setSelectedResult(null);
+      alert(`✅ Commission paid successfully! Amount: $${data.amount_paid?.toLocaleString()}`);
     },
+    onError: (error) => {
+      const errorMsg = error?.response?.data?.error || error.message || 'Failed to pay commission';
+      alert(`❌ ${errorMsg}`);
+    }
   });
 
   const handleApproveClick = (result) => {
@@ -127,6 +108,14 @@ export default function CommissionReview() {
 
   const handleApprove = async () => {
     if (!selectedResult) return;
+    
+    // UI Validation
+    const rate = parseFloat(adjustedRate);
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      alert('Invalid commission rate. Must be between 0 and 100');
+      return;
+    }
+    
     await approveMutation.mutateAsync({
       resultId: selectedResult.id,
       adjustedRate,
@@ -136,6 +125,17 @@ export default function CommissionReview() {
 
   const handlePay = async () => {
     if (!selectedResult) return;
+    
+    // Confirm before paying
+    const confirmed = window.confirm(
+      `⚠️ Confirm Commission Payment\n\n` +
+      `Employee: ${selectedResult.employee_name}\n` +
+      `Amount: $${selectedResult.commission_amount?.toLocaleString()}\n\n` +
+      `This will create accounting and payroll entries. Continue?`
+    );
+    
+    if (!confirmed) return;
+    
     await payMutation.mutateAsync(selectedResult.id);
   };
 
@@ -278,9 +278,10 @@ export default function CommissionReview() {
                     <Button 
                       onClick={() => handleApproveClick(result)}
                       className="w-full bg-green-600 hover:bg-green-700"
+                      disabled={approveMutation.isPending}
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Review & Approve
+                      {approveMutation.isPending ? 'Processing...' : 'Review & Approve'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -334,9 +335,10 @@ export default function CommissionReview() {
                     <Button 
                       onClick={() => handlePayClick(result)}
                       className="w-full bg-blue-600 hover:bg-blue-700"
+                      disabled={payMutation.isPending}
                     >
                       <CreditCard className="w-4 h-4 mr-2" />
-                      Pay Commission
+                      {payMutation.isPending ? 'Processing Payment...' : 'Pay Commission'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -412,10 +414,11 @@ export default function CommissionReview() {
           </DialogHeader>
           {selectedResult && (
             <div className="space-y-4">
-              <Alert>
-                <AlertCircle className="w-4 h-4" />
-                <AlertDescription>
-                  Review the calculation details and adjust the commission rate if needed before approving.
+              <Alert className="border-yellow-300 bg-yellow-50">
+                <AlertCircle className="w-4 h-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-800">
+                  <strong>Important:</strong> Review the calculation details and adjust the commission rate if needed before approving. 
+                  Once approved, the commission will be ready for payment.
                 </AlertDescription>
               </Alert>
 
@@ -485,10 +488,11 @@ export default function CommissionReview() {
           </DialogHeader>
           {selectedResult && (
             <div className="space-y-4">
-              <Alert>
-                <AlertCircle className="w-4 h-4" />
-                <AlertDescription>
-                  This will create a payroll entry and accounting transaction for the commission payment.
+              <Alert className="border-red-300 bg-red-50">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  <strong>⚠️ Critical Action:</strong> This will create a payroll entry and accounting transaction. 
+                  This action is <strong>IRREVERSIBLE</strong> and will immediately process the payment.
                 </AlertDescription>
               </Alert>
 
