@@ -3,11 +3,11 @@ import { base44 } from '@/api/base44Client';
 import { useState, useCallback, useEffect } from 'react';
 
 /**
- * TRUE SERVER-SIDE CURSOR-BASED PAGINATION HOOK
- * Uses backend functions for real pagination (no client-side slice)
+ * CLIENT-SIDE PAGINATION HOOK
+ * Uses entity.filter() for data fetching with client-side pagination
  * 
  * @param {string} entityName - Entity name (Invoice, Quote, Job)
- * @param {object} filters - Server-side filters
+ * @param {object} filters - Filters to apply
  * @param {number} pageSize - Items per page (default: 50)
  * @param {object} queryOptions - Additional React Query options
  * @returns {object} { items, isLoading, loadMore, hasMore, totalLoaded, refetch }
@@ -18,109 +18,62 @@ export function usePaginatedEntityList({
   pageSize = 50,
   queryOptions = {}
 }) {
-  const [pages, setPages] = useState([]);
-  const [cursors, setCursors] = useState([null]); // [null, cursor1, cursor2, ...]
+  const [displayLimit, setDisplayLimit] = useState(pageSize);
   const queryClient = useQueryClient();
 
-  const currentPageIndex = pages.length;
-  const currentCursor = cursors[currentPageIndex] || null;
-
-  // Query key includes current cursor to trigger refetch on loadMore
-  const { data: pageData, isLoading, error, refetch } = useQuery({
-    queryKey: ['paginated', entityName, filters, currentCursor, pageSize],
+  // Fetch all data with filters
+  const { data: allItems = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['entityList', entityName, filters],
     queryFn: async () => {
       // Defensive check: ensure entityName is valid
       if (!entityName || typeof entityName !== 'string') {
         console.error('[usePaginatedEntityList] Invalid entityName:', entityName);
-        return { items: [], hasMore: false, nextCursor: null };
+        return [];
       }
 
-      // Call backend pagination function
-      const functionName = `list${entityName}sPaginated`;
-      
       try {
-        const result = await base44.functions.invoke(functionName, {
-          limit: pageSize,
-          cursor: currentCursor,
-          filters
-        });
-        return result;
+        // Use entity filter or list based on filters
+        if (Object.keys(filters).length > 0) {
+          return await base44.entities[entityName].filter(filters, '-created_date', 500);
+        } else {
+          return await base44.entities[entityName].list('-created_date', 500);
+        }
       } catch (err) {
-        console.error(`[usePaginatedEntityList] Error calling ${functionName}:`, err);
-        // Return empty result on error to prevent crash
-        return { items: [], hasMore: false, nextCursor: null };
+        console.error(`[usePaginatedEntityList] Error fetching ${entityName}:`, err);
+        return [];
       }
     },
-    enabled: !!entityName && currentPageIndex === pages.length, // Only fetch if entityName valid and we need this page
+    enabled: !!entityName,
     staleTime: 5 * 60 * 1000, // 5 min cache
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    retry: false, // Don't retry failed pagination calls
+    retry: false,
     ...queryOptions
   });
 
-  // When new page data arrives, add to pages
-  useEffect(() => {
-    if (pageData?.items && pageData.items.length > 0) {
-      setPages(prev => {
-        // Check if this page is already added (avoid duplicates)
-        const lastPage = prev[prev.length - 1];
-        if (lastPage && lastPage[0]?.id === pageData.items[0]?.id) {
-          return prev; // Already have this page
-        }
-        return [...prev, pageData.items];
-      });
-
-      // Add next cursor
-      if (pageData.nextCursor) {
-        setCursors(prev => {
-          const lastCursor = prev[prev.length - 1];
-          const isSameCursor = lastCursor && 
-            lastCursor.created_date === pageData.nextCursor.created_date &&
-            lastCursor.id === pageData.nextCursor.id;
-          
-          if (!isSameCursor) {
-            return [...prev, pageData.nextCursor];
-          }
-          return prev;
-        });
-      }
-    }
-  }, [pageData]);
-
-  // Flatten all pages into single array
-  const allItems = pages.flat();
-
-  // Deduplicate by id (safety check)
-  const uniqueItems = Array.from(
-    new Map(allItems.map(item => [item.id, item])).values()
-  );
-
-  const hasMore = pageData?.hasMore || false;
+  // Client-side pagination: slice items based on displayLimit
+  const displayedItems = allItems.slice(0, displayLimit);
+  const hasMore = displayedItems.length < allItems.length;
 
   const loadMore = useCallback(() => {
     if (hasMore && !isLoading) {
-      // Trigger next page fetch by incrementing page count
-      queryClient.invalidateQueries({ 
-        queryKey: ['paginated', entityName, filters, cursors[pages.length], pageSize] 
-      });
+      setDisplayLimit(prev => prev + pageSize);
     }
-  }, [hasMore, isLoading, entityName, filters, pages.length, cursors, pageSize, queryClient]);
+  }, [hasMore, isLoading, pageSize]);
 
   const resetPagination = useCallback(() => {
-    setPages([]);
-    setCursors([null]);
+    setDisplayLimit(pageSize);
     refetch();
-  }, [refetch]);
+  }, [refetch, pageSize]);
 
   return {
-    items: uniqueItems,
+    items: displayedItems,
     isLoading,
     error,
     loadMore,
     hasMore,
-    totalLoaded: uniqueItems.length,
+    totalLoaded: displayedItems.length,
     pageSize,
     refetch: resetPagination
   };
