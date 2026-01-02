@@ -14,13 +14,16 @@ import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 import PendingInvitationCard from "@/components/empleados/PendingInvitationCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import { useToast } from "@/components/ui/toast";
+import { canViewSensitiveEmployeeData } from "@/components/utils/employeeSecurity";
 
 
 
-const EmployeeFormDialog = ({ employee, onClose }) => {
+const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const canViewSensitive = canViewSensitiveEmployeeData(currentUser);
+  
   const [formData, setFormData] = useState({
     email: employee?.email || '',
     first_name: employee?.first_name || '',
@@ -198,15 +201,25 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
         <Input value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        <div>
-          <Label>Date of Birth</Label>
-          <Input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} />
+      {canViewSensitive && (
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <Label>Date of Birth</Label>
+            <Input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} />
+          </div>
+          <div>
+            <Label>SSN/Tax ID</Label>
+            <Input value={formData.ssn_tax_id} onChange={(e) => setFormData({...formData, ssn_tax_id: e.target.value})} placeholder="XXX-XX-XXXX" />
+          </div>
         </div>
+      )}
+      {!canViewSensitive && (
         <div>
-          <Label>SSN/Tax ID</Label>
-          <Input value={formData.ssn_tax_id} onChange={(e) => setFormData({...formData, ssn_tax_id: e.target.value})} />
-        </div>
+          <Alert className="bg-amber-50 border-amber-200">
+            <AlertDescription className="text-amber-800 text-sm">
+              🔒 DOB and SSN fields require CEO/Admin/Administrator permissions
+            </AlertDescription>
+          </Alert>
         <div>
           <Label>T-Shirt Size</Label>
           <select 
@@ -223,6 +236,7 @@ const EmployeeFormDialog = ({ employee, onClose }) => {
             <option value="XXXL">XXXL</option>
           </select>
         </div>
+      )}
       </div>
 
       <div>
@@ -256,6 +270,12 @@ export default function Empleados() {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
+  
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity
+  });
 
   // Lazy load employees with pagination
   const [page, setPage] = useState(1);
@@ -718,7 +738,7 @@ export default function Empleados() {
             <DialogHeader>
               <DialogTitle>{editingEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
             </DialogHeader>
-            <EmployeeFormDialog employee={editingEmployee} onClose={() => { setShowDialog(false); setEditingEmployee(null); }} />
+            <EmployeeFormDialog employee={editingEmployee} currentUser={currentUser} onClose={() => { setShowDialog(false); setEditingEmployee(null); }} />
           </DialogContent>
         </Dialog>
 
