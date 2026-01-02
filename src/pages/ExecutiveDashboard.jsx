@@ -147,11 +147,21 @@ export default function ExecutiveDashboard() {
         </Card>
 
         {/* Revenue KPI */}
-        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+        <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-700">
               <DollarSign className="w-6 h-6" />
               Total Revenue
+              <div className="ml-auto">
+                <div className="group relative">
+                  <div className="w-4 h-4 rounded-full bg-green-200 text-green-700 flex items-center justify-center text-xs cursor-help">
+                    ?
+                  </div>
+                  <div className="absolute right-0 top-6 w-64 bg-slate-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
+                    Revenue from all paid invoices in the selected period
+                  </div>
+                </div>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -166,11 +176,21 @@ export default function ExecutiveDashboard() {
 
         {/* Commissions KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="border-blue-200 bg-blue-50">
+          <Card className="border-yellow-200 bg-yellow-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-700 text-sm">
+              <CardTitle className="flex items-center gap-2 text-yellow-700 text-sm">
                 <Clock className="w-4 h-4" />
-                Calculated
+                Pending Review
+                <div className="ml-auto">
+                  <div className="group relative">
+                    <div className="w-3 h-3 rounded-full bg-yellow-200 text-yellow-700 flex items-center justify-center text-[10px] cursor-help">
+                      ?
+                    </div>
+                    <div className="absolute right-0 top-5 w-48 bg-slate-900 text-white text-xs rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
+                      Commissions calculated but not yet approved
+                    </div>
+                  </div>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -183,11 +203,21 @@ export default function ExecutiveDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-yellow-200 bg-yellow-50">
+          <Card className="border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-yellow-700 text-sm">
+              <CardTitle className="flex items-center gap-2 text-blue-700 text-sm">
                 <AlertTriangle className="w-4 h-4" />
-                Approved (Pending Payment)
+                Approved - Awaiting Payment
+                <div className="ml-auto">
+                  <div className="group relative">
+                    <div className="w-3 h-3 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-[10px] cursor-help">
+                      ?
+                    </div>
+                    <div className="absolute right-0 top-5 w-48 bg-slate-900 text-white text-xs rounded-lg p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
+                      Approved commissions ready to be paid
+                    </div>
+                  </div>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -224,6 +254,16 @@ export default function ExecutiveDashboard() {
             <CardTitle className="flex items-center gap-2 text-purple-700">
               <TrendingUp className="w-6 h-6" />
               Payroll Exposure
+              <div className="ml-auto">
+                <div className="group relative">
+                  <div className="w-4 h-4 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center text-xs cursor-help">
+                    ?
+                  </div>
+                  <div className="absolute right-0 top-6 w-64 bg-slate-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
+                    Total payroll cost (including commissions) in the selected period
+                  </div>
+                </div>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -248,6 +288,16 @@ export default function ExecutiveDashboard() {
             <CardTitle className="flex items-center gap-2">
               <Users className="w-6 h-6" />
               Tax Compliance Rate
+              <div className="ml-auto">
+                <div className="group relative">
+                  <div className="w-4 h-4 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs cursor-help">
+                    ?
+                  </div>
+                  <div className="absolute right-0 top-6 w-64 bg-slate-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
+                    Percentage of active employees with completed W-9/W-4 tax profiles
+                  </div>
+                </div>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -142,11 +142,21 @@ export default function ManagerDashboard() {
         </Card>
 
         {/* Jobs Closed */}
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Briefcase className="w-6 h-6" />
               Jobs Closed
+              <div className="ml-auto">
+                <div className="group relative">
+                  <div className="w-4 h-4 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-xs cursor-help">
+                    ?
+                  </div>
+                  <div className="absolute right-0 top-6 w-64 bg-slate-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
+                    Number of completed jobs assigned to your teams in the selected period
+                  </div>
+                </div>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -161,15 +171,15 @@ export default function ManagerDashboard() {
 
         {/* Commissions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="border-yellow-200 bg-yellow-50">
+          <Card className="border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-yellow-700">
+              <CardTitle className="flex items-center gap-2 text-blue-700">
                 <TrendingUp className="w-5 h-5" />
-                Approved (Pending Payment)
+                Approved - Awaiting Payment
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-yellow-700">
+              <p className="text-3xl font-bold text-blue-700">
                 ${totalApproved.toLocaleString()}
               </p>
               <p className="text-xs text-slate-600 mt-2">

@@ -47,14 +47,14 @@ export default function AuditTrail() {
 
   const getEventBadge = (eventType) => {
     const badges = {
-      commission_calculated: { color: 'bg-blue-100 text-blue-800', label: 'Calculated' },
-      commission_approved: { color: 'bg-green-100 text-green-800', label: 'Approved' },
-      commission_paid: { color: 'bg-purple-100 text-purple-800', label: 'Paid' },
-      commission_invalidated: { color: 'bg-red-100 text-red-800', label: 'Invalidated' },
-      tax_profile_completed: { color: 'bg-indigo-100 text-indigo-800', label: 'Tax Profile' },
-      payroll_entry_created: { color: 'bg-yellow-100 text-yellow-800', label: 'Payroll' },
+      commission_calculated: { color: 'bg-yellow-100 text-yellow-800 border border-yellow-300', label: 'Calculated' },
+      commission_approved: { color: 'bg-blue-100 text-blue-800 border border-blue-300', label: 'Approved' },
+      commission_paid: { color: 'bg-green-100 text-green-800 border border-green-300', label: 'Paid' },
+      commission_invalidated: { color: 'bg-red-100 text-red-800 border border-red-300', label: 'Cancelled' },
+      tax_profile_completed: { color: 'bg-indigo-100 text-indigo-800 border border-indigo-300', label: 'Tax Profile' },
+      payroll_entry_created: { color: 'bg-purple-100 text-purple-800 border border-purple-300', label: 'Payroll' },
     };
-    return badges[eventType] || { color: 'bg-slate-100 text-slate-800', label: eventType };
+    return badges[eventType] || { color: 'bg-slate-100 text-slate-800 border border-slate-300', label: eventType };
   };
 
   if (!isAdmin) {

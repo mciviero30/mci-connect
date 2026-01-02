@@ -1,6 +1,7 @@
 import AdminCleanup from './pages/AdminCleanup';
 import AgreementSignatures from './pages/AgreementSignatures';
 import ApprovalsHub from './pages/ApprovalsHub';
+import AuditTrail from './pages/AuditTrail';
 import BonusConfiguration from './pages/BonusConfiguration';
 import BudgetForecasting from './pages/BudgetForecasting';
 import Calendario from './pages/Calendario';
@@ -14,6 +15,7 @@ import CodebaseExport from './pages/CodebaseExport';
 import CommissionAgreements from './pages/CommissionAgreements';
 import CommissionReports from './pages/CommissionReports';
 import CommissionReview from './pages/CommissionReview';
+import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import CompanyInfo from './pages/CompanyInfo';
 import ComplianceHub from './pages/ComplianceHub';
 import Configuracion from './pages/Configuracion';
@@ -29,6 +31,7 @@ import Empleados from './pages/Empleados';
 import EmployeeProfile from './pages/EmployeeProfile';
 import Estimados from './pages/Estimados';
 import ExecutiveControlTower from './pages/ExecutiveControlTower';
+import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
 import FieldProject from './pages/FieldProject';
@@ -43,6 +46,7 @@ import Items from './pages/Items';
 import JobDetails from './pages/JobDetails';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
 import JobPhotos from './pages/JobPhotos';
+import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
 import MiScorecard from './pages/MiScorecard';
 import MileageApproval from './pages/MileageApproval';
@@ -66,6 +70,7 @@ import ReportingHub from './pages/ReportingHub';
 import RoleManagement from './pages/RoleManagement';
 import SetupPassword from './pages/SetupPassword';
 import SkillMatrix from './pages/SkillMatrix';
+import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
 import TeamGoals from './pages/TeamGoals';
 import Teams from './pages/Teams';
@@ -77,11 +82,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
-import TaxOnboarding from './pages/TaxOnboarding';
-import AuditTrail from './pages/AuditTrail';
-import ExecutiveDashboard from './pages/ExecutiveDashboard';
-import ManagerDashboard from './pages/ManagerDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +89,7 @@ export const PAGES = {
     "AdminCleanup": AdminCleanup,
     "AgreementSignatures": AgreementSignatures,
     "ApprovalsHub": ApprovalsHub,
+    "AuditTrail": AuditTrail,
     "BonusConfiguration": BonusConfiguration,
     "BudgetForecasting": BudgetForecasting,
     "Calendario": Calendario,
@@ -102,6 +103,7 @@ export const PAGES = {
     "CommissionAgreements": CommissionAgreements,
     "CommissionReports": CommissionReports,
     "CommissionReview": CommissionReview,
+    "CommissionTotalsGusto": CommissionTotalsGusto,
     "CompanyInfo": CompanyInfo,
     "ComplianceHub": ComplianceHub,
     "Configuracion": Configuracion,
@@ -117,6 +119,7 @@ export const PAGES = {
     "EmployeeProfile": EmployeeProfile,
     "Estimados": Estimados,
     "ExecutiveControlTower": ExecutiveControlTower,
+    "ExecutiveDashboard": ExecutiveDashboard,
     "Facturas": Facturas,
     "Field": Field,
     "FieldProject": FieldProject,
@@ -131,6 +134,7 @@ export const PAGES = {
     "JobDetails": JobDetails,
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
     "JobPhotos": JobPhotos,
+    "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
     "MiScorecard": MiScorecard,
     "MileageApproval": MileageApproval,
@@ -154,6 +158,7 @@ export const PAGES = {
     "RoleManagement": RoleManagement,
     "SetupPassword": SetupPassword,
     "SkillMatrix": SkillMatrix,
+    "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
     "TeamGoals": TeamGoals,
     "Teams": Teams,
@@ -165,11 +170,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "CommissionTotalsGusto": CommissionTotalsGusto,
-    "TaxOnboarding": TaxOnboarding,
-    "AuditTrail": AuditTrail,
-    "ExecutiveDashboard": ExecutiveDashboard,
-    "ManagerDashboard": ManagerDashboard,
 }
 
 export const pagesConfig = {
