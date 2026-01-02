@@ -66,10 +66,31 @@ export default function Estimados() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Quote.delete(id),
+    mutationFn: async (id) => {
+      // Verify quote exists before deleting
+      try {
+        const quote = await base44.entities.Quote.filter({ id });
+        if (quote.length === 0) {
+          throw new Error('Quote not found');
+        }
+        await base44.entities.Quote.delete(id);
+      } catch (error) {
+        if (error.message?.includes('not found')) {
+          // Quote already deleted, just refresh
+          queryClient.invalidateQueries({ queryKey: ['quotes'] });
+          return;
+        }
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       toast.success(t('deletedSuccessfully'));
+    },
+    onError: (error) => {
+      if (!error.message?.includes('not found')) {
+        toast.error(language === 'es' ? 'Error al eliminar' : 'Delete failed');
+      }
     }
   });
 
