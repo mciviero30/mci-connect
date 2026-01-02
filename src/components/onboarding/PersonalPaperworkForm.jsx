@@ -12,8 +12,6 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
     legal_full_name: '',
     ssn_or_itin: '',
     date_of_birth: '',
-    drivers_license_url: '',
-    social_security_card_url: '',
     bank_name: '',
     routing_number: '',
     account_number: '',
@@ -22,43 +20,16 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
     emergency_contact_phone: ''
   });
 
-  const [uploadingLicense, setUploadingLicense] = useState(false);
-  const [uploadingSSCard, setUploadingSSCard] = useState(false);
 
-  const uploadFileMutation = useMutation({
-    mutationFn: async (file) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      return file_url;
-    }
-  });
-
-  const handleFileUpload = async (e, field) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const setLoading = field === 'drivers_license_url' ? setUploadingLicense : setUploadingSSCard;
-    setLoading(true);
-
-    try {
-      const url = await uploadFileMutation.mutateAsync(file);
-      setFormData({...formData, [field]: url});
-    } catch (error) {
-      alert('Error uploading file: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validation - ONLY REQUIRED: personal info, bank, emergency
-    if (!formData.legal_full_name || !formData.ssn_or_itin || !formData.date_of_birth) {
+    // Validation - legal_full_name, dob REQUIRED; ssn OPTIONAL
+    if (!formData.legal_full_name || !formData.date_of_birth) {
       alert('Please fill in all required personal information');
       return;
     }
-    
-    // REMOVED: Document upload requirements (optional now)
     
     if (!formData.bank_name || !formData.routing_number || !formData.account_number) {
       alert('Please fill in all bank information for direct deposit');
@@ -105,14 +76,16 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-700">SSN or ITIN *</Label>
+                <Label className="text-slate-700">SSN or ITIN (Optional)</Label>
                 <Input
                   value={formData.ssn_or_itin}
                   onChange={(e) => setFormData({...formData, ssn_or_itin: e.target.value})}
                   placeholder="XXX-XX-XXXX"
                   className="bg-slate-50"
-                  required
                 />
+                <p className="text-xs text-slate-500 mt-1">
+                  You can provide this later if needed for payroll
+                </p>
               </div>
               
               <div>
@@ -128,79 +101,7 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
             </div>
           </div>
 
-          {/* Document Uploads - OPTIONAL */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Upload className="w-5 h-5 text-green-600" />
-              Optional Documents
-            </h3>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-slate-700">Driver's License / State ID (Optional)</Label>
-                <div className="mt-2">
-                  {formData.drivers_license_url ? (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <span className="text-sm text-green-700">ID Uploaded</span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setFormData({...formData, drivers_license_url: ''})}
-                        className="text-red-600"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ) : (
-                    <Input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileUpload(e, 'drivers_license_url')}
-                      disabled={uploadingLicense}
-                      className="bg-slate-50"
-                    />
-                  )}
-                  {uploadingLicense && <p className="text-sm text-blue-600 mt-2">Uploading...</p>}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-slate-700">Social Security Card / Work Permit (Optional)</Label>
-                <div className="mt-2">
-                  {formData.social_security_card_url ? (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                        <span className="text-sm text-green-700">Document Uploaded</span>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setFormData({...formData, social_security_card_url: ''})}
-                        className="text-red-600"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ) : (
-                    <Input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileUpload(e, 'social_security_card_url')}
-                      disabled={uploadingSSCard}
-                      className="bg-slate-50"
-                    />
-                  )}
-                  {uploadingSSCard && <p className="text-sm text-blue-600 mt-2">Uploading...</p>}
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Bank Information */}
           <div className="space-y-4">
