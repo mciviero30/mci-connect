@@ -44,6 +44,14 @@ export default function CrearFactura() {
   const editId = urlParams.get('id');
   const quoteId = urlParams.get('quote_id');
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const canCreate = canCreateFinancialDocs(user);
+  const requiresApproval = needsApproval(user);
+
   const { data: invoices } = useQuery({
     queryKey: ['invoices'],
     queryFn: () => base44.entities.Invoice.list(),
