@@ -165,6 +165,28 @@ Deno.serve(async (req) => {
       status: 'calculated',
     });
 
+    // AUDIT LOG: Commission calculated
+    await base44.asServiceRole.entities.AuditLog.create({
+      event_type: 'commission_calculated',
+      entity_type: 'CommissionResult',
+      entity_id: commissionResult.id,
+      performed_by: user.email,
+      performed_by_name: user.full_name || user.email,
+      action_description: `Commission calculated for ${employeeName || employeeEmail} on job "${job.name}": $${commissionAmount.toFixed(2)}`,
+      after_state: {
+        job_id: job.id,
+        employee_email: employeeEmail,
+        commission_amount: commissionAmount,
+        status: 'calculated',
+      },
+      metadata: {
+        job_revenue: jobRevenue,
+        job_expenses: totalExpenses,
+        net_profit: netProfit,
+        commission_rate: commissionRate,
+      }
+    });
+
     // Create alert for CEO/Admin
     const adminUsers = await base44.asServiceRole.entities.User.list();
     const ceoAdminUsers = adminUsers.filter(u => u.role === 'admin' || u.role === 'ceo');

@@ -123,11 +123,31 @@ export default function TaxOnboarding() {
         completed_at: new Date().toISOString(),
       };
 
+      let savedProfile;
       if (existingTaxProfile) {
-        return base44.entities.TaxProfile.update(existingTaxProfile.id, taxProfileData);
+        savedProfile = await base44.entities.TaxProfile.update(existingTaxProfile.id, taxProfileData);
       } else {
-        return base44.entities.TaxProfile.create(taxProfileData);
+        savedProfile = await base44.entities.TaxProfile.create(taxProfileData);
       }
+
+      // AUDIT LOG: Tax profile completed
+      await base44.entities.AuditLog.create({
+        event_type: 'tax_profile_completed',
+        entity_type: 'TaxProfile',
+        entity_id: savedProfile.id,
+        performed_by: currentUser.email,
+        performed_by_name: currentUser.full_name || currentUser.email,
+        action_description: `Tax profile completed for ${currentUser.full_name || currentUser.email} (${taxType})`,
+        after_state: {
+          tax_type: taxType,
+          completed: true,
+        },
+        metadata: {
+          employee_directory_id: employeeProfile.id,
+        }
+      });
+
+      return savedProfile;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['taxProfile'] });

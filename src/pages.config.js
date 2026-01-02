@@ -79,6 +79,7 @@ import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
 import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import TaxOnboarding from './pages/TaxOnboarding';
+import AuditTrail from './pages/AuditTrail';
 import __Layout from './Layout.jsx';
 
 
@@ -164,6 +165,7 @@ export const PAGES = {
     "WelcomeMessage": WelcomeMessage,
     "CommissionTotalsGusto": CommissionTotalsGusto,
     "TaxOnboarding": TaxOnboarding,
+    "AuditTrail": AuditTrail,
 }
 
 export const pagesConfig = {

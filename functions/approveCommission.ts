@@ -70,6 +70,29 @@ Deno.serve(async (req) => {
       }
     );
 
+    // AUDIT LOG: Commission approved
+    await base44.asServiceRole.entities.AuditLog.create({
+      event_type: 'commission_approved',
+      entity_type: 'CommissionResult',
+      entity_id: commission_result_id,
+      performed_by: user.email,
+      performed_by_name: user.full_name || user.email,
+      action_description: `Commission approved for ${result.employee_name} on job "${result.job_name}": $${finalAmount.toFixed(2)}`,
+      before_state: {
+        status: 'calculated',
+        commission_amount: result.commission_amount,
+      },
+      after_state: {
+        status: 'approved',
+        commission_amount: finalAmount,
+        adjusted_rate: finalRate,
+      },
+      metadata: {
+        rate_adjusted: adjusted_rate !== undefined,
+        notes: notes,
+      }
+    });
+
     // Create alert for Manager (commission approved)
     await base44.asServiceRole.entities.SystemAlert.create({
       recipient_email: result.employee_email,

@@ -95,6 +95,46 @@ Deno.serve(async (req) => {
     );
     // ATOMIC TRANSACTION END
 
+    // AUDIT LOG: Commission paid
+    await base44.asServiceRole.entities.AuditLog.create({
+      event_type: 'commission_paid',
+      entity_type: 'CommissionResult',
+      entity_id: commission_result_id,
+      performed_by: user.email,
+      performed_by_name: user.full_name || user.email,
+      action_description: `Commission paid to ${result.employee_name} for job "${result.job_name}": $${result.commission_amount.toFixed(2)}`,
+      before_state: {
+        status: 'approved',
+      },
+      after_state: {
+        status: 'paid',
+        payroll_entry_id: payrollEntry.id,
+        accounting_entry_id: accountingEntry.id,
+      },
+      metadata: {
+        commission_amount: result.commission_amount,
+      }
+    });
+
+    // AUDIT LOG: Payroll entry created
+    await base44.asServiceRole.entities.AuditLog.create({
+      event_type: 'payroll_entry_created',
+      entity_type: 'WeeklyPayroll',
+      entity_id: payrollEntry.id,
+      performed_by: user.email,
+      performed_by_name: user.full_name || user.email,
+      action_description: `Payroll entry created for commission payment to ${result.employee_name}: $${result.commission_amount.toFixed(2)}`,
+      after_state: {
+        employee_email: result.employee_email,
+        commission_pay: result.commission_amount,
+        total_pay: result.commission_amount,
+      },
+      metadata: {
+        commission_result_id: commission_result_id,
+        job_id: result.job_id,
+      }
+    });
+
     // Create alert for Manager (commission paid)
     await base44.asServiceRole.entities.SystemAlert.create({
       recipient_email: result.employee_email,
