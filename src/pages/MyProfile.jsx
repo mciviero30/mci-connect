@@ -118,8 +118,8 @@ export default function MyProfile() {
         <div className="max-w-5xl mx-auto px-4 pt-8 pb-24">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white">Mi Perfil</h1>
-              <p className="text-blue-200 text-sm">Gestiona tu información personal</p>
+              <h1 className="text-2xl font-bold text-white">{t('myProfile')}</h1>
+              <p className="text-blue-200 text-sm">{t('managePersonalInfo')}</p>
             </div>
             {!editing ? (
               <Button
@@ -128,7 +128,7 @@ export default function MyProfile() {
                 className="bg-white/10 border-white/30 text-white hover:bg-white/20"
               >
                 <Edit3 className="w-4 h-4 mr-2" />
-                Editar
+                {t('edit')}
               </Button>
             ) : (
               <div className="flex gap-2">
@@ -147,7 +147,7 @@ export default function MyProfile() {
                   className="bg-white/10 border-white/30 text-white hover:bg-white/20"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Cancelar
+                  {t('cancel')}
                 </Button>
                 <Button
                   onClick={handleSave}
@@ -155,7 +155,7 @@ export default function MyProfile() {
                   className="bg-white text-blue-700 hover:bg-blue-50"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {updateProfileMutation.isPending ? 'Guardando...' : 'Guardar'}
+                  {updateProfileMutation.isPending ? t('saving') : t('save')}
                 </Button>
               </div>
             )}
@@ -301,7 +301,7 @@ export default function MyProfile() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <User className="w-4 h-4 text-blue-600" />
-                  Información Personal
+                  {t('personalInfo')}
                 </h3>
                 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -351,7 +351,7 @@ export default function MyProfile() {
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCircle className="w-4 h-4 text-red-500" />
-                  Contacto de Emergencia
+                  {t('emergencyContact')}
                 </h3>
                 
                 <div className="grid md:grid-cols-3 gap-4">
@@ -403,7 +403,7 @@ export default function MyProfile() {
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                     <Award className="w-4 h-4 text-amber-500" />
-                    Reconocimientos Recientes
+                    {t('recentRecognitions')}
                   </h3>
                   
                   <div className="space-y-3">
@@ -434,7 +434,7 @@ export default function MyProfile() {
             <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm">
-                  Acciones Rápidas
+                  {t('quickActions')}
                 </h3>
                 
                 <div className="space-y-2">

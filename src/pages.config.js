@@ -47,7 +47,6 @@ import MisGastos from './pages/MisGastos';
 import MisHoras from './pages/MisHoras';
 import MisProyectos from './pages/MisProyectos';
 import MyPayroll from './pages/MyPayroll';
-import MyProfile from './pages/MyProfile';
 import NewsFeed from './pages/NewsFeed';
 import Nomina from './pages/Nomina';
 import NotificationCenter from './pages/NotificationCenter';
@@ -74,6 +73,7 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import MyProfile from './pages/MyProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -127,7 +127,6 @@ export const PAGES = {
     "MisHoras": MisHoras,
     "MisProyectos": MisProyectos,
     "MyPayroll": MyPayroll,
-    "MyProfile": MyProfile,
     "NewsFeed": NewsFeed,
     "Nomina": Nomina,
     "NotificationCenter": NotificationCenter,
@@ -154,6 +153,7 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "MyProfile": MyProfile,
 }
 
 export const pagesConfig = {
