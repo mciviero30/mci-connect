@@ -117,34 +117,34 @@ export default function ModernJobCard({ job }) {
           </DropdownMenu>
         </div>
 
-        {/* Status Badges */}
-        <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className={`${statusColors[job.status]} px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center`}>
+        {/* Status Badges - Enhanced sizing */}
+        <div className="flex items-center flex-wrap gap-2 mb-4">
+          <Badge className={`${statusColors[job.status]} px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center`}>
             {statusLabels[job.status] || job.status}
           </Badge>
           {job.team_name && (
             <Badge 
               variant="outline" 
-              className="border border-[#1E6FE8] text-[#1E6FE8] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
+              className="border border-[#507DB4]/40 dark:border-[#6B9DD8]/40 text-[#507DB4] dark:text-[#6B9DD8] bg-transparent hover:bg-transparent px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center"
             >
-              <MapPin className="w-3 h-3 mr-0.5" />
+              <MapPin className="w-3.5 h-3.5 mr-1" />
               {job.team_name}
             </Badge>
           )}
         </div>
 
-        {/* Description */}
+        {/* Description - Better readability */}
         {job.description && (
-          <p className="text-[11px] text-[#666666] mb-3 line-clamp-2 leading-relaxed">
+          <p className="text-xs sm:text-[11px] text-[#666666] dark:text-slate-400 mb-4 line-clamp-2 leading-relaxed">
             {job.description}
           </p>
         )}
 
-        {/* Address */}
+        {/* Address - Better spacing */}
         {(job.address || job.city) && (
-          <div className="flex items-start gap-1.5 text-[#666666] mb-3">
-            <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
-            <span className="text-[10px] line-clamp-2">
+          <div className="flex items-start gap-2 text-[#666666] dark:text-slate-400 mb-4">
+            <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5" strokeWidth={2} />
+            <span className="text-xs line-clamp-2">
               {job.address}
               {job.city && `, ${job.city}`}
               {job.state && `, ${job.state}`}
@@ -153,27 +153,27 @@ export default function ModernJobCard({ job }) {
           </div>
         )}
 
-        {/* Financial Info */}
-        <div className="mt-auto pt-3 border-t border-slate-100">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
+        {/* Financial Info - Enhanced visual hierarchy */}
+        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-[#666666] font-semibold">
-                {lang === 'es' ? 'Valor Contrato' : 'Contract Value'}
+              <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
+                {lang === 'es' ? 'Contrato' : 'Contract'}
               </span>
-              <span className="text-[14px] font-bold text-[#1E6FE8]">
+              <span className="text-lg font-bold text-[#507DB4] dark:text-[#6B9DD8]">
                 {formatCurrency(contractAmount)}
               </span>
             </div>
             
             {estimatedCost > 0 && (
-              <div className="flex items-center justify-between pt-2 border-t border-blue-100">
-                <div className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-slate-500" />
-                  <span className="text-[10px] text-[#666666] font-semibold">
+              <div className="flex items-center justify-between pt-3 border-t border-blue-100 dark:border-blue-800/30 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
                     {lang === 'es' ? 'Margen' : 'Margin'}
                   </span>
                 </div>
-                <span className={`text-[12px] font-bold ${getProfitMarginColor(profitMargin)}`}>
+                <span className={`text-base font-bold ${getProfitMarginColor(profitMargin)}`}>
                   {profitMargin.toFixed(1)}%
                 </span>
               </div>
@@ -182,8 +182,8 @@ export default function ModernJobCard({ job }) {
         </div>
       </div>
 
-      {/* Gradient Line at Bottom */}
-      <div className={`h-[3px] bg-gradient-to-r from-${colorIndicator}-500 to-${colorIndicator}-600`} />
+      {/* Gradient Line at Bottom - More prominent */}
+      <div className={`h-1 bg-gradient-to-r from-${colorIndicator}-500 to-${colorIndicator}-600`} />
     </Card>
   );
 }

@@ -55,18 +55,18 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
   const statusMeta = getInvoiceStatusMeta(status, language);
 
   return (
-    <Card className="bg-white rounded-[16px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border-0 overflow-hidden hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] transition-all duration-300 w-full flex flex-col h-full">
-      <div className="p-4 flex-1 flex flex-col">
+    <Card className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5 line-clamp-2">
+            <h3 className="text-base sm:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2">
               {customer}
             </h3>
             {invoice?.job_name && (
-              <div className="flex items-center gap-1 mt-1">
-                <Users className="w-3 h-3 text-[#666666]" />
-                <p className="text-[11px] text-[#666666] leading-tight truncate">
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <Users className="w-3.5 h-3.5 text-[#666666] dark:text-slate-400" />
+                <p className="text-xs sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate">
                   {invoice.job_name}
                 </p>
               </div>
@@ -78,9 +78,9 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
               <Button
                 variant="ghost"
                 size="sm"
-                className="bg-[#F5F5F5] hover:bg-[#E8E8E8] text-slate-700 px-2 rounded-lg h-[26px]"
+                className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 py-1.5 rounded-lg min-h-[36px] flex-shrink-0 touch-manipulation active:scale-95 transition-transform"
               >
-                <MoreVertical className="w-3.5 h-3.5" />
+                <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
@@ -139,17 +139,17 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
           </DropdownMenu>
         </div>
 
-        {/* Status Badges */}
-        <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className={`${statusMeta.cardBadgeClass} px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center`}>
+        {/* Status Badges - Enhanced sizing */}
+        <div className="flex items-center flex-wrap gap-2 mb-4">
+          <Badge className={`${statusMeta.cardBadgeClass} px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center`}>
             {statusMeta.label}
           </Badge>
           {invoice.team_name && (
             <Badge 
               variant="outline" 
-              className="border border-[#1E6FE8] text-[#1E6FE8] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
+              className="border border-[#507DB4]/40 dark:border-[#6B9DD8]/40 text-[#507DB4] dark:text-[#6B9DD8] bg-transparent hover:bg-transparent px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center"
             >
-              <MapPin className="w-3 h-3 mr-0.5" />
+              <MapPin className="w-3.5 h-3.5 mr-1" />
               {invoice.team_name}
             </Badge>
           )}
@@ -165,18 +165,18 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
           />
         )}
 
-        {/* Overdue Alert */}
+        {/* Overdue Alert - More prominent */}
         {daysOverdue > 0 && (
-          <div className="mb-3 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-1.5">
-            <AlertCircle className="w-3 h-3 text-red-600" />
-            <span className="text-[10px] font-semibold text-red-600">
-              {language === 'es' ? `Vencida ${daysOverdue}d` : `Overdue ${daysOverdue}d`}
+          <div className="mb-4 px-3 py-2 soft-red-gradient rounded-xl flex items-center gap-2 shadow-sm">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <span className="text-xs font-bold text-red-700 dark:text-red-500">
+              {language === 'es' ? `Vencida ${daysOverdue} días` : `Overdue ${daysOverdue} days`}
             </span>
           </div>
         )}
 
-        {/* Invoice Number & Date */}
-        <div className="text-[10px] text-[#666666] mb-3">
+        {/* Invoice Number & Date - Better spacing */}
+        <div className="text-xs text-[#666666] dark:text-slate-400 mb-4">
           <div className="flex items-center justify-between">
             <span>{invoiceNumber}</span>
             {invoice?.invoice_date && (() => {
@@ -213,24 +213,24 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
           </div>
         )}
 
-        {/* Financial Info */}
-        <div className="mt-auto pt-3 border-t border-slate-100">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-[#666666] font-semibold">
+        {/* Financial Info - Enhanced visual hierarchy */}
+        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
                 {language === 'es' ? 'Total' : 'Total'}
               </span>
-              <span className="text-[14px] font-bold text-[#00C48C]">
+              <span className="text-lg font-bold text-[#00C48C] dark:text-emerald-400">
                 {formatCurrency(total)}
               </span>
             </div>
             
             {status === 'partial' && (
-              <div className="flex items-center justify-between pt-2 border-t border-green-100 mt-2">
-                <span className="text-[10px] text-[#666666] font-semibold">
+              <div className="flex items-center justify-between pt-3 border-t border-green-100 dark:border-green-800/30 mt-2">
+                <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
                   {language === 'es' ? 'Saldo' : 'Balance'}
                 </span>
-                <span className="text-[12px] font-bold text-amber-600">
+                <span className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {formatCurrency(balance)}
                 </span>
               </div>
@@ -238,24 +238,24 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
           </div>
         </div>
 
-        {/* Action Buttons - Only for Admin */}
+        {/* Action Buttons - Enhanced touch targets */}
         {isAdmin && status !== 'paid' && status !== 'cancelled' && onRegisterPayment && (
-          <div className="flex gap-1.5 mt-3">
+          <div className="flex gap-2 mt-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onRegisterPayment(invoice)}
-              className="flex-1 h-[32px] text-[10px] font-semibold text-green-600 border-2 border-green-300 hover:bg-green-50"
+              className="flex-1 min-h-[40px] text-xs font-semibold text-green-600 dark:text-green-400 border-2 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg touch-manipulation active:scale-95 transition-transform"
             >
-              <DollarSign className="w-3.5 h-3.5 mr-1.5" />
-              {language === 'es' ? 'Pago' : 'Payment'}
+              <DollarSign className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Registrar Pago' : 'Register Payment'}
             </Button>
           </div>
         )}
       </div>
 
-      {/* Gradient Line at Bottom */}
-      <div className="h-[3px] bg-gradient-to-r from-green-500 to-emerald-600" />
+      {/* Gradient Line at Bottom - More prominent */}
+      <div className="h-1 bg-gradient-to-r from-green-500 to-emerald-600" />
     </Card>
   );
 }

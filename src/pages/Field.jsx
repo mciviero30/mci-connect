@@ -164,33 +164,35 @@ export default function Field() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto">
       <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
-      <div className="px-3 sm:px-6 md:px-10 py-4 sm:py-5 md:py-6 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-4 sm:mb-5 md:mb-6 flex flex-col sm:flex-row items-center justify-between text-white gap-3 sm:gap-0 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+      {/* Header - Improved mobile spacing and touch targets */}
+      <div className="px-3 sm:px-6 md:px-10 py-5 sm:py-6 md:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-5 sm:mb-6 md:mb-8 flex flex-col sm:flex-row items-center justify-between text-white gap-4 sm:gap-0 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <Link to={createPageUrl('Dashboard')} className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 h-9 w-9 sm:h-10 sm:w-10">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px] rounded-xl touch-manipulation active:scale-95 transition-transform">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
           alt="MCI Field"
-          className="h-12 sm:h-16 md:h-20 object-contain"
+          className="h-14 sm:h-16 md:h-20 object-contain"
           style={{ 
             imageRendering: '-webkit-optimize-contrast'
           }}
         />
         <div className="text-center sm:text-right">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wide text-slate-300" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
-          <p className="text-slate-300 text-xs sm:text-sm mt-0.5 sm:mt-1">Central management for construction projects</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wide text-white" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
+          <p className="text-slate-200 text-xs sm:text-sm mt-1">Central management for construction projects</p>
         </div>
       </div>
-      <div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+      {/* Search & Actions - Improved spacing and mobile layout */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <button
             onClick={() => setShowQuickSearch(true)}
-            className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors min-h-[44px]"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-800 transition-all min-h-[48px] shadow-md touch-manipulation active:scale-[0.98]"
           >
             <Search className="w-4 h-4" />
-            <span className="text-sm">Quick Search</span>
+            <span className="text-sm font-medium">Quick Search</span>
             <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-black rounded text-[10px] font-medium">
               <Command className="w-3 h-3" />K
             </kbd>
@@ -198,17 +200,17 @@ export default function Field() {
           {user?.role !== 'customer' && (
             <Button 
               onClick={() => setShowNewProject(true)}
-              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[44px] text-sm sm:text-base px-4 sm:px-5 w-full sm:w-auto"
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[48px] text-sm sm:text-base px-5 w-full sm:w-auto rounded-xl touch-manipulation active:scale-[0.98] transition-transform"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-5 h-5 mr-2" />
               New Project
             </Button>
           )}
         </div>
       </div>
 
-      {/* Stats Cards - Mobile Optimized */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4 md:mb-6">
+      {/* Stats Cards - Enhanced spacing */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <StatsCard 
           label="ACTIVE PROJECTS"
           value={activeProjects}
@@ -235,68 +237,69 @@ export default function Field() {
         />
       </div>
 
-      {/* Tabs - Mobile Optimized */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4 md:mb-6">
-        <TabsList className="bg-slate-800 dark:bg-slate-800/50 border border-slate-700 dark:border-slate-700 w-full grid grid-cols-3 gap-1">
-          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-xs md:text-sm min-h-[40px]">
-            <Briefcase className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+      {/* Tabs - Enhanced touch targets and spacing */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="bg-slate-800 dark:bg-slate-800/50 border border-slate-700 dark:border-slate-700 w-full grid grid-cols-3 gap-1 p-1 rounded-xl">
+          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[44px] rounded-lg touch-manipulation transition-all">
+            <Briefcase className="w-4 h-4 md:mr-2" />
             <span className="hidden sm:inline">Projects</span>
           </TabsTrigger>
-          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-xs md:text-sm min-h-[40px]">
-            <FileText className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[44px] rounded-lg touch-manipulation transition-all">
+            <FileText className="w-4 h-4 md:mr-2" />
             <span className="hidden sm:inline">Dimensions</span>
           </TabsTrigger>
-          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-xs md:text-sm min-h-[40px]">
-            <ClipboardList className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[44px] rounded-lg touch-manipulation transition-all">
+            <ClipboardList className="w-4 h-4 md:mr-2" />
             <span className="hidden sm:inline">Checklists</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects" className="mt-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          {/* Search and Filter Bar - Improved layout */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 className="text-2xl font-bold text-white">My Projects</h2>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                placeholder="Search projects..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 w-64"
-              />
-            </div>
-            <div className="flex bg-black rounded-lg p-1">
-              <button
-                onClick={() => setFilter('active')}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  filter === 'active' 
-                    ? 'bg-slate-700 text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Active
-              </button>
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  filter === 'all' 
-                    ? 'bg-slate-700 text-white shadow-sm' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                All
-              </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <div className="relative flex-1 sm:flex-none">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 w-full sm:w-64 h-11 rounded-xl"
+                />
+              </div>
+              <div className="flex bg-black rounded-xl p-1 shadow-md">
+                <button
+                  onClick={() => setFilter('active')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] touch-manipulation ${
+                    filter === 'active' 
+                      ? 'bg-slate-700 text-white shadow-sm' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setFilter('all')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] touch-manipulation ${
+                    filter === 'all' 
+                      ? 'bg-slate-700 text-white shadow-sm' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  All
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Projects Grid */}
+          {/* Projects Grid - Improved spacing */}
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-[#FFB800] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredJobs.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredJobs.map((job, idx) => (
               <ProjectCard key={job.id} job={job} index={idx} userRole={user?.role} />
             ))}
@@ -374,15 +377,15 @@ export default function Field() {
 
 function StatsCard({ label, value, icon: Icon, color }) {
   return (
-    <div className="bg-[#1e293b] border border-slate-700/50 rounded-lg md:rounded-xl p-2 md:p-4 shadow-lg">
-      <div className="flex flex-col gap-1">
+    <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-3 md:p-4 shadow-lg hover:shadow-xl transition-shadow">
+      <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between">
           <p className="text-2xl md:text-3xl font-bold text-white leading-tight">{value}</p>
-          <div className="p-1.5 md:p-2 rounded-full bg-white">
+          <div className="p-2 rounded-xl bg-white shadow-sm">
             <Icon className="w-4 h-4 md:w-5 md:h-5 text-black" />
           </div>
         </div>
-        <p className="text-[9px] md:text-xs font-bold text-slate-400 uppercase tracking-wider leading-tight">
+        <p className="text-[9px] md:text-xs font-bold text-slate-300 uppercase tracking-wider leading-tight">
           {label.split(' ').map((word, i) => (
             <React.Fragment key={i}>
               {word}
@@ -414,32 +417,32 @@ function ProjectCard({ job, index, userRole }) {
       transition={{ delay: index * 0.05 }}
     >
       <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
-        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 hover:bg-slate-700/50 transition-all cursor-pointer group shadow-lg">
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2 bg-[#FFB800]/20 rounded-lg">
+        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 hover:bg-slate-700/50 hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer group shadow-lg touch-manipulation">
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-2.5 bg-gradient-to-br from-[#FFB800]/20 to-[#FF8C00]/20 rounded-xl shadow-sm">
               <FolderOpen className="w-5 h-5 text-[#FFB800]" />
             </div>
-            <Badge className={statusColors[job.status] || statusColors.active}>
+            <Badge className={`${statusColors[job.status] || statusColors.active} px-2.5 py-1 rounded-full text-xs font-bold`}>
               {job.status === 'active' ? 'Active' : 
                job.status === 'completed' ? 'Completed' : 
                job.status === 'on_hold' ? 'On Hold' : 'Archived'}
             </Badge>
           </div>
-          <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors mb-1">
+          <h3 className="text-base font-bold text-white group-hover:text-[#FFB800] transition-colors mb-2 line-clamp-2 leading-snug">
             {jobName}
           </h3>
-          <p className="text-sm text-slate-400 line-clamp-1">
+          <p className="text-sm text-slate-400 line-clamp-2 mb-3 leading-relaxed">
             {job.address || job.description || 'No address'}
           </p>
           {/* Hide sensitive data for customers */}
           {!isCustomer && job.client_name_field && (
-            <p className="text-xs text-slate-500 mt-2">
-              Client: {job.client_name_field}
+            <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-700/50">
+              Client: <span className="text-slate-400">{job.client_name_field}</span>
             </p>
           )}
           {!isCustomer && job.contract_amount && (
-            <p className="text-xs text-slate-500 mt-1">
-              Budget: ${job.contract_amount.toLocaleString()}
+            <p className="text-xs text-slate-500 mt-1.5">
+              Budget: <span className="text-[#FFB800] font-semibold">${job.contract_amount.toLocaleString()}</span>
             </p>
           )}
         </div>
@@ -450,19 +453,19 @@ function ProjectCard({ job, index, userRole }) {
 
 function EmptyState({ onCreateProject }) {
   return (
-    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-12 text-center shadow-sm">
-      <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-        <AlertCircle className="w-8 h-8 text-orange-400" />
+    <div className="bg-slate-900 border border-slate-700 rounded-2xl p-12 text-center shadow-lg">
+      <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <AlertCircle className="w-10 h-10 text-orange-400" />
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">No projects assigned</h3>
-      <p className="text-slate-400 mb-6">
+      <p className="text-slate-300 mb-6 max-w-md mx-auto">
         Start by creating your first project or request access to an existing one
       </p>
       <Button 
         onClick={onCreateProject}
-        className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white"
+        className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[48px] px-6 rounded-xl"
       >
-        <Plus className="w-4 h-4 mr-2" />
+        <Plus className="w-5 h-5 mr-2" />
         Create Project
       </Button>
     </div>
