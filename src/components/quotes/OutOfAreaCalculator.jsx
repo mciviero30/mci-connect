@@ -37,6 +37,11 @@ export default function OutOfAreaCalculator({
         teamIds: selectedTeamIds
       });
 
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
       if (data.results) {
         setTravelMetrics(data.results);
         
@@ -48,12 +53,22 @@ export default function OutOfAreaCalculator({
           }
         });
         setVehicleCounts(counts);
+        
+        // Show error if all calculations failed
+        const allFailed = data.results.every(r => !r.success);
+        if (allFailed) {
+          const errorMessages = data.results.map(r => r.error).filter(Boolean).join(', ');
+          setError(errorMessages || (language === 'es' 
+            ? 'Error al calcular distancias para todos los equipos.'
+            : 'Failed to calculate distances for all teams.'));
+        }
       }
     } catch (err) {
       console.error('Error calculating travel metrics:', err);
-      setError(language === 'es' 
+      const errorMessage = err.response?.data?.error || err.message;
+      setError(errorMessage || (language === 'es' 
         ? 'Error al calcular distancias. Verifica que GOOGLE_MAPS_API_KEY esté configurado.'
-        : 'Failed to calculate distances. Check that GOOGLE_MAPS_API_KEY is configured.');
+        : 'Failed to calculate distances. Check that GOOGLE_MAPS_API_KEY is configured.'));
     } finally {
       setIsCalculating(false);
     }
