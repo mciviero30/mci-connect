@@ -25,22 +25,9 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // CRITICAL VALIDATION: SSN/ITIN is REQUIRED
-    if (!formData.ssn_or_itin || formData.ssn_or_itin.trim() === '') {
-      alert('SSN or ITIN is required for payroll processing');
-      return;
-    }
-    
-    // Validate SSN format (basic)
-    const ssnClean = formData.ssn_or_itin.replace(/[^0-9]/g, '');
-    if (ssnClean.length !== 9) {
-      alert('SSN/ITIN must be 9 digits (format: XXX-XX-XXXX)');
-      return;
-    }
-    
-    // Other required fields
-    if (!formData.legal_full_name || !formData.date_of_birth) {
-      alert('Please fill in all required personal information');
+    // Validation - ALL REQUIRED: legal_full_name, ssn, dob
+    if (!formData.legal_full_name || !formData.ssn_or_itin || !formData.date_of_birth) {
+      alert('Please fill in all required personal information including SSN/ITIN');
       return;
     }
     
@@ -89,17 +76,16 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-slate-700 font-semibold">SSN or ITIN * (Required)</Label>
+                <Label className="text-slate-700">SSN or ITIN *</Label>
                 <Input
                   value={formData.ssn_or_itin}
                   onChange={(e) => setFormData({...formData, ssn_or_itin: e.target.value})}
                   placeholder="XXX-XX-XXXX"
-                  className="bg-slate-50 border-slate-300"
+                  className="bg-slate-50"
                   required
-                  maxLength={11}
                 />
-                <p className="text-xs text-red-600 mt-1 font-medium">
-                  🔒 Required for payroll - Only visible to CEO/Admin
+                <p className="text-xs text-slate-500 mt-1">
+                  Required for payroll processing
                 </p>
               </div>
               

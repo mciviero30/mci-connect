@@ -501,8 +501,6 @@ export const translations = {
     optional: "Optional",
     requiredField: "Required",
     location: "Location",
-    noData: "Not available",
-    restricted: "Restricted",
 
     // New translations for employee features
     myProfile: "My Profile",
@@ -1129,8 +1127,6 @@ export const translations = {
     optional: "Opcional",
     requiredField: "Requerido",
     location: "Ubicación",
-    noData: "No disponible",
-    restricted: "Restringido",
 
     // Employee features
     myProfile: "Mi Perfil",
