@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
+import { createPageUrl } from '@/utils';
 
 export default function Directory() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,6 +22,12 @@ export default function Directory() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  const { profile: userProfile } = useEmployeeProfile(user?.email, user);
+  
+  // ROLE-BASED ACCESS: Admin and Manager see all employees
+  const userRole = (userProfile?.role || user?.role || 'employee').toLowerCase();
+  const isAdminOrManager = userRole === 'admin' || userRole === 'manager';
 
   // Use EmployeeDirectory as primary source (safe, public data)
   const { data: directoryEntries = [], isLoading: directoryLoading } = useQuery({

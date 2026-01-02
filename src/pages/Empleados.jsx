@@ -14,7 +14,7 @@ import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 import PendingInvitationCard from "@/components/empleados/PendingInvitationCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import { useToast } from "@/components/ui/toast";
-import { canViewSensitiveEmployeeData } from "@/components/utils/employeeSecurity";
+import { canViewSensitiveData } from "@/components/utils/employeeSecurity";
 
 
 
@@ -89,7 +89,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const canViewSensitive = canViewSensitiveEmployeeData(currentUser);
+  const canViewSensitive = canViewSensitiveData(currentUser);
   
   const [formData, setFormData] = useState({
     email: employee?.email || '',
@@ -367,6 +367,34 @@ export default function Empleados() {
     queryFn: () => base44.auth.me(),
     staleTime: Infinity
   });
+
+  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
+  
+  // GUARD: Only Admin can access Employee Management
+  const userRole = (userProfile?.role || currentUser?.role || 'employee').toLowerCase();
+  const isAdmin = userRole === 'admin';
+
+  if (currentUser && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Access Denied</h2>
+            <p className="text-slate-600 dark:text-slate-400 mb-6">
+              Employee Management is restricted to administrators only.
+            </p>
+            <Button 
+              onClick={() => window.location.href = createPageUrl('Dashboard')} 
+              className="w-full"
+            >
+              Go to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Lazy load employees with pagination
   const [page, setPage] = useState(1);
