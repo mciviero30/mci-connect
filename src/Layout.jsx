@@ -549,6 +549,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
+        { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
       ]
     },
     {
@@ -565,6 +566,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       section: 'GENERAL',
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
