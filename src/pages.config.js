@@ -80,6 +80,8 @@ import WelcomeMessage from './pages/WelcomeMessage';
 import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import TaxOnboarding from './pages/TaxOnboarding';
 import AuditTrail from './pages/AuditTrail';
+import ExecutiveDashboard from './pages/ExecutiveDashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -166,6 +168,8 @@ export const PAGES = {
     "CommissionTotalsGusto": CommissionTotalsGusto,
     "TaxOnboarding": TaxOnboarding,
     "AuditTrail": AuditTrail,
+    "ExecutiveDashboard": ExecutiveDashboard,
+    "ManagerDashboard": ManagerDashboard,
 }
 
 export const pagesConfig = {

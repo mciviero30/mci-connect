@@ -479,6 +479,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       section: 'STRATEGY',
       icon: Target,
       items: [
+        { title: 'Executive Dashboard', url: createPageUrl("ExecutiveDashboard"), icon: TrendingUp },
         { title: 'Control Tower', url: createPageUrl("ExecutiveControlTower"), icon: Shield },
         { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
@@ -569,6 +570,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     {
       section: 'GENERAL',
       items: [
+        { title: 'Manager Dashboard', url: createPageUrl("ManagerDashboard"), icon: TrendingUp },
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
