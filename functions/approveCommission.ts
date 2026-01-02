@@ -70,6 +70,44 @@ Deno.serve(async (req) => {
       }
     );
 
+    // Create alert for Manager (commission approved)
+    await base44.asServiceRole.entities.SystemAlert.create({
+      recipient_email: result.employee_email,
+      alert_type: 'commission_approved',
+      title: 'Commission Approved',
+      message: `Your commission for job "${result.job_name}" has been approved: $${finalAmount.toFixed(2)}`,
+      severity: 'info',
+      related_entity: 'CommissionResult',
+      related_id: commission_result_id,
+      action_url: '/CommissionReports',
+      metadata: {
+        job_id: result.job_id,
+        commission_amount: finalAmount,
+      }
+    });
+
+    // Alert CEO/Admin about pending payment
+    const adminUsers = await base44.asServiceRole.entities.User.list();
+    const ceoAdminUsers = adminUsers.filter(u => u.role === 'admin' || u.role === 'ceo');
+
+    for (const admin of ceoAdminUsers) {
+      await base44.asServiceRole.entities.SystemAlert.create({
+        recipient_email: admin.email,
+        alert_type: 'commission_pending_approval',
+        title: 'Commission Pending Payment',
+        message: `Commission approved for ${result.employee_name} on "${result.job_name}": $${finalAmount.toFixed(2)} - Ready for payment`,
+        severity: 'warning',
+        related_entity: 'CommissionResult',
+        related_id: commission_result_id,
+        action_url: '/CommissionReview',
+        metadata: {
+          employee_email: result.employee_email,
+          job_id: result.job_id,
+          commission_amount: finalAmount,
+        }
+      });
+    }
+
     return Response.json({
       success: true,
       commission_result: updated,

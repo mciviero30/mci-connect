@@ -95,6 +95,23 @@ Deno.serve(async (req) => {
     );
     // ATOMIC TRANSACTION END
 
+    // Create alert for Manager (commission paid)
+    await base44.asServiceRole.entities.SystemAlert.create({
+      recipient_email: result.employee_email,
+      alert_type: 'commission_paid',
+      title: 'Commission Paid',
+      message: `Your commission for job "${result.job_name}" has been paid: $${result.commission_amount.toFixed(2)}`,
+      severity: 'info',
+      related_entity: 'CommissionResult',
+      related_id: commission_result_id,
+      action_url: '/MyPayroll',
+      metadata: {
+        job_id: result.job_id,
+        commission_amount: result.commission_amount,
+        payroll_entry_id: payrollEntry.id,
+      }
+    });
+
     return Response.json({
       success: true,
       commission_result: updated,

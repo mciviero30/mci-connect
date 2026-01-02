@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, X, Check, Trash2, ExternalLink } from 'lucide-react';
+import { Bell, X, Check, Trash2, ExternalLink, AlertCircle, DollarSign, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function NotificationBell({ user }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,23 @@ export default function NotificationBell({ user }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  // Fetch system alerts
+  const { data: alerts = [] } = useQuery({
+    queryKey: ['system-alerts', user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const systemAlerts = await base44.entities.SystemAlert.filter({ 
+        recipient_email: user.email,
+      });
+      return systemAlerts.sort((a, b) => 
+        new Date(b.created_date) - new Date(a.created_date)
+      ).slice(0, 20);
+    },
+    enabled: !!user?.email,
+    refetchInterval: 30000,
+  });
+
+  // Fetch legacy notifications
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', user?.email],
     queryFn: async () => {
@@ -26,12 +44,20 @@ export default function NotificationBell({ user }) {
       return allNotifs;
     },
     enabled: !!user?.email,
-    refetchInterval: 30000, // Refresh every 30s
+    refetchInterval: 30000,
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const markAlertAsReadMutation = useMutation({
+    mutationFn: (alertId) => base44.entities.SystemAlert.update(alertId, {
+      read: true,
+      read_at: new Date().toISOString(),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-alerts'] });
+    }
+  });
 
-  const markAsReadMutation = useMutation({
+  const markNotificationAsReadMutation = useMutation({
     mutationFn: (notificationId) => base44.entities.Notification.update(notificationId, { read: true }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -45,23 +71,50 @@ export default function NotificationBell({ user }) {
     }
   });
 
-  const markAllAsReadMutation = useMutation({
-    mutationFn: async () => {
-      const unreadNotifs = notifications.filter(n => !n.read);
-      for (const notif of unreadNotifs) {
-        await base44.entities.Notification.update(notif.id, { read: true });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  const unreadAlertsCount = alerts.filter(a => !a.read).length;
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
+  const unreadCount = unreadAlertsCount + unreadNotificationsCount;
+
+  const handleAlertClick = (alert) => {
+    if (!alert.read) {
+      markAlertAsReadMutation.mutate(alert.id);
     }
-  });
+    if (alert.action_url) {
+      navigate(createPageUrl(alert.action_url.replace('/', '')));
+      setIsOpen(false);
+    }
+  };
 
   const handleNotificationClick = (notification) => {
-    markAsReadMutation.mutate(notification.id);
+    markNotificationAsReadMutation.mutate(notification.id);
     if (notification.link) {
       navigate(notification.link);
       setIsOpen(false);
+    }
+  };
+
+  const getAlertIcon = (type) => {
+    switch (type) {
+      case 'tax_info_incomplete':
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      case 'commission_calculated':
+      case 'commission_pending_approval':
+      case 'commission_approved':
+      case 'commission_paid':
+        return <DollarSign className="w-4 h-4 text-green-600" />;
+      default:
+        return <FileText className="w-4 h-4 text-blue-600" />;
+    }
+  };
+
+  const getSeverityColor = (severity) => {
+    switch (severity) {
+      case 'critical':
+        return 'border-l-red-500 bg-red-50 dark:bg-red-900/10';
+      case 'warning':
+        return 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/10';
+      default:
+        return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/10';
     }
   };
 
@@ -138,25 +191,12 @@ export default function NotificationBell({ user }) {
                     {unreadCount} {language === 'es' ? 'sin leer' : 'unread'}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  {unreadCount > 0 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => markAllAsReadMutation.mutate()}
-                      className="text-xs hover:bg-white dark:hover:bg-slate-700 rounded-lg"
-                    >
-                      <Check className="w-3 h-3 mr-1" />
-                      {language === 'es' ? 'Leer todo' : 'Mark all read'}
-                    </Button>
-                  )}
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                  </button>
-                </div>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                </button>
               </div>
 
               {/* Notifications List */}
@@ -166,7 +206,7 @@ export default function NotificationBell({ user }) {
                     <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
                     <p className="text-sm text-slate-500 mt-3">{language === 'es' ? 'Cargando...' : 'Loading...'}</p>
                   </div>
-                ) : notifications.length === 0 ? (
+                ) : alerts.length === 0 && notifications.length === 0 ? (
                   <div className="p-12 text-center">
                     <Bell className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
                     <p className="text-slate-500 dark:text-slate-400">
@@ -175,6 +215,47 @@ export default function NotificationBell({ user }) {
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                    {/* System Alerts */}
+                    {alerts.map((alert) => (
+                      <motion.div
+                        key={alert.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`p-4 cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-700/50 border-l-4 ${
+                          !alert.read ? 'bg-slate-50 dark:bg-slate-800/50' : ''
+                        } ${getSeverityColor(alert.severity)}`}
+                        onClick={() => handleAlertClick(alert)}
+                      >
+                        <div className="flex gap-3 items-start">
+                          <div className="flex-shrink-0 mt-0.5">
+                            {getAlertIcon(alert.alert_type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm text-slate-900 dark:text-white mb-0.5">
+                              {alert.title}
+                            </div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-1">
+                              {alert.message}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!alert.read && (
+                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                  {language === 'es' ? 'Nuevo' : 'New'}
+                                </Badge>
+                              )}
+                              <span className="text-[10px] text-slate-500">
+                                {formatDistanceToNow(new Date(alert.created_date), {
+                                  addSuffix: true,
+                                  locale: language === 'es' ? es : undefined
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+
+                    {/* Legacy Notifications */}
                     {notifications.map((notification) => (
                       <motion.div
                         key={notification.id}
@@ -210,32 +291,17 @@ export default function NotificationBell({ user }) {
                                   locale: language === 'es' ? es : undefined
                                 })}
                               </span>
-                              <div className="flex items-center gap-1">
-                                {notification.link && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 px-2 text-xs text-indigo-600 hover:bg-indigo-100 dark:text-indigo-400 dark:hover:bg-indigo-900/20 rounded-lg"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleNotificationClick(notification);
-                                    }}
-                                  >
-                                    <ExternalLink className="w-3 h-3" />
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-6 px-2 text-xs text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteNotificationMutation.mutate(notification.id);
-                                  }}
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-2 text-xs text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotificationMutation.mutate(notification.id);
+                                }}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -246,7 +312,7 @@ export default function NotificationBell({ user }) {
               </ScrollArea>
 
               {/* Footer */}
-              {notifications.length > 0 && (
+              {(alerts.length > 0 || notifications.length > 0) && (
                 <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                   <button
                     onClick={() => {
