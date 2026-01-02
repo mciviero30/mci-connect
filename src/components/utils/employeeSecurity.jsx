@@ -5,23 +5,19 @@
 
 /**
  * Determines if user can view/edit sensitive employee data (DOB, SSN)
- * @param {Object} user - Current authenticated user
+ * @param {Object} user - Current authenticated user (merged profile)
  * @returns {boolean} - True if user has permission
  */
 export const canViewSensitiveEmployeeData = (user) => {
   if (!user) return false;
   
-  // Admin role always has access
-  if (user.role === 'admin') return true;
-  
-  // CEO, Administrator positions have access
-  const position = (user.position || '').toLowerCase();
-  if (position.includes('ceo') || position.includes('administrator')) {
-    return true;
-  }
-  
-  return false;
+  // GUARD: Only Admin role can view DOB/SSN
+  const role = (user.role || '').toLowerCase();
+  return role === 'admin';
 };
+
+// Alias for consistency
+export const canViewSensitiveData = canViewSensitiveEmployeeData;
 
 /**
  * Masks SSN/Tax ID for display
