@@ -387,7 +387,7 @@ function StatsCard({ label, value, icon: Icon, color }) {
             <React.Fragment key={i}>
               {word}
               {i < label.split(' ').length - 1 && <br className="md:hidden" />}
-              {i < label.split(' ').length - 1 && <span className="hidden md:inline"> </span>}
+              {i < label.split(' ').length - 1 && ' '}
             </React.Fragment>
           ))}
         </p>
