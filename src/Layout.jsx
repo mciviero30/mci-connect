@@ -550,6 +550,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
+        { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
       ]
     },
     {
@@ -567,6 +568,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
+        { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
