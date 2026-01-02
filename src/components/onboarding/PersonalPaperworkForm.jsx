@@ -9,7 +9,8 @@ import { useMutation } from "@tanstack/react-query";
 
 export default function PersonalPaperworkForm({ onSubmit, isProcessing, employeeEmail }) {
   const [formData, setFormData] = useState({
-    legal_full_name: '',
+    first_name: '',
+    last_name: '',
     ssn_or_itin: '',
     date_of_birth: '',
     bank_name: '',
@@ -25,8 +26,8 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validation - ALL REQUIRED: legal_full_name, ssn, dob
-    if (!formData.legal_full_name || !formData.ssn_or_itin || !formData.date_of_birth) {
+    // Validation - ALL REQUIRED: first_name, last_name, ssn, dob
+    if (!formData.first_name || !formData.last_name || !formData.ssn_or_itin || !formData.date_of_birth) {
       alert('Please fill in all required personal information including SSN/ITIN');
       return;
     }
@@ -62,16 +63,31 @@ export default function PersonalPaperworkForm({ onSubmit, isProcessing, employee
               <User className="w-5 h-5 text-green-600" />
               Personal Information
             </h3>
-            
-            <div>
-              <Label className="text-slate-700">Full Legal Name (as per ID) *</Label>
-              <Input
-                value={formData.legal_full_name}
-                onChange={(e) => setFormData({...formData, legal_full_name: e.target.value})}
-                placeholder="First Middle Last"
-                className="bg-slate-50"
-                required
-              />
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-slate-700">First Name *</Label>
+                <Input
+                  value={formData.first_name}
+                  onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                  placeholder="First name"
+                  className="bg-slate-50"
+                  autoCapitalizeInput
+                  required
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Last Name *</Label>
+                <Input
+                  value={formData.last_name}
+                  onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                  placeholder="Last name"
+                  className="bg-slate-50"
+                  autoCapitalizeInput
+                  required
+                />
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
