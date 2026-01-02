@@ -50,6 +50,27 @@ Deno.serve(async (req) => {
         invalidated_at: new Date().toISOString(),
       });
 
+      // AUDIT LOG: Commission invalidated
+      await base44.asServiceRole.entities.AuditLog.create({
+        event_type: 'commission_invalidated',
+        entity_type: 'CommissionResult',
+        entity_id: result.id,
+        performed_by: user.email,
+        performed_by_name: user.full_name || user.email,
+        action_description: `Commission invalidated for ${result.employee_name} on job "${result.job_name}". Reason: ${reason || 'Job data changed'}`,
+        before_state: {
+          status: result.status,
+          commission_amount: result.commission_amount,
+        },
+        after_state: {
+          status: 'invalidated',
+        },
+        metadata: {
+          job_id: job_id,
+          invalidation_reason: reason || 'Job data changed',
+        }
+      });
+
       invalidated.push(result.id);
     }
 
