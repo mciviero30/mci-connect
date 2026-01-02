@@ -17,16 +17,16 @@ export default function OnlineStatusManager({ userEmail }) {
       if (!visibilityRef.current) return;
       
       try {
-        // Find or create user presence record
-        const existing = await base44.entities.User.filter({ email: userEmail });
-        if (existing.length > 0) {
-          await base44.auth.updateMe({
-            last_seen: new Date().toISOString(),
-            is_online: true
-          });
-        }
+        // Update current user's presence directly (no list needed)
+        await base44.auth.updateMe({
+          last_seen: new Date().toISOString(),
+          is_online: true
+        });
       } catch (error) {
-        console.error('Error updating presence:', error);
+        // Silently ignore permission errors
+        if (!error.message?.includes('Permission denied')) {
+          console.error('Error updating presence:', error);
+        }
       }
     };
 
