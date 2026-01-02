@@ -31,6 +31,34 @@ export default function TaxProfileGate({ user, children }) {
     staleTime: 60000,
   });
 
+  // Create alert if tax profile incomplete
+  useEffect(() => {
+    if (isLoading || !user || isExempt) return;
+
+    const needsTaxOnboarding = !taxProfile || !taxProfile.completed;
+
+    if (needsTaxOnboarding && user.email) {
+      // Check if alert already exists
+      base44.entities.SystemAlert.filter({
+        recipient_email: user.email,
+        alert_type: 'tax_info_incomplete',
+        read: false,
+      }).then(existingAlerts => {
+        if (existingAlerts.length === 0) {
+          // Create critical alert
+          base44.entities.SystemAlert.create({
+            recipient_email: user.email,
+            alert_type: 'tax_info_incomplete',
+            title: 'Tax Information Required',
+            message: 'You must complete your tax information before using the system. This is required by federal law.',
+            severity: 'critical',
+            action_url: '/TaxOnboarding',
+          });
+        }
+      });
+    }
+  }, [user, taxProfile, isLoading, isExempt]);
+
   // CRITICAL: Block access if tax profile not completed
   useEffect(() => {
     if (isLoading || !user || isExempt) return;
