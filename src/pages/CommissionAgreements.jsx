@@ -12,10 +12,15 @@ import {
   Clock,
   DollarSign,
   AlertTriangle,
-  Shield
+  Shield,
+  Plus,
+  Edit,
+  Pause,
+  Play
 } from 'lucide-react';
 import { canManageAllAgreements, canViewOwnAgreement, canAccessAgreement, canSignAgreement } from '@/components/commission/commissionPermissions';
 import AgreementSignatureDialog from '@/components/commission/AgreementSignatureDialog';
+import AdminCommissionForm from '@/components/commission/AdminCommissionForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
@@ -24,6 +29,8 @@ export default function CommissionAgreements() {
   const queryClient = useQueryClient();
   const [selectedAgreement, setSelectedAgreement] = useState(null);
   const [showSignDialog, setShowSignDialog] = useState(false);
+  const [showAdminForm, setShowAdminForm] = useState(false);
+  const [editingAgreement, setEditingAgreement] = useState(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -35,6 +42,15 @@ export default function CommissionAgreements() {
   // Check permissions
   const canManageAll = canManageAllAgreements(userProfile);
   const canViewOwn = canViewOwnAgreement(userProfile);
+
+  // Fetch eligible employees (for creating agreements)
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employeeDirectory'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ 
+      role: 'manager'
+    }),
+    enabled: canManageAll,
+  });
 
   // Fetch agreements based on permissions
   const { data: agreements = [], isLoading } = useQuery({
@@ -72,6 +88,56 @@ export default function CommissionAgreements() {
     },
   });
 
+  // Create/Update agreement mutation (Admin)
+  const saveAgreementMutation = useMutation({
+    mutationFn: async (data) => {
+      if (editingAgreement) {
+        return base44.entities.CommissionAgreement.update(editingAgreement.id, data);
+      } else {
+        return base44.entities.CommissionAgreement.create({
+          ...data,
+          status: 'pending',
+          created_by: userProfile.email,
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['commissionAgreements'] });
+      setShowAdminForm(false);
+      setEditingAgreement(null);
+    },
+  });
+
+  // Suspend agreement mutation (Admin)
+  const suspendAgreementMutation = useMutation({
+    mutationFn: async ({ agreementId, reason }) => {
+      return base44.entities.CommissionAgreement.update(agreementId, {
+        status: 'suspended',
+        suspension_reason: reason,
+        suspended_date: new Date().toISOString(),
+        suspended_by: userProfile.email,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['commissionAgreements'] });
+    },
+  });
+
+  // Reactivate agreement mutation (Admin)
+  const reactivateAgreementMutation = useMutation({
+    mutationFn: async (agreementId) => {
+      return base44.entities.CommissionAgreement.update(agreementId, {
+        status: 'active',
+        suspension_reason: null,
+        suspended_date: null,
+        suspended_by: null,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['commissionAgreements'] });
+    },
+  });
+
   const handleSignAgreement = (agreement) => {
     setSelectedAgreement(agreement);
     setShowSignDialog(true);
@@ -83,6 +149,33 @@ export default function CommissionAgreements() {
       agreementId: selectedAgreement.id,
       signature_data: signatureData.signature_data,
     });
+  };
+
+  const handleCreateAgreement = () => {
+    setEditingAgreement(null);
+    setShowAdminForm(true);
+  };
+
+  const handleEditAgreement = (agreement) => {
+    setEditingAgreement(agreement);
+    setShowAdminForm(true);
+  };
+
+  const handleSuspendAgreement = async (agreementId) => {
+    const reason = prompt('Enter suspension reason:');
+    if (reason) {
+      await suspendAgreementMutation.mutateAsync({ agreementId, reason });
+    }
+  };
+
+  const handleReactivateAgreement = async (agreementId) => {
+    if (confirm('Reactivate this agreement?')) {
+      await reactivateAgreementMutation.mutateAsync(agreementId);
+    }
+  };
+
+  const handleSaveAgreement = async (data) => {
+    await saveAgreementMutation.mutateAsync(data);
   };
 
   // Access denied for employees
@@ -144,14 +237,22 @@ export default function CommissionAgreements() {
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Commission Agreements</h1>
-          <p className="text-slate-600">
-            {canManageAll 
-              ? 'Manage commission agreements for all employees'
-              : 'View and sign your commission agreement'
-            }
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Commission Agreements</h1>
+            <p className="text-slate-600">
+              {canManageAll 
+                ? 'Manage commission agreements for all employees'
+                : 'View and sign your commission agreement'
+              }
+            </p>
+          </div>
+          {canManageAll && (
+            <Button onClick={handleCreateAgreement} className="bg-indigo-600 hover:bg-indigo-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Agreement
+            </Button>
+          )}
         </div>
 
         {/* Pending Agreements Alert */}
@@ -200,15 +301,25 @@ export default function CommissionAgreements() {
                       </div>
                     </div>
                     
-                    {canSignAgreement(userProfile, agreement) && (
-                      <Button 
-                        onClick={() => handleSignAgreement(agreement)}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Review and Sign Agreement
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {canSignAgreement(userProfile, agreement) && (
+                        <Button 
+                          onClick={() => handleSignAgreement(agreement)}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Review and Sign Agreement
+                        </Button>
+                      )}
+                      {canManageAll && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleEditAgreement(agreement)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -267,6 +378,28 @@ export default function CommissionAgreements() {
                         </p>
                       </div>
                     </div>
+
+                    {canManageAll && (
+                      <div className="flex gap-2 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditAgreement(agreement)}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSuspendAgreement(agreement.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Pause className="w-4 h-4 mr-2" />
+                          Suspend
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -313,13 +446,35 @@ export default function CommissionAgreements() {
                       {getStatusBadge(agreement)}
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-4">
                     {agreement.suspension_reason && (
                       <Alert className="border-red-200 bg-red-50">
                         <AlertDescription className="text-red-900">
                           <strong>Suspension Reason:</strong> {agreement.suspension_reason}
                         </AlertDescription>
                       </Alert>
+                    )}
+
+                    {canManageAll && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditAgreement(agreement)}
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleReactivateAgreement(agreement.id)}
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Reactivate
+                        </Button>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -339,6 +494,20 @@ export default function CommissionAgreements() {
             setSelectedAgreement(null);
           }}
           onSign={handleSign}
+        />
+      )}
+
+      {/* Admin Form */}
+      {canManageAll && (
+        <AdminCommissionForm
+          agreement={editingAgreement}
+          employees={employees}
+          open={showAdminForm}
+          onClose={() => {
+            setShowAdminForm(false);
+            setEditingAgreement(null);
+          }}
+          onSave={handleSaveAgreement}
         />
       )}
     </div>
