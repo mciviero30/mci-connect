@@ -56,6 +56,7 @@ import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/com
 import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
 import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.jsx';
 import MobileActionBar from '@/components/field/MobileActionBar.jsx';
+import DailyFieldReportView from '@/components/field/DailyFieldReportView.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -151,6 +152,7 @@ export default function FieldProject() {
     { id: 'dimensions', label: 'Site Dims', icon: FileText },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'before-after', label: 'Before/After', icon: Camera },
+    { id: 'daily-reports', label: 'Daily Reports', icon: ClipboardList },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
@@ -213,6 +215,8 @@ export default function FieldProject() {
         return <FieldPhotosView jobId={jobId} />;
       case 'before-after':
         return <BeforeAfterPhotos jobId={jobId} />;
+      case 'daily-reports':
+        return <DailyFieldReportView jobId={jobId} />;
       case 'documents':
         return <FieldDocumentsView jobId={jobId} />;
       case 'budget':
