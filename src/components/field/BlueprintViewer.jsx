@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import TaskPin from './TaskPin.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
@@ -15,13 +16,15 @@ import BlueprintMiniMap from './BlueprintMiniMap.jsx';
 import BlueprintFilterBar from './BlueprintFilterBar.jsx';
 import LiveCollaborators from './LiveCollaborators.jsx';
 import AILearningEngine from './AILearningEngine.jsx';
+import ClientPunchDialog from '../client/ClientPunchDialog.jsx';
+import PunchItemReview from './PunchItemReview.jsx';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 5000;
 const LOAD_TIMEOUT_MS = 30000;
 
-export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
+export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientView = false, clientEmail, clientName }) {
   const queryClient = useQueryClient();
   const [zoom, setZoom] = useState(0.3); // Optimized initial zoom
   const [position, setPosition] = useState({ x: 60, y: 0 });
@@ -33,6 +36,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
   const [isPlacingPin, setIsPlacingPin] = useState(false);
   const [pendingPinPosition, setPendingPinPosition] = useState(null);
   const [showCreateTask, setShowCreateTask] = useState(false);
+  const [showClientPunch, setShowClientPunch] = useState(false);
+  const [reviewingPunch, setReviewingPunch] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
   const [draggingPin, setDraggingPin] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -517,8 +522,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setEditingTask(task);
-    setShowCreateTask(true);
+    
+    // Client punch items open review dialog
+    if (task.created_by_client && task.task_type === 'punch_item') {
+      setReviewingPunch(task);
+    } else {
+      setEditingTask(task);
+      setShowCreateTask(true);
+    }
   }, []);
 
   const handlePinDrag = (task, e) => {
@@ -625,7 +636,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     const y = ((e.clientY - rect.top) / rect.height) * 100;
     
     setPendingPinPosition({ x, y });
-    setShowCreateTask(true);
+    
+    // Client creates punch, internal creates task
+    if (isClientView) {
+      setShowClientPunch(true);
+    } else {
+      setShowCreateTask(true);
+    }
+    
     setIsPlacingPin(false);
     setActiveTool('select');
     setCursorPosition(null);
@@ -638,7 +656,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
     { id: 'zoomIn', icon: ZoomIn, label: 'Zoom In', action: handleZoomIn },
     { id: 'zoomOut', icon: ZoomOut, label: 'Zoom Out', action: handleZoomOut },
     { id: 'divider2', type: 'divider' },
-    { id: 'pin', icon: MapPin, label: 'Add Pin', tool: true },
+    { id: 'pin', icon: MapPin, label: isClientView ? 'Report Issue' : 'Add Pin', tool: true },
     { id: 'divider3', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'divider4', type: 'divider' },
@@ -986,10 +1004,33 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
 
 
 
+        {/* Legend - Visible when client punches exist */}
+        {tasks.some(t => t.created_by_client && t.task_type === 'punch_item') && (
+          <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg border border-slate-200 dark:border-slate-700">
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Pin Legend</p>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-purple-500 border-2 border-purple-700 animate-pulse" />
+                <span className="text-slate-600 dark:text-slate-400">Client Punch (New)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-amber-500 border-2 border-amber-700" />
+                <span className="text-slate-600 dark:text-slate-400">Internal Task</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-green-700" />
+                <span className="text-slate-600 dark:text-slate-400">Completed</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Keyboard Shortcuts Hint */}
-        <div className="absolute bottom-4 left-20 text-[10px] text-slate-400 dark:text-slate-500 hidden md:block">
-          Z/X: Zoom • P: Pin • F: Filters • M: Mini Map • ESC: Cancel • Double-click: Quick Zoom
-        </div>
+        {!isClientView && (
+          <div className="absolute bottom-4 left-20 text-[10px] text-slate-400 dark:text-slate-500 hidden md:block">
+            Z/X: Zoom • P: Pin • F: Filters • M: Mini Map • ESC: Cancel • Double-click: Quick Zoom
+          </div>
+        )}
       </div>
 
 
@@ -1012,6 +1053,31 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack }) {
         planImageUrl={pdfCanvas || plan.file_url}
         pdfCanvas={pdfCanvas}
         existingTask={editingTask}
+      />
+
+      {/* Client Punch Dialog */}
+      <ClientPunchDialog
+        open={showClientPunch}
+        onOpenChange={(open) => {
+          setShowClientPunch(open);
+          if (!open) {
+            setPendingPinPosition(null);
+            setCursorPosition(null);
+          }
+        }}
+        jobId={jobId}
+        planId={plan?.id}
+        pinPosition={pendingPinPosition}
+        clientEmail={clientEmail}
+        clientName={clientName}
+        onCreated={handleTaskCreated}
+      />
+
+      {/* Punch Item Review Dialog */}
+      <PunchItemReview
+        punchItem={reviewingPunch}
+        open={!!reviewingPunch}
+        onOpenChange={(open) => !open && setReviewingPunch(null)}
       />
     </div>
     </TooltipProvider>
