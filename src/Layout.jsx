@@ -629,6 +629,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       section: 'RESOURCES',
       items: [
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Field Knowledge', url: createPageUrl("FieldKnowledge"), icon: Lightbulb },
+        { title: 'Review Knowledge', url: createPageUrl("ReviewKnowledge"), icon: CheckCircle2 },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },

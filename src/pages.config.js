@@ -38,6 +38,7 @@ import FieldExport from './pages/FieldExport';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
+import GoLiveChecklist from './pages/GoLiveChecklist';
 import Goals from './pages/Goals';
 import Home from './pages/Home';
 import Horarios from './pages/Horarios';
@@ -84,7 +85,10 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import GoLiveChecklist from './pages/GoLiveChecklist';
+import FieldKnowledge from './pages/FieldKnowledge';
+import CreateKnowledge from './pages/CreateKnowledge';
+import ReviewKnowledge from './pages/ReviewKnowledge';
+import ViewKnowledge from './pages/ViewKnowledge';
 import __Layout from './Layout.jsx';
 
 
@@ -129,6 +133,7 @@ export const PAGES = {
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
+    "GoLiveChecklist": GoLiveChecklist,
     "Goals": Goals,
     "Home": Home,
     "Horarios": Horarios,
@@ -175,7 +180,10 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "GoLiveChecklist": GoLiveChecklist,
+    "FieldKnowledge": FieldKnowledge,
+    "CreateKnowledge": CreateKnowledge,
+    "ReviewKnowledge": ReviewKnowledge,
+    "ViewKnowledge": ViewKnowledge,
 }
 
 export const pagesConfig = {
