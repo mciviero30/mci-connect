@@ -82,6 +82,7 @@ import { migratePendingToUser, normalizeEmail } from "@/components/utils/profile
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
+import TrainingModeBanner from "@/components/training/TrainingModeBanner";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -542,6 +543,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       icon: Shield,
       items: [
         { title: 'System Readiness', url: createPageUrl("SystemReadiness"), icon: Rocket },
+        { title: 'Go-Live Checklist', url: createPageUrl("GoLiveChecklist"), icon: Rocket },
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
@@ -777,6 +779,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         </>
       )}
         
+      <TrainingModeBanner />
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
         <style>{`
           /* ============================================ */
