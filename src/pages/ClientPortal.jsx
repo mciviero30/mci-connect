@@ -27,6 +27,8 @@ import AvatarCreator from '@/components/avatar/AvatarCreator';
 import ClientComments from '@/components/client/ClientComments';
 import PhotoGalleryEnhanced from '@/components/client/PhotoGalleryEnhanced';
 import ClientDriveViewer from '@/components/client/ClientDriveViewer';
+import ProgressTimeline from '@/components/client/ProgressTimeline';
+import WeeklySummary from '@/components/client/WeeklySummary';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -250,12 +252,19 @@ export default function ClientPortal() {
           </div>
         </div>
 
+        {/* Weekly Summary */}
+        <WeeklySummary tasks={tasks} photos={photos} activityLog={activityLog} />
+
         {/* Tabs - Enhanced mobile-friendly design */}
-        <Tabs defaultValue="progress" className="space-y-6">
+        <Tabs defaultValue="timeline" className="space-y-6">
           <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1.5 rounded-xl flex-wrap h-auto gap-1.5 shadow-sm">
+            <TabsTrigger value="timeline" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <Activity className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Timeline</span>
+            </TabsTrigger>
             <TabsTrigger value="progress" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <BarChart3 className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Progress</span>
+              <span className="hidden sm:inline">Tasks</span>
             </TabsTrigger>
             <TabsTrigger value="photos" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <Camera className="w-4 h-4 mr-2" />
@@ -285,6 +294,13 @@ export default function ClientPortal() {
               <span className="hidden sm:inline">Reports</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* Timeline Tab - NEW */}
+          <TabsContent value="timeline">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <ProgressTimeline tasks={tasks} />
+            </div>
+          </TabsContent>
 
           {/* Progress Tab - Enhanced task list */}
           <TabsContent value="progress">

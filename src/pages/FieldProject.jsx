@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
 import { Link, useSearchParams } from 'react-router-dom';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
@@ -53,6 +54,7 @@ import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav
 import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
 import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
 import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.jsx';
+import MobileActionBar from '@/components/field/MobileActionBar.jsx';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -61,6 +63,8 @@ export default function FieldProject() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const queryClient = useQueryClient();
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -335,9 +339,19 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pb-20 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
+      <div className="flex-1 overflow-y-auto pb-32 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
         {renderContent()}
       </div>
+
+      {/* Mobile Action Bar */}
+      {isMobile && (
+        <MobileActionBar
+          jobId={jobId}
+          onPhotoAdded={() => queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] })}
+          onTaskCreated={() => setShowCreateTask(true)}
+          onNoteAdded={() => setActiveTab('activity')}
+        />
+      )}
 
       {/* Mobile Bottom Navigation */}
       {isMobile && (
@@ -355,6 +369,17 @@ export default function FieldProject() {
         onOpenChange={setShowDailyReport}
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
+      />
+
+      {/* Quick Create Task Dialog (Mobile) */}
+      <CreateTaskDialog
+        open={showCreateTask}
+        onOpenChange={setShowCreateTask}
+        jobId={jobId}
+        onCreated={() => {
+          setShowCreateTask(false);
+          queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+        }}
       />
     </div>
     </FieldOfflineProvider>

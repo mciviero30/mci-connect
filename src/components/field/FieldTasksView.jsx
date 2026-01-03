@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Filter, LayoutGrid, List, Search } from 'lucide-react';
+import { Plus, Filter, LayoutGrid, List, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -18,8 +18,15 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [taskTypeFilter, setTaskTypeFilter] = useState('all');
+  const [showMyTasks, setShowMyTasks] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const queryClient = useQueryClient();
 
@@ -48,7 +55,9 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
       const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
       const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-      return matchesSearch && matchesStatus && matchesPriority;
+      const matchesType = taskTypeFilter === 'all' || task.task_type === taskTypeFilter;
+      const matchesUser = !showMyTasks || task.assigned_to === currentUser?.email;
+      return matchesSearch && matchesStatus && matchesPriority && matchesType && matchesUser;
     })
     .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
 
@@ -96,17 +105,40 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
               className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 w-full sm:w-56 h-11 rounded-xl"
             />
           </div>
+          <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-11 rounded-xl min-w-[140px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-700 rounded-xl">
+              <SelectItem value="all" className="text-white">All Types</SelectItem>
+              <SelectItem value="task" className="text-white">📋 Task</SelectItem>
+              <SelectItem value="checklist" className="text-white">✅ Checklist</SelectItem>
+              <SelectItem value="inspection" className="text-white">🔍 Inspection</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-11 rounded-xl min-w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700 rounded-xl">
-              <SelectItem value="all" className="text-white">All Tasks</SelectItem>
+              <SelectItem value="all" className="text-white">All Status</SelectItem>
               <SelectItem value="pending" className="text-white">📋 Assigned</SelectItem>
               <SelectItem value="in_progress" className="text-white">⚙️ Working</SelectItem>
               <SelectItem value="completed" className="text-white">✅ Done</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            onClick={() => setShowMyTasks(!showMyTasks)}
+            variant={showMyTasks ? "default" : "outline"}
+            className={`min-h-[44px] rounded-xl ${
+              showMyTasks 
+                ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-none' 
+                : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
+            }`}
+          >
+            <User className="w-4 h-4 mr-2" />
+            My Tasks
+          </Button>
           <div className="hidden sm:flex bg-slate-800 rounded-xl p-1 shadow-md">
             <button
               onClick={() => setView('kanban')}

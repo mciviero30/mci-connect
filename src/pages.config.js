@@ -34,6 +34,7 @@ import ExecutiveControlTower from './pages/ExecutiveControlTower';
 import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
+import FieldExport from './pages/FieldExport';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
@@ -83,7 +84,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import FieldExport from './pages/FieldExport';
 import __Layout from './Layout.jsx';
 
 
@@ -124,6 +124,7 @@ export const PAGES = {
     "ExecutiveDashboard": ExecutiveDashboard,
     "Facturas": Facturas,
     "Field": Field,
+    "FieldExport": FieldExport,
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
@@ -173,7 +174,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "FieldExport": FieldExport,
 }
 
 export const pagesConfig = {

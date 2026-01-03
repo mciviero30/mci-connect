@@ -52,6 +52,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     priority: 'high',
     category: 'installation',
     status: 'in_progress',
+    task_type: 'task',
     due_date: '',
     assigned_to: '',
     checklist: [],
@@ -181,6 +182,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         priority: 'high',
         category: 'installation',
         status: 'in_progress',
+        task_type: 'task',
         due_date: '',
         assigned_to: '',
         checklist: [],
@@ -267,6 +269,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         priority: existingTask.priority || 'high',
         category: existingTask.category || 'installation',
         status: existingTask.status || 'in_progress',
+        task_type: existingTask.task_type || 'task',
         due_date: existingTask.due_date || '',
         assigned_to: existingTask.assigned_to || '',
         checklist: existingTask.checklist || [],
@@ -700,6 +703,21 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>
                     <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Task Type */}
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Type</label>
+                <Select value={task.task_type} onValueChange={(v) => setTask({...task, task_type: v})}>
+                  <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <SelectItem value="task">📋 Task</SelectItem>
+                    <SelectItem value="checklist">✅ Checklist</SelectItem>
+                    <SelectItem value="inspection">🔍 Inspection</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

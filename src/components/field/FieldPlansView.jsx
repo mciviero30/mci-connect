@@ -277,11 +277,24 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = '';
-                          e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><div class="text-4xl mb-2">🖼️</div><p class="text-slate-400 text-sm">Vista previa no disponible</p></div></div>';
+                          e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center"><div class="text-center"><div class="text-4xl mb-2">🖼️</div><p class="text-slate-400 text-sm">Preview unavailable</p></div></div>';
                         }}
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                    
+                    {/* Version Badge */}
+                    <div className="absolute top-2 left-2 flex gap-2">
+                      <div className="bg-slate-900/80 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border border-slate-700">
+                        {plan.is_latest ? '✅ Latest' : `V${plan.version || 1}`}
+                      </div>
+                      {plan.is_locked && (
+                        <div className="bg-red-500/80 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border border-red-400">
+                          🔒 Locked
+                        </div>
+                      )}
+                    </div>
+
                     {taskCount > 0 && (
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-black text-xs px-3 py-1 rounded-full z-10 font-semibold shadow-lg">
                         {taskCount} tasks

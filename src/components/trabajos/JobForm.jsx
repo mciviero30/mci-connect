@@ -11,6 +11,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import JobImporter from "../sync/JobImporter";
 import { MapPin, FolderPlus, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const { t } = useLanguage();
@@ -208,17 +209,32 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
           </Select>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label className="text-slate-700 font-semibold">{t('address')}</Label>
-            <Input
-              value={formData.address}
-              onChange={(e) => setFormData({...formData, address: e.target.value})}
-              className="bg-slate-50 border-slate-200"
-              placeholder="123 Main St"
-            />
-          </div>
+        <div>
+          <Label className="text-slate-700 font-semibold flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-blue-500" />
+            {t('address')} - Google Places
+          </Label>
+          <AddressAutocomplete
+            value={formData.address}
+            onChange={(value) => setFormData({...formData, address: value})}
+            onPlaceSelected={(place) => {
+              setFormData({
+                ...formData,
+                address: place.address,
+                city: place.city,
+                state: place.state,
+                zip: place.zip,
+                latitude: place.lat,
+                longitude: place.lng
+              });
+            }}
+            placeholder="Start typing address..."
+            className="bg-slate-50 border-slate-200"
+          />
+          <p className="text-xs text-slate-500 mt-1">Start typing to search addresses (auto-fills city, state, zip)</p>
+        </div>
 
+        <div className="grid md:grid-cols-3 gap-4">
           <div>
             <Label className="text-slate-700 font-semibold">{t('city')}</Label>
             <Input
@@ -228,9 +244,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
               placeholder="Atlanta"
             />
           </div>
-        </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label className="text-slate-700 font-semibold">{t('state')}</Label>
             <Input
