@@ -114,10 +114,10 @@ export default function KnowledgeSubmit() {
           </Link>
           
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Submit Knowledge Content
+            Submit Installation Content
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Share installation guides, best practices, or technical tips
+            Share installation guides, system documentation, or field tips
           </p>
         </div>
 

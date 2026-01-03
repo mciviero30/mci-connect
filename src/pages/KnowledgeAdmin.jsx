@@ -137,10 +137,10 @@ export default function KnowledgeAdmin() {
           </Link>
           
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Knowledge Review Queue
+            Installation Library Review
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Approve or reject submitted content
+            Review and approve installation content submissions
           </p>
         </div>
 

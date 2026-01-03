@@ -131,10 +131,10 @@ export default function KnowledgeLibrary() {
                 <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
                   <BookOpen className="w-7 h-7 text-white" />
                 </div>
-                Knowledge Library
+                Installation Library
               </h1>
               <p className="text-slate-600 dark:text-slate-400 mt-2 ml-[60px]">
-                Installation guides, best practices, and technical references
+                Installation guides, system documentation, and field expertise
               </p>
             </div>
             
