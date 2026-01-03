@@ -29,6 +29,8 @@ import PhotoGalleryEnhanced from '@/components/client/PhotoGalleryEnhanced';
 import ClientDriveViewer from '@/components/client/ClientDriveViewer';
 import ProgressTimeline from '@/components/client/ProgressTimeline';
 import WeeklySummary from '@/components/client/WeeklySummary';
+import ClientTasksView from '@/components/client/ClientTasksView';
+import JobChatView from '@/components/client/JobChatView';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -262,9 +264,13 @@ export default function ClientPortal() {
               <Activity className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Timeline</span>
             </TabsTrigger>
+            <TabsTrigger value="tasks" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Tasks</span>
+            </TabsTrigger>
             <TabsTrigger value="progress" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <BarChart3 className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Tasks</span>
+              <span className="hidden sm:inline">Status</span>
             </TabsTrigger>
             <TabsTrigger value="photos" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <Camera className="w-4 h-4 mr-2" />
@@ -295,10 +301,29 @@ export default function ClientPortal() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Timeline Tab - NEW */}
+          {/* Timeline Tab */}
           <TabsContent value="timeline">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
               <ProgressTimeline tasks={tasks} />
+            </div>
+          </TabsContent>
+
+          {/* Tasks Tab - NEW */}
+          <TabsContent value="tasks">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <ClientTasksView 
+                jobId={selectedProject.job_id} 
+                clientEmail={user?.email}
+                clientName={user?.full_name}
+              />
+            </div>
+          </TabsContent>
+
+          {/* Messages Tab - NEW */}
+          <TabsContent value="messages">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Project Messages</h3>
+              <JobChatView jobId={selectedProject.job_id} currentUser={user} />
             </div>
           </TabsContent>
 

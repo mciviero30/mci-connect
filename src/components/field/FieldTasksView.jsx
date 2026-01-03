@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import CreateTaskDialog from './CreateTaskDialog.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
+import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided

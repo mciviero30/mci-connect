@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus, Loader2, Trash2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus, Loader2, Trash2, Eye, EyeOff } from 'lucide-react';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Tesseract from 'tesseract.js';
+import { Switch } from '@/components/ui/switch';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -59,6 +60,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     photo_urls: [],
     manpower: '',
     cost: '',
+    visible_to_client: false,
+    internal_notes: '',
   });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showNewItemInput, setShowNewItemInput] = useState(false);
@@ -189,6 +192,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         photo_urls: [],
         manpower: '',
         cost: '',
+        visible_to_client: false,
+        internal_notes: '',
       });
       setShowNewItemInput(false);
       setNewChecklistItem('');
@@ -276,6 +281,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         photo_urls: existingTask.photo_urls || [],
         manpower: existingTask.manpower || '',
         cost: existingTask.cost || '',
+        visible_to_client: existingTask.visible_to_client || false,
+        internal_notes: existingTask.internal_notes || '',
       });
     }
   }, [existingTask]);
@@ -784,6 +791,45 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   onChange={(e) => setTask({...task, cost: e.target.value})}
                   placeholder="e.g., $500"
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
+                />
+              </div>
+
+              {/* Client Visibility */}
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {task.visible_to_client ? (
+                      <Eye className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    ) : (
+                      <EyeOff className="w-4 h-4 text-slate-500" />
+                    )}
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Client Visible
+                    </label>
+                  </div>
+                  <Switch
+                    checked={task.visible_to_client}
+                    onCheckedChange={(checked) => setTask({...task, visible_to_client: checked})}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  {task.visible_to_client 
+                    ? 'Visible in Client Portal (description, photos, checklist)' 
+                    : 'Internal only - not visible to client'}
+                </p>
+              </div>
+
+              {/* Internal Notes */}
+              <div>
+                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">
+                  Internal Notes
+                  <span className="text-[10px] text-slate-400 ml-1">(not visible to client)</span>
+                </label>
+                <Textarea
+                  value={task.internal_notes}
+                  onChange={(e) => setTask({...task, internal_notes: e.target.value})}
+                  placeholder="Private notes..."
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-20 text-sm"
                 />
               </div>
 
