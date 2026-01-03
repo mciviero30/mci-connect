@@ -25,6 +25,7 @@ import CrearFactura from './pages/CrearFactura';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
 import Dashboard from './pages/Dashboard';
+import Directory from './pages/Directory';
 import EditarEstimado from './pages/EditarEstimado';
 import Empleados from './pages/Empleados';
 import EmployeeProfile from './pages/EmployeeProfile';
@@ -37,6 +38,7 @@ import FieldExport from './pages/FieldExport';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
+import GoLivePlaybook from './pages/GoLivePlaybook';
 import Goals from './pages/Goals';
 import Home from './pages/Home';
 import Horarios from './pages/Horarios';
@@ -46,6 +48,10 @@ import Items from './pages/Items';
 import JobDetails from './pages/JobDetails';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
 import JobPhotos from './pages/JobPhotos';
+import KnowledgeAdmin from './pages/KnowledgeAdmin';
+import KnowledgeLibrary from './pages/KnowledgeLibrary';
+import KnowledgeSubmit from './pages/KnowledgeSubmit';
+import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
 import MiScorecard from './pages/MiScorecard';
 import MileageApproval from './pages/MileageApproval';
@@ -53,6 +59,7 @@ import MisGastos from './pages/MisGastos';
 import MisHoras from './pages/MisHoras';
 import MisProyectos from './pages/MisProyectos';
 import MyPayroll from './pages/MyPayroll';
+import MyProfile from './pages/MyProfile';
 import NewsFeed from './pages/NewsFeed';
 import Nomina from './pages/Nomina';
 import NotificationCenter from './pages/NotificationCenter';
@@ -81,13 +88,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import KnowledgeSubmit from './pages/KnowledgeSubmit';
-import ManagerDashboard from './pages/ManagerDashboard';
-import Directory from './pages/Directory';
-import MyProfile from './pages/MyProfile';
-import KnowledgeLibrary from './pages/KnowledgeLibrary';
-import KnowledgeAdmin from './pages/KnowledgeAdmin';
-import GoLivePlaybook from './pages/GoLivePlaybook';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +119,7 @@ export const PAGES = {
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
     "Dashboard": Dashboard,
+    "Directory": Directory,
     "EditarEstimado": EditarEstimado,
     "Empleados": Empleados,
     "EmployeeProfile": EmployeeProfile,
@@ -131,6 +132,7 @@ export const PAGES = {
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
+    "GoLivePlaybook": GoLivePlaybook,
     "Goals": Goals,
     "Home": Home,
     "Horarios": Horarios,
@@ -140,6 +142,10 @@ export const PAGES = {
     "JobDetails": JobDetails,
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
     "JobPhotos": JobPhotos,
+    "KnowledgeAdmin": KnowledgeAdmin,
+    "KnowledgeLibrary": KnowledgeLibrary,
+    "KnowledgeSubmit": KnowledgeSubmit,
+    "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
     "MiScorecard": MiScorecard,
     "MileageApproval": MileageApproval,
@@ -147,6 +153,7 @@ export const PAGES = {
     "MisHoras": MisHoras,
     "MisProyectos": MisProyectos,
     "MyPayroll": MyPayroll,
+    "MyProfile": MyProfile,
     "NewsFeed": NewsFeed,
     "Nomina": Nomina,
     "NotificationCenter": NotificationCenter,
@@ -175,13 +182,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "KnowledgeSubmit": KnowledgeSubmit,
-    "ManagerDashboard": ManagerDashboard,
-    "Directory": Directory,
-    "MyProfile": MyProfile,
-    "KnowledgeLibrary": KnowledgeLibrary,
-    "KnowledgeAdmin": KnowledgeAdmin,
-    "GoLivePlaybook": GoLivePlaybook,
 }
 
 export const pagesConfig = {

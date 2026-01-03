@@ -20,7 +20,8 @@ export const translations = {
     chat: "Chat",
     announcements: "Announcements",
     forms: "Forms",
-    training: "Training",
+    training: "Training Modules",
+    installationLibrary: "Installation Library",
     
     // Sections
     main: "Main",
@@ -662,7 +663,8 @@ export const translations = {
     chat: "Chat",
     announcements: "Anuncios",
     forms: "Formularios",
-    training: "Capacitación",
+    training: "Módulos de Capacitación",
+    installationLibrary: "Biblioteca de Instalación",
     
     // Sections
     main: "Principal",
