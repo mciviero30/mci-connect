@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
 export default function ProfileSyncManager({ user }) {
   const queryClient = useQueryClient();
