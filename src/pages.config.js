@@ -84,6 +84,9 @@ import WelcomeMessage from './pages/WelcomeMessage';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Directory from './pages/Directory';
 import MyProfile from './pages/MyProfile';
+import KnowledgeLibrary from './pages/KnowledgeLibrary';
+import KnowledgeSubmit from './pages/KnowledgeSubmit';
+import KnowledgeAdmin from './pages/KnowledgeAdmin';
 import __Layout from './Layout.jsx';
 
 
@@ -174,6 +177,9 @@ export const PAGES = {
     "ManagerDashboard": ManagerDashboard,
     "Directory": Directory,
     "MyProfile": MyProfile,
+    "KnowledgeLibrary": KnowledgeLibrary,
+    "KnowledgeSubmit": KnowledgeSubmit,
+    "KnowledgeAdmin": KnowledgeAdmin,
 }
 
 export const pagesConfig = {
