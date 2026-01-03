@@ -22,6 +22,7 @@ import Configuracion from './pages/Configuracion';
 import Contabilidad from './pages/Contabilidad';
 import CrearEstimado from './pages/CrearEstimado';
 import CrearFactura from './pages/CrearFactura';
+import CreateKnowledge from './pages/CreateKnowledge';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
 import Dashboard from './pages/Dashboard';
@@ -35,6 +36,7 @@ import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
 import FieldExport from './pages/FieldExport';
+import FieldKnowledge from './pages/FieldKnowledge';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
@@ -69,6 +71,7 @@ import QuoteImporter from './pages/QuoteImporter';
 import Recognitions from './pages/Recognitions';
 import Reportes from './pages/Reportes';
 import ReportingHub from './pages/ReportingHub';
+import ReviewKnowledge from './pages/ReviewKnowledge';
 import RoleManagement from './pages/RoleManagement';
 import SetupPassword from './pages/SetupPassword';
 import SkillMatrix from './pages/SkillMatrix';
@@ -84,11 +87,8 @@ import TimeTracking from './pages/TimeTracking';
 import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
-import WelcomeMessage from './pages/WelcomeMessage';
-import FieldKnowledge from './pages/FieldKnowledge';
-import CreateKnowledge from './pages/CreateKnowledge';
-import ReviewKnowledge from './pages/ReviewKnowledge';
 import ViewKnowledge from './pages/ViewKnowledge';
+import WelcomeMessage from './pages/WelcomeMessage';
 import __Layout from './Layout.jsx';
 
 
@@ -117,6 +117,7 @@ export const PAGES = {
     "Contabilidad": Contabilidad,
     "CrearEstimado": CrearEstimado,
     "CrearFactura": CrearFactura,
+    "CreateKnowledge": CreateKnowledge,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
     "Dashboard": Dashboard,
@@ -130,6 +131,7 @@ export const PAGES = {
     "Facturas": Facturas,
     "Field": Field,
     "FieldExport": FieldExport,
+    "FieldKnowledge": FieldKnowledge,
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
@@ -164,6 +166,7 @@ export const PAGES = {
     "Recognitions": Recognitions,
     "Reportes": Reportes,
     "ReportingHub": ReportingHub,
+    "ReviewKnowledge": ReviewKnowledge,
     "RoleManagement": RoleManagement,
     "SetupPassword": SetupPassword,
     "SkillMatrix": SkillMatrix,
@@ -179,11 +182,8 @@ export const PAGES = {
     "Trabajos": Trabajos,
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
-    "WelcomeMessage": WelcomeMessage,
-    "FieldKnowledge": FieldKnowledge,
-    "CreateKnowledge": CreateKnowledge,
-    "ReviewKnowledge": ReviewKnowledge,
     "ViewKnowledge": ViewKnowledge,
+    "WelcomeMessage": WelcomeMessage,
 }
 
 export const pagesConfig = {

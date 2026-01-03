@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Briefcase, DollarSign, CheckCircle, TrendingUp, AlertCircle } from 'lucide-react';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
+import { Briefcase, DollarSign, CheckCircle, TrendingUp, AlertCircle, Users, MapPin, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function ManagerDashboard() {
   const [startDate, setStartDate] = useState('');
