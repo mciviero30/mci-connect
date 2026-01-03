@@ -11,7 +11,6 @@ import TaskDetailPanel from './TaskDetailPanel.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
-import { Badge } from '@/components/ui/badge';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided
@@ -203,11 +202,22 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                       const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
                       return (
                         <div
-                          key={task.id}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, task)}
-                          onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
-                          className="bg-slate-800 border-2 border-slate-700 rounded-xl p-3 cursor-pointer hover:border-[#FFB800] hover:shadow-lg active:scale-[0.98] transition-all touch-manipulation"
+                         key={task.id}
+                         draggable
+                         onDragStart={(e) => handleDragStart(e, task)}
+                         onClick={() => {
+                           if (task.created_by_client && task.task_type === 'punch_item') {
+                             setReviewingPunch(task);
+                           } else {
+                             setEditingTask(task);
+                             setShowCreateTask(true);
+                           }
+                         }}
+                         className={`border-2 rounded-xl p-3 cursor-pointer hover:shadow-lg active:scale-[0.98] transition-all touch-manipulation ${
+                           task.created_by_client && task.task_type === 'punch_item'
+                             ? 'bg-purple-900/40 border-purple-500 hover:border-purple-400'
+                             : 'bg-slate-800 border-slate-700 hover:border-[#FFB800]'
+                         }`}
                         >
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-md ${
@@ -218,10 +228,17 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                               {wallNum}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-white text-sm font-medium truncate mb-1">Wall {wallNum}</p>
-                              <Badge className={`${priorityColors[task.priority]} text-xs px-2 py-0.5`}>
-                                {task.priority || 'normal'}
-                              </Badge>
+                             <div className="flex items-center gap-2 mb-1">
+                               <p className="text-white text-sm font-medium truncate">Wall {wallNum}</p>
+                               {task.created_by_client && task.task_type === 'punch_item' && (
+                                 <Badge className="bg-purple-600 text-white text-[10px] px-1.5 py-0">
+                                   CLIENT
+                                 </Badge>
+                               )}
+                             </div>
+                             <Badge className={`${priorityColors[task.priority]} text-xs px-2 py-0.5`}>
+                               {task.priority || 'normal'}
+                             </Badge>
                             </div>
                           </div>
                         </div>
@@ -301,6 +318,13 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
         jobId={jobId}
         onCreated={() => { setShowCreateTask(false); setEditingTask(null); }}
         existingTask={editingTask}
+      />
+
+      {/* Punch Item Review Dialog */}
+      <PunchItemReview
+        punchItem={reviewingPunch}
+        open={!!reviewingPunch}
+        onOpenChange={(open) => !open && setReviewingPunch(null)}
       />
     </div>
   );
