@@ -11,6 +11,7 @@ import { Camera, Image as ImageIcon, X, Users, DollarSign, Plus, Check, Minus, L
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Tesseract from 'tesseract.js';
 import { Switch } from '@/components/ui/switch';
+import { canEditTasks, canToggleClientVisibility } from './rolePermissions';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -298,8 +299,13 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     }
   }, [createTaskMutation.data]);
 
+  // Check edit permissions
+  const canEdit = canEditTasks(currentUser);
+  const canToggleVisibility = canToggleClientVisibility(currentUser);
+
   const handleSave = () => {
     if (!task.id) return;
+    if (!canEdit) return; // Block unauthorized edits
     
     const dataToSave = {
       ...task,
@@ -422,8 +428,17 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
         <VisuallyHidden>
           <DialogTitle>Task Details</DialogTitle>
-          <DialogDescription>Edit task information and checklist</DialogDescription>
+          <DialogDescription>{canEdit ? 'Edit task information and checklist' : 'View task information'}</DialogDescription>
         </VisuallyHidden>
+        
+        {/* Read-Only Warning for Technicians */}
+        {!canEdit && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 p-3 text-center">
+            <p className="text-xs text-amber-800 dark:text-amber-300 font-semibold">
+              🔒 Read-Only Mode - Only supervisors can edit tasks
+            </p>
+          </div>
+        )}
         {/* Two Column Layout */}
         <div className="flex h-full">
           {/* Left Column - Task Details */}
@@ -445,6 +460,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     onChange={(e) => setTask({...task, title: e.target.value})}
                     placeholder="Enter wall number"
                     className="text-xl font-semibold border-none bg-transparent p-0 h-auto focus-visible:ring-0 text-slate-900 dark:text-white"
+                    disabled={!canEdit}
                   />
                 )}
               </div>
@@ -464,15 +480,17 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       <SelectItem value="solid_wall" className="text-slate-900 dark:text-white text-xs">Solid Wall Installation</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowNewItemInput(!showNewItemInput)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowNewItemInput(!showNewItemInput)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -669,7 +687,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
             <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="font-semibold text-slate-900 dark:text-white">Task Attributes</h3>
               <div className="flex items-center gap-2">
-                {task.id && (
+                {task.id && canEdit && (
                   <Button 
                     onClick={handleSave}
                     disabled={updateTaskMutation.isPending}
@@ -679,6 +697,16 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
                   </Button>
                 )}
+                {task.id && !canEdit && (
+                  <Button 
+                    onClick={() => onOpenChange(false)}
+                    size="sm"
+                    variant="outline"
+                    className="px-6"
+                  >
+                    Close
+                  </Button>
+                )}
               </div>
             </div>
             
@@ -686,15 +714,15 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>
-                <Select value={task.status} onValueChange={(v) => setTask({...task, status: v})}>
-                  <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
+                <Select value={task.status} onValueChange={(v) => setTask({...task, status: v})} disabled={!canEdit}>
+                <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
                 </Select>
               </div>
 
@@ -795,7 +823,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               </div>
 
               {/* Client Visibility - Only for authorized roles */}
-              {canToggleVisibility() && (
+              {canToggleVisibility && (
                 <>
                   <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
                     <div className="flex items-center justify-between mb-2">
@@ -812,6 +840,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       <Switch
                         checked={task.visible_to_client}
                         onCheckedChange={(checked) => setTask({...task, visible_to_client: checked})}
+                        disabled={!canToggleVisibility}
                       />
                     </div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400">
@@ -876,7 +905,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   )}
 
                   {/* Delete Button */}
-                  {task.id && (
+                  {task.id && canEdit && (
                   <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <Button
                     onClick={handleDeleteTask}

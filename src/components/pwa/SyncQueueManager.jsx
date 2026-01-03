@@ -4,6 +4,7 @@ import { useToast } from '@/components/ui/toast';
 import { normalizeQuoteForSave, normalizeInvoiceForSave } from '../utils/dataValidation';
 import { generateQuoteNumber } from '@/functions/generateQuoteNumber';
 import { generateInvoiceNumber } from '@/functions/generateInvoiceNumber';
+import { getRolePriority } from '../field/rolePermissions';
 
 const SyncQueueContext = createContext();
 
@@ -21,6 +22,7 @@ const MAX_RETRIES = 3;
 export function SyncQueueProvider({ children }) {
   const [queue, setQueue] = useState([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [conflicts, setConflicts] = useState([]);
   const { toast } = useToast();
 
   // Load queue from localStorage on mount
@@ -47,7 +49,7 @@ export function SyncQueueProvider({ children }) {
   }, [queue]);
 
   // Add item to queue ONLY if offline
-  const addToQueue = useCallback((operation) => {
+  const addToQueue = useCallback((operation, currentUser) => {
     // CRITICAL: Only queue if offline, otherwise execute immediately
     if (navigator.onLine) {
       console.log('🌐 Online: executing operation directly (not queueing)');
@@ -63,6 +65,9 @@ export function SyncQueueProvider({ children }) {
       entity: operation.entity,
       operation: operation.operation,
       data: operation.data,
+      user_email: currentUser?.email,
+      user_name: currentUser?.full_name,
+      role_priority: getRolePriority(currentUser),
     };
 
     setQueue(prev => [...prev, queueItem]);
@@ -71,7 +76,7 @@ export function SyncQueueProvider({ children }) {
     return queueItem.queueId;
   }, []);
 
-  // Process queue
+  // Process queue with conflict detection
   const processQueue = useCallback(async () => {
     if (!navigator.onLine || queue.length === 0 || isSyncing) {
       return;
@@ -83,33 +88,87 @@ export function SyncQueueProvider({ children }) {
     const results = {
       success: 0,
       failed: 0,
+      conflicts: [],
       errors: []
     };
 
-    for (const item of queue) {
-      try {
-        await executeOperation(item);
+    // Group queue items by entity+entityId to detect conflicts
+    const grouped = {};
+    queue.forEach(item => {
+      const key = `${item.entity}_${item.entityId}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
+    });
 
-        // Remove from queue on success
-        setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
-        results.success++;
-
-        console.log('✅ Synced:', item.entity, item.operation);
-      } catch (error) {
-        console.error('❌ Sync failed:', item, error);
+    // Process each group
+    for (const [key, items] of Object.entries(grouped)) {
+      // CONFLICT DETECTION: Multiple edits to same entity
+      if (items.length > 1 && items[0].operation === 'update') {
+        // Sort by role priority (highest first)
+        items.sort((a, b) => (b.role_priority || 0) - (a.role_priority || 0));
         
-        // Increment retry count
-        if (item.retries < MAX_RETRIES) {
-          setQueue(prev => prev.map(i => 
-            i.queueId === item.queueId 
-              ? { ...i, retries: i.retries + 1, lastError: error.message }
-              : i
-          ));
-        } else {
-          // Remove after max retries
-          setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
+        // Auto-resolve: highest role priority wins
+        const winner = items[0];
+        const losers = items.slice(1);
+
+        console.log('⚠️ CONFLICT RESOLVED by role priority:', {
+          winner: winner.user_name,
+          priority: winner.role_priority,
+          losers: losers.map(l => l.user_name)
+        });
+
+        // Keep winner, mark losers as conflict
+        results.conflicts.push({
+          id: key,
+          entity: winner.entity,
+          entityId: winner.entityId,
+          resolved_by: 'role_priority',
+          winner: {
+            user_name: winner.user_name,
+            role_priority: winner.role_priority,
+            data: winner.data
+          },
+          discarded: losers.map(l => ({
+            user_name: l.user_name,
+            role_priority: l.role_priority,
+            data: l.data
+          }))
+        });
+
+        // Execute winner only
+        try {
+          await executeOperation(winner);
+          setQueue(prev => prev.filter(i => !items.map(x => x.queueId).includes(i.queueId)));
+          results.success++;
+        } catch (error) {
           results.failed++;
-          results.errors.push({ item, error: error.message });
+          results.errors.push({ item: winner, error: error.message });
+        }
+
+        continue;
+      }
+
+      // NO CONFLICT: Process normally
+      for (const item of items) {
+        try {
+          await executeOperation(item);
+          setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
+          results.success++;
+          console.log('✅ Synced:', item.entity, item.operation);
+        } catch (error) {
+          console.error('❌ Sync failed:', item, error);
+          
+          if (item.retries < MAX_RETRIES) {
+            setQueue(prev => prev.map(i => 
+              i.queueId === item.queueId 
+                ? { ...i, retries: i.retries + 1, lastError: error.message }
+                : i
+            ));
+          } else {
+            setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
+            results.failed++;
+            results.errors.push({ item, error: error.message });
+          }
         }
       }
     }
@@ -118,11 +177,15 @@ export function SyncQueueProvider({ children }) {
 
     // Show results
     if (results.success > 0) {
-      toast.success(`✅ Sincronizados ${results.success} cambios`);
+      toast.success(`✅ Synced ${results.success} change(s)`);
+    }
+
+    if (results.conflicts.length > 0) {
+      toast.warning(`⚠️ ${results.conflicts.length} conflict(s) auto-resolved by role priority`);
     }
 
     if (results.failed > 0) {
-      toast.error(`❌ ${results.failed} cambios fallaron`);
+      toast.error(`❌ ${results.failed} change(s) failed`);
     }
 
     console.log('📊 Sync results:', results);
@@ -198,9 +261,11 @@ export function SyncQueueProvider({ children }) {
     queue,
     pendingCount: queue.length,
     isSyncing,
+    conflicts,
     addToQueue,
     syncNow: processQueue,
-    clearQueue: () => setQueue([])
+    clearQueue: () => setQueue([]),
+    clearConflicts: () => setConflicts([])
   };
 
   return (

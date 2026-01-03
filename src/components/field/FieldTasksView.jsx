@@ -11,6 +11,7 @@ import TaskDetailPanel from './TaskDetailPanel.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
+import { canEditTasks } from './rolePermissions';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided
@@ -32,6 +33,9 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   });
 
   const queryClient = useQueryClient();
+  
+  // Check permissions
+  const canEdit = canEditTasks(currentUser);
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, data }) => {
@@ -156,13 +160,15 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
               <List className="w-4 h-4" />
             </button>
           </div>
-          <Button 
-            onClick={() => setShowCreateTask(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            <span className="font-bold">New Task</span>
-          </Button>
+          {canEdit && (
+            <Button 
+              onClick={() => setShowCreateTask(true)}
+              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              <span className="font-bold">New Task</span>
+            </Button>
+          )}
         </div>
       </div>
 

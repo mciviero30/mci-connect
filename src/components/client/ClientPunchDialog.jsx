@@ -25,6 +25,10 @@ export default function ClientPunchDialog({
   const [creating, setCreating] = useState(false);
   const photoInputRef = useRef(null);
 
+  // 🔒 BLOCK OFFLINE FOR CLIENTS
+  const isOnline = navigator.onLine;
+  const [showOfflineWarning, setShowOfflineWarning] = useState(false);
+
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -47,6 +51,13 @@ export default function ClientPunchDialog({
   const handleSubmit = async () => {
     if (!title.trim()) {
       error('Please provide a title for the punch item');
+      return;
+    }
+
+    // 🔒 BLOCK OFFLINE SUBMISSION FOR CLIENTS
+    if (!isOnline) {
+      setShowOfflineWarning(true);
+      error('You must be online to submit punch items');
       return;
     }
 
@@ -93,6 +104,18 @@ export default function ClientPunchDialog({
         </DialogHeader>
 
         <div className="space-y-4 pt-4">
+          {/* OFFLINE WARNING FOR CLIENTS */}
+          {!isOnline && (
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-800 dark:text-red-300 font-semibold">
+                🔴 No Internet Connection
+              </p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                You must be online to submit punch items. Please check your connection and try again.
+              </p>
+            </div>
+          )}
+          
           <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
             <p className="text-xs text-slate-600 dark:text-slate-400">
               📍 <strong>Pinned to Drawing</strong> - Your punch item will appear on the plan at the location you selected.
@@ -196,14 +219,16 @@ export default function ClientPunchDialog({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!title.trim() || creating}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+              disabled={!title.trim() || creating || !isOnline}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white disabled:opacity-50"
             >
               {creating ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Submitting...
                 </>
+              ) : !isOnline ? (
+                '🔴 Offline - Cannot Submit'
               ) : (
                 'Submit Punch Item'
               )}
