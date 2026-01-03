@@ -283,6 +283,10 @@ export default function ClientPortal() {
               <Activity className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Activity</span>
             </TabsTrigger>
+            <TabsTrigger value="messages" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Messages</span>
+            </TabsTrigger>
             <TabsTrigger value="comments" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <MessageSquare className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Comments</span>
@@ -312,7 +316,7 @@ export default function ClientPortal() {
           <TabsContent value="tasks">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
               <ClientTasksView 
-                jobId={selectedProject.job_id} 
+                jobId={selectedJob?.id} 
                 clientEmail={user?.email}
                 clientName={user?.full_name}
               />
@@ -323,7 +327,7 @@ export default function ClientPortal() {
           <TabsContent value="messages">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Project Messages</h3>
-              <JobChatView jobId={selectedProject.job_id} currentUser={user} />
+              <JobChatView jobId={selectedJob?.id} currentUser={user} />
             </div>
           </TabsContent>
 
@@ -423,6 +427,14 @@ export default function ClientPortal() {
                   ))}
                 </div>
               )}
+            </div>
+          </TabsContent>
+
+          {/* Messages Tab - NEW */}
+          <TabsContent value="messages">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Project Messages</h3>
+              <JobChatView jobId={selectedJob?.id} currentUser={user} />
             </div>
           </TabsContent>
 
