@@ -25,7 +25,6 @@ import CrearFactura from './pages/CrearFactura';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
 import Dashboard from './pages/Dashboard';
-import Directory from './pages/Directory';
 import EditarEstimado from './pages/EditarEstimado';
 import Empleados from './pages/Empleados';
 import EmployeeProfile from './pages/EmployeeProfile';
@@ -47,7 +46,6 @@ import Items from './pages/Items';
 import JobDetails from './pages/JobDetails';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
 import JobPhotos from './pages/JobPhotos';
-import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
 import MiScorecard from './pages/MiScorecard';
 import MileageApproval from './pages/MileageApproval';
@@ -55,7 +53,6 @@ import MisGastos from './pages/MisGastos';
 import MisHoras from './pages/MisHoras';
 import MisProyectos from './pages/MisProyectos';
 import MyPayroll from './pages/MyPayroll';
-import MyProfile from './pages/MyProfile';
 import NewsFeed from './pages/NewsFeed';
 import Nomina from './pages/Nomina';
 import NotificationCenter from './pages/NotificationCenter';
@@ -84,6 +81,9 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import ManagerDashboard from './pages/ManagerDashboard';
+import Directory from './pages/Directory';
+import MyProfile from './pages/MyProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -115,7 +115,6 @@ export const PAGES = {
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
     "Dashboard": Dashboard,
-    "Directory": Directory,
     "EditarEstimado": EditarEstimado,
     "Empleados": Empleados,
     "EmployeeProfile": EmployeeProfile,
@@ -137,7 +136,6 @@ export const PAGES = {
     "JobDetails": JobDetails,
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
     "JobPhotos": JobPhotos,
-    "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
     "MiScorecard": MiScorecard,
     "MileageApproval": MileageApproval,
@@ -145,7 +143,6 @@ export const PAGES = {
     "MisHoras": MisHoras,
     "MisProyectos": MisProyectos,
     "MyPayroll": MyPayroll,
-    "MyProfile": MyProfile,
     "NewsFeed": NewsFeed,
     "Nomina": Nomina,
     "NotificationCenter": NotificationCenter,
@@ -174,6 +171,9 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "ManagerDashboard": ManagerDashboard,
+    "Directory": Directory,
+    "MyProfile": MyProfile,
 }
 
 export const pagesConfig = {

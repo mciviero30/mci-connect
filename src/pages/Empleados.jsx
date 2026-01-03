@@ -367,11 +367,9 @@ export default function Empleados() {
     queryFn: () => base44.auth.me(),
     staleTime: Infinity
   });
-
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
   
   // GUARD: Only Admin and CEO can access Employee Management
-  const userRole = (userProfile?.role || currentUser?.role || 'employee').toLowerCase();
+  const userRole = (currentUser?.role || 'employee').toLowerCase();
   const hasFullAccess = userRole === 'admin' || userRole === 'ceo';
 
   if (currentUser && !hasFullAccess) {
