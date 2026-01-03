@@ -1,11 +1,36 @@
 import React from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 export default function TaskVisibilityToggle({ task, compact = false }) {
   const queryClient = useQueryClient();
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  // Check if user has permission to toggle visibility
+  const canToggleVisibility = () => {
+    if (!currentUser) return false;
+    const role = currentUser.role?.toLowerCase();
+    const position = currentUser.position?.toLowerCase() || '';
+    
+    return (
+      role === 'admin' ||
+      role === 'ceo' ||
+      role === 'manager' ||
+      position.includes('manager') ||
+      position.includes('foreman') ||
+      position.includes('supervisor')
+    );
+  };
+
+  if (!canToggleVisibility()) {
+    return null; // Hide toggle for technicians and non-authorized users
+  }
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, visible }) => base44.entities.Task.update(id, { visible_to_client: visible }),

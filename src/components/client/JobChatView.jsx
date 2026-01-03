@@ -13,6 +13,19 @@ export default function JobChatView({ jobId, currentUser }) {
   const [newMessage, setNewMessage] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  // Verify user has access to this job (ProjectMember)
+  const { data: membership } = useQuery({
+    queryKey: ['project-membership', jobId, currentUser?.email],
+    queryFn: async () => {
+      const members = await base44.entities.ProjectMember.filter({ 
+        project_id: jobId,
+        user_email: currentUser.email
+      });
+      return members[0];
+    },
+    enabled: !!jobId && !!currentUser?.email,
+  });
+
   // Fetch messages for this job
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['job-chat', jobId],
@@ -20,12 +33,15 @@ export default function JobChatView({ jobId, currentUser }) {
       project_id: jobId,
       channel: 'general'
     }, 'created_date'),
-    enabled: !!jobId,
+    enabled: !!jobId && !!membership, // Only fetch if user is a member
     refetchInterval: 5000, // Poll every 5 seconds
   });
 
   const createMessageMutation = useMutation({
-    mutationFn: (data) => base44.entities.ChatMessage.create(data),
+    mutationFn: (data) => base44.entities.ChatMessage.create({
+      ...data,
+      is_client: isClient, // Tag message with client flag
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-chat', jobId] });
       setNewMessage('');
@@ -77,7 +93,16 @@ export default function JobChatView({ jobId, currentUser }) {
   };
 
   // Check if user is client
-  const isClient = currentUser?.role !== 'admin' && !currentUser?.position;
+  const isClient = membership?.role === 'client';
+
+  if (!membership) {
+    return (
+      <div className="text-center py-12 bg-slate-50 dark:bg-slate-800 rounded-xl">
+        <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <p className="text-slate-500">You don't have access to this project's chat</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -98,7 +123,9 @@ export default function JobChatView({ jobId, currentUser }) {
         ) : (
           messages.map((msg) => {
             const isOwn = msg.sender_email === currentUser?.email;
-            const isClientMessage = !msg.sender_email?.includes('@') || msg.sender_email?.includes('client');
+            
+            // Determine if message is from a client by checking ProjectMember role
+            const isClientMessage = msg.is_client || false;
             
             return (
               <div key={msg.id} className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>

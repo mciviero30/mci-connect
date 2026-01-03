@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CheckCircle2, Circle, MessageSquare, Image as ImageIcon, Calendar, User } from 'lucide-react';
+import { CheckCircle2, Circle, MessageSquare, Image as ImageIcon, Calendar, User, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,11 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format } from 'date-fns';
+import { useToast } from '@/components/ui/toast';
 
 export default function ClientTasksView({ jobId, clientEmail, clientName }) {
   const queryClient = useQueryClient();
+  const { success, error } = useToast();
   const [selectedTask, setSelectedTask] = useState(null);
   const [newComment, setNewComment] = useState('');
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
 
   // Fetch only client-visible tasks
   const { data: tasks = [], isLoading } = useQuery({
@@ -72,6 +75,29 @@ export default function ClientTasksView({ jobId, clientEmail, clientName }) {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    setDownloadingPDF(true);
+    try {
+      const response = await fetch(`/api/functions/generateTaskReportPDF?jobId=${jobId}`);
+      if (!response.ok) throw new Error('Failed to generate PDF');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `task-report-${jobId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      success('PDF downloaded');
+    } catch (err) {
+      error('Failed to download PDF');
+    } finally {
+      setDownloadingPDF(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -82,6 +108,20 @@ export default function ClientTasksView({ jobId, clientEmail, clientName }) {
 
   return (
     <div className="space-y-4">
+      {/* Header with PDF Download */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Tasks & Updates</h3>
+        <Button
+          onClick={handleDownloadPDF}
+          disabled={downloadingPDF || tasks.length === 0}
+          variant="outline"
+          size="sm"
+          className="border-slate-300 dark:border-slate-600"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          {downloadingPDF ? 'Generating...' : 'Download PDF'}
+        </Button>
+      </div>
       {tasks.length === 0 ? (
         <div className="text-center py-12 bg-slate-50 dark:bg-slate-800 rounded-xl">
           <CheckCircle2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
@@ -160,14 +200,16 @@ export default function ClientTasksView({ jobId, clientEmail, clientName }) {
           </DialogHeader>
 
           <div className="space-y-6 pt-4">
-            {/* Task Details */}
+            {/* Task Details - Client-safe only */}
             <div className="space-y-3">
               {selectedTask?.description && (
                 <div>
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Description</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{selectedTask.description}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{selectedTask.description}</p>
                 </div>
               )}
+              
+              {/* SECURITY: Internal notes are NEVER shown to clients */}
 
               <div className="flex items-center gap-4">
                 <Badge className={`${getStatusColor(selectedTask?.status)} border`}>
@@ -222,7 +264,12 @@ export default function ClientTasksView({ jobId, clientEmail, clientName }) {
 
             {/* Comments Section */}
             <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Comments</p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Comments & Questions</p>
+              <Badge className="bg-purple-100 text-purple-800 border-purple-300 text-xs">
+                Client Comments Enabled
+              </Badge>
+            </div>
               
               {/* Comments List */}
               <div className="space-y-3 mb-4 max-h-[300px] overflow-y-auto">

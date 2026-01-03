@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
+import ClientInviteManager from '@/components/client/ClientInviteManager.jsx';
 import { Link, useSearchParams } from 'react-router-dom';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
