@@ -10,6 +10,8 @@ import CreateTaskDialog from './CreateTaskDialog.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
+import PunchItemReview from './PunchItemReview.jsx';
+import { Badge } from '@/components/ui/badge';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided
@@ -23,6 +25,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   const [showMyTasks, setShowMyTasks] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [reviewingPunch, setReviewingPunch] = useState(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],

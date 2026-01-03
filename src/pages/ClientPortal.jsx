@@ -31,6 +31,7 @@ import ProgressTimeline from '@/components/client/ProgressTimeline';
 import WeeklySummary from '@/components/client/WeeklySummary';
 import ClientTasksView from '@/components/client/ClientTasksView';
 import JobChatView from '@/components/client/JobChatView';
+import BlueprintViewer from '@/components/field/BlueprintViewer';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -88,6 +89,12 @@ export default function ClientPortal() {
   const { data: reports = [] } = useQuery({
     queryKey: ['client-reports', selectedJob?.id],
     queryFn: () => base44.entities.Report.filter({ job_id: selectedJob.id }, '-created_date'),
+    enabled: !!selectedJob?.id,
+  });
+
+  const { data: plans = [] } = useQuery({
+    queryKey: ['client-plans', selectedJob?.id],
+    queryFn: () => base44.entities.Plan.filter({ job_id: selectedJob.id }, 'order'),
     enabled: !!selectedJob?.id,
   });
 
@@ -282,6 +289,10 @@ export default function ClientPortal() {
             <TabsTrigger value="activity" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <Activity className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
+            <TabsTrigger value="drawings" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <MapPin className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Drawings</span>
             </TabsTrigger>
             <TabsTrigger value="messages" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <MessageSquare className="w-4 h-4 mr-2" />

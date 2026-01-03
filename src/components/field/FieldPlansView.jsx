@@ -296,8 +296,15 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     </div>
 
                     {taskCount > 0 && (
-                      <div className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-black text-xs px-3 py-1 rounded-full z-10 font-semibold shadow-lg">
-                        {taskCount} tasks
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <div className="bg-gradient-to-r from-orange-500 to-yellow-500 text-black text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
+                          {taskCount} tasks
+                        </div>
+                        {tasks.filter(t => t.blueprint_id === plan.id && t.created_by_client && t.punch_status === 'client_submitted').length > 0 && (
+                          <Badge className="bg-purple-600 text-white text-xs px-2 py-1 shadow-lg animate-pulse">
+                            {tasks.filter(t => t.blueprint_id === plan.id && t.created_by_client && t.punch_status === 'client_submitted').length} 🔔
+                          </Badge>
+                        )}
                       </div>
                     )}
                   </div>
