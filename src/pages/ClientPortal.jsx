@@ -32,6 +32,7 @@ import WeeklySummary from '@/components/client/WeeklySummary';
 import ClientTasksView from '@/components/client/ClientTasksView';
 import JobChatView from '@/components/client/JobChatView';
 import BlueprintViewer from '@/components/field/BlueprintViewer';
+import DailyFieldReportView from '@/components/field/DailyFieldReportView';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -89,6 +90,15 @@ export default function ClientPortal() {
   const { data: reports = [] } = useQuery({
     queryKey: ['client-reports', selectedJob?.id],
     queryFn: () => base44.entities.Report.filter({ job_id: selectedJob.id }, '-created_date'),
+    enabled: !!selectedJob?.id,
+  });
+
+  const { data: dailyReports = [] } = useQuery({
+    queryKey: ['client-daily-reports', selectedJob?.id],
+    queryFn: () => base44.entities.DailyFieldReport.filter({ 
+      job_id: selectedJob.id,
+      client_visible: true 
+    }, '-report_date', 30),
     enabled: !!selectedJob?.id,
   });
 
@@ -313,6 +323,15 @@ export default function ClientPortal() {
             <TabsTrigger value="reports" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <BarChart3 className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Reports</span>
+            </TabsTrigger>
+            <TabsTrigger value="daily-reports" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <FileText className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Daily Reports</span>
+              {dailyReports.length > 0 && (
+                <Badge className="ml-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-xs px-1.5 py-0.5">
+                  {dailyReports.length}
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -542,6 +561,13 @@ export default function ClientPortal() {
                   ))}
                 </div>
               )}
+            </div>
+          </TabsContent>
+
+          {/* Daily Reports Tab */}
+          <TabsContent value="daily-reports">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <DailyFieldReportView jobId={selectedJob?.id} isClientView={true} />
             </div>
           </TabsContent>
         </Tabs>
