@@ -77,7 +77,7 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
-import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
+import useEmployeeProfile from "@/components/hooks/useEmployeeProfile.jsx";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
