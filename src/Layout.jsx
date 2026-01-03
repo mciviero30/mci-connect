@@ -40,6 +40,7 @@ import {
   Bell,
   CheckCircle2,
   Rocket,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -538,13 +539,20 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       ]
     },
     {
+      section: 'TRAINING & KNOWLEDGE',
+      icon: GraduationCap,
+      items: [
+        { title: 'Training Courses', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Knowledge Library', url: createPageUrl("KnowledgeLibrary"), icon: BookOpen },
+      ]
+    },
+    {
       section: 'COMPLIANCE',
       icon: Shield,
       items: [
         { title: 'System Readiness', url: createPageUrl("SystemReadiness"), icon: Rocket },
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
-        { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
@@ -673,6 +681,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       items: [
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Knowledge Library', url: createPageUrl("KnowledgeLibrary"), icon: BookOpen },
         { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target },
         { title: 'My Goals', url: createPageUrl("Goals"), icon: Target },
         { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
