@@ -40,6 +40,7 @@ import {
   Bell,
   CheckCircle2,
   Rocket,
+  Lightbulb,
 } from "lucide-react";
 import {
   Sidebar,
@@ -677,6 +678,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       items: [
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Field Knowledge', url: createPageUrl("FieldKnowledge"), icon: Lightbulb },
         { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target },
         { title: 'My Goals', url: createPageUrl("Goals"), icon: Target },
         { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
