@@ -103,26 +103,29 @@ export default function ClientPortal() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#507DB4] border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
+          <p className="text-slate-600 text-sm">Loading your projects...</p>
+        </div>
       </div>
     );
   }
 
   if (jobs.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-12 text-center max-w-md">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Building2 className="w-8 h-8 text-blue-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-12 text-center max-w-md">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Building2 className="w-10 h-10 text-blue-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Sin Proyectos Asignados</h2>
-          <p className="text-slate-600 mb-6">
-            Aún no tienes proyectos asignados como cliente. Contacta a tu contratista para obtener acceso.
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">No Projects Assigned</h2>
+          <p className="text-slate-600 mb-6 leading-relaxed">
+            You don't have any projects assigned yet. Please contact your contractor to request access to your project.
           </p>
-          <Button onClick={() => base44.auth.logout()} variant="outline">
+          <Button onClick={() => base44.auth.logout()} variant="outline" className="border-slate-300 hover:bg-slate-50 min-h-[44px]">
             <LogOut className="w-4 h-4 mr-2" />
-            Cerrar Sesión
+            Sign Out
           </Button>
         </div>
       </div>
@@ -131,48 +134,48 @@ export default function ClientPortal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+      {/* Header - Enhanced visual hierarchy */}
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-20 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button 
                 onClick={() => setShowAvatarCreator(true)}
-                className="w-10 h-10 rounded-xl overflow-hidden ring-2 ring-blue-100 hover:ring-blue-300 transition-all"
+                className="w-12 h-12 rounded-xl overflow-hidden ring-2 ring-blue-200 dark:ring-blue-800 hover:ring-blue-400 dark:hover:ring-blue-600 transition-all shadow-md touch-manipulation active:scale-95"
               >
                 {user?.avatar_image_url ? (
                   <img src={user.avatar_image_url} alt={user.full_name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-white" />
+                  <div className="w-full h-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-white" />
                   </div>
                 )}
               </button>
               <div>
-                <h1 className="font-bold text-slate-900">Portal del Cliente</h1>
-                <p className="text-sm text-slate-500">Bienvenido, {user?.full_name}</p>
+                <h1 className="text-lg font-bold text-slate-900 dark:text-white">Client Portal</h1>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Welcome, {user?.full_name}</p>
               </div>
             </div>
-            <Button onClick={() => base44.auth.logout()} variant="ghost" size="sm">
+            <Button onClick={() => base44.auth.logout()} variant="ghost" size="sm" className="min-h-[44px] hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">
               <LogOut className="w-4 h-4 mr-2" />
-              Salir
+              Sign Out
             </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Project Selector (if multiple) */}
+        {/* Project Selector - Enhanced styling */}
         {jobs.length > 1 && (
-          <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
+          <div className="mb-6 flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
             {jobs.map((job) => (
               <button
                 key={job.id}
                 onClick={() => setSelectedJobId(job.id)}
-                className={`flex-shrink-0 px-4 py-2 rounded-lg border transition-all ${
+                className={`flex-shrink-0 px-5 py-3 rounded-xl border-2 font-medium transition-all min-h-[48px] touch-manipulation active:scale-95 ${
                   selectedJob?.id === job.id
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300'
+                    ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white border-[#507DB4] shadow-md'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-[#507DB4] dark:hover:border-[#6B9DD8]'
                 }`}
               >
                 {job.name}
@@ -181,141 +184,149 @@ export default function ClientPortal() {
           </div>
         )}
 
-        {/* Project Header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">{selectedJob?.name}</h2>
+        {/* Project Header - Enhanced visual design */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6 sm:p-8 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div className="flex-1">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">{selectedJob?.name}</h2>
               {selectedJob?.address && (
-                <div className="flex items-center gap-2 text-slate-500 mt-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>{selectedJob.address}</span>
+                <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400 mt-2">
+                  <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm leading-relaxed">{selectedJob.address}</span>
                 </div>
               )}
             </div>
             <Badge className={`${
               selectedJob?.status === 'active' 
-                ? 'bg-green-100 text-green-700 border-green-200' 
-                : 'bg-blue-100 text-blue-700 border-blue-200'
-            } text-sm px-3 py-1`}>
-              {selectedJob?.status === 'active' ? 'En Progreso' : 'Completado'}
+                ? 'soft-green-gradient' 
+                : 'soft-blue-gradient'
+            } text-sm px-4 py-2 h-auto shadow-sm`}>
+              {selectedJob?.status === 'active' ? 'In Progress' : 'Completed'}
             </Badge>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-700">Progreso General</span>
-              <span className="text-sm font-bold text-blue-600">{progressPercent}%</span>
+          {/* Progress Bar - Enhanced visibility */}
+          <div className="mb-6 p-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900/50 dark:to-blue-900/30 rounded-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Overall Progress</span>
+              <span className="text-lg font-bold text-[#507DB4] dark:text-[#6B9DD8]">{progressPercent}%</span>
             </div>
-            <Progress value={progressPercent} className="h-3" />
+            <Progress value={progressPercent} className="h-3 bg-slate-200 dark:bg-slate-700" />
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              {completedTasks} of {totalTasks} tasks completed
+            </p>
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-slate-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 text-slate-600 mb-1">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span className="text-sm">Completadas</span>
+          {/* Quick Stats - Enhanced cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="soft-green-gradient rounded-xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-500" />
+                <span className="text-xs font-semibold text-green-700 dark:text-green-600 uppercase tracking-wide">Completed</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{completedTasks}</p>
+              <p className="text-3xl font-bold text-green-800 dark:text-green-700">{completedTasks}</p>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 text-slate-600 mb-1">
-                <TrendingUp className="w-4 h-4 text-blue-500" />
-                <span className="text-sm">En Progreso</span>
+            <div className="soft-blue-gradient rounded-xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-600 uppercase tracking-wide">In Progress</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{inProgressTasks}</p>
+              <p className="text-3xl font-bold text-blue-800 dark:text-blue-700">{inProgressTasks}</p>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 text-slate-600 mb-1">
-                <Clock className="w-4 h-4 text-amber-500" />
-                <span className="text-sm">Pendientes</span>
+            <div className="soft-amber-gradient rounded-xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-500" />
+                <span className="text-xs font-semibold text-amber-700 dark:text-amber-600 uppercase tracking-wide">Pending</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{pendingTasks}</p>
+              <p className="text-3xl font-bold text-amber-800 dark:text-amber-700">{pendingTasks}</p>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4">
-              <div className="flex items-center gap-2 text-slate-600 mb-1">
-                <Camera className="w-4 h-4 text-purple-500" />
-                <span className="text-sm">Fotos</span>
+            <div className="soft-purple-gradient rounded-xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <Camera className="w-5 h-5 text-purple-600 dark:text-purple-500" />
+                <span className="text-xs font-semibold text-purple-700 dark:text-purple-600 uppercase tracking-wide">Photos</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{photos.length}</p>
+              <p className="text-3xl font-bold text-purple-800 dark:text-purple-700">{photos.length}</p>
             </div>
           </div>
         </div>
 
-        {/* Tabs Content */}
+        {/* Tabs - Enhanced mobile-friendly design */}
         <Tabs defaultValue="progress" className="space-y-6">
-          <TabsList className="bg-white border border-slate-200 p-1 rounded-xl flex-wrap h-auto">
-            <TabsTrigger value="progress" className="rounded-lg">
+          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1.5 rounded-xl flex-wrap h-auto gap-1.5 shadow-sm">
+            <TabsTrigger value="progress" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Progreso
+              <span className="hidden sm:inline">Progress</span>
             </TabsTrigger>
-            <TabsTrigger value="photos" className="rounded-lg">
+            <TabsTrigger value="photos" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <Camera className="w-4 h-4 mr-2" />
-              Fotos ({photos.length})
+              <span className="hidden sm:inline">Photos</span>
+              <Badge className="ml-1 sm:ml-2 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 text-xs px-1.5 py-0.5">
+                {photos.length}
+              </Badge>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="rounded-lg">
+            <TabsTrigger value="activity" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <Activity className="w-4 h-4 mr-2" />
-              Actividad
+              <span className="hidden sm:inline">Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="comments" className="rounded-lg">
+            <TabsTrigger value="comments" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <MessageSquare className="w-4 h-4 mr-2" />
-              Comentarios
+              <span className="hidden sm:inline">Comments</span>
             </TabsTrigger>
-            <TabsTrigger value="documents" className="rounded-lg">
+            <TabsTrigger value="documents" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <FileText className="w-4 h-4 mr-2" />
-              Documentos
+              <span className="hidden sm:inline">Documents</span>
             </TabsTrigger>
-            <TabsTrigger value="drive" className="rounded-lg">
+            <TabsTrigger value="drive" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <FileText className="w-4 h-4 mr-2" />
-              Drive
+              <span className="hidden sm:inline">Drive</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="rounded-lg">
+            <TabsTrigger value="reports" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Reportes
+              <span className="hidden sm:inline">Reports</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Progress Tab */}
+          {/* Progress Tab - Enhanced task list */}
           <TabsContent value="progress">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-900 mb-4">Tareas del Proyecto</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Project Tasks</h3>
               {tasks.length === 0 ? (
-                <div className="text-center py-12">
-                  <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500">No hay tareas registradas aún</p>
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-10 h-10 text-slate-300 dark:text-slate-500" />
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400">No tasks registered yet</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {tasks.map((task) => (
                     <div 
                       key={task.id}
-                      className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
+                      className="flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className={`w-4 h-4 rounded-full flex-shrink-0 shadow-sm ${
                           task.status === 'completed' ? 'bg-green-500' :
                           task.status === 'in_progress' ? 'bg-blue-500' :
                           task.status === 'blocked' ? 'bg-red-500' :
                           'bg-amber-500'
                         }`} />
-                        <div>
-                          <p className="font-medium text-slate-900">{task.title}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">{task.title}</p>
                           {task.category && (
-                            <p className="text-sm text-slate-500">{task.category}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{task.category}</p>
                           )}
                         </div>
                       </div>
-                      <Badge className={`${
-                        task.status === 'completed' ? 'bg-green-100 text-green-700' :
-                        task.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                        task.status === 'blocked' ? 'bg-red-100 text-red-700' :
-                        'bg-amber-100 text-amber-700'
+                      <Badge className={`flex-shrink-0 px-3 py-1 text-xs font-bold ${
+                        task.status === 'completed' ? 'soft-green-gradient' :
+                        task.status === 'in_progress' ? 'soft-blue-gradient' :
+                        task.status === 'blocked' ? 'soft-red-gradient' :
+                        'soft-amber-gradient'
                       }`}>
-                        {task.status === 'completed' ? 'Completada' :
-                         task.status === 'in_progress' ? 'En Progreso' :
-                         task.status === 'blocked' ? 'Bloqueada' : 'Pendiente'}
+                        {task.status === 'completed' ? 'Done' :
+                         task.status === 'in_progress' ? 'Active' :
+                         task.status === 'blocked' ? 'Blocked' : 'Pending'}
                       </Badge>
                     </div>
                   ))}
@@ -324,41 +335,47 @@ export default function ClientPortal() {
             </div>
           </TabsContent>
 
-          {/* Photos Tab */}
+          {/* Photos Tab - Enhanced */}
           <TabsContent value="photos">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                <Camera className="w-5 h-5 text-blue-600" />
-                Galería de Fotos del Proyecto
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl">
+                  <Camera className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                Project Photo Gallery
               </h3>
               <PhotoGalleryEnhanced photos={photos} />
             </div>
           </TabsContent>
 
-          {/* Activity Tab */}
+          {/* Activity Tab - Enhanced */}
           <TabsContent value="activity">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <h3 className="font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-blue-600" />
-                Actividad Reciente
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl">
+                  <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                Recent Activity
               </h3>
               {activityLog.length === 0 ? (
-                <div className="text-center py-12">
-                  <Activity className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500">No hay actividad registrada</p>
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Activity className="w-10 h-10 text-slate-300 dark:text-slate-500" />
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400">No activity recorded yet</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {activityLog.map((activity) => (
-                    <div key={activity.id} className="flex gap-4 p-4 bg-slate-50 rounded-xl">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                    <div key={activity.id} className="flex gap-4 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5 flex-shrink-0 shadow-sm" />
                       <div className="flex-1">
-                        <p className="text-slate-900 font-medium">{activity.action}</p>
+                        <p className="text-slate-900 dark:text-white font-semibold text-sm">{activity.action}</p>
                         {activity.details && (
-                          <p className="text-sm text-slate-600 mt-1">{activity.details}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">{activity.details}</p>
                         )}
-                        <p className="text-xs text-slate-500 mt-2">
-                          {format(new Date(activity.created_at), 'dd MMM yyyy, HH:mm')} • {activity.user_name}
+                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                          {format(new Date(activity.created_at), 'MMM dd, yyyy • HH:mm')} • {activity.user_name}
                         </p>
                       </div>
                     </div>

@@ -160,19 +160,29 @@ export default function FieldProject() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mb-4" />
+          <p className="text-slate-300 text-sm">Loading project...</p>
+        </div>
       </div>
     );
   }
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-slate-400 mb-4">Project not found</p>
+      <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl p-12 text-center max-w-md">
+          <div className="w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-10 h-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Project Not Found</h3>
+          <p className="text-slate-400 mb-6">The project you're looking for doesn't exist or has been removed.</p>
           <Link to={createPageUrl('Field')}>
-            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white">Back</Button>
+            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[48px] px-6 rounded-xl">
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Projects
+            </Button>
           </Link>
         </div>
       </div>
@@ -245,56 +255,71 @@ export default function FieldProject() {
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-64 bg-slate-900 border-r border-slate-700 flex-col shadow-lg overflow-y-auto">
-        {/* Header */}
-        <div className="p-4 border-b border-slate-700 bg-black flex-shrink-0">
+      <div className="hidden md:flex w-72 bg-slate-900 border-r border-slate-700 flex-col shadow-xl overflow-y-auto">
+        {/* Header - Fixed job info */}
+        <div className="p-5 border-b border-slate-700 bg-gradient-to-br from-black to-slate-900 flex-shrink-0 sticky top-0 z-10">
           <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-3">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-4 min-h-[40px] hover:bg-slate-800 rounded-lg transition-all">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Back to Projects
             </Button>
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-white truncate">{job.name || job.job_name_field}</h2>
-              <Badge className={`text-xs ${
+          <div className="space-y-3">
+            <div>
+              <h2 className="font-bold text-white text-lg leading-tight mb-2">{job.name || job.job_name_field}</h2>
+              {job.address && (
+                <div className="flex items-start gap-2 text-slate-400 text-sm mb-2">
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span className="line-clamp-2">{job.address}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className={`text-xs px-3 py-1 ${
                 job.status === 'active' 
-                  ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                  : job.status === 'completed'
+                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
                   : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
               }`}>
-                {job.status === 'active' ? 'Active' : job.status}
+                {job.status === 'active' ? 'Active' : 
+                 job.status === 'completed' ? 'Completed' : 
+                 job.status}
               </Badge>
+              {job.client_name_field && (
+                <span className="text-xs text-slate-400">• {job.client_name_field}</span>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        {/* Navigation - Enhanced touch targets and visual hierarchy */}
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
           {sidebarItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[48px] ${
                 activeTab === item.id
-                  ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/40 shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent'
               }`}
             >
               <div className="flex items-center gap-3">
-                <item.icon className="w-4 h-4" />
-                {item.label}
+                <item.icon className="w-5 h-5" />
+                <span>{item.label}</span>
               </div>
               {item.count !== undefined && item.count > 0 && (
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
                   activeTab === item.id
-                    ? 'bg-orange-500/30 text-orange-300'
-                    : 'bg-slate-700 text-slate-400'
+                    ? 'bg-orange-500/40 text-orange-200'
+                    : 'bg-slate-700 text-slate-300'
                 }`}>
                   {item.count}
                 </span>
               )}
               {item.badge && (
-                <span className="text-xs">{item.badge}</span>
+                <span className="text-lg">{item.badge}</span>
               )}
             </button>
           ))}

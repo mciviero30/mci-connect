@@ -87,17 +87,19 @@ export default function ManagerDashboard() {
 
   if (!isManager) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 flex items-center justify-center">
-        <Card className="max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6 flex items-center justify-center">
+        <Card className="max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-3 text-red-600 dark:text-red-400 text-xl">
+              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                <AlertCircle className="w-6 h-6" />
+              </div>
               Access Denied
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-600">
-              This dashboard is only available for Managers.
+            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+              This dashboard is only available for Managers. Please contact your administrator if you believe this is an error.
             </p>
           </CardContent>
         </Card>
@@ -106,127 +108,144 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Manager Dashboard</h1>
-          <p className="text-slate-600">Your performance overview</p>
+        {/* Header - Enhanced */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">Manager Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400">Your performance overview and team insights</p>
         </div>
 
-        {/* Date Filter */}
-        <Card>
+        {/* Date Filter - Enhanced */}
+        <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md">
           <CardHeader>
-            <CardTitle>Period Filter</CardTitle>
+            <CardTitle className="text-lg text-slate-900 dark:text-white flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
+              Period Filter
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Start Date</Label>
+                <Label className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">Start Date</Label>
                 <Input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11"
                 />
               </div>
               <div>
-                <Label>End Date</Label>
+                <Label className="text-slate-700 dark:text-slate-300 font-medium mb-2 block">End Date</Label>
                 <Input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-11"
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Jobs Closed */}
-        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-lg">
+        {/* Jobs Closed - Enhanced */}
+        <Card className="soft-blue-gradient shadow-lg border-0">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-700">
-              <Briefcase className="w-6 h-6" />
-              Jobs Closed
-              <div className="ml-auto">
-                <div className="group relative">
-                  <div className="w-4 h-4 rounded-full bg-blue-200 text-blue-700 flex items-center justify-center text-xs cursor-help">
-                    ?
-                  </div>
-                  <div className="absolute right-0 top-6 w-64 bg-slate-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-xl">
-                    Number of completed jobs assigned to your teams in the selected period
-                  </div>
-                </div>
+            <CardTitle className="flex items-center gap-3 text-blue-700 dark:text-blue-600 text-xl">
+              <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                <Briefcase className="w-6 h-6" />
               </div>
+              Jobs Closed
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold text-blue-700">
+            <p className="text-5xl font-bold text-blue-800 dark:text-blue-700 mb-2">
               {completedJobs.length}
             </p>
-            <p className="text-sm text-slate-600 mt-2">
+            <p className="text-sm text-blue-700 dark:text-blue-600 font-medium">
               Completed job{completedJobs.length !== 1 ? 's' : ''} in selected period
             </p>
           </CardContent>
         </Card>
 
-        {/* Commissions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="border-blue-200 bg-blue-50">
+        {/* Commissions - Enhanced cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <Card className="soft-amber-gradient shadow-lg border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-700">
-                <TrendingUp className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-3 text-amber-700 dark:text-amber-600 text-lg">
+                <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
                 Approved - Awaiting Payment
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-blue-700">
+              <p className="text-4xl font-bold text-amber-800 dark:text-amber-700 mb-2">
                 ${totalApproved.toLocaleString()}
               </p>
-              <p className="text-xs text-slate-600 mt-2">
+              <p className="text-sm text-amber-700 dark:text-amber-600 font-medium">
                 {approvedCommissions.length} commission{approvedCommissions.length !== 1 ? 's' : ''}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-green-50">
+          <Card className="soft-green-gradient shadow-lg border-0">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-700">
-                <CheckCircle className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-3 text-green-700 dark:text-green-600 text-lg">
+                <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-xl">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
                 Paid
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-green-700">
+              <p className="text-4xl font-bold text-green-800 dark:text-green-700 mb-2">
                 ${totalPaid.toLocaleString()}
               </p>
-              <p className="text-xs text-slate-600 mt-2">
+              <p className="text-sm text-green-700 dark:text-green-600 font-medium">
                 {paidCommissions.length} commission{paidCommissions.length !== 1 ? 's' : ''}
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Teams Overview */}
+        {/* Teams Overview - Enhanced */}
         {managerTeams.length > 0 && (
-          <Card>
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md">
             <CardHeader>
-              <CardTitle>Your Teams</CardTitle>
+              <CardTitle className="text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
+                Your Teams
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {managerTeams.map(team => (
-                  <div
-                    key={team.id}
-                    className="flex items-center justify-between p-3 bg-slate-100 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-slate-900">{team.name}</p>
-                      <p className="text-xs text-slate-600">
-                        {jobs.filter(j => j.team_id === team.id).length} job{jobs.filter(j => j.team_id === team.id).length !== 1 ? 's' : ''}
-                      </p>
+              <div className="space-y-3">
+                {managerTeams.map(team => {
+                  const teamJobCount = jobs.filter(j => j.team_id === team.id).length;
+                  const teamActiveJobs = jobs.filter(j => j.team_id === team.id && j.status === 'active').length;
+                  
+                  return (
+                    <div
+                      key={team.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-br from-[#507DB4]/20 to-[#6B9DD8]/20 rounded-lg">
+                          <MapPin className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-900 dark:text-white">{team.name}</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            {teamJobCount} total job{teamJobCount !== 1 ? 's' : ''} • {teamActiveJobs} active
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className="soft-blue-gradient px-3 py-1 text-xs font-bold">
+                        {teamActiveJobs} Active
+                      </Badge>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
