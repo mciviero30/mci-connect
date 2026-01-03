@@ -5,34 +5,42 @@ export default function ServiceWorkerRegistration() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // EMERGENCY FIX: Completely disable Service Worker and clear all caches
-    const emergencyCacheClear = async () => {
-      if ('serviceWorker' in navigator) {
-        // 1. Unregister ALL service workers
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          await registration.unregister();
-          console.log('🗑️ Service Worker unregistered');
-        }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((registration) => {
+            console.log('✅ Service Worker registered:', registration.scope);
 
-        // 2. Clear ALL caches
-        const cacheNames = await caches.keys();
-        for (const cacheName of cacheNames) {
-          await caches.delete(cacheName);
-          console.log('🧹 Cache deleted:', cacheName);
-        }
+            // Check for updates periodically
+            setInterval(() => {
+              registration.update();
+            }, 60000); // Check every minute
 
-        // 3. Clear localStorage flags
-        localStorage.removeItem('sw-cache-version');
-        
-        console.log('✅ Emergency cache clear completed');
-      }
-    };
+            // Handle updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  toast.info('Nueva versión disponible. Recarga la app para actualizar.');
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.error('❌ Service Worker registration failed:', error);
+          });
 
-    emergencyCacheClear();
-
-    // DO NOT re-register Service Worker - keep it disabled
-  }, []);
+        // Listen for messages from service worker
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data.type === 'CACHE_UPDATED') {
+            console.log('📦 Cache updated:', event.data.url);
+          }
+        });
+      });
+    }
+  }, [toast]);
 
   return null;
 }

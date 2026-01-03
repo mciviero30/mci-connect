@@ -40,7 +40,6 @@ import {
   Bell,
   CheckCircle2,
   Rocket,
-  Lightbulb,
 } from "lucide-react";
 import {
   Sidebar,
@@ -78,6 +77,7 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
+import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
@@ -261,8 +261,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   // Check if we're on a Field page
   const isFieldPage = location.pathname.toLowerCase().includes('field');
 
-  // Use user directly (employee profile merge not needed)
-  const displayUser = user;
+  // Merge auth user with Employee entity data
+  const { profile: displayUser } = useEmployeeProfile(user?.email, user);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -629,8 +629,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       section: 'RESOURCES',
       items: [
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
-        { title: 'Field Knowledge', url: createPageUrl("FieldKnowledge"), icon: Lightbulb },
-        { title: 'Review Knowledge', url: createPageUrl("ReviewKnowledge"), icon: CheckCircle2 },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
@@ -677,7 +675,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       items: [
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
-        { title: 'Field Knowledge', url: createPageUrl("FieldKnowledge"), icon: Lightbulb },
         { title: 'My Scorecard', url: createPageUrl("MiScorecard"), icon: Target },
         { title: 'My Goals', url: createPageUrl("Goals"), icon: Target },
         { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },

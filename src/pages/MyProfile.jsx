@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { canViewSensitiveEmployeeData, maskSSN, getSensitiveFieldDisplay } from "@/components/utils/employeeSecurity";
+import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -28,13 +29,16 @@ export default function MyProfile() {
   const [editing, setEditing] = useState(false);
   const [showPhotoManager, setShowPhotoManager] = useState(false);
   
-  const { data: user } = useQuery({
+  const { data: authUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Merge auth user with EmployeeDirectory data
+  const { profile: user } = useEmployeeProfile(authUser?.email, authUser);
   
   // Check if user can view sensitive data
-  const canViewSensitive = canViewSensitiveEmployeeData(user);
+  const canViewSensitive = canViewSensitiveEmployeeData(authUser);
 
   const { data: myCertifications = [] } = useQuery({
     queryKey: ['myCertifications', user?.email],
