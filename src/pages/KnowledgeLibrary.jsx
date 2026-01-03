@@ -24,37 +24,31 @@ import { Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/toast';
 
 const categoryLabels = {
-  walls: 'Walls',
-  glass: 'Glass',
-  millwork: 'Millwork',
+  solid_wall_systems: 'Solid Wall Systems',
+  glass_wall_systems: 'Glass Wall Systems',
   doors: 'Doors',
-  hardware: 'Hardware',
-  acoustics: 'Acoustics',
-  electrical: 'Electrical',
-  hvac: 'HVAC',
-  safety: 'Safety',
-  tools: 'Tools',
-  materials: 'Materials',
-  best_practices: 'Best Practices',
-  troubleshooting: 'Troubleshooting',
-  other: 'Other'
+  timber_lvl: 'Timber / LVL',
+  millwork: 'Millwork',
+  carpet: 'Carpet',
+  general_installation: 'General Installation',
+  field_tips: 'Field Tips'
 };
 
 const categoryColors = {
-  walls: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  glass: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  millwork: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  solid_wall_systems: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  glass_wall_systems: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
   doors: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
-  hardware: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-  acoustics: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  electrical: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  hvac: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
-  safety: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  tools: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  materials: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  best_practices: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-  troubleshooting: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
-  other: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+  timber_lvl: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  millwork: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  carpet: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  general_installation: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
+  field_tips: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+};
+
+const contentTypeLabels = {
+  installation_guide: 'Installation Guide',
+  system_overview: 'System Overview',
+  field_tip: 'Field Tip'
 };
 
 export default function KnowledgeLibrary() {
@@ -74,7 +68,7 @@ export default function KnowledgeLibrary() {
   // Fetch approved articles
   const { data: articles = [], isLoading } = useQuery({
     queryKey: ['knowledge-articles'],
-    queryFn: () => base44.entities.KnowledgeArticle.filter({ status: 'approved' }, '-created_date')
+    queryFn: () => base44.entities.KnowledgeArticle.filter({ status: 'approved' }, '-helpful_count')
   });
 
   // Fetch user's pending submissions
@@ -124,7 +118,7 @@ export default function KnowledgeLibrary() {
     return matchesSearch && matchesCategory;
   });
 
-  const pendingCount = mySubmissions.filter(s => s.status === 'pending').length;
+  const pendingCount = mySubmissions.filter(s => s.status === 'pending_approval').length;
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
@@ -227,12 +221,12 @@ export default function KnowledgeLibrary() {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <Badge className={`text-xs ${categoryColors[article.category] || categoryColors.other}`}>
-                      {categoryLabels[article.category] || 'Other'}
+                    <Badge className={`text-xs ${categoryColors[article.category] || categoryColors.general_installation}`}>
+                      {categoryLabels[article.category] || 'General'}
                     </Badge>
-                    {article.system_specific && (
-                      <Badge variant="outline" className="text-xs">
-                        {article.system_specific}
+                    {article.model && (
+                      <Badge variant="outline" className="text-xs font-semibold">
+                        {article.model}
                       </Badge>
                     )}
                   </div>
@@ -242,6 +236,12 @@ export default function KnowledgeLibrary() {
                 </CardHeader>
                 
                 <CardContent>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="secondary" className="text-xs">
+                      {contentTypeLabels[article.content_type] || article.content_type}
+                    </Badge>
+                  </div>
+                  
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
                     {article.description}
                   </p>

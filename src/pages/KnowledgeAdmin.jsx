@@ -22,20 +22,20 @@ import { useToast } from '@/components/ui/toast';
 import { format } from 'date-fns';
 
 const categoryLabels = {
-  walls: 'Walls',
-  glass: 'Glass',
-  millwork: 'Millwork',
+  solid_wall_systems: 'Solid Wall Systems',
+  glass_wall_systems: 'Glass Wall Systems',
   doors: 'Doors',
-  hardware: 'Hardware',
-  acoustics: 'Acoustics',
-  electrical: 'Electrical',
-  hvac: 'HVAC',
-  safety: 'Safety',
-  tools: 'Tools',
-  materials: 'Materials',
-  best_practices: 'Best Practices',
-  troubleshooting: 'Troubleshooting',
-  other: 'Other'
+  timber_lvl: 'Timber / LVL',
+  millwork: 'Millwork',
+  carpet: 'Carpet',
+  general_installation: 'General Installation',
+  field_tips: 'Field Tips'
+};
+
+const contentTypeLabels = {
+  installation_guide: 'Installation Guide',
+  system_overview: 'System Overview',
+  field_tip: 'Field Tip'
 };
 
 export default function KnowledgeAdmin() {
@@ -56,7 +56,7 @@ export default function KnowledgeAdmin() {
   // Fetch pending articles
   const { data: pendingArticles = [], isLoading } = useQuery({
     queryKey: ['knowledge-pending'],
-    queryFn: () => base44.entities.KnowledgeArticle.filter({ status: 'pending' }, '-submitted_at')
+    queryFn: () => base44.entities.KnowledgeArticle.filter({ status: 'pending_approval' }, '-submitted_at')
   });
 
   // Fetch all articles (for history)
@@ -69,9 +69,9 @@ export default function KnowledgeAdmin() {
     mutationFn: async (articleId) => {
       await base44.entities.KnowledgeArticle.update(articleId, {
         status: 'approved',
-        reviewed_by: currentUser.email,
-        reviewed_by_name: currentUser.full_name,
-        reviewed_at: new Date().toISOString()
+        approved_by: currentUser.email,
+        approved_by_name: currentUser.full_name,
+        approved_at: new Date().toISOString()
       });
     },
     onSuccess: () => {
@@ -87,9 +87,9 @@ export default function KnowledgeAdmin() {
     mutationFn: async ({ articleId, reason }) => {
       await base44.entities.KnowledgeArticle.update(articleId, {
         status: 'rejected',
-        reviewed_by: currentUser.email,
-        reviewed_by_name: currentUser.full_name,
-        reviewed_at: new Date().toISOString(),
+        approved_by: currentUser.email,
+        approved_by_name: currentUser.full_name,
+        approved_at: new Date().toISOString(),
         rejection_reason: reason
       });
     },
@@ -191,11 +191,14 @@ export default function KnowledgeAdmin() {
                     
                     <CardContent className="space-y-4">
                       <div>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Category</p>
-                        <Badge variant="secondary">{categoryLabels[article.category]}</Badge>
-                        {article.system_specific && (
-                          <Badge variant="outline" className="ml-2">{article.system_specific}</Badge>
-                        )}
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Category & Type</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary">{categoryLabels[article.category]}</Badge>
+                          <Badge variant="secondary">{contentTypeLabels[article.content_type]}</Badge>
+                          {article.model && (
+                            <Badge variant="outline">{article.model}</Badge>
+                          )}
+                        </div>
                       </div>
                       
                       <div>
@@ -267,7 +270,7 @@ export default function KnowledgeAdmin() {
                       </Badge>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Reviewed by {article.reviewed_by_name}
+                      Approved by {article.approved_by_name}
                     </p>
                   </CardContent>
                 </Card>
@@ -288,7 +291,7 @@ export default function KnowledgeAdmin() {
                       </Badge>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                      Reviewed by {article.reviewed_by_name}
+                      Reviewed by {article.approved_by_name}
                     </p>
                     {article.rejection_reason && (
                       <p className="text-sm text-red-600 dark:text-red-400">

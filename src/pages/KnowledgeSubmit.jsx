@@ -12,20 +12,20 @@ import { createPageUrl } from '@/utils';
 import { useToast } from '@/components/ui/toast';
 
 const categoryLabels = {
-  walls: 'Walls',
-  glass: 'Glass',
-  millwork: 'Millwork',
+  solid_wall_systems: 'Solid Wall Systems',
+  glass_wall_systems: 'Glass Wall Systems',
   doors: 'Doors',
-  hardware: 'Hardware',
-  acoustics: 'Acoustics',
-  electrical: 'Electrical',
-  hvac: 'HVAC',
-  safety: 'Safety',
-  tools: 'Tools',
-  materials: 'Materials',
-  best_practices: 'Best Practices',
-  troubleshooting: 'Troubleshooting',
-  other: 'Other'
+  timber_lvl: 'Timber / LVL',
+  millwork: 'Millwork',
+  carpet: 'Carpet',
+  general_installation: 'General Installation',
+  field_tips: 'Field Tips'
+};
+
+const contentTypeLabels = {
+  installation_guide: 'Installation Guide',
+  system_overview: 'System Overview',
+  field_tip: 'Field Tip'
 };
 
 export default function KnowledgeSubmit() {
@@ -42,8 +42,9 @@ export default function KnowledgeSubmit() {
     title: '',
     description: '',
     content: '',
-    category: 'other',
-    system_specific: '',
+    category: 'general_installation',
+    content_type: 'installation_guide',
+    model: '',
     tags: ''
   });
 
@@ -68,10 +69,11 @@ export default function KnowledgeSubmit() {
         description: data.description,
         content: data.content,
         category: data.category,
-        system_specific: data.system_specific || null,
+        content_type: data.content_type,
+        model: data.model || null,
         tags: data.tags ? data.tags.split(',').map(t => t.trim()) : [],
         file_url: fileUrl,
-        status: 'pending',
+        status: 'pending_approval',
         submitted_by: currentUser.email,
         submitted_by_name: currentUser.full_name,
         submitted_at: new Date().toISOString()
@@ -150,27 +152,46 @@ export default function KnowledgeSubmit() {
                 />
               </div>
 
-              <div>
-                <Label>Category *</Label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full h-10 px-3 border rounded-md bg-white dark:bg-slate-800"
-                  required
-                >
-                  {Object.entries(categoryLabels).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
-                  ))}
-                </select>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Category *</Label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full h-10 px-3 border rounded-md bg-white dark:bg-slate-800"
+                    required
+                  >
+                    {Object.entries(categoryLabels).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label>Content Type *</Label>
+                  <select
+                    value={formData.content_type}
+                    onChange={(e) => setFormData({ ...formData, content_type: e.target.value })}
+                    className="w-full h-10 px-3 border rounded-md bg-white dark:bg-slate-800"
+                    required
+                  >
+                    {Object.entries(contentTypeLabels).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
-                <Label>System-Specific (Optional)</Label>
+                <Label>Model / System (Optional)</Label>
                 <Input
-                  value={formData.system_specific}
-                  onChange={(e) => setFormData({ ...formData, system_specific: e.target.value })}
+                  value={formData.model}
+                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                   placeholder="e.g., Falkbuilt, Dirtt, NanaWall"
                 />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Manufacturer or system model (e.g., Falkbuilt for Solid Walls)
+                </p>
               </div>
 
               <div>

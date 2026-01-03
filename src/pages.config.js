@@ -81,11 +81,11 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import KnowledgeSubmit from './pages/KnowledgeSubmit';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Directory from './pages/Directory';
 import MyProfile from './pages/MyProfile';
 import KnowledgeLibrary from './pages/KnowledgeLibrary';
-import KnowledgeSubmit from './pages/KnowledgeSubmit';
 import KnowledgeAdmin from './pages/KnowledgeAdmin';
 import __Layout from './Layout.jsx';
 
@@ -174,11 +174,11 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "KnowledgeSubmit": KnowledgeSubmit,
     "ManagerDashboard": ManagerDashboard,
     "Directory": Directory,
     "MyProfile": MyProfile,
     "KnowledgeLibrary": KnowledgeLibrary,
-    "KnowledgeSubmit": KnowledgeSubmit,
     "KnowledgeAdmin": KnowledgeAdmin,
 }
 
