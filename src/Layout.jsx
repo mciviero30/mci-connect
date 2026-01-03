@@ -551,6 +551,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       icon: Shield,
       items: [
         { title: 'System Readiness', url: createPageUrl("SystemReadiness"), icon: Rocket },
+        { title: 'Go-Live Playbook', url: createPageUrl("GoLivePlaybook"), icon: Rocket },
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },

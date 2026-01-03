@@ -87,6 +87,7 @@ import Directory from './pages/Directory';
 import MyProfile from './pages/MyProfile';
 import KnowledgeLibrary from './pages/KnowledgeLibrary';
 import KnowledgeAdmin from './pages/KnowledgeAdmin';
+import GoLivePlaybook from './pages/GoLivePlaybook';
 import __Layout from './Layout.jsx';
 
 
@@ -180,6 +181,7 @@ export const PAGES = {
     "MyProfile": MyProfile,
     "KnowledgeLibrary": KnowledgeLibrary,
     "KnowledgeAdmin": KnowledgeAdmin,
+    "GoLivePlaybook": GoLivePlaybook,
 }
 
 export const pagesConfig = {
