@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { Download, FileArchive, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Download, FileArchive, Loader2, CheckCircle2, AlertCircle, MapPin, FileJson } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/toast';
+import { exportFieldCodebase } from '@/functions/exportFieldCodebase';
 
 export default function CodebaseExport() {
   const [isExporting, setIsExporting] = useState(false);
   const [exportStatus, setExportStatus] = useState(null);
+  const [isExportingField, setIsExportingField] = useState(false);
+  const [fieldExportStatus, setFieldExportStatus] = useState(null);
   const { success, error: showError } = useToast();
 
   const handleExport = async () => {
@@ -41,6 +44,40 @@ export default function CodebaseExport() {
     }
   };
 
+  const handleFieldExport = async () => {
+    setIsExportingField(true);
+    setFieldExportStatus('generating');
+
+    try {
+      const response = await exportFieldCodebase({});
+      
+      if (response.status === 200) {
+        // Create JSON file
+        const jsonData = JSON.stringify(response.data, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `mci-field-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        setFieldExportStatus('success');
+        success('MCI Field export downloaded!');
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (err) {
+      console.error('Field export failed:', err);
+      setFieldExportStatus('error');
+      showError('Field export failed');
+    } finally {
+      setIsExportingField(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
       <div className="max-w-4xl mx-auto">
@@ -54,6 +91,128 @@ export default function CodebaseExport() {
         </div>
 
         <div className="grid gap-6">
+          {/* MCI Field Export Card */}
+          <Card className="border-2 border-orange-200 dark:border-orange-800 shadow-xl bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30">
+            <CardHeader className="bg-gradient-to-r from-orange-500 to-yellow-500 border-b">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-black/20 rounded-xl shadow-lg">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl text-white">MCI Field Export</CardTitle>
+                  <CardDescription className="text-base text-black/80">
+                    Field module only - entities, components, and structure map
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {/* What's Included */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white dark:bg-slate-800 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                      📦 Included Content
+                    </h3>
+                    <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        35+ Field entity schemas
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        50+ Field components list
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        Backend functions map
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        Architecture documentation
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        Dashboard access guide
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h3 className="font-bold text-blue-900 dark:text-blue-100 mb-3 flex items-center gap-2">
+                      💡 Perfect For
+                    </h3>
+                    <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
+                      <li className="flex items-start gap-2">
+                        <FileJson className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        Exporting Field module only
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <FileJson className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        Sharing Field architecture
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <FileJson className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        Entity schema reference
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <FileJson className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        File structure mapping
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Export Button */}
+                <div className="pt-4 border-t border-orange-200 dark:border-orange-800">
+                  <Button
+                    onClick={handleFieldExport}
+                    disabled={isExportingField}
+                    size="lg"
+                    className="w-full md:w-auto bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold shadow-lg"
+                  >
+                    {isExportingField ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Generating Field Export...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5 mr-2" />
+                        Download MCI Field Export (JSON)
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Status Message */}
+                {fieldExportStatus === 'success' && (
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                      <CheckCircle2 className="w-5 h-5" />
+                      <p className="font-medium">Field export completed!</p>
+                    </div>
+                    <p className="text-sm text-green-700 dark:text-green-300 mt-1 ml-7">
+                      JSON file downloaded. Open it to view entity schemas and file structure.
+                    </p>
+                  </div>
+                )}
+
+                {fieldExportStatus === 'error' && (
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
+                      <AlertCircle className="w-5 h-5" />
+                      <p className="font-medium">Field export failed</p>
+                    </div>
+                    <p className="text-sm text-red-700 dark:text-red-300 mt-1 ml-7">
+                      Please try again or contact support.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Main Export Card */}
           <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 border-b">
