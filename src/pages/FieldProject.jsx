@@ -256,38 +256,46 @@ export default function FieldProject() {
 
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-72 bg-slate-900 border-r border-slate-700 flex-col shadow-xl overflow-y-auto">
-        {/* Header - Fixed job info */}
+        {/* Header - Fixed job info with Maps link */}
         <div className="p-5 border-b border-slate-700 bg-gradient-to-br from-black to-slate-900 flex-shrink-0 sticky top-0 z-10">
           <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-4 min-h-[40px] hover:bg-slate-800 rounded-lg transition-all">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-4 min-h-[40px] hover:bg-slate-800 rounded-lg transition-all w-full justify-start">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Projects
             </Button>
           </Link>
           <div className="space-y-3">
             <div>
-              <h2 className="font-bold text-white text-lg leading-tight mb-2">{job.name || job.job_name_field}</h2>
+              <h2 className="font-bold text-white text-lg leading-tight mb-3">{job.name || job.job_name_field}</h2>
               {job.address && (
-                <div className="flex items-start gap-2 text-slate-400 text-sm mb-2">
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span className="line-clamp-2">{job.address}</span>
-                </div>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-2 text-slate-300 hover:text-[#FFB800] transition-colors text-sm mb-3 p-2 bg-slate-800/50 rounded-lg hover:bg-slate-800 group"
+                >
+                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 group-hover:text-[#FFB800]" />
+                  <span className="line-clamp-2 leading-relaxed">{job.address}</span>
+                </a>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Badge className={`text-xs px-3 py-1 ${
+            <div className="flex flex-col gap-2">
+              <Badge className={`text-xs px-3 py-1.5 font-bold ${
                 job.status === 'active' 
-                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                  ? 'bg-green-500/20 text-green-400 border-green-500/40'
                   : job.status === 'completed'
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                  : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/40'
+                  : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
               }`}>
-                {job.status === 'active' ? 'Active' : 
-                 job.status === 'completed' ? 'Completed' : 
+                {job.status === 'active' ? '🟢 Active' : 
+                 job.status === 'completed' ? '✅ Completed' : 
                  job.status}
               </Badge>
               {job.client_name_field && (
-                <span className="text-xs text-slate-400">• {job.client_name_field}</span>
+                <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5" />
+                  {job.client_name_field}
+                </p>
               )}
             </div>
           </div>

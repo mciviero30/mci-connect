@@ -77,26 +77,26 @@ export default function FieldPhotosView({ jobId }) {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Photos</h1>
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
+          <h1 className="text-2xl font-bold text-black">Photos</h1>
         </div>
         <div className="flex gap-2">
-          {/* Mobile: Camera capture button */}
+          {/* Mobile: Camera capture button with better touch target */}
           <Button 
             onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] px-5 rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform"
           >
             {isMobile ? (
               <>
-                <Camera className="w-4 h-4 mr-2" />
-                Take Photo
+                <Camera className="w-5 h-5 mr-2" />
+                <span className="font-bold">Take Photo</span>
               </>
             ) : (
               <>
-                <Plus className="w-4 h-4 mr-2" />
-                Upload Photo
+                <Plus className="w-5 h-5 mr-2" />
+                <span className="font-bold">Upload Photo</span>
               </>
             )}
           </Button>
@@ -104,14 +104,17 @@ export default function FieldPhotosView({ jobId }) {
       </div>
 
       <Tabs defaultValue="gallery" className="mb-6">
-        <TabsList className="bg-slate-800/50 border border-slate-700">
-          <TabsTrigger value="gallery" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">Gallery</TabsTrigger>
-          <TabsTrigger value="before-after" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">
-            <ArrowLeftRight className="w-4 h-4 mr-1" />
-            Before & After
+        <TabsList className="bg-slate-800 border-2 border-slate-700 p-1.5 rounded-xl shadow-md w-full flex-wrap h-auto gap-1.5">
+          <TabsTrigger value="gallery" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black text-slate-300 min-h-[44px] rounded-lg flex-1 font-medium">
+            <Camera className="w-4 h-4 mr-2" />
+            Gallery
           </TabsTrigger>
-          <TabsTrigger value="comparison" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black">
-            Comparisons
+          <TabsTrigger value="before-after" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black text-slate-300 min-h-[44px] rounded-lg flex-1 font-medium">
+            <ArrowLeftRight className="w-4 h-4 mr-1" />
+            Before/After
+          </TabsTrigger>
+          <TabsTrigger value="comparison" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-black text-slate-300 min-h-[44px] rounded-lg flex-1 font-medium">
+            Compare
           </TabsTrigger>
         </TabsList>
         <TabsContent value="before-after" className="mt-4">
@@ -123,43 +126,67 @@ export default function FieldPhotosView({ jobId }) {
         <TabsContent value="gallery">
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-slate-300 text-sm">Loading photos...</p>
         </div>
       ) : photos.length === 0 ? (
-        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-2xl p-12 text-center shadow-lg">
-          <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No photos</h3>
-          <p className="text-slate-400 mb-4">Upload photos of project progress</p>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 border-2 border-slate-600 rounded-2xl p-16 text-center shadow-xl">
+          <div className="w-20 h-20 bg-orange-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Camera className="w-10 h-10 text-orange-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">No Photos Yet</h3>
+          <p className="text-slate-300 mb-6 max-w-md mx-auto">Start documenting your project progress by uploading or capturing photos</p>
           <Button 
-            onClick={() => setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
+            onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] px-6 rounded-xl"
           >
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Photo
+            {isMobile ? (
+              <>
+                <Camera className="w-5 h-5 mr-2" />
+                Take Photo
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 mr-2" />
+                Upload Photo
+              </>
+            )}
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {photos.map((photo) => (
             <div 
               key={photo.id}
               onClick={() => setSelectedPhoto(photo)}
-              className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group"
+              className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group border-2 border-slate-700 hover:border-[#FFB800] shadow-lg hover:shadow-xl transition-all touch-manipulation active:scale-[0.98]"
             >
               <img 
                 src={photo.file_url}
-                alt={photo.caption || 'Foto'}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                alt={photo.caption || 'Photo'}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
                 {photo.caption && (
-                  <p className="text-sm text-white truncate">{photo.caption}</p>
+                  <p className="text-sm font-semibold text-white mb-1 line-clamp-2 leading-tight">{photo.caption}</p>
                 )}
-                <p className="text-xs text-slate-300">
-                  {format(new Date(photo.created_date), 'dd MMM yyyy')}
+                <p className="text-xs text-slate-300 flex items-center gap-2">
+                  <span>{format(new Date(photo.created_date), 'MMM dd, yyyy')}</span>
+                  {photo.created_by && (
+                    <>
+                      <span>•</span>
+                      <span className="truncate">{photo.created_by.split('@')[0]}</span>
+                    </>
+                  )}
                 </p>
+                {photo.location && (
+                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {photo.location}
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -169,11 +196,11 @@ export default function FieldPhotosView({ jobId }) {
         </TabsContent>
       </Tabs>
 
-      {/* Upload Dialog */}
+      {/* Upload Dialog - Enhanced feedback */}
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white">
           <DialogHeader>
-            <DialogTitle>Upload Photo</DialogTitle>
+            <DialogTitle className="text-xl">Upload Photo</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
@@ -225,46 +252,70 @@ export default function FieldPhotosView({ jobId }) {
               />
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300">
+              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-slate-700 text-slate-300 min-h-[44px] hover:bg-slate-800">
                 Cancel
               </Button>
               <Button 
                 onClick={handleCreatePhoto}
                 disabled={!newPhoto.file_url || createPhotoMutation.isPending}
-                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[44px] px-6"
               >
-                {createPhotoMutation.isPending ? 'Saving...' : 'Save Photo'}
+                {createPhotoMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Save Photo
+                  </>
+                )}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Photo Viewer */}
+      {/* Photo Viewer - Enhanced with author info */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl">
           {selectedPhoto && (
             <>
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-800">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-800 border-2 border-slate-700">
                 <img 
                   src={selectedPhoto.file_url}
-                  alt={selectedPhoto.caption || 'Foto'}
+                  alt={selectedPhoto.caption || 'Photo'}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="flex items-center justify-between mt-4">
-                <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
+                <div className="flex-1">
                   {selectedPhoto.caption && (
-                    <p className="text-white font-medium">{selectedPhoto.caption}</p>
+                    <p className="text-white font-semibold text-base mb-2">{selectedPhoto.caption}</p>
                   )}
-                  <p className="text-sm text-slate-400">
-                    {format(new Date(selectedPhoto.created_date), 'dd MMM yyyy HH:mm')}
-                    {selectedPhoto.location && ` • ${selectedPhoto.location}`}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
+                    <span>{format(new Date(selectedPhoto.created_date), 'MMM dd, yyyy • HH:mm')}</span>
+                    {selectedPhoto.created_by && (
+                      <>
+                        <span>•</span>
+                        <span className="text-slate-300">{selectedPhoto.created_by.split('@')[0]}</span>
+                      </>
+                    )}
+                    {selectedPhoto.location && (
+                      <>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {selectedPhoto.location}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <a href={selectedPhoto.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm" className="border-slate-700 text-slate-300">
+                    <Button variant="outline" size="sm" className="border-slate-700 text-slate-300 hover:bg-slate-800 min-h-[44px]">
                       <Download className="w-4 h-4 mr-2" />
                       Download
                     </Button>
@@ -272,10 +323,19 @@ export default function FieldPhotosView({ jobId }) {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => deletePhotoMutation.mutate(selectedPhoto.id)}
-                    className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                    onClick={() => {
+                      if (confirm('Delete this photo?')) {
+                        deletePhotoMutation.mutate(selectedPhoto.id);
+                      }
+                    }}
+                    disabled={deletePhotoMutation.isPending}
+                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 min-h-[44px]"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    {deletePhotoMutation.isPending ? (
+                      <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin mr-2" />
+                    ) : (
+                      <Trash2 className="w-4 h-4 mr-2" />
+                    )}
                     Delete
                   </Button>
                 </div>

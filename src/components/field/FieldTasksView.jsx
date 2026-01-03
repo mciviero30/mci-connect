@@ -53,9 +53,9 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
     .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
 
   const columns = [
-    { id: 'pending', label: 'Pending', color: 'red' },
-    { id: 'in_progress', label: 'In Progress', color: 'blue' },
-    { id: 'completed', label: 'Completed', color: 'green' },
+    { id: 'pending', label: 'Assigned', color: 'red', emoji: '📋' },
+    { id: 'in_progress', label: 'Working', color: 'blue', emoji: '⚙️' },
+    { id: 'completed', label: 'Done', color: 'green', emoji: '✅' },
   ];
 
   const handleDragStart = (e, task) => {
@@ -81,100 +81,117 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
 
   return (
     <div className="p-6 flex flex-col h-full">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Tasks</h1>
+      {/* Header - Enhanced with better mobile layout */}
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
+          <h1 className="text-2xl font-bold text-black">Tasks</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
               placeholder="Search tasks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-slate-800/50 border-slate-700 text-white w-48"
+              className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 w-full sm:w-56 h-11 rounded-xl"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36 bg-slate-800/50 border-slate-700 text-white">
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-11 rounded-xl min-w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="all" className="text-white">All</SelectItem>
-              <SelectItem value="pending" className="text-white">Pending</SelectItem>
-              <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
-              <SelectItem value="completed" className="text-white">Completed</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-700 rounded-xl">
+              <SelectItem value="all" className="text-white">All Tasks</SelectItem>
+              <SelectItem value="pending" className="text-white">📋 Assigned</SelectItem>
+              <SelectItem value="in_progress" className="text-white">⚙️ Working</SelectItem>
+              <SelectItem value="completed" className="text-white">✅ Done</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex bg-slate-800/50 rounded-lg p-1">
+          <div className="hidden sm:flex bg-slate-800 rounded-xl p-1 shadow-md">
             <button
               onClick={() => setView('kanban')}
-              className={`p-2 rounded ${view === 'kanban' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
+              className={`p-2.5 rounded-lg min-h-[44px] transition-all ${view === 'kanban' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setView('list')}
-              className={`p-2 rounded ${view === 'list' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
+              className={`p-2.5 rounded-lg min-h-[44px] transition-all ${view === 'list' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
             >
               <List className="w-4 h-4" />
             </button>
           </div>
           <Button 
             onClick={() => setShowCreateTask(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            New Task
+            <Plus className="w-5 h-5 mr-2" />
+            <span className="font-bold">New Task</span>
           </Button>
         </div>
       </div>
 
-      {/* Kanban View - Responsive */}
+      {/* Kanban View - Enhanced with clear states */}
       {view === 'kanban' && (
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 overflow-x-auto">
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 overflow-x-auto">
           {columns.map((column) => {
             const columnTasks = filteredTasks.filter(t => t.status === column.id);
             return (
               <div 
                 key={column.id}
-                className="bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl p-2 md:p-4 min-h-[300px] md:min-h-[400px] shadow-lg"
+                className="bg-gradient-to-br from-slate-700 to-slate-800 border-2 border-slate-600 rounded-xl p-4 min-h-[400px] shadow-xl"
                 onDrop={(e) => handleDrop(e, column.id)}
                 onDragOver={handleDragOver}
               >
-                <div className="flex items-center justify-between mb-2 md:mb-4">
-                  <h3 className="font-semibold text-xs md:text-sm text-white">{column.label}</h3>
-                  <Badge className={`bg-${column.color}-100 dark:bg-${column.color}-500/20 text-${column.color}-600 dark:text-${column.color}-400 border-${column.color}-200 dark:border-${column.color}-500/30 text-[10px] md:text-xs`}>
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-600">
+                  <h3 className="font-bold text-base text-white flex items-center gap-2">
+                    <span className="text-xl">{column.emoji}</span>
+                    {column.label}
+                  </h3>
+                  <Badge className={`
+                    ${column.color === 'red' ? 'bg-red-500/20 text-red-400 border-red-500/40' : ''}
+                    ${column.color === 'blue' ? 'bg-blue-500/20 text-blue-400 border-blue-500/40' : ''}
+                    ${column.color === 'green' ? 'bg-green-500/20 text-green-400 border-green-500/40' : ''}
+                    text-xs font-bold px-2.5 py-1
+                  `}>
                     {columnTasks.length}
                   </Badge>
                 </div>
-                <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
-                  {columnTasks.sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title)).map((task) => {
-                    const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
-                    return (
-                      <div
-                        key={task.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task)}
-                        onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
-                        className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-2 cursor-pointer hover:border-[#FFB800]/50 transition-all flex items-center gap-2"
-                      >
-                        <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
-                          task.status === 'completed' ? 'bg-green-500' :
-                          task.status === 'in_progress' ? 'bg-blue-500' :
-                          'bg-red-500'
-                        }`}>
-                          {wallNum}
+                <div className="space-y-2.5 max-h-[calc(100vh-300px)] overflow-y-auto">
+                  {columnTasks.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400 text-sm">
+                      No {column.label.toLowerCase()} tasks
+                    </div>
+                  ) : (
+                    columnTasks.sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title)).map((task) => {
+                      const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+                      return (
+                        <div
+                          key={task.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, task)}
+                          onClick={() => { setEditingTask(task); setShowCreateTask(true); }}
+                          className="bg-slate-800 border-2 border-slate-700 rounded-xl p-3 cursor-pointer hover:border-[#FFB800] hover:shadow-lg active:scale-[0.98] transition-all touch-manipulation"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-md ${
+                              task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600' :
+                              task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
+                              'bg-gradient-to-br from-red-500 to-red-600'
+                            }`}>
+                              {wallNum}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-white text-sm font-medium truncate mb-1">Wall {wallNum}</p>
+                              <Badge className={`${priorityColors[task.priority]} text-xs px-2 py-0.5`}>
+                                {task.priority || 'normal'}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <Badge className={`${priorityColors[task.priority]} text-[10px] px-1.5 py-0`}>
-                            {task.priority?.[0]?.toUpperCase()}
-                          </Badge>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
             );

@@ -51,15 +51,15 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl">
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-black">Project Overview</h1>
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
+          <h1 className="text-2xl font-bold text-black">Project Overview</h1>
         </div>
         {onOpenDailyReport && (
-          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none min-h-[44px] text-sm sm:text-base px-4 sm:px-5 w-full sm:w-auto">
-            <FileCheck className="w-4 h-4 mr-2" />
-            Daily Report
+          <Button onClick={onOpenDailyReport} className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] px-6 rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform">
+            <FileCheck className="w-5 h-5 mr-2" />
+            <span className="font-bold">Daily Report</span>
           </Button>
         )}
       </div>
@@ -74,28 +74,39 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
         <OverdueTasksAlert tasks={tasks} onTaskClick={onTaskClick} />
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
-        {stats.map((stat) => (
-          <div 
-            key={stat.label}
-            className="bg-gradient-to-br from-slate-700/50 to-slate-800/50 border border-slate-600/50 rounded-lg sm:rounded-xl p-3 sm:p-4"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-2">{stat.label}</p>
-                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
+      {/* Stats - Enhanced visual hierarchy */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        {stats.map((stat) => {
+          const colorClasses = {
+            amber: { bg: 'from-amber-500/10 to-amber-600/10', border: 'border-amber-500/30', icon: 'text-amber-400' },
+            blue: { bg: 'from-blue-500/10 to-blue-600/10', border: 'border-blue-500/30', icon: 'text-blue-400' },
+            green: { bg: 'from-green-500/10 to-green-600/10', border: 'border-green-500/30', icon: 'text-green-400' },
+            red: { bg: 'from-red-500/10 to-red-600/10', border: 'border-red-500/30', icon: 'text-red-400' },
+          };
+          const colors = colorClasses[stat.color];
+          
+          return (
+            <div 
+              key={stat.label}
+              className={`bg-gradient-to-br ${colors.bg} border-2 ${colors.border} rounded-xl p-4 shadow-lg hover:shadow-xl transition-shadow`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <stat.icon className={`w-6 h-6 ${colors.icon}`} />
+                <p className="text-3xl font-bold text-white">{stat.value}</p>
               </div>
-              <stat.icon className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-slate-400 opacity-50`} />
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wide">{stat.label}</p>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Project Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border border-slate-600 shadow-lg">
-          <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Project Information</h3>
+      {/* Project Info - Enhanced cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border-2 border-slate-600 shadow-xl">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-orange-400" />
+            Project Information
+          </h3>
           <div className="space-y-3">
             {job.address && (
               <div className="flex items-start gap-3">
@@ -129,10 +140,18 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border border-slate-600 shadow-lg">
-          <h3 className="text-base sm:text-lg font-bold text-white mb-3 sm:mb-4">Plans ({plans.length})</h3>
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border-2 border-slate-600 shadow-xl">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Map className="w-5 h-5 text-orange-400" />
+            Plans ({plans.length})
+          </h3>
           {plans.length === 0 ? (
-            <p className="text-slate-400 text-sm">No plans uploaded</p>
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-slate-600/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Map className="w-8 h-8 text-slate-500" />
+              </div>
+              <p className="text-slate-400 text-sm">No plans uploaded yet</p>
+            </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {plans.slice(0, 4).map((plan) => (
@@ -153,35 +172,43 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
         </div>
       </div>
 
-      {/* Recent Tasks */}
-      <div className="mt-4 sm:mt-6 bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border border-slate-600 shadow-lg">
-        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Recent Tasks</h3>
+      {/* Recent Tasks - Enhanced with better states */}
+      <div className="mt-6 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border-2 border-slate-600 shadow-xl">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <CheckSquare className="w-5 h-5 text-orange-400" />
+          Recent Tasks
+        </h3>
         {tasks.length === 0 ? (
-          <p className="text-slate-400 text-sm">No tasks created</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-slate-600/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <CheckSquare className="w-8 h-8 text-slate-500" />
+            </div>
+            <p className="text-slate-400 text-sm">No tasks created yet</p>
+          </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {tasks.slice(0, 5).map((task) => (
               <div 
                 key={task.id}
-                className="flex items-center justify-between p-3 bg-slate-800/50 border border-slate-700/50 rounded-lg"
+                className="flex items-center justify-between p-4 bg-slate-800 border-2 border-slate-700 rounded-xl hover:border-[#FFB800] transition-all"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={`w-3 h-3 rounded-full shadow-sm ${
                     task.status === 'completed' ? 'bg-green-500' :
                     task.status === 'in_progress' ? 'bg-blue-500' :
                     task.status === 'blocked' ? 'bg-red-500' :
                     'bg-amber-500'
                   }`} />
-                  <span className="text-white">{task.title}</span>
+                  <span className="text-white text-sm font-medium truncate">{task.title}</span>
                 </div>
-                <span className={`text-xs px-2 py-1 rounded ${
-                  task.priority === 'urgent' ? 'bg-red-500/20 text-red-400' :
-                  task.priority === 'high' ? 'bg-orange-500/20 text-orange-400' :
-                  task.priority === 'medium' ? 'bg-amber-500/20 text-amber-400' :
-                  'bg-slate-500/20 text-slate-400'
+                <Badge className={`flex-shrink-0 text-xs px-2.5 py-1 font-bold ${
+                  task.priority === 'urgent' ? 'bg-red-500/20 text-red-400 border-red-500/40' :
+                  task.priority === 'high' ? 'bg-orange-500/20 text-orange-400 border-orange-500/40' :
+                  task.priority === 'medium' ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' :
+                  'bg-slate-500/20 text-slate-400 border-slate-500/40'
                 }`}>
-                  {task.priority}
-                </span>
+                  {task.priority || 'normal'}
+                </Badge>
               </div>
             ))}
           </div>
