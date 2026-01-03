@@ -6,24 +6,39 @@ export default function ServiceWorkerRegistration() {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
+      // CRITICAL: Clear all caches on mount in development
+      if (import.meta.env.DEV) {
+        caches.keys().then(keys => {
+          keys.forEach(key => caches.delete(key));
+          console.log('🧹 DEV: All caches cleared');
+        });
+      }
+
+      // Unregister old service workers to force fresh start
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister();
+          console.log('🗑️ Unregistered old service worker');
+        });
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')
           .then((registration) => {
             console.log('✅ Service Worker registered:', registration.scope);
 
-            // Check for updates periodically
-            setInterval(() => {
-              registration.update();
-            }, 60000); // Check every minute
+            // Force immediate update check
+            registration.update();
 
-            // Handle updates
+            // Handle updates - Auto-reload on new version
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
               
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  toast.info('Nueva versión disponible. Recarga la app para actualizar.');
+                  console.log('🔄 New version detected - Auto-reloading...');
+                  window.location.reload();
                 }
               });
             });
@@ -32,11 +47,10 @@ export default function ServiceWorkerRegistration() {
             console.error('❌ Service Worker registration failed:', error);
           });
 
-        // Listen for messages from service worker
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data.type === 'CACHE_UPDATED') {
-            console.log('📦 Cache updated:', event.data.url);
-          }
+        // Listen for controller change (new SW activated)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('🔄 New Service Worker activated - Reloading...');
+          window.location.reload();
         });
       });
     }
