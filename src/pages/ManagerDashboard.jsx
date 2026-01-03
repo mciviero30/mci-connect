@@ -16,8 +16,7 @@ export default function ManagerDashboard() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const isManager = userProfile?.role === 'manager';
+  const isManager = currentUser?.role === 'manager';
 
   // Fetch manager's teams
   const { data: managerTeams = [] } = useQuery({
