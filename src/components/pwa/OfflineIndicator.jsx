@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { WifiOff, Wifi, Cloud, CloudOff, RefreshCw } from 'lucide-react';
+import { WifiOff, Wifi, Cloud, CloudOff, RefreshCw, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSyncQueue } from './SyncQueueManager';
+import ConflictResolutionDialog from '../field/ConflictResolutionDialog';
 
 export default function OfflineIndicator() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showIndicator, setShowIndicator] = useState(!navigator.onLine);
-  const { pendingCount, isSyncing, syncNow } = useSyncQueue();
+  const [showConflicts, setShowConflicts] = useState(false);
+  const { pendingCount, isSyncing, conflicts, syncNow, clearConflicts } = useSyncQueue();
 
   useEffect(() => {
     const handleOnline = () => {
@@ -28,12 +30,32 @@ export default function OfflineIndicator() {
     };
   }, []);
 
-  if (!showIndicator && isOnline && pendingCount === 0) {
+  // Show conflicts button if any
+  const hasConflicts = conflicts && conflicts.length > 0;
+
+  if (!showIndicator && isOnline && pendingCount === 0 && !hasConflicts) {
     return null;
   }
 
   return (
-    <AnimatePresence>
+    <>
+      {/* Conflicts Alert - Fixed position */}
+      {hasConflicts && (
+        <div className="fixed bottom-24 md:bottom-20 right-4 z-[9999]">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex items-center gap-2 px-4 py-2 rounded-full shadow-xl bg-gradient-to-r from-red-500 to-red-600 text-white cursor-pointer hover:shadow-2xl transition-all"
+            onClick={() => setShowConflicts(true)}
+          >
+            <AlertTriangle className="w-4 h-4 animate-pulse" />
+            <span className="text-sm font-bold">{conflicts.length} Conflict(s)</span>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Sync Status Banner */}
+      <AnimatePresence>
       <motion.div
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -118,5 +140,17 @@ export default function OfflineIndicator() {
         </div>
       </motion.div>
     </AnimatePresence>
+
+      {/* Conflict Resolution Dialog */}
+      <ConflictResolutionDialog
+        conflicts={conflicts}
+        open={showConflicts}
+        onOpenChange={setShowConflicts}
+        onResolve={(resolutions) => {
+          console.log('Manual conflict resolution:', resolutions);
+          clearConflicts();
+        }}
+      />
+    </>
   );
 }
