@@ -20,7 +20,6 @@ import {
   CreditCard
 } from 'lucide-react';
 import { canManageAllAgreements } from '@/components/commission/commissionPermissions';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 export default function CommissionReview() {
@@ -36,8 +35,7 @@ export default function CommissionReview() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const canManageAll = canManageAllAgreements(userProfile);
+  const canManageAll = canManageAllAgreements(currentUser);
 
   // Fetch commission results
   const { data: results = [], isLoading } = useQuery({
