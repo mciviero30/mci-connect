@@ -188,6 +188,24 @@ export default function CrearEstimado() {
         item_name: item.item_name ?? item.catalog_name ?? item.name ?? undefined,
       }));
 
+      // Extract tech count from existing items if available
+      const hotelItem = itemsWithItemName.find(i => i.calculation_type === 'hotel');
+      const perDiemItem = itemsWithItemName.find(i => i.calculation_type === 'per_diem');
+      const drivingItem = itemsWithItemName.find(i => i.calculation_type === 'hours');
+      
+      if (hotelItem?.tech_count) {
+        setProjectTechCount(hotelItem.tech_count);
+      } else if (perDiemItem?.tech_count) {
+        setProjectTechCount(perDiemItem.tech_count);
+      } else if (drivingItem?.tech_count) {
+        setProjectTechCount(drivingItem.tech_count);
+      }
+      
+      // Extract travel time from driving items
+      if (drivingItem?.duration_value) {
+        setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
+      }
+
       setFormData({
         customer_id: existingQuote.customer_id || '',
         customer_name: existingQuote.customer_name || '',
