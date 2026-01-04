@@ -29,8 +29,8 @@ Deno.serve(async (req) => {
       const users = await base44.asServiceRole.entities.User.list('', 1000);
       
       for (const u of users) {
-        // Skip the exception user and admins
-        if (u.email === exceptEmail || u.role === 'admin') {
+        // Skip the exception user (case insensitive)
+        if (u.email?.toLowerCase() === exceptEmail.toLowerCase()) {
           results.users_skipped++;
           continue;
         }
@@ -41,29 +41,8 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Create PendingEmployee record
+        // Update User to pending and reset onboarding
         try {
-          await base44.asServiceRole.entities.PendingEmployee.create({
-            email: u.email,
-            full_name: u.full_name,
-            position: u.position,
-            department: u.department,
-            phone: u.phone,
-            hourly_rate: u.hourly_rate,
-            date_of_birth: u.date_of_birth,
-            address: u.address,
-            ssn: u.ssn,
-            tshirt_size: u.tshirt_size,
-            hire_date: u.hire_date,
-            profile_photo_url: u.profile_photo_url,
-            avatar_image_url: u.avatar_image_url,
-            emergency_contact_name: u.emergency_contact_name,
-            emergency_contact_phone: u.emergency_contact_phone,
-            emergency_contact_relationship: u.emergency_contact_relationship,
-            status: 'pending'
-          });
-
-          // Update User to pending
           await base44.asServiceRole.entities.User.update(u.id, {
             employment_status: 'pending',
             onboarding_completed: false

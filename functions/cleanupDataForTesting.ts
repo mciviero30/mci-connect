@@ -22,6 +22,8 @@ Deno.serve(async (req) => {
       field_photos_deleted: 0,
       field_documents_deleted: 0,
       field_members_deleted: 0,
+      calendar_assignments_deleted: 0,
+      time_entries_deleted: 0,
       errors: []
     };
 
@@ -56,6 +58,28 @@ Deno.serve(async (req) => {
       }
     } catch (error) {
       results.errors.push(`Jobs: ${error.message}`);
+    }
+
+    // Delete Calendar data
+    try {
+      const assignments = await base44.asServiceRole.entities.JobAssignment.list('', 1000);
+      for (const assignment of assignments) {
+        await base44.asServiceRole.entities.JobAssignment.delete(assignment.id);
+        results.calendar_assignments_deleted++;
+      }
+    } catch (error) {
+      results.errors.push(`Calendar: ${error.message}`);
+    }
+
+    // Delete Time Entries
+    try {
+      const timeEntries = await base44.asServiceRole.entities.TimeEntry.list('', 1000);
+      for (const entry of timeEntries) {
+        await base44.asServiceRole.entities.TimeEntry.delete(entry.id);
+        results.time_entries_deleted++;
+      }
+    } catch (error) {
+      results.errors.push(`Time Entries: ${error.message}`);
     }
 
     // Delete Field Projects and related data
