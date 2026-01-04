@@ -96,6 +96,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     department: employee?.department || 'operations',
     team_id: employee?.team_id || '',
     team_name: employee?.team_name || '',
+    hourly_rate: employee?.hourly_rate || 0,
     status: isPending ? (employee?.status || 'pending') : undefined
   });
 
@@ -337,6 +338,19 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
               <SelectItem value="XXXL">XXXL</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div>
+          <Label className="text-slate-900 font-medium">Hourly Rate ($) *</Label>
+          <Input
+            type="number"
+            step="0.01"
+            min="0"
+            value={formData.hourly_rate || ''}
+            onChange={(e) => setFormData({ ...formData, hourly_rate: parseFloat(e.target.value) || 0 })}
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
+            placeholder="20.00"
+          />
         </div>
       </div>
 
