@@ -16,8 +16,7 @@ export default function ExecutiveDashboard() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'ceo';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
   // Fetch data
   const { data: invoices = [] } = useQuery({
