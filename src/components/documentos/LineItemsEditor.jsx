@@ -234,9 +234,9 @@ export default function LineItemsEditor({
                 min="0"
                 step="0.01"
                 required
-                disabled={item.calculation_type !== 'none'}
+                disabled={item.is_travel_item || (item.calculation_type && item.calculation_type !== 'none')}
                 className={`h-9 text-sm text-center font-semibold ${
-                  item.calculation_type !== 'none'
+                  item.is_travel_item || (item.calculation_type && item.calculation_type !== 'none')
                     ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
                     : 'bg-white border-slate-200 text-slate-900'
                 }`}
@@ -248,9 +248,9 @@ export default function LineItemsEditor({
               <Input
                 value={item.unit}
                 onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                disabled={item.calculation_type !== 'none'}
+                disabled={item.is_travel_item}
                 className={`h-9 text-xs text-center ${
-                  item.calculation_type !== 'none' 
+                  item.is_travel_item 
                     ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed' 
                     : 'bg-white border-slate-200 text-slate-900'
                 }`}
@@ -266,7 +266,12 @@ export default function LineItemsEditor({
                 min="0"
                 step="0.01"
                 required
-                className="bg-white border-slate-200 text-slate-900 h-9 text-sm text-center font-semibold"
+                disabled={item.is_travel_item}
+                className={`h-9 text-sm text-center font-semibold ${
+                  item.is_travel_item
+                    ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
+                    : 'bg-white border-slate-200 text-slate-900'
+                }`}
               />
             </div>
 
