@@ -32,22 +32,23 @@ export default function OutOfAreaCalculator({
     setError(null);
 
     try {
-      const { data } = await base44.functions.invoke('calculateTravelMetrics', {
+      const response = await base44.functions.invoke('calculateTravelMetrics', {
         jobAddress,
         teamIds: selectedTeamIds
       });
 
-      if (data.error) {
-        setError(data.error);
+      if (response.data.error) {
+        setError(response.data.error);
+        setIsCalculating(false);
         return;
       }
 
-      if (data.results) {
-        setTravelMetrics(data.results);
+      if (response.data.results) {
+        setTravelMetrics(response.data.results);
         
         // Initialize vehicle counts (default 1 per team)
         const counts = {};
-        data.results.forEach(result => {
+        response.data.results.forEach(result => {
           if (result.success) {
             counts[result.teamId] = 1;
           }
@@ -55,21 +56,22 @@ export default function OutOfAreaCalculator({
         setVehicleCounts(counts);
         
         // Show error if all calculations failed
-        const allFailed = data.results.every(r => !r.success);
+        const allFailed = response.data.results.every(r => !r.success);
         if (allFailed) {
-          const errorMessages = data.results.map(r => r.error).filter(Boolean).join(', ');
+          const errorMessages = response.data.results.map(r => r.error).filter(Boolean).join(', ');
           setError(errorMessages || (language === 'es' 
             ? 'Error al calcular distancias para todos los equipos.'
             : 'Failed to calculate distances for all teams.'));
         }
       }
+      
+      setIsCalculating(false);
     } catch (err) {
       console.error('Error calculating travel metrics:', err);
-      const errorMessage = err.response?.data?.error || err.message;
+      const errorMessage = err.data?.error || err.message;
       setError(errorMessage || (language === 'es' 
         ? 'Error al calcular distancias. Verifica que GOOGLE_MAPS_API_KEY esté configurado.'
         : 'Failed to calculate distances. Check that GOOGLE_MAPS_API_KEY is configured.'));
-    } finally {
       setIsCalculating(false);
     }
   };
