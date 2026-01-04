@@ -12,7 +12,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { AGREEMENTS, getRequiredAgreements, hasSignedAllAgreements } from '@/components/core/agreementsConfig';
 import ReactMarkdown from 'react-markdown';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
 export default function AgreementGate({ children, user }) {
   const { language } = useLanguage();
@@ -22,9 +21,6 @@ export default function AgreementGate({ children, user }) {
   const [signatureName, setSignatureName] = useState('');
   const [showContent, setShowContent] = useState(false);
 
-  // CRITICAL FIX: Use merged profile (EmployeeDirectory + User) to ensure position is hydrated
-  const { profile: mergedUser, isLoading: profileLoading } = useEmployeeProfile(user?.email, user);
-
   // Fetch user's existing signatures
   const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
     queryKey: ['agreementSignatures', user?.email],
@@ -33,11 +29,11 @@ export default function AgreementGate({ children, user }) {
     initialData: [],
   });
 
-  // Get required agreements for this user (use mergedUser with hydrated position)
-  const requiredAgreements = getRequiredAgreements(mergedUser);
-  const hasAllSignatures = hasSignedAllAgreements(mergedUser, signatures);
+  // Get required agreements for this user
+  const requiredAgreements = getRequiredAgreements(user);
+  const hasAllSignatures = hasSignedAllAgreements(user, signatures);
 
-  const isLoading = profileLoading || signaturesLoading;
+  const isLoading = signaturesLoading;
 
   // Filter out already signed agreements
   const unsignedAgreements = requiredAgreements.filter(agreement => {
@@ -62,8 +58,8 @@ export default function AgreementGate({ children, user }) {
       return base44.entities.AgreementSignature.create({
         user_id: user.id,
         employee_email: user.email,
-        employee_name: mergedUser.full_name || user.full_name,
-        employee_position: mergedUser.position,
+        employee_name: user.full_name,
+        employee_position: user.position,
         agreement_type: agreementData.type,
         version: agreementData.version,
         accepted: true,
