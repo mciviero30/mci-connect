@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Hotel, Coffee, Clock, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Users, Hotel, Coffee, Clock, Info, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function StayDurationCalculator({ 
@@ -92,8 +93,7 @@ export default function StayDurationCalculator({
 
   }, [items, techCount, travelTimeHours, roomsPerNight]);
 
-  // Auto-update items when calculations change
-  useEffect(() => {
+  const handleAddToQuote = () => {
     if (!calculations || !onAutoGenerateItems) return;
 
     onAutoGenerateItems({
@@ -102,7 +102,7 @@ export default function StayDurationCalculator({
       tech_count: techCount,
       duration_days: calculations.totalCalendarDays
     });
-  }, [calculations, techCount, onAutoGenerateItems]);
+  };
 
   if (!calculations) return null;
 
@@ -212,12 +212,13 @@ export default function StayDurationCalculator({
           </AlertDescription>
         </Alert>
 
-        <div className="flex items-center gap-2 text-xs text-purple-700 bg-purple-100 px-3 py-2 rounded-lg">
-          <Badge className="bg-purple-600 text-white text-xs">
-            {language === 'es' ? 'Auto-calculado' : 'Auto-calculated'}
-          </Badge>
-          <span>{language === 'es' ? 'Hotel y Per Diem se actualizarán automáticamente' : 'Hotel and Per Diem will update automatically'}</span>
-        </div>
+        <Button
+          onClick={handleAddToQuote}
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {language === 'es' ? 'Agregar Hotel y Per Diem al Estimado' : 'Add Hotel & Per Diem to Quote'}
+        </Button>
       </CardContent>
     </Card>
   );
