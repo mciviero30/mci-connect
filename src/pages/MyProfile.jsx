@@ -61,11 +61,8 @@ export default function MyProfile() {
   });
 
   const [formData, setFormData] = useState({
-    phone: user?.phone || '',
     address: user?.address || '',
-    emergency_contact_name: user?.emergency_contact_name || '',
-    emergency_contact_phone: user?.emergency_contact_phone || '',
-    emergency_contact_relationship: user?.emergency_contact_relationship || '',
+    tshirt_size: user?.tshirt_size || ''
   });
 
   const updateProfileMutation = useMutation({
@@ -140,11 +137,8 @@ export default function MyProfile() {
                   onClick={() => {
                     setEditing(false);
                     setFormData({
-                      phone: user?.phone || '',
                       address: user?.address || '',
-                      emergency_contact_name: user?.emergency_contact_name || '',
-                      emergency_contact_phone: user?.emergency_contact_phone || '',
-                      emergency_contact_relationship: user?.emergency_contact_relationship || '',
+                      tshirt_size: user?.tshirt_size || ''
                     });
                   }}
                   variant="outline"
@@ -308,30 +302,79 @@ export default function MyProfile() {
                   {t('personalInformation')}
                 </h3>
 
+                <Alert className="mb-4 bg-amber-50 border-amber-200">
+                  <Lock className="w-4 h-4 text-amber-600" />
+                  <AlertDescription className="text-amber-900 text-sm">
+                    You can only edit <strong>Address</strong> and <strong>T-Shirt Size</strong>. For other changes, contact your administrator.
+                  </AlertDescription>
+                </Alert>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('fullName')}
+                      <Lock className="w-3 h-3 text-slate-400" />
+                    </Label>
                     <p className="text-slate-900 dark:text-white font-medium mt-1">{getDisplayName(user)}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('email')}</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('email')}
+                      <Lock className="w-3 h-3 text-slate-400" />
+                    </Label>
                     <p className="text-slate-900 dark:text-white font-medium mt-1">{user.email}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
-                    {editing ? (
-                      <PhoneInput
-                        value={formData.phone}
-                        onChange={(value) => setFormData({ ...formData, phone: value })}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.phone || '—'}</p>
-                    )}
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('phone')}
+                      <Lock className="w-3 h-3 text-slate-400" />
+                    </Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.phone || '—'}</p>
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('position')}</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('position')}
+                      <Lock className="w-3 h-3 text-slate-400" />
+                    </Label>
                     <p className="text-slate-900 dark:text-white font-medium mt-1">{user.position || '—'}</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      💵 {t('hourlyRate')}
+                      <Lock className="w-3 h-3 text-slate-400" />
+                    </Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">
+                      ${user.hourly_rate?.toFixed(2) || '0.00'}/hr
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      👕 T-Shirt Size
+                      {editing && <Edit3 className="w-3 h-3 text-green-600" />}
+                    </Label>
+                    {editing ? (
+                      <Select 
+                        value={formData.tshirt_size} 
+                        onValueChange={(value) => setFormData({ ...formData, tshirt_size: value })}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="XS">XS</SelectItem>
+                          <SelectItem value="S">S</SelectItem>
+                          <SelectItem value="M">M</SelectItem>
+                          <SelectItem value="L">L</SelectItem>
+                          <SelectItem value="XL">XL</SelectItem>
+                          <SelectItem value="XXL">XXL</SelectItem>
+                          <SelectItem value="XXXL">XXXL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.tshirt_size || '—'}</p>
+                    )}
                   </div>
 
                   {/* Sensitive Data - DOB and SSN */}
@@ -380,7 +423,10 @@ export default function MyProfile() {
                   )}
 
                   <div className="md:col-span-2">
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('address')}</Label>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('address')}
+                      {editing && <Edit3 className="w-3 h-3 text-green-600" />}
+                    </Label>
                     {editing ? (
                       <Input
                         value={formData.address}
@@ -396,54 +442,36 @@ export default function MyProfile() {
               </CardContent>
             </Card>
 
-            {/* Emergency Contact */}
+            {/* Emergency Contact - Read Only */}
             <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCircle className="w-4 h-4 text-red-500" />
                   {t('emergencyContact')}
+                  <Lock className="w-3 h-3 text-slate-400 ml-auto" />
                 </h3>
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
-                    {editing ? (
-                      <Input
-                        value={formData.emergency_contact_name}
-                        onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-                        placeholder={t('contactName')}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_name || '—'}</p>
-                    )}
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_name || '—'}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
-                    {editing ? (
-                      <PhoneInput
-                        value={formData.emergency_contact_phone}
-                        onChange={(value) => setFormData({ ...formData, emergency_contact_phone: value })}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_phone || '—'}</p>
-                    )}
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_phone || '—'}</p>
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('relationship')}</Label>
-                    {editing ? (
-                      <Input
-                        value={formData.emergency_contact_relationship}
-                        onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
-                        placeholder={t('exampleSpouseParent')}
-                        className="mt-1"
-                      />
-                    ) : (
-                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_relationship || '—'}</p>
-                    )}
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_relationship || '—'}</p>
                   </div>
                 </div>
+                
+                <Alert className="mt-4 bg-blue-50 border-blue-200">
+                  <AlertCircle className="w-4 h-4 text-blue-600" />
+                  <AlertDescription className="text-blue-900 text-sm">
+                    To update emergency contact info, please contact your administrator.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
 

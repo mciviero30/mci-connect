@@ -475,6 +475,7 @@ export const translations = {
     english: "English",
     spanish: "Spanish",
     selectLanguage: "Select Language",
+    hourlyRate: "Hourly Rate",
     
     // Messages
     success: "Success",
@@ -1116,6 +1117,7 @@ export const translations = {
     english: "Inglés",
     spanish: "Español",
     selectLanguage: "Seleccionar Idioma",
+    hourlyRate: "Tarifa por Hora",
     
     // Messages
     success: "Éxito",
