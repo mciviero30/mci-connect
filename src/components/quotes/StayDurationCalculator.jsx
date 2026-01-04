@@ -35,38 +35,37 @@ export default function StayDurationCalculator({
       return;
     }
 
-    // Step 2: Calculate daily and weekly capacity
+    // Step 2: Calculate work days (Monday-Friday only)
     const hoursPerDay = 8;
-    const workDaysPerWeek = 5;
-    const dailyCapacity = techCount * hoursPerDay;
-    const weeklyCapacity = dailyCapacity * workDaysPerWeek;
-
-    // Step 3: Calculate work duration
-    const totalWeeks = totalLaborHours / weeklyCapacity;
-    const fullWeeks = Math.floor(totalWeeks);
-    const remainingHours = totalLaborHours - (fullWeeks * weeklyCapacity);
-    const remainingDays = Math.ceil(remainingHours / dailyCapacity);
-
-    // Step 4: Calculate calendar days
-    let workDays = (fullWeeks * workDaysPerWeek) + remainingDays;
-    const fullCalendarWeeks = Math.floor(workDays / workDaysPerWeek);
-    const extraWorkDays = workDays % workDaysPerWeek;
+    let totalWorkDays = totalLaborHours / (hoursPerDay * techCount);
     
-    // Count weekends (2 days per full week)
-    let weekends = fullCalendarWeeks * 2;
-    // If work extends beyond Friday, add 1 weekend
-    if (extraWorkDays > 0) weekends += 2;
+    // Round to nearest 0.5 day
+    totalWorkDays = Math.round(totalWorkDays * 2) / 2;
 
-    let totalCalendarDays = workDays + weekends;
-    let totalNights = totalCalendarDays - 1;
+    // Step 3: Add travel days (always 2: inbound Sunday + outbound day after last work day)
+    const travelDays = 2;
 
-    // Step 5: Add travel days if needed
-    let extraTravelDays = 0;
-    if (travelTimeHours > 4) {
-      extraTravelDays = 2; // 1 at start, 1 at end
-      totalCalendarDays += 2;
-      totalNights += 2;
+    // Step 4: Convert work days into calendar days (including weekends)
+    // Project starts on Monday, work is Mon-Fri only
+    const fullWeeks = Math.floor(totalWorkDays / 5);
+    const remainingWorkDays = totalWorkDays % 5;
+    
+    // Calendar days = work days + weekends
+    // Each full week = 5 work days + 2 weekend days = 7 calendar days
+    // Remaining work days span into next week (adds 2 weekend days if > 0)
+    let workCalendarDays = (fullWeeks * 7) + remainingWorkDays;
+    if (remainingWorkDays > 0) {
+      workCalendarDays += 2; // Add weekend after partial week
     }
+
+    // Step 5: Total calendar days and nights
+    // Travel: arrive Sunday, leave day after last work day
+    const totalCalendarDays = workCalendarDays + travelDays;
+    const totalNights = totalCalendarDays - 1;
+
+    // For display
+    const weekends = Math.ceil(totalWorkDays / 5) * 2;
+    const extraTravelDays = travelTimeHours > 4 ? 2 : 0;
 
     // Step 6: Calculate hotel rooms and per diem
     const suggestedRooms = Math.ceil(techCount / 2);
@@ -79,9 +78,9 @@ export default function StayDurationCalculator({
 
     setCalculations({
       totalLaborHours,
-      dailyCapacity,
-      weeklyCapacity,
-      workDays,
+      dailyCapacity: hoursPerDay * techCount,
+      weeklyCapacity: hoursPerDay * techCount * 5,
+      workDays: totalWorkDays,
       weekends,
       extraTravelDays,
       totalCalendarDays,
