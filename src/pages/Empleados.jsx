@@ -480,7 +480,7 @@ export default function Empleados() {
     employees.forEach(emp => {
       const empForms = onboardingForms.filter(f => f.employee_email === emp.email && f.status === 'completed');
       const completed = empForms.length;
-      const total = 3; // 3 mandatory forms
+      const total = 4; // 4 mandatory steps (safety, rules, paperwork, profile review)
       const percentage = Math.round((completed / total) * 100);
       
       progressMap[emp.id] = {
