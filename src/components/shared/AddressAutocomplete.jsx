@@ -54,7 +54,7 @@ export default function AddressAutocomplete({
       clearTimeout(debounceTimer.current);
     }
 
-    if (newValue.length < 3) {
+    if (newValue.length < 2) {
       setPredictions([]);
       setShowDropdown(false);
       return;
@@ -62,11 +62,11 @@ export default function AddressAutocomplete({
 
     debounceTimer.current = setTimeout(() => {
       fetchPredictions(newValue);
-    }, 300);
+    }, 150);
   };
 
   const fetchPredictions = async (input) => {
-    if (!autocompleteService.current || input.length < 3) return;
+    if (!autocompleteService.current || input.length < 2) return;
 
     setLoading(true);
     try {
