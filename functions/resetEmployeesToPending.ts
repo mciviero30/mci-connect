@@ -24,43 +24,50 @@ Deno.serve(async (req) => {
       errors: []
     };
 
-    // Get all active users from User entity
+    // Get all users from EmployeeDirectory
     try {
-      const users = await base44.asServiceRole.entities.User.list('', 1000);
+      const employees = await base44.asServiceRole.entities.EmployeeDirectory.list('', 1000);
       
-      for (const u of users) {
+      for (const emp of employees) {
         // Skip the exception user (case insensitive)
-        if (u.email?.toLowerCase() === exceptEmail.toLowerCase()) {
+        if (emp.email?.toLowerCase() === exceptEmail.toLowerCase()) {
           results.users_skipped++;
           continue;
         }
 
-        // Skip if already deleted or pending
-        if (u.employment_status === 'deleted' || u.employment_status === 'pending') {
-          results.users_skipped++;
-          continue;
-        }
-
-        // Update User to pending and reset onboarding
+        // Move to pending
         try {
-          await base44.asServiceRole.entities.User.update(u.id, {
+          await base44.asServiceRole.entities.EmployeeDirectory.update(emp.id, {
             employment_status: 'pending',
             onboarding_completed: false
           });
 
+          // Also update User entity if exists
+          try {
+            const userRecords = await base44.asServiceRole.entities.User.filter({ email: emp.email });
+            if (userRecords.length > 0) {
+              await base44.asServiceRole.entities.User.update(userRecords[0].id, {
+                employment_status: 'pending',
+                onboarding_completed: false
+              });
+            }
+          } catch (userError) {
+            // User entity might not exist, that's ok
+          }
+
           results.users_moved++;
           results.moved_users.push({
-            email: u.email,
-            name: u.full_name
+            email: emp.email,
+            name: emp.full_name
           });
 
         } catch (error) {
-          results.errors.push(`${u.email}: ${error.message}`);
+          results.errors.push(`${emp.email}: ${error.message}`);
         }
       }
 
     } catch (error) {
-      results.errors.push(`User fetch error: ${error.message}`);
+      results.errors.push(`Employee fetch error: ${error.message}`);
     }
 
     return Response.json({
