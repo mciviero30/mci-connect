@@ -130,53 +130,78 @@ export default function CrearEstimado() {
   const handleAutoGenerateStayItems = (stayData) => {
     const { hotel_quantity, per_diem_quantity } = stayData;
     
-    // Find hotel and per diem items from catalog
-    const hotelItem = quoteItems.find(qi => qi.name === 'Hotel Rooms');
-    const perDiemItem = quoteItems.find(qi => qi.name === 'Per-Diem');
-    
-    // Remove existing hotel and per diem items
-    const filteredItems = formData.items.filter(item => 
-      item.item_name !== 'Hotel Rooms' && item.item_name !== 'Per-Diem'
+    // Find hotel and per diem items from catalog (case-insensitive, flexible matching)
+    const hotelItem = quoteItems.find(qi => 
+      qi.name?.toLowerCase().includes('hotel') || 
+      qi.name === 'Hotel Rooms'
+    );
+    const perDiemItem = quoteItems.find(qi => 
+      qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem')
     );
     
+    console.log('🔍 Catalog search:', { hotelItem, perDiemItem, hotel_quantity, per_diem_quantity });
+    
+    // Remove existing hotel and per diem items (flexible matching)
+    const filteredItems = formData.items.filter(item => {
+      const itemNameLower = item.item_name?.toLowerCase() || '';
+      const isHotel = itemNameLower.includes('hotel');
+      const isPerDiem = itemNameLower.includes('per') && itemNameLower.includes('diem');
+      return !isHotel && !isPerDiem;
+    });
+    
     const updatedItems = [...filteredItems];
+    let addedCount = 0;
     
     // Add Hotel Rooms
-    if (hotelItem && hotel_quantity > 0) {
+    if (hotel_quantity > 0) {
+      const hotelName = hotelItem?.name || 'Hotel Rooms';
       updatedItems.push({
-        item_name: 'Hotel Rooms',
-        description: 'Hotel Rooms',
+        item_name: hotelName,
+        description: hotelItem?.description || 'Hotel accommodations',
         quantity: hotel_quantity,
-        unit: hotelItem.unit || 'nights',
-        unit_price: hotelItem.unit_price || 200,
-        total: hotel_quantity * (hotelItem.unit_price || 200),
+        unit: hotelItem?.unit || 'night',
+        unit_price: hotelItem?.unit_price || 200,
+        total: hotel_quantity * (hotelItem?.unit_price || 200),
         is_travel_item: true,
         calculation_type: 'hotel',
         tech_count: projectTechCount,
         installation_time: 0,
       });
+      addedCount++;
     }
     
     // Add Per-Diem
-    if (perDiemItem && per_diem_quantity > 0) {
+    if (per_diem_quantity > 0) {
+      const perDiemName = perDiemItem?.name || 'Per-Diem';
       updatedItems.push({
-        item_name: 'Per-Diem',
-        description: 'Per-Diem',
+        item_name: perDiemName,
+        description: perDiemItem?.description || 'Daily meal allowance',
         quantity: per_diem_quantity,
-        unit: perDiemItem.unit || 'days',
-        unit_price: perDiemItem.unit_price || 55,
-        total: per_diem_quantity * (perDiemItem.unit_price || 55),
+        unit: perDiemItem?.unit || 'day',
+        unit_price: perDiemItem?.unit_price || 55,
+        total: per_diem_quantity * (perDiemItem?.unit_price || 55),
         is_travel_item: true,
         calculation_type: 'per_diem',
         tech_count: projectTechCount,
         installation_time: 0,
       });
+      addedCount++;
     }
     
     setFormData(prev => ({
       ...prev,
       items: updatedItems
     }));
+    
+    if (addedCount > 0) {
+      toast({
+        title: language === 'es' ? `${addedCount} items agregados` : `${addedCount} items added`,
+        description: language === 'es' 
+          ? `Hotel: ${hotel_quantity} noches • Per Diem: ${per_diem_quantity} días`
+          : `Hotel: ${hotel_quantity} nights • Per Diem: ${per_diem_quantity} days`,
+        variant: 'success'
+      });
+    }
   };
 
   // Load existing quote data when editing
