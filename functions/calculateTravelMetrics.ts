@@ -15,18 +15,18 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Try to get API key from Deno env first, fallback to a hardcoded default for testing
-    let apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    // Get API key from Deno environment
+    const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
     
     if (!apiKey) {
-      console.warn('⚠️ GOOGLE_MAPS_API_KEY not found in Deno.env');
-      // For now, we'll return an error asking user to configure it
+      console.error('❌ GOOGLE_MAPS_API_KEY not found');
+      console.error('Available env vars:', Object.keys(Deno.env.toObject()));
       return Response.json({ 
-        error: 'Google Maps API key not accessible. Please ensure GOOGLE_MAPS_API_KEY is set in Base44 Dashboard > Settings > Environment Variables and backend functions have been restarted.' 
+        error: 'GOOGLE_MAPS_API_KEY not configured'
       }, { status: 500 });
     }
     
-    console.log('✅ Google Maps API Key found:', apiKey.substring(0, 10) + '...');
+    console.log('✅ Google Maps API Key found');
 
     // Fetch team data
     const teams = await base44.entities.Team.list();
