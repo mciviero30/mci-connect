@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Download, Shield, AlertCircle, DollarSign } from 'lucide-react';
 import { canManageAllAgreements } from '@/components/commission/commissionPermissions';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
 export default function CommissionTotalsGusto() {
   const [startDate, setStartDate] = useState('');
@@ -19,8 +18,7 @@ export default function CommissionTotalsGusto() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const canManageAll = canManageAllAgreements(userProfile);
+  const canManageAll = canManageAllAgreements(currentUser);
 
   // Fetch PAID commissions only
   const { data: paidCommissions = [], isLoading } = useQuery({
