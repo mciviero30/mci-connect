@@ -4,8 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Briefcase, DollarSign, CheckCircle, TrendingUp, AlertCircle } from 'lucide-react';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
+import { Briefcase, DollarSign, CheckCircle, TrendingUp, AlertCircle, Calendar, MapPin, Users } from 'lucide-react';
 
 export default function ManagerDashboard() {
   const [startDate, setStartDate] = useState('');
@@ -16,8 +15,7 @@ export default function ManagerDashboard() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const isManager = userProfile?.role === 'manager';
+  const isManager = currentUser?.role === 'manager';
 
   // Fetch manager's teams
   const { data: managerTeams = [] } = useQuery({

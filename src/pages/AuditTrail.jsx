@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Shield, Search, Filter, FileText, AlertCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
 export default function AuditTrail() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,8 +18,7 @@ export default function AuditTrail() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'ceo';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
   const { data: auditLogs = [], isLoading } = useQuery({
     queryKey: ['audit-logs'],
