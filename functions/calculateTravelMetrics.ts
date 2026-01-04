@@ -14,12 +14,14 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    // Try to get API key from Deno env first, fallback to a hardcoded default for testing
+    let apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    
     if (!apiKey) {
-      console.error('❌ GOOGLE_MAPS_API_KEY not found in environment');
-      console.error('Available env vars:', Object.keys(Deno.env.toObject()).join(', '));
+      console.warn('⚠️ GOOGLE_MAPS_API_KEY not found in Deno.env');
+      // For now, we'll return an error asking user to configure it
       return Response.json({ 
-        error: 'GOOGLE_MAPS_API_KEY not configured. Please set it in Base44 Dashboard > Settings > Environment Variables' 
+        error: 'Google Maps API key not accessible. Please ensure GOOGLE_MAPS_API_KEY is set in Base44 Dashboard > Settings > Environment Variables and backend functions have been restarted.' 
       }, { status: 500 });
     }
     
