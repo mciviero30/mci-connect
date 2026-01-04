@@ -1,7 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { requireUser, safeJsonError } from './_auth.js';
 
-// Calculate travel metrics using Google Maps Distance Matrix API
+/**
+ * Calculate travel metrics using Google Maps Distance Matrix API
+ * Returns distance and driving time for teams to job location
+ */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
