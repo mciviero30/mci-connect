@@ -28,6 +28,7 @@ import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { canCreateFinancialDocs, needsApproval } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
+import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -846,9 +847,16 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
 
                 <div className="md:col-span-2">
                   <Label className="text-slate-700">{t('jobAddress')}</Label>
-                  <Input
+                  <AddressAutocomplete
                     value={formData.job_address}
-                    onChange={(e) => setFormData({...formData, job_address: e.target.value})}
+                    onChange={(value) => setFormData({...formData, job_address: value})}
+                    onPlaceSelected={(placeData) => {
+                      setFormData({
+                        ...formData,
+                        job_address: placeData.full_address || placeData.address
+                      });
+                    }}
+                    placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
                     className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
