@@ -25,6 +25,7 @@ import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { canCreateFinancialDocs, needsApproval, canSendDocument } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
+import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 
 // Helper to extract invoice number from various response structures
 function extractInvoiceNumber(res) {
@@ -772,10 +773,16 @@ export default function CrearFactura() {
                 </div>
                 <div>
                   <Label>{t('jobAddress')}</Label>
-                  <Input
+                  <AddressAutocomplete
                     value={formData.job_address}
-                    onChange={e => setFormData({ ...formData, job_address: e.target.value })}
-                    placeholder={t('fullAddress')}
+                    onChange={(value) => setFormData({ ...formData, job_address: value })}
+                    onPlaceSelected={(placeData) => {
+                      setFormData({
+                        ...formData,
+                        job_address: placeData.full_address || placeData.address
+                      });
+                    }}
+                    placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
                   />
                 </div>
                 <div>

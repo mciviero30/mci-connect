@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { X, Save, AlertTriangle } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 
 export default function CustomerForm({ customer, onSubmit, onClose, isProcessing }) {
   const { t, language } = useLanguage();
@@ -215,12 +216,20 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
       <div className="space-y-4">
         <div className="space-y-2">
           <Label className="text-slate-700">{t('address')}</Label>
-          <Input
+          <AddressAutocomplete
             value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder="123 Main Street"
+            onChange={(value) => setFormData({ ...formData, address: value })}
+            onPlaceSelected={(place) => {
+              setFormData({
+                ...formData,
+                address: place.address,
+                city: place.city,
+                state: place.state,
+                zip: place.zip
+              });
+            }}
+            placeholder={language === 'es' ? 'Ej: 123 Main St, New York, NY 10001' : 'e.g., 123 Main St, New York, NY 10001'}
             className="bg-white border-slate-300 text-slate-900"
-            autoCapitalizeInput={true}
           />
         </div>
 
