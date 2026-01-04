@@ -130,8 +130,6 @@ export default function CrearEstimado() {
   const handleAutoGenerateStayItems = (stayData) => {
     const { hotel_quantity, per_diem_quantity } = stayData;
     
-    console.log('🏨 ADD STAY ITEMS CALLED:', { hotel_quantity, per_diem_quantity, currentItems: formData.items.length });
-    
     // Find hotel and per diem items from catalog (case-insensitive, flexible matching)
     const hotelItem = quoteItems.find(qi => 
       qi.name?.toLowerCase().includes('hotel') || 
@@ -141,12 +139,7 @@ export default function CrearEstimado() {
       qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem')
     );
     
-    console.log('🔍 Catalog items found:', { 
-      hotelItem: hotelItem?.name, 
-      hotelPrice: hotelItem?.unit_price,
-      perDiemItem: perDiemItem?.name,
-      perDiemPrice: perDiemItem?.unit_price
-    });
+    console.log('🔍 Catalog search:', { hotelItem, perDiemItem, hotel_quantity, per_diem_quantity });
     
     // Remove existing hotel and per diem items (flexible matching)
     const filteredItems = formData.items.filter(item => {
@@ -156,15 +149,13 @@ export default function CrearEstimado() {
       return !isHotel && !isPerDiem;
     });
     
-    console.log('🧹 After filtering:', { before: formData.items.length, after: filteredItems.length });
-    
     const updatedItems = [...filteredItems];
     let addedCount = 0;
     
     // Add Hotel Rooms
     if (hotel_quantity > 0) {
       const hotelName = hotelItem?.name || 'Hotel Rooms';
-      const newHotel = {
+      updatedItems.push({
         item_name: hotelName,
         description: hotelItem?.description || 'Hotel accommodations',
         quantity: hotel_quantity,
@@ -175,16 +166,14 @@ export default function CrearEstimado() {
         calculation_type: 'hotel',
         tech_count: projectTechCount,
         installation_time: 0,
-      };
-      updatedItems.push(newHotel);
+      });
       addedCount++;
-      console.log('✅ Hotel item added:', newHotel);
     }
     
     // Add Per-Diem
     if (per_diem_quantity > 0) {
       const perDiemName = perDiemItem?.name || 'Per-Diem';
-      const newPerDiem = {
+      updatedItems.push({
         item_name: perDiemName,
         description: perDiemItem?.description || 'Daily meal allowance',
         quantity: per_diem_quantity,
@@ -195,13 +184,9 @@ export default function CrearEstimado() {
         calculation_type: 'per_diem',
         tech_count: projectTechCount,
         installation_time: 0,
-      };
-      updatedItems.push(newPerDiem);
+      });
       addedCount++;
-      console.log('✅ Per Diem item added:', newPerDiem);
     }
-    
-    console.log('📦 Final items array:', { count: updatedItems.length, items: updatedItems.map(i => i.item_name) });
     
     setFormData(prev => ({
       ...prev,
@@ -216,8 +201,6 @@ export default function CrearEstimado() {
           : `Hotel: ${hotel_quantity} nights • Per Diem: ${per_diem_quantity} days`,
         variant: 'success'
       });
-    } else {
-      console.warn('⚠️ No items added - check quantities');
     }
   };
 
