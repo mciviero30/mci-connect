@@ -15,7 +15,6 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { canManageAllAgreements } from '@/components/commission/commissionPermissions';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 import CommissionFilters from '@/components/commission/CommissionFilters';
 import { exportCommissionCSV } from '@/components/commission/exportCommissionCSV';
 
@@ -33,9 +32,8 @@ export default function CommissionReports() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-  const canManageAll = canManageAllAgreements(userProfile);
-  const isManager = userProfile?.role?.toLowerCase() === 'manager';
+  const canManageAll = canManageAllAgreements(currentUser);
+  const isManager = currentUser?.role?.toLowerCase() === 'manager';
 
   // Fetch commission results
   const { data: allResults = [], isLoading } = useQuery({

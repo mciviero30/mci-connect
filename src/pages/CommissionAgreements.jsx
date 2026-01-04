@@ -22,7 +22,6 @@ import { canManageAllAgreements, canViewOwnAgreement, canAccessAgreement, canSig
 import AgreementSignatureDialog from '@/components/commission/AgreementSignatureDialog';
 import AdminCommissionForm from '@/components/commission/AdminCommissionForm';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
 export default function CommissionAgreements() {
   const { t } = useLanguage();
@@ -37,11 +36,9 @@ export default function CommissionAgreements() {
     queryFn: () => base44.auth.me(),
   });
 
-  const { profile: userProfile } = useEmployeeProfile(currentUser?.email, currentUser);
-
   // Check permissions
-  const canManageAll = canManageAllAgreements(userProfile);
-  const canViewOwn = canViewOwnAgreement(userProfile);
+  const canManageAll = canManageAllAgreements(currentUser);
+  const canViewOwn = canViewOwnAgreement(currentUser);
 
   // Fetch eligible employees (for creating agreements)
   const { data: employees = [] } = useQuery({
@@ -54,7 +51,7 @@ export default function CommissionAgreements() {
 
   // Fetch agreements based on permissions
   const { data: agreements = [], isLoading } = useQuery({
-    queryKey: ['commissionAgreements', userProfile?.email],
+    queryKey: ['commissionAgreements', currentUser?.email],
     queryFn: async () => {
       if (canManageAll) {
         // CEO/Admin see all agreements
@@ -62,12 +59,12 @@ export default function CommissionAgreements() {
       } else if (canViewOwn) {
         // Manager sees only their own
         return base44.entities.CommissionAgreement.filter({
-          employee_email: userProfile.email
+          employee_email: currentUser.email
         });
       }
       return [];
     },
-    enabled: !!userProfile && (canManageAll || canViewOwn),
+    enabled: !!currentUser && (canManageAll || canViewOwn),
   });
 
   // Sign agreement mutation
@@ -76,7 +73,7 @@ export default function CommissionAgreements() {
       return base44.entities.CommissionAgreement.update(agreementId, {
         signed: true,
         signed_date: new Date().toISOString(),
-        signed_by_employee: userProfile.email,
+        signed_by_employee: currentUser.email,
         signature_data,
         status: 'active'
       });
@@ -97,7 +94,7 @@ export default function CommissionAgreements() {
         return base44.entities.CommissionAgreement.create({
           ...data,
           status: 'pending',
-          created_by: userProfile.email,
+          created_by: currentUser.email,
         });
       }
     },
@@ -115,7 +112,7 @@ export default function CommissionAgreements() {
         status: 'suspended',
         suspension_reason: reason,
         suspended_date: new Date().toISOString(),
-        suspended_by: userProfile.email,
+        suspended_by: currentUser.email,
       });
     },
     onSuccess: () => {
@@ -302,7 +299,7 @@ export default function CommissionAgreements() {
                     </div>
                     
                     <div className="flex gap-2">
-                      {canSignAgreement(userProfile, agreement) && (
+                      {canSignAgreement(currentUser, agreement) && (
                         <Button 
                           onClick={() => handleSignAgreement(agreement)}
                           className="flex-1 bg-green-600 hover:bg-green-700"
