@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, FileText, Mail, UserX } from "lucide-react";
+import { Users, Plus, Search, FileText, Mail, UserX, Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import PendingInvitationCard from "@/components/empleados/PendingInvitationCard"
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import { useToast } from "@/components/ui/toast";
 import { canViewSensitiveData } from "@/components/utils/employeeSecurity";
+import { createPageUrl } from "@/utils";
 
 
 
@@ -539,7 +540,7 @@ export default function Empleados() {
   };
 
   // Exclude account owner from all employee lists
-  const OWNER_EMAIL = 'mciviero30@gmail.com';
+  const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
   const excludeOwner = (list) => list.filter(e => e.email !== OWNER_EMAIL);
 
   const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status)));
