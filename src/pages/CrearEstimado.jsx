@@ -29,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { canCreateFinancialDocs, needsApproval } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
+import StayDurationCalculator from "@/components/quotes/StayDurationCalculator";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -99,6 +100,8 @@ export default function CrearEstimado() {
   });
 
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+  const [projectTechCount, setProjectTechCount] = useState(2);
+  const [travelTimeHours, setTravelTimeHours] = useState(0);
 
   const handleAddTravelItems = (travelItems) => {
     // Remove existing travel items first
@@ -106,6 +109,12 @@ export default function CrearEstimado() {
     
     // Add new travel items
     const updatedItems = [...nonTravelItems, ...travelItems];
+    
+    // Extract travel time from driving items for stay calculator
+    const drivingItem = travelItems.find(item => item.description?.includes('Driving'));
+    if (drivingItem?.duration_value) {
+      setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
+    }
     
     setFormData(prev => ({
       ...prev,
@@ -116,6 +125,58 @@ export default function CrearEstimado() {
       title: language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`,
       variant: 'success'
     });
+  };
+
+  const handleAutoGenerateStayItems = (stayData) => {
+    const { hotel_quantity, per_diem_quantity } = stayData;
+    
+    // Find hotel and per diem items from catalog
+    const hotelItem = quoteItems.find(qi => qi.name === 'Hotel Rooms');
+    const perDiemItem = quoteItems.find(qi => qi.name === 'Per-Diem');
+    
+    // Remove existing hotel and per diem items
+    const filteredItems = formData.items.filter(item => 
+      item.item_name !== 'Hotel Rooms' && item.item_name !== 'Per-Diem'
+    );
+    
+    const updatedItems = [...filteredItems];
+    
+    // Add Hotel Rooms
+    if (hotelItem && hotel_quantity > 0) {
+      updatedItems.push({
+        item_name: 'Hotel Rooms',
+        description: 'Hotel Rooms',
+        quantity: hotel_quantity,
+        unit: hotelItem.unit || 'nights',
+        unit_price: hotelItem.unit_price || 200,
+        total: hotel_quantity * (hotelItem.unit_price || 200),
+        is_travel_item: true,
+        calculation_type: 'hotel',
+        tech_count: projectTechCount,
+        installation_time: 0,
+      });
+    }
+    
+    // Add Per-Diem
+    if (perDiemItem && per_diem_quantity > 0) {
+      updatedItems.push({
+        item_name: 'Per-Diem',
+        description: 'Per-Diem',
+        quantity: per_diem_quantity,
+        unit: perDiemItem.unit || 'days',
+        unit_price: perDiemItem.unit_price || 55,
+        total: per_diem_quantity * (perDiemItem.unit_price || 55),
+        is_travel_item: true,
+        calculation_type: 'per_diem',
+        tech_count: projectTechCount,
+        installation_time: 0,
+      });
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      items: updatedItems
+    }));
   };
 
   // Load existing quote data when editing
@@ -924,13 +985,24 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   </div>
                   
                   {formData.out_of_area && (
-                    <OutOfAreaCalculator
-                      jobAddress={formData.job_address}
-                      selectedTeamIds={formData.team_ids}
-                      onAddTravelItems={handleAddTravelItems}
-                      isCalculating={isCalculatingTravel}
-                      setIsCalculating={setIsCalculatingTravel}
-                    />
+                    <div className="space-y-4">
+                      <OutOfAreaCalculator
+                        jobAddress={formData.job_address}
+                        selectedTeamIds={formData.team_ids}
+                        onAddTravelItems={handleAddTravelItems}
+                        isCalculating={isCalculatingTravel}
+                        setIsCalculating={setIsCalculatingTravel}
+                      />
+                      
+                      <StayDurationCalculator
+                        items={formData.items}
+                        techCount={projectTechCount}
+                        onTechCountChange={setProjectTechCount}
+                        travelTimeHours={travelTimeHours}
+                        onAutoGenerateItems={handleAutoGenerateStayItems}
+                        language={language}
+                      />
+                    </div>
                   )}
                 </div>
 
