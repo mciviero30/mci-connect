@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import useEmployeeProfile from '@/components/hooks/useEmployeeProfile';
 
 export default function ExecutiveDashboard() {
   const [startDate, setStartDate] = useState('');
