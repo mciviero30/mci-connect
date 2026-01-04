@@ -78,7 +78,6 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
-import useEmployeeProfile from "@/components/hooks/useEmployeeProfile";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
@@ -261,8 +260,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   // Check if we're on a Field page
   const isFieldPage = location.pathname.toLowerCase().includes('field');
 
-  // Merge auth user with Employee entity data
-  const { profile: displayUser } = useEmployeeProfile(user?.email, user);
+  // Use auth user directly
+  const displayUser = user;
 
   // Initialize theme on mount
   useEffect(() => {
