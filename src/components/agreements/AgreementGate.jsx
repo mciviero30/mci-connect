@@ -26,6 +26,9 @@ export default function AgreementGate({ children, user }) {
     queryKey: ['agreementSignatures', user?.email],
     queryFn: () => base44.entities.AgreementSignature.filter({ employee_email: user?.email }),
     enabled: !!user?.email,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     initialData: [],
   });
 

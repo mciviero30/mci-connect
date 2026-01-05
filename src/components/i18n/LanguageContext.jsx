@@ -1287,23 +1287,16 @@ export const translations = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    retry: false,
-  });
+  // REMOVED: Duplicate user query causing infinite loops
+  // Use the user from Layout instead
 
   // Deterministic language resolution
   const getInitialLanguage = () => {
-    // Priority 1: User preference from DB
-    if (user?.preferred_language) return user.preferred_language;
-    if (user?.language_preference) return user.language_preference;
-    
-    // Priority 2: localStorage
+    // Priority 1: localStorage
     const stored = localStorage.getItem('language');
     if (stored === 'en' || stored === 'es') return stored;
     
-    // Priority 3: Browser language
+    // Priority 2: Browser language
     const browserLang = navigator.language?.toLowerCase();
     if (browserLang?.startsWith('es')) return 'es';
     
@@ -1313,22 +1306,13 @@ export const LanguageProvider = ({ children }) => {
 
   const [language, setLanguage] = useState(getInitialLanguage);
 
-  useEffect(() => {
-    const resolved = getInitialLanguage();
-    setLanguage(resolved);
-    localStorage.setItem('language', resolved);
-  }, [user?.preferred_language, user?.language_preference]);
-
-  const updateLanguageMutation = useMutation({
-    mutationFn: (lang) => base44.auth.updateMe({ preferred_language: lang }),
-  });
-
   const changeLanguage = (lang) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
-    if (user) {
-      updateLanguageMutation.mutate(lang);
-    }
+    // Save to user profile asynchronously (no await, no state update)
+    base44.auth.updateMe({ preferred_language: lang }).catch(() => {
+      // Silently fail - language is already saved to localStorage
+    });
   };
 
   const t = (key) => {

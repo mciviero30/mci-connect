@@ -1,15 +1,14 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 const PermissionsContext = createContext();
 
 export const PermissionsProvider = ({ children }) => {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    retry: false,
-  });
+  // REMOVED: Duplicate user query causing infinite loops
+  // Get user from React Query cache instead
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData(['currentUser']);
 
   const { data: userRole } = useQuery({
     queryKey: ['userRole', user?.custom_role_id],
@@ -19,6 +18,9 @@ export const PermissionsProvider = ({ children }) => {
       return roles[0] || null;
     },
     enabled: !!user?.custom_role_id,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Build permissions object

@@ -28,7 +28,9 @@ export default function TaxProfileGate({ user, children }) {
       return profiles[0] || null;
     },
     enabled: !!user?.email && !isExempt,
-    staleTime: 60000,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // Create alert if tax profile incomplete
