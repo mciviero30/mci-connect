@@ -147,7 +147,7 @@ export default function Dashboard() {
     },
     enabled: !!user?.email && needsEmployeeData,
     staleTime: 600000,
-    gcTime: 900000
+    gcTime: 900000,
     initialData: [],
   });
 
@@ -185,7 +185,7 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
     enabled: !!user,
     staleTime: 300000,
-    gcTime: 600000
+    gcTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -218,7 +218,7 @@ export default function Dashboard() {
     queryFn: () => base44.entities.User.list('full_name'),
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
     staleTime: 1800000,
-    gcTime: 3600000
+    gcTime: 3600000,
     initialData: [],
   });
 
