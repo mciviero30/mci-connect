@@ -750,7 +750,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   return (
     <SidebarProvider>
-      <ServiceWorkerRegistration />
+      {/* <ServiceWorkerRegistration /> */}
       <MobileOptimizations />
       <SyncQueueProvider>
         <OfflineIndicator />
