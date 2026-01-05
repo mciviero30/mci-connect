@@ -100,17 +100,12 @@ export default function AgreementGate({ children, user }) {
         console.log('🔄 Refreshing signatures...');
       }
 
-      // Invalidate both queries to ensure full state refresh
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] }),
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] })
-      ]);
-
-      // Refetch signatures to get updated data
+      // Invalidate and refetch ONLY signatures query (single source of truth)
+      await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] });
       await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
 
       if (import.meta.env.DEV) {
-        console.log('✅ Signatures and user state refreshed');
+        console.log('✅ Signatures refreshed');
       }
       
       // Move to next agreement or show content
@@ -162,15 +157,22 @@ export default function AgreementGate({ children, user }) {
     );
   }
 
-  // Safety guard: If signing is in progress, allow flow to complete
-  // Prevents redirect loops during partial state updates
-  if (isSigningInProgress) {
-    // Keep showing agreement UI until signing completes
-    // Don't re-evaluate or redirect
+  // Loading state - wait for signatures query
+  if (signaturesLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
-  // If no agreements required or all signed, show children
-  if (requiredAgreements.length === 0 || hasAllSignatures || showContent) {
+  // Safety guard: If signing is in progress, allow flow to complete
+  if (isSigningInProgress) {
+    // Keep showing agreement UI - don't re-evaluate or redirect
+  }
+
+  // Allow access if: no agreements required, all signed, or explicitly shown
+  if (!shouldBlockAccess || showContent) {
     return children;
   }
 
