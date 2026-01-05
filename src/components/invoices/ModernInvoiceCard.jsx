@@ -85,7 +85,11 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <DropdownMenuItem 
-                onClick={() => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(createPageUrl(`VerFactura?id=${invoice.id}`));
+                }}
                 className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
               >
                 <Eye className="w-3.5 h-3.5 mr-2" />
@@ -93,7 +97,11 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
               </DropdownMenuItem>
               {isAdmin && (
                 <DropdownMenuItem 
-                  onClick={() => navigate(createPageUrl(`CrearFactura?id=${invoice.id}`))}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(createPageUrl(`CrearFactura?id=${invoice.id}`));
+                  }}
                   className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                 >
                   <Edit3 className="w-3.5 h-3.5 mr-2" />
@@ -101,7 +109,9 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem 
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   const { data } = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
                   const blob = new Blob([data], { type: 'application/pdf' });
                   const url = window.URL.createObjectURL(blob);
@@ -120,14 +130,22 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                 <>
                   <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-800" />
                   <DropdownMenuItem 
-                    onClick={() => onDuplicate?.(invoice)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onDuplicate?.(invoice);
+                    }}
                     className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                   >
                     <Copy className="w-3.5 h-3.5 mr-2" />
                     {language === 'es' ? 'Duplicar' : 'Duplicate'}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={() => onDelete?.(invoice)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onDelete?.(invoice);
+                    }}
                     className="cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs"
                   >
                     <Trash2 className="w-3.5 h-3.5 mr-2" />
@@ -244,7 +262,11 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onRegisterPayment(invoice)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRegisterPayment(invoice);
+              }}
               className="flex-1 min-h-[40px] text-xs font-semibold text-green-600 dark:text-green-400 border-2 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg touch-manipulation active:scale-95 transition-transform"
             >
               <DollarSign className="w-4 h-4 mr-2" />
