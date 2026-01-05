@@ -59,6 +59,7 @@ export function normalizeDocumentBase(data) {
   if (normalized.customer_phone === undefined) normalized.customer_phone = '';
   if (normalized.job_name === undefined) normalized.job_name = '';
   if (normalized.job_address === undefined) normalized.job_address = '';
+  if (normalized.work_details === undefined) normalized.work_details = '';
   if (normalized.notes === undefined) normalized.notes = '';
   if (normalized.terms === undefined) normalized.terms = '';
   if (normalized.status === undefined) normalized.status = 'draft';

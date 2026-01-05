@@ -109,6 +109,9 @@ export default function QuoteDocument({ quote }) {
                     {quote.job_address && (
                         <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{quote.job_address}</p>
                     )}
+                    {quote.work_details && (
+                        <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed mt-2">{quote.work_details}</p>
+                    )}
                 </div>
             )}
 
