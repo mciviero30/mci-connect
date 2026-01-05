@@ -294,6 +294,22 @@
   button, .btn {
     min-height: 40px; /* Reduced from 44px where appropriate */
   }
+  
+  /* Mobile typography utilities */
+  @media (max-width: 768px) {
+    .mobile-text-xs { font-size: 0.625rem; }
+    .mobile-text-sm { font-size: 0.75rem; }
+    .mobile-text-base { font-size: 0.875rem; }
+    .mobile-text-lg { font-size: 1rem; }
+    
+    /* Reduce card padding on mobile */
+    .card { @apply p-3; }
+    
+    /* Compact headers on mobile */
+    h1 { font-size: 1.125rem; } /* 18px */
+    h2 { font-size: 1rem; }     /* 16px */
+    h3 { font-size: 0.875rem; } /* 14px */
+  }
 }
 
 /* ============================================ */

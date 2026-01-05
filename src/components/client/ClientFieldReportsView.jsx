@@ -112,30 +112,59 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
             <Card key={report.id} className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-md">
               <CardContent className="p-5">
                 {/* Header */}
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge className={
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <Badge className={`text-[10px] px-2 py-0.5 ${
                     report.report_type === 'daily' ? 'bg-blue-500 text-white' :
                     report.report_type === 'safety' ? 'bg-red-500 text-white' :
                     report.report_type === 'progress' ? 'bg-green-500 text-white' :
                     'bg-amber-500 text-white'
-                  }>
+                  }`}>
                     {report.report_type === 'daily' && (language === 'es' ? 'Diario' : 'Daily')}
                     {report.report_type === 'safety' && (language === 'es' ? 'Seguridad' : 'Safety')}
                     {report.report_type === 'progress' && (language === 'es' ? 'Progreso' : 'Progress')}
                     {report.report_type === 'issue' && (language === 'es' ? 'Problema' : 'Issue')}
                   </Badge>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {format(new Date(report.report_date), 'MMMM dd, yyyy')}
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {format(new Date(report.report_date), 'MMM dd, yyyy')}
                   </span>
                 </div>
 
                 {/* Summary */}
-                <p className="text-slate-900 dark:text-white font-medium mb-3 leading-relaxed">
+                <p className="text-slate-900 dark:text-white font-medium mb-2 leading-relaxed text-sm">
                   {summary}
                 </p>
 
+                {/* Quality Badge (if available) */}
+                {report.quality_score && (
+                  <div className="mb-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400">
+                        {language === 'es' ? 'Calidad' : 'Quality'}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-base font-bold ${
+                          report.quality_score >= 7 ? 'text-green-600 dark:text-green-400' :
+                          report.quality_score >= 5 ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-red-600 dark:text-red-400'
+                        }`}>
+                          {report.quality_score}/10
+                        </span>
+                        <Badge className={`text-[9px] px-1.5 py-0.5 ${
+                          report.quality_status === 'pass' ? 'bg-green-600 text-white' :
+                          report.quality_status === 'needs_rework' ? 'bg-yellow-600 text-white' :
+                          'bg-red-600 text-white'
+                        }`}>
+                          {report.quality_status === 'pass' && (language === 'es' ? 'PASA' : 'PASS')}
+                          {report.quality_status === 'needs_rework' && (language === 'es' ? 'RETRAB' : 'REWORK')}
+                          {report.quality_status === 'fail' && (language === 'es' ? 'FALLA' : 'FAIL')}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Meta */}
-                <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 mb-4">
+                <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400 flex-wrap">
                   <span className="flex items-center gap-1">
                     <User className="w-3 h-3" />
                     {report.captured_by_name}
@@ -143,28 +172,28 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
                   {report.media_attachments && report.media_attachments.length > 0 && (
                     <span className="flex items-center gap-1">
                       <Camera className="w-3 h-3" />
-                      {report.media_attachments.length} {language === 'es' ? 'archivos' : 'files'}
+                      {report.media_attachments.length}
                     </span>
                   )}
                 </div>
 
                 {/* Expand Details */}
                 {isExpanded && (
-                  <div className="space-y-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="space-y-4 pt-3 border-t border-slate-200 dark:border-slate-700">
                     {/* Quality Analysis Section */}
                     {report.quality_score && (
-                      <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                        <h4 className="font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-yellow-500" />
+                      <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-1.5 text-xs">
+                          <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
                           {language === 'es' ? 'Análisis de Calidad' : 'Quality Analysis'}
                         </h4>
                         
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                          <div className="p-3 bg-white dark:bg-slate-800 rounded-lg">
-                            <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div className="p-2 bg-white dark:bg-slate-800 rounded-lg">
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 mb-0.5">
                               {language === 'es' ? 'Puntaje' : 'Score'}
                             </p>
-                            <p className={`text-2xl font-bold ${
+                            <p className={`text-xl font-bold ${
                               report.quality_score >= 7 ? 'text-green-600' :
                               report.quality_score >= 5 ? 'text-yellow-600' :
                               'text-red-600'
@@ -172,50 +201,50 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
                               {report.quality_score}/10
                             </p>
                           </div>
-                          <div className="p-3 bg-white dark:bg-slate-800 rounded-lg">
-                            <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
+                          <div className="p-2 bg-white dark:bg-slate-800 rounded-lg">
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 mb-0.5">
                               {language === 'es' ? 'Estado' : 'Status'}
                             </p>
-                            <Badge className={`text-sm ${
+                            <Badge className={`text-[10px] px-2 py-0.5 ${
                               report.quality_status === 'pass' ? 'bg-green-600 text-white' :
                               report.quality_status === 'needs_rework' ? 'bg-yellow-600 text-white' :
                               'bg-red-600 text-white'
                             }`}>
-                              {report.quality_status === 'pass' && (language === 'es' ? 'APROBADO' : 'APPROVED')}
-                              {report.quality_status === 'needs_rework' && (language === 'es' ? 'RETRABAJO' : 'REWORK')}
-                              {report.quality_status === 'fail' && (language === 'es' ? 'NO APROBADO' : 'FAILED')}
+                              {report.quality_status === 'pass' && (language === 'es' ? 'PASA' : 'PASS')}
+                              {report.quality_status === 'needs_rework' && (language === 'es' ? 'RETRAB' : 'REWORK')}
+                              {report.quality_status === 'fail' && (language === 'es' ? 'FALLA' : 'FAIL')}
                             </Badge>
                           </div>
                         </div>
 
                         {/* Defects */}
                         {report.quality_defects && report.quality_defects.length > 0 && (
-                          <div className="mb-4">
-                            <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
-                              {language === 'es' ? 'Defectos Identificados' : 'Identified Defects'} ({report.quality_defects.length})
+                          <div className="mb-3">
+                            <h5 className="text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
+                              {language === 'es' ? 'Defectos' : 'Defects'} ({report.quality_defects.length})
                             </h5>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                               {report.quality_defects.map((defect, idx) => {
                                 const desc = language === 'es' ? defect.description_es : defect.description_en;
                                 return (
-                                  <div key={idx} className={`p-3 rounded-lg border ${
+                                  <div key={idx} className={`p-2 rounded-lg border ${
                                     defect.severity === 'critical' ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700' :
                                     defect.severity === 'major' ? 'bg-orange-50 border-orange-300 dark:bg-orange-900/20 dark:border-orange-700' :
                                     'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-700'
                                   }`}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <Badge className={`text-xs ${
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                      <Badge className={`text-[9px] px-1.5 py-0 ${
                                         defect.severity === 'critical' ? 'bg-red-600' :
                                         defect.severity === 'major' ? 'bg-orange-600' :
                                         'bg-yellow-600'
                                       } text-white`}>
                                         {defect.severity}
                                       </Badge>
-                                      <Badge variant="outline" className="text-xs">{defect.category}</Badge>
+                                      <Badge variant="outline" className="text-[9px] px-1.5 py-0">{defect.category}</Badge>
                                     </div>
-                                    <p className="text-xs text-slate-900 dark:text-white">{desc}</p>
+                                    <p className="text-[11px] text-slate-900 dark:text-white leading-relaxed">{desc}</p>
                                     {defect.location && (
-                                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">📍 {defect.location}</p>
+                                      <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1">📍 {defect.location}</p>
                                     )}
                                   </div>
                                 );
@@ -227,18 +256,18 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
                         {/* Punch List */}
                         {report.punch_list_items && report.punch_list_items.length > 0 && (
                           <div>
-                            <h5 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
-                              {language === 'es' ? 'Elementos Pendientes de Corrección' : 'Punch List Items'} ({report.punch_list_items.length})
+                            <h5 className="text-xs font-semibold text-slate-900 dark:text-white mb-1.5">
+                              {language === 'es' ? 'Pendientes' : 'Punch List'} ({report.punch_list_items.length})
                             </h5>
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                               {report.punch_list_items.map((item, idx) => {
                                 const title = language === 'es' ? item.title_es : item.title_en;
                                 const desc = language === 'es' ? item.description_es : item.description_en;
                                 return (
-                                  <div key={idx} className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-600">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <span className="text-xs font-bold text-slate-900 dark:text-white">{title}</span>
-                                      <Badge className={`text-xs ${
+                                  <div key={idx} className="p-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-600">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                      <span className="text-[11px] font-bold text-slate-900 dark:text-white">{title}</span>
+                                      <Badge className={`text-[9px] px-1.5 py-0 ${
                                         item.priority === 'high' ? 'bg-red-600' :
                                         item.priority === 'medium' ? 'bg-yellow-600' :
                                         'bg-blue-600'
@@ -246,9 +275,9 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
                                         {item.priority}
                                       </Badge>
                                     </div>
-                                    <p className="text-xs text-slate-700 dark:text-slate-300">{desc}</p>
+                                    <p className="text-[10px] text-slate-700 dark:text-slate-300 leading-relaxed">{desc}</p>
                                     {item.estimated_time && (
-                                      <p className="text-xs text-slate-500 mt-1">⏱️ {item.estimated_time}</p>
+                                      <p className="text-[9px] text-slate-500 mt-0.5">⏱️ {item.estimated_time}</p>
                                     )}
                                   </div>
                                 );
@@ -274,25 +303,25 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
                     {/* AI-Generated Photo Captions */}
                     {report.media_attachments && report.media_attachments.filter(m => m.type === 'photo').length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm flex items-center gap-2">
-                          <Camera className="w-4 h-4 text-blue-600" />
-                          {language === 'es' ? 'Documentación Fotográfica (Subtítulos IA)' : 'Photo Documentation (AI Captions)'}
+                        <h4 className="font-semibold text-slate-900 dark:text-white mb-2 text-xs flex items-center gap-1.5">
+                          <Camera className="w-3.5 h-3.5 text-blue-600" />
+                          {language === 'es' ? 'Fotos (Subtítulos IA)' : 'Photos (AI Captions)'}
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {report.media_attachments
                             .filter(m => m.type === 'photo')
                             .map((media, idx) => {
                               const caption = language === 'es' ? media.caption_es : media.caption_en;
                               return (
-                                <div key={idx} className="space-y-2">
+                                <div key={idx} className="space-y-1.5">
                                   <img
                                     src={media.url}
                                     alt={caption}
-                                    className="w-full h-48 object-cover rounded-lg border-2 border-slate-200 dark:border-slate-600 shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+                                    className="w-full h-40 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                                     onClick={() => window.open(media.url, '_blank')}
                                   />
-                                  <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-600">
-                                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                                  <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-600">
+                                    <p className="text-[10px] text-slate-700 dark:text-slate-300 leading-relaxed">
                                       📷 {caption}
                                     </p>
                                   </div>
