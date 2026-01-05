@@ -87,8 +87,13 @@ Deno.serve(async (req) => {
           console.log('📁 Creating new Job from invoice...');
         }
         
+        // Generate job number
+        const jobNumberResponse = await base44.asServiceRole.functions.invoke('generateJobNumber', {});
+        const job_number = jobNumberResponse?.data?.job_number || jobNumberResponse?.job_number;
+        
         job = await base44.asServiceRole.entities.Job.create({
           name: invoice.job_name,
+          job_number: job_number,
           address: invoice.job_address || '',
           customer_id: invoice.customer_id || '',
           customer_name: invoice.customer_name || '',
@@ -111,7 +116,7 @@ Deno.serve(async (req) => {
         await base44.asServiceRole.entities.Invoice.update(invoice_id, { job_id: jobId });
         
         if (import.meta.env?.DEV) {
-          console.log(`✅ Job created: ${jobId}`);
+          console.log(`✅ Job created: ${jobId} ${job_number}`);
         }
       }
     } catch (error) {

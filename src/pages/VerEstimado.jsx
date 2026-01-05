@@ -138,8 +138,13 @@ Lawrenceville, Georgia 30043, U.S.A`
       if (!jobId) {
         console.log('📁 Creating new job in MCI Connect...');
         
+        // Generate job number
+        const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+        const job_number = jobNumberData.job_number;
+        
         const newJob = await base44.entities.Job.create({
           name: quote.job_name,
+          job_number: job_number,
           address: quote.job_address,
           customer_id: quote.customer_id,
           customer_name: quote.customer_name,
@@ -155,7 +160,7 @@ Lawrenceville, Georgia 30043, U.S.A`
         
         jobId = newJob.id;
         wasJobCreated = true;
-        console.log('✅ Job created:', jobId);
+        console.log('✅ Job created:', jobId, job_number);
         
         // Update quote with job_id
         await base44.entities.Quote.update(quote.id, { job_id: jobId });
@@ -169,24 +174,29 @@ Lawrenceville, Georgia 30043, U.S.A`
         }
       } else {
         console.log('✅ Using existing job:', jobId);
-        // Update existing job with contract amount
-        await base44.entities.Job.update(jobId, {
-          contract_amount: quote.total,
-          status: 'active'
-        });
+        // Load existing job to accumulate contract amounts
+        const existingJobs = await base44.entities.Job.filter({ id: jobId });
+        if (existingJobs.length > 0) {
+          const existingJob = existingJobs[0];
+          const currentContractAmount = existingJob.contract_amount || 0;
+          const newTotal = currentContractAmount + quote.total;
+          
+          // Update existing job - ACCUMULATE contract amount
+          await base44.entities.Job.update(jobId, {
+            contract_amount: newTotal,
+            status: 'active'
+          });
+          
+          console.log(`✅ Job contract updated: $${currentContractAmount} + $${quote.total} = $${newTotal}`);
+        }
       }
 
       // Step 3: Create invoice
       console.log('📄 Creating invoice...');
-      const invoices = await base44.entities.Invoice.list();
-      const existingNumbers = invoices
-        .map(inv => inv.invoice_number)
-        .filter(n => n?.startsWith('INV-'))
-        .map(n => parseInt(n.replace('INV-', '')))
-        .filter(n => !isNaN(n));
-
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
+      
+      // Generate invoice number using backend function
+      const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
+      const invoice_number = invoiceNumberData.invoice_number;
 
       const invoiceData = {
         invoice_number,
@@ -279,15 +289,9 @@ Lawrenceville, Georgia 30043, U.S.A`
 
   const cloneMutation = useMutation({
     mutationFn: async () => {
-      const quotes = await base44.entities.Quote.list();
-      const existingNumbers = quotes
-        .map(q => q.quote_number)
-        .filter(n => n?.startsWith('EST-'))
-        .map(n => parseInt(n.replace('EST-', '')))
-        .filter(n => !isNaN(n));
-
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const new_quote_number = `EST-${String(nextNumber).padStart(5, '0')}`;
+      // Generate new quote number using backend function
+      const { data: quoteNumberData } = await base44.functions.invoke('generateQuoteNumber', {});
+      const new_quote_number = quoteNumberData.quote_number;
 
       const clonedQuote = {
         ...quote,

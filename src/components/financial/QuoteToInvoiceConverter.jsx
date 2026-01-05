@@ -91,10 +91,11 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
 
       const newInvoice = await base44.entities.Invoice.create(invoice);
 
-      // Update quote status
+      // Update quote status and link to job
       await base44.entities.Quote.update(quote.id, {
         status: 'converted_to_invoice',
-        invoice_id: newInvoice.id
+        invoice_id: newInvoice.id,
+        job_id: jobId
       });
 
       // Send email to customer if requested
