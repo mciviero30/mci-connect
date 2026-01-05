@@ -43,7 +43,9 @@ export default function AgreementGate({ children }) {
   const userId = user?.id || null;
   const userFullName = user?.full_name || null;
   const userPosition = user?.position || null;
-  const shouldFetchSignatures = !!userEmail;
+  
+  // CRITICAL: Only fetch if NOT unlocked
+  const shouldFetchSignatures = !!userEmail && !gateUnlocked;
 
   // SINGLE SOURCE OF TRUTH: AgreementSignature entity determines signed state
   const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
