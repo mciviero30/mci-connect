@@ -213,11 +213,8 @@ export default function AgreementGate({ children }) {
     window.print();
   };
 
-  // CRITICAL: Check session unlock FIRST - highest priority
+  // ⚡ INSTANT PASSTHROUGH: Check session unlock BEFORE everything
   if (gateUnlocked) {
-    if (import.meta.env.DEV) {
-      console.log('✅ AgreementGate: Session unlocked - immediate passthrough');
-    }
     return children;
   }
 
@@ -226,7 +223,7 @@ export default function AgreementGate({ children }) {
     return children;
   }
 
-  // Show loading ONLY if signatures not loaded yet AND not unlocked
+  // Show loading ONLY if signatures not loaded yet
   if (signaturesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
