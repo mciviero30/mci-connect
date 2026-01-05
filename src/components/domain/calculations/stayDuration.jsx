@@ -71,25 +71,34 @@ export function calculateStayDuration({ items, techCount, travelTimeHours, rooms
   const hoursPerDay = 8;
   const totalWorkDays = calculateWorkDays(totalLaborHours, techCount);
 
-  // Step 3: Add travel days (always 2: inbound Sunday + outbound day after last work day)
-  const travelDays = 2;
-
-  // Step 4: Convert work days into calendar days (including weekends)
+  // Step 3: Convert work days into calendar days (including weekends)
+  // Work schedule: Monday–Friday only
+  // Always start work on Monday
   const workCalendarDays = calculateWorkCalendarDays(totalWorkDays);
 
+  // Step 4: Add travel days (always 2: inbound Sunday + outbound day after last work day)
+  // Travel CAN occur on weekends
+  // Travel time >4h does NOT auto-add extra days
+  const travelDays = 2;
+
   // Step 5: Total calendar days and nights
-  // Travel: arrive Sunday, leave day after last work day
+  // Calendar days = work days + weekends in between + travel days
   const totalCalendarDays = workCalendarDays + travelDays;
+  
+  // Nights = calendar days - 1
   const totalNights = totalCalendarDays - 1;
 
-  // For display
+  // Weekends for display breakdown
   const weekends = Math.ceil(totalWorkDays / 5) * 2;
-  const extraTravelDays = travelTimeHours > 4 ? 2 : 0;
 
   // Step 6: Calculate hotel rooms and per diem
+  // Hotel rooms: ceil(techs / 2) per night
   const suggestedRooms = Math.ceil(techCount / 2);
-
+  
+  // Total hotel rooms = nights × roomsPerNight
   const totalHotelRooms = totalNights * roomsPerNight;
+  
+  // Per diem days = calendar days (includes weekends and travel days)
   const totalPerDiem = totalCalendarDays * techCount;
 
   return {
@@ -98,7 +107,6 @@ export function calculateStayDuration({ items, techCount, travelTimeHours, rooms
     weeklyCapacity: hoursPerDay * techCount * 5,
     workDays: totalWorkDays,
     weekends,
-    extraTravelDays,
     totalCalendarDays,
     totalNights,
     totalHotelRooms,

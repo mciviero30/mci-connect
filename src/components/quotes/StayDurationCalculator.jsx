@@ -169,11 +169,6 @@ export default function StayDurationCalculator({
             <p>
               <strong>{language === 'es' ? 'Calendario:' : 'Schedule:'}</strong> {calculations.workDays} {language === 'es' ? 'días laborales' : 'work days'} + {calculations.weekends} {language === 'es' ? 'días de fin de semana' : 'weekend days'}
             </p>
-            {calculations.extraTravelDays > 0 && (
-              <p>
-                <strong>{language === 'es' ? 'Viaje:' : 'Travel:'}</strong> +{calculations.extraTravelDays} {language === 'es' ? 'días extra' : 'extra days'} ({language === 'es' ? 'viaje largo' : 'long travel'})
-              </p>
-            )}
           </AlertDescription>
         </Alert>
 
