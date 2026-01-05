@@ -175,8 +175,11 @@ export default function AgreementGate({ children }) {
 
   const currentAgreement = unsignedAgreements[currentStep];
   
-  // Gate blocks if unsigned agreements exist AND user hasn't manually progressed
-  const shouldBlockAccess = unsignedAgreements.length > 0 && !showContent;
+  // Gate blocks ONLY if unlocked flag is false AND unsigned agreements exist
+  const shouldBlockAccess = 
+    !gateUnlocked &&
+    unsignedAgreements.length > 0 &&
+    !showContent;
 
   // DEFENSIVE GUARDS: Prevent redirect loops under all conditions
   
