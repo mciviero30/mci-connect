@@ -251,7 +251,6 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
 
 const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
