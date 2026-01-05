@@ -143,8 +143,6 @@ export default function CrearEstimado() {
       qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem')
     );
     
-    console.log('🔍 Catalog search:', { hotelItem, perDiemItem, hotel_quantity, per_diem_quantity });
-    
     // Remove existing hotel and per diem items (flexible matching) + empty items
     const filteredItems = formData.items.filter(item => {
       const itemNameLower = item.item_name?.toLowerCase() || '';
@@ -157,45 +155,41 @@ export default function CrearEstimado() {
     const updatedItems = [...filteredItems];
     let addedCount = 0;
     
-    // Add Hotel Rooms
-    if (hotel_quantity && hotel_quantity > 0) {
-      const hotelName = hotelItem?.name || 'Hotel Rooms';
-      const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
-      updatedItems.push({
-        item_name: hotelName,
-        description: hotelItem?.description || 'Hotel accommodations',
-        quantity: Math.max(1, hotel_quantity), // Ensure at least 1
-        unit: hotelItem?.unit || 'night',
-        unit_price: finalHotelRate,
-        total: Math.max(1, hotel_quantity) * finalHotelRate,
-        is_travel_item: true,
-        calculation_type: 'hotel',
-        tech_count: projectTechCount,
-        installation_time: 0,
-      });
-      addedCount++;
-    }
+    // Add Hotel Rooms (auto-calculated)
+    const hotelName = hotelItem?.name || 'Hotel Rooms';
+    const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
+    updatedItems.push({
+      item_name: hotelName,
+      description: hotelItem?.description || 'Hotel accommodations (auto-calculated from project duration)',
+      quantity: 0, // Will be derived
+      unit: hotelItem?.unit || 'night',
+      unit_price: finalHotelRate,
+      total: 0, // Will be derived
+      is_travel_item: false,
+      calculation_type: 'hotel',
+      auto_calculated: true,
+      manual_override: false,
+      installation_time: 0,
+    });
+    addedCount++;
     
-    // Add Per-Diem
-    if (per_diem_quantity && per_diem_quantity > 0) {
-      const perDiemName = perDiemItem?.name || 'Per-Diem';
-      const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
-      updatedItems.push({
-        item_name: perDiemName,
-        description: perDiemItem?.description || 'Daily meal allowance',
-        quantity: Math.max(1, per_diem_quantity), // Ensure at least 1
-        unit: perDiemItem?.unit || 'day',
-        unit_price: finalPerDiemRate,
-        total: Math.max(1, per_diem_quantity) * finalPerDiemRate,
-        is_travel_item: true,
-        calculation_type: 'per_diem',
-        tech_count: projectTechCount,
-        installation_time: 0,
-      });
-      addedCount++;
-    }
-    
-    console.log('📦 Generated stay items:', updatedItems);
+    // Add Per-Diem (auto-calculated)
+    const perDiemName = perDiemItem?.name || 'Per-Diem';
+    const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
+    updatedItems.push({
+      item_name: perDiemName,
+      description: perDiemItem?.description || 'Daily meal allowance (auto-calculated from project duration)',
+      quantity: 0, // Will be derived
+      unit: perDiemItem?.unit || 'day',
+      unit_price: finalPerDiemRate,
+      total: 0, // Will be derived
+      is_travel_item: false,
+      calculation_type: 'per_diem',
+      auto_calculated: true,
+      manual_override: false,
+      installation_time: 0,
+    });
+    addedCount++;
     
     setFormData(prev => ({
       ...prev,
@@ -204,10 +198,10 @@ export default function CrearEstimado() {
     
     if (addedCount > 0) {
       toast({
-        title: language === 'es' ? `${addedCount} items agregados` : `${addedCount} items added`,
+        title: language === 'es' ? `${addedCount} items agregados (auto-calculados)` : `${addedCount} items added (auto-calculated)`,
         description: language === 'es' 
-          ? `Hotel: ${hotel_quantity} noches • Per Diem: ${per_diem_quantity} días`
-          : `Hotel: ${hotel_quantity} nights • Per Diem: ${per_diem_quantity} days`,
+          ? 'Las cantidades se actualizarán automáticamente según los items del proyecto'
+          : 'Quantities will update automatically based on project items',
         variant: 'success'
       });
     }
@@ -797,8 +791,19 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     }
   };
 
-  // Calculate totals using centralized function
-  const { subtotal, tax_amount: taxAmount, total } = calculateQuoteTotals(formData.items, formData.tax_rate);
+  // Calculate totals using centralized function with derived quantities
+  const calculateTotals = () => {
+    const { enrichItemsWithDerivedQuantities } = require('@/components/domain/calculations/derivedItemQuantities');
+    const enrichedItems = enrichItemsWithDerivedQuantities(
+      formData.items,
+      projectTechCount,
+      travelTimeHours,
+      roomsPerNight
+    );
+    return calculateQuoteTotals(enrichedItems, formData.tax_rate);
+  };
+  
+  const { subtotal, tax_amount: taxAmount, total } = calculateTotals();
 
   // Block non-authorized users
   if (user && !canCreate) {
@@ -1118,6 +1123,9 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 allowCatalogSelect={true}
                 allowReorder={true}
                 onToast={toast}
+                techCount={projectTechCount}
+                travelTimeHours={travelTimeHours}
+                roomsPerNight={roomsPerNight}
               />
             </CardContent>
           </Card>
