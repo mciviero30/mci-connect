@@ -125,23 +125,30 @@ Deno.serve(async (req) => {
         }
 
         // ==========================================
-        // TABLE HEADER - 5 COLUMNS
+        // TABLE HEADER - 5 COLUMNS - smooth gradient
         // ==========================================
-        doc.setFillColor(51, 65, 85);
-        doc.rect(15, currentY, 180, 10, 'F');
+        const tableHeaderY = currentY;
+        const headerSteps = 100;
+        for (let i = 0; i < headerSteps; i++) {
+            const x = 15 + (180 / headerSteps) * i;
+            const width = (180 / headerSteps) + 0.5;
+            const gray = Math.floor(i * (120 / headerSteps));
+            doc.setFillColor(gray, gray, gray);
+            doc.rect(x, tableHeaderY, width, 10, 'F');
+        }
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(9);
         doc.setFont(undefined, 'bold');
-        doc.text('#', 18, currentY + 6.5);
-        doc.text('ITEM & DESCRIPTION', 30, currentY + 6.5);
-        doc.text('QTY', 140, currentY + 6.5, { align: 'right' });
-        doc.text('RATE', 165, currentY + 6.5, { align: 'right' });
-        doc.text('AMOUNT', 190, currentY + 6.5, { align: 'right' });
+        doc.text('#', 18, tableHeaderY + 6.5);
+        doc.text('ITEM & DESCRIPTION', 30, tableHeaderY + 6.5);
+        doc.text('QTY', 140, tableHeaderY + 6.5, { align: 'right' });
+        doc.text('RATE', 165, tableHeaderY + 6.5, { align: 'right' });
+        doc.text('AMOUNT', 190, tableHeaderY + 6.5, { align: 'right' });
 
         // ==========================================
         // ITEMS
         // ==========================================
-        currentY += 10;
+        currentY = tableHeaderY + 10;
         doc.setTextColor(15, 23, 42);
         let itemIndex = 1;
 
@@ -206,9 +213,18 @@ Deno.serve(async (req) => {
             currentY += 6;
         }
 
-        // Gray box for Total
-        doc.setFillColor(241, 245, 249);
-        doc.roundedRect(totalX - 2, currentY, 57, 10, 1, 1, 'F');
+        // Gray gradient box for Total - smooth
+        const totalBoxSteps = 100;
+        for (let i = 0; i < totalBoxSteps; i++) {
+            const x = (totalX - 2) + (57 / totalBoxSteps) * i;
+            const width = (57 / totalBoxSteps) + 0.5;
+            const gray = 241 - Math.floor(i * (36 / totalBoxSteps));
+            doc.setFillColor(gray, gray - 4, gray - 8);
+            doc.rect(x, currentY, width, 10, 'F');
+        }
+        doc.setDrawColor(30, 30, 30);
+        doc.setLineWidth(0.8);
+        doc.line(totalX - 2, currentY, totalX + 55, currentY);
         doc.setFontSize(11);
         doc.setFont(undefined, 'bold');
         doc.text('TOTAL', totalX + 2, currentY + 6.5);

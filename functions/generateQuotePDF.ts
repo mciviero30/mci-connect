@@ -30,12 +30,12 @@ Deno.serve(async (req) => {
 
         const doc = new jsPDF();
 
-        // HEADER CON GRADIENTE NEGRO A GRIS
+        // HEADER CON GRADIENTE NEGRO A GRIS - smooth
         const headerHeight = 40;
         const steps = 100;
         for (let i = 0; i < steps; i++) {
             const x = (210 / steps) * i;
-            const width = 210 / steps;
+            const width = (210 / steps) + 0.5;
             const gray = Math.floor(i * (74 / steps)); // 0 negro a 74 gris
             doc.setFillColor(gray, gray, gray);
             doc.rect(x, 0, width, headerHeight, 'F');
@@ -109,12 +109,12 @@ Deno.serve(async (req) => {
             currentY += 20;
         }
 
-        // TABLE HEADER con gradiente
+        // TABLE HEADER con gradiente - smooth
         const tableHeaderY = currentY;
-        const headerSteps = 50;
+        const headerSteps = 100;
         for (let i = 0; i < headerSteps; i++) {
             const x = 15 + (180 / headerSteps) * i;
-            const width = 180 / headerSteps;
+            const width = (180 / headerSteps) + 0.5;
             const gray = Math.floor(i * (74 / headerSteps));
             doc.setFillColor(gray, gray, gray);
             doc.rect(x, tableHeaderY, width, 10, 'F');
@@ -175,10 +175,10 @@ Deno.serve(async (req) => {
         doc.text(`$${(quote.subtotal || 0).toFixed(2)}`, 195, currentY, { align: 'right' });
         
         currentY += 8;
-        const totalSteps = 30;
+        const totalSteps = 100;
         for (let i = 0; i < totalSteps; i++) {
             const x = totalX + (65 / totalSteps) * i;
-            const width = 65 / totalSteps;
+            const width = (65 / totalSteps) + 0.5;
             const gray = 241 - Math.floor(i * (36 / totalSteps));
             doc.setFillColor(gray, gray, gray);
             doc.rect(x, currentY - 4, width, 10, 'F');

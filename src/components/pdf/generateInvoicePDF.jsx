@@ -64,14 +64,14 @@ export async function generateInvoicePDF(invoice) {
   doc.setFillColor(0, 0, 0);
   doc.rect(0, 0, Number(logoEndX), Number(headerHeight), 'F');
   
-  // Parte 2: Gradiente de negro a gris desde el logo hasta el final
+  // Parte 2: Gradiente de negro a gris desde el logo hasta el final - smooth
   const gradientWidth = pageWidth - logoEndX;
-  const gradientSteps = 10;
+  const gradientSteps = 100;
   for (let i = 0; i < gradientSteps; i++) {
     const gray = Math.floor((i / gradientSteps) * 130);
     doc.setFillColor(gray, gray, gray);
     const rectX = Number(logoEndX + (i * gradientWidth) / gradientSteps);
-    const rectWidth = Number(gradientWidth / gradientSteps);
+    const rectWidth = Number(gradientWidth / gradientSteps + 0.5);
     doc.rect(rectX, 0, rectWidth, Number(headerHeight), 'F');
   }
   
@@ -195,12 +195,12 @@ export async function generateInvoicePDF(invoice) {
   // ========== ITEMS TABLE ==========
   const tableHeaderY = y;
   const tableHeaderHeight = 7;
-  const tableGradientSteps = 10;
+  const tableGradientSteps = 100;
   for (let i = 0; i < tableGradientSteps; i++) {
     const gray = Math.floor((i / tableGradientSteps) * 120);
     doc.setFillColor(gray, gray, gray);
     const rectX = Number(margin + (i * contentWidth) / tableGradientSteps);
-    const rectWidth = Number(contentWidth / tableGradientSteps);
+    const rectWidth = Number(contentWidth / tableGradientSteps + 0.5);
     doc.rect(rectX, Number(tableHeaderY), rectWidth, Number(tableHeaderHeight), 'F');
   }
   
@@ -246,7 +246,7 @@ export async function generateInvoicePDF(invoice) {
         const gray = Math.floor((i / tableGradientSteps) * 120);
         doc.setFillColor(gray, gray, gray);
         const rectX = Number(margin + (i * contentWidth) / tableGradientSteps);
-        const rectWidth = Number(contentWidth / tableGradientSteps);
+        const rectWidth = Number(contentWidth / tableGradientSteps + 0.5);
         doc.rect(rectX, Number(y), rectWidth, 7, 'F');
       }
       doc.setFont('helvetica', 'bold');
