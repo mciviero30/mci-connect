@@ -17,9 +17,11 @@ import CommissionReports from './pages/CommissionReports';
 import CommissionReview from './pages/CommissionReview';
 import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import CompanyInfo from './pages/CompanyInfo';
+import CompanySettings from './pages/CompanySettings';
 import ComplianceHub from './pages/ComplianceHub';
 import Configuracion from './pages/Configuracion';
 import Contabilidad from './pages/Contabilidad';
+import CrearEstimado from './pages/CrearEstimado';
 import CrearFactura from './pages/CrearFactura';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
@@ -87,8 +89,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import CrearEstimado from './pages/CrearEstimado';
-import CompanySettings from './pages/CompanySettings';
 import __Layout from './Layout.jsx';
 
 
@@ -112,9 +112,11 @@ export const PAGES = {
     "CommissionReview": CommissionReview,
     "CommissionTotalsGusto": CommissionTotalsGusto,
     "CompanyInfo": CompanyInfo,
+    "CompanySettings": CompanySettings,
     "ComplianceHub": ComplianceHub,
     "Configuracion": Configuracion,
     "Contabilidad": Contabilidad,
+    "CrearEstimado": CrearEstimado,
     "CrearFactura": CrearFactura,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
@@ -182,8 +184,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "CrearEstimado": CrearEstimado,
-    "CompanySettings": CompanySettings,
 }
 
 export const pagesConfig = {
