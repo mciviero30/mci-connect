@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
@@ -8,25 +8,33 @@ import { createPageUrl } from '@/utils';
  * Tax Profile Gate
  * BLOCKS access to entire app until tax profile is completed
  * EXCEPTION: CEO/Admin are exempt
+ * 
+ * CRITICAL: Reads user from cache, not props, for stability
  */
-export default function TaxProfileGate({ user, children }) {
+export default function TaxProfileGate({ children }) {
   // CRITICAL: All hooks MUST be called unconditionally at the top
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   
-  // Compute derived values (not hooks)
+  // Read user from cache (stable, doesn't cause prop changes)
+  const user = queryClient.getQueryData(['currentUser']);
+  
+  // Compute stable derived values BEFORE hooks
+  const userEmail = user?.email || null;
+  const userRole = user?.role || null;
   const isTaxOnboardingPage = location?.pathname?.includes('TaxOnboarding') || false;
-  const isExempt = user?.role === 'ceo' || user?.role === 'admin';
-  const hasUser = !!user?.email;
+  const isExempt = userRole === 'ceo' || userRole === 'admin';
+  const shouldFetchProfile = !!userEmail && !isExempt;
 
-  // Fetch tax profile - ALWAYS declare this hook
+  // Fetch tax profile - ALWAYS called, enabled flag is stable
   const { data: taxProfile, isLoading, error } = useQuery({
-    queryKey: ['taxProfile', user?.email],
+    queryKey: ['taxProfile', userEmail],
     queryFn: async () => {
-      if (!user?.email) return null;
+      if (!userEmail) return null;
       try {
         const profiles = await base44.entities.TaxProfile.filter({ 
-          employee_email: user.email 
+          employee_email: userEmail 
         });
         return profiles?.[0] || null;
       } catch (err) {
@@ -37,28 +45,28 @@ export default function TaxProfileGate({ user, children }) {
         return null;
       }
     },
-    enabled: hasUser && !isExempt,
+    enabled: shouldFetchProfile,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
-  // Create alert if tax profile incomplete
+  // Create alert if tax profile incomplete - stable dependencies
   useEffect(() => {
-    if (!hasUser || isLoading || isExempt) return;
+    if (!userEmail || isLoading || isExempt) return;
 
     const needsTaxOnboarding = !taxProfile || !taxProfile?.completed;
 
-    if (needsTaxOnboarding && user.email) {
+    if (needsTaxOnboarding) {
       // Defensive: catch errors to prevent crash
       base44.entities.SystemAlert.filter({
-        recipient_email: user.email,
+        recipient_email: userEmail,
         alert_type: 'tax_info_incomplete',
         read: false,
       }).then(existingAlerts => {
         if (!existingAlerts || existingAlerts.length === 0) {
           base44.entities.SystemAlert.create({
-            recipient_email: user.email,
+            recipient_email: userEmail,
             alert_type: 'tax_info_incomplete',
             title: 'Tax Information Required',
             message: 'You must complete your tax information before using the system. This is required by federal law.',
@@ -78,11 +86,11 @@ export default function TaxProfileGate({ user, children }) {
         }
       });
     }
-  }, [hasUser, taxProfile, isLoading, isExempt, user?.email]);
+  }, [userEmail, taxProfile, isLoading, isExempt]);
 
-  // CRITICAL: Block access if tax profile not completed
+  // CRITICAL: Block access if tax profile not completed - stable dependencies
   useEffect(() => {
-    if (!hasUser || isLoading || isExempt || isTaxOnboardingPage) return;
+    if (!userEmail || isLoading || isExempt || isTaxOnboardingPage) return;
 
     const needsTaxOnboarding = !taxProfile || !taxProfile?.completed;
 
@@ -96,12 +104,12 @@ export default function TaxProfileGate({ user, children }) {
         }
       }
     }
-  }, [hasUser, taxProfile, isLoading, isTaxOnboardingPage, navigate, isExempt]);
+  }, [userEmail, taxProfile, isLoading, isTaxOnboardingPage, navigate, isExempt]);
 
   // CONDITIONAL RENDERING - happens AFTER all hooks
   
   // Defensive: if no user, fail open (allow access)
-  if (!hasUser) {
+  if (!userEmail) {
     return children;
   }
 
