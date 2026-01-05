@@ -613,7 +613,7 @@ Lawrenceville, Georgia 30043, U.S.A`
                     <span className="font-medium text-green-600">{quote.profit_margin.toFixed(1)}%</span>
                   </div>
                 )}
-                {quote.estimated_hours && (
+                {quote.estimated_hours !== undefined && quote.estimated_hours !== null && (
                   <div className="flex justify-between text-slate-600 dark:text-slate-400">
                     <span>{language === 'es' ? 'Horas Est.' : 'Est. Hours'}</span>
                     <span className="font-medium">{quote.estimated_hours}h</span>
