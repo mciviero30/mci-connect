@@ -137,9 +137,9 @@ export default function AgreementGate({ children }) {
         setSignatureName('');
         setIsSigningInProgress(false);
       } else {
-        // UNLOCK: Write to session ONLY, NO setState to avoid re-render loop
+        // CRITICAL: Update BOTH sessionStorage AND state to prevent query re-execution
         sessionStorage.setItem(SESSION_KEY, 'true');
-        // Cache will reflect all signatures now, natural re-render will pass through
+        setGateUnlocked(true); // This stops the query from running again
         setIsSigningInProgress(false);
       }
     },
