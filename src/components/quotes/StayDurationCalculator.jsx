@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Hotel, Coffee, Clock, Info, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { calculateStayDuration } from '@/components/domain/calculations/stayDuration';
 
 export default function StayDurationCalculator({ 
   items = [], 
@@ -19,76 +20,30 @@ export default function StayDurationCalculator({
   const [calculations, setCalculations] = useState(null);
 
   useEffect(() => {
-    if (!items || items.length === 0) return;
-
-    // Step 1: Sum labor hours from all items
-    const totalLaborHours = items
-      .filter(item => !item.is_travel_item)
-      .reduce((sum, item) => {
-        const hours = parseFloat(item.installation_time) || 0;
-        const qty = parseFloat(item.quantity) || 0;
-        return sum + (hours * qty);
-      }, 0);
-
-    if (totalLaborHours === 0) {
+    if (!items || items.length === 0) {
       setCalculations(null);
       return;
     }
 
-    // Step 2: Calculate work days (Monday-Friday only)
-    const hoursPerDay = 8;
-    let totalWorkDays = totalLaborHours / (hoursPerDay * techCount);
-    
-    // Round to nearest 0.5 day
-    totalWorkDays = Math.round(totalWorkDays * 2) / 2;
-
-    // Step 3: Add travel days (always 2: inbound Sunday + outbound day after last work day)
-    const travelDays = 2;
-
-    // Step 4: Convert work days into calendar days (including weekends)
-    // Project starts on Monday, work is Mon-Fri only
-    const fullWeeks = Math.floor(totalWorkDays / 5);
-    const remainingWorkDays = totalWorkDays % 5;
-    
-    // Calendar days = work days + weekends
-    // Each full week = 5 work days + 2 weekend days = 7 calendar days
-    // Remaining work days span into next week (adds 2 weekend days if > 0)
-    let workCalendarDays = (fullWeeks * 7) + remainingWorkDays;
-    if (remainingWorkDays > 0) {
-      workCalendarDays += 2; // Add weekend after partial week
-    }
-
-    // Step 5: Total calendar days and nights
-    // Travel: arrive Sunday, leave day after last work day
-    const totalCalendarDays = workCalendarDays + travelDays;
-    const totalNights = totalCalendarDays - 1;
-
-    // For display
-    const weekends = Math.ceil(totalWorkDays / 5) * 2;
-    const extraTravelDays = travelTimeHours > 4 ? 2 : 0;
-
-    // Step 6: Calculate hotel rooms and per diem
-    const suggestedRooms = Math.ceil(techCount / 2);
-    if (roomsPerNight !== suggestedRooms) {
-      setRoomsPerNight(suggestedRooms);
-    }
-
-    const totalHotelRooms = totalNights * roomsPerNight;
-    const totalPerDiem = totalCalendarDays * techCount;
-
-    setCalculations({
-      totalLaborHours,
-      dailyCapacity: hoursPerDay * techCount,
-      weeklyCapacity: hoursPerDay * techCount * 5,
-      workDays: totalWorkDays,
-      weekends,
-      extraTravelDays,
-      totalCalendarDays,
-      totalNights,
-      totalHotelRooms,
-      totalPerDiem,
-      suggestedRooms
+    // Call centralized calculation helper
+    const result = calculateStayDuration({
+      items,
+      techCount,
+      travelTimeHours,
+      roomsPerNight
     });
+    
+    if (!result) {
+      setCalculations(null);
+      return;
+    }
+
+    // Auto-update rooms per night if it doesn't match suggested
+    if (roomsPerNight !== result.suggestedRooms) {
+      setRoomsPerNight(result.suggestedRooms);
+    }
+
+    setCalculations(result);
 
   }, [items, techCount, travelTimeHours, roomsPerNight]);
 
