@@ -140,13 +140,7 @@ export default function TaxProfileGate({ children }) {
     !isTaxOnboardingPage &&
     (!taxProfile || !taxProfile.completed)
   ) {
-    return (
-      <Navigate
-        to={createPageUrl('TaxOnboarding')}
-        replace
-        state={{ from: location }}
-      />
-    );
+    return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
   }
 
   // Allow access if: exempt, tax profile loaded and complete
