@@ -46,10 +46,10 @@ export default function AgreementGate({ children }) {
     gcTime: Infinity,
   });
 
-  // Sign mutation - MUST be declared before any returns
+  // Sign mutation - optimistic updates, no complex state
   const signMutation = useMutation({
     mutationFn: async (agreementData) => {
-      // PREVENT DUPLICATES: Check if already signed
+      // Check for duplicates
       const existing = await base44.entities.AgreementSignature.filter({
         employee_email: userEmail,
         agreement_type: agreementData.type,
@@ -57,22 +57,12 @@ export default function AgreementGate({ children }) {
         accepted: true
       });
 
-      if (existing && existing.length > 0) {
-        if (import.meta.env.DEV) {
-          console.log('⚠️ Agreement already signed, skipping duplicate');
-        }
-        // Return existing signature instead of creating duplicate
-        return existing[0];
+      if (existing?.length > 0) {
+        return existing[0]; // Return existing
       }
 
-      const metadata = {
-        user_agent: navigator.userAgent,
-        device: /Mobile/.test(navigator.userAgent) ? 'mobile' : 'desktop',
-        app_version: 'v1.0',
-      };
-
-      // Create signature with explicit field mapping
-      const signatureData = {
+      // Create new signature
+      return await base44.entities.AgreementSignature.create({
         user_id: userId,
         employee_email: userEmail,
         employee_name: userFullName,
@@ -82,94 +72,50 @@ export default function AgreementGate({ children }) {
         accepted: true,
         accepted_at: new Date().toISOString(),
         signature_name: signatureName,
-        metadata,
-      };
-
-      // Log for debugging (DEV only)
-      if (import.meta.env.DEV) {
-        console.log('🔐 Signing agreement:', {
-          type: agreementData.type,
-          version: agreementData.version,
-          email: userEmail
-        });
-      }
-
-      const result = await base44.entities.AgreementSignature.create(signatureData);
-
-      // Verify signature was created
-      if (!result?.id) {
-        throw new Error('Signature creation failed - no ID returned');
-      }
-
-      if (import.meta.env.DEV) {
-        console.log('✅ Signature created:', result.id);
-      }
-
-      return result;
+        metadata: {
+          user_agent: navigator.userAgent,
+          device: /Mobile/.test(navigator.userAgent) ? 'mobile' : 'desktop',
+          app_version: 'v1.0',
+        },
+      });
     },
-    onSuccess: async (data, agreementData) => {
-      // Update cache IMMEDIATELY with new signature
-      queryClient.setQueryData(['agreementSignatures', userEmail], (old = []) => [
-        ...old,
-        {
+    onSuccess: (data, agreementData) => {
+      // ATOMIC: Update cache optimistically
+      queryClient.setQueryData(['agreementSignatures', userEmail], (old = []) => {
+        const newSig = {
           id: data.id,
           employee_email: userEmail,
           agreement_type: agreementData.type,
           version: agreementData.version,
           accepted: true,
-        }
-      ]);
+        };
+        return [...old, newSig];
+      });
 
-      // Move to next agreement or unlock session
+      // Move to next or reset form
       if (currentStep < unsignedAgreements.length - 1) {
-        setCurrentStep(currentStep + 1);
+        setCurrentStep(prev => prev + 1);
         setHasRead(false);
         setSignatureName('');
-        setIsSigningInProgress(false);
       } else {
-        // CRITICAL: Update BOTH sessionStorage AND state to prevent query re-execution
-        sessionStorage.setItem(SESSION_KEY, 'true');
-        setGateUnlocked(true); // This stops the query from running again
-        setIsSigningInProgress(false);
+        // All done - reset form (component will naturally pass through on next render)
+        setHasRead(false);
+        setSignatureName('');
       }
-    },
-    onError: (error) => {
-      // Log error for debugging
-      console.error('❌ Signature save failed:', error);
-      
-      // Reset signing flag on error
-      setIsSigningInProgress(false);
-      
-      // Error already displayed in UI via signMutation.isError
     },
   });
 
-  // REMOVED: useEffect loops causing issues
-  // Gate unlock happens ONCE in onSuccess, not in effects
-
-  // Handler functions (not hooks)
+  // Handlers
   const handleSign = () => {
-    if (!hasRead || !signatureName.trim()) return;
-    setIsSigningInProgress(true);
+    if (!hasRead || !signatureName.trim() || signMutation.isPending) return;
     signMutation.mutate(currentAgreement);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = () => window.print();
 
-  // ⚡ INSTANT PASSTHROUGH: Check session unlock BEFORE everything
-  if (gateUnlocked) {
-    return children;
-  }
-
-  // Defensive: ensure user exists
-  if (!userEmail) {
-    return children;
-  }
-
-  // NEVER show loading if gate is unlocked
-  if (signaturesLoading && !gateUnlocked) {
+  // Defensive checks
+  if (!userEmail) return children;
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -177,31 +123,24 @@ export default function AgreementGate({ children }) {
     );
   }
 
-  // Determine which agreements apply (based on role/position)
+  // Calculate unsigned agreements
   const requiredAgreements = getRequiredAgreements(user) || [];
-
-  // Check signatures query for signed state
   const unsignedAgreements = requiredAgreements.filter(agreement => {
-    return !signatures.some(sig => 
+    return !signatures?.some(sig => 
       sig?.agreement_type === agreement?.type && 
       sig?.version === agreement?.version &&
       sig?.accepted === true
     );
   });
 
-  // If no unsigned agreements, unlock ONCE and allow access
+  // If all signed, pass through immediately
   if (unsignedAgreements.length === 0) {
-    // Write to session but DON'T call setState - avoid re-render
-    sessionStorage.setItem(SESSION_KEY, 'true');
     return children;
   }
 
+  // Get current agreement to sign
   const currentAgreement = unsignedAgreements[currentStep];
-
-  // Safety: no agreement to show
-  if (!currentAgreement) {
-    return children;
-  }
+  if (!currentAgreement) return children;
 
   // Block access - render agreement modal
   return (
