@@ -20,7 +20,9 @@ import {
   AlertTriangle,
   Shield,
   ListChecks,
-  Search
+  Search,
+  Sparkles,
+  Video
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
