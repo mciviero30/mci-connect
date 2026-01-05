@@ -27,7 +27,8 @@ export default function AddressAutocomplete({
     } else {
       // Load Google Maps Places API dynamically
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCe_P2vn6m0sQWNSyWFnMw-yzO1yt1uA_4&libraries=places`;
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.onload = () => {
         if (window.google?.maps?.places) {
