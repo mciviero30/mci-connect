@@ -118,6 +118,18 @@ export default function AgreementGate({ children }) {
       return result;
     },
     onSuccess: async (data, agreementData) => {
+      // Update cache IMMEDIATELY with new signature
+      queryClient.setQueryData(['agreementSignatures', userEmail], (old = []) => [
+        ...old,
+        {
+          id: data.id,
+          employee_email: userEmail,
+          agreement_type: agreementData.type,
+          version: agreementData.version,
+          accepted: true,
+        }
+      ]);
+
       // Move to next agreement or unlock session
       if (currentStep < unsignedAgreements.length - 1) {
         setCurrentStep(currentStep + 1);
@@ -125,9 +137,9 @@ export default function AgreementGate({ children }) {
         setSignatureName('');
         setIsSigningInProgress(false);
       } else {
-        // PERMANENT SESSION UNLOCK: All agreements signed
+        // UNLOCK: Write to session ONLY, NO setState to avoid re-render loop
         sessionStorage.setItem(SESSION_KEY, 'true');
-        setGateUnlocked(true);
+        // Cache will reflect all signatures now, natural re-render will pass through
         setIsSigningInProgress(false);
       }
     },
