@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, MapPin, Clock, Car, Calculator, Plus, Minus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function OutOfAreaCalculator({ 
@@ -19,6 +20,17 @@ export default function OutOfAreaCalculator({
   const [travelMetrics, setTravelMetrics] = useState([]);
   const [error, setError] = useState(null);
   const [vehicleCounts, setVehicleCounts] = useState({});
+  
+  // Load company settings for rates
+  const { data: companySettings } = useQuery({
+    queryKey: ['companySettings'],
+    queryFn: async () => {
+      const settings = await base44.entities.CompanySettings.list();
+      return settings[0] || {};
+    },
+    initialData: {},
+    staleTime: Infinity
+  });
 
   const calculateMetrics = async () => {
     if (!jobAddress || selectedTeamIds.length === 0) {
@@ -85,6 +97,10 @@ export default function OutOfAreaCalculator({
 
   const addItemsToQuote = () => {
     const items = [];
+    
+    // Use company settings rates
+    const drivingRate = companySettings?.travel_driving_time_rate || 60;
+    const mileageRate = companySettings?.travel_mileage_rate || 0.70;
 
     travelMetrics.forEach(metric => {
       if (!metric.success) return;
@@ -99,8 +115,8 @@ export default function OutOfAreaCalculator({
         description: `Round trip driving from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi + 10% buffer)`,
         quantity: drivingHours,
         unit: 'hours',
-        unit_price: 25, // Default hourly rate for driving
-        total: drivingHours * 25,
+        unit_price: drivingRate,
+        total: drivingHours * drivingRate,
         is_travel_item: true,
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
@@ -113,8 +129,8 @@ export default function OutOfAreaCalculator({
         description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${milesPerVehicle} miles round trip`,
         quantity: milesPerVehicle * vehicleCount,
         unit: 'miles',
-        unit_price: 0.60,
-        total: milesPerVehicle * vehicleCount * 0.60,
+        unit_price: mileageRate,
+        total: milesPerVehicle * vehicleCount * mileageRate,
         is_travel_item: true,
         travel_item_type: 'miles_per_vehicle',
         team_id: metric.teamId,
