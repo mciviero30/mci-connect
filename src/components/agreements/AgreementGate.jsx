@@ -14,6 +14,7 @@ import { AGREEMENTS, getRequiredAgreements, hasSignedAllAgreements } from '@/com
 import ReactMarkdown from 'react-markdown';
 
 export default function AgreementGate({ children, user }) {
+  // CRITICAL: All hooks MUST be called unconditionally at the top
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(0);
@@ -35,29 +36,7 @@ export default function AgreementGate({ children, user }) {
     initialData: [],
   });
 
-  // Defensive: ensure user exists
-  if (!user?.email) {
-    return children;
-  }
-
-  // Determine which agreements apply (based on role/position)
-  const requiredAgreements = getRequiredAgreements(user) || [];
-
-  // Check signatures query for signed state (NOT currentUser)
-  const unsignedAgreements = requiredAgreements.filter(agreement => {
-    return !signatures.some(sig => 
-      sig?.agreement_type === agreement?.type && 
-      sig?.version === agreement?.version &&
-      sig?.accepted === true
-    );
-  });
-
-  const currentAgreement = unsignedAgreements[currentStep];
-  
-  // Gate blocks if unsigned agreements exist AND user hasn't manually progressed
-  const shouldBlockAccess = unsignedAgreements.length > 0 && !showContent;
-
-  // Sign mutation
+  // Sign mutation - MUST be declared before any returns
   const signMutation = useMutation({
     mutationFn: async (agreementData) => {
       const metadata = {
@@ -137,6 +116,15 @@ export default function AgreementGate({ children, user }) {
     },
   });
 
+  // Reset state when user changes - MUST be declared before any returns
+  useEffect(() => {
+    setCurrentStep(0);
+    setHasRead(false);
+    setSignatureName('');
+    setShowContent(false);
+  }, [user?.id]);
+
+  // Handler functions (not hooks)
   const handleSign = () => {
     if (!hasRead || !signatureName.trim()) return;
     setIsSigningInProgress(true);
@@ -147,13 +135,29 @@ export default function AgreementGate({ children, user }) {
     window.print();
   };
 
-  // Reset state when user changes
-  useEffect(() => {
-    setCurrentStep(0);
-    setHasRead(false);
-    setSignatureName('');
-    setShowContent(false);
-  }, [user?.id]);
+  // CONDITIONAL LOGIC - happens AFTER all hooks
+  
+  // Defensive: ensure user exists
+  if (!user?.email) {
+    return children;
+  }
+
+  // Determine which agreements apply (based on role/position)
+  const requiredAgreements = getRequiredAgreements(user) || [];
+
+  // Check signatures query for signed state (NOT currentUser)
+  const unsignedAgreements = requiredAgreements.filter(agreement => {
+    return !signatures.some(sig => 
+      sig?.agreement_type === agreement?.type && 
+      sig?.version === agreement?.version &&
+      sig?.accepted === true
+    );
+  });
+
+  const currentAgreement = unsignedAgreements[currentStep];
+  
+  // Gate blocks if unsigned agreements exist AND user hasn't manually progressed
+  const shouldBlockAccess = unsignedAgreements.length > 0 && !showContent;
 
   // DEFENSIVE GUARDS: Prevent redirect loops under all conditions
   

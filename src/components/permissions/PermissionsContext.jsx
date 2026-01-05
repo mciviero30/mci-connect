@@ -90,7 +90,19 @@ export const PermissionsProvider = ({ children }) => {
 export const usePermissions = () => {
   const context = useContext(PermissionsContext);
   if (!context) {
-    throw new Error('usePermissions must be used within PermissionsProvider');
+    // DEFENSIVE: Instead of throwing, return default safe permissions
+    if (import.meta.env.DEV) {
+      console.warn('usePermissions called outside PermissionsProvider - returning default permissions');
+    }
+    return {
+      isAdmin: false,
+      raw: {},
+      hasPermission: () => false,
+      canView: () => false,
+      canEdit: () => false,
+      canViewAll: () => false,
+      canViewTeamOnly: () => false,
+    };
   }
   return context;
 };
