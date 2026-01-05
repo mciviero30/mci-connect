@@ -25,6 +25,14 @@ export default function StayDurationCalculator({
       return;
     }
 
+    // Debug: log items to see installation_time
+    console.log('📊 StayDurationCalculator - Items:', items.map(i => ({
+      name: i.item_name,
+      installation_time: i.installation_time,
+      quantity: i.quantity,
+      is_travel: i.is_travel_item
+    })));
+
     // Call centralized calculation helper
     const result = calculateStayDuration({
       items,
@@ -32,6 +40,8 @@ export default function StayDurationCalculator({
       travelTimeHours,
       roomsPerNight
     });
+    
+    console.log('📊 StayDurationCalculator - Result:', result);
     
     if (!result) {
       setCalculations(null);
