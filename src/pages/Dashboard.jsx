@@ -77,11 +77,10 @@ export default function Dashboard() {
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000,
-    cacheTime: 300000,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 60000,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const isAdmin = user?.role === 'admin' || 
@@ -147,8 +146,8 @@ export default function Dashboard() {
       }, '-date', 100);
     },
     enabled: !!user?.email && needsEmployeeData,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000, // 15 minutes
+    staleTime: 600000,
+    gcTime: 900000
     initialData: [],
   });
 
@@ -185,8 +184,8 @@ export default function Dashboard() {
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
     enabled: !!user,
-    staleTime: 300000, // 5 minutes
-    cacheTime: 600000, // 10 minutes
+    staleTime: 300000,
+    gcTime: 600000
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -218,8 +217,8 @@ export default function Dashboard() {
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('full_name'),
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
-    staleTime: 1800000, // 30 minutes - employee list rarely changes
-    cacheTime: 3600000, // 1 hour
+    staleTime: 1800000,
+    gcTime: 3600000
     initialData: [],
   });
 
@@ -227,8 +226,8 @@ export default function Dashboard() {
     queryKey: ['allTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.filter({ status: 'approved' }, '-date', 200),
     enabled: isAdmin && widgets.some(w => w.type === 'total-hours'),
-    staleTime: 900000, // 15 minutes
-    cacheTime: 1800000,
+    staleTime: 900000,
+    gcTime: 1800000,
     initialData: [],
   });
 
@@ -245,8 +244,8 @@ export default function Dashboard() {
     queryKey: ['recentRecognitions'],
     queryFn: () => base44.entities.Recognition.list('-date', 5),
     enabled: needsRecognitionData,
-    staleTime: 900000, // 15 minutes - recognitions don't change frequently
-    cacheTime: 1800000,
+    staleTime: 900000,
+    gcTime: 1800000,
     initialData: [],
   });
 
@@ -257,8 +256,8 @@ export default function Dashboard() {
       return base44.entities.Certification.filter({ employee_email: user.email }, '-expiration_date');
     },
     enabled: !!user?.email && !isAdmin,
-    staleTime: 1800000, // 30 minutes
-    cacheTime: 3600000,
+    staleTime: 1800000,
+    gcTime: 3600000,
     initialData: [],
   });
 
@@ -266,8 +265,8 @@ export default function Dashboard() {
     queryKey: ['pendingTimeEntries'],
     queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }, '-date', 100),
     enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets'),
-    staleTime: 300000, // 5 minutes - pending items need more frequent updates
-    cacheTime: 600000,
+    staleTime: 300000,
+    gcTime: 600000,
     initialData: [],
   });
 

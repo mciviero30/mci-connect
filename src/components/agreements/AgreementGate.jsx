@@ -30,15 +30,10 @@ export default function AgreementGate({ children }) {
   const [isSigningInProgress, setIsSigningInProgress] = useState(false);
   
   // SESSION LATCH: Once unlocked in this session, never block again
-  const [gateUnlocked, setGateUnlocked] = useState(() => {
-    return sessionStorage.getItem('agreements_unlocked') === 'true';
-  });
-  
   const SESSION_KEY = 'agreements_unlocked';
-  
-  const [sessionUnlocked, setSessionUnlocked] = useState(
-    sessionStorage.getItem(SESSION_KEY) === 'true'
-  );
+  const [gateUnlocked, setGateUnlocked] = useState(() => {
+    return sessionStorage.getItem(SESSION_KEY) === 'true';
+  });
 
   // Read user from cache (stable, doesn't cause prop changes)
   const user = queryClient.getQueryData(['currentUser']);
@@ -184,16 +179,6 @@ export default function AgreementGate({ children }) {
 
   // CONDITIONAL LOGIC - happens AFTER all hooks
   
-  // DEV: Log render order
-  if (import.meta.env.DEV) {
-    console.log('🔵 AgreementGate rendering:', {
-      userEmail,
-      signaturesLoading,
-      gateUnlocked,
-      unsignedCount: unsignedAgreements.length
-    });
-  }
-  
   // Defensive: ensure user exists
   if (!userEmail) {
     return children;
@@ -210,6 +195,16 @@ export default function AgreementGate({ children }) {
       sig?.accepted === true
     );
   });
+  
+  // DEV: Log render order
+  if (import.meta.env.DEV) {
+    console.log('🔵 AgreementGate rendering:', {
+      userEmail,
+      signaturesLoading,
+      gateUnlocked,
+      unsignedCount: unsignedAgreements.length
+    });
+  }
 
   const currentAgreement = unsignedAgreements[currentStep];
 
