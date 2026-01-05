@@ -201,10 +201,8 @@ export default function AgreementGate({ children }) {
 
   // If no unsigned agreements, unlock ONCE and allow access
   if (unsignedAgreements.length === 0) {
-    if (!gateUnlocked) {
-      sessionStorage.setItem(SESSION_KEY, 'true');
-      // Don't setState here - just return children to avoid re-render
-    }
+    // Write to session but DON'T call setState - avoid re-render
+    sessionStorage.setItem(SESSION_KEY, 'true');
     return children;
   }
 
