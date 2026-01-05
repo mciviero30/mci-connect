@@ -71,8 +71,10 @@ export default function AgreementGate({ children, user }) {
         metadata,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] });
+    onSuccess: async () => {
+      // Wait for query to update before proceeding
+      await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] });
+      await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
       
       // Move to next agreement or show content
       if (currentStep < unsignedAgreements.length - 1) {
