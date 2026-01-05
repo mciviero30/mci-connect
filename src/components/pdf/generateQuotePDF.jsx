@@ -187,6 +187,16 @@ export async function generateQuotePDF(quote) {
       y += addressLines.length * 4;
     }
     
+    if (quote.work_details) {
+      y += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(70, 70, 70);
+      const detailsLines = doc.splitTextToSize(String(quote.work_details), contentWidth);
+      doc.text(detailsLines, margin, y);
+      y += detailsLines.length * 4;
+    }
+    
     y += 8;
   }
 
