@@ -35,15 +35,20 @@ export default function AgreementGate({ children, user }) {
     initialData: [],
   });
 
+  // Defensive: ensure user exists
+  if (!user?.email) {
+    return children;
+  }
+
   // Determine which agreements apply (based on role/position)
-  const requiredAgreements = getRequiredAgreements(user);
+  const requiredAgreements = getRequiredAgreements(user) || [];
 
   // Check signatures query for signed state (NOT currentUser)
   const unsignedAgreements = requiredAgreements.filter(agreement => {
     return !signatures.some(sig => 
-      sig.agreement_type === agreement.type && 
-      sig.version === agreement.version &&
-      sig.accepted === true
+      sig?.agreement_type === agreement?.type && 
+      sig?.version === agreement?.version &&
+      sig?.accepted === true
     );
   });
 
@@ -164,13 +169,18 @@ export default function AgreementGate({ children, user }) {
   // Guard 2: If signing is in progress, DO NOT redirect (prevents mutation interruption)
   if (isSigningInProgress) {
     // Allow agreement UI to remain visible until mutation completes
-    // Fall through to render agreement modal
+    // Fall through to render agreement modal below
   } else if (!shouldBlockAccess || showContent) {
     // Guard 3: Allow access if no blocking needed or user has progressed manually
     return children;
   }
 
-  // If there are unsigned agreements, block access
+  // Guard 4: Safety check - if no current agreement, allow access
+  if (!currentAgreement) {
+    return children;
+  }
+
+  // Block access - render agreement modal
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-4">
       <AnimatePresence mode="wait">
@@ -189,7 +199,7 @@ export default function AgreementGate({ children, user }) {
                   <FileText className="w-6 h-6" />
                   <div>
                     <CardTitle className="text-xl">
-                      {currentAgreement.title[language]}
+                      {currentAgreement?.title?.[language] || 'Agreement'}
                     </CardTitle>
                     {unsignedAgreements.length > 1 && (
                       <p className="text-sm text-blue-100 mt-1">
@@ -214,7 +224,7 @@ export default function AgreementGate({ children, user }) {
               {/* Agreement Content */}
               <div className="prose prose-slate dark:prose-invert max-w-none bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 max-h-96 overflow-y-auto">
                 <ReactMarkdown>
-                  {currentAgreement.body[language]}
+                  {currentAgreement?.body?.[language] || ''}
                 </ReactMarkdown>
               </div>
 
