@@ -20,6 +20,7 @@ export default function AgreementGate({ children, user }) {
   const [hasRead, setHasRead] = useState(false);
   const [signatureName, setSignatureName] = useState('');
   const [showContent, setShowContent] = useState(false);
+  const [isSigningInProgress, setIsSigningInProgress] = useState(false);
 
   // Fetch user's existing signatures
   const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
@@ -117,13 +118,18 @@ export default function AgreementGate({ children, user }) {
         setCurrentStep(currentStep + 1);
         setHasRead(false);
         setSignatureName('');
+        setIsSigningInProgress(false);
       } else {
         setShowContent(true);
+        setIsSigningInProgress(false);
       }
     },
     onError: (error) => {
       // Log error for debugging
       console.error('❌ Signature save failed:', error);
+      
+      // Reset signing flag on error
+      setIsSigningInProgress(false);
       
       // Error already displayed in UI via signMutation.isError
     },
@@ -131,6 +137,7 @@ export default function AgreementGate({ children, user }) {
 
   const handleSign = () => {
     if (!hasRead || !signatureName.trim()) return;
+    setIsSigningInProgress(true);
     signMutation.mutate(currentAgreement);
   };
 
@@ -153,6 +160,13 @@ export default function AgreementGate({ children, user }) {
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
+  }
+
+  // Safety guard: If signing is in progress, allow flow to complete
+  // Prevents redirect loops during partial state updates
+  if (isSigningInProgress) {
+    // Keep showing agreement UI until signing completes
+    // Don't re-evaluate or redirect
   }
 
   // If no agreements required or all signed, show children
