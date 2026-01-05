@@ -31,12 +31,14 @@ export function calculateQuoteTotals(items = [], tax_rate = 0) {
   // Calculate total
   const total = subtotal + tax_amount;
 
-  // Calculate estimated hours (for labor planning)
-  const estimated_hours = validItems.reduce((sum, item) => {
-    const installation_time = item.installation_time || 0;
-    const quantity = item.quantity || 0;
-    return sum + (installation_time * quantity);
-  }, 0);
+  // Calculate estimated hours (for labor planning, exclude auto-calculated items)
+  const estimated_hours = validItems
+    .filter(item => !item.auto_calculated)
+    .reduce((sum, item) => {
+      const installation_time = item.installation_time || 0;
+      const quantity = item.quantity || 0;
+      return sum + (installation_time * quantity);
+    }, 0);
 
   // Calculate estimated cost (if cost_per_unit exists)
   const estimated_cost = validItems.reduce((sum, item) => {
