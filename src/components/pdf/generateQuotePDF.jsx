@@ -194,13 +194,13 @@ export async function generateQuotePDF(quote) {
       const detailsLines = doc.splitTextToSize(String(quote.work_details), contentWidth - 6);
       const boxHeight = detailsLines.length * 3.5 + 4;
       
-      // Gradient background (light gray to medium gray, matching table header)
-      const gradientSteps = 10;
+      // Gradient background (light gray to medium gray, matching table header) - smooth with many steps
+      const gradientSteps = 100;
       for (let i = 0; i < gradientSteps; i++) {
-        const gray = 240 - Math.floor((i / gradientSteps) * 120); // 240 to 120 (light to medium gray)
-        doc.setFillColor(gray, gray, gray);
+        const gray = 241 - Math.floor((i / gradientSteps) * 36); // 241 to 205 (f1 to cd in RGB)
+        doc.setFillColor(gray, gray - 4, gray - 8); // Subtle blue tint like #f1f5f9 to #cbd5e1
         const rectX = Number(margin + (i * contentWidth) / gradientSteps);
-        const rectWidth = Number(contentWidth / gradientSteps);
+        const rectWidth = Number(contentWidth / gradientSteps + 0.5);
         doc.rect(rectX, Number(y - 2), rectWidth, Number(boxHeight), 'F');
       }
       
@@ -217,14 +217,14 @@ export async function generateQuotePDF(quote) {
 
   // ========== ITEMS TABLE ==========
   const tableHeaderY = y;
-  // Black to gray gradient (horizontal left to right)
+  // Black to gray gradient (horizontal left to right) - smooth with many steps
   const tableHeaderHeight = 7;
-  const tableGradientSteps = 10;
+  const tableGradientSteps = 100;
   for (let i = 0; i < tableGradientSteps; i++) {
     const gray = Math.floor((i / tableGradientSteps) * 120); // 0 to 120
     doc.setFillColor(gray, gray, gray);
     const rectX = Number(margin + (i * contentWidth) / tableGradientSteps);
-    const rectWidth = Number(contentWidth / tableGradientSteps);
+    const rectWidth = Number(contentWidth / tableGradientSteps + 0.5);
     doc.rect(rectX, Number(tableHeaderY), rectWidth, Number(tableHeaderHeight), 'F');
   }
   
