@@ -200,20 +200,9 @@ export default function AgreementGate({ children }) {
 
   const currentAgreement = unsignedAgreements[currentStep];
 
-  // If signing in progress, keep modal visible
-  if (isSigningInProgress) {
-    // Fall through to render agreement modal
-  } else if (showContent) {
-    // User completed all agreements this render
+  // Safety: no agreement to show
+  if (!currentAgreement) {
     return children;
-  } else if (!currentAgreement) {
-    // Safety: no agreement to show
-    return children;
-  }
-
-  // DEV: Log blocking decision
-  if (import.meta.env.DEV) {
-    console.log('🚨 AgreementGate BLOCKING access - rendering modal');
   }
 
   // Block access - render agreement modal
