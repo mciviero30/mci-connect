@@ -10,6 +10,25 @@
  * All components, hooks, and calculations MUST use this function.
  * 
  * ============================================================================
+ * WHY HOTEL ROOMS AND PER DIEM ARE NOT EDITABLE:
+ * ============================================================================
+ * 
+ * These values are DERIVED from project parameters to prevent estimation errors.
+ * 
+ * Manual editing would create:
+ * - Inconsistencies between project duration and stay costs
+ * - Estimation errors (forgetting to update when items change)
+ * - Data integrity issues (values frozen in time)
+ * - Financial discrepancies (quoted cost vs actual need)
+ * 
+ * WHAT INPUTS AFFECT THE CALCULATION:
+ * - items with installation_time (labor hours)
+ * - number of technicians
+ * - hours per work day (default: 8)
+ * - travel time (if > 4 hours one-way, adds 2 travel days)
+ * - rooms per night (default: ceil(techs / 2), can be overridden)
+ * 
+ * ============================================================================
  * BUSINESS RULES:
  * ============================================================================
  * 
@@ -36,14 +55,76 @@
  *    - Cannot be negative
  * 
  * 6. HOTEL ROOMS
- *    - 2 techs per room
- *    - Formula: hotelRooms = ceil(techs / 2) × nights
+ *    - 2 techs per room (default)
+ *    - Formula: hotelRooms = roomsPerNight × nights
  * 
  * 7. PER DIEM
  *    - One per diem per tech per calendar day
  *    - Formula: perDiemDays = techs × calendarDays
  * 
  * ============================================================================
+ */
+
+/**
+ * ============================================================================
+ * TYPE DEFINITIONS (CAPA 2 - INPUT CANÓNICO)
+ * ============================================================================
+ */
+
+/**
+ * @typedef {Object} QuoteItem
+ * @property {string} item_name - Item name
+ * @property {number} quantity - Quantity
+ * @property {number} installation_time - Installation time in hours
+ * @property {boolean} [is_travel_item] - Whether this is a travel item
+ */
+
+/**
+ * @typedef {Object} TravelConfig
+ * @property {boolean} enabled - Whether travel is required
+ * @property {number} hours - One-way travel time in hours
+ */
+
+/**
+ * @typedef {Object} CalendarConfig
+ * @property {number} hoursPerDay - Work hours per day (default: 8)
+ * @property {number[]} workDays - Work days of week [1,2,3,4,5] = Mon-Fri
+ */
+
+/**
+ * @typedef {Object} QuoteComputeInput
+ * @property {QuoteItem[]} items - Quote items with installation times
+ * @property {number} techs - Number of technicians (must be > 0)
+ * @property {TravelConfig} travel - Travel configuration
+ * @property {CalendarConfig} calendar - Calendar configuration
+ * @property {number|null} [roomsPerNight] - Optional manual override for rooms per night
+ */
+
+/**
+ * @typedef {Object} QuoteDerivedBreakdown
+ * @property {number} step1_laborHours - Total installation hours
+ * @property {number} step2_rawWorkDays - Work days before rounding
+ * @property {number} step3_roundedWorkDays - Work days rounded to 0.5
+ * @property {number} step4_calendarDays - Calendar days (Mon-Sun)
+ * @property {number} step5_travelDays - Additional travel days (0 or 2)
+ * @property {number} step6_totalDays - Total calendar days including travel
+ * @property {number} step7_nights - Nights required (totalDays - 1)
+ * @property {number} step8_roomsPerNight - Rooms per night
+ * @property {number} step9_hotelRooms - Total hotel room-nights
+ * @property {number} step10_perDiem - Total per diem days
+ */
+
+/**
+ * @typedef {Object} QuoteDerived
+ * @property {number} totalLaborHours - Total installation hours
+ * @property {number} workDays - Work days (Mon-Fri) rounded to 0.5
+ * @property {number} calendarDays - Calendar days (excluding travel)
+ * @property {number} travelDays - Travel days (0 or 2)
+ * @property {number} totalCalendarDays - Total calendar days (including travel)
+ * @property {number} nights - Total nights stay
+ * @property {number} hotelRooms - Total hotel room-nights
+ * @property {number} perDiemDays - Total per diem days (techs × totalDays)
+ * @property {QuoteDerivedBreakdown} breakdown - Detailed calculation breakdown
  */
 
 /**
@@ -85,59 +166,58 @@ function roundToHalfDay(days) {
 
 /**
  * ============================================================================
- * MAIN COMPUTATION FUNCTION
+ * MAIN COMPUTATION FUNCTION (CAPA 2 - INPUT CANÓNICO)
  * ============================================================================
  * 
  * Computes ALL derived values for a quote in a single pass.
  * This function is 100% pure - no mutations, no side effects, no external dependencies.
  * 
- * @param {Object} params - Input parameters
- * @param {Array} params.items - Quote items with installation_time and quantity
- * @param {number} params.techs - Number of technicians (default: 2)
- * @param {Object} params.travel - Travel configuration
- * @param {boolean} params.travel.enabled - Is travel required?
- * @param {number} params.travel.hours - One-way travel time in hours
- * @param {Object} params.calendar - Calendar configuration
- * @param {number} params.calendar.hoursPerDay - Work hours per day (default: 8)
- * @param {Array<number>} params.calendar.workDays - Days of week that are work days [1-5] = Mon-Fri
- * @param {number} params.roomsPerNight - Hotel rooms needed per night (optional override)
+ * ⚠️ ANTI DATOS FANTASMA:
+ * - NO optional defaults in params
+ * - ALL inputs MUST be explicitly provided
+ * - NO implicit inferences from context
  * 
- * @returns {Object} Derived values
- * @returns {number} .totalLaborHours - Total installation hours
- * @returns {number} .workDays - Work days (rounded to 0.5)
- * @returns {number} .calendarDays - Total calendar days (including weekends)
- * @returns {number} .travelDays - Additional travel days (0 or 2)
- * @returns {number} .totalCalendarDays - Calendar days + travel days
- * @returns {number} .nights - Number of nights stay
- * @returns {number} .hotelRooms - Total hotel room-nights needed
- * @returns {number} .perDiemDays - Total per diem days (techs × days)
- * @returns {Object} .breakdown - Detailed breakdown for debugging
+ * @param {QuoteComputeInput} params - Input parameters (STRICT CONTRACT)
+ * @returns {QuoteDerived} - Derived values (STRICT OUTPUT)
  */
 export function computeQuoteDerived(params) {
   // ============================================================================
-  // STEP 0: VALIDATE AND NORMALIZE INPUTS
+  // STEP 0: VALIDATE AND NORMALIZE INPUTS (CAPA 5 - GUARDAS DURAS)
   // ============================================================================
   
   const {
-    items = [],
-    techs = 2,
-    travel = { enabled: false, hours: 0 },
-    calendar = { hoursPerDay: 8, workDays: [1, 2, 3, 4, 5] },
-    roomsPerNight = null // Optional manual override
+    items,
+    techs,
+    travel,
+    calendar,
+    roomsPerNight = null
   } = params;
   
-  // Validate inputs
+  // HARD GUARD: Reject invalid inputs
   if (!Array.isArray(items)) {
-    throw new Error('items must be an array');
+    throw new Error('[computeQuoteDerived] items must be an array');
   }
   
   if (typeof techs !== 'number' || techs <= 0) {
-    throw new Error('techs must be a positive number');
+    throw new Error('[computeQuoteDerived] techs must be a positive number');
   }
   
-  const hoursPerDay = calendar.hoursPerDay || 8;
-  const travelEnabled = travel?.enabled || false;
-  const travelHours = travel?.hours || 0;
+  if (!travel || typeof travel !== 'object') {
+    throw new Error('[computeQuoteDerived] travel config is required');
+  }
+  
+  if (!calendar || typeof calendar !== 'object') {
+    throw new Error('[computeQuoteDerived] calendar config is required');
+  }
+  
+  const hoursPerDay = calendar.hoursPerDay;
+  const travelEnabled = travel.enabled;
+  const travelHours = travel.hours;
+  
+  // HARD GUARD: Validate calendar config
+  if (typeof hoursPerDay !== 'number' || hoursPerDay <= 0) {
+    throw new Error('[computeQuoteDerived] calendar.hoursPerDay must be a positive number');
+  }
   
   // ============================================================================
   // STEP 1: CALCULATE TOTAL LABOR HOURS
@@ -157,12 +237,12 @@ export function computeQuoteDerived(params) {
   }, 0);
   
   // ============================================================================
-  // STEP 2: CALCULATE WORK DAYS
+  // STEP 2: CALCULATE WORK DAYS (CAPA 5 - EDGE CASE: ZERO HOURS)
   // ============================================================================
   
-  // If no labor hours, return all zeros
-  if (totalLaborHours === 0) {
-    return {
+  // HARD GUARD: If no labor hours OR invalid techs, return ZERO_DERIVED
+  if (totalLaborHours <= 0 || techs <= 0) {
+    const ZERO_DERIVED = {
       totalLaborHours: 0,
       workDays: 0,
       calendarDays: 0,
@@ -184,13 +264,24 @@ export function computeQuoteDerived(params) {
         step10_perDiem: 0
       }
     };
+    return ZERO_DERIVED;
   }
   
   // Work days = total hours / (hours per day × techs)
   const rawWorkDays = totalLaborHours / (hoursPerDay * techs);
   
+  // HARD GUARD: Prevent NaN
+  if (isNaN(rawWorkDays) || !isFinite(rawWorkDays)) {
+    throw new Error('[computeQuoteDerived] Invalid work days calculation - check inputs');
+  }
+  
   // Round to nearest 0.5 day
   const workDays = roundToHalfDay(rawWorkDays);
+  
+  // HARD GUARD: Prevent negative work days
+  if (workDays < 0) {
+    throw new Error('[computeQuoteDerived] Work days cannot be negative');
+  }
   
   // ============================================================================
   // STEP 3: CONVERT TO CALENDAR DAYS
@@ -238,34 +329,44 @@ export function computeQuoteDerived(params) {
   const perDiemDays = techs * totalCalendarDays;
   
   // ============================================================================
-  // STEP 8: RETURN COMPLETE RESULT
+  // STEP 8: RETURN COMPLETE RESULT (CAPA 5 - FINAL GUARDS)
   // ============================================================================
   
-  return {
+  // HARD GUARD: Ensure no NaN, undefined, or negative values in output
+  const result = {
     // Main outputs
-    totalLaborHours,
-    workDays,
-    calendarDays,
-    travelDays,
-    totalCalendarDays,
-    nights,
-    hotelRooms,
-    perDiemDays,
+    totalLaborHours: Number(totalLaborHours) || 0,
+    workDays: Number(workDays) || 0,
+    calendarDays: Number(calendarDays) || 0,
+    travelDays: Number(travelDays) || 0,
+    totalCalendarDays: Number(totalCalendarDays) || 0,
+    nights: Number(nights) || 0,
+    hotelRooms: Number(hotelRooms) || 0,
+    perDiemDays: Number(perDiemDays) || 0,
     
     // Detailed breakdown for debugging and display
     breakdown: {
-      step1_laborHours: totalLaborHours,
-      step2_rawWorkDays: rawWorkDays,
-      step3_roundedWorkDays: workDays,
-      step4_calendarDays: calendarDays,
-      step5_travelDays: travelDays,
-      step6_totalDays: totalCalendarDays,
-      step7_nights: nights,
-      step8_roomsPerNight: effectiveRoomsPerNight,
-      step9_hotelRooms: hotelRooms,
-      step10_perDiem: perDiemDays
+      step1_laborHours: Number(totalLaborHours) || 0,
+      step2_rawWorkDays: Number(rawWorkDays) || 0,
+      step3_roundedWorkDays: Number(workDays) || 0,
+      step4_calendarDays: Number(calendarDays) || 0,
+      step5_travelDays: Number(travelDays) || 0,
+      step6_totalDays: Number(totalCalendarDays) || 0,
+      step7_nights: Number(nights) || 0,
+      step8_roomsPerNight: Number(effectiveRoomsPerNight) || 0,
+      step9_hotelRooms: Number(hotelRooms) || 0,
+      step10_perDiem: Number(perDiemDays) || 0
     }
   };
+  
+  // HARD GUARD: Validate no negative values in result
+  for (const key in result) {
+    if (typeof result[key] === 'number' && result[key] < 0) {
+      throw new Error(`[computeQuoteDerived] Negative value detected: ${key} = ${result[key]}`);
+    }
+  }
+  
+  return result;
 }
 
 /**
@@ -295,9 +396,53 @@ export function getDerivedQuantity(result, calculationType) {
  * HELPER: Check if an item should use derived calculation
  * ============================================================================
  * 
+ * ⚠️ WARNING (CAPA 8 - ANTI FUTURO DEV):
+ * DO NOT manually set quantities for auto-calculated items.
+ * These values MUST always be derived from computeQuoteDerived.
+ * 
  * @param {Object} item - Line item
  * @returns {boolean}
  */
 export function isAutoCalculatedItem(item) {
   return item.auto_calculated === true && !item.manual_override;
+}
+
+/**
+ * ============================================================================
+ * HELPER: Create canonical input for computeQuoteDerived (CAPA 2)
+ * ============================================================================
+ * 
+ * Factory function to ensure all required fields are present.
+ * Prevents implicit defaults and ghost data.
+ * 
+ * @param {Object} params - Raw parameters
+ * @returns {QuoteComputeInput} - Canonical input
+ */
+export function createComputeInput(params) {
+  const {
+    items,
+    techs,
+    travelEnabled = false,
+    travelHours = 0,
+    hoursPerDay = 8,
+    roomsPerNight = null
+  } = params;
+  
+  // Validate required fields
+  if (!items) throw new Error('items is required');
+  if (!techs) throw new Error('techs is required');
+  
+  return {
+    items,
+    techs,
+    travel: {
+      enabled: Boolean(travelEnabled),
+      hours: Number(travelHours) || 0
+    },
+    calendar: {
+      hoursPerDay: Number(hoursPerDay) || 8,
+      workDays: [1, 2, 3, 4, 5] // Mon-Fri fixed
+    },
+    roomsPerNight
+  };
 }

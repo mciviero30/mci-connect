@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import StayDurationCalculator from "@/components/quotes/StayDurationCalculator";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
 import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
+import { computeQuoteDerived, createComputeInput, getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDerived";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -103,10 +104,37 @@ export default function CrearEstimado() {
     terms: '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
   });
 
+  // ============================================================================
+  // CAPA 4 - ELIMINAR ESTADOS INTERMEDIOS
+  // ============================================================================
+  // NO MORE: useState for derived values like hotel rooms, per diem, nights
+  // ALL derived values come from useMemo below
+  
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
   const [projectTechCount, setProjectTechCount] = useState(2);
   const [travelTimeHours, setTravelTimeHours] = useState(0);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
+  
+  // ============================================================================
+  // CAPA 3 - useMemo ÚNICO EN QUOTE ROOT
+  // ============================================================================
+  // SINGLE source of truth for ALL derived values
+  // Dependencies: items, techs, travel, calendar
+  
+  const derivedValues = useMemo(() => {
+    // Create canonical input (CAPA 2)
+    const input = createComputeInput({
+      items: formData.items,
+      techs: projectTechCount,
+      travelEnabled: travelTimeHours > 4, // Auto-detect travel requirement
+      travelHours: travelTimeHours,
+      hoursPerDay: 8,
+      roomsPerNight
+    });
+    
+    // Compute derived values (SINGLE SOURCE OF TRUTH)
+    return computeQuoteDerived(input);
+  }, [formData.items, projectTechCount, travelTimeHours, roomsPerNight]);
 
   const handleAddTravelItems = (travelItems) => {
     // Remove existing travel items first
@@ -792,18 +820,30 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     }
   };
 
-  // Calculate totals using centralized function with derived quantities
-  const calculateTotals = () => {
-    const enrichedItems = enrichItemsWithDerivedQuantities(
-      formData.items,
-      projectTechCount,
-      travelTimeHours,
-      roomsPerNight
-    );
-    return calculateQuoteTotals(enrichedItems, formData.tax_rate);
-  };
+  // ============================================================================
+  // CALCULATE TOTALS USING DERIVED VALUES (READ-ONLY)
+  // ============================================================================
   
-  const { subtotal, tax_amount: taxAmount, total } = calculateTotals();
+  const { subtotal, taxAmount, total } = useMemo(() => {
+    // Enrich items with derived quantities from computeQuoteDerived
+    const enrichedItems = formData.items.map(item => {
+      // If auto-calculated, use derived quantity
+      if (item.auto_calculated && !item.manual_override) {
+        const quantity = getDerivedQuantity(derivedValues, item.calculation_type);
+        return {
+          ...item,
+          quantity,
+          total: quantity * (item.unit_price || 0)
+        };
+      }
+      
+      // Otherwise use stored quantity
+      return item;
+    });
+    
+    // Calculate totals
+    return calculateQuoteTotals(enrichedItems, formData.tax_rate);
+  }, [formData.items, formData.tax_rate, derivedValues]);
 
   // Block non-authorized users
   if (user && !canCreate) {
@@ -1052,10 +1092,9 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       />
                       
                       <StayDurationCalculator
-                        items={formData.items}
+                        derivedValues={derivedValues}
                         techCount={projectTechCount}
                         onTechCountChange={setProjectTechCount}
-                        travelTimeHours={travelTimeHours}
                         onAutoGenerateItems={handleAutoGenerateStayItems}
                         language={language}
                         roomsPerNight={roomsPerNight}
@@ -1063,9 +1102,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       />
                       
                       <ProjectDurationSummary
-                        items={formData.items}
-                        techCount={projectTechCount}
-                        travelTimeHours={travelTimeHours}
+                        derivedValues={derivedValues}
                         language={language}
                       />
                     </div>
@@ -1123,9 +1160,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 allowCatalogSelect={true}
                 allowReorder={true}
                 onToast={toast}
-                techCount={projectTechCount}
-                travelTimeHours={travelTimeHours}
-                roomsPerNight={roomsPerNight}
+                derivedValues={derivedValues}
               />
             </CardContent>
           </Card>

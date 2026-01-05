@@ -1,25 +1,35 @@
+/**
+ * ============================================================================
+ * CAPA 6 - PROJECT DURATION SUMMARY (LEDGER UX - READ-ONLY)
+ * ============================================================================
+ * 
+ * ⚠️ WARNING (CAPA 8 - ANTI FUTURO DEV):
+ * This component does NOT perform calculations.
+ * It ONLY displays derived values passed from parent.
+ * 
+ * DO NOT add any calculation logic here.
+ * DO NOT call computeQuoteDerived or any calculation functions.
+ * 
+ * All values are auto-calculated and synchronized with project changes.
+ */
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Calendar, Users, Clock, Briefcase, Moon, Info } from 'lucide-react';
-import { calculateStayDuration } from '@/components/domain/calculations/stayDuration';
+import { Calendar, Users, Clock, Briefcase, Moon, Info, Lock } from 'lucide-react';
 
-export default function ProjectDurationSummary({ items, techCount, travelTimeHours, language }) {
-  // Calculate duration metrics
-  const calculations = calculateStayDuration({
-    items,
-    techCount,
-    travelTimeHours,
-    roomsPerNight: Math.ceil(techCount / 2)
-  });
-
-  if (!calculations) {
+export default function ProjectDurationSummary({ derivedValues, language }) {
+  // ============================================================================
+  // CAPA 6 - PURELY PRESENTATIONAL (NO CALCULATIONS)
+  // ============================================================================
+  
+  if (!derivedValues || derivedValues.totalLaborHours === 0) {
     return null;
   }
 
-  const hasTravelDays = travelTimeHours > 0;
-  const hasWeekends = calculations.weekends > 0;
+  const hasTravelDays = derivedValues.travelDays > 0;
+  const hasWeekends = derivedValues.calendarDays > derivedValues.workDays;
 
   return (
     <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 shadow-lg">
@@ -30,13 +40,17 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
             {language === 'es' ? 'Resumen de Duración del Proyecto' : 'Project Duration Summary'}
           </CardTitle>
           <div className="flex gap-2">
+            <Badge className="bg-blue-100 text-blue-700 border border-blue-300 flex items-center gap-1">
+              <Lock className="w-3 h-3" />
+              {language === 'es' ? 'Auto-calculado' : 'Auto-calculated'}
+            </Badge>
             {hasWeekends && (
               <Badge className="bg-purple-100 text-purple-700 border border-purple-300">
                 {language === 'es' ? 'Incluye fines de semana' : 'Includes weekends'}
               </Badge>
             )}
             {hasTravelDays && (
-              <Badge className="bg-blue-100 text-blue-700 border border-blue-300">
+              <Badge className="bg-amber-100 text-amber-700 border border-amber-300">
                 {language === 'es' ? 'Incluye días de viaje' : 'Travel days included'}
               </Badge>
             )}
@@ -53,27 +67,13 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
                 {language === 'es' ? 'Horas Laborales' : 'Labor Hours'}
               </span>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{calculations.totalLaborHours}</p>
+            <p className="text-2xl font-bold text-slate-900">{derivedValues.totalLaborHours}</p>
             <p className="text-xs text-slate-500 mt-0.5">
-              {language === 'es' ? 'horas totales' : 'total hours'}
+              {language === 'es' ? '🔒 auto-calculado' : '🔒 auto-calculated'}
             </p>
           </div>
 
-          {/* Technicians */}
-          <div className="bg-white rounded-lg p-3 border border-slate-200">
-            <div className="flex items-center gap-2 mb-1">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span className="text-xs text-slate-600">
-                {language === 'es' ? 'Técnicos' : 'Technicians'}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-slate-900">{techCount}</p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {language === 'es' ? 'personas' : 'people'}
-            </p>
-          </div>
-
-          {/* Work Days */}
+          {/* Work Days - READ-ONLY */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -85,23 +85,23 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
                     </span>
                     <Info className="w-3 h-3 text-slate-400" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{calculations.workDays}</p>
+                  <p className="text-2xl font-bold text-slate-900">{derivedValues.workDays}</p>
                   <p className="text-xs text-green-600 mt-0.5 font-medium">
-                    {language === 'es' ? 'Lun–Vie solamente' : 'Mon–Fri only'}
+                    {language === 'es' ? '🔒 Lun–Vie' : '🔒 Mon–Fri'}
                   </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 text-white max-w-xs">
                 <p className="text-sm">
                   {language === 'es'
-                    ? 'Días laborales calculados basados en horas de instalación. Solo cuenta lunes a viernes.'
-                    : 'Work days calculated based on installation hours. Only counts Monday through Friday.'}
+                    ? '🔒 Auto-calculado: Este valor se deriva automáticamente de las horas de instalación y se mantiene sincronizado con los cambios del proyecto para prevenir errores de estimación.'
+                    : '🔒 Auto-calculated: This value is automatically derived from installation hours and stays synchronized with project changes to prevent estimation errors.'}
                 </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
-          {/* Calendar Days */}
+          {/* Calendar Days - READ-ONLY */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -113,23 +113,23 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
                     </span>
                     <Info className="w-3 h-3 text-slate-400" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{calculations.totalCalendarDays}</p>
+                  <p className="text-2xl font-bold text-slate-900">{derivedValues.totalCalendarDays}</p>
                   <p className="text-xs text-purple-600 mt-0.5 font-medium">
-                    {language === 'es' ? 'Incluye fines de semana' : 'Includes weekends'}
+                    {language === 'es' ? '🔒 Incluye fines de semana' : '🔒 Includes weekends'}
                   </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 text-white max-w-xs">
                 <p className="text-sm">
                   {language === 'es'
-                    ? 'Total de días calendario desde llegada hasta salida. Incluye fines de semana y días de viaje.'
-                    : 'Total calendar days from arrival to departure. Includes weekends and travel days.'}
+                    ? '🔒 Auto-calculado: Total de días calendario desde llegada hasta salida. Incluye fines de semana y días de viaje. Se mantiene sincronizado automáticamente.'
+                    : '🔒 Auto-calculated: Total calendar days from arrival to departure. Includes weekends and travel days. Stays synchronized automatically.'}
                 </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
-          {/* Total Nights */}
+          {/* Total Nights - READ-ONLY */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -141,23 +141,23 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
                     </span>
                     <Info className="w-3 h-3 text-slate-400" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{calculations.totalNights}</p>
+                  <p className="text-2xl font-bold text-slate-900">{derivedValues.nights}</p>
                   <p className="text-xs text-indigo-600 mt-0.5 font-medium">
-                    {language === 'es' ? 'Viaje + fines de semana' : 'Travel + weekends'}
+                    {language === 'es' ? '🔒 auto-calculado' : '🔒 auto-calculated'}
                   </p>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-900 text-white max-w-xs">
                 <p className="text-sm">
                   {language === 'es'
-                    ? 'Noches de hotel necesarias. Incluye noches de viaje (domingos/fines de semana) y fines de semana durante el trabajo.'
-                    : 'Hotel nights required. Includes travel nights (Sundays/weekends) and weekends during work period.'}
+                    ? '🔒 Auto-calculado: Noches de hotel necesarias. Se deriva automáticamente de la duración del proyecto y se mantiene sincronizado con los cambios.'
+                    : '🔒 Auto-calculated: Hotel nights required. Automatically derived from project duration and stays synchronized with changes.'}
                 </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
-          {/* Travel Days Status */}
+          {/* Travel Days Status - READ-ONLY */}
           <div className="bg-white rounded-lg p-3 border border-slate-200">
             <div className="flex items-center gap-2 mb-1">
               <Calendar className="w-4 h-4 text-amber-600" />
@@ -177,8 +177,24 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
           </div>
         </div>
 
-        {/* Explanation Footer */}
+        {/* CAPA 6 & 8 - Explanation Footer with Lock Icon */}
         <div className="mt-4 pt-4 border-t border-slate-200">
+          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className="w-4 h-4 text-blue-600" />
+              <p className="text-xs font-bold text-blue-900">
+                {language === 'es' 
+                  ? '¿Por qué estos valores no son editables?' 
+                  : 'Why are these values not editable?'}
+              </p>
+            </div>
+            <p className="text-xs text-blue-800 leading-relaxed">
+              {language === 'es'
+                ? 'Estos valores se calculan automáticamente a partir de los items del proyecto para prevenir errores de estimación. Se mantienen sincronizados con cualquier cambio en las horas de instalación, cantidad de técnicos, o duración del proyecto.'
+                : 'These values are automatically calculated from project items to prevent estimation errors. They stay synchronized with any changes to installation hours, technician count, or project duration.'}
+            </p>
+          </div>
+          
           <div className="grid md:grid-cols-2 gap-3 text-xs text-slate-600">
             <div className="flex items-start gap-2">
               <Info className="w-3 h-3 text-blue-500 mt-0.5 flex-shrink-0" />
@@ -209,8 +225,8 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
                   {language === 'es' ? 'Noches de hotel:' : 'Hotel nights:'}
                 </strong>{' '}
                 {language === 'es'
-                  ? 'Incluye viaje + fines de semana durante trabajo'
-                  : 'Includes travel + weekends during work'}
+                  ? 'Auto-calculado de duración total'
+                  : 'Auto-calculated from total duration'}
               </p>
             </div>
             <div className="flex items-start gap-2">
@@ -220,8 +236,8 @@ export default function ProjectDurationSummary({ items, techCount, travelTimeHou
                   {language === 'es' ? 'Días de viaje:' : 'Travel days:'}
                 </strong>{' '}
                 {language === 'es'
-                  ? 'Pueden ocurrir en fines de semana'
-                  : 'May occur on weekends'}
+                  ? 'Agregados si viaje > 4h'
+                  : 'Added if travel > 4h'}
               </p>
             </div>
           </div>

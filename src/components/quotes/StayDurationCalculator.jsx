@@ -1,81 +1,46 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * ============================================================================
+ * CAPA 4 - COMPONENTE SIN ESTADOS INTERMEDIOS
+ * ============================================================================
+ * 
+ * Este componente NO calcula nada.
+ * Solo MUESTRA valores derivados del parent.
+ * 
+ * ⚠️ WARNING: NO agregues useState o useEffect para cálculos.
+ * Todos los valores vienen de derivedValues (prop).
+ */
+
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Hotel, Coffee, Clock, Info, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { calculateStayDuration } from '@/components/domain/calculations/stayDuration';
 
 export default function StayDurationCalculator({ 
-  items = [], 
+  derivedValues,
   techCount = 2, 
   onTechCountChange,
-  travelTimeHours = 0,
   onAutoGenerateItems,
   language = 'en',
-  roomsPerNight: controlledRoomsPerNight,
+  roomsPerNight,
   onRoomsPerNightChange
 }) {
-  const [internalRoomsPerNight, setInternalRoomsPerNight] = useState(1);
-  const [calculations, setCalculations] = useState(null);
+  // ============================================================================
+  // CAPA 6 - READ-ONLY DISPLAY (NO CALCULATIONS)
+  // ============================================================================
   
-  // Use controlled or internal state
-  const roomsPerNight = controlledRoomsPerNight !== undefined ? controlledRoomsPerNight : internalRoomsPerNight;
-  const setRoomsPerNight = onRoomsPerNightChange || setInternalRoomsPerNight;
-
-  useEffect(() => {
-    if (!items || items.length === 0) {
-      setCalculations(null);
-      return;
-    }
-
-    // Debug: Detailed logging
-    console.log('📊 StayDurationCalculator - Total items count:', items.length);
-    console.log('📊 StayDurationCalculator - All items:', items);
-    console.log('📊 StayDurationCalculator - Items summary:', items.map(i => ({
-      name: i.item_name,
-      installation_time: i.installation_time,
-      quantity: i.quantity,
-      is_travel: i.is_travel_item
-    })));
-
-    // Call centralized calculation helper
-    const result = calculateStayDuration({
-      items,
-      techCount,
-      travelTimeHours,
-      roomsPerNight
-    });
-    
-    console.log('📊 StayDurationCalculator - Result:', result);
-    
-    if (!result) {
-      setCalculations(null);
-      return;
-    }
-
-    // Auto-update rooms per night if it doesn't match suggested
-    if (roomsPerNight !== result.suggestedRooms) {
-      setRoomsPerNight(result.suggestedRooms);
-    }
-
-    setCalculations(result);
-
-  }, [items, techCount, travelTimeHours, roomsPerNight]);
-
-  // Check if items exist but have no installation hours
-  const hasItemsWithoutHours = items && items.length > 0 && !calculations;
+  const hasCalculations = derivedValues && derivedValues.totalLaborHours > 0;
 
   const handleAddToQuote = () => {
-    if (!calculations || !onAutoGenerateItems) return;
+    if (!derivedValues || !onAutoGenerateItems) return;
 
     onAutoGenerateItems({
-      hotel_quantity: calculations.totalHotelRooms,
-      per_diem_quantity: calculations.totalPerDiem,
+      hotel_quantity: derivedValues.hotelRooms,
+      per_diem_quantity: derivedValues.perDiemDays,
       tech_count: techCount,
-      duration_days: calculations.totalCalendarDays
+      duration_days: derivedValues.totalCalendarDays
     });
   };
 
@@ -106,26 +71,21 @@ export default function StayDurationCalculator({
           </div>
         </div>
 
-        {!calculations && (
-          <Alert className={hasItemsWithoutHours ? "bg-amber-50 border-amber-300" : "bg-blue-50 border-blue-300"}>
-            <Info className={hasItemsWithoutHours ? "w-4 h-4 text-amber-600" : "w-4 h-4 text-blue-600"} />
-            <AlertDescription className={hasItemsWithoutHours ? "text-sm text-amber-900" : "text-sm text-blue-900"}>
-              {hasItemsWithoutHours ? (
-                language === 'es' 
-                  ? 'Los items actuales no tienen horas de instalación definidas. Edita los items y agrega horas de instalación para activar el cálculo automático.' 
-                  : 'Current items have no installation hours defined. Edit items and add installation hours to activate automatic calculation.'
-              ) : (
-                language === 'es' 
-                  ? 'Agrega items con horas de instalación para calcular automáticamente la duración del proyecto, habitaciones de hotel y per diem.' 
-                  : 'Add items with installation hours to automatically calculate project duration, hotel rooms, and per diem.'
-              )}
+        {/* CAPA 6 - LEDGER UX (READ-ONLY DISPLAY) */}
+        {!hasCalculations && (
+          <Alert className="bg-blue-50 border-blue-300">
+            <Info className="w-4 h-4 text-blue-600" />
+            <AlertDescription className="text-sm text-blue-900">
+              {language === 'es' 
+                ? '🔒 Agrega items con horas de instalación para activar el cálculo automático de duración, hotel y per diem. Los valores se actualizan automáticamente para prevenir errores de estimación.' 
+                : '🔒 Add items with installation hours to activate automatic calculation of duration, hotel, and per diem. Values update automatically to prevent estimation errors.'}
             </AlertDescription>
           </Alert>
         )}
         
-        {calculations && (
+        {hasCalculations && (
           <>
-        {/* Calculation Summary */}
+        {/* Calculation Summary - READ-ONLY DISPLAY */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-white rounded-lg border border-purple-200">
             <div className="flex items-center gap-2 mb-1">
@@ -134,9 +94,9 @@ export default function StayDurationCalculator({
                 {language === 'es' ? 'Horas Totales' : 'Total Hours'}
               </span>
             </div>
-            <p className="text-2xl font-bold text-purple-900">{calculations.totalLaborHours.toFixed(0)}h</p>
+            <p className="text-2xl font-bold text-purple-900">{derivedValues.totalLaborHours.toFixed(0)}h</p>
             <p className="text-xs text-slate-500">
-              {calculations.workDays} {language === 'es' ? 'días laborales' : 'work days'}
+              {derivedValues.workDays} {language === 'es' ? 'días laborales' : 'work days'}
             </p>
           </div>
 
@@ -147,9 +107,9 @@ export default function StayDurationCalculator({
                 {language === 'es' ? 'Duración Total' : 'Total Duration'}
               </span>
             </div>
-            <p className="text-2xl font-bold text-purple-900">{calculations.totalCalendarDays} {language === 'es' ? 'días' : 'days'}</p>
+            <p className="text-2xl font-bold text-purple-900">{derivedValues.totalCalendarDays} {language === 'es' ? 'días' : 'days'}</p>
             <p className="text-xs text-slate-500">
-              {calculations.totalNights} {language === 'es' ? 'noches' : 'nights'}
+              {derivedValues.nights} {language === 'es' ? 'noches' : 'nights'}
             </p>
           </div>
 
@@ -160,17 +120,17 @@ export default function StayDurationCalculator({
                 {language === 'es' ? 'Habitaciones' : 'Hotel Rooms'}
               </span>
             </div>
-            <p className="text-2xl font-bold text-purple-900">{calculations.totalHotelRooms}</p>
+            <p className="text-2xl font-bold text-purple-900">{derivedValues.hotelRooms}</p>
             <div className="flex items-center gap-2 mt-1">
               <Input
                 type="number"
                 min="1"
                 max="10"
                 value={roomsPerNight}
-                onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
+                onChange={(e) => onRoomsPerNightChange(parseInt(e.target.value) || 1)}
                 className="w-14 h-6 text-xs"
               />
-              <span className="text-xs text-slate-500">x {calculations.totalNights}n</span>
+              <span className="text-xs text-slate-500">x {derivedValues.nights}n</span>
             </div>
           </div>
 
@@ -179,22 +139,25 @@ export default function StayDurationCalculator({
               <Coffee className="w-4 h-4 text-purple-600" />
               <span className="text-xs font-semibold text-slate-600">Per Diem</span>
             </div>
-            <p className="text-2xl font-bold text-purple-900">{calculations.totalPerDiem}</p>
+            <p className="text-2xl font-bold text-purple-900">{derivedValues.perDiemDays}</p>
             <p className="text-xs text-slate-500">
-              {techCount} techs × {calculations.totalCalendarDays}d
+              {techCount} techs × {derivedValues.totalCalendarDays}d
             </p>
           </div>
         </div>
 
-        {/* Breakdown */}
+        {/* Breakdown - READ-ONLY */}
         <Alert className="bg-purple-50 border-purple-300">
           <Info className="w-4 h-4 text-purple-600" />
           <AlertDescription className="text-xs text-purple-900 space-y-1">
             <p>
-              <strong>{language === 'es' ? 'Capacidad:' : 'Capacity:'}</strong> {calculations.dailyCapacity}h/day ({techCount} techs × 8h)
+              <strong>{language === 'es' ? '🔒 Auto-calculado:' : '🔒 Auto-calculated:'}</strong>{' '}
+              {language === 'es' 
+                ? 'Estos valores se sincronizan automáticamente con los cambios del proyecto.'
+                : 'These values stay synchronized with project changes automatically.'}
             </p>
             <p>
-              <strong>{language === 'es' ? 'Calendario:' : 'Schedule:'}</strong> {calculations.workDays} {language === 'es' ? 'días laborales' : 'work days'} + {calculations.weekends} {language === 'es' ? 'días de fin de semana' : 'weekend days'}
+              <strong>{language === 'es' ? 'Capacidad:' : 'Capacity:'}</strong> {techCount * 8}h/day ({techCount} techs × 8h)
             </p>
           </AlertDescription>
         </Alert>
