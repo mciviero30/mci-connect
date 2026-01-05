@@ -174,6 +174,16 @@ export default function AgreementGate({ children }) {
 
   // CONDITIONAL LOGIC - happens AFTER all hooks
   
+  // DEV: Log render order
+  if (import.meta.env.DEV) {
+    console.log('🔵 AgreementGate rendering:', {
+      userEmail,
+      signaturesLoading,
+      gateUnlocked,
+      unsignedCount: unsignedAgreements.length
+    });
+  }
+  
   // Defensive: ensure user exists
   if (!userEmail) {
     return children;
@@ -215,6 +225,10 @@ export default function AgreementGate({ children }) {
     // Allow agreement UI to remain visible until mutation completes
     // Fall through to render agreement modal below
   } else if (gateUnlocked || !shouldBlockAccess || showContent) {
+    // DEV: Log passthrough
+    if (import.meta.env.DEV) {
+      console.log('✅ AgreementGate allowing access');
+    }
     // Guard 3: Session unlock or no blocking needed - allow access
     return children;
     }
@@ -228,6 +242,11 @@ export default function AgreementGate({ children }) {
     if (!currentAgreement) {
     return children;
     }
+
+  // DEV: Log blocking decision
+  if (import.meta.env.DEV) {
+    console.log('🚨 AgreementGate BLOCKING access - rendering modal');
+  }
 
   // Block access - render agreement modal
   return (

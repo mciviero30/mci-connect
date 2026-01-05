@@ -101,6 +101,17 @@ export default function TaxProfileGate({ children }) {
 
   // CONDITIONAL RENDERING - happens AFTER all hooks
   
+  // DEV: Log render order
+  if (import.meta.env.DEV) {
+    console.log('🟢 TaxProfileGate rendering:', {
+      userEmail,
+      isLoading,
+      isExempt,
+      hasPendingAgreements,
+      taxProfileCompleted: taxProfile?.completed
+    });
+  }
+  
   // Defensive: if no user, fail open (allow access)
   if (!userEmail) {
     return children;
@@ -140,7 +151,15 @@ export default function TaxProfileGate({ children }) {
     !isTaxOnboardingPage &&
     (!taxProfile || !taxProfile.completed)
   ) {
+    if (import.meta.env.DEV) {
+      console.log('🚨 TaxProfileGate BLOCKING access - redirecting to TaxOnboarding');
+    }
     return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
+  }
+  
+  // DEV: Log passthrough
+  if (import.meta.env.DEV) {
+    console.log('✅ TaxProfileGate allowing access');
   }
 
   // Allow access if: exempt, tax profile loaded and complete
