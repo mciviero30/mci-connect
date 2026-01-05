@@ -19,8 +19,48 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
 
   const convertMutation = useMutation({
     mutationFn: async () => {
-      // Create invoice from quote
-      const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+      // Generate invoice number
+      const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
+      const invoiceNumber = invoiceNumberData.invoice_number;
+      
+      // Auto-create or reuse job number
+      let jobId = quote.job_id;
+      let job_number = null;
+      
+      if (jobId) {
+        // Get existing job number
+        const existingJobs = await base44.entities.Job.filter({ id: jobId });
+        if (existingJobs.length > 0) {
+          job_number = existingJobs[0].job_number;
+        }
+      }
+      
+      // If no job exists, create one with new job number
+      if (!jobId && quote.job_name) {
+        const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+        job_number = jobNumberData.job_number;
+        
+        const newJob = await base44.entities.Job.create({
+          name: quote.job_name,
+          job_number: job_number,
+          address: quote.job_address || '',
+          city: '',
+          state: '',
+          zip: '',
+          customer_id: quote.customer_id || '',
+          customer_name: quote.customer_name || '',
+          contract_amount: quote.total || 0,
+          estimated_cost: 0,
+          estimated_hours: 0,
+          status: 'active',
+          team_id: quote.team_id || '',
+          team_name: quote.team_name || '',
+          color: 'blue',
+          description: `Auto-created from Quote ${quote.quote_number}`
+        });
+        
+        jobId = newJob.id;
+      }
       
       const invoice = {
         invoice_number: invoiceNumber,
@@ -30,7 +70,7 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
         customer_email: quote.customer_email,
         customer_phone: quote.customer_phone,
         job_name: quote.job_name,
-        job_id: quote.job_id,
+        job_id: jobId,
         job_address: quote.job_address,
         team_id: quote.team_id,
         team_name: quote.team_name,
@@ -45,7 +85,8 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
         balance: quote.total,
         notes: quote.notes,
         terms: quote.terms,
-        status: 'sent'
+        status: 'sent',
+        approval_status: 'approved'
       };
 
       const newInvoice = await base44.entities.Invoice.create(invoice);
