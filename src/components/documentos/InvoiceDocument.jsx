@@ -1,9 +1,18 @@
 import React from 'react';
 import { format } from 'date-fns';
 import LineItemsTable from './LineItemsTable';
+import { enrichItemsWithDerivedQuantities } from '@/components/domain/calculations/derivedItemQuantities';
 
 export default function InvoiceDocument({ invoice }) {
     if (!invoice) return null;
+
+    // Enrich items with derived quantities for accurate display
+    const enrichedItems = enrichItemsWithDerivedQuantities(
+        invoice.items || [],
+        2, // Default tech count
+        0, // Default travel time
+        1  // Default rooms per night
+    );
 
     const isPaid = invoice.status === 'paid';
     const hasBalance = invoice.balance > 0;
@@ -118,7 +127,7 @@ export default function InvoiceDocument({ invoice }) {
 
             {/* Items Table */}
             <div className="mb-8">
-                <LineItemsTable items={invoice.items || []} variant="invoice" />
+                <LineItemsTable items={enrichedItems} variant="invoice" />
             </div>
 
             {/* Notes Section */}
