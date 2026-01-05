@@ -143,6 +143,24 @@ export default function AgreementGate({ children }) {
     setShowContent(false);
   }, [userId]);
 
+  // Auto-unlock when no agreements pending (computed after signatures load)
+  useEffect(() => {
+    if (!signaturesLoading && user) {
+      const requiredAgreements = getRequiredAgreements(user) || [];
+      const unsigned = requiredAgreements.filter(agreement => {
+        return !signatures.some(sig => 
+          sig?.agreement_type === agreement?.type && 
+          sig?.version === agreement?.version &&
+          sig?.accepted === true
+        );
+      });
+      
+      if (unsigned.length === 0) {
+        setGateUnlocked(true);
+      }
+    }
+  }, [signaturesLoading, signatures, user]);
+
   // Handler functions (not hooks)
   const handleSign = () => {
     if (!hasRead || !signatureName.trim()) return;
