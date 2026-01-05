@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
-import { getRequiredAgreements } from '@/components/core/agreementsConfig';
 
 /**
  * Tax Profile Gate
@@ -27,16 +26,7 @@ export default function TaxProfileGate({ children }) {
   const isExempt = userRole === 'ceo' || userRole === 'admin';
   const shouldFetchProfile = !!userEmail && !isExempt;
 
-  // CRITICAL: Check if AgreementGate is still blocking
-  const agreementSignatures = queryClient.getQueryData(['agreementSignatures', userEmail]) || [];
-  const requiredAgreements = user ? getRequiredAgreements(user) : [];
-  const hasPendingAgreements = requiredAgreements.length > 0 && !requiredAgreements.every(agreement => 
-    agreementSignatures.some(sig => 
-      sig?.agreement_type === agreement?.type && 
-      sig?.version === agreement?.version &&
-      sig?.accepted === true
-    )
-  );
+
 
   // Fetch tax profile - ALWAYS called, enabled flag is stable
   const { data: taxProfile, isLoading, error } = useQuery({
@@ -107,7 +97,6 @@ export default function TaxProfileGate({ children }) {
       userEmail,
       isLoading,
       isExempt,
-      hasPendingAgreements,
       taxProfileCompleted: taxProfile?.completed
     });
   }
@@ -142,12 +131,10 @@ export default function TaxProfileGate({ children }) {
   }
 
   // DECLARATIVE REDIRECT: Block access if tax profile not completed
-  // CRITICAL: Only block if AgreementGate is NOT blocking (respects gate hierarchy)
   if (
     userEmail &&
     !isExempt &&
     !isLoading &&
-    !hasPendingAgreements &&
     !isTaxOnboardingPage &&
     (!taxProfile || !taxProfile.completed)
   ) {
