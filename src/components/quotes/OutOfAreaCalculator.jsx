@@ -160,6 +160,7 @@ export default function OutOfAreaCalculator({
 
         {!travelMetrics.length && (
           <Button 
+            type="button"
             onClick={calculateMetrics}
             disabled={isCalculating || !jobAddress || selectedTeamIds.length === 0}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
@@ -259,6 +260,7 @@ export default function OutOfAreaCalculator({
 
             <div className="flex gap-3 pt-4">
               <Button
+                type="button"
                 variant="outline"
                 onClick={() => {
                   setTravelMetrics([]);
@@ -269,6 +271,7 @@ export default function OutOfAreaCalculator({
                 {language === 'es' ? 'Recalcular' : 'Recalculate'}
               </Button>
               <Button
+                type="button"
                 onClick={addItemsToQuote}
                 className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
               >
