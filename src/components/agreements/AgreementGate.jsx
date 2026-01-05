@@ -193,8 +193,8 @@ export default function AgreementGate({ children }) {
   if (isSigningInProgress) {
     // Allow agreement UI to remain visible until mutation completes
     // Fall through to render agreement modal below
-  } else if (!shouldBlockAccess || showContent) {
-    // Guard 3: Allow access if no blocking needed or user has progressed manually
+  } else if (gateUnlocked || !shouldBlockAccess || showContent) {
+    // Guard 3: Session unlock or no blocking needed - allow access
     return children;
   }
 
