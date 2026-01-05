@@ -59,6 +59,22 @@ export default function AgreementGate({ children }) {
   // Sign mutation - MUST be declared before any returns
   const signMutation = useMutation({
     mutationFn: async (agreementData) => {
+      // PREVENT DUPLICATES: Check if already signed
+      const existing = await base44.entities.AgreementSignature.filter({
+        employee_email: userEmail,
+        agreement_type: agreementData.type,
+        version: agreementData.version,
+        accepted: true
+      });
+
+      if (existing && existing.length > 0) {
+        if (import.meta.env.DEV) {
+          console.log('⚠️ Agreement already signed, skipping duplicate');
+        }
+        // Return existing signature instead of creating duplicate
+        return existing[0];
+      }
+
       const metadata = {
         user_agent: navigator.userAgent,
         device: /Mobile/.test(navigator.userAgent) ? 'mobile' : 'desktop',
