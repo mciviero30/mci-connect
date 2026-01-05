@@ -1030,6 +1030,18 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     refetchInterval: false,
   });
 
+  // Global beforeunload handler to prevent silent reloads
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      // Warn on any reload/navigation to prevent auth refresh loops
+      e.preventDefault();
+      e.returnValue = ''; // Chrome requires returnValue to be set
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   return (
     <ToastProvider>
       <ErrorBoundary>
