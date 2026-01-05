@@ -8,84 +8,18 @@ export default function NotificationEngine({ user }) {
   // Only run for authenticated users
   if (!user?.email) return null;
 
-  // Monitor pending approvals (admin only)
-  const { data: pendingTimeEntries = [] } = useQuery({
-    queryKey: ['pendingTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.filter({ status: 'pending' }),
-    enabled: user?.role === 'admin',
-    refetchInterval: 300000, // Check every 5 minutes
-    initialData: []
-  });
-
-  const { data: pendingExpenses = [] } = useQuery({
-    queryKey: ['pendingExpenses'],
-    queryFn: () => base44.entities.Expense.filter({ status: 'pending' }),
-    enabled: user?.role === 'admin',
-    refetchInterval: 300000,
-    initialData: []
-  });
-
-  const { data: pendingTimeOff = [] } = useQuery({
-    queryKey: ['pendingTimeOff'],
-    queryFn: () => base44.entities.TimeOffRequest.filter({ status: 'pending' }),
-    enabled: user?.role === 'admin',
-    refetchInterval: 300000,
-    initialData: []
-  });
-
-  // Monitor inventory levels (admin only)
-  const { data: inventory = [] } = useQuery({
-    queryKey: ['inventoryItems'],
-    queryFn: () => base44.entities.InventoryItem.list(),
-    enabled: user?.role === 'admin',
-    refetchInterval: 900000, // Check every 15 minutes
-    initialData: []
-  });
-
-  // Monitor certifications expiring soon (admin only)
-  const { data: certifications = [] } = useQuery({
-    queryKey: ['certifications'],
-    queryFn: () => base44.entities.Certification.list(),
-    enabled: user?.role === 'admin',
-    refetchInterval: 86400000, // Check daily
-    initialData: []
-  });
-
-  // Monitor upcoming assignments
-  const { data: assignments = [] } = useQuery({
-    queryKey: ['assignments'],
-    queryFn: () => base44.entities.JobAssignment.list('-date', 100),
-    enabled: !!user,
-    refetchInterval: 600000,
-    initialData: []
-  });
-
-  // Monitor invoices for due dates
-  const { data: invoices = [] } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
-    enabled: user?.role === 'admin',
-    refetchInterval: 3600000, // Check every hour
-    initialData: []
-  });
-
-  // Monitor time entries for overtime
-  const { data: allTimeEntries = [] } = useQuery({
-    queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list(),
-    enabled: user?.role === 'admin',
-    refetchInterval: 600000, // Check every 10 minutes
-    initialData: []
-  });
-
-  // Monitor employees for performance reviews
-  const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
-    enabled: user?.role === 'admin',
-    refetchInterval: 86400000, // Check daily
-    initialData: []
-  });
+  // DISABLED: All polling disabled to fix refresh issue
+  // These features can be re-enabled later with proper optimization
+  
+  const pendingTimeEntries = [];
+  const pendingExpenses = [];
+  const pendingTimeOff = [];
+  const inventory = [];
+  const certifications = [];
+  const assignments = [];
+  const invoices = [];
+  const allTimeEntries = [];
+  const employees = [];
 
   // Check and create notifications
   useEffect(() => {

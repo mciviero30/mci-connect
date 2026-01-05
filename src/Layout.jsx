@@ -347,16 +347,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     }
   }, [user, shouldBlockForOnboarding, isOnboardingPage, navigate, isLoading, redirectCount]);
 
-  // ATOMIC MIGRATION: Sync employee data on first login
+  // ATOMIC MIGRATION: Sync employee data on first login - OPTIMIZED
   useEffect(() => {
     if (isLoading || !user) return;
 
     // Skip if already migrated
     const migrationFlag = sessionStorage.getItem(`migrated_${user.id}`);
-    if (migrationFlag === 'done') {
-      return;
-    }
-    if (migrationFlag === 'processing') {
+    if (migrationFlag === 'done' || migrationFlag === 'processing') {
       return;
     }
 
@@ -364,29 +361,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       try {
         sessionStorage.setItem(`migrated_${user.id}`, 'processing');
 
-        if (import.meta.env.DEV) {
-          console.log('🔄 Running atomic migration for:', user.email);
-        }
-
         // Call backend migration function (idempotent)
-        const result = await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
+        await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
         
-        if (import.meta.env.DEV) {
-          console.log('✅ Migration result:', result.data);
-          if (result.data.steps) {
-            result.data.steps.forEach(step => console.log('  -', step));
-          }
-          if (result.data.warnings && result.data.warnings.length > 0) {
-            console.warn('⚠️ Migration warnings:', result.data.warnings);
-          }
-        }
-
         sessionStorage.setItem(`migrated_${user.id}`, 'done');
-
-        // Refresh all employee-related queries
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-        queryClient.invalidateQueries({ queryKey: ['employeeProfile'] });
-        queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
 
       } catch (error) {
         if (import.meta.env.DEV) {
@@ -397,7 +375,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     };
 
     performMigration();
-  }, [user?.id, isLoading, queryClient]);
+  }, [user?.id, isLoading]);
 
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
