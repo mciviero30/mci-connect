@@ -822,10 +822,17 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return;
     }
 
+    // Calculate estimated hours from items
+    const estimated_hours = enrichedItems.reduce((sum, item) => {
+      const hours = (item.installation_time || 0) * (item.quantity || 0);
+      return sum + hours;
+    }, 0);
+
     // Save with enriched items (derived quantities applied)
     const dataToSave = {
       ...formData,
-      items: enrichedItems
+      items: enrichedItems,
+      estimated_hours
     };
 
     console.log('🔍 ITEMS BEFORE SAVE (with derived):', enrichedItems.map(i => ({

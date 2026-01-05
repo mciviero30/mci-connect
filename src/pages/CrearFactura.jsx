@@ -485,7 +485,16 @@ export default function CrearFactura() {
       return;
     }
 
-    createMutation.mutate(formData);
+    // Calculate estimated hours from items
+    const estimated_hours = (formData.items || []).reduce((sum, item) => {
+      const hours = (item.installation_time || 0) * (item.quantity || 0);
+      return sum + hours;
+    }, 0);
+
+    createMutation.mutate({
+      ...formData,
+      estimated_hours
+    });
   };
 
   // Modified existing saveMutation to now only handle UPDATES of existing invoices.
@@ -507,9 +516,16 @@ export default function CrearFactura() {
         })));
       }
       
+      // Calculate estimated hours from items
+      const estimated_hours = (data.items || []).reduce((sum, item) => {
+        const hours = (item.installation_time || 0) * (item.quantity || 0);
+        return sum + hours;
+      }, 0);
+      
       // Normalize and validate data (preserves payment info)
       const normalizedData = normalizeInvoiceForSave({
         ...data,
+        estimated_hours,
         amount_paid: existingInvoice?.amount_paid || 0, // Preserve existing payments
       });
 
@@ -561,9 +577,16 @@ export default function CrearFactura() {
 
       console.log('Sending invoice with data:', data);
       
+      // Calculate estimated hours from items
+      const estimated_hours = (data.items || []).reduce((sum, item) => {
+        const hours = (item.installation_time || 0) * (item.quantity || 0);
+        return sum + hours;
+      }, 0);
+      
       // Normalize and validate
       const normalizedData = normalizeInvoiceForSave({
         ...data,
+        estimated_hours,
         amount_paid: editId ? existingInvoice?.amount_paid || 0 : 0,
       });
 
