@@ -386,13 +386,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
 
 
-  // Soft redirect client-only users to ClientPortal
-  useEffect(() => {
-    if (isLoading || !user) return;
-    if (isClientOnly && currentPageName !== 'ClientPortal') {
-      navigate(createPageUrl('ClientPortal'), { replace: true });
-    }
-  }, [isClientOnly, currentPageName, navigate, isLoading, user]);
+
 
   // Permission-based navigation
   const getNavigationForUser = () => {
