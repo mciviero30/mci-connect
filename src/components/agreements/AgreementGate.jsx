@@ -58,7 +58,8 @@ export default function AgreementGate({ children, user }) {
         app_version: 'v1.0',
       };
 
-      return base44.entities.AgreementSignature.create({
+      // Create signature with explicit field mapping
+      const signatureData = {
         user_id: user.id,
         employee_email: user.email,
         employee_name: user.full_name,
@@ -69,12 +70,42 @@ export default function AgreementGate({ children, user }) {
         accepted_at: new Date().toISOString(),
         signature_name: signatureName,
         metadata,
-      });
+      };
+
+      // Log for debugging (DEV only)
+      if (import.meta.env.DEV) {
+        console.log('🔐 Signing agreement:', {
+          type: agreementData.type,
+          version: agreementData.version,
+          email: user.email
+        });
+      }
+
+      const result = await base44.entities.AgreementSignature.create(signatureData);
+
+      // Verify signature was created
+      if (!result?.id) {
+        throw new Error('Signature creation failed - no ID returned');
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('✅ Signature created:', result.id);
+      }
+
+      return result;
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      if (import.meta.env.DEV) {
+        console.log('🔄 Refreshing signatures...');
+      }
+
       // Wait for query to update before proceeding
       await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] });
-      await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
+      const refetchResult = await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
+
+      if (import.meta.env.DEV) {
+        console.log('✅ Signatures refreshed:', refetchResult);
+      }
       
       // Move to next agreement or show content
       if (currentStep < unsignedAgreements.length - 1) {
@@ -84,6 +115,12 @@ export default function AgreementGate({ children, user }) {
       } else {
         setShowContent(true);
       }
+    },
+    onError: (error) => {
+      // Log error for debugging
+      console.error('❌ Signature save failed:', error);
+      
+      // Error already displayed in UI via signMutation.isError
     },
   });
 
