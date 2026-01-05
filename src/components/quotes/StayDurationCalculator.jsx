@@ -173,6 +173,7 @@ export default function StayDurationCalculator({
         </Alert>
 
         <Button
+          type="button"
           onClick={handleAddToQuote}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
         >
