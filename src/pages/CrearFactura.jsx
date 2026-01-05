@@ -119,6 +119,9 @@ export default function CrearFactura() {
 
   const [outOfAreaEnabled, setOutOfAreaEnabled] = useState(false);
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+  const [projectTechCount, setProjectTechCount] = useState(2);
+  const [travelTimeHours, setTravelTimeHours] = useState(0);
+  const [roomsPerNight, setRoomsPerNight] = useState(1);
 
   const handleAddTravelItems = (travelItems) => {
     // Remove existing travel items first
@@ -196,6 +199,31 @@ export default function CrearFactura() {
     
     if (field === 'quantity' || field === 'unit_price') {
       newItems[index].total = newItems[index].quantity * newItems[index].unit_price;
+    }
+    
+    // AUTO-RECALCULATE hotel and per diem when regular items change
+    if (field === 'quantity' || field === 'installation_time') {
+      const { calculateStayDuration } = require('@/components/domain/calculations/stayDuration');
+      const result = calculateStayDuration({
+        items: newItems,
+        techCount: projectTechCount,
+        travelTimeHours,
+        roomsPerNight
+      });
+      
+      if (result) {
+        // Update hotel and per diem quantities
+        newItems.forEach((item, idx) => {
+          if (item.calculation_type === 'hotel') {
+            newItems[idx].quantity = result.totalHotelRooms;
+            newItems[idx].total = result.totalHotelRooms * (item.unit_price || 0);
+          }
+          if (item.calculation_type === 'per_diem') {
+            newItems[idx].quantity = result.totalPerDiem;
+            newItems[idx].total = result.totalPerDiem * (item.unit_price || 0);
+          }
+        });
+      }
     }
     
     setFormData({ ...formData, items: newItems });
