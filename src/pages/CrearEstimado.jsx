@@ -94,6 +94,7 @@ export default function CrearEstimado() {
     job_name: '',
     job_id: '',
     job_address: '',
+    work_details: '', // NEW: Details like floor, room, etc.
     team_ids: [], // Changed to array for multiple teams
     team_names: [], // Changed to array for multiple team names
     quote_date: format(new Date(), 'yyyy-MM-dd'),
@@ -273,6 +274,7 @@ export default function CrearEstimado() {
         job_name: existingQuote.job_name || '',
         job_id: existingQuote.job_id || '',
         job_address: existingQuote.job_address || '',
+        work_details: existingQuote.work_details || '',
         team_ids: existingQuote.team_ids || (existingQuote.team_id ? [existingQuote.team_id] : []),
         team_names: existingQuote.team_names || (existingQuote.team_name ? [existingQuote.team_name] : []),
         quote_date: existingQuote.quote_date || format(new Date(), 'yyyy-MM-dd'),
@@ -994,8 +996,18 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           </Card>
 
           <Card className="glass-card shadow-xl border-slate-200 mb-6">
-            <CardHeader className="border-b border-slate-200">
+            <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
               <CardTitle className="text-slate-900">{t('jobDetails')}</CardTitle>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="out-of-area-toggle"
+                  checked={formData.out_of_area}
+                  onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
+                />
+                <Label htmlFor="out-of-area-toggle" className="cursor-pointer text-sm font-medium text-slate-700 whitespace-nowrap">
+                  {language === 'es' ? 'Fuera de Área' : 'Out of Area'}
+                </Label>
+              </div>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -1038,6 +1050,18 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                     }}
                     placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
                     className="bg-white border-slate-300 text-slate-900"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label className="text-slate-700">
+                    {language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})
+                  </Label>
+                  <Textarea
+                    value={formData.work_details}
+                    onChange={(e) => setFormData({...formData, work_details: e.target.value})}
+                    className="h-20 bg-white border-slate-300 text-slate-900"
+                    placeholder={language === 'es' ? 'Ej: Piso 2, Habitación 205, lado norte...' : 'e.g., Floor 2, Room 205, north side...'}
                   />
                 </div>
 
@@ -1091,24 +1115,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   </p>
                 </div>
 
-                <div className="md:col-span-2">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Checkbox
-                      id="out-of-area"
-                      checked={formData.out_of_area}
-                      onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
-                    />
-                    <Label htmlFor="out-of-area" className="cursor-pointer text-slate-900 dark:text-white font-medium">
-                      {language === 'es' ? 'Trabajo Fuera de Área' : 'Out of Area Job'}
-                    </Label>
-                    {formData.out_of_area && (
-                      <Badge className="bg-orange-100 text-orange-700 border border-orange-300 text-xs">
-                        {language === 'es' ? 'Fuera de Área' : 'Out of Area'}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {formData.out_of_area && (
+                {formData.out_of_area && (
+                  <div className="md:col-span-2">
                     <div className="space-y-4">
                       <OutOfAreaCalculator
                         jobAddress={formData.job_address}
@@ -1133,8 +1141,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         language={language}
                       />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div>
                   <Label className="text-slate-700">{t('quoteDate')}</Label>
