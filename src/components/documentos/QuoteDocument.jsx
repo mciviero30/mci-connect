@@ -1,24 +1,29 @@
+/**
+ * ============================================================================
+ * CAPA 7 - QUOTE DOCUMENT (SNAPSHOT DISPLAY)
+ * ============================================================================
+ * 
+ * ⚠️ CRITICAL: Quote document displays saved quantities.
+ * 
+ * When quote is saved, derived quantities are already applied.
+ * This document shows the final approved values.
+ * 
+ * NO recalculation needed - quantities are final.
+ */
+
 import React from 'react';
 import { format } from 'date-fns';
 import LineItemsTable from './LineItemsTable';
-import { enrichItemsWithDerivedQuantities } from '@/components/domain/calculations/derivedItemQuantities';
 
 export default function QuoteDocument({ quote }) {
     if (!quote) return null;
 
-    // Enrich items with derived quantities for accurate display
-    let enrichedItems = quote.items || [];
-    try {
-        enrichedItems = enrichItemsWithDerivedQuantities(
-            quote.items || [],
-            2, // Default tech count
-            0, // Default travel time
-            1  // Default rooms per night
-        );
-    } catch (error) {
-        console.warn('Failed to enrich quote items, using raw items:', error);
-        enrichedItems = quote.items || [];
-    }
+    // ============================================================================
+    // CAPA 7 - USE SAVED QUANTITIES (NO ENRICHMENT)
+    // ============================================================================
+    // Quote items already have final derived quantities applied at save time
+    // Display as-is without recalculation
+    const displayItems = quote.items || [];
 
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
@@ -107,9 +112,9 @@ export default function QuoteDocument({ quote }) {
                 </div>
             )}
 
-            {/* Tabla con Alineación Superior (CRÍTICO) */}
+            {/* Tabla con Cantidades Finales */}
             <div className="mb-8">
-                <LineItemsTable items={enrichedItems} variant="quote" />
+                <LineItemsTable items={displayItems} variant="quote" />
             </div>
 
             {/* Notes Section */}

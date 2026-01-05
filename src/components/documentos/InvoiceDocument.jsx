@@ -1,24 +1,29 @@
+/**
+ * ============================================================================
+ * CAPA 7 - INVOICE DOCUMENT (SNAPSHOT DISPLAY)
+ * ============================================================================
+ * 
+ * ⚠️ CRITICAL: Invoice displays SNAPSHOT quantities from Quote.
+ * 
+ * NO recalculation of derived values.
+ * NO enrichItemsWithDerivedQuantities.
+ * 
+ * Items are displayed as-is (approved values from quote).
+ */
+
 import React from 'react';
 import { format } from 'date-fns';
 import LineItemsTable from './LineItemsTable';
-import { enrichItemsWithDerivedQuantities } from '@/components/domain/calculations/derivedItemQuantities';
 
 export default function InvoiceDocument({ invoice }) {
     if (!invoice) return null;
 
-    // Enrich items with derived quantities for accurate display
-    let enrichedItems = invoice.items || [];
-    try {
-        enrichedItems = enrichItemsWithDerivedQuantities(
-            invoice.items || [],
-            2, // Default tech count
-            0, // Default travel time
-            1  // Default rooms per night
-        );
-    } catch (error) {
-        console.warn('Failed to enrich invoice items, using raw items:', error);
-        enrichedItems = invoice.items || [];
-    }
+    // ============================================================================
+    // CAPA 7 - USE SNAPSHOT (NO ENRICHMENT)
+    // ============================================================================
+    // Invoice items already have final quantities from Quote
+    // Display as-is without recalculation
+    const displayItems = invoice.items || [];
 
     const isPaid = invoice.status === 'paid';
     const hasBalance = invoice.balance > 0;
@@ -131,9 +136,9 @@ export default function InvoiceDocument({ invoice }) {
                 </div>
             )}
 
-            {/* Items Table */}
+            {/* Items Table - SNAPSHOT */}
             <div className="mb-8">
-                <LineItemsTable items={enrichedItems} variant="invoice" />
+                <LineItemsTable items={displayItems} variant="invoice" />
             </div>
 
             {/* Notes Section */}
