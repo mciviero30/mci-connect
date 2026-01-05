@@ -157,16 +157,16 @@ export default function CrearEstimado() {
     let addedCount = 0;
     
     // Add Hotel Rooms
-    if (hotel_quantity > 0) {
+    if (hotel_quantity && hotel_quantity > 0) {
       const hotelName = hotelItem?.name || 'Hotel Rooms';
       const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
       updatedItems.push({
         item_name: hotelName,
         description: hotelItem?.description || 'Hotel accommodations',
-        quantity: hotel_quantity,
+        quantity: Math.max(1, hotel_quantity), // Ensure at least 1
         unit: hotelItem?.unit || 'night',
         unit_price: finalHotelRate,
-        total: hotel_quantity * finalHotelRate,
+        total: Math.max(1, hotel_quantity) * finalHotelRate,
         is_travel_item: true,
         calculation_type: 'hotel',
         tech_count: projectTechCount,
@@ -176,16 +176,16 @@ export default function CrearEstimado() {
     }
     
     // Add Per-Diem
-    if (per_diem_quantity > 0) {
+    if (per_diem_quantity && per_diem_quantity > 0) {
       const perDiemName = perDiemItem?.name || 'Per-Diem';
       const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
       updatedItems.push({
         item_name: perDiemName,
         description: perDiemItem?.description || 'Daily meal allowance',
-        quantity: per_diem_quantity,
+        quantity: Math.max(1, per_diem_quantity), // Ensure at least 1
         unit: perDiemItem?.unit || 'day',
         unit_price: finalPerDiemRate,
-        total: per_diem_quantity * finalPerDiemRate,
+        total: Math.max(1, per_diem_quantity) * finalPerDiemRate,
         is_travel_item: true,
         calculation_type: 'per_diem',
         tech_count: projectTechCount,
@@ -193,6 +193,8 @@ export default function CrearEstimado() {
       });
       addedCount++;
     }
+    
+    console.log('📦 Generated stay items:', updatedItems);
     
     setFormData(prev => ({
       ...prev,
