@@ -7,12 +7,18 @@ export default function InvoiceDocument({ invoice }) {
     if (!invoice) return null;
 
     // Enrich items with derived quantities for accurate display
-    const enrichedItems = enrichItemsWithDerivedQuantities(
-        invoice.items || [],
-        2, // Default tech count
-        0, // Default travel time
-        1  // Default rooms per night
-    );
+    let enrichedItems = invoice.items || [];
+    try {
+        enrichedItems = enrichItemsWithDerivedQuantities(
+            invoice.items || [],
+            2, // Default tech count
+            0, // Default travel time
+            1  // Default rooms per night
+        );
+    } catch (error) {
+        console.warn('Failed to enrich invoice items, using raw items:', error);
+        enrichedItems = invoice.items || [];
+    }
 
     const isPaid = invoice.status === 'paid';
     const hasBalance = invoice.balance > 0;

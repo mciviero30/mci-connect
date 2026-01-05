@@ -7,12 +7,18 @@ export default function QuoteDocument({ quote }) {
     if (!quote) return null;
 
     // Enrich items with derived quantities for accurate display
-    const enrichedItems = enrichItemsWithDerivedQuantities(
-        quote.items || [],
-        2, // Default tech count
-        0, // Default travel time
-        1  // Default rooms per night
-    );
+    let enrichedItems = quote.items || [];
+    try {
+        enrichedItems = enrichItemsWithDerivedQuantities(
+            quote.items || [],
+            2, // Default tech count
+            0, // Default travel time
+            1  // Default rooms per night
+        );
+    } catch (error) {
+        console.warn('Failed to enrich quote items, using raw items:', error);
+        enrichedItems = quote.items || [];
+    }
 
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
