@@ -22,7 +22,9 @@ export default function AgreementGate({ children, user }) {
   const [showContent, setShowContent] = useState(false);
   const [isSigningInProgress, setIsSigningInProgress] = useState(false);
 
-  // Fetch user's existing signatures
+  // SINGLE SOURCE OF TRUTH: AgreementSignature entity determines signed state
+  // currentUser is ONLY used to determine which agreements are required (role/position)
+  // Signed state comes ONLY from this query - NOT from currentUser
   const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
     queryKey: ['agreementSignatures', user?.email],
     queryFn: () => base44.entities.AgreementSignature.filter({ employee_email: user?.email }),
@@ -33,13 +35,10 @@ export default function AgreementGate({ children, user }) {
     initialData: [],
   });
 
-  // Get required agreements for this user
+  // Determine which agreements apply (based on role/position)
   const requiredAgreements = getRequiredAgreements(user);
-  const hasAllSignatures = hasSignedAllAgreements(user, signatures);
 
-  const isLoading = signaturesLoading;
-
-  // Filter out already signed agreements
+  // Check signatures query for signed state (NOT currentUser)
   const unsignedAgreements = requiredAgreements.filter(agreement => {
     return !signatures.some(sig => 
       sig.agreement_type === agreement.type && 
@@ -49,6 +48,9 @@ export default function AgreementGate({ children, user }) {
   });
 
   const currentAgreement = unsignedAgreements[currentStep];
+  
+  // Gate blocks if unsigned agreements exist AND user hasn't manually progressed
+  const shouldBlockAccess = unsignedAgreements.length > 0 && !showContent;
 
   // Sign mutation
   const signMutation = useMutation({
@@ -148,20 +150,11 @@ export default function AgreementGate({ children, user }) {
     setShowContent(false);
   }, [user?.id]);
 
-  // Show loading state
-  if (isLoading) {
+  // Wait for signatures query to load
+  if (signaturesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  // Loading state - wait for signatures query
-  if (signaturesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
