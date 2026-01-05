@@ -33,6 +33,7 @@ import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import StayDurationCalculator from "@/components/quotes/StayDurationCalculator";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
+import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -793,7 +794,6 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
 
   // Calculate totals using centralized function with derived quantities
   const calculateTotals = () => {
-    const { enrichItemsWithDerivedQuantities } = require('@/components/domain/calculations/derivedItemQuantities');
     const enrichedItems = enrichItemsWithDerivedQuantities(
       formData.items,
       projectTechCount,

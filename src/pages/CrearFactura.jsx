@@ -191,7 +191,6 @@ export default function CrearFactura() {
 
   const calculateTotals = () => {
     // Enrich items with derived quantities before calculation
-    const { enrichItemsWithDerivedQuantities } = require('@/components/domain/calculations/derivedItemQuantities');
     const enrichedItems = enrichItemsWithDerivedQuantities(
       formData.items,
       projectTechCount,
