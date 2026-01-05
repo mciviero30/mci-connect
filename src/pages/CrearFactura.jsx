@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -26,7 +26,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { canCreateFinancialDocs, needsApproval, canSendDocument } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
-import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
+/**
+ * ============================================================================
+ * CAPA 7 - INVOICE SNAPSHOT (NO RECALCULATION)
+ * ============================================================================
+ * 
+ * ⚠️ CRITICAL: Invoices inherit quantities as SNAPSHOT from Quote.
+ * 
+ * When Invoice is created from Quote:
+ * - ALL quantities are copied as-is (including hotel, per diem)
+ * - Invoice does NOT recalculate derived values
+ * - Invoice displays inherited snapshot
+ * 
+ * This prevents financial discrepancies:
+ * - Quote: $5,800 (approved by client)
+ * - Invoice: $5,800 (must match quote exactly)
+ * 
+ * DO NOT call computeQuoteDerived on Invoices.
+ */
 
 // Helper to extract invoice number from various response structures
 function extractInvoiceNumber(res) {
@@ -120,9 +137,19 @@ export default function CrearFactura() {
 
   const [outOfAreaEnabled, setOutOfAreaEnabled] = useState(false);
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
-  const [projectTechCount, setProjectTechCount] = useState(2);
-  const [travelTimeHours, setTravelTimeHours] = useState(0);
-  const [roomsPerNight, setRoomsPerNight] = useState(1);
+  
+  // ============================================================================
+  // CAPA 7 - NO DERIVED CALCULATIONS IN INVOICE
+  // ============================================================================
+  // These states exist ONLY for legacy support during manual creation
+  // When Invoice is created from Quote, these are ignored
+  // Invoice uses snapshot quantities from Quote, never recalculates
+  const [projectTechCount] = useState(2);
+  const [travelTimeHours] = useState(0);
+  const [roomsPerNight] = useState(1);
+  
+  // ⚠️ WARNING: DO NOT add useMemo with computeQuoteDerived here
+  // Invoices display snapshot values only
 
   const handleAddTravelItems = (travelItems) => {
     // Remove existing travel items first
@@ -159,16 +186,26 @@ export default function CrearFactura() {
     }
   }, [existingInvoice, loadingInvoice]);
 
+  // ============================================================================
+  // CAPA 7 - QUOTE → INVOICE SNAPSHOT
+  // ============================================================================
+  // When loading from Quote, copy ALL values as-is (SNAPSHOT)
+  // DO NOT recalculate hotel rooms, per diem, or any derived values
   useEffect(() => {
     if (quoteId && quotes.length > 0) {
       const quote = quotes.find(q => q.id === quoteId);
       if (quote) {
-        // Ensure items have item_name preserved from quote
+        // ⚠️ CRITICAL: Preserve ALL quantities from quote (SNAPSHOT)
+        // Items with auto_calculated flag still use their stored quantity
+        // This is the accepted value from quote - DO NOT recalculate
         const itemsWithItemName = (quote.items || []).map(item => ({
           ...item,
           item_name: (item.item_name ?? item.name ?? ''),
           description: (item.description ?? ''),
           unit: (item.unit ?? item.uom ?? 'pcs'),
+          // SNAPSHOT: Keep quantity as-is from quote
+          quantity: item.quantity,
+          total: item.quantity * (item.unit_price || 0)
         }));
 
         setFormData(prevFormData => ({
@@ -190,15 +227,14 @@ export default function CrearFactura() {
     }
   }, [quoteId, quotes]);
 
+  // ============================================================================
+  // CAPA 7 - INVOICE TOTALS (NO RECALCULATION)
+  // ============================================================================
+  // Invoice uses snapshot quantities from Quote
+  // NO enrichment, NO recalculation of derived values
   const calculateTotals = () => {
-    // Enrich items with derived quantities before calculation
-    const enrichedItems = enrichItemsWithDerivedQuantities(
-      formData.items,
-      projectTechCount,
-      travelTimeHours,
-      roomsPerNight
-    );
-    return calculateInvoiceTotals(enrichedItems, formData.tax_rate, formData.amount_paid || 0);
+    // Use items as-is (snapshot from quote or manual entry)
+    return calculateInvoiceTotals(formData.items, formData.tax_rate, formData.amount_paid || 0);
   };
 
   const handleItemChange = (index, field, value) => {
@@ -908,9 +944,7 @@ export default function CrearFactura() {
                 allowCatalogSelect={true}
                 allowReorder={false}
                 onToast={(toastData) => toast[toastData.variant || 'success'](toastData.title, { description: toastData.description })}
-                techCount={projectTechCount}
-                travelTimeHours={travelTimeHours}
-                roomsPerNight={roomsPerNight}
+                derivedValues={null}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto">

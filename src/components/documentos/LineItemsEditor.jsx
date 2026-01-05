@@ -8,19 +8,24 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { getDerivedQuantity, isAutoCalculatedItem } from "@/components/domain/calculations/derivedItemQuantities";
+import { getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDerived";
 
 /**
- * Unified Line Items Editor
+ * ============================================================================
+ * CAPA 4 & 8 - LINE ITEMS EDITOR (NO DERIVED CALCULATIONS)
+ * ============================================================================
  * 
- * Single source of truth for editing line items in Quotes and Invoices.
- * Follows EXACTLY the UI/UX from CrearEstimado.
+ * ⚠️ WARNING: This component does NOT calculate derived quantities.
+ * It receives derivedValues from parent and uses getDerivedQuantity helper.
+ * 
+ * DO NOT add calculation logic here.
+ * DO NOT manually set quantities for auto-calculated items.
  * 
  * Features:
  * - Catalog selection (if catalogItems provided)
  * - Manual editing (item_name + description)
  * - Travel items support (read-only if is_travel_item)
- * - Auto-calculation for special calculation_type items
+ * - Auto-calculated items display (hotel, per diem) - READ-ONLY
  * 
  * @param {Array} items - Current items array
  * @param {Function} onItemsChange - Callback when items change: (newItems) => void
@@ -28,6 +33,7 @@ import { getDerivedQuantity, isAutoCalculatedItem } from "@/components/domain/ca
  * @param {boolean} allowCatalogSelect - Show catalog selector (default: true)
  * @param {boolean} allowReorder - Show up/down arrows (default: true)
  * @param {Function} onToast - Toast notification function (optional)
+ * @param {Object} derivedValues - Derived values from computeQuoteDerived (CAPA 3)
  */
 export default function LineItemsEditor({
   items = [],
@@ -36,14 +42,20 @@ export default function LineItemsEditor({
   allowCatalogSelect = true,
   allowReorder = true,
   onToast,
-  techCount = 2,
-  travelTimeHours = 0,
-  roomsPerNight = 1
+  derivedValues // CAPA 3 - Receive derived values from parent
 }) {
   
   // Helper: Get catalog item name (supports both QuoteItem.name and ItemCatalog.item_name)
   const getCatalogName = (ci) => String(ci?.name || ci?.item_name || '').trim();
 
+  // ============================================================================
+  // CAPA 8 - ANTI FUTURO DEV WARNING
+  // ============================================================================
+  // Helper: Check if item is auto-calculated
+  const isAutoCalculatedItem = (item) => {
+    return item.auto_calculated === true && !item.manual_override;
+  };
+  
   const updateItem = (index, field, value) => {
     // Guard: Never allow clearing item_name
     if (field === 'item_name' && (value === null || value === undefined)) return;
@@ -51,9 +63,18 @@ export default function LineItemsEditor({
     const newItems = [...items];
     const itemBefore = { ...newItems[index] };
     
-    // If editing quantity on auto-calculated item, enable manual override
+    // ⚠️ WARNING (CAPA 8): If editing quantity on auto-calculated item, enable manual override
+    // This breaks automatic synchronization - user is taking control
     if (field === 'quantity' && isAutoCalculatedItem(newItems[index]) && !newItems[index].manual_override) {
       newItems[index].manual_override = true;
+      
+      if (onToast) {
+        onToast({
+          title: '⚠️ Manual Override Enabled',
+          description: 'This value will no longer update automatically with project changes.',
+          variant: 'warning'
+        });
+      }
     }
     
     newItems[index][field] = value;
@@ -153,10 +174,12 @@ export default function LineItemsEditor({
       </div>
 
       {items.map((item, index) => {
-        // Calculate derived quantity for display
+        // ============================================================================
+        // CAPA 4 - USE DERIVED VALUES (NO RECALCULATION)
+        // ============================================================================
         const isAutoCalc = isAutoCalculatedItem(item);
-        const displayQuantity = isAutoCalc && !item.manual_override
-          ? getDerivedQuantity(item, items, techCount, travelTimeHours, roomsPerNight)
+        const displayQuantity = isAutoCalc && !item.manual_override && derivedValues
+          ? getDerivedQuantity(derivedValues, item.calculation_type)
           : item.quantity;
         const displayTotal = displayQuantity * (item.unit_price || 0);
         
@@ -165,17 +188,34 @@ export default function LineItemsEditor({
           key={index} 
           className={`border-b border-slate-200 ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'} relative`}
         >
-          {/* Auto-calculated badge for special items */}
+          {/* CAPA 6 - Auto-calculated badge (VISUAL INDICATOR) */}
           {isAutoCalc && (
             <div className="absolute top-2 left-2 z-10 flex gap-1">
-              <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[9px] px-2 py-0.5">
-                {item.calculation_type === 'hotel' && '🏨 Auto-calc'}
-                {item.calculation_type === 'per_diem' && '🍽️ Auto-calc'}
-                {item.calculation_type === 'hours' && '⏱️ Auto-calc'}
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[9px] px-2 py-0.5 cursor-help">
+                      {item.calculation_type === 'hotel' && '🏨 🔒 Auto'}
+                      {item.calculation_type === 'per_diem' && '🍽️ 🔒 Auto'}
+                      {item.calculation_type === 'hours' && '⏱️ 🔒 Auto'}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
+                    <p>
+                      🔒 <strong>Auto-calculated value.</strong>
+                    </p>
+                    <p className="mt-1">
+                      This quantity is automatically synchronized with project changes to prevent estimation errors.
+                    </p>
+                    <p className="mt-1 text-amber-400">
+                      Click the quantity field to enable manual override (not recommended).
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               {item.manual_override && (
                 <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-[9px] px-2 py-0.5">
-                  Manual Override
+                  ⚠️ Manual Override
                 </Badge>
               )}
             </div>
@@ -311,14 +351,17 @@ export default function LineItemsEditor({
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
+                        <p>
+                          🔒 <strong>Derived Value</strong>
+                        </p>
                         {item.calculation_type === 'hotel' && (
-                          <p>Auto-calculated from project duration. Click quantity to override.</p>
+                          <p className="mt-1">Hotel rooms = roomsPerNight × nights</p>
                         )}
                         {item.calculation_type === 'per_diem' && (
-                          <p>Auto-calculated from project duration. Click quantity to override.</p>
+                          <p className="mt-1">Per diem = techs × totalCalendarDays</p>
                         )}
                         {item.manual_override && (
-                          <p className="text-amber-400 mt-1">⚠️ Manual override active</p>
+                          <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
                         )}
                       </TooltipContent>
                     </Tooltip>
