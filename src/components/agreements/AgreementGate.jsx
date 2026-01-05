@@ -101,17 +101,29 @@ export default function AgreementGate({ children }) {
 
       return result;
     },
-    onSuccess: async (data) => {
+    onSuccess: async (data, agreementData) => {
       if (import.meta.env.DEV) {
-        console.log('🔄 Refreshing signatures...');
+        console.log('🔄 Agreement signed, updating cache...');
       }
 
-      // Invalidate and refetch ONLY signatures query (single source of truth)
-      await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', userEmail] });
-      await queryClient.refetchQueries({ queryKey: ['agreementSignatures', userEmail] });
+      // OPTIMISTIC UPDATE: Add signature to cache immediately
+      queryClient.setQueryData(['agreementSignatures', userEmail], (old = []) => [
+        ...old,
+        {
+          id: data.id,
+          employee_email: userEmail,
+          agreement_type: agreementData.type,
+          version: agreementData.version,
+          accepted: true,
+          accepted_at: new Date().toISOString(),
+        }
+      ]);
+
+      // Invalidate to fetch fresh from server (background)
+      queryClient.invalidateQueries({ queryKey: ['agreementSignatures', userEmail] });
 
       if (import.meta.env.DEV) {
-        console.log('✅ Signatures refreshed');
+        console.log('✅ Cache updated');
       }
       
       // Move to next agreement or unlock session
@@ -121,8 +133,11 @@ export default function AgreementGate({ children }) {
         setSignatureName('');
         setIsSigningInProgress(false);
       } else {
-        // SESSION UNLOCK: All agreements signed, unlock for this session
-        sessionStorage.setItem('agreements_unlocked', 'true');
+        // PERMANENT SESSION UNLOCK: All agreements signed
+        if (import.meta.env.DEV) {
+          console.log('🔓 All agreements signed - unlocking session');
+        }
+        sessionStorage.setItem(SESSION_KEY, 'true');
         setGateUnlocked(true);
         setShowContent(true);
         setIsSigningInProgress(false);
@@ -147,9 +162,9 @@ export default function AgreementGate({ children }) {
     setShowContent(false);
   }, [userId]);
 
-  // Auto-unlock when no agreements pending (computed after signatures load)
+  // Auto-unlock when no agreements pending
   useEffect(() => {
-    if (!signaturesLoading && user) {
+    if (!signaturesLoading && user && !gateUnlocked) {
       const requiredAgreements = getRequiredAgreements(user) || [];
       const unsigned = requiredAgreements.filter(agreement => {
         return !signatures.some(sig => 
@@ -160,11 +175,14 @@ export default function AgreementGate({ children }) {
       });
       
       if (unsigned.length === 0) {
-        sessionStorage.setItem('agreements_unlocked', 'true');
+        if (import.meta.env.DEV) {
+          console.log('🔓 Auto-unlocking: All agreements completed');
+        }
+        sessionStorage.setItem(SESSION_KEY, 'true');
         setGateUnlocked(true);
       }
     }
-  }, [signaturesLoading, signatures, user]);
+  }, [signaturesLoading, signatures, user, gateUnlocked]);
 
   // Handler functions (not hooks)
   const handleSign = () => {
@@ -177,46 +195,20 @@ export default function AgreementGate({ children }) {
     window.print();
   };
 
-  // CONDITIONAL LOGIC - happens AFTER all hooks
-  
+  // CRITICAL: Check session unlock FIRST - highest priority
+  if (gateUnlocked) {
+    if (import.meta.env.DEV) {
+      console.log('✅ AgreementGate: Session unlocked - immediate passthrough');
+    }
+    return children;
+  }
+
   // Defensive: ensure user exists
   if (!userEmail) {
     return children;
   }
 
-  // Determine which agreements apply (based on role/position)
-  const requiredAgreements = getRequiredAgreements(user) || [];
-
-  // Check signatures query for signed state (NOT currentUser)
-  const unsignedAgreements = requiredAgreements.filter(agreement => {
-    return !signatures.some(sig => 
-      sig?.agreement_type === agreement?.type && 
-      sig?.version === agreement?.version &&
-      sig?.accepted === true
-    );
-  });
-  
-  // DEV: Log render order
-  if (import.meta.env.DEV) {
-    console.log('🔵 AgreementGate rendering:', {
-      userEmail,
-      signaturesLoading,
-      gateUnlocked,
-      unsignedCount: unsignedAgreements.length
-    });
-  }
-
-  const currentAgreement = unsignedAgreements[currentStep];
-
-  // Gate blocks ONLY if: not unlocked, has unsigned agreements, AND user hasn't manually progressed
-  const shouldBlockAccess =
-    !gateUnlocked &&
-    unsignedAgreements.length > 0 &&
-    !showContent;
-
-  // DEFENSIVE GUARDS: Prevent redirect loops under all conditions
-  
-  // Guard 1: Wait for signatures query to load (prevents premature blocking)
+  // Show loading ONLY if signatures not loaded yet AND not unlocked
   if (signaturesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -225,28 +217,50 @@ export default function AgreementGate({ children }) {
     );
   }
 
-  // Guard 2: If signing is in progress, DO NOT redirect (prevents mutation interruption)
+  // Determine which agreements apply (based on role/position)
+  const requiredAgreements = getRequiredAgreements(user) || [];
+
+  // Check signatures query for signed state
+  const unsignedAgreements = requiredAgreements.filter(agreement => {
+    return !signatures.some(sig => 
+      sig?.agreement_type === agreement?.type && 
+      sig?.version === agreement?.version &&
+      sig?.accepted === true
+    );
+  });
+  
+  // DEV: Log gate state
+  if (import.meta.env.DEV) {
+    console.log('🔵 AgreementGate check:', {
+      userEmail,
+      gateUnlocked,
+      unsignedCount: unsignedAgreements.length,
+      signatures: signatures.map(s => s.agreement_type)
+    });
+  }
+
+  // If no unsigned agreements, allow access
+  if (unsignedAgreements.length === 0) {
+    // Cache result in session
+    if (!gateUnlocked) {
+      sessionStorage.setItem(SESSION_KEY, 'true');
+      setGateUnlocked(true);
+    }
+    return children;
+  }
+
+  const currentAgreement = unsignedAgreements[currentStep];
+
+  // If signing in progress, keep modal visible
   if (isSigningInProgress) {
-    // Allow agreement UI to remain visible until mutation completes
-    // Fall through to render agreement modal below
-  } else if (gateUnlocked || !shouldBlockAccess || showContent) {
-    // DEV: Log passthrough
-    if (import.meta.env.DEV) {
-      console.log('✅ AgreementGate allowing access');
-    }
-    // Guard 3: Session unlock or no blocking needed - allow access
+    // Fall through to render agreement modal
+  } else if (showContent) {
+    // User completed all agreements this render
     return children;
-    }
-
-    // Guard 4: Final safety - if gate unlocked, ALWAYS allow access
-    if (gateUnlocked) {
+  } else if (!currentAgreement) {
+    // Safety: no agreement to show
     return children;
-    }
-
-    // Guard 5: Safety check - if no current agreement, allow access
-    if (!currentAgreement) {
-    return children;
-    }
+  }
 
   // DEV: Log blocking decision
   if (import.meta.env.DEV) {
