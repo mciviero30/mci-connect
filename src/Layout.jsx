@@ -1011,7 +1011,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       } catch (err) {
         // Handle 401 - redirect to login without breaking app
         if (err?.status === 401 || err?.message?.includes('401')) {
-          base44.auth.redirectToLogin();
+          // Prevent infinite redirect loops - redirect only once per session
+          const hasRedirected = sessionStorage.getItem('auth_redirect_pending');
+          if (!hasRedirected) {
+            sessionStorage.setItem('auth_redirect_pending', 'true');
+            base44.auth.redirectToLogin();
+          }
           return null;
         }
         throw err;
