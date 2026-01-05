@@ -784,8 +784,21 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return;
     }
 
+    // Enrich items with derived quantities before validation
+    const enrichedItems = formData.items.map(item => {
+      if (item.auto_calculated && !item.manual_override) {
+        const quantity = getDerivedQuantity(derivedValues, item.calculation_type);
+        return {
+          ...item,
+          quantity,
+          total: quantity * (item.unit_price || 0)
+        };
+      }
+      return item;
+    });
+
     // Unified validation using isValidLineItem
-    const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
+    const invalid = enrichedItems.filter(i => !isValidLineItem(i));
     if (invalid.length > 0) {
       // Find first invalid item and get missing fields
       const firstInvalid = invalid[0];
@@ -805,18 +818,25 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return;
     }
 
-    // DEBUG: Log items before save to check if item_name exists
-    console.log('🔍 ITEMS BEFORE SAVE:', formData.items.map(i => ({
+    // Save with enriched items (derived quantities applied)
+    const dataToSave = {
+      ...formData,
+      items: enrichedItems
+    };
+
+    console.log('🔍 ITEMS BEFORE SAVE (with derived):', enrichedItems.map(i => ({
       item_name: i.item_name,
       description: i.description,
       quantity: i.quantity,
       unit_price: i.unit_price,
+      auto_calculated: i.auto_calculated,
+      calculation_type: i.calculation_type
     })));
 
     if (editId) {
-      updateMutation.mutate(formData);
+      updateMutation.mutate(dataToSave);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(dataToSave);
     }
   };
 
@@ -824,7 +844,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
   // CALCULATE TOTALS USING DERIVED VALUES (READ-ONLY)
   // ============================================================================
   
-  const { subtotal, taxAmount, total } = useMemo(() => {
+  const { subtotal, tax_amount: taxAmount, total } = useMemo(() => {
     // Enrich items with derived quantities from computeQuoteDerived
     const enrichedItems = formData.items.map(item => {
       // If auto-calculated, use derived quantity
@@ -842,7 +862,12 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     });
     
     // Calculate totals
-    return calculateQuoteTotals(enrichedItems, formData.tax_rate);
+    const totals = calculateQuoteTotals(enrichedItems, formData.tax_rate);
+    return {
+      subtotal: totals.subtotal,
+      tax_amount: totals.tax_amount,
+      total: totals.total
+    };
   }, [formData.items, formData.tax_rate, derivedValues]);
 
   // Block non-authorized users
