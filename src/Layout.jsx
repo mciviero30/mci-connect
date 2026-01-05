@@ -920,7 +920,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
-                    key={imageKey}
                     src={`${profileImage}?v=${imageKey}`}
                     alt={(displayUser || user)?.full_name}
                     className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"
@@ -986,20 +985,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             touchAction: 'pan-y',
             overscrollBehaviorY: 'contain'
           }}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPageName}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="min-h-full w-full"
-              >
-                <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0 pb-20 md:pb-0">
-                  {children}
-                </div>
-              </motion.div>
-            </AnimatePresence>
+            <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0 pb-20 md:pb-0">
+              {children}
+            </div>
           </div>
 
           <AIAssistant currentPage={currentPageName} />
