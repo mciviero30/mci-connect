@@ -13,7 +13,7 @@ export default function QuoteDocument({ quote }) {
 
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
-            <style jsx global>{`
+            <style dangerouslySetInnerHTML={{__html: `
                 @page {
                     size: A4 portrait;
                     margin: 1cm;
@@ -30,7 +30,7 @@ export default function QuoteDocument({ quote }) {
                         word-break: break-word !important;
                     }
                 }
-            `}</style>
+            `}} />
 
             {/* Header Negro con Gradiente */}
             <div className="px-10 py-6 -mx-10 -mt-10 mb-6 flex items-center justify-between text-white" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
