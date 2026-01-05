@@ -166,8 +166,8 @@ export default function AgreementGate({ children }) {
     return children;
   }
 
-  // Show loading ONLY if signatures not loaded yet
-  if (signaturesLoading) {
+  // NEVER show loading if gate is unlocked
+  if (signaturesLoading && !gateUnlocked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
