@@ -1286,41 +1286,48 @@ export const translations = {
   }
 };
 
+// Deterministic language resolution - OUTSIDE component to prevent recreation
+const getInitialLanguage = () => {
+  // Priority 1: localStorage
+  const stored = localStorage.getItem('language');
+  if (stored === 'en' || stored === 'es') return stored;
+  
+  // Priority 2: Browser language
+  const browserLang = navigator.language?.toLowerCase();
+  if (browserLang?.startsWith('es')) return 'es';
+  
+  // Default: English
+  return 'en';
+};
+
 export const LanguageProvider = ({ children }) => {
-  // REMOVED: Duplicate user query causing infinite loops
-  // Use the user from Layout instead
-
-  // Deterministic language resolution
-  const getInitialLanguage = () => {
-    // Priority 1: localStorage
-    const stored = localStorage.getItem('language');
-    if (stored === 'en' || stored === 'es') return stored;
-    
-    // Priority 2: Browser language
-    const browserLang = navigator.language?.toLowerCase();
-    if (browserLang?.startsWith('es')) return 'es';
-    
-    // Default: English
-    return 'en';
-  };
-
+  // CRITICAL: All hooks at top level, unconditional, stable order
   const [language, setLanguage] = useState(getInitialLanguage);
 
-  const changeLanguage = (lang) => {
+  // Memoized callback to prevent recreation on every render
+  const changeLanguage = React.useCallback((lang) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
     // Save to user profile asynchronously (no await, no state update)
     base44.auth.updateMe({ preferred_language: lang }).catch(() => {
       // Silently fail - language is already saved to localStorage
     });
-  };
+  }, []);
 
-  const t = (key) => {
+  // Memoized translation function
+  const t = React.useCallback((key) => {
     return translations[language]?.[key] || translations.en[key] || key;
-  };
+  }, [language]);
+
+  // Memoized context value to prevent unnecessary re-renders
+  const contextValue = React.useMemo(() => ({
+    language,
+    changeLanguage,
+    t
+  }), [language, changeLanguage, t]);
 
   return (
-    <LanguageContext.Provider value={{ language, changeLanguage, t }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

@@ -5,11 +5,13 @@ import { base44 } from '@/api/base44Client';
 const PermissionsContext = createContext();
 
 export const PermissionsProvider = ({ children }) => {
-  // REMOVED: Duplicate user query causing infinite loops
-  // Get user from React Query cache instead
+  // CRITICAL: All hooks at top level, unconditional, stable order
   const queryClient = useQueryClient();
+  
+  // Safely get user from cache (no additional query)
   const user = queryClient.getQueryData(['currentUser']);
 
+  // Fetch role only if custom_role_id exists - hook always called
   const { data: userRole } = useQuery({
     queryKey: ['userRole', user?.custom_role_id],
     queryFn: async () => {
@@ -23,7 +25,7 @@ export const PermissionsProvider = ({ children }) => {
     refetchOnWindowFocus: false
   });
 
-  // Build permissions object
+  // Build permissions object - stable dependencies
   const permissions = useMemo(() => {
     // If admin, grant all permissions
     if (user?.role === 'admin') {
