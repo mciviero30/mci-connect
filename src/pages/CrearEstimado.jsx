@@ -144,12 +144,13 @@ export default function CrearEstimado() {
     
     console.log('🔍 Catalog search:', { hotelItem, perDiemItem, hotel_quantity, per_diem_quantity });
     
-    // Remove existing hotel and per diem items (flexible matching)
+    // Remove existing hotel and per diem items (flexible matching) + empty items
     const filteredItems = formData.items.filter(item => {
       const itemNameLower = item.item_name?.toLowerCase() || '';
       const isHotel = itemNameLower.includes('hotel');
       const isPerDiem = itemNameLower.includes('per') && itemNameLower.includes('diem');
-      return !isHotel && !isPerDiem;
+      const isEmpty = !item.item_name || !item.description;
+      return !isHotel && !isPerDiem && !isEmpty;
     });
     
     const updatedItems = [...filteredItems];
