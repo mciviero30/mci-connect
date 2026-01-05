@@ -129,7 +129,7 @@ export default function CrearEstimado() {
   };
 
   const handleAutoGenerateStayItems = (stayData) => {
-    const { hotel_quantity, per_diem_quantity } = stayData;
+    const { hotel_quantity, per_diem_quantity, hotel_rate, per_diem_rate } = stayData;
     
     // Find hotel and per diem items from catalog (case-insensitive, flexible matching)
     const hotelItem = quoteItems.find(qi => 
@@ -156,13 +156,14 @@ export default function CrearEstimado() {
     // Add Hotel Rooms
     if (hotel_quantity > 0) {
       const hotelName = hotelItem?.name || 'Hotel Rooms';
+      const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
       updatedItems.push({
         item_name: hotelName,
         description: hotelItem?.description || 'Hotel accommodations',
         quantity: hotel_quantity,
         unit: hotelItem?.unit || 'night',
-        unit_price: hotelItem?.unit_price || 200,
-        total: hotel_quantity * (hotelItem?.unit_price || 200),
+        unit_price: finalHotelRate,
+        total: hotel_quantity * finalHotelRate,
         is_travel_item: true,
         calculation_type: 'hotel',
         tech_count: projectTechCount,
@@ -174,13 +175,14 @@ export default function CrearEstimado() {
     // Add Per-Diem
     if (per_diem_quantity > 0) {
       const perDiemName = perDiemItem?.name || 'Per-Diem';
+      const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
       updatedItems.push({
         item_name: perDiemName,
         description: perDiemItem?.description || 'Daily meal allowance',
         quantity: per_diem_quantity,
         unit: perDiemItem?.unit || 'day',
-        unit_price: perDiemItem?.unit_price || 55,
-        total: per_diem_quantity * (perDiemItem?.unit_price || 55),
+        unit_price: finalPerDiemRate,
+        total: per_diem_quantity * finalPerDiemRate,
         is_travel_item: true,
         calculation_type: 'per_diem',
         tech_count: projectTechCount,
