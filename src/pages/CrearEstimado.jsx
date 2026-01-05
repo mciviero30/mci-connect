@@ -47,7 +47,9 @@ export default function CrearEstimado() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const canCreate = user ? canCreateFinancialDocs(user) : false;

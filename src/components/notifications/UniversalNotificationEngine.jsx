@@ -7,39 +7,43 @@ export default function UniversalNotificationEngine({ user }) {
   const queryClient = useQueryClient();
   const lastCheckRef = useRef({});
 
-  // Poll for new assignments
+  // Poll for new assignments - REDUCED frequency
   const { data: assignments = [] } = useQuery({
     queryKey: ['recentAssignments', user?.email],
     queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }, '-updated_date', 10),
     enabled: !!user?.email,
-    refetchInterval: 15000, // Check every 15 seconds
+    refetchInterval: 120000, // Check every 2 minutes (was 15s)
+    staleTime: 60000,
     initialData: []
   });
 
-  // Poll for urgent posts
+  // Poll for urgent posts - REDUCED frequency
   const { data: urgentPosts = [] } = useQuery({
     queryKey: ['urgentPosts'],
     queryFn: () => base44.entities.Post.filter({ priority: 'urgent' }, '-created_date', 5),
     enabled: !!user?.email,
-    refetchInterval: 20000,
+    refetchInterval: 180000, // Check every 3 minutes (was 20s)
+    staleTime: 90000,
     initialData: []
   });
 
-  // Poll for approved time entries
+  // Poll for approved time entries - REDUCED frequency
   const { data: myTimeEntries = [] } = useQuery({
     queryKey: ['myApprovedEntries', user?.email],
     queryFn: () => base44.entities.TimeEntry.filter({ employee_email: user.email, status: 'approved' }, '-updated_date', 10),
     enabled: !!user?.email,
-    refetchInterval: 30000,
+    refetchInterval: 300000, // Check every 5 minutes (was 30s)
+    staleTime: 180000,
     initialData: []
   });
 
-  // Poll for approved expenses
+  // Poll for approved expenses - REDUCED frequency
   const { data: myExpenses = [] } = useQuery({
     queryKey: ['myApprovedExpenses', user?.email],
     queryFn: () => base44.entities.Expense.filter({ employee_email: user.email, status: 'approved' }, '-updated_date', 10),
     enabled: !!user?.email,
-    refetchInterval: 30000,
+    refetchInterval: 300000, // Check every 5 minutes (was 30s)
+    staleTime: 180000,
     initialData: []
   });
 

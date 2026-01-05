@@ -12,10 +12,10 @@ export default function ServiceWorkerRegistration() {
           .then((registration) => {
             console.log('✅ Service Worker registered:', registration.scope);
 
-            // Check for updates periodically
+            // Check for updates periodically - REDUCED frequency
             setInterval(() => {
               registration.update();
-            }, 60000); // Check every minute
+            }, 600000); // Check every 10 minutes (was 1 min)
 
             // Handle updates
             registration.addEventListener('updatefound', () => {

@@ -13,7 +13,6 @@ export default function ProfileSyncManager({ user }) {
       if (e.key === 'profile_updated' || e.key === 'user_profile_updated') {
         console.log('🔄 Profile update detected from another tab, refreshing...');
         queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-        queryClient.refetchQueries({ queryKey: ['currentUser'] });
       }
     };
 
@@ -21,7 +20,6 @@ export default function ProfileSyncManager({ user }) {
     const handleProfileUpdate = (e) => {
       console.log('🔄 Profile update event received, refreshing...');
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.refetchQueries({ queryKey: ['currentUser'] });
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -36,22 +34,7 @@ export default function ProfileSyncManager({ user }) {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
-  }, [user?.profile_last_updated, queryClient]);
-
-  // Poll for changes if we detect the user object has a profile_last_updated field
-  useEffect(() => {
-    if (!user?.profile_last_updated) return;
-
-    const checkForUpdates = setInterval(() => {
-      const storedTimestamp = localStorage.getItem('profile_timestamp');
-      if (storedTimestamp && storedTimestamp !== user.profile_last_updated) {
-        console.log('🔄 Profile timestamp mismatch detected, refreshing...');
-        queryClient.refetchQueries({ queryKey: ['currentUser'] });
-      }
-    }, 5000); // Check every 5 seconds
-
-    return () => clearInterval(checkForUpdates);
-  }, [user?.profile_last_updated, queryClient]);
+  }, [user?.id, queryClient]);
 
   // Sync with MCI Web when profile updates
   useEffect(() => {

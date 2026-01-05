@@ -55,7 +55,7 @@ export default function Field() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 300000,
+    staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
@@ -65,22 +65,18 @@ export default function Field() {
     queryKey: ['user-job-assignments', user?.email],
     queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }),
     enabled: !!user?.email && (user?.role === 'customer' || user?.role === 'field_worker'),
-    staleTime: 600000,
+    staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
   // ADMIN BYPASS: Admins see ALL jobs, others see assigned jobs only
   const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['field-jobs'],
+    queryKey: ['field-jobs', user?.email],
     queryFn: async () => {
-      console.log('🔍 Field: Fetching jobs for user:', user?.email, 'role:', user?.role);
-      
       // ✅ ADMIN BYPASS - Show all jobs for admins
       if (user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator') {
-        const allJobs = await base44.entities.Job.list('-created_date');
-        console.log('✅ Admin access: Showing', allJobs.length, 'total jobs');
-        return allJobs;
+        return await base44.entities.Job.list('-created_date');
       }
       
       // Managers see all jobs
@@ -103,7 +99,7 @@ export default function Field() {
       return base44.entities.Job.list('-created_date');
     },
     enabled: !!user,
-    staleTime: 300000,
+    staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
@@ -122,7 +118,7 @@ export default function Field() {
       return allTasks.filter(task => task.job_id && jobIds.includes(task.job_id));
     },
     enabled: jobs.length > 0,
-    staleTime: 300000,
+    staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
