@@ -1005,8 +1005,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           export default function Layout({ children, currentPageName }) {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    retry: 1,
+    queryFn: async () => {
+      try {
+        return await base44.auth.me();
+      } catch (err) {
+        // Handle 401 - redirect to login without breaking app
+        if (err?.status === 401 || err?.message?.includes('401')) {
+          base44.auth.redirectToLogin();
+          return null;
+        }
+        throw err;
+      }
+    },
+    retry: false,
     staleTime: Infinity,
     gcTime: Infinity,
     refetchOnMount: false,
