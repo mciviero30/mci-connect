@@ -217,12 +217,17 @@ export default function AgreementGate({ children }) {
   } else if (gateUnlocked || !shouldBlockAccess || showContent) {
     // Guard 3: Session unlock or no blocking needed - allow access
     return children;
-  }
+    }
 
-  // Guard 4: Safety check - if no current agreement, allow access
-  if (!currentAgreement) {
+    // Guard 4: Final safety - if gate unlocked, ALWAYS allow access
+    if (gateUnlocked) {
     return children;
-  }
+    }
+
+    // Guard 5: Safety check - if no current agreement, allow access
+    if (!currentAgreement) {
+    return children;
+    }
 
   // Block access - render agreement modal
   return (
