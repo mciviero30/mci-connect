@@ -149,6 +149,39 @@ export default function ClientFieldReportsView({ jobId, language = 'en' }) {
                 {/* Expand Details */}
                 {isExpanded && (
                   <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    {/* Quality Details (if available) */}
+                    {report.quality_defects && report.quality_defects.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-semibold text-slate-900 dark:text-white mb-2 text-sm">
+                          {language === 'es' ? 'Defectos Identificados' : 'Identified Defects'}
+                        </h4>
+                        <div className="space-y-2">
+                          {report.quality_defects.map((defect, idx) => {
+                            const desc = language === 'es' ? defect.description_es : defect.description_en;
+                            return (
+                              <div key={idx} className={`p-3 rounded-lg border ${
+                                defect.severity === 'critical' ? 'bg-red-50 border-red-200' :
+                                defect.severity === 'major' ? 'bg-orange-50 border-orange-200' :
+                                'bg-yellow-50 border-yellow-200'
+                              }`}>
+                                <Badge className={`text-xs mb-1 ${
+                                  defect.severity === 'critical' ? 'bg-red-600' :
+                                  defect.severity === 'major' ? 'bg-orange-600' :
+                                  'bg-yellow-600'
+                                } text-white`}>
+                                  {defect.category}
+                                </Badge>
+                                <p className="text-xs text-slate-900">{desc}</p>
+                                {defect.location && (
+                                  <p className="text-xs text-slate-600 mt-1">📍 {defect.location}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Observations */}
                     {observations && (
                       <div>

@@ -307,6 +307,12 @@ function ReportCard({ report, language, onToggleVisibility, onViewDetails }) {
                   Visible para Cliente
                 </Badge>
               )}
+              {report.requires_quality_review && (
+                <Badge className="bg-orange-500 text-white text-xs px-3 py-1 animate-pulse">
+                  <AlertTriangle className="w-3 h-3 mr-1" />
+                  Calidad Baja
+                </Badge>
+              )}
             </div>
 
             {/* Summary */}
