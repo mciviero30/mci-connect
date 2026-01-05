@@ -35,6 +35,7 @@ export default function AgreementGate({ children }) {
   });
   
   const SESSION_KEY = 'agreements_unlocked';
+  
   const [sessionUnlocked, setSessionUnlocked] = useState(
     sessionStorage.getItem(SESSION_KEY) === 'true'
   );
