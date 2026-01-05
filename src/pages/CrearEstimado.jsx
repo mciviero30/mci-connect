@@ -992,15 +992,15 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           </Card>
 
           <Card className="glass-card shadow-xl border-slate-200 mb-6">
-            <CardHeader className="border-b border-slate-200 py-3">
-              <CardTitle className="text-slate-900 text-base">{t('jobDetails')}</CardTitle>
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="text-slate-900">{t('jobDetails')}</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <div className="grid md:grid-cols-2 gap-3">
+            <CardContent className="p-6 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-700 text-sm">{t('selectExistingJob')} ({t('optional')})</Label>
+                  <Label className="text-slate-700">{t('selectExistingJob')} ({t('optional')})</Label>
                   <Select value={formData.job_id} onValueChange={handleJobChange}>
-                    <SelectTrigger className="bg-white border-slate-300 text-slate-900 h-9">
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                       <SelectValue placeholder={t('selectExistingJob')} />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-slate-200">
@@ -1014,17 +1014,17 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 </div>
 
                 <div>
-                  <Label className="text-slate-700 text-sm">{t('jobName')} *</Label>
+                  <Label className="text-slate-700">{t('jobName')} *</Label>
                   <Input
                     value={formData.job_name}
                     onChange={(e) => setFormData({...formData, job_name: e.target.value})}
                     required
-                    className="bg-white border-slate-300 text-slate-900 h-9"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label className="text-slate-700 text-sm">{t('jobAddress')}</Label>
+                  <Label className="text-slate-700">{t('jobAddress')}</Label>
                   <AddressAutocomplete
                     value={formData.job_address}
                     onChange={(value) => setFormData({...formData, job_address: value})}
@@ -1035,27 +1035,17 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       });
                     }}
                     placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
-                    className="bg-white border-slate-300 text-slate-900 h-9"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label className="text-slate-700 text-sm">{language === 'es' ? 'Detalles / Notas del Trabajo' : 'Job Details / Notes'}</Label>
-                  <Textarea
-                    value={formData.job_notes || ''}
-                    onChange={(e) => setFormData({...formData, job_notes: e.target.value})}
-                    placeholder={language === 'es' ? 'Ej: 3 pisos, Opción 1, Incluye escaleras, etc.' : 'e.g., 3 floors, Option 1, Includes stairs, etc.'}
-                    className="bg-white border-slate-300 text-slate-900 h-16 text-sm"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <Label className="text-slate-700 text-sm">Teams * {formData.team_ids.length > 0 && <span className="text-blue-600 text-xs">({formData.team_ids.length} selected)</span>}</Label>
+                  <Label className="text-slate-700">Teams * {formData.team_ids.length > 0 && <span className="text-blue-600">({formData.team_ids.length} selected)</span>}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-between bg-white border-slate-300 text-slate-900 h-9 text-sm"
+                        className="w-full justify-between bg-white border-slate-300 text-slate-900 h-10"
                       >
                         <span className="truncate">
                           {formData.team_ids.length === 0 
@@ -1073,17 +1063,17 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                             <div
                               key={team.id}
                               onClick={() => handleTeamToggle(team.id)}
-                              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
+                              className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
                                 isSelected 
                                   ? 'bg-blue-100 text-blue-900' 
                                   : 'hover:bg-slate-100'
                               }`}
                             >
-                              <Check className={`h-3 w-3 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                              <Check className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
                               <div className="flex-1">
-                                <div className="font-medium text-xs">{team.team_name}</div>
+                                <div className="font-medium text-sm">{team.team_name}</div>
                                 {team.base_address && (
-                                  <div className="text-[10px] text-slate-500">📍 {team.base_address}</div>
+                                  <div className="text-xs text-slate-500">📍 {team.base_address}</div>
                                 )}
                               </div>
                             </div>
@@ -1092,106 +1082,92 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       </div>
                     </PopoverContent>
                   </Popover>
-                  <p className="text-[10px] text-slate-500 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {language === 'es' 
                       ? 'Equipos responsables del proyecto (puedes seleccionar múltiples)' 
                       : 'Teams responsible for the project (you can select multiple)'}
                   </p>
                 </div>
 
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Checkbox
+                      id="out-of-area"
+                      checked={formData.out_of_area}
+                      onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
+                    />
+                    <Label htmlFor="out-of-area" className="cursor-pointer text-slate-900 dark:text-white font-medium">
+                      {language === 'es' ? 'Trabajo Fuera de Área' : 'Out of Area Job'}
+                    </Label>
+                    {formData.out_of_area && (
+                      <Badge className="bg-orange-100 text-orange-700 border border-orange-300 text-xs">
+                        {language === 'es' ? 'Fuera de Área' : 'Out of Area'}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {formData.out_of_area && (
+                    <div className="space-y-4">
+                      <OutOfAreaCalculator
+                        jobAddress={formData.job_address}
+                        selectedTeamIds={formData.team_ids}
+                        onAddTravelItems={handleAddTravelItems}
+                        isCalculating={isCalculatingTravel}
+                        setIsCalculating={setIsCalculatingTravel}
+                      />
+                      
+                      <StayDurationCalculator
+                        derivedValues={derivedValues}
+                        techCount={projectTechCount}
+                        onTechCountChange={setProjectTechCount}
+                        onAutoGenerateItems={handleAutoGenerateStayItems}
+                        language={language}
+                        roomsPerNight={roomsPerNight}
+                        onRoomsPerNightChange={setRoomsPerNight}
+                      />
+                      
+                      <ProjectDurationSummary
+                        derivedValues={derivedValues}
+                        language={language}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div>
-                  <Label className="text-slate-700 text-sm">{t('quoteDate')}</Label>
+                  <Label className="text-slate-700">{t('quoteDate')}</Label>
                   <Input
                     type="date"
                     value={formData.quote_date}
                     onChange={(e) => setFormData({...formData, quote_date: e.target.value})}
                     required
-                    className="bg-white border-slate-300 text-slate-900 h-9"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-slate-700 text-sm">{t('validUntil')}</Label>
+                  <Label className="text-slate-700">{t('validUntil')}</Label>
                   <Input
                     type="date"
                     value={formData.valid_until}
                     onChange={(e) => setFormData({...formData, valid_until: e.target.value})}
                     required
-                    className="bg-white border-slate-300 text-slate-900 h-9"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-slate-700 text-sm">Installation Date ({t('optional')})</Label>
+                  <Label className="text-slate-700">Installation Date ({t('optional')})</Label>
                   <Input
                     type="date"
                     value={formData.install_date}
                     onChange={(e) => setFormData({...formData, install_date: e.target.value})}
-                    className="bg-white border-slate-300 text-slate-900 h-9"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Out of Area Section - Compact */}
-          {formData.out_of_area && (
-            <Card className="glass-card shadow-xl border-slate-200 mb-6">
-              <CardHeader className="border-b border-slate-200 py-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="out-of-area"
-                    checked={formData.out_of_area}
-                    onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
-                  />
-                  <Label htmlFor="out-of-area" className="cursor-pointer text-slate-900 dark:text-white font-medium text-sm">
-                    {language === 'es' ? 'Trabajo Fuera de Área' : 'Out of Area Job'}
-                  </Label>
-                  <Badge className="bg-orange-100 text-orange-700 border border-orange-300 text-xs">
-                    {language === 'es' ? 'Fuera de Área' : 'Out of Area'}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="p-3 space-y-3">
-                <OutOfAreaCalculator
-                  jobAddress={formData.job_address}
-                  selectedTeamIds={formData.team_ids}
-                  onAddTravelItems={handleAddTravelItems}
-                  isCalculating={isCalculatingTravel}
-                  setIsCalculating={setIsCalculatingTravel}
-                />
-                
-                <StayDurationCalculator
-                  derivedValues={derivedValues}
-                  techCount={projectTechCount}
-                  onTechCountChange={setProjectTechCount}
-                  onAutoGenerateItems={handleAutoGenerateStayItems}
-                  language={language}
-                  roomsPerNight={roomsPerNight}
-                  onRoomsPerNightChange={setRoomsPerNight}
-                />
-                
-                <ProjectDurationSummary
-                  derivedValues={derivedValues}
-                  language={language}
-                />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Checkbox toggle cuando está cerrado */}
-          {!formData.out_of_area && (
-            <div className="mb-6 flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-              <Checkbox
-                id="out-of-area"
-                checked={formData.out_of_area}
-                onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
-              />
-              <Label htmlFor="out-of-area" className="cursor-pointer text-slate-900 dark:text-white font-medium text-sm">
-                {language === 'es' ? 'Trabajo Fuera de Área' : 'Out of Area Job'}
-              </Label>
-            </div>
-          )}
 
           <Card className="glass-card shadow-xl border-slate-200 mb-6">
             <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">

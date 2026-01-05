@@ -817,22 +817,21 @@ export default function CrearFactura() {
           </Card>
 
           <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">{t('jobDetails')}</CardTitle>
+            <CardHeader className="border-b">
+              <CardTitle>{t('jobDetails')}</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <div className="grid md:grid-cols-2 gap-3">
+            <CardContent className="p-6 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm">{t('jobName')} *</Label>
+                  <Label>{t('jobName')} *</Label>
                   <Input
                     value={formData.job_name}
                     onChange={e => setFormData({ ...formData, job_name: e.target.value })}
                     placeholder={t('jobDescription')}
-                    className="h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-sm">{t('jobAddress')}</Label>
+                  <Label>{t('jobAddress')}</Label>
                   <AddressAutocomplete
                     value={formData.job_address}
                     onChange={(value) => setFormData({ ...formData, job_address: value })}
@@ -843,70 +842,56 @@ export default function CrearFactura() {
                       });
                     }}
                     placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
-                    className="h-9"
                   />
                 </div>
-
-                <div className="md:col-span-2">
-                  <Label className="text-sm">{language === 'es' ? 'Detalles / Notas del Trabajo' : 'Job Details / Notes'}</Label>
-                  <Textarea
-                    value={formData.job_notes || ''}
-                    onChange={e => setFormData({ ...formData, job_notes: e.target.value })}
-                    placeholder={language === 'es' ? 'Ej: 3 pisos, Opción 1, Incluye escaleras, etc.' : 'e.g., 3 floors, Option 1, Includes stairs, etc.'}
-                    className="h-16 text-sm"
-                  />
-                </div>
-
                 <div>
-                  <Label className="text-sm">{t('invoiceDate')}</Label>
+                  <Label>{t('invoiceDate')}</Label>
                   <Input
                     type="date"
                     value={formData.invoice_date}
                     onChange={e => setFormData({ ...formData, invoice_date: e.target.value })}
-                    className="h-9"
                   />
                 </div>
                 <div>
-                  <Label className="text-sm">{t('dueDate')}</Label>
+                  <Label>{t('dueDate')}</Label>
                   <Input
                     type="date"
                     value={formData.due_date}
                     onChange={e => setFormData({ ...formData, due_date: e.target.value })}
-                    className="h-9"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Team Selection Card - Compact */}
+          {/* Team Selection Card */}
           <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b py-3">
-              <CardTitle className="text-base">{language === 'es' ? 'Equipos Asignados' : 'Assigned Teams'}</CardTitle>
+            <CardHeader className="border-b">
+              <CardTitle>{language === 'es' ? 'Equipos Asignados' : 'Assigned Teams'}</CardTitle>
             </CardHeader>
-            <CardContent className="p-3">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {teams.map(team => (
                   <div
                     key={team.id}
                     onClick={() => handleTeamToggle(team.id)}
-                    className={`p-2 rounded-lg border-2 cursor-pointer transition-all ${
+                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
                       (formData.team_ids || []).includes(team.id)
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         checked={(formData.team_ids || []).includes(team.id)}
                         onCheckedChange={() => handleTeamToggle(team.id)}
-                        className="pointer-events-none h-3.5 w-3.5"
+                        className="pointer-events-none"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                        <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
                           {team.team_name}
                         </p>
-                        <p className="text-[10px] text-slate-600 dark:text-slate-400 truncate">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
                           {team.location}
                         </p>
                       </div>
@@ -917,32 +902,30 @@ export default function CrearFactura() {
             </CardContent>
           </Card>
 
-          {/* Out of Area Travel Section - Compact */}
+          {/* Out of Area Travel Section */}
           {formData.job_address && (formData.team_ids || []).length > 0 && (
-            <Card className="border-0 shadow-lg mb-6">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <Checkbox
-                    id="out-of-area"
-                    checked={outOfAreaEnabled}
-                    onCheckedChange={setOutOfAreaEnabled}
-                  />
-                  <Label htmlFor="out-of-area" className="text-xs font-medium cursor-pointer">
-                    {language === 'es' ? 'Calcular viaje fuera de área' : 'Calculate out of area travel'}
-                  </Label>
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="out-of-area"
+                  checked={outOfAreaEnabled}
+                  onCheckedChange={setOutOfAreaEnabled}
+                />
+                <Label htmlFor="out-of-area" className="text-sm font-medium cursor-pointer">
+                  {language === 'es' ? 'Calcular viaje fuera de área' : 'Calculate out of area travel'}
+                </Label>
+              </div>
 
-                {outOfAreaEnabled && (
-                  <OutOfAreaCalculator
-                    jobAddress={formData.job_address}
-                    selectedTeamIds={formData.team_ids || []}
-                    onAddTravelItems={handleAddTravelItems}
-                    isCalculating={isCalculatingTravel}
-                    setIsCalculating={setIsCalculatingTravel}
-                  />
-                )}
-              </CardContent>
-            </Card>
+              {outOfAreaEnabled && (
+                <OutOfAreaCalculator
+                  jobAddress={formData.job_address}
+                  selectedTeamIds={formData.team_ids || []}
+                  onAddTravelItems={handleAddTravelItems}
+                  isCalculating={isCalculatingTravel}
+                  setIsCalculating={setIsCalculatingTravel}
+                />
+              )}
+            </div>
           )}
 
           <Card className="border-0 shadow-lg">

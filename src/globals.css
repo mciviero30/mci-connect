@@ -96,31 +96,6 @@
     --ring: 217 91% 60%;
     --radius: 0.75rem;
     
-    /* Mobile-First Typography Scale */
-    --text-xs: 0.625rem;    /* 10px - labels, captions */
-    --text-sm: 0.75rem;     /* 12px - secondary text */
-    --text-base: 0.875rem;  /* 14px - primary text (reduced from 16px) */
-    --text-lg: 1rem;        /* 16px - section headers (reduced from 18px) */
-    --text-xl: 1.125rem;    /* 18px - page headers (reduced from 20px) */
-    --text-2xl: 1.25rem;    /* 20px - main titles (reduced from 24px) */
-    
-    /* Compact Spacing Scale */
-    --spacing-xs: 0.25rem;  /* 4px */
-    --spacing-sm: 0.5rem;   /* 8px */
-    --spacing-md: 0.75rem;  /* 12px */
-    --spacing-lg: 1rem;     /* 16px */
-    --spacing-xl: 1.5rem;   /* 24px */
-    
-    /* Icon Sizes */
-    --icon-xs: 0.875rem;    /* 14px */
-    --icon-sm: 1rem;        /* 16px */
-    --icon-md: 1.125rem;    /* 18px */
-    --icon-lg: 1.25rem;     /* 20px */
-    --icon-xl: 1.5rem;      /* 24px */
-    
-    /* Touch Target Minimum */
-    --touch-min: 44px;
-    
     /* MCI Connect Corporate Blue System */
     --soft-blue-from: 221 83% 96%;
     --soft-blue-to: 221 83% 92%;
@@ -254,61 +229,15 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    font-size: 14px; /* Mobile-first base */
   }
 
-  h1 {
+  h1, h2, h3, h4, h5, h6 {
     @apply text-slate-900 dark:text-slate-50;
-    font-size: 1.25rem; /* 20px - reduced */
     letter-spacing: -0.02em;
-  }
-  
-  h2 {
-    @apply text-slate-900 dark:text-slate-50;
-    font-size: 1.125rem; /* 18px - reduced */
-    letter-spacing: -0.01em;
-  }
-  
-  h3 {
-    @apply text-slate-900 dark:text-slate-50;
-    font-size: 1rem; /* 16px - reduced */
-    letter-spacing: -0.01em;
-  }
-  
-  h4, h5, h6 {
-    @apply text-slate-900 dark:text-slate-50;
-    font-size: 0.875rem; /* 14px - reduced */
-    letter-spacing: 0;
   }
 
   p, span, div {
     @apply text-slate-700 dark:text-slate-300;
-  }
-  
-  /* Compact card padding override */
-  .card-compact {
-    @apply p-3 md:p-4;
-  }
-  
-  /* Mobile-optimized button */
-  button, .btn {
-    min-height: 40px; /* Reduced from 44px where appropriate */
-  }
-  
-  /* Mobile typography utilities */
-  @media (max-width: 768px) {
-    .mobile-text-xs { font-size: 0.625rem; }
-    .mobile-text-sm { font-size: 0.75rem; }
-    .mobile-text-base { font-size: 0.875rem; }
-    .mobile-text-lg { font-size: 1rem; }
-    
-    /* Reduce card padding on mobile */
-    .card { @apply p-3; }
-    
-    /* Compact headers on mobile */
-    h1 { font-size: 1.125rem; } /* 18px */
-    h2 { font-size: 1rem; }     /* 16px */
-    h3 { font-size: 0.875rem; } /* 14px */
   }
 }
 

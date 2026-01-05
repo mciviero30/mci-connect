@@ -60,7 +60,7 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
     <>
       {/* Bottom Navigation Bar - Fixed at bottom */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg pb-safe">
-        <div className="grid grid-cols-5 h-14 px-0.5">
+        <div className="grid grid-cols-5 h-16 px-1">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);
             return (
@@ -74,17 +74,17 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
                 }`}
               >
                 {active && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-b-full" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-b-full" />
                 )}
                 <div className="relative">
-                  <item.icon className={`w-4.5 h-4.5 ${active ? 'scale-110' : ''} transition-transform`} />
+                  <item.icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} />
                   {item.badge && (
-                    <Badge className="absolute -top-1 -right-1 h-3 min-w-3 px-0.5 text-[8px] bg-red-500 text-white border-0 flex items-center justify-center">
-                      {item.badge > 9 ? '9+' : item.badge}
+                    <Badge className="absolute -top-1.5 -right-1.5 h-3.5 min-w-3.5 px-0.5 text-[9px] bg-red-500 text-white border-0 flex items-center justify-center">
+                      {item.badge}
                     </Badge>
                   )}
                 </div>
-                <span className={`text-[8.5px] font-medium ${active ? 'font-bold' : ''} truncate max-w-full px-0.5 text-center`}>
+                <span className={`text-[9px] font-medium ${active ? 'font-bold' : ''} truncate max-w-full px-0.5 text-center`}>
                   {item.title}
                 </span>
               </Link>
@@ -95,25 +95,25 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
               <button className="flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400 min-w-0">
-                <Menu className="w-4.5 h-4.5" />
-                <span className="text-[8.5px] font-medium truncate max-w-full px-0.5">More</span>
+                <Menu className="w-5 h-5" />
+                <span className="text-[9px] font-medium truncate max-w-full px-0.5">More</span>
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="bg-white dark:bg-slate-900 h-[85vh] rounded-t-2xl">
-              <SheetHeader className="pb-3 border-b border-slate-200 dark:border-slate-800">
-                <SheetTitle className="text-slate-900 dark:text-white text-base">All Sections</SheetTitle>
+            <SheetContent side="bottom" className="bg-white dark:bg-slate-900 h-[85vh] rounded-t-3xl">
+              <SheetHeader className="pb-4 border-b border-slate-200 dark:border-slate-800">
+                <SheetTitle className="text-slate-900 dark:text-white">All Sections</SheetTitle>
               </SheetHeader>
-              <ScrollArea className="h-[calc(85vh-70px)] mt-3">
-                <div className="space-y-4 pb-6">
+              <ScrollArea className="h-[calc(85vh-80px)] mt-4">
+                <div className="space-y-6 pb-6">
                   {navigation.map((section, idx) => (
                     <div key={idx}>
-                      <div className="flex items-center gap-1.5 mb-2 px-3">
-                        {section.icon && <section.icon className="w-3 h-3 text-[#507DB4] dark:text-[#6B9DD8]" />}
-                        <h3 className="text-[10px] font-bold text-[#507DB4] dark:text-[#6B9DD8] tracking-wider uppercase">
+                      <div className="flex items-center gap-2 mb-3 px-4">
+                        {section.icon && <section.icon className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />}
+                        <h3 className="text-xs font-bold text-[#507DB4] dark:text-[#6B9DD8] tracking-wider">
                           {section.section}
                         </h3>
                       </div>
-                      <div className="space-y-0.5">
+                      <div className="space-y-1">
                         {section.items.map((item) => {
                           const active = isActive(item.url);
                           return (
@@ -121,18 +121,18 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
                               key={item.title}
                               to={item.url}
                               onClick={() => setSheetOpen(false)}
-                              className={`flex items-center justify-between px-3 py-2.5 rounded-lg mx-2 transition-all ${
+                              className={`flex items-center justify-between px-4 py-3 rounded-lg mx-2 transition-all ${
                                 active
                                   ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white'
                                   : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
                               }`}
                             >
-                              <div className="flex items-center gap-2.5">
-                                <item.icon className="w-4 h-4" />
-                                <span className="font-medium text-sm">{item.title}</span>
+                              <div className="flex items-center gap-3">
+                                <item.icon className="w-5 h-5" />
+                                <span className="font-medium">{item.title}</span>
                               </div>
                               {active && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                                <div className="w-2 h-2 rounded-full bg-white" />
                               )}
                             </Link>
                           );
@@ -148,7 +148,7 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
       </div>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
-      <div className="md:hidden h-14" />
+      <div className="md:hidden h-16" />
     </>
   );
 };

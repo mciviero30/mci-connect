@@ -1001,7 +1001,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
                 </div>
               </div>
             </motion.header>
-            )}
+          )}
 
           <div className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" data-scrollable="true" style={{ 
             WebkitOverflowScrolling: 'touch', 
