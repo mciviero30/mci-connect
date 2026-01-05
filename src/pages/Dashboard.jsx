@@ -97,7 +97,7 @@ export default function Dashboard() {
     },
     enabled: !!user?.email,
     staleTime: Infinity,
-    cacheTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -160,8 +160,8 @@ export default function Dashboard() {
       }, '-date', 50);
     },
     enabled: !!user?.email && needsExpenseData && !isAdmin,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000,
+    staleTime: 600000,
+    gcTime: 900000,
     initialData: [],
   });
 
@@ -175,8 +175,8 @@ export default function Dashboard() {
       }, '-date', 50);
     },
     enabled: !!user?.email && needsEmployeeData,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000,
+    staleTime: 600000,
+    gcTime: 900000,
     initialData: [],
   });
 
@@ -208,8 +208,8 @@ export default function Dashboard() {
       });
     },
     enabled: !!user?.email && needsAssignmentData,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000,
+    staleTime: 600000,
+    gcTime: 900000,
     initialData: [],
   });
 
@@ -235,8 +235,8 @@ export default function Dashboard() {
     queryKey: ['allExpenses'],
     queryFn: () => base44.entities.Expense.list('-date', 200),
     enabled: isAdmin && needsExpenseData,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000,
+    staleTime: 600000,
+    gcTime: 900000,
     initialData: [],
   });
 
