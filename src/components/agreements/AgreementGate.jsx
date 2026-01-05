@@ -120,30 +120,6 @@ export default function AgreementGate({ children }) {
       return result;
     },
     onSuccess: async (data, agreementData) => {
-      if (import.meta.env.DEV) {
-        console.log('🔄 Agreement signed, updating cache...');
-      }
-
-      // OPTIMISTIC UPDATE: Add signature to cache immediately
-      queryClient.setQueryData(['agreementSignatures', userEmail], (old = []) => [
-        ...old,
-        {
-          id: data.id,
-          employee_email: userEmail,
-          agreement_type: agreementData.type,
-          version: agreementData.version,
-          accepted: true,
-          accepted_at: new Date().toISOString(),
-        }
-      ]);
-
-      // Invalidate to fetch fresh from server (background)
-      queryClient.invalidateQueries({ queryKey: ['agreementSignatures', userEmail] });
-
-      if (import.meta.env.DEV) {
-        console.log('✅ Cache updated');
-      }
-      
       // Move to next agreement or unlock session
       if (currentStep < unsignedAgreements.length - 1) {
         setCurrentStep(currentStep + 1);
@@ -152,12 +128,8 @@ export default function AgreementGate({ children }) {
         setIsSigningInProgress(false);
       } else {
         // PERMANENT SESSION UNLOCK: All agreements signed
-        if (import.meta.env.DEV) {
-          console.log('🔓 All agreements signed - unlocking session');
-        }
         sessionStorage.setItem(SESSION_KEY, 'true');
         setGateUnlocked(true);
-        setShowContent(true);
         setIsSigningInProgress(false);
       }
     },
