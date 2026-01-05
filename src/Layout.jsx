@@ -655,6 +655,29 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     );
   }
 
+  // DECLARATIVE GATE 1: Block for onboarding (no navigation)
+  if (shouldBlockForOnboarding && !isOnboardingPage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">
+        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-blue-200 dark:border-slate-700 shadow-2xl">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/30">
+            <ClipboardList className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Onboarding Required</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            Please complete your onboarding before accessing the app.
+          </p>
+          <Link to={createPageUrl('OnboardingWizard')}>
+            <Button className="soft-blue-gradient text-white shadow-lg">
+              Complete Onboarding
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // DECLARATIVE GATE 2: Deleted users
   if (user && user.employment_status === 'deleted') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
@@ -675,14 +698,31 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     );
   }
 
+  // DECLARATIVE GATE 3: Client-only users -> render ClientPortal directly
+  if (isClientOnly && currentPageName !== 'ClientPortal') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 p-4">
+        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-orange-200 dark:border-slate-700 shadow-2xl">
+          <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-orange-500/30">
+            <User className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Client Access</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            Redirecting to your project portal...
+          </p>
+          <Link to={createPageUrl('ClientPortal')}>
+            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg">
+              Go to Client Portal
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const navigation = getNavigationForUser();
   const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
   const isAdmin = userRole === 'admin' || userRole === 'ceo';
-
-  // If client only, render ClientPortal directly without sidebar
-  if (isClientOnly) {
-    return children;
-  }
 
   const getProfileImage = () => {
     const effectiveUser = displayUser || user;
