@@ -188,23 +188,12 @@ export default function AgreementGate({ children }) {
       sig?.accepted === true
     );
   });
-  
-  // DEV: Log gate state
-  if (import.meta.env.DEV) {
-    console.log('🔵 AgreementGate check:', {
-      userEmail,
-      gateUnlocked,
-      unsignedCount: unsignedAgreements.length,
-      signatures: signatures.map(s => s.agreement_type)
-    });
-  }
 
-  // If no unsigned agreements, allow access
+  // If no unsigned agreements, unlock ONCE and allow access
   if (unsignedAgreements.length === 0) {
-    // Cache result in session
     if (!gateUnlocked) {
       sessionStorage.setItem(SESSION_KEY, 'true');
-      setGateUnlocked(true);
+      // Don't setState here - just return children to avoid re-render
     }
     return children;
   }
