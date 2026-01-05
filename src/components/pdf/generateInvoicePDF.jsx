@@ -47,7 +47,8 @@ export async function generateInvoicePDF(invoice) {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a4'
+    format: 'a4',
+    compress: true
   });
 
   const margin = 20;
@@ -65,7 +66,7 @@ export async function generateInvoicePDF(invoice) {
   
   // Parte 2: Gradiente de negro a gris desde el logo hasta el final
   const gradientWidth = pageWidth - logoEndX;
-  const gradientSteps = 50;
+  const gradientSteps = 10;
   for (let i = 0; i < gradientSteps; i++) {
     const gray = Math.floor((i / gradientSteps) * 130);
     doc.setFillColor(gray, gray, gray);
@@ -74,12 +75,12 @@ export async function generateInvoicePDF(invoice) {
     doc.rect(rectX, 0, rectWidth, Number(headerHeight), 'F');
   }
   
-  // Load and add MCI logo
+  // Load and add MCI logo (compressed)
   const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
   const logoBase64 = await loadImageAsBase64(logoUrl);
   
   if (logoBase64) {
-    doc.addImage(logoBase64, 'PNG', margin, 5, 35, 15);
+    doc.addImage(logoBase64, 'PNG', margin, 5, 35, 15, undefined, 'FAST');
   } else {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
@@ -194,7 +195,7 @@ export async function generateInvoicePDF(invoice) {
   // ========== ITEMS TABLE ==========
   const tableHeaderY = y;
   const tableHeaderHeight = 7;
-  const tableGradientSteps = 30;
+  const tableGradientSteps = 10;
   for (let i = 0; i < tableGradientSteps; i++) {
     const gray = Math.floor((i / tableGradientSteps) * 120);
     doc.setFillColor(gray, gray, gray);
