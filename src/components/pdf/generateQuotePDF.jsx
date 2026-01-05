@@ -189,12 +189,27 @@ export async function generateQuotePDF(quote) {
     
     if (quote.work_details) {
       y += 5;
+      
+      // Box with gradient (similar to ITEM header)
+      const detailsLines = doc.splitTextToSize(String(quote.work_details), contentWidth - 6);
+      const boxHeight = detailsLines.length * 3.5 + 4;
+      
+      // Gradient background (black to gray)
+      const gradientSteps = 10;
+      for (let i = 0; i < gradientSteps; i++) {
+        const gray = Math.floor((i / gradientSteps) * 74); // 0 to 74 (0x4a)
+        doc.setFillColor(gray, gray, gray);
+        const rectX = Number(margin + (i * contentWidth) / gradientSteps);
+        const rectWidth = Number(contentWidth / gradientSteps);
+        doc.rect(rectX, Number(y - 2), rectWidth, Number(boxHeight), 'F');
+      }
+      
+      // Text in white, smaller font
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(70, 70, 70);
-      const detailsLines = doc.splitTextToSize(String(quote.work_details), contentWidth);
-      doc.text(detailsLines, margin, y);
-      y += detailsLines.length * 4;
+      doc.setFontSize(7);
+      doc.setTextColor(255, 255, 255);
+      doc.text(detailsLines, margin + 3, y + 1.5);
+      y += boxHeight + 2;
     }
     
     y += 8;
