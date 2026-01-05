@@ -1040,9 +1040,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     retry: 1,
-    staleTime: 60000,  // Reduced from Infinity to 60s
+    staleTime: Infinity,
     gcTime: Infinity,
-    refetchOnMount: true,  // Always refetch on mount to catch onboarding completion
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchInterval: false,
   });
