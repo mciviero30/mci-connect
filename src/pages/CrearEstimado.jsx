@@ -30,7 +30,6 @@ import { canCreateFinancialDocs, needsApproval } from "@/components/core/roleRul
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import StayDurationCalculator from "@/components/quotes/StayDurationCalculator";
-import { calculateQuantity } from "@/components/utils/quantityCalculations";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -587,8 +586,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   description: `${teamName} (${response.distance_miles} mi each way)`,
                   quantity: totalMiles,
                   unit: mileageItem?.unit || 'miles',
-                  unit_price: mileageItem?.unit_price || 0.70,
-                  total: totalMiles * (mileageItem?.unit_price || 0.70),
+                  unit_price: mileageItem?.unit_price || 0.60,
+                  total: totalMiles * (mileageItem?.unit_price || 0.60),
                   is_travel_item: true,
                   calculation_type: 'none',
                   installation_time: 0,
@@ -674,6 +673,25 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     }
     const newItems = formData.items.filter((_, i) => i !== index);
     setFormData({ ...formData, items: newItems });
+  };
+
+  const calculateQuantity = (item) => {
+    const techCount = parseInt(item.tech_count) || 1;
+    const durationValue = parseFloat(item.duration_value) || 1;
+
+    if (item.calculation_type === 'hotel') {
+      // Hotel: Math.ceil(tech_count / 2) × nights
+      const rooms = Math.ceil(techCount / 2);
+      return rooms * durationValue;
+    } else if (item.calculation_type === 'per_diem') {
+      // Per-diem: tech_count × days
+      return techCount * durationValue;
+    } else if (item.calculation_type === 'hours') {
+      // Hours (driving, normal, overtime): tech_count × hours
+      return techCount * durationValue;
+    }
+    
+    return item.quantity || 1;
   };
 
   const updateItem = (index, field, value) => {

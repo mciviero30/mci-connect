@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
-import { calculateQuantity } from "@/components/utils/quantityCalculations";
 
 /**
  * Unified Line Items Editor
@@ -38,6 +37,22 @@ export default function LineItemsEditor({
   // Helper: Get catalog item name (supports both QuoteItem.name and ItemCatalog.item_name)
   const getCatalogName = (ci) => String(ci?.name || ci?.item_name || '').trim();
   
+  const calculateQuantity = (item) => {
+    const techCount = parseInt(item.tech_count) || 1;
+    const durationValue = parseFloat(item.duration_value) || 1;
+
+    if (item.calculation_type === 'hotel') {
+      const rooms = Math.ceil(techCount / 2);
+      return rooms * durationValue;
+    } else if (item.calculation_type === 'per_diem') {
+      return techCount * durationValue;
+    } else if (item.calculation_type === 'hours') {
+      return techCount * durationValue;
+    }
+    
+    return item.quantity || 1;
+  };
+
   const updateItem = (index, field, value) => {
     // Guard: Never allow clearing item_name
     if (field === 'item_name' && (value === null || value === undefined)) return;
