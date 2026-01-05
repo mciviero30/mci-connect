@@ -83,7 +83,8 @@ export default function FieldReportsManager({ jobId = null, language = 'en' }) {
     
     const matchesTab = activeTab === 'all' ||
                       (activeTab === 'urgent' && report.is_urgent) ||
-                      (activeTab === 'unreviewed' && !report.reviewed_by_manager);
+                      (activeTab === 'unreviewed' && !report.reviewed_by_manager) ||
+                      (activeTab === 'quality' && report.requires_quality_review);
     
     return matchesSearch && matchesType && matchesUrgency && matchesTab;
   });
@@ -93,7 +94,9 @@ export default function FieldReportsManager({ jobId = null, language = 'en' }) {
     total: reports.length,
     urgent: reports.filter(r => r.is_urgent).length,
     unreviewed: reports.filter(r => !r.reviewed_by_manager).length,
-    visible: reports.filter(r => r.client_visible).length
+    visible: reports.filter(r => r.client_visible).length,
+    qualityIssues: reports.filter(r => r.requires_quality_review).length,
+    failed: reports.filter(r => r.quality_status === 'fail').length
   };
 
   return (
@@ -160,6 +163,30 @@ export default function FieldReportsManager({ jobId = null, language = 'en' }) {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="bg-gradient-to-br from-orange-700 to-orange-800 border-orange-600">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-orange-200">Baja Calidad</p>
+                <p className="text-2xl font-bold text-white">{stats.qualityIssues}</p>
+              </div>
+              <AlertTriangle className="w-8 h-8 text-orange-300" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-700 to-purple-800 border-purple-600">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-purple-200">Falló Calidad</p>
+                <p className="text-2xl font-bold text-white">{stats.failed}</p>
+              </div>
+              <Shield className="w-8 h-8 text-purple-300" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
@@ -168,6 +195,7 @@ export default function FieldReportsManager({ jobId = null, language = 'en' }) {
           <TabsTrigger value="all">Todos ({stats.total})</TabsTrigger>
           <TabsTrigger value="urgent">Urgentes ({stats.urgent})</TabsTrigger>
           <TabsTrigger value="unreviewed">Sin Revisar ({stats.unreviewed})</TabsTrigger>
+          <TabsTrigger value="quality">Baja Calidad ({stats.qualityIssues})</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -307,6 +335,42 @@ function ReportCard({ report, language, onToggleVisibility, onViewDetails }) {
                 </span>
               )}
             </div>
+
+            {/* Quality Score Badge */}
+            {report.quality_score && (
+              <div className="mt-3 p-3 bg-slate-700 border border-slate-600 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                    <span className="text-xs font-bold text-slate-300">Calidad:</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-lg font-bold ${
+                      report.quality_score >= 7 ? 'text-green-400' :
+                      report.quality_score >= 5 ? 'text-yellow-400' :
+                      'text-red-400'
+                    }`}>
+                      {report.quality_score}/10
+                    </span>
+                    <Badge className={
+                      report.quality_status === 'pass' ? 'bg-green-600 text-white' :
+                      report.quality_status === 'needs_rework' ? 'bg-yellow-600 text-white' :
+                      'bg-red-600 text-white'
+                    }>
+                      {report.quality_status === 'pass' && (language === 'es' ? 'PASA' : 'PASS')}
+                      {report.quality_status === 'needs_rework' && (language === 'es' ? 'RETRABAJO' : 'REWORK')}
+                      {report.quality_status === 'fail' && (language === 'es' ? 'FALLA' : 'FAIL')}
+                    </Badge>
+                  </div>
+                </div>
+                {report.quality_defects && report.quality_defects.length > 0 && (
+                  <p className="text-xs text-slate-400 mt-2">
+                    {report.quality_defects.length} defecto{report.quality_defects.length > 1 ? 's' : ''} • 
+                    {report.punch_list_items?.length || 0} punch items
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Safety Risks Preview */}
             {report.safety_risks && report.safety_risks.length > 0 && (
@@ -455,6 +519,117 @@ function ReportDetailsDialog({ report, language, open, onClose, onToggleVisibili
                     {material}
                   </Badge>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quality Analysis */}
+          {report.quality_score && (
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+                Análisis de Calidad
+              </h3>
+              <div className="p-4 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-lg border-2 border-slate-300 dark:border-slate-600">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Puntaje de Calidad</span>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-3xl font-bold ${
+                      report.quality_score >= 7 ? 'text-green-600 dark:text-green-400' :
+                      report.quality_score >= 5 ? 'text-yellow-600 dark:text-yellow-400' :
+                      'text-red-600 dark:text-red-400'
+                    }`}>
+                      {report.quality_score}/10
+                    </span>
+                    <Badge className={`text-sm px-3 py-1 ${
+                      report.quality_status === 'pass' ? 'bg-green-600 text-white' :
+                      report.quality_status === 'needs_rework' ? 'bg-yellow-600 text-white' :
+                      'bg-red-600 text-white'
+                    }`}>
+                      {report.quality_status === 'pass' && (language === 'es' ? 'PASA' : 'PASS')}
+                      {report.quality_status === 'needs_rework' && (language === 'es' ? 'RETRABAJO' : 'REWORK')}
+                      {report.quality_status === 'fail' && (language === 'es' ? 'FALLA' : 'FAIL')}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Defects */}
+                {report.quality_defects && report.quality_defects.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                      Defectos Identificados ({report.quality_defects.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {report.quality_defects.map((defect, idx) => {
+                        const desc = language === 'es' ? defect.description_es : defect.description_en;
+                        return (
+                          <div key={idx} className={`p-3 rounded-lg border-2 ${
+                            defect.severity === 'critical' ? 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700' :
+                            defect.severity === 'major' ? 'bg-orange-50 border-orange-300 dark:bg-orange-900/20 dark:border-orange-700' :
+                            'bg-yellow-50 border-yellow-300 dark:bg-yellow-900/20 dark:border-yellow-700'
+                          }`}>
+                            <div className="flex items-start gap-2">
+                              <Badge className={`text-xs ${
+                                defect.severity === 'critical' ? 'bg-red-600' :
+                                defect.severity === 'major' ? 'bg-orange-600' :
+                                'bg-yellow-600'
+                              } text-white`}>
+                                {defect.severity}
+                              </Badge>
+                              <Badge variant="outline" className="text-xs">{defect.category}</Badge>
+                            </div>
+                            <p className="text-xs text-slate-900 dark:text-white mt-2">{desc}</p>
+                            {defect.location && (
+                              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                                📍 {defect.location}
+                              </p>
+                            )}
+                            {defect.photo_reference && (
+                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                📷 {defect.photo_reference}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Punch List */}
+                {report.punch_list_items && report.punch_list_items.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                      Punch List ({report.punch_list_items.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {report.punch_list_items.map((item, idx) => {
+                        const title = language === 'es' ? item.title_es : item.title_en;
+                        const desc = language === 'es' ? item.description_es : item.description_en;
+                        return (
+                          <div key={idx} className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-600">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white">{title}</span>
+                              <Badge className={`text-xs ${
+                                item.priority === 'high' ? 'bg-orange-600' :
+                                item.priority === 'medium' ? 'bg-blue-600' :
+                                'bg-slate-600'
+                              } text-white`}>
+                                {item.priority}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">{desc}</p>
+                            {item.estimated_time && (
+                              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                                ⏱️ {item.estimated_time}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

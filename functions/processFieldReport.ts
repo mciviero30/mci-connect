@@ -50,10 +50,10 @@ Text: ${optional_notes}`;
     }
 
     // ========================================================================
-    // STEP 2: GENERATE BILINGUAL STRUCTURED REPORT
+    // STEP 2: GENERATE BILINGUAL STRUCTURED REPORT WITH QUALITY ANALYSIS
     // ========================================================================
     
-    const promptTemplate = `You are a construction field report AI for Falkbuilt wall installations.
+    const promptTemplate = `You are a construction field report AI for Falkbuilt wall installations with expert quality control capabilities.
 
 PROJECT: ${job_name}
 REPORT TYPE: ${report_type}
@@ -74,6 +74,13 @@ INSTRUCTIONS:
 5. Extract material requirements
 6. Generate actionable tasks
 7. Create bilingual captions for each photo/video
+8. **QUALITY ANALYSIS**: Inspect installation quality from photos/videos:
+   - Assign quality_score (1-10): 1-4=fail, 5-6=needs_rework, 7-10=pass
+   - Identify specific defects with severity (minor/major/critical)
+   - Categorize defects: alignment, finish, damage, incomplete, safety, specification
+   - Generate punch list items for corrections
+   - Provide recommendations to improve quality
+   - Reference specific photos showing defects
 
 CRITICAL: Always generate BOTH English and Spanish versions, regardless of original language.
 
@@ -99,6 +106,31 @@ Return JSON:
       "priority": "low|medium|high|critical",
       "category": "installation|safety|materials|inspection"
     }
+  ],
+  "quality_score": 8,
+  "quality_defects": [
+    {
+      "severity": "minor|major|critical",
+      "category": "alignment|finish|damage|incomplete|safety|specification",
+      "description_en": "Defect description in English",
+      "description_es": "Descripción del defecto en español",
+      "location": "Wall section B, upper panel",
+      "photo_reference": "Photo 2"
+    }
+  ],
+  "punch_list_items": [
+    {
+      "title_en": "Punch item title in English",
+      "title_es": "Título de punch item en español",
+      "description_en": "Detailed description in English",
+      "description_es": "Descripción detallada en español",
+      "priority": "low|medium|high",
+      "estimated_time": "30 minutes"
+    }
+  ],
+  "quality_recommendations": [
+    "Recommendation 1",
+    "Recommendation 2"
   ],
   "media_captions": [
     {
@@ -162,6 +194,39 @@ Return JSON:
           search_keywords: {
             type: "array",
             items: { type: "string" }
+          },
+          quality_score: { type: "number" },
+          quality_defects: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                severity: { type: "string" },
+                category: { type: "string" },
+                description_en: { type: "string" },
+                description_es: { type: "string" },
+                location: { type: "string" },
+                photo_reference: { type: "string" }
+              }
+            }
+          },
+          punch_list_items: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title_en: { type: "string" },
+                title_es: { type: "string" },
+                description_en: { type: "string" },
+                description_es: { type: "string" },
+                priority: { type: "string" },
+                estimated_time: { type: "string" }
+              }
+            }
+          },
+          quality_recommendations: {
+            type: "array",
+            items: { type: "string" }
           }
         }
       }
@@ -213,7 +278,22 @@ Return JSON:
     }
 
     // ========================================================================
-    // STEP 5: SAVE TO DATABASE
+    // STEP 5: DETERMINE QUALITY STATUS AND FLAGS
+    // ========================================================================
+    
+    const qualityScore = analysis.quality_score || 7;
+    let qualityStatus = 'pass';
+    if (qualityScore <= 4) {
+      qualityStatus = 'fail';
+    } else if (qualityScore <= 6) {
+      qualityStatus = 'needs_rework';
+    }
+    
+    const requiresQualityReview = qualityStatus === 'fail' || 
+                                   (analysis.quality_defects || []).some(d => d.severity === 'critical');
+
+    // ========================================================================
+    // STEP 6: SAVE TO DATABASE
     // ========================================================================
     
     const reportData = {
@@ -239,6 +319,12 @@ Return JSON:
           ? 'high' 
           : task.priority
       })),
+      quality_score: qualityScore,
+      quality_status: qualityStatus,
+      quality_defects: analysis.quality_defects || [],
+      punch_list_items: analysis.punch_list_items || [],
+      quality_recommendations: analysis.quality_recommendations || [],
+      requires_quality_review: requiresQualityReview,
       media_attachments: mediaAttachments,
       raw_audio_url: audio_url,
       raw_video_url: video_url,
