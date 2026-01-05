@@ -735,30 +735,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       }
     }
     
-    // AUTO-RECALCULATE hotel and per diem when regular items change
-    if (field === 'quantity' || field === 'installation_time') {
-      const { calculateStayDuration } = require('@/components/domain/calculations/stayDuration');
-      const result = calculateStayDuration({
-        items: newItems,
-        techCount: projectTechCount,
-        travelTimeHours,
-        roomsPerNight
-      });
-      
-      if (result) {
-        // Update hotel and per diem quantities
-        newItems.forEach((item, idx) => {
-          if (item.calculation_type === 'hotel') {
-            newItems[idx].quantity = result.totalHotelRooms;
-            newItems[idx].total = result.totalHotelRooms * (item.unit_price || 0);
-          }
-          if (item.calculation_type === 'per_diem') {
-            newItems[idx].quantity = result.totalPerDiem;
-            newItems[idx].total = result.totalPerDiem * (item.unit_price || 0);
-          }
-        });
-      }
-    }
+    // No need to manually update quantities anymore - they are derived automatically
     
     setFormData({ ...formData, items: newItems });
   };

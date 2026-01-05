@@ -8,6 +8,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { getDerivedQuantity, isAutoCalculatedItem } from "@/components/domain/calculations/derivedItemQuantities";
 
 /**
  * Unified Line Items Editor
@@ -34,7 +35,10 @@ export default function LineItemsEditor({
   catalogItems = [],
   allowCatalogSelect = true,
   allowReorder = true,
-  onToast
+  onToast,
+  techCount = 2,
+  travelTimeHours = 0,
+  roomsPerNight = 1
 }) {
   
   // Helper: Get catalog item name (supports both QuoteItem.name and ItemCatalog.item_name)
@@ -46,6 +50,12 @@ export default function LineItemsEditor({
     
     const newItems = [...items];
     const itemBefore = { ...newItems[index] };
+    
+    // If editing quantity on auto-calculated item, enable manual override
+    if (field === 'quantity' && isAutoCalculatedItem(newItems[index]) && !newItems[index].manual_override) {
+      newItems[index].manual_override = true;
+    }
+    
     newItems[index][field] = value;
     
     // Auto-calculate quantity for special items
@@ -142,19 +152,32 @@ export default function LineItemsEditor({
         <div></div>
       </div>
 
-      {items.map((item, index) => (
+      {items.map((item, index) => {
+        // Calculate derived quantity for display
+        const isAutoCalc = isAutoCalculatedItem(item);
+        const displayQuantity = isAutoCalc && !item.manual_override
+          ? getDerivedQuantity(item, items, techCount, travelTimeHours, roomsPerNight)
+          : item.quantity;
+        const displayTotal = displayQuantity * (item.unit_price || 0);
+        
+        return (
         <div 
           key={index} 
           className={`border-b border-slate-200 ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'} relative`}
         >
           {/* Auto-calculated badge for special items */}
-          {item.calculation_type && item.calculation_type !== 'none' && (
-            <div className="absolute top-2 left-2 z-10">
+          {isAutoCalc && (
+            <div className="absolute top-2 left-2 z-10 flex gap-1">
               <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[9px] px-2 py-0.5">
                 {item.calculation_type === 'hotel' && '🏨 Auto-calc'}
                 {item.calculation_type === 'per_diem' && '🍽️ Auto-calc'}
                 {item.calculation_type === 'hours' && '⏱️ Auto-calc'}
               </Badge>
+              {item.manual_override && (
+                <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-[9px] px-2 py-0.5">
+                  Manual Override
+                </Badge>
+              )}
             </div>
           )}
           {/* Row 1: Select Item and aligned fields */}
@@ -226,15 +249,15 @@ export default function LineItemsEditor({
             <div className="flex items-center justify-center">
               <Input
                 type="number"
-                value={item.quantity}
+                value={displayQuantity}
                 onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                 min="0"
                 step="0.01"
                 required
-                disabled={item.is_travel_item || (item.calculation_type && item.calculation_type !== 'none')}
+                disabled={item.is_travel_item || (isAutoCalc && !item.manual_override)}
                 className={`h-9 text-sm text-center font-semibold ${
-                  item.is_travel_item || (item.calculation_type && item.calculation_type !== 'none')
-                    ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
+                  item.is_travel_item || (isAutoCalc && !item.manual_override)
+                    ? 'bg-blue-50 border-blue-200 text-blue-900 cursor-not-allowed'
                     : 'bg-white border-slate-200 text-slate-900'
                 }`}
               />
@@ -276,26 +299,26 @@ export default function LineItemsEditor({
             <div className="flex items-center justify-end">
               <div className="text-right space-y-0.5">
                 <div className="text-slate-900 font-bold text-base">
-                  ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ${displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
-                {item.calculation_type !== 'none' && item.calculation_type && (
+                {isAutoCalc && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="text-[9px] text-blue-600 font-medium flex items-center gap-1 justify-end cursor-help">
                           <Info className="w-2.5 h-2.5" />
-                          = {item.quantity} {item.unit}
+                          = {displayQuantity} {item.unit}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
                         {item.calculation_type === 'hotel' && (
-                          <p>Auto-calculated: Rooms = ceil(techs / 2) × nights</p>
+                          <p>Auto-calculated from project duration. Click quantity to override.</p>
                         )}
                         {item.calculation_type === 'per_diem' && (
-                          <p>Auto-calculated: Per diem per person per calendar day</p>
+                          <p>Auto-calculated from project duration. Click quantity to override.</p>
                         )}
-                        {item.calculation_type === 'hours' && (
-                          <p>Auto-calculated: Hours × technicians</p>
+                        {item.manual_override && (
+                          <p className="text-amber-400 mt-1">⚠️ Manual override active</p>
                         )}
                       </TooltipContent>
                     </Tooltip>
@@ -359,7 +382,8 @@ export default function LineItemsEditor({
             />
           </div>
         </div>
-      ))}
+        );
+      })}
     </>
   );
 }

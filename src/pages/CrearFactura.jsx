@@ -190,7 +190,15 @@ export default function CrearFactura() {
   }, [quoteId, quotes]);
 
   const calculateTotals = () => {
-    return calculateInvoiceTotals(formData.items, formData.tax_rate, formData.amount_paid || 0);
+    // Enrich items with derived quantities before calculation
+    const { enrichItemsWithDerivedQuantities } = require('@/components/domain/calculations/derivedItemQuantities');
+    const enrichedItems = enrichItemsWithDerivedQuantities(
+      formData.items,
+      projectTechCount,
+      travelTimeHours,
+      roomsPerNight
+    );
+    return calculateInvoiceTotals(enrichedItems, formData.tax_rate, formData.amount_paid || 0);
   };
 
   const handleItemChange = (index, field, value) => {
@@ -201,30 +209,7 @@ export default function CrearFactura() {
       newItems[index].total = newItems[index].quantity * newItems[index].unit_price;
     }
     
-    // AUTO-RECALCULATE hotel and per diem when regular items change
-    if (field === 'quantity' || field === 'installation_time') {
-      const { calculateStayDuration } = require('@/components/domain/calculations/stayDuration');
-      const result = calculateStayDuration({
-        items: newItems,
-        techCount: projectTechCount,
-        travelTimeHours,
-        roomsPerNight
-      });
-      
-      if (result) {
-        // Update hotel and per diem quantities
-        newItems.forEach((item, idx) => {
-          if (item.calculation_type === 'hotel') {
-            newItems[idx].quantity = result.totalHotelRooms;
-            newItems[idx].total = result.totalHotelRooms * (item.unit_price || 0);
-          }
-          if (item.calculation_type === 'per_diem') {
-            newItems[idx].quantity = result.totalPerDiem;
-            newItems[idx].total = result.totalPerDiem * (item.unit_price || 0);
-          }
-        });
-      }
-    }
+    // No need to manually update quantities - they are derived automatically
     
     setFormData({ ...formData, items: newItems });
   };
@@ -923,6 +908,9 @@ export default function CrearFactura() {
                 allowCatalogSelect={true}
                 allowReorder={false}
                 onToast={(toastData) => toast[toastData.variant || 'success'](toastData.title, { description: toastData.description })}
+                techCount={projectTechCount}
+                travelTimeHours={travelTimeHours}
+                roomsPerNight={roomsPerNight}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto">
