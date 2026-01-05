@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 
@@ -13,7 +13,6 @@ import { createPageUrl } from '@/utils';
  */
 export default function TaxProfileGate({ children }) {
   // CRITICAL: All hooks MUST be called unconditionally at the top
-  const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   
@@ -88,24 +87,6 @@ export default function TaxProfileGate({ children }) {
     }
   }, [userEmail, taxProfile, isLoading, isExempt]);
 
-  // CRITICAL: Block access if tax profile not completed - stable dependencies
-  useEffect(() => {
-    if (!userEmail || isLoading || isExempt || isTaxOnboardingPage) return;
-
-    const needsTaxOnboarding = !taxProfile || !taxProfile?.completed;
-
-    if (needsTaxOnboarding) {
-      try {
-        navigate(createPageUrl('TaxOnboarding'), { replace: true });
-      } catch (err) {
-        // Defensive: if navigation fails, fail closed (block in loading state)
-        if (import.meta.env.DEV) {
-          console.error('TaxProfile navigation error:', err);
-        }
-      }
-    }
-  }, [userEmail, taxProfile, isLoading, isTaxOnboardingPage, navigate, isExempt]);
-
   // CONDITIONAL RENDERING - happens AFTER all hooks
   
   // Defensive: if no user, fail open (allow access)
@@ -134,6 +115,23 @@ export default function TaxProfileGate({ children }) {
           <p className="text-red-600 dark:text-red-400">Unable to verify tax information. Please refresh.</p>
         </div>
       </div>
+    );
+  }
+
+  // DECLARATIVE REDIRECT: Block access if tax profile not completed
+  if (
+    userEmail &&
+    !isExempt &&
+    !isLoading &&
+    !isTaxOnboardingPage &&
+    (!taxProfile || !taxProfile.completed)
+  ) {
+    return (
+      <Navigate
+        to={createPageUrl('TaxOnboarding')}
+        replace
+        state={{ from: location }}
+      />
     );
   }
 
