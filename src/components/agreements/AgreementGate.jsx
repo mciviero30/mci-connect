@@ -172,35 +172,8 @@ export default function AgreementGate({ children }) {
     },
   });
 
-  // Reset state when user changes - MUST be declared before any returns
-  useEffect(() => {
-    setCurrentStep(0);
-    setHasRead(false);
-    setSignatureName('');
-    setShowContent(false);
-  }, [userId]);
-
-  // Auto-unlock when no agreements pending
-  useEffect(() => {
-    if (!signaturesLoading && user && !gateUnlocked) {
-      const requiredAgreements = getRequiredAgreements(user) || [];
-      const unsigned = requiredAgreements.filter(agreement => {
-        return !signatures.some(sig => 
-          sig?.agreement_type === agreement?.type && 
-          sig?.version === agreement?.version &&
-          sig?.accepted === true
-        );
-      });
-      
-      if (unsigned.length === 0) {
-        if (import.meta.env.DEV) {
-          console.log('🔓 Auto-unlocking: All agreements completed');
-        }
-        sessionStorage.setItem(SESSION_KEY, 'true');
-        setGateUnlocked(true);
-      }
-    }
-  }, [signaturesLoading, signatures, user, gateUnlocked]);
+  // REMOVED: useEffect loops causing issues
+  // Gate unlock happens ONCE in onSuccess, not in effects
 
   // Handler functions (not hooks)
   const handleSign = () => {
