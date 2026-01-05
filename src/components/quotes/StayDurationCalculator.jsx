@@ -47,6 +47,9 @@ export default function StayDurationCalculator({
 
   }, [items, techCount, travelTimeHours, roomsPerNight]);
 
+  // Check if items exist but have no installation hours
+  const hasItemsWithoutHours = items && items.length > 0 && !calculations;
+
   const handleAddToQuote = () => {
     if (!calculations || !onAutoGenerateItems) return;
 
@@ -86,12 +89,18 @@ export default function StayDurationCalculator({
         </div>
 
         {!calculations && (
-          <Alert className="bg-blue-50 border-blue-300">
-            <Info className="w-4 h-4 text-blue-600" />
-            <AlertDescription className="text-sm text-blue-900">
-              {language === 'es' 
-                ? 'Agrega items con horas de instalación para calcular automáticamente la duración del proyecto, habitaciones de hotel y per diem.' 
-                : 'Add items with installation hours to automatically calculate project duration, hotel rooms, and per diem.'}
+          <Alert className={hasItemsWithoutHours ? "bg-amber-50 border-amber-300" : "bg-blue-50 border-blue-300"}>
+            <Info className={hasItemsWithoutHours ? "w-4 h-4 text-amber-600" : "w-4 h-4 text-blue-600"} />
+            <AlertDescription className={hasItemsWithoutHours ? "text-sm text-amber-900" : "text-sm text-blue-900"}>
+              {hasItemsWithoutHours ? (
+                language === 'es' 
+                  ? 'Los items actuales no tienen horas de instalación definidas. Edita los items y agrega horas de instalación para activar el cálculo automático.' 
+                  : 'Current items have no installation hours defined. Edit items and add installation hours to activate automatic calculation.'
+              ) : (
+                language === 'es' 
+                  ? 'Agrega items con horas de instalación para calcular automáticamente la duración del proyecto, habitaciones de hotel y per diem.' 
+                  : 'Add items with installation hours to automatically calculate project duration, hotel rooms, and per diem.'
+              )}
             </AlertDescription>
           </Alert>
         )}
