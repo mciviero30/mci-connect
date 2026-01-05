@@ -6,9 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users, Hotel, Coffee, Clock, Info, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { calculateTotalLaborHours, calculateWorkDays, calculateCapacity } from '@/components/domain/calculations/laborCalculator';
-import { convertWorkDaysToCalendarDays, calculateWeekends, calculateProjectDuration, calculateHotelRooms, calculatePerDiem, getSuggestedRoomsPerNight } from '@/components/domain/calculations/stayCalculator';
-import { calculateTravelDays } from '@/components/domain/calculations/travelRules';
 
 export default function StayDurationCalculator({ 
   items = [], 
@@ -24,44 +21,66 @@ export default function StayDurationCalculator({
   useEffect(() => {
     if (!items || items.length === 0) return;
 
-    // Step 1: Calculate total labor hours (pure function)
-    const totalLaborHours = calculateTotalLaborHours(items);
-    
+    // Step 1: Sum labor hours from all items
+    const totalLaborHours = items
+      .filter(item => !item.is_travel_item)
+      .reduce((sum, item) => {
+        const hours = parseFloat(item.installation_time) || 0;
+        const qty = parseFloat(item.quantity) || 0;
+        return sum + (hours * qty);
+      }, 0);
+
     if (totalLaborHours === 0) {
       setCalculations(null);
       return;
     }
 
-    // Step 2: Calculate work days (pure function)
-    const workDays = calculateWorkDays(totalLaborHours, techCount);
+    // Step 2: Calculate work days (Monday-Friday only)
+    const hoursPerDay = 8;
+    let totalWorkDays = totalLaborHours / (hoursPerDay * techCount);
     
-    // Step 3: Calculate capacity (pure function)
-    const { dailyCapacity, weeklyCapacity } = calculateCapacity(techCount);
+    // Round to nearest 0.5 day
+    totalWorkDays = Math.round(totalWorkDays * 2) / 2;
+
+    // Step 3: Add travel days (always 2: inbound Sunday + outbound day after last work day)
+    const travelDays = 2;
+
+    // Step 4: Convert work days into calendar days (including weekends)
+    // Project starts on Monday, work is Mon-Fri only
+    const fullWeeks = Math.floor(totalWorkDays / 5);
+    const remainingWorkDays = totalWorkDays % 5;
     
-    // Step 4: Convert work days to calendar days (pure function)
-    const workCalendarDays = convertWorkDaysToCalendarDays(workDays);
-    
-    // Step 5: Calculate weekends (pure function)
-    const weekends = calculateWeekends(workDays);
-    
-    // Step 6: Calculate project duration with travel (pure function)
-    const { totalCalendarDays, totalNights, extraTravelDays } = calculateProjectDuration(workCalendarDays, travelTimeHours);
-    
-    // Step 7: Calculate hotel rooms (pure function)
-    const suggestedRooms = getSuggestedRoomsPerNight(techCount);
+    // Calendar days = work days + weekends
+    // Each full week = 5 work days + 2 weekend days = 7 calendar days
+    // Remaining work days span into next week (adds 2 weekend days if > 0)
+    let workCalendarDays = (fullWeeks * 7) + remainingWorkDays;
+    if (remainingWorkDays > 0) {
+      workCalendarDays += 2; // Add weekend after partial week
+    }
+
+    // Step 5: Total calendar days and nights
+    // Travel: arrive Sunday, leave day after last work day
+    const totalCalendarDays = workCalendarDays + travelDays;
+    const totalNights = totalCalendarDays - 1;
+
+    // For display
+    const weekends = Math.ceil(totalWorkDays / 5) * 2;
+    const extraTravelDays = travelTimeHours > 4 ? 2 : 0;
+
+    // Step 6: Calculate hotel rooms and per diem
+    const suggestedRooms = Math.ceil(techCount / 2);
     if (roomsPerNight !== suggestedRooms) {
       setRoomsPerNight(suggestedRooms);
     }
-    const totalHotelRooms = calculateHotelRooms(totalNights, techCount, roomsPerNight);
-    
-    // Step 8: Calculate per diem (pure function)
-    const totalPerDiem = calculatePerDiem(totalCalendarDays, techCount);
+
+    const totalHotelRooms = totalNights * roomsPerNight;
+    const totalPerDiem = totalCalendarDays * techCount;
 
     setCalculations({
       totalLaborHours,
-      dailyCapacity,
-      weeklyCapacity,
-      workDays,
+      dailyCapacity: hoursPerDay * techCount,
+      weeklyCapacity: hoursPerDay * techCount * 5,
+      workDays: totalWorkDays,
       weekends,
       extraTravelDays,
       totalCalendarDays,

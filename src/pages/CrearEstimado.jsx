@@ -442,7 +442,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         // Update travel items with calculated values
         const updatedItems = formData.items.map(item => {
           if (item.travel_item_type === 'mileage') {
-            return { ...item, quantity: response.distance_miles * 2, total: response.distance_miles * 2 * (item.unit_price || 0.70) };
+            return { ...item, quantity: response.distance_miles * 2, total: response.distance_miles * 2 * (item.unit_price || 0.60) };
           }
           if (item.travel_item_type === 'travel_time') {
             return { ...item, quantity: response.travel_time_hours * 2, total: response.travel_time_hours * 2 * (item.unit_price || 25) };
