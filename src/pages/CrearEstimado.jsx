@@ -758,9 +758,19 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     // Unified validation using isValidLineItem
     const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
     if (invalid.length > 0) {
+      // Find first invalid item and get missing fields
+      const firstInvalid = invalid[0];
+      const missing = [];
+      if (!firstInvalid.item_name) missing.push(language === 'es' ? 'Nombre del Item' : 'Item Name');
+      if (!firstInvalid.description) missing.push(language === 'es' ? 'Descripción' : 'Description');
+      if (!firstInvalid.quantity || firstInvalid.quantity <= 0) missing.push(language === 'es' ? 'Cantidad' : 'Quantity');
+      if (!firstInvalid.unit_price || firstInvalid.unit_price < 0) missing.push(language === 'es' ? 'Precio' : 'Price');
+      
       toast({
         title: 'Error',
-        description: language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields',
+        description: language === 'es' 
+          ? `Campos faltantes en items: ${missing.join(', ')}` 
+          : `Missing fields in items: ${missing.join(', ')}`,
         variant: 'destructive',
       });
       return;
