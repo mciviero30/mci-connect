@@ -150,7 +150,9 @@ export default function AgreementGate({ children, user }) {
     setShowContent(false);
   }, [user?.id]);
 
-  // Wait for signatures query to load
+  // DEFENSIVE GUARDS: Prevent redirect loops under all conditions
+  
+  // Guard 1: Wait for signatures query to load (prevents premature blocking)
   if (signaturesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -159,13 +161,12 @@ export default function AgreementGate({ children, user }) {
     );
   }
 
-  // Safety guard: If signing is in progress, allow flow to complete
+  // Guard 2: If signing is in progress, DO NOT redirect (prevents mutation interruption)
   if (isSigningInProgress) {
-    // Keep showing agreement UI - don't re-evaluate or redirect
-  }
-
-  // Allow access if: no agreements required, all signed, or explicitly shown
-  if (!shouldBlockAccess || showContent) {
+    // Allow agreement UI to remain visible until mutation completes
+    // Fall through to render agreement modal
+  } else if (!shouldBlockAccess || showContent) {
+    // Guard 3: Allow access if no blocking needed or user has progressed manually
     return children;
   }
 
