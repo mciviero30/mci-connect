@@ -29,8 +29,10 @@ export default function AgreementGate({ children }) {
   const [showContent, setShowContent] = useState(false);
   const [isSigningInProgress, setIsSigningInProgress] = useState(false);
   
-  // SESSION UNLOCK: Once unlocked in this session, never block again
-  const [gateUnlocked, setGateUnlocked] = useState(false);
+  // SESSION LATCH: Once unlocked in this session, never block again
+  const [gateUnlocked, setGateUnlocked] = useState(() => {
+    return sessionStorage.getItem('agreements_unlocked') === 'true';
+  });
 
   // Read user from cache (stable, doesn't cause prop changes)
   const user = queryClient.getQueryData(['currentUser']);
@@ -119,6 +121,7 @@ export default function AgreementGate({ children }) {
         setIsSigningInProgress(false);
       } else {
         // SESSION UNLOCK: All agreements signed, unlock for this session
+        sessionStorage.setItem('agreements_unlocked', 'true');
         setGateUnlocked(true);
         setShowContent(true);
         setIsSigningInProgress(false);
@@ -156,6 +159,7 @@ export default function AgreementGate({ children }) {
       });
       
       if (unsigned.length === 0) {
+        sessionStorage.setItem('agreements_unlocked', 'true');
         setGateUnlocked(true);
       }
     }
