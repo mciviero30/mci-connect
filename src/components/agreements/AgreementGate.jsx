@@ -44,17 +44,15 @@ export default function AgreementGate({ children }) {
   const userFullName = user?.full_name || null;
   const userPosition = user?.position || null;
   
-  // CRITICAL: Only fetch if NOT unlocked
-  const shouldFetchSignatures = !!userEmail && !gateUnlocked;
-
-  // SINGLE SOURCE OF TRUTH: AgreementSignature entity determines signed state
+  // CRITICAL: Skip query entirely if gate is unlocked
   const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
     queryKey: ['agreementSignatures', userEmail],
     queryFn: () => base44.entities.AgreementSignature.filter({ employee_email: userEmail }),
-    enabled: shouldFetchSignatures,
+    enabled: !!userEmail && !gateUnlocked, // NEVER fetch if unlocked
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    refetchInterval: false,
     initialData: [],
   });
 
