@@ -715,7 +715,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
         
         // Set default values based on calculation type
         if (selectedItem.calculation_type && selectedItem.calculation_type !== 'none') {
-          newItems[index].tech_count = 1;
+          newItems[index].tech_count = projectTechCount;
           newItems[index].duration_value = 1;
           newItems[index].quantity = calculateLineItemQuantity(newItems[index]);
         }
