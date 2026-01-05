@@ -99,12 +99,17 @@ export default function AgreementGate({ children, user }) {
         console.log('🔄 Refreshing signatures...');
       }
 
-      // Wait for query to update before proceeding
-      await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] });
-      const refetchResult = await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
+      // Invalidate both queries to ensure full state refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] }),
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] })
+      ]);
+
+      // Refetch signatures to get updated data
+      await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
 
       if (import.meta.env.DEV) {
-        console.log('✅ Signatures refreshed:', refetchResult);
+        console.log('✅ Signatures and user state refreshed');
       }
       
       // Move to next agreement or show content
