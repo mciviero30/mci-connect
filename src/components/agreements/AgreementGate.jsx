@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -10,50 +10,40 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FileText, CheckCircle, Download, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { AGREEMENTS, getRequiredAgreements, hasSignedAllAgreements } from '@/components/core/agreementsConfig';
+import { AGREEMENTS, getRequiredAgreements } from '@/components/core/agreementsConfig';
 import ReactMarkdown from 'react-markdown';
 
 /**
- * Agreement Gate
- * BLOCKS access until all required agreements are signed
- * 
- * CRITICAL: Reads user from cache for stability
+ * Agreement Gate - REFACTORED FOR ZERO RE-RENDER LOOPS
+ * Single source of truth: React Query cache
+ * No sessionStorage, no complex state - just cache + optimistic updates
  */
 export default function AgreementGate({ children }) {
-  // CRITICAL: All hooks MUST be called unconditionally at the top
   const { language } = useLanguage();
   const queryClient = useQueryClient();
+  
+  // Form state only - NOT gate control
   const [currentStep, setCurrentStep] = useState(0);
   const [hasRead, setHasRead] = useState(false);
   const [signatureName, setSignatureName] = useState('');
-  const [showContent, setShowContent] = useState(false);
-  const [isSigningInProgress, setIsSigningInProgress] = useState(false);
-  
-  // SESSION LATCH: Once unlocked in this session, never block again
-  const SESSION_KEY = 'agreements_unlocked';
-  const [gateUnlocked, setGateUnlocked] = useState(() => {
-    return sessionStorage.getItem(SESSION_KEY) === 'true';
-  });
 
-  // Read user from cache (stable, doesn't cause prop changes)
+  // Read user from cache (stable)
   const user = queryClient.getQueryData(['currentUser']);
+  const userEmail = user?.email;
+  const userId = user?.id;
+  const userFullName = user?.full_name;
+  const userPosition = user?.position;
   
-  // Compute stable derived values BEFORE query hooks
-  const userEmail = user?.email || null;
-  const userId = user?.id || null;
-  const userFullName = user?.full_name || null;
-  const userPosition = user?.position || null;
-  
-  // CRITICAL: Skip query entirely if gate is unlocked
-  const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
+  // Fetch signatures - simple, no complex enabled logic
+  const { data: signatures = [], isLoading } = useQuery({
     queryKey: ['agreementSignatures', userEmail],
-    queryFn: () => base44.entities.AgreementSignature.filter({ employee_email: userEmail }),
-    enabled: !!userEmail && !gateUnlocked, // NEVER fetch if unlocked
+    queryFn: async () => {
+      if (!userEmail) return [];
+      return await base44.entities.AgreementSignature.filter({ employee_email: userEmail });
+    },
+    enabled: !!userEmail,
     staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-    initialData: [],
+    gcTime: Infinity,
   });
 
   // Sign mutation - MUST be declared before any returns
