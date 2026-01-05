@@ -2,10 +2,12 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check } from "lucide-react";
+import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check, Info } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * Unified Line Items Editor
@@ -143,10 +145,20 @@ export default function LineItemsEditor({
       {items.map((item, index) => (
         <div 
           key={index} 
-          className={`border-b border-slate-200 ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'}`}
+          className={`border-b border-slate-200 ${item.is_travel_item ? 'bg-blue-50/30' : 'bg-white'} relative`}
         >
+          {/* Auto-calculated badge for special items */}
+          {item.calculation_type && item.calculation_type !== 'none' && (
+            <div className="absolute top-2 left-2 z-10">
+              <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[9px] px-2 py-0.5">
+                {item.calculation_type === 'hotel' && '🏨 Auto-calc'}
+                {item.calculation_type === 'per_diem' && '🍽️ Auto-calc'}
+                {item.calculation_type === 'hours' && '⏱️ Auto-calc'}
+              </Badge>
+            </div>
+          )}
           {/* Row 1: Select Item and aligned fields */}
-          <div className="grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 pt-3 pb-1 hover:bg-slate-50/50 transition-colors">
+          <div className="grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 pt-8 pb-1 hover:bg-slate-50/50 transition-colors">
             {/* Select Item / Item Name */}
             <div>
               {allowCatalogSelect && catalogItems.length > 0 ? (
@@ -266,10 +278,28 @@ export default function LineItemsEditor({
                 <div className="text-slate-900 font-bold text-base">
                   ${item.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
-                {item.calculation_type !== 'none' && (
-                  <div className="text-[9px] text-blue-600 font-medium">
-                    = {item.quantity} {item.unit}
-                  </div>
+                {item.calculation_type !== 'none' && item.calculation_type && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-[9px] text-blue-600 font-medium flex items-center gap-1 justify-end cursor-help">
+                          <Info className="w-2.5 h-2.5" />
+                          = {item.quantity} {item.unit}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
+                        {item.calculation_type === 'hotel' && (
+                          <p>Auto-calculated: Rooms = ceil(techs / 2) × nights</p>
+                        )}
+                        {item.calculation_type === 'per_diem' && (
+                          <p>Auto-calculated: Per diem per person per calendar day</p>
+                        )}
+                        {item.calculation_type === 'hours' && (
+                          <p>Auto-calculated: Hours × technicians</p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
             </div>

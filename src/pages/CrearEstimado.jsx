@@ -1011,6 +1011,11 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                     <Label htmlFor="out-of-area" className="cursor-pointer text-slate-900 dark:text-white font-medium">
                       {language === 'es' ? 'Trabajo Fuera de Área' : 'Out of Area Job'}
                     </Label>
+                    {formData.out_of_area && (
+                      <Badge className="bg-orange-100 text-orange-700 border border-orange-300 text-xs">
+                        {language === 'es' ? 'Fuera de Área' : 'Out of Area'}
+                      </Badge>
+                    )}
                   </div>
                   
                   {formData.out_of_area && (
@@ -1029,6 +1034,13 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         onTechCountChange={setProjectTechCount}
                         travelTimeHours={travelTimeHours}
                         onAutoGenerateItems={handleAutoGenerateStayItems}
+                        language={language}
+                      />
+                      
+                      <ProjectDurationSummary
+                        items={formData.items}
+                        techCount={projectTechCount}
+                        travelTimeHours={travelTimeHours}
                         language={language}
                       />
                     </div>
