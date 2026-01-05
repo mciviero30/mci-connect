@@ -28,6 +28,9 @@ export default function AgreementGate({ children }) {
   const [signatureName, setSignatureName] = useState('');
   const [showContent, setShowContent] = useState(false);
   const [isSigningInProgress, setIsSigningInProgress] = useState(false);
+  
+  // SESSION UNLOCK: Once unlocked in this session, never block again
+  const [gateUnlocked, setGateUnlocked] = useState(false);
 
   // Read user from cache (stable, doesn't cause prop changes)
   const user = queryClient.getQueryData(['currentUser']);
@@ -108,13 +111,15 @@ export default function AgreementGate({ children }) {
         console.log('✅ Signatures refreshed');
       }
       
-      // Move to next agreement or show content
+      // Move to next agreement or unlock session
       if (currentStep < unsignedAgreements.length - 1) {
         setCurrentStep(currentStep + 1);
         setHasRead(false);
         setSignatureName('');
         setIsSigningInProgress(false);
       } else {
+        // SESSION UNLOCK: All agreements signed, unlock for this session
+        setGateUnlocked(true);
         setShowContent(true);
         setIsSigningInProgress(false);
       }
