@@ -12,20 +12,33 @@ import { createPageUrl } from '@/utils';
 export default function TaxProfileGate({ user, children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const isTaxOnboardingPage = location.pathname.includes('TaxOnboarding');
+  const isTaxOnboardingPage = location?.pathname?.includes('TaxOnboarding') || false;
+
+  // Defensive: if no user, fail open (allow access)
+  if (!user?.email) {
+    return children;
+  }
 
   // Exempt CEO/Admin from tax onboarding requirement
   const isExempt = user?.role === 'ceo' || user?.role === 'admin';
 
   // Fetch tax profile
-  const { data: taxProfile, isLoading } = useQuery({
+  const { data: taxProfile, isLoading, error } = useQuery({
     queryKey: ['taxProfile', user?.email],
     queryFn: async () => {
       if (!user?.email) return null;
-      const profiles = await base44.entities.TaxProfile.filter({ 
-        employee_email: user.email 
-      });
-      return profiles[0] || null;
+      try {
+        const profiles = await base44.entities.TaxProfile.filter({ 
+          employee_email: user.email 
+        });
+        return profiles?.[0] || null;
+      } catch (err) {
+        // Fail closed: treat query error as incomplete profile
+        if (import.meta.env.DEV) {
+          console.error('TaxProfile query error:', err);
+        }
+        return null;
+      }
     },
     enabled: !!user?.email && !isExempt,
     staleTime: Infinity,
@@ -35,19 +48,18 @@ export default function TaxProfileGate({ user, children }) {
 
   // Create alert if tax profile incomplete
   useEffect(() => {
-    if (isLoading || !user || isExempt) return;
+    if (isLoading || !user?.email || isExempt) return;
 
-    const needsTaxOnboarding = !taxProfile || !taxProfile.completed;
+    const needsTaxOnboarding = !taxProfile || !taxProfile?.completed;
 
     if (needsTaxOnboarding && user.email) {
-      // Check if alert already exists
+      // Defensive: catch errors to prevent crash
       base44.entities.SystemAlert.filter({
         recipient_email: user.email,
         alert_type: 'tax_info_incomplete',
         read: false,
       }).then(existingAlerts => {
-        if (existingAlerts.length === 0) {
-          // Create critical alert
+        if (!existingAlerts || existingAlerts.length === 0) {
           base44.entities.SystemAlert.create({
             recipient_email: user.email,
             alert_type: 'tax_info_incomplete',
@@ -55,35 +67,65 @@ export default function TaxProfileGate({ user, children }) {
             message: 'You must complete your tax information before using the system. This is required by federal law.',
             severity: 'critical',
             action_url: '/TaxOnboarding',
+          }).catch(err => {
+            // Silent fail: alert creation is not critical for gate function
+            if (import.meta.env.DEV) {
+              console.error('Failed to create tax alert:', err);
+            }
           });
+        }
+      }).catch(err => {
+        // Silent fail: alert check is not critical for gate function
+        if (import.meta.env.DEV) {
+          console.error('Failed to check tax alerts:', err);
         }
       });
     }
-  }, [user, taxProfile, isLoading, isExempt]);
+  }, [user?.email, taxProfile, isLoading, isExempt]);
 
   // CRITICAL: Block access if tax profile not completed
   useEffect(() => {
-    if (isLoading || !user || isExempt) return;
+    if (isLoading || !user?.email || isExempt) return;
     if (isTaxOnboardingPage) return;
 
-    const needsTaxOnboarding = !taxProfile || !taxProfile.completed;
+    const needsTaxOnboarding = !taxProfile || !taxProfile?.completed;
 
     if (needsTaxOnboarding) {
-      navigate(createPageUrl('TaxOnboarding'), { replace: true });
+      try {
+        navigate(createPageUrl('TaxOnboarding'), { replace: true });
+      } catch (err) {
+        // Defensive: if navigation fails, fail closed (block in loading state)
+        if (import.meta.env.DEV) {
+          console.error('TaxProfile navigation error:', err);
+        }
+      }
     }
-  }, [user, taxProfile, isLoading, isTaxOnboardingPage, navigate, isExempt]);
+  }, [user?.email, taxProfile, isLoading, isTaxOnboardingPage, navigate, isExempt]);
 
-  // Show loading while checking
+  // Show loading while checking (fail closed during verification)
   if (!isExempt && isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center">
           <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Verifying tax information...</p>
+          <p className="text-slate-600 dark:text-slate-400">Verifying tax information...</p>
         </div>
       </div>
     );
   }
 
+  // If query errored, fail closed (block with loading state)
+  if (!isExempt && error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <div className="w-12 h-12 border-3 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-red-600 dark:text-red-400">Unable to verify tax information. Please refresh.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Allow access if: exempt, tax profile loaded and complete
   return children;
 }
