@@ -337,8 +337,13 @@ export default function CrearFactura() {
       if (!jobId && finalData.job_name) {
         console.log('🏗️ Auto-creating Job from invoice...');
         try {
+          // Generate job number
+          const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+          const job_number = jobNumberData.job_number;
+          
           const newJob = await base44.entities.Job.create({
             name: finalData.job_name,
+            job_number: job_number,
             address: finalData.job_address || '',
             city: finalData.job_address ? '' : '',
             state: '',
@@ -357,7 +362,7 @@ export default function CrearFactura() {
           
           jobId = newJob.id;
           finalData.job_id = newJob.id;
-          console.log('✅ Job auto-created:', newJob.id, newJob.name);
+          console.log('✅ Job auto-created:', newJob.id, newJob.name, job_number);
         } catch (jobError) {
           console.error('⚠️ Error auto-creating job:', jobError);
         }
@@ -550,8 +555,13 @@ export default function CrearFactura() {
       if (!jobId && invoiceData.job_name) {
         console.log('🏗️ Auto-creating Job from invoice (send flow)...');
         try {
+          // Generate job number
+          const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+          const job_number = jobNumberData.job_number;
+          
           const newJob = await base44.entities.Job.create({
             name: invoiceData.job_name,
+            job_number: job_number,
             address: invoiceData.job_address || '',
             city: '',
             state: '',
@@ -570,7 +580,7 @@ export default function CrearFactura() {
           
           jobId = newJob.id;
           invoiceData.job_id = newJob.id;
-          console.log('✅ Job auto-created (send):', newJob.id, newJob.name);
+          console.log('✅ Job auto-created (send):', newJob.id, newJob.name, job_number);
         } catch (jobError) {
           console.error('⚠️ Error auto-creating job:', jobError);
         }
