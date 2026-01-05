@@ -26,6 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { canCreateFinancialDocs, needsApproval, canSendDocument } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
+import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
 
 // Helper to extract invoice number from various response structures
 function extractInvoiceNumber(res) {
