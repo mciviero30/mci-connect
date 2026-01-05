@@ -1031,7 +1031,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         <LanguageProvider>
           <PermissionsProvider>
             <TaxProfileGate>
-              <AgreementGate user={user}>
+              <AgreementGate>
                 <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
                   {children}
                 </LayoutContent>

@@ -13,7 +13,13 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { AGREEMENTS, getRequiredAgreements, hasSignedAllAgreements } from '@/components/core/agreementsConfig';
 import ReactMarkdown from 'react-markdown';
 
-export default function AgreementGate({ children, user }) {
+/**
+ * Agreement Gate
+ * BLOCKS access until all required agreements are signed
+ * 
+ * CRITICAL: Reads user from cache for stability
+ */
+export default function AgreementGate({ children }) {
   // CRITICAL: All hooks MUST be called unconditionally at the top
   const { language } = useLanguage();
   const queryClient = useQueryClient();
@@ -23,13 +29,21 @@ export default function AgreementGate({ children, user }) {
   const [showContent, setShowContent] = useState(false);
   const [isSigningInProgress, setIsSigningInProgress] = useState(false);
 
+  // Read user from cache (stable, doesn't cause prop changes)
+  const user = queryClient.getQueryData(['currentUser']);
+  
+  // Compute stable derived values BEFORE query hooks
+  const userEmail = user?.email || null;
+  const userId = user?.id || null;
+  const userFullName = user?.full_name || null;
+  const userPosition = user?.position || null;
+  const shouldFetchSignatures = !!userEmail;
+
   // SINGLE SOURCE OF TRUTH: AgreementSignature entity determines signed state
-  // currentUser is ONLY used to determine which agreements are required (role/position)
-  // Signed state comes ONLY from this query - NOT from currentUser
   const { data: signatures = [], isLoading: signaturesLoading } = useQuery({
-    queryKey: ['agreementSignatures', user?.email],
-    queryFn: () => base44.entities.AgreementSignature.filter({ employee_email: user?.email }),
-    enabled: !!user?.email,
+    queryKey: ['agreementSignatures', userEmail],
+    queryFn: () => base44.entities.AgreementSignature.filter({ employee_email: userEmail }),
+    enabled: shouldFetchSignatures,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -47,10 +61,10 @@ export default function AgreementGate({ children, user }) {
 
       // Create signature with explicit field mapping
       const signatureData = {
-        user_id: user.id,
-        employee_email: user.email,
-        employee_name: user.full_name,
-        employee_position: user.position,
+        user_id: userId,
+        employee_email: userEmail,
+        employee_name: userFullName,
+        employee_position: userPosition,
         agreement_type: agreementData.type,
         version: agreementData.version,
         accepted: true,
@@ -64,7 +78,7 @@ export default function AgreementGate({ children, user }) {
         console.log('🔐 Signing agreement:', {
           type: agreementData.type,
           version: agreementData.version,
-          email: user.email
+          email: userEmail
         });
       }
 
@@ -87,8 +101,8 @@ export default function AgreementGate({ children, user }) {
       }
 
       // Invalidate and refetch ONLY signatures query (single source of truth)
-      await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', user?.email] });
-      await queryClient.refetchQueries({ queryKey: ['agreementSignatures', user?.email] });
+      await queryClient.invalidateQueries({ queryKey: ['agreementSignatures', userEmail] });
+      await queryClient.refetchQueries({ queryKey: ['agreementSignatures', userEmail] });
 
       if (import.meta.env.DEV) {
         console.log('✅ Signatures refreshed');
@@ -122,7 +136,7 @@ export default function AgreementGate({ children, user }) {
     setHasRead(false);
     setSignatureName('');
     setShowContent(false);
-  }, [user?.id]);
+  }, [userId]);
 
   // Handler functions (not hooks)
   const handleSign = () => {
@@ -138,7 +152,7 @@ export default function AgreementGate({ children, user }) {
   // CONDITIONAL LOGIC - happens AFTER all hooks
   
   // Defensive: ensure user exists
-  if (!user?.email) {
+  if (!userEmail) {
     return children;
   }
 
@@ -261,7 +275,7 @@ export default function AgreementGate({ children, user }) {
                     id="signature"
                     value={signatureName}
                     onChange={(e) => setSignatureName(e.target.value)}
-                    placeholder={user?.full_name || (language === 'es' ? 'Tu nombre completo' : 'Your full name')}
+                    placeholder={userFullName || (language === 'es' ? 'Tu nombre completo' : 'Your full name')}
                     className="text-lg font-semibold h-12"
                     autoFocus
                   />
