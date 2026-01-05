@@ -25,8 +25,11 @@ export default function StayDurationCalculator({
       return;
     }
 
-    // Debug: log items to see installation_time
-    console.log('📊 StayDurationCalculator - Items:', items.map(i => ({
+    // Debug: log items to see ALL fields of first item
+    if (items.length > 0) {
+      console.log('📊 StayDurationCalculator - First item (ALL fields):', items[0]);
+    }
+    console.log('📊 StayDurationCalculator - Items summary:', items.map(i => ({
       name: i.item_name,
       installation_time: i.installation_time,
       quantity: i.quantity,
