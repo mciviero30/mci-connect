@@ -1,15 +1,18 @@
 import React from 'react';
 import { format } from 'date-fns';
 import LineItemsTable from './LineItemsTable';
+import { enrichItemsWithDerivedQuantities } from '@/components/domain/calculations/derivedItemQuantities';
 
 export default function QuoteDocument({ quote }) {
     if (!quote) return null;
 
-    // DEBUG: Check what data arrives to PDF render
-    console.log('🔍 PDF ITEMS DEBUG (QuoteDocument):', quote.items?.map(i => ({
-        item_name: i.item_name,
-        description: i.description
-    })));
+    // Enrich items with derived quantities for accurate display
+    const enrichedItems = enrichItemsWithDerivedQuantities(
+        quote.items || [],
+        2, // Default tech count
+        0, // Default travel time
+        1  // Default rooms per night
+    );
 
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
@@ -100,7 +103,7 @@ export default function QuoteDocument({ quote }) {
 
             {/* Tabla con Alineación Superior (CRÍTICO) */}
             <div className="mb-8">
-                <LineItemsTable items={quote.items || []} variant="quote" />
+                <LineItemsTable items={enrichedItems} variant="quote" />
             </div>
 
             {/* Notes Section */}
