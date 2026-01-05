@@ -14,10 +14,16 @@ export default function StayDurationCalculator({
   onTechCountChange,
   travelTimeHours = 0,
   onAutoGenerateItems,
-  language = 'en'
+  language = 'en',
+  roomsPerNight: controlledRoomsPerNight,
+  onRoomsPerNightChange
 }) {
-  const [roomsPerNight, setRoomsPerNight] = useState(1);
+  const [internalRoomsPerNight, setInternalRoomsPerNight] = useState(1);
   const [calculations, setCalculations] = useState(null);
+  
+  // Use controlled or internal state
+  const roomsPerNight = controlledRoomsPerNight !== undefined ? controlledRoomsPerNight : internalRoomsPerNight;
+  const setRoomsPerNight = onRoomsPerNightChange || setInternalRoomsPerNight;
 
   useEffect(() => {
     if (!items || items.length === 0) {
