@@ -183,8 +183,8 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
     <>
       {navigation.map((section, idx) => (
         <SidebarGroup key={idx} className={idx === 0 ? "mb-6 mt-0 pt-0" : "mb-6"}>
-          <SidebarGroupLabel className="text-[9px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-2 py-1.5 mb-1.5 flex items-center gap-1.5 text-[#507DB4] dark:text-slate-300 border border-[#507DB4]/10 dark:border-slate-700">
-            {section.icon && <section.icon className="w-3 h-3" />}
+          <SidebarGroupLabel className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:from-slate-800 dark:to-slate-700 rounded-lg px-3 py-2 mb-2 flex items-center gap-2 text-[#507DB4] dark:text-slate-300 border border-[#507DB4]/10 dark:border-slate-700">
+            {section.icon && <section.icon className="w-3.5 h-3.5" />}
             {section.section}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -208,17 +208,17 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
                         ref={el => itemRefs.current[currentItemIndex] = el}
                         to={item.url} 
                         onClick={() => setOpenMobile(false)} 
-                        className={`flex items-center gap-2 px-2.5 py-2 relative group outline-none ${
+                        className={`flex items-center gap-3 px-3 py-2.5 relative group outline-none ${
                           focusedIndex === currentItemIndex ? 'ring-2 ring-[#507DB4] ring-offset-2' : ''
                         }`}
                         data-sidebar-item
                         tabIndex={0}>
-                        <item.icon className={`w-3.5 h-3.5 flex-shrink-0 transition-transform group-hover:scale-105 ${
+                        <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
                           isActive ? 'text-white' : (item.title === 'MCI Field' ? 'text-[#FF8C00]' : 'text-slate-500 dark:text-slate-400')
                         }`} style={item.title === 'MCI Field' && !isActive ? { 
                           filter: 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
                         } : {}} />
-                        <span className={`font-medium text-xs ${
+                        <span className={`font-medium text-sm ${
                           item.title === 'MCI Field' && !isActive 
                             ? 'bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent font-bold' 
                             : ''
@@ -923,56 +923,56 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} sidebarContentRef={sidebarContentRef} />
           </SidebarContent>
 
-          <SidebarFooter className="p-3 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
-            <div className="mb-2 px-1 flex items-center gap-1.5">
+          <SidebarFooter className="p-4 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
+            <div className="mb-3 px-2 flex items-center gap-2">
               <Select value={language} onValueChange={changeLanguage}>
-                <SelectTrigger className="h-8 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded-lg text-xs">
-                  <Languages className="w-3 h-3 mr-1" />
+                <SelectTrigger className="h-9 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded-xl">
+                  <Languages className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
-                  <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs">🇺🇸 EN</SelectItem>
-                  <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs">🇪🇸 ES</SelectItem>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl">
+                  <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">🇺🇸 English</SelectItem>
+                  <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">🇪🇸 Español</SelectItem>
                 </SelectContent>
               </Select>
               <ThemeToggle />
             </div>
 
-            <div className="flex items-center justify-between rounded-xl p-2 border bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 shadow-sm">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center justify-between rounded-2xl p-3 border bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 shadow-sm">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 {profileImage ? (
                   <img
                     key={imageKey}
                     src={`${profileImage}?v=${imageKey}`}
                     alt={(displayUser || user)?.full_name}
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-sm"
+                    className="w-11 h-11 rounded-full object-cover ring-2 ring-[#1E3A8A]/30 shadow-md"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center ring-2 ring-[#507DB4]/30 shadow-sm">
-                    <span className="text-white font-bold text-xs">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center ring-2 ring-[#507DB4]/30 shadow-md">
+                    <span className="text-white font-bold text-base">
                       {(displayUser || user)?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-xs truncate text-slate-900 dark:text-slate-100">
+                  <p className="font-bold text-sm truncate text-slate-900 dark:text-slate-100">
                     {(displayUser || user)?.full_name || (displayUser || user)?.email || 'User'}
                   </p>
-                  <p className="text-[10px] truncate text-[#507DB4] dark:text-[#6B9DD8] font-medium">
+                  <p className="text-xs truncate text-[#507DB4] dark:text-[#6B9DD8] font-medium">
                     {(displayUser || user)?.position || (user?.role === 'admin' ? t('admin') : t('user'))}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-0.5">
-                <Link to={createPageUrl("Configuracion")} className="p-1.5 rounded-lg transition-all hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50" title={t('settings')}>
-                  <Settings className="w-3.5 h-3.5 text-[#507DB4] dark:text-[#6B9DD8]" />
+              <div className="flex items-center gap-1">
+                <Link to={createPageUrl("Configuracion")} className="p-2 rounded-xl transition-all hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')}>
+                  <Settings className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
                 </Link>
                 <button
                   onClick={() => base44.auth.logout()}
-                  className="p-1.5 rounded-lg transition-all hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="p-2 rounded-xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-110"
                   title={t('logout')}
                 >
-                  <LogOut className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                  <LogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
                 </button>
               </div>
             </div>
@@ -985,16 +985,16 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="p-0 md:hidden flex-shrink-0 h-16 relative overflow-hidden bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
+              className="p-0 md:hidden flex-shrink-0 h-28 relative overflow-hidden bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
               >
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                 alt="MCI Connect"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 flex items-center justify-between px-3 z-10">
-                <SidebarTrigger className="p-1.5 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[36px] min-h-[36px]">
-                  <Menu className="w-4 h-4 text-[#1E3A8A]" />
+              <div className="absolute inset-0 flex items-center justify-between px-4 z-10">
+                <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[40px] min-h-[40px]">
+                  <Menu className="w-5 h-5 text-[#1E3A8A]" />
                 </SidebarTrigger>
                 <div className="flex-shrink-0">
                   <NotificationBell user={user} />
