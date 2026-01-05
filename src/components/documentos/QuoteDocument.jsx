@@ -110,8 +110,8 @@ export default function QuoteDocument({ quote }) {
                         <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{quote.job_address}</p>
                     )}
                     {quote.work_details && (
-                        <div className="mt-3 px-3 py-2 rounded" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
-                            <p className="text-xs text-white/90 whitespace-pre-line leading-relaxed">{quote.work_details}</p>
+                        <div className="mt-3 px-3 py-2 rounded" style={{ background: 'linear-gradient(to right, #f1f5f9 0%, #cbd5e1 100%)' }}>
+                            <p className="text-xs text-slate-800 whitespace-pre-line leading-relaxed">{quote.work_details}</p>
                         </div>
                     )}
                 </div>
