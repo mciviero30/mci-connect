@@ -67,20 +67,7 @@ export default function StayDurationCalculator({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!calculations && (
-          <Alert className="bg-blue-50 border-blue-300">
-            <Info className="w-4 h-4 text-blue-600" />
-            <AlertDescription className="text-sm text-blue-900">
-              {language === 'es' 
-                ? 'Agrega items con horas de instalación para calcular automáticamente la duración del proyecto, habitaciones de hotel y per diem.' 
-                : 'Add items with installation hours to automatically calculate project duration, hotel rooms, and per diem.'}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {calculations && (
-          <>
-        {/* Tech Count Input */}
+        {/* Tech Count Input - Always visible */}
         <div className="flex items-center gap-4 p-3 bg-white rounded-lg border border-purple-200">
           <Users className="w-5 h-5 text-purple-600" />
           <div className="flex-1">
@@ -98,6 +85,19 @@ export default function StayDurationCalculator({
           </div>
         </div>
 
+        {!calculations && (
+          <Alert className="bg-blue-50 border-blue-300">
+            <Info className="w-4 h-4 text-blue-600" />
+            <AlertDescription className="text-sm text-blue-900">
+              {language === 'es' 
+                ? 'Agrega items con horas de instalación para calcular automáticamente la duración del proyecto, habitaciones de hotel y per diem.' 
+                : 'Add items with installation hours to automatically calculate project duration, hotel rooms, and per diem.'}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {calculations && (
+          <>
         {/* Calculation Summary */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-white rounded-lg border border-purple-200">
