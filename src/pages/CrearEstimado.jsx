@@ -27,6 +27,7 @@ import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import ProjectDurationSummary from "../components/quotes/ProjectDurationSummary";
 import { canCreateFinancialDocs, needsApproval } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
