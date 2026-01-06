@@ -215,19 +215,27 @@ export default function Items() {
       const doc = new jsPDF();
 
       // ==========================================
-      // HEADER BANNER (BLACK) - Matching Invoice/Quote style
+      // HEADER BANNER (BLACK to GRAY gradient) - Logo area pure black
       // ==========================================
       const headerHeight = 40;
-      const steps = 100;
-      for (let i = 0; i < steps; i++) {
-        const x = (210 / steps) * i;
-        const width = (210 / steps) + 0.5;
-        const gray = Math.floor(i * (74 / steps)); // 0 black to 74 gray
+      const logoEndX = 120; // Where logo ends, gradient starts
+      
+      // Pure black section (0 to logoEndX)
+      doc.setFillColor(0, 0, 0);
+      doc.rect(0, 0, logoEndX, headerHeight, 'F');
+      
+      // Gradient section (logoEndX to 210)
+      const gradientSteps = 100;
+      const gradientWidth = 210 - logoEndX;
+      for (let i = 0; i < gradientSteps; i++) {
+        const x = logoEndX + (gradientWidth / gradientSteps) * i;
+        const width = (gradientWidth / gradientSteps) + 0.5;
+        const gray = Math.floor(i * (74 / gradientSteps)); // 0 black to 74 gray
         doc.setFillColor(gray, gray, gray);
         doc.rect(x, 0, width, headerHeight, 'F');
       }
 
-      // Load and add logo with chunked conversion (BLACK LOGO for PDFs)
+      // Load and add logo with chunked conversion (BLACK LOGO for PDFs - 2x size)
       try {
         const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6a65cfe08_Screenshot2026-01-06at95746AM.png';
         const logoResponse = await fetch(logoUrl);
@@ -245,7 +253,7 @@ export default function Items() {
         }
         
         const logoBase64 = btoa(binary);
-        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
+        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 5, 100, 30);
       } catch (err) {
         console.log('Logo load error:', err);
       }
