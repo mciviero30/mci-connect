@@ -214,103 +214,131 @@ export default function Items() {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
 
-      // Dark Header Banner
-      doc.setFillColor(0, 0, 0);
-      doc.rect(0, 0, 210, 30, 'F');
+      // ==========================================
+      // HEADER BANNER (BLACK) - Matching Invoice/Quote style
+      // ==========================================
+      const headerHeight = 40;
+      const steps = 100;
+      for (let i = 0; i < steps; i++) {
+        const x = (210 / steps) * i;
+        const width = (210 / steps) + 0.5;
+        const gray = Math.floor(i * (74 / steps)); // 0 black to 74 gray
+        doc.setFillColor(gray, gray, gray);
+        doc.rect(x, 0, width, headerHeight, 'F');
+      }
 
-      // Load and add logo in header
+      // Load and add logo with chunked conversion
       try {
         const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = logoUrl;
-        await new Promise((resolve) => {
-          img.onload = () => {
-            doc.addImage(img, 'PNG', 15, 7, 70, 16);
-            resolve();
-          };
-          img.onerror = resolve;
-        });
+        const logoResponse = await fetch(logoUrl);
+        const arrayBuffer = await logoResponse.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        
+        // Convert to base64 in chunks to avoid stack overflow
+        let binary = '';
+        const chunkSize = 8192;
+        const len = bytes.byteLength;
+        
+        for (let i = 0; i < len; i += chunkSize) {
+          const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+          binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        
+        const logoBase64 = btoa(binary);
+        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
       } catch (err) {
-        console.log('Could not load logo:', err);
+        console.log('Logo load error:', err);
       }
 
       // PRICE LIST title in header (white text)
-      doc.setFontSize(36);
-      doc.setFont(undefined, 'bold');
       doc.setTextColor(255, 255, 255);
+      doc.setFontSize(32);
+      doc.setFont(undefined, 'bold');
       doc.text('PRICE LIST', 195, 20, { align: 'right' });
 
-      // Reset text color
+      // ==========================================
+      // INFO SECTIONS
+      // ==========================================
       doc.setTextColor(0, 0, 0);
-
-      // Company info below header
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text('Modern Components Installation', 15, 38);
+      doc.text('Modern Components Installation', 15, 50);
       
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      doc.text('2414 Meadow Isle Ln', 15, 43);
-      doc.text('Lawrenceville Georgia 30043', 15, 47);
-      doc.text('U.S.A', 15, 51);
-      doc.text('Phone: 470-209-3783', 15, 56);
+      doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 55);
 
       // Generated date (right side)
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139); // slate-500
-      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 45, { align: 'right' });
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 55, { align: 'right' });
 
-      // Reset text color
-      doc.setTextColor(0, 0, 0);
+      // ==========================================
+      // TABLE HEADER - Smooth gradient (matching Invoice style)
+      // ==========================================
+      const tableHeaderY = 70;
+      const headerSteps = 100;
+      for (let i = 0; i < headerSteps; i++) {
+        const x = 15 + (180 / headerSteps) * i;
+        const width = (180 / headerSteps) + 0.5;
+        const gray = Math.floor(i * (120 / headerSteps));
+        doc.setFillColor(gray, gray, gray);
+        doc.rect(x, tableHeaderY, width, 10, 'F');
+      }
 
-      // Table header (dark background)
-      doc.setFillColor(51, 65, 85); // slate-700
-      doc.rect(15, 62, 180, 8, 'F');
-
+      doc.setTextColor(255, 255, 255);
       doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(255, 255, 255); // white text
-      doc.text('#', 18, 67);
-      doc.text('ITEM NAME', 30, 67);
-      doc.text('CATEGORY', 100, 67);
-      doc.text('SALE PRICE', 155, 67, { align: 'right' });
-      doc.text('SUPPLIER', 180, 67);
+      doc.text('#', 18, tableHeaderY + 6.5);
+      doc.text('ITEM NAME', 30, tableHeaderY + 6.5);
+      doc.text('CATEGORY', 100, tableHeaderY + 6.5);
+      doc.text('SALE PRICE', 155, tableHeaderY + 6.5, { align: 'right' });
+      doc.text('SUPPLIER', 180, tableHeaderY + 6.5);
 
-      // Reset text color for content
-      doc.setTextColor(0, 0, 0);
-
-      // Table content
+      // ==========================================
+      // ITEMS
+      // ==========================================
+      doc.setTextColor(15, 23, 42);
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      let y = 75;
+      let y = tableHeaderY + 10;
       let rowIndex = 1;
 
       for (const item of filteredItems) {
         // Check if we need a new page
-        if (y > 270) {
+        if (y > 260) {
           doc.addPage();
-          y = 20;
+          const newTableHeaderY = 20;
           
-          // Repeat table header on new page
-          doc.setFillColor(51, 65, 85);
-          doc.rect(15, y - 5, 180, 8, 'F');
-          doc.setFont(undefined, 'bold');
+          // Repeat table header on new page (matching style)
+          const headerSteps2 = 100;
+          for (let i = 0; i < headerSteps2; i++) {
+            const x = 15 + (180 / headerSteps2) * i;
+            const width = (180 / headerSteps2) + 0.5;
+            const gray = Math.floor(i * (120 / headerSteps2));
+            doc.setFillColor(gray, gray, gray);
+            doc.rect(x, newTableHeaderY, width, 10, 'F');
+          }
+          
           doc.setTextColor(255, 255, 255);
-          doc.text('#', 18, y);
-          doc.text('ITEM NAME', 30, y);
-          doc.text('CATEGORY', 100, y);
-          doc.text('SALE PRICE', 155, y, { align: 'right' });
-          doc.text('SUPPLIER', 180, y);
-          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(9);
+          doc.setFont(undefined, 'bold');
+          doc.text('#', 18, newTableHeaderY + 6.5);
+          doc.text('ITEM NAME', 30, newTableHeaderY + 6.5);
+          doc.text('CATEGORY', 100, newTableHeaderY + 6.5);
+          doc.text('SALE PRICE', 155, newTableHeaderY + 6.5, { align: 'right' });
+          doc.text('SUPPLIER', 180, newTableHeaderY + 6.5);
+          
+          doc.setTextColor(15, 23, 42);
+          doc.setFontSize(8);
           doc.setFont(undefined, 'normal');
-          y += 8;
+          y = newTableHeaderY + 10;
           rowIndex = 1;
         }
 
-        // Alternating row background
+        // Alternating row background (zebra striping)
         if (rowIndex % 2 === 0) {
-          doc.setFillColor(248, 250, 252); // slate-50
+          doc.setFillColor(249, 250, 251);
           doc.rect(15, y - 4, 180, 7, 'F');
         }
 
@@ -326,12 +354,14 @@ export default function Items() {
           ? (item.supplier || '').substring(0, 9) + '...'
           : (item.supplier || '');
 
-        // Row content
-        doc.setTextColor(71, 85, 105); // slate-600
+        // Row content (matching Invoice style)
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(71, 85, 105);
         doc.text(rowIndex.toString(), 18, y);
         
-        doc.setTextColor(15, 23, 42); // slate-900
         doc.setFont(undefined, 'bold');
+        doc.setTextColor(15, 23, 42);
         doc.text(itemName, 30, y);
         
         doc.setFont(undefined, 'normal');
@@ -346,24 +376,23 @@ export default function Items() {
         doc.setTextColor(100, 116, 139);
         doc.text(supplier, 180, y);
 
-        // Draw separator line
-        doc.setDrawColor(226, 232, 240);
-        doc.setLineWidth(0.1);
+        // Border line
+        doc.setDrawColor(241, 245, 249);
         doc.line(15, y + 2, 195, y + 2);
 
         y += 7;
         rowIndex++;
       }
 
-      // Footer on all pages
+      // ==========================================
+      // FOOTER
+      // ==========================================
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(7);
-        doc.setTextColor(148, 163, 184); // slate-400
-        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
-        doc.text('Modern Components Installation', 15, 290);
-        doc.text('470-209-3783', 195, 290, { align: 'right' });
+        doc.setTextColor(150);
+        doc.text(`Page ${i} of ${pageCount} | Modern Components Installation`, 105, 285, { align: 'center' });
       }
 
       // Save PDF

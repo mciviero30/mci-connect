@@ -23,8 +23,10 @@ import CompanySettings from './pages/CompanySettings';
 import ComplianceHub from './pages/ComplianceHub';
 import Configuracion from './pages/Configuracion';
 import Contabilidad from './pages/Contabilidad';
+import CrearChangeOrder from './pages/CrearChangeOrder';
 import CrearEstimado from './pages/CrearEstimado';
 import CrearFactura from './pages/CrearFactura';
+import CrearIncidente from './pages/CrearIncidente';
 import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
 import Dashboard from './pages/Dashboard';
@@ -90,13 +92,11 @@ import TimeOffRequests from './pages/TimeOffRequests';
 import TimeReports from './pages/TimeReports';
 import TimeTracking from './pages/TimeTracking';
 import Trabajos from './pages/Trabajos';
+import VerChangeOrder from './pages/VerChangeOrder';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
-import WelcomeMessage from './pages/WelcomeMessage';
-import CrearChangeOrder from './pages/CrearChangeOrder';
-import VerChangeOrder from './pages/VerChangeOrder';
-import CrearIncidente from './pages/CrearIncidente';
 import VerIncidente from './pages/VerIncidente';
+import WelcomeMessage from './pages/WelcomeMessage';
 import __Layout from './Layout.jsx';
 
 
@@ -126,8 +126,10 @@ export const PAGES = {
     "ComplianceHub": ComplianceHub,
     "Configuracion": Configuracion,
     "Contabilidad": Contabilidad,
+    "CrearChangeOrder": CrearChangeOrder,
     "CrearEstimado": CrearEstimado,
     "CrearFactura": CrearFactura,
+    "CrearIncidente": CrearIncidente,
     "CrossAppSync": CrossAppSync,
     "CustomerDetails": CustomerDetails,
     "Dashboard": Dashboard,
@@ -193,13 +195,11 @@ export const PAGES = {
     "TimeReports": TimeReports,
     "TimeTracking": TimeTracking,
     "Trabajos": Trabajos,
+    "VerChangeOrder": VerChangeOrder,
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
-    "WelcomeMessage": WelcomeMessage,
-    "CrearChangeOrder": CrearChangeOrder,
-    "VerChangeOrder": VerChangeOrder,
-    "CrearIncidente": CrearIncidente,
     "VerIncidente": VerIncidente,
+    "WelcomeMessage": WelcomeMessage,
 }
 
 export const pagesConfig = {
