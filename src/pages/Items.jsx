@@ -302,7 +302,7 @@ export default function Items() {
       doc.setTextColor(15, 23, 42);
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      let y = tableHeaderY + 10;
+      let y = tableHeaderY + 15;
       let rowIndex = 1;
 
       for (const item of filteredItems) {
@@ -334,7 +334,7 @@ export default function Items() {
           doc.setTextColor(15, 23, 42);
           doc.setFontSize(8);
           doc.setFont(undefined, 'normal');
-          y = newTableHeaderY + 10;
+          y = newTableHeaderY + 15;
           rowIndex = 1;
         }
 
