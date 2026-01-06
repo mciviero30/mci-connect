@@ -41,6 +41,7 @@ import {
   CheckCircle2,
   Rocket,
   BookOpen,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -494,6 +495,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Go-Live Playbook', url: createPageUrl("GoLivePlaybook"), icon: Rocket },
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
+        { title: 'Change Orders', url: createPageUrl("ChangeOrders"), icon: FileText },
+        { title: 'Safety Incidents', url: createPageUrl("SafetyIncidents"), icon: Shield },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },

@@ -75,14 +75,14 @@ export default function SafetyIncidentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-red-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
       <PageHeader
         title="Safety Incidents"
         description="Gestión de incidentes de seguridad"
         icon={Shield}
         actions={
           <Link to={createPageUrl('CrearIncidente')}>
-            <Button className="bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg hover:shadow-xl">
+            <Button className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-lg hover:shadow-xl">
               <Plus className="w-4 h-4 mr-2" />
               Reportar Incidente
             </Button>
@@ -215,7 +215,7 @@ export default function SafetyIncidentsPage() {
                               <Badge className="bg-purple-100 text-purple-800">OSHA</Badge>
                             )}
                           </div>
-                          <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+                          <p className="text-sm font-semibold text-[#507DB4] dark:text-[#6B9DD8] mb-2">
                             {typeConfig[incident.incident_type]}
                           </p>
                           <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">

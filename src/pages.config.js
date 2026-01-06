@@ -8,6 +8,7 @@ import BudgetForecasting from './pages/BudgetForecasting';
 import Calendario from './pages/Calendario';
 import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
+import ChangeOrders from './pages/ChangeOrders';
 import Chat from './pages/Chat';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
@@ -76,6 +77,7 @@ import Recognitions from './pages/Recognitions';
 import Reportes from './pages/Reportes';
 import ReportingHub from './pages/ReportingHub';
 import RoleManagement from './pages/RoleManagement';
+import SafetyIncidents from './pages/SafetyIncidents';
 import SetupPassword from './pages/SetupPassword';
 import SkillMatrix from './pages/SkillMatrix';
 import SystemReadiness from './pages/SystemReadiness';
@@ -91,8 +93,6 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import ChangeOrders from './pages/ChangeOrders';
-import SafetyIncidents from './pages/SafetyIncidents';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +107,7 @@ export const PAGES = {
     "Calendario": Calendario,
     "Capacitacion": Capacitacion,
     "CashFlowReport": CashFlowReport,
+    "ChangeOrders": ChangeOrders,
     "Chat": Chat,
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
@@ -175,6 +176,7 @@ export const PAGES = {
     "Reportes": Reportes,
     "ReportingHub": ReportingHub,
     "RoleManagement": RoleManagement,
+    "SafetyIncidents": SafetyIncidents,
     "SetupPassword": SetupPassword,
     "SkillMatrix": SkillMatrix,
     "SystemReadiness": SystemReadiness,
@@ -190,8 +192,6 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "ChangeOrders": ChangeOrders,
-    "SafetyIncidents": SafetyIncidents,
 }
 
 export const pagesConfig = {
