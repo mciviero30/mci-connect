@@ -18,7 +18,8 @@ import {
   Download,
   ArrowLeft,
   FileText,
-  Briefcase
+  Briefcase,
+  CreditCard
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -314,6 +315,29 @@ export default function VerFactura() {
     }
   };
 
+  const handleStripePayment = async () => {
+    try {
+      // Check if running in iframe
+      if (window.self !== window.top) {
+        toast.error(language === 'es' 
+          ? 'Los pagos solo funcionan en la app publicada. Abre la app en una nueva pestaña.' 
+          : 'Payments only work in published app. Open app in a new tab.');
+        return;
+      }
+
+      const response = await base44.functions.invoke('stripe-checkout', { invoiceId: invoice.id });
+      
+      if (response?.url) {
+        window.location.href = response.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Stripe payment error:', error);
+      toast.error(safeErrorMessage(error, 'Failed to create payment session'));
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -433,15 +457,26 @@ export default function VerFactura() {
             )}
 
             {canRecordPayment && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setPaymentDialog(true)}
-                className="soft-green-gradient shadow-lg"
-              >
-                <DollarSign className="w-4 h-4 mr-2" />
-                {t('recordPayment')}
-              </Button>
+              <>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleStripePayment}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Pagar Ahora' : 'Pay Now'}
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setPaymentDialog(true)}
+                  className="soft-green-gradient shadow-lg"
+                >
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  {t('recordPayment')}
+                </Button>
+              </>
             )}
 
             <RetryProvisioningButton 
