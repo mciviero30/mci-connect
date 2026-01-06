@@ -72,6 +72,7 @@ import MobileOptimizations from "@/components/shared/MobileOptimizations";
 import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistration";
 import { SyncQueueProvider } from "@/components/pwa/SyncQueueManager";
 import OfflineIndicator from "@/components/pwa/OfflineIndicator";
+import EnhancedOfflineSync from "@/components/offline/EnhancedOfflineSync";
 import AIAssistant from "@/components/ai/AIAssistant";
 import NotificationService from "@/components/notifications/NotificationService";
 import NotificationEngine from "@/components/notifications/NotificationEngine";
@@ -997,6 +998,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           </div>
 
           <AIAssistant currentPage={currentPageName} />
+          <EnhancedOfflineSync />
           </main>
 
           {/* Bottom Navigation for Mobile */}
