@@ -90,6 +90,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
 import BankSync from './pages/BankSync';
+import PaymentReconciliation from './pages/PaymentReconciliation';
 import __Layout from './Layout.jsx';
 
 
@@ -186,6 +187,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
     "BankSync": BankSync,
+    "PaymentReconciliation": PaymentReconciliation,
 }
 
 export const pagesConfig = {
