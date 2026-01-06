@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2, ChevronUp, ChevronDown, FileText } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -126,6 +126,7 @@ export default function CrearEstimado() {
   const [projectTechCount, setProjectTechCount] = useState(2);
   const [travelTimeHours, setTravelTimeHours] = useState(0);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
+  const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   
   // ============================================================================
   // CAPA 3 - useMemo ÚNICO EN QUOTE ROOT
@@ -686,6 +687,20 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     });
   };
 
+  const handleAddMatchedItems = (matchedItems) => {
+    const regularItems = formData.items.filter(item => !item.is_travel_item);
+    const travelItems = formData.items.filter(item => item.is_travel_item);
+    
+    setFormData({
+      ...formData,
+      items: [
+        ...regularItems,
+        ...matchedItems,
+        ...travelItems
+      ]
+    });
+  };
+
   const moveItem = (index, direction) => {
     const newItems = [...formData.items];
     const item = newItems[index];
@@ -1199,10 +1214,22 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           <Card className="glass-card shadow-xl border-slate-200 mb-6">
             <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
               <CardTitle className="text-slate-900">{t('items')}</CardTitle>
-              <Button type="button" onClick={addItem} size="sm" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                {t('addItem')}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  type="button" 
+                  onClick={() => setShowItemsMatcher(true)} 
+                  size="sm" 
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Items Match
+                </Button>
+                <Button type="button" onClick={addItem} size="sm" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('addItem')}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <LineItemsEditor 
@@ -1328,6 +1355,12 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
             </Button>
           </div>
         </form>
+
+        <ItemsMatchImporter
+          isOpen={showItemsMatcher}
+          onClose={() => setShowItemsMatcher(false)}
+          onAddItems={handleAddMatchedItems}
+        />
       </div>
     </div>
   );
