@@ -93,6 +93,10 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
+import CrearChangeOrder from './pages/CrearChangeOrder';
+import VerChangeOrder from './pages/VerChangeOrder';
+import CrearIncidente from './pages/CrearIncidente';
+import VerIncidente from './pages/VerIncidente';
 import __Layout from './Layout.jsx';
 
 
@@ -192,6 +196,10 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
+    "CrearChangeOrder": CrearChangeOrder,
+    "VerChangeOrder": VerChangeOrder,
+    "CrearIncidente": CrearIncidente,
+    "VerIncidente": VerIncidente,
 }
 
 export const pagesConfig = {
