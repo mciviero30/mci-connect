@@ -229,7 +229,7 @@ export default function Items() {
 
       // Load and add logo with chunked conversion (BLACK LOGO for PDFs)
       try {
-        const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
+        const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/6a65cfe08_Screenshot2026-01-06at95746AM.png';
         const logoResponse = await fetch(logoUrl);
         const arrayBuffer = await logoResponse.arrayBuffer();
         const bytes = new Uint8Array(arrayBuffer);
