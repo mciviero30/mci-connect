@@ -120,6 +120,7 @@ export default function OutOfAreaCalculator({
         is_travel_item: true,
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
+        round_trips: 1,
         account_category: 'expense_travel_per_diem'
       });
 
@@ -135,6 +136,7 @@ export default function OutOfAreaCalculator({
         travel_item_type: 'miles_per_vehicle',
         team_id: metric.teamId,
         vehicle_count: vehicleCount,
+        round_trips: 1,
         account_category: 'expense_travel_per_diem'
       });
     });

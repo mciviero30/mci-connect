@@ -85,8 +85,14 @@ export default function LineItemsEditor({
       newItems[index].total = (newItems[index].quantity || 0) * (newItems[index].unit_price || 0);
     }
     
-    if (field === 'quantity' || field === 'unit_price') {
-      newItems[index].total = (newItems[index].quantity || 0) * (newItems[index].unit_price || 0);
+    if (field === 'quantity' || field === 'unit_price' || field === 'round_trips') {
+      const qty = newItems[index].quantity || 0;
+      const trips = newItems[index].round_trips || 1;
+      const price = newItems[index].unit_price || 0;
+      
+      // Apply round trips multiplier for travel items
+      const finalQty = newItems[index].is_travel_item ? qty * trips : qty;
+      newItems[index].total = finalQty * price;
     }
     
     // If selecting from catalog
@@ -145,24 +151,40 @@ export default function LineItemsEditor({
 
   return (
     <>
-      {/* Table Header */}
-      <div className="hidden md:grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
-        <div>ITEM DETAILS</div>
-        <div className="text-center">QUANTITY</div>
-        <div className="text-center">UNIT</div>
-        <div className="text-center">RATE</div>
-        <div className="text-right">AMOUNT</div>
-        <div></div>
-      </div>
+      {/* Table Header - Dynamic based on travel items */}
+      {items.some(i => i.is_travel_item) ? (
+        <div className="hidden md:grid md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.8fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+          <div>ITEM DETAILS</div>
+          <div className="text-center">TRIPS</div>
+          <div className="text-center">QTY</div>
+          <div className="text-center">UNIT</div>
+          <div className="text-center">RATE</div>
+          <div className="text-right">AMOUNT</div>
+          <div></div>
+        </div>
+      ) : (
+        <div className="hidden md:grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+          <div>ITEM DETAILS</div>
+          <div className="text-center">QUANTITY</div>
+          <div className="text-center">UNIT</div>
+          <div className="text-center">RATE</div>
+          <div className="text-right">AMOUNT</div>
+          <div></div>
+        </div>
+      )}
 
       {items.map((item, index) => {
         // ============================================================================
         // CAPA 4 - USE DERIVED VALUES (NO RECALCULATION)
         // ============================================================================
         const isAutoCalc = isAutoCalculatedItem(item);
-        const displayQuantity = isAutoCalc && !item.manual_override && derivedValues
+        const baseQuantity = isAutoCalc && !item.manual_override && derivedValues
           ? getDerivedQuantity(derivedValues, item.calculation_type)
           : item.quantity;
+        
+        // Apply round trips multiplier for travel items
+        const roundTrips = item.round_trips || 1;
+        const displayQuantity = item.is_travel_item ? baseQuantity * roundTrips : baseQuantity;
         const displayTotal = displayQuantity * (item.unit_price || 0);
         
         return (
@@ -203,7 +225,7 @@ export default function LineItemsEditor({
             </div>
           )}
           {/* Row 1: Select Item and aligned fields */}
-          <div className="grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 pt-8 pb-1 hover:bg-slate-50/50 transition-colors">
+          <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr]'} gap-2 px-3 pt-8 pb-1 hover:bg-slate-50/50 transition-colors`}>
             {/* Select Item / Item Name */}
             <div>
               {allowCatalogSelect && catalogItems.length > 0 ? (
@@ -257,11 +279,25 @@ export default function LineItemsEditor({
               )}
             </div>
 
+            {/* Round Trips (only for travel items) */}
+            {item.is_travel_item && (
+              <div className="flex items-center justify-center">
+                <Input
+                  type="number"
+                  value={item.round_trips || 1}
+                  onChange={(e) => updateItem(index, 'round_trips', parseFloat(e.target.value) || 1)}
+                  min="1"
+                  step="1"
+                  className="h-9 text-sm text-center font-semibold bg-white border-slate-200 text-slate-900"
+                />
+              </div>
+            )}
+
             {/* Quantity */}
             <div className="flex items-center justify-center">
               <Input
                 type="number"
-                value={displayQuantity}
+                value={item.is_travel_item ? baseQuantity : displayQuantity}
                 onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                 min="0"
                 step="0.01"
