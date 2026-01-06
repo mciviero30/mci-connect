@@ -1,76 +1,74 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, Plus } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/components/ui/toast';
+import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Upload, Loader2, Check, X, Plus, FileText, AlertCircle } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 export default function ItemsMatchImporter({ isOpen, onClose, onAddItems }) {
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [extractedItems, setExtractedItems] = useState([]);
-  const [selectedItems, setSelectedItems] = useState({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [file, setFile] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [extractedItems, setExtractedItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState(new Set());
 
-  // Fetch Item Catalog
+  // Fetch catalog
   const { data: catalogItems = [] } = useQuery({
     queryKey: ['itemCatalog'],
     queryFn: () => base44.entities.ItemCatalog.list(),
-    initialData: []
+    enabled: isOpen,
   });
 
-  // Create new catalog item mutation
-  const createCatalogItemMutation = useMutation({
+  // Create catalog item mutation
+  const createCatalogMutation = useMutation({
     mutationFn: (itemData) => base44.entities.ItemCatalog.create(itemData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['itemCatalog'] });
-    }
+    },
   });
 
+  // Upload file and extract items
   const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const uploadedFile = e.target.files?.[0];
+    if (!uploadedFile) return;
+
+    setFile(uploadedFile);
+    setAnalyzing(true);
+    setExtractedItems([]);
+    setSelectedItems(new Set());
 
     try {
-      // Upload file to get URL
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setUploadedFile(file_url);
-      
-      // Auto-analyze
-      analyzeImage(file_url);
-    } catch (error) {
-      toast.error('Error uploading file');
-      console.error(error);
-    }
-  };
+      // Step 1: Upload file
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: uploadedFile });
 
-  const analyzeImage = async (fileUrl) => {
-    setIsAnalyzing(true);
-    try {
+      // Step 2: Extract items with AI
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract ALL line items from this construction/installation quote or estimate image. 
-        
-Return a JSON array with this exact structure for each item:
+        prompt: `Analyze this quote/estimate image and extract ALL line items.
+
+For each item, provide:
+- item_name: Short product/service name (e.g., "Vinyl Flooring", "Labor - Installation")
+- description: Detailed description
+- quantity: Numeric quantity
+- unit: Unit of measure (e.g., sqft, hour, unit, lnft, each)
+- unit_price: Price per unit (numeric, no $ symbol)
+
+Return ONLY a JSON array of items:
 [
   {
-    "description": "exact item description from image",
-    "quantity": number,
-    "unit": "unit of measure (ft, sf, Count, etc)"
+    "item_name": "...",
+    "description": "...",
+    "quantity": 0,
+    "unit": "...",
+    "unit_price": 0
   }
-]
-
-Rules:
-- Extract EVERY line item, even if it has notes in parentheses
-- Keep original descriptions exactly as shown
-- Parse quantities as numbers (remove commas)
-- Use exact unit labels from image
-- Return ONLY the JSON array, no other text`,
-        file_urls: [fileUrl],
+]`,
+        file_urls: [file_url],
         response_json_schema: {
           type: "object",
           properties: {
@@ -79,274 +77,324 @@ Rules:
               items: {
                 type: "object",
                 properties: {
+                  item_name: { type: "string" },
                   description: { type: "string" },
                   quantity: { type: "number" },
-                  unit: { type: "string" }
-                }
+                  unit: { type: "string" },
+                  unit_price: { type: "number" }
+                },
+                required: ["item_name", "description", "quantity", "unit", "unit_price"]
               }
             }
-          }
+          },
+          required: ["items"]
         }
       });
 
-      const items = response.items || [];
+      const items = response?.items || [];
       
-      // Match with catalog
-      const matchedItems = items.map(item => {
-        const match = findBestMatch(item.description, catalogItems);
+      if (items.length === 0) {
+        toast({
+          title: 'No items found',
+          description: 'Could not extract any items from the image',
+          variant: 'destructive'
+        });
+        setAnalyzing(false);
+        return;
+      }
+
+      // Step 3: Match against catalog
+      const matchedItems = items.map(extracted => {
+        const match = findBestMatch(extracted.item_name, catalogItems);
+        if (match) {
+          // Auto-select matched items
+          setSelectedItems(prev => new Set([...prev, extracted.item_name]));
+        }
         return {
-          ...item,
-          match: match,
-          isMatched: !!match,
-          catalogItem: match
+          ...extracted,
+          catalog_match: match,
+          is_matched: !!match
         };
       });
 
       setExtractedItems(matchedItems);
-      
-      // Auto-select matched items
-      const autoSelected = {};
-      matchedItems.forEach((item, index) => {
-        if (item.isMatched) {
-          autoSelected[index] = true;
-        }
+      toast({
+        title: `✓ ${items.length} items extracted`,
+        description: `${matchedItems.filter(i => i.is_matched).length} matched with catalog`,
+        variant: 'success'
       });
-      setSelectedItems(autoSelected);
-
     } catch (error) {
-      toast.error('Error analyzing image');
-      console.error(error);
-    } finally {
-      setIsAnalyzing(false);
+      console.error('Error analyzing image:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to analyze image. Please try again.',
+        variant: 'destructive'
+      });
     }
+
+    setAnalyzing(false);
   };
 
-  const findBestMatch = (description, catalog) => {
-    const cleanDesc = description.toLowerCase().trim();
+  // Find best matching catalog item
+  const findBestMatch = (extractedName, catalog) => {
+    const nameLower = extractedName.toLowerCase().trim();
     
-    // Try exact match
-    let match = catalog.find(item => 
-      item.name.toLowerCase().trim() === cleanDesc
-    );
-    if (match) return match;
-
-    // Try partial match (80% similarity)
-    const words = cleanDesc.split(/\s+/);
-    match = catalog.find(item => {
-      const catalogWords = item.name.toLowerCase().split(/\s+/);
-      const matchedWords = words.filter(w => catalogWords.some(cw => cw.includes(w) || w.includes(cw)));
-      return matchedWords.length / words.length >= 0.6;
+    // Exact match
+    const exact = catalog.find(ci => ci.name?.toLowerCase().trim() === nameLower);
+    if (exact) return exact;
+    
+    // Partial match (50% threshold)
+    const partial = catalog.find(ci => {
+      const catName = ci.name?.toLowerCase().trim() || '';
+      return nameLower.includes(catName) || catName.includes(nameLower);
     });
-
-    return match;
+    
+    return partial || null;
   };
 
-  const handleAddToCatalog = async (item, index) => {
+  // Add unmatched item to catalog
+  const handleAddToCatalog = async (item) => {
     try {
-      const newItem = await createCatalogItemMutation.mutateAsync({
-        name: item.description,
-        uom: item.unit || 'unit',
-        unit_price: 0,
+      const newItem = await createCatalogMutation.mutateAsync({
+        name: item.item_name,
+        description: item.description,
+        unit_price: item.unit_price,
+        uom: item.unit,
+        category: 'materials',
         active: true
       });
 
-      // Update extracted item with new catalog match
-      const updated = [...extractedItems];
-      updated[index] = {
-        ...updated[index],
-        isMatched: true,
-        catalogItem: newItem,
-        match: newItem
-      };
-      setExtractedItems(updated);
-      
-      toast.success('Item added to catalog');
+      // Update extracted items to show match
+      setExtractedItems(prev => prev.map(i => 
+        i.item_name === item.item_name 
+          ? { ...i, catalog_match: newItem, is_matched: true }
+          : i
+      ));
+
+      toast({
+        title: 'Added to catalog',
+        description: `"${item.item_name}" is now in your catalog`,
+        variant: 'success'
+      });
     } catch (error) {
-      toast.error('Error adding to catalog');
-      console.error(error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add item to catalog',
+        variant: 'destructive'
+      });
     }
   };
 
+  // Toggle item selection
+  const toggleSelection = (itemName) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemName)) {
+        newSet.delete(itemName);
+      } else {
+        newSet.add(itemName);
+      }
+      return newSet;
+    });
+  };
+
+  // Add selected items to quote
   const handleAddToQuote = () => {
     const itemsToAdd = extractedItems
-      .filter((_, index) => selectedItems[index])
+      .filter(item => selectedItems.has(item.item_name))
       .map(item => ({
-        item_name: item.catalogItem?.name || item.description,
-        description: item.description,
-        quantity: item.quantity || 0,
-        unit: item.catalogItem?.uom || item.unit || 'unit',
-        unit_price: item.catalogItem?.unit_price || 0,
-        total: (item.quantity || 0) * (item.catalogItem?.unit_price || 0)
+        item_name: item.catalog_match?.name || item.item_name,
+        description: item.catalog_match?.description || item.description,
+        quantity: item.quantity,
+        unit: item.catalog_match?.uom || item.unit,
+        unit_price: item.catalog_match?.unit_price || item.unit_price,
+        total: item.quantity * (item.catalog_match?.unit_price || item.unit_price),
+        installation_time: item.catalog_match?.installation_time || 0
       }));
 
     onAddItems(itemsToAdd);
-    handleClose();
-  };
+    
+    toast({
+      title: `${itemsToAdd.length} items added`,
+      variant: 'success'
+    });
 
-  const handleClose = () => {
-    setUploadedFile(null);
+    // Reset and close
+    setFile(null);
     setExtractedItems([]);
-    setSelectedItems({});
+    setSelectedItems(new Set());
     onClose();
   };
 
-  const matchedItems = extractedItems.filter(item => item.isMatched);
-  const unmatchedItems = extractedItems.filter(item => !item.isMatched);
-  const selectedCount = Object.values(selectedItems).filter(Boolean).length;
+  const matchedCount = extractedItems.filter(i => i.is_matched).length;
+  const unmatchedCount = extractedItems.filter(i => !i.is_matched).length;
+  const selectedCount = selectedItems.size;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-600" />
-            Items Match Importer
+            Items Match - Import from Image
           </DialogTitle>
-          <DialogDescription>
-            Upload an image of a quote/estimate to extract and match items with your catalog
-          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Upload Section */}
-          {!uploadedFile && (
-            <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
+          {!file && (
+            <Card className="border-2 border-dashed border-slate-300 p-8 text-center">
               <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="font-semibold text-lg mb-2">Upload Quote/Estimate Image</h3>
               <p className="text-sm text-slate-600 mb-4">
-                Upload a quote or estimate image (PNG, JPG, PDF)
+                Take a photo or upload an image of a competitor's quote
               </p>
               <Input
                 type="file"
-                accept="image/*,.pdf"
+                accept="image/*"
                 onChange={handleFileUpload}
                 className="max-w-xs mx-auto"
               />
-            </div>
+            </Card>
           )}
 
           {/* Analyzing */}
-          {isAnalyzing && (
-            <div className="text-center py-8">
+          {analyzing && (
+            <Card className="p-8 text-center">
               <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-              <p className="text-sm text-slate-600">Analyzing image and matching items...</p>
-            </div>
+              <h3 className="font-semibold text-lg mb-2">Analyzing image...</h3>
+              <p className="text-sm text-slate-600">
+                AI is extracting line items and matching them with your catalog
+              </p>
+            </Card>
           )}
 
           {/* Results */}
-          {!isAnalyzing && extractedItems.length > 0 && (
+          {!analyzing && extractedItems.length > 0 && (
             <>
               {/* Summary */}
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
                 <div className="flex items-center gap-4">
                   <Badge className="bg-green-100 text-green-700">
-                    {matchedItems.length} Matched
+                    <Check className="w-3 h-3 mr-1" />
+                    {matchedCount} Matched
                   </Badge>
                   <Badge className="bg-amber-100 text-amber-700">
-                    {unmatchedItems.length} Unmatched
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {unmatchedCount} Unmatched
                   </Badge>
                   <Badge className="bg-blue-100 text-blue-700">
                     {selectedCount} Selected
                   </Badge>
                 </div>
                 <Button
-                  onClick={handleAddToQuote}
-                  disabled={selectedCount === 0}
-                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+                  onClick={() => {
+                    setFile(null);
+                    setExtractedItems([]);
+                    setSelectedItems(new Set());
+                  }}
+                  variant="outline"
+                  size="sm"
                 >
-                  Add {selectedCount} Items to Quote
+                  Upload Different Image
                 </Button>
               </div>
 
               {/* Matched Items */}
-              {matchedItems.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    Matched Items ({matchedItems.length})
+              {matchedCount > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2 text-green-700 flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    Matched Items ({matchedCount})
                   </h3>
-                  {matchedItems.map((item, originalIndex) => {
-                    const index = extractedItems.indexOf(item);
-                    return (
-                      <div key={index} className="border border-green-200 rounded-lg p-4 bg-green-50/30">
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={selectedItems[index]}
-                            onCheckedChange={(checked) =>
-                              setSelectedItems(prev => ({ ...prev, [index]: checked }))
-                            }
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-slate-900">{item.description}</span>
-                              <Badge className="bg-green-100 text-green-700 text-xs">
-                                ${item.catalogItem?.unit_price || 0} / {item.catalogItem?.uom}
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-slate-600">
-                              Qty: {item.quantity} {item.unit} → Catalog: {item.catalogItem?.name}
+                  <div className="space-y-2">
+                    {extractedItems
+                      .filter(item => item.is_matched)
+                      .map((item, idx) => (
+                        <Card key={idx} className="p-3 border-green-200 bg-green-50/30">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={selectedItems.has(item.item_name)}
+                              onCheckedChange={() => toggleSelection(item.item_name)}
+                            />
+                            <div className="flex-1">
+                              <div className="font-semibold text-sm">{item.item_name}</div>
+                              <div className="text-xs text-slate-600">{item.description}</div>
+                              <div className="flex items-center gap-4 mt-1 text-xs">
+                                <span className="text-slate-500">
+                                  Qty: {item.quantity} {item.unit}
+                                </span>
+                                <span className="font-semibold text-green-700">
+                                  ${item.catalog_match.unit_price} / {item.catalog_match.uom}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        </Card>
+                      ))}
+                  </div>
                 </div>
               )}
 
               {/* Unmatched Items */}
-              {unmatchedItems.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-amber-600" />
-                    Unmatched Items ({unmatchedItems.length})
+              {unmatchedCount > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2 text-amber-700 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Unmatched Items ({unmatchedCount})
                   </h3>
-                  {unmatchedItems.map((item, originalIndex) => {
-                    const index = extractedItems.indexOf(item);
-                    return (
-                      <div key={index} className="border border-amber-200 rounded-lg p-4 bg-amber-50/30">
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={selectedItems[index]}
-                            onCheckedChange={(checked) =>
-                              setSelectedItems(prev => ({ ...prev, [index]: checked }))
-                            }
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium text-slate-900">{item.description}</span>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleAddToCatalog(item, index)}
-                                className="text-xs"
-                              >
-                                <Plus className="w-3 h-3 mr-1" />
-                                Add to Catalog
-                              </Button>
+                  <div className="space-y-2">
+                    {extractedItems
+                      .filter(item => !item.is_matched)
+                      .map((item, idx) => (
+                        <Card key={idx} className="p-3 border-amber-200 bg-amber-50/30">
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={selectedItems.has(item.item_name)}
+                              onCheckedChange={() => toggleSelection(item.item_name)}
+                            />
+                            <div className="flex-1">
+                              <div className="font-semibold text-sm">{item.item_name}</div>
+                              <div className="text-xs text-slate-600">{item.description}</div>
+                              <div className="flex items-center gap-4 mt-1 text-xs">
+                                <span className="text-slate-500">
+                                  Qty: {item.quantity} {item.unit}
+                                </span>
+                                <span className="font-semibold text-amber-700">
+                                  ${item.unit_price} / {item.unit}
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-sm text-slate-600">
-                              Qty: {item.quantity} {item.unit} • Price: $0.00 (add to catalog to set price)
-                            </div>
+                            <Button
+                              onClick={() => handleAddToCatalog(item)}
+                              size="sm"
+                              variant="outline"
+                              className="text-blue-600 border-blue-300"
+                            >
+                              <Plus className="w-3 h-3 mr-1" />
+                              Add to Catalog
+                            </Button>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                        </Card>
+                      ))}
+                  </div>
                 </div>
               )}
 
-              {/* Upload New Image */}
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setUploadedFile(null);
-                  setExtractedItems([]);
-                  setSelectedItems({});
-                }}
-                className="w-full"
-              >
-                Upload Different Image
-              </Button>
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button onClick={onClose} variant="outline">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddToQuote}
+                  disabled={selectedCount === 0}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add {selectedCount} Items to Quote
+                </Button>
+              </div>
             </>
           )}
         </div>
