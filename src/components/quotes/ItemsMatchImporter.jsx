@@ -5,10 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Upload, Loader2, Check, X, Plus, FileText, AlertCircle } from "lucide-react";
+import { Upload, Loader2, Check, X, Plus, FileText, AlertCircle, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 
 export default function ItemsMatchImporter({ isOpen, onClose, onAddItems }) {
   const { toast } = useToast();
@@ -28,6 +30,14 @@ export default function ItemsMatchImporter({ isOpen, onClose, onAddItems }) {
   // Create catalog item mutation
   const createCatalogMutation = useMutation({
     mutationFn: (itemData) => base44.entities.ItemCatalog.create(itemData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['itemCatalog'] });
+    },
+  });
+
+  // Update catalog item mutation (for adding alternate names)
+  const updateCatalogMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.ItemCatalog.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['itemCatalog'] });
     },
@@ -135,21 +145,38 @@ Return ONLY a JSON array of items:
     setAnalyzing(false);
   };
 
-  // Find best matching catalog item
+  // Find best matching catalog item (includes alternate_names)
   const findBestMatch = (extractedName, catalog) => {
     const nameLower = extractedName.toLowerCase().trim();
     
-    // Exact match
+    // Exact match on name
     const exact = catalog.find(ci => ci.name?.toLowerCase().trim() === nameLower);
     if (exact) return exact;
     
-    // Partial match (50% threshold)
+    // Exact match on alternate_names
+    const exactAlias = catalog.find(ci => {
+      const aliases = ci.alternate_names || [];
+      return aliases.some(alias => alias.toLowerCase().trim() === nameLower);
+    });
+    if (exactAlias) return exactAlias;
+    
+    // Partial match on name
     const partial = catalog.find(ci => {
       const catName = ci.name?.toLowerCase().trim() || '';
       return nameLower.includes(catName) || catName.includes(nameLower);
     });
+    if (partial) return partial;
     
-    return partial || null;
+    // Partial match on alternate_names
+    const partialAlias = catalog.find(ci => {
+      const aliases = ci.alternate_names || [];
+      return aliases.some(alias => {
+        const aliasLower = alias.toLowerCase().trim();
+        return nameLower.includes(aliasLower) || aliasLower.includes(nameLower);
+      });
+    });
+    
+    return partialAlias || null;
   };
 
   // Add unmatched item to catalog
@@ -180,6 +207,54 @@ Return ONLY a JSON array of items:
       toast({
         title: 'Error',
         description: 'Failed to add item to catalog',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // Match unmatched item with existing catalog item
+  const handleMatchWithCatalog = async (extractedItem, catalogItem) => {
+    try {
+      // Add extracted name as alternate name (alias)
+      const existingAlternates = catalogItem.alternate_names || [];
+      const extractedNameTrimmed = extractedItem.item_name.trim();
+      
+      // Don't add if already exists
+      if (existingAlternates.includes(extractedNameTrimmed) || 
+          catalogItem.name === extractedNameTrimmed) {
+        // Just update UI
+        setExtractedItems(prev => prev.map(i => 
+          i.item_name === extractedItem.item_name 
+            ? { ...i, catalog_match: catalogItem, is_matched: true }
+            : i
+        ));
+        return;
+      }
+
+      // Update catalog item with new alternate name
+      await updateCatalogMutation.mutateAsync({
+        id: catalogItem.id,
+        data: {
+          alternate_names: [...existingAlternates, extractedNameTrimmed]
+        }
+      });
+
+      // Update extracted items to show match
+      setExtractedItems(prev => prev.map(i => 
+        i.item_name === extractedItem.item_name 
+          ? { ...i, catalog_match: catalogItem, is_matched: true }
+          : i
+      ));
+
+      toast({
+        title: 'Matched successfully',
+        description: `"${extractedItem.item_name}" will now match with "${catalogItem.name}"`,
+        variant: 'success'
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to match with catalog',
         variant: 'destructive'
       });
     }
@@ -365,15 +440,53 @@ Return ONLY a JSON array of items:
                                 </span>
                               </div>
                             </div>
-                            <Button
-                              onClick={() => handleAddToCatalog(item)}
-                              size="sm"
-                              variant="outline"
-                              className="text-blue-600 border-blue-300"
-                            >
-                              <Plus className="w-3 h-3 mr-1" />
-                              Add to Catalog
-                            </Button>
+                            <div className="flex gap-2">
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-green-600 border-green-300 hover:bg-green-50"
+                                  >
+                                    <LinkIcon className="w-3 h-3 mr-1" />
+                                    Match with Catalog
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80 p-0 bg-white" align="end">
+                                  <Command>
+                                    <CommandInput placeholder="Search catalog..." />
+                                    <CommandEmpty>No items found</CommandEmpty>
+                                    <CommandGroup className="max-h-60 overflow-y-auto">
+                                      {catalogItems.map(catalogItem => (
+                                        <CommandItem
+                                          key={catalogItem.id}
+                                          onSelect={() => handleMatchWithCatalog(item, catalogItem)}
+                                          className="cursor-pointer"
+                                        >
+                                          <div className="flex-1">
+                                            <div className="font-semibold text-xs">{catalogItem.name}</div>
+                                            <div className="text-[10px] text-slate-500">{catalogItem.description}</div>
+                                            <div className="text-[10px] text-blue-600 font-bold">
+                                              ${catalogItem.unit_price} / {catalogItem.uom}
+                                            </div>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                              
+                              <Button
+                                onClick={() => handleAddToCatalog(item)}
+                                size="sm"
+                                variant="outline"
+                                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                              >
+                                <Plus className="w-3 h-3 mr-1" />
+                                Add to Catalog
+                              </Button>
+                            </div>
                           </div>
                         </Card>
                       ))}
