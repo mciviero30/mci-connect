@@ -230,15 +230,10 @@ export default function LineItemsEditor({
                     <Button
                       variant="outline"
                       role="combobox"
-                      disabled={item.is_travel_item}
-                      className={`w-full justify-between h-9 font-semibold text-xs ${
-                        item.is_travel_item 
-                          ? 'bg-blue-100 border-blue-200 text-blue-900 cursor-not-allowed' 
-                          : 'bg-white border-slate-300 text-slate-900 hover:bg-slate-50'
-                      }`}
+                      className="w-full justify-between h-9 font-semibold text-xs bg-white border-slate-300 text-slate-900 hover:bg-slate-50"
                     >
                       <span className="truncate">{item.item_name || "Select item"}</span>
-                      {!item.is_travel_item && <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-70" />}
+                      <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-70" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[350px] p-0 bg-white border shadow-xl">
@@ -275,12 +270,7 @@ export default function LineItemsEditor({
                   value={item.item_name || ''}
                   onChange={(e) => updateItem(index, 'item_name', e.target.value)}
                   placeholder="Item name"
-                  disabled={item.is_travel_item}
-                  className={`h-9 font-semibold text-xs ${
-                    item.is_travel_item 
-                      ? 'bg-blue-100 border-blue-200 text-blue-900 cursor-not-allowed' 
-                      : 'bg-white border-slate-300 text-slate-900'
-                  }`}
+                  className="h-9 font-semibold text-xs bg-white border-slate-300 text-slate-900"
                 />
               )}
             </div>
@@ -294,9 +284,9 @@ export default function LineItemsEditor({
                 min="0"
                 step="0.01"
                 required
-                disabled={item.is_travel_item || (isAutoCalc && !item.manual_override)}
+                disabled={isAutoCalc && !item.manual_override}
                 className={`h-9 text-sm text-center font-semibold ${
-                  item.is_travel_item || (isAutoCalc && !item.manual_override)
+                  isAutoCalc && !item.manual_override
                     ? 'bg-blue-50 border-blue-200 text-blue-900 cursor-not-allowed'
                     : 'bg-white border-slate-200 text-slate-900'
                 }`}
@@ -308,12 +298,7 @@ export default function LineItemsEditor({
               <Input
                 value={item.unit}
                 onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                disabled={item.is_travel_item}
-                className={`h-9 text-xs text-center ${
-                  item.is_travel_item 
-                    ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed' 
-                    : 'bg-white border-slate-200 text-slate-900'
-                }`}
+                className="h-9 text-xs text-center bg-white border-slate-200 text-slate-900"
               />
             </div>
 
@@ -326,12 +311,7 @@ export default function LineItemsEditor({
                 min="0"
                 step="0.01"
                 required
-                disabled={item.is_travel_item}
-                className={`h-9 text-sm text-center font-semibold ${
-                  item.is_travel_item
-                    ? 'bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed'
-                    : 'bg-white border-slate-200 text-slate-900'
-                }`}
+                className="h-9 text-sm text-center font-semibold bg-white border-slate-200 text-slate-900"
               />
             </div>
 
@@ -414,14 +394,9 @@ export default function LineItemsEditor({
             <Textarea
               value={item.description}
               onChange={(e) => updateItem(index, 'description', e.target.value)}
-              required={!item.is_travel_item}
-              disabled={item.is_travel_item}
+              required
               placeholder="Description"
-              className={`min-h-[60px] text-xs text-slate-600 resize-none ${
-                item.is_travel_item 
-                  ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed' 
-                  : 'bg-white border-slate-200'
-              }`}
+              className="min-h-[60px] text-xs text-slate-600 resize-none bg-white border-slate-200"
             />
           </div>
         </div>
