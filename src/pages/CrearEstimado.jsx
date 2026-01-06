@@ -79,6 +79,14 @@ export default function CrearEstimado() {
     initialData: [],
   });
 
+  const { data: companySettings } = useQuery({
+    queryKey: ['companySettings'],
+    queryFn: async () => {
+      const data = await base44.entities.CompanySettings.list();
+      return data[0] || {};
+    },
+  });
+
   // Fetch existing quote if editing
   const { data: existingQuote } = useQuery({
     queryKey: ['quote', editId],
@@ -103,6 +111,7 @@ export default function CrearEstimado() {
     out_of_area: false,
     items: [{ item_name: '', description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
     tax_rate: 0,
+    auto_tax_enabled: false,
     notes: '',
     terms: '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
   });
@@ -283,6 +292,7 @@ export default function CrearEstimado() {
         out_of_area: existingQuote.out_of_area || false,
         items: itemsWithItemName.length > 0 ? itemsWithItemName : [{ item_name: '', description: '', quantity: 1, unit: 'pcs', unit_price: 0, total: 0, installation_time: 0 }],
         tax_rate: existingQuote.tax_rate || 0,
+        auto_tax_enabled: existingQuote.auto_tax_enabled ?? false,
         notes: existingQuote.notes || '',
         terms: existingQuote.terms || '• Approval: PO required to schedule work.\n• Offload: Standard offload only. Excludes stairs/windows/special equipment. Client provides equipment. Site access issues may require revised quote.\n• Hours: Regular hours only. OT/after-hours billed separately via Change Order.',
       });
@@ -1204,6 +1214,65 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 onToast={toast}
                 derivedValues={derivedValues}
               />
+
+              <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">
+                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                  <span className="font-medium">{t('subtotal')}:</span>
+                  <span className="text-lg font-bold">${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{t('tax')}:</span>
+                    {companySettings?.auto_calculate_sales_tax && formData.auto_tax_enabled ? (
+                      <>
+                        <span className="text-sm text-emerald-600 font-medium">{companySettings.default_tax_rate}% (auto)</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, auto_tax_enabled: false })}
+                          className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700"
+                        >
+                          {language === 'es' ? 'Manual' : 'Manual'}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          type="number"
+                          value={formData.tax_rate}
+                          onChange={e => setFormData({ ...formData, tax_rate: parseFloat(e.target.value) || 0 })}
+                          className="w-20 h-8"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                        <span>%</span>
+                        {companySettings?.auto_calculate_sales_tax && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setFormData({ 
+                              ...formData, 
+                              auto_tax_enabled: true,
+                              tax_rate: companySettings.default_tax_rate || 0
+                            })}
+                            className="h-6 px-2 text-xs text-emerald-600 hover:text-emerald-700"
+                          >
+                            {language === 'es' ? 'Auto' : 'Auto'}
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <span className="text-lg font-bold">${taxAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-lg border-2 border-emerald-200">
+                  <span className="text-lg font-bold text-emerald-900">{t('total').toUpperCase()}:</span>
+                  <span className="text-2xl font-bold text-emerald-700">${total.toFixed(2)}</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
