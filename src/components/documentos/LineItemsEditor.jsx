@@ -297,7 +297,7 @@ export default function LineItemsEditor({
             <div className="flex items-center justify-center">
               <Input
                 type="number"
-                value={item.is_travel_item ? baseQuantity : displayQuantity}
+                value={baseQuantity}
                 onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                 min="0"
                 step="0.01"
@@ -339,7 +339,7 @@ export default function LineItemsEditor({
                 <div className="text-slate-900 font-bold text-base">
                   ${displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
-                {isAutoCalc && (
+                {(isAutoCalc || (item.is_travel_item && roundTrips > 1)) && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -349,17 +349,26 @@ export default function LineItemsEditor({
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
-                        <p>
-                          🔒 <strong>Derived Value</strong>
-                        </p>
-                        {item.calculation_type === 'hotel' && (
-                          <p className="mt-1">Hotel rooms = roomsPerNight × nights</p>
-                        )}
-                        {item.calculation_type === 'per_diem' && (
-                          <p className="mt-1">Per diem = techs × totalCalendarDays</p>
-                        )}
-                        {item.manual_override && (
-                          <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
+                        {isAutoCalc ? (
+                          <>
+                            <p>
+                              🔒 <strong>Derived Value</strong>
+                            </p>
+                            {item.calculation_type === 'hotel' && (
+                              <p className="mt-1">Hotel rooms = roomsPerNight × nights</p>
+                            )}
+                            {item.calculation_type === 'per_diem' && (
+                              <p className="mt-1">Per diem = techs × totalCalendarDays</p>
+                            )}
+                            {item.manual_override && (
+                              <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
+                            )}
+                          </>
+                        ) : (
+                          <p>
+                            <strong>Round trips calculation:</strong><br />
+                            {baseQuantity} {item.unit} × {roundTrips} trips = {displayQuantity} {item.unit}
+                          </p>
                         )}
                       </TooltipContent>
                     </Tooltip>
