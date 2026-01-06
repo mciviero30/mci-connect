@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Building2, Save, DollarSign } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Building2, Save, DollarSign, Car, Receipt } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { useToast } from '@/components/ui/toast';
 import PageHeader from '@/components/shared/PageHeader';
@@ -51,6 +52,8 @@ export default function CompanySettings() {
         travel_driving_time_rate: settings.travel_driving_time_rate ?? 60,
         travel_per_diem_rate: settings.travel_per_diem_rate ?? 55,
         travel_hotel_nightly_rate: settings.travel_hotel_nightly_rate ?? 200,
+        auto_calculate_sales_tax: settings.auto_calculate_sales_tax ?? false,
+        default_tax_rate: settings.default_tax_rate ?? 0,
       });
     }
   }, [settings]);
@@ -304,6 +307,52 @@ export default function CompanySettings() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Sales Tax Settings Card */}
+          <Card className="shadow-lg border-emerald-200 bg-emerald-50/30">
+            <CardHeader className="border-b border-emerald-200">
+              <CardTitle className="flex items-center gap-2 text-slate-900">
+                <Receipt className="w-5 h-5 text-emerald-600" />
+                {language === 'es' ? 'Configuración de Sales Tax' : 'Sales Tax Settings'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="auto-tax"
+                  checked={formData.auto_calculate_sales_tax}
+                  onCheckedChange={(checked) => setFormData({ ...formData, auto_calculate_sales_tax: checked })}
+                />
+                <Label htmlFor="auto-tax" className="text-slate-900 cursor-pointer">
+                  {language === 'es' 
+                    ? 'Auto-calcular sales tax en quotes e invoices' 
+                    : 'Auto-calculate sales tax on quotes and invoices'}
+                </Label>
+              </div>
+              
+              {formData.auto_calculate_sales_tax && (
+                <div>
+                  <Label className="text-slate-900">
+                    {language === 'es' ? 'Tasa de Tax por Defecto (%)' : 'Default Tax Rate (%)'}
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={formData.default_tax_rate}
+                    onChange={(e) => setFormData({ ...formData, default_tax_rate: parseFloat(e.target.value) || 0 })}
+                    className="bg-white border-slate-300 w-32"
+                  />
+                  <p className="text-xs text-slate-600 mt-1">
+                    {language === 'es' 
+                      ? 'Esta tasa se aplicará automáticamente cuando auto-tax esté habilitado' 
+                      : 'This rate will be applied automatically when auto-tax is enabled'}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

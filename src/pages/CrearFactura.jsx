@@ -101,6 +101,14 @@ export default function CrearFactura() {
     initialData: [],
   });
 
+  const { data: companySettings } = useQuery({
+    queryKey: ['companySettings'],
+    queryFn: async () => {
+      const data = await base44.entities.CompanySettings.list();
+      return data[0] || {};
+    },
+  });
+
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('team_name'),
@@ -129,6 +137,7 @@ export default function CrearFactura() {
     due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
     items: [{ item_name: "", description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }],
     tax_rate: 0,
+    auto_tax_enabled: false,
     notes: "",
     terms: "• Payment: Due 30 days from invoice date (unless otherwise specified).\n• Late Fee: 1.5% monthly interest on overdue balance.\n• Collection: Client responsible for all collection costs including attorney fees.\n• Disputes: Report discrepancies within 5 days in writing. Undisputed amounts due by due date.\n• Scope: Final cost includes all approved Change Orders.",
     status: "draft",
@@ -182,6 +191,7 @@ export default function CrearFactura() {
         // Ensure date formats are correct for input type="date"
         invoice_date: format(new Date(existingInvoice.invoice_date), 'yyyy-MM-dd'),
         due_date: format(new Date(existingInvoice.due_date), 'yyyy-MM-dd'),
+        auto_tax_enabled: existingInvoice.auto_tax_enabled ?? false
       });
     }
   }, [existingInvoice, loadingInvoice]);
@@ -978,16 +988,48 @@ export default function CrearFactura() {
                 <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{t('tax')}:</span>
-                    <Input
-                      type="number"
-                      value={formData.tax_rate}
-                      onChange={e => setFormData({ ...formData, tax_rate: parseFloat(e.target.value) || 0 })}
-                      className="w-20 h-8"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                    />
-                    <span>%</span>
+                    {companySettings?.auto_calculate_sales_tax && formData.auto_tax_enabled ? (
+                      <>
+                        <span className="text-sm text-emerald-600 font-medium">{companySettings.default_tax_rate}% (auto)</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, auto_tax_enabled: false })}
+                          className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700"
+                        >
+                          {language === 'es' ? 'Manual' : 'Manual'}
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          type="number"
+                          value={formData.tax_rate}
+                          onChange={e => setFormData({ ...formData, tax_rate: parseFloat(e.target.value) || 0 })}
+                          className="w-20 h-8"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                        <span>%</span>
+                        {companySettings?.auto_calculate_sales_tax && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setFormData({ 
+                              ...formData, 
+                              auto_tax_enabled: true,
+                              tax_rate: companySettings.default_tax_rate || 0
+                            })}
+                            className="h-6 px-2 text-xs text-emerald-600 hover:text-emerald-700"
+                          >
+                            {language === 'es' ? 'Auto' : 'Auto'}
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </div>
                   <span className="text-lg font-bold">${tax_amount.toFixed(2)}</span>
                 </div>
