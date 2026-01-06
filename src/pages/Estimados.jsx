@@ -93,16 +93,8 @@ export default function Estimados() {
 
   const duplicateMutation = useMutation({
     mutationFn: async (quote) => {
-      // Get all quotes to find the next number
-      const allQuotes = await base44.entities.Quote.list();
-      const existingNumbers = allQuotes
-        .map(q => q.quote_number)
-        .filter(n => n?.startsWith('EST-'))
-        .map(n => parseInt(n.replace('EST-', '')))
-        .filter(n => !isNaN(n));
-      
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const newQuoteNumber = `EST-${String(nextNumber).padStart(5, '0')}`;
+      // Use atomic number generator to prevent duplicates
+      const { quote_number: newQuoteNumber } = await base44.functions.invoke('generateQuoteNumber');
       
       const newQuote = {
         ...quote,
