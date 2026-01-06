@@ -124,18 +124,6 @@ export default function LineItemsEditor({
   };
 
   const removeItem = (index) => {
-    // Prevent removing travel items (if is_travel_item exists)
-    if (items[index]?.is_travel_item) {
-      if (onToast) {
-        onToast({
-          title: 'Cannot remove',
-          description: 'Disable "Out-of-Area Job" to remove travel items',
-          variant: 'destructive'
-        });
-      }
-      return;
-    }
-    
     if (items.length === 1) return;
     
     const newItems = items.filter((_, i) => i !== index);
@@ -144,16 +132,10 @@ export default function LineItemsEditor({
 
   const moveItem = (index, direction) => {
     const newItems = [...items];
-    const item = newItems[index];
-    
-    // Can't move travel items or move into travel items section
-    if (item.is_travel_item) return;
-    
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     
-    // Check boundaries and don't move into travel items
+    // Check boundaries
     if (targetIndex < 0 || targetIndex >= newItems.length) return;
-    if (newItems[targetIndex].is_travel_item) return;
     
     // Swap items
     [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
@@ -352,25 +334,23 @@ export default function LineItemsEditor({
 
             {/* Actions */}
             <div className="flex justify-end gap-0.5 items-center">
-              {allowReorder && !item.is_travel_item && index > 0 && (
+              {allowReorder && index > 0 && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => moveItem(index, 'up')}
-                  disabled={items[index - 1]?.is_travel_item}
                   className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
                 >
                   <ChevronUp className="w-3 h-3" />
                 </Button>
               )}
-              {allowReorder && !item.is_travel_item && index < items.length - 1 && (
+              {allowReorder && index < items.length - 1 && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => moveItem(index, 'down')}
-                  disabled={items[index + 1]?.is_travel_item}
                   className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
                 >
                   <ChevronDown className="w-3 h-3" />
