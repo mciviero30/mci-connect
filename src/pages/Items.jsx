@@ -262,21 +262,21 @@ export default function Items() {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text('Modern Components Installation', 15, 40);
+      doc.text('Modern Components Installation', 15, 42);
       
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 45);
+      doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 47);
 
       // Generated date (right side)
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
-      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 45, { align: 'right' });
+      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 50, { align: 'right' });
 
       // ==========================================
       // TABLE HEADER - Smooth gradient (matching Invoice style)
       // ==========================================
-      const tableHeaderY = 62;
+      const tableHeaderY = 68;
       const headerSteps = 100;
       for (let i = 0; i < headerSteps; i++) {
         const x = 15 + (180 / headerSteps) * i;
@@ -291,10 +291,10 @@ export default function Items() {
       doc.setFont(undefined, 'bold');
       doc.text('#', 18, tableHeaderY + 6.5);
       doc.text('ITEM NAME', 30, tableHeaderY + 6.5);
-      doc.text('CATEGORY', 95, tableHeaderY + 6.5);
-      doc.text('UNIT', 120, tableHeaderY + 6.5);
-      doc.text('SALE PRICE', 155, tableHeaderY + 6.5, { align: 'right' });
-      doc.text('SUPPLIER', 175, tableHeaderY + 6.5);
+      doc.text('CATEGORY', 90, tableHeaderY + 6.5);
+      doc.text('UNIT', 115, tableHeaderY + 6.5);
+      doc.text('SALE PRICE', 150, tableHeaderY + 6.5, { align: 'right' });
+      doc.text('SUPPLIER', 170, tableHeaderY + 6.5);
 
       // ==========================================
       // ITEMS
@@ -326,10 +326,10 @@ export default function Items() {
           doc.setFont(undefined, 'bold');
           doc.text('#', 18, newTableHeaderY + 6.5);
           doc.text('ITEM NAME', 30, newTableHeaderY + 6.5);
-          doc.text('CATEGORY', 95, newTableHeaderY + 6.5);
-          doc.text('UNIT', 120, newTableHeaderY + 6.5);
-          doc.text('SALE PRICE', 155, newTableHeaderY + 6.5, { align: 'right' });
-          doc.text('SUPPLIER', 175, newTableHeaderY + 6.5);
+          doc.text('CATEGORY', 90, newTableHeaderY + 6.5);
+          doc.text('UNIT', 115, newTableHeaderY + 6.5);
+          doc.text('SALE PRICE', 150, newTableHeaderY + 6.5, { align: 'right' });
+          doc.text('SUPPLIER', 170, newTableHeaderY + 6.5);
           
           doc.setTextColor(15, 23, 42);
           doc.setFontSize(8);
@@ -369,18 +369,18 @@ export default function Items() {
         
         doc.setFont(undefined, 'normal');
         doc.setTextColor(71, 85, 105);
-        doc.text(categoryLabel, 95, y);
+        doc.text(categoryLabel, 90, y);
         
         doc.setTextColor(100, 116, 139);
-        doc.text(unitLabel, 120, y);
+        doc.text(unitLabel, 115, y);
         
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
-        doc.text(salePrice, 155, y, { align: 'right' });
+        doc.text(salePrice, 150, y, { align: 'right' });
         
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 116, 139);
-        doc.text(supplier, 175, y);
+        doc.text(supplier, 170, y);
 
         // Border line
         doc.setDrawColor(241, 245, 249);
