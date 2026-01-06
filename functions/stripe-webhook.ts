@@ -58,16 +58,7 @@ Deno.serve(async (req) => {
       const newBalance = (invoice.total || 0) - newAmountPaid;
       const newStatus = newBalance <= 0 ? 'paid' : 'partial';
 
-      // Update invoice
-      await base44.asServiceRole.entities.Invoice.update(invoiceId, {
-        amount_paid: newAmountPaid,
-        balance: newBalance,
-        status: newStatus,
-        payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
-        transaction_id: transaction.id
-      });
-
-      // Record transaction
+      // Record transaction FIRST
       const transaction = await base44.asServiceRole.entities.Transaction.create({
         type: 'income',
         amount: paymentAmount,
@@ -81,6 +72,15 @@ Deno.serve(async (req) => {
         matched_invoice_number: invoice.invoice_number,
         reconciled_by: 'auto',
         reconciled_at: new Date().toISOString()
+      });
+
+      // Update invoice with transaction reference
+      await base44.asServiceRole.entities.Invoice.update(invoiceId, {
+        amount_paid: newAmountPaid,
+        balance: newBalance,
+        status: newStatus,
+        payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
+        transaction_id: transaction.id
       });
 
       // Send confirmation email
