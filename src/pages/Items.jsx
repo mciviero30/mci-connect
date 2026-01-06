@@ -217,7 +217,7 @@ export default function Items() {
       // ==========================================
       // HEADER BANNER (BLACK) - Matching Invoice/Quote style
       // ==========================================
-      const headerHeight = 40;
+      const headerHeight = 30;
       const steps = 100;
       for (let i = 0; i < steps; i++) {
         const x = (210 / steps) * i;
@@ -245,16 +245,16 @@ export default function Items() {
         }
         
         const logoBase64 = btoa(binary);
-        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
+        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 7, 50, 15);
       } catch (err) {
         console.log('Logo load error:', err);
       }
 
       // PRICE LIST title in header (white text)
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(32);
+      doc.setFontSize(28);
       doc.setFont(undefined, 'bold');
-      doc.text('PRICE LIST', 195, 20, { align: 'right' });
+      doc.text('PRICE LIST', 195, 18, { align: 'right' });
 
       // ==========================================
       // INFO SECTIONS
@@ -262,21 +262,21 @@ export default function Items() {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text('Modern Components Installation', 15, 50);
+      doc.text('Modern Components Installation', 15, 40);
       
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 55);
+      doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 45);
 
       // Generated date (right side)
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
-      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 55, { align: 'right' });
+      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 45, { align: 'right' });
 
       // ==========================================
       // TABLE HEADER - Smooth gradient (matching Invoice style)
       // ==========================================
-      const tableHeaderY = 70;
+      const tableHeaderY = 62;
       const headerSteps = 100;
       for (let i = 0; i < headerSteps; i++) {
         const x = 15 + (180 / headerSteps) * i;
