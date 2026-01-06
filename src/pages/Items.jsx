@@ -291,9 +291,10 @@ export default function Items() {
       doc.setFont(undefined, 'bold');
       doc.text('#', 18, tableHeaderY + 6.5);
       doc.text('ITEM NAME', 30, tableHeaderY + 6.5);
-      doc.text('CATEGORY', 100, tableHeaderY + 6.5);
+      doc.text('CATEGORY', 95, tableHeaderY + 6.5);
+      doc.text('UNIT', 120, tableHeaderY + 6.5);
       doc.text('SALE PRICE', 155, tableHeaderY + 6.5, { align: 'right' });
-      doc.text('SUPPLIER', 180, tableHeaderY + 6.5);
+      doc.text('SUPPLIER', 175, tableHeaderY + 6.5);
 
       // ==========================================
       // ITEMS
@@ -325,9 +326,10 @@ export default function Items() {
           doc.setFont(undefined, 'bold');
           doc.text('#', 18, newTableHeaderY + 6.5);
           doc.text('ITEM NAME', 30, newTableHeaderY + 6.5);
-          doc.text('CATEGORY', 100, newTableHeaderY + 6.5);
+          doc.text('CATEGORY', 95, newTableHeaderY + 6.5);
+          doc.text('UNIT', 120, newTableHeaderY + 6.5);
           doc.text('SALE PRICE', 155, newTableHeaderY + 6.5, { align: 'right' });
-          doc.text('SUPPLIER', 180, newTableHeaderY + 6.5);
+          doc.text('SUPPLIER', 175, newTableHeaderY + 6.5);
           
           doc.setTextColor(15, 23, 42);
           doc.setFontSize(8);
@@ -344,14 +346,15 @@ export default function Items() {
 
         const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
         const salePrice = `$${(item.unit_price || 0).toFixed(2)}`;
+        const unitLabel = item.unit || 'pcs';
 
-        // Truncate long text
-        const itemName = (item.name || '').length > 40 
-          ? (item.name || '').substring(0, 37) + '...' 
+        // Truncate long text to fit new layout
+        const itemName = (item.name || '').length > 32 
+          ? (item.name || '').substring(0, 29) + '...' 
           : (item.name || '');
 
-        const supplier = (item.supplier || '').length > 12
-          ? (item.supplier || '').substring(0, 9) + '...'
+        const supplier = (item.supplier || '').length > 15
+          ? (item.supplier || '').substring(0, 12) + '...'
           : (item.supplier || '');
 
         // Row content (matching Invoice style)
@@ -366,7 +369,10 @@ export default function Items() {
         
         doc.setFont(undefined, 'normal');
         doc.setTextColor(71, 85, 105);
-        doc.text(categoryLabel, 100, y);
+        doc.text(categoryLabel, 95, y);
+        
+        doc.setTextColor(100, 116, 139);
+        doc.text(unitLabel, 120, y);
         
         doc.setFont(undefined, 'bold');
         doc.setTextColor(15, 23, 42);
@@ -374,7 +380,7 @@ export default function Items() {
         
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 116, 139);
-        doc.text(supplier, 180, y);
+        doc.text(supplier, 175, y);
 
         // Border line
         doc.setDrawColor(241, 245, 249);
