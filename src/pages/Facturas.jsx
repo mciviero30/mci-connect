@@ -72,16 +72,8 @@ export default function Facturas() {
 
   const duplicateMutation = useMutation({
     mutationFn: async (invoice) => {
-      // Get all invoices to find the next number
-      const allInvoices = await base44.entities.Invoice.list();
-      const existingNumbers = allInvoices
-        .map(inv => inv.invoice_number)
-        .filter(n => n?.startsWith('INV-'))
-        .map(n => parseInt(n.replace('INV-', '')))
-        .filter(n => !isNaN(n));
-      
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const newInvoiceNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
+      // Use atomic number generator to prevent duplicates
+      const { invoice_number: newInvoiceNumber } = await base44.functions.invoke('generateInvoiceNumber');
       
       const newInvoice = {
         ...invoice,
