@@ -2,6 +2,7 @@ import AdminCleanup from './pages/AdminCleanup';
 import AgreementSignatures from './pages/AgreementSignatures';
 import ApprovalsHub from './pages/ApprovalsHub';
 import AuditTrail from './pages/AuditTrail';
+import BankSync from './pages/BankSync';
 import BonusConfiguration from './pages/BonusConfiguration';
 import BudgetForecasting from './pages/BudgetForecasting';
 import Calendario from './pages/Calendario';
@@ -66,6 +67,7 @@ import Nomina from './pages/Nomina';
 import NotificationCenter from './pages/NotificationCenter';
 import NotificationSettings from './pages/NotificationSettings';
 import OnboardingWizard from './pages/OnboardingWizard';
+import PaymentReconciliation from './pages/PaymentReconciliation';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
 import PerformanceManagement from './pages/PerformanceManagement';
@@ -89,8 +91,8 @@ import Trabajos from './pages/Trabajos';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import WelcomeMessage from './pages/WelcomeMessage';
-import BankSync from './pages/BankSync';
-import PaymentReconciliation from './pages/PaymentReconciliation';
+import ChangeOrders from './pages/ChangeOrders';
+import SafetyIncidents from './pages/SafetyIncidents';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +101,7 @@ export const PAGES = {
     "AgreementSignatures": AgreementSignatures,
     "ApprovalsHub": ApprovalsHub,
     "AuditTrail": AuditTrail,
+    "BankSync": BankSync,
     "BonusConfiguration": BonusConfiguration,
     "BudgetForecasting": BudgetForecasting,
     "Calendario": Calendario,
@@ -163,6 +166,7 @@ export const PAGES = {
     "NotificationCenter": NotificationCenter,
     "NotificationSettings": NotificationSettings,
     "OnboardingWizard": OnboardingWizard,
+    "PaymentReconciliation": PaymentReconciliation,
     "PayrollAutoFlow": PayrollAutoFlow,
     "PerDiem": PerDiem,
     "PerformanceManagement": PerformanceManagement,
@@ -186,8 +190,8 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "WelcomeMessage": WelcomeMessage,
-    "BankSync": BankSync,
-    "PaymentReconciliation": PaymentReconciliation,
+    "ChangeOrders": ChangeOrders,
+    "SafetyIncidents": SafetyIncidents,
 }
 
 export const pagesConfig = {
