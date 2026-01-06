@@ -214,167 +214,193 @@ export default function Items() {
       const { jsPDF } = await import('jspdf');
       const doc = new jsPDF();
 
-      // ==========================================
-      // HEADER CON GRADIENTE NEGRO A GRIS - smooth (matching Quote)
-      // ==========================================
-      const headerHeight = 40;
-      const steps = 100;
-      for (let i = 0; i < steps; i++) {
-        const x = (210 / steps) * i;
-        const width = (210 / steps) + 0.5;
-        const gray = Math.floor(i * (74 / steps)); // 0 negro a 74 gris
+      // ========== HEADER: Black solid until logo ends, then gradient to gray ==========
+      const headerHeight = 25;
+      const logoEndX = 60;
+      const margin = 20;
+      
+      // Pure black section for logo
+      doc.setFillColor(0, 0, 0);
+      doc.rect(0, 0, logoEndX, headerHeight, 'F');
+      
+      // Gradient from logo end to page end
+      const gradientWidth = 210 - logoEndX;
+      const gradientSteps = 100;
+      for (let i = 0; i < gradientSteps; i++) {
+        const gray = Math.floor((i / gradientSteps) * 130);
         doc.setFillColor(gray, gray, gray);
-        doc.rect(x, 0, width, headerHeight, 'F');
+        const rectX = logoEndX + (i * gradientWidth) / gradientSteps;
+        const rectWidth = (gradientWidth / gradientSteps) + 0.5;
+        doc.rect(rectX, 0, rectWidth, headerHeight, 'F');
       }
 
-      // Logo como texto (MCI logo style - matching Quote)
+      // Load and add logo image
+      try {
+        const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
+        const logoResponse = await fetch(logoUrl);
+        const arrayBuffer = await logoResponse.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        
+        let binary = '';
+        const chunkSize = 8192;
+        const len = bytes.byteLength;
+        
+        for (let i = 0; i < len; i += chunkSize) {
+          const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+          binary += String.fromCharCode.apply(null, Array.from(chunk));
+        }
+        
+        const logoBase64 = btoa(binary);
+        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 5, 35, 15);
+      } catch (err) {
+        console.log('Logo load error:', err);
+      }
+
+      // PRICE LIST title (right aligned, white)
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(12);
+      doc.setFontSize(28);
       doc.setFont(undefined, 'bold');
-      doc.text('MODERN', 20, 17);
-      doc.text('COMPONENTS', 20, 22);
-      doc.text('INSTALLATIONS', 20, 27);
+      doc.text('PRICE LIST', 190, 17, { align: 'right' });
+
+      // ==========================================
+      // INFO SECTIONS (matching Quote style exactly)
+      // ==========================================
+      let y = 35;
+      const contentWidth = 170;
       
-      // Logo frame
-      doc.setDrawColor(255, 255, 255);
-      doc.setLineWidth(0.8);
-      doc.rect(15, 10, 8, 8);
-      doc.line(19, 14, 23, 14);
-      doc.line(19, 18, 23, 18);
-
-      // PRICE LIST title in header (white text - matching Quote style)
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(40);
-      doc.setFont(undefined, 'bold');
-      doc.text('PRICE LIST', 195, 25, { align: 'right' });
-
-      // ==========================================
-      // INFO SECTIONS (matching Quote style)
-      // ==========================================
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text('Modern Components Installation', 15, 50);
+      doc.text('Modern Components Installation', margin, y);
       
       doc.setFont(undefined, 'normal');
-      doc.setFontSize(8);
-      doc.text(['2414 Meadow Isle Ln, Lawrenceville GA 30043', 'Phone: 470-209-3783'], 15, 55);
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      y += 5;
+      doc.text('2414 Meadow Isle Ln, Lawrenceville GA 30043', margin, y);
+      y += 4;
+      doc.text('Phone: 470-209-3783', margin, y);
 
       // Generated date (right side)
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
-      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 195, 50, { align: 'right' });
+      doc.text(`Generated: ${format(new Date(), 'MM.dd.yyyy')}`, 190, 35, { align: 'right' });
+      
+      y += 20;
 
       // ==========================================
-      // TABLE HEADER - Smooth gradient (matching Quote style)
+      // TABLE HEADER - Gradient (matching Quote style exactly)
       // ==========================================
-      const tableHeaderY = 70;
+      const tableHeaderY = y;
+      const tableHeaderHeight = 7;
       const headerSteps = 100;
       for (let i = 0; i < headerSteps; i++) {
-        const x = 15 + (180 / headerSteps) * i;
-        const width = (180 / headerSteps) + 0.5;
-        const gray = Math.floor(i * (74 / headerSteps));
+        const x = margin + (contentWidth / headerSteps) * i;
+        const width = (contentWidth / headerSteps) + 0.5;
+        const gray = Math.floor(i * (120 / headerSteps));
         doc.setFillColor(gray, gray, gray);
-        doc.rect(x, tableHeaderY, width, 10, 'F');
+        doc.rect(x, tableHeaderY, width, tableHeaderHeight, 'F');
       }
 
+      const numCol = margin + 3;
+      const itemCol = margin + 12;
+      const catCol = 190 - 95;
+      const unitCol = 190 - 70;
+      const priceCol = 190 - 35;
+      const supplierCol = 190 - 15;
+
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(9);
+      doc.setFontSize(7);
       doc.setFont(undefined, 'bold');
-      doc.text('#', 18, tableHeaderY + 6.5);
-      doc.text('ITEM NAME', 30, tableHeaderY + 6.5);
-      doc.text('CATEGORY', 87, tableHeaderY + 6.5);
-      doc.text('UNIT', 112, tableHeaderY + 6.5);
-      doc.text('SALE PRICE', 148, tableHeaderY + 6.5, { align: 'right' });
-      doc.text('SUPPLIER', 167, tableHeaderY + 6.5);
+      doc.text('#', numCol, tableHeaderY + 4.5);
+      doc.text('ITEM NAME', itemCol, tableHeaderY + 4.5);
+      doc.text('CATEGORY', catCol, tableHeaderY + 4.5);
+      doc.text('UNIT', unitCol, tableHeaderY + 4.5);
+      doc.text('SALE PRICE', priceCol, tableHeaderY + 4.5, { align: 'right' });
+      doc.text('SUPPLIER', supplierCol, tableHeaderY + 4.5);
 
       // ==========================================
-      // ITEMS (matching Quote style)
+      // ITEMS (matching Quote style exactly)
       // ==========================================
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(8);
       doc.setFont(undefined, 'normal');
-      let y = tableHeaderY + 10;
+      y = tableHeaderY + 9;
       let rowIndex = 1;
 
       for (const item of filteredItems) {
-        // Check if we need a new page
-        if (y > 260) {
+        const itemName = item.name || '';
+        const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
+        const unitLabel = item.unit || 'pcs';
+        const salePrice = `$${(item.unit_price || 0).toFixed(2)}`;
+        const supplier = item.supplier || '';
+
+        const nameLines = doc.splitTextToSize(itemName, contentWidth - 80);
+        const rowHeight = Math.max(8, nameLines.length * 4 + 6);
+
+        // Page break check
+        if (y + rowHeight > 270) {
           doc.addPage();
-          const newTableHeaderY = 20;
+          const newTableHeaderY = margin;
           
-          // Repeat table header on new page (matching Quote style)
-          const headerSteps2 = 100;
-          for (let i = 0; i < headerSteps2; i++) {
-            const x = 15 + (180 / headerSteps2) * i;
-            const width = (180 / headerSteps2) + 0.5;
-            const gray = Math.floor(i * (74 / headerSteps2));
+          // Re-render header
+          for (let i = 0; i < headerSteps; i++) {
+            const x = margin + (contentWidth / headerSteps) * i;
+            const width = (contentWidth / headerSteps) + 0.5;
+            const gray = Math.floor(i * (120 / headerSteps));
             doc.setFillColor(gray, gray, gray);
-            doc.rect(x, newTableHeaderY, width, 10, 'F');
+            doc.rect(x, newTableHeaderY, width, tableHeaderHeight, 'F');
           }
           
           doc.setTextColor(255, 255, 255);
-          doc.setFontSize(9);
+          doc.setFontSize(7);
           doc.setFont(undefined, 'bold');
-          doc.text('#', 18, newTableHeaderY + 6.5);
-          doc.text('ITEM NAME', 30, newTableHeaderY + 6.5);
-          doc.text('CATEGORY', 87, newTableHeaderY + 6.5);
-          doc.text('UNIT', 112, newTableHeaderY + 6.5);
-          doc.text('SALE PRICE', 148, newTableHeaderY + 6.5, { align: 'right' });
-          doc.text('SUPPLIER', 167, newTableHeaderY + 6.5);
+          doc.text('#', numCol, newTableHeaderY + 4.5);
+          doc.text('ITEM NAME', itemCol, newTableHeaderY + 4.5);
+          doc.text('CATEGORY', catCol, newTableHeaderY + 4.5);
+          doc.text('UNIT', unitCol, newTableHeaderY + 4.5);
+          doc.text('SALE PRICE', priceCol, newTableHeaderY + 4.5, { align: 'right' });
+          doc.text('SUPPLIER', supplierCol, newTableHeaderY + 4.5);
           
-          doc.setTextColor(0, 0, 0);
-          doc.setFontSize(8);
-          doc.setFont(undefined, 'normal');
-          y = newTableHeaderY + 10;
+          y = newTableHeaderY + 9;
           rowIndex = 1;
         }
 
-        // Alternating row background (zebra striping)
+        // Zebra striping
         if (rowIndex % 2 === 0) {
-          doc.setFillColor(249, 250, 251);
-          doc.rect(15, y - 4, 180, 7, 'F');
+          doc.setFillColor(250, 250, 250);
+          doc.rect(margin, y, contentWidth, rowHeight, 'F');
         }
 
-        const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
-        const salePrice = `$${(item.unit_price || 0).toFixed(2)}`;
-        const unitLabel = item.unit || 'pcs';
-
-        // Truncate long text to fit new layout
-        const itemName = (item.name || '').length > 32 
-          ? (item.name || '').substring(0, 29) + '...' 
-          : (item.name || '');
-
-        const supplier = (item.supplier || '').length > 15
-          ? (item.supplier || '').substring(0, 12) + '...'
-          : (item.supplier || '');
-
-        // Row content (matching Quote style exactly)
+        // Item number (light gray)
+        doc.setFont(undefined, 'normal');
         doc.setFontSize(8);
-        doc.setFont(undefined, 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text(rowIndex.toString(), 18, y);
+        doc.setTextColor(180, 180, 180);
+        doc.text(rowIndex.toString(), numCol, y + 4);
         
+        // Item Name (bold, black)
         doc.setFont(undefined, 'bold');
+        doc.setFontSize(9);
         doc.setTextColor(0, 0, 0);
-        doc.text(itemName, 30, y);
+        doc.text(nameLines, itemCol, y + 4);
         
+        // Category, Unit, Price, Supplier
         doc.setFont(undefined, 'normal');
-        doc.text(categoryLabel, 87, y);
-        
-        doc.text(unitLabel, 112, y);
+        doc.setFontSize(9);
+        doc.text(categoryLabel, catCol, y + 4);
+        doc.text(unitLabel, unitCol, y + 4);
         
         doc.setFont(undefined, 'bold');
-        doc.text(salePrice, 148, y, { align: 'right' });
+        doc.text(salePrice, priceCol, y + 4, { align: 'right' });
         
         doc.setFont(undefined, 'normal');
-        doc.text(supplier, 167, y);
+        doc.text(supplier, supplierCol, y + 4);
 
-        // Border line (matching Quote)
-        doc.setDrawColor(226, 232, 240);
-        doc.line(15, y + 7, 195, y + 7);
+        // Row border
+        doc.setDrawColor(230, 230, 230);
+        doc.line(margin, y + rowHeight, 190, y + rowHeight);
 
-        y += 7;
+        y += rowHeight;
         rowIndex++;
       }
 
