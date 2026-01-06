@@ -63,17 +63,24 @@ Deno.serve(async (req) => {
         amount_paid: newAmountPaid,
         balance: newBalance,
         status: newStatus,
-        payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date
+        payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
+        transaction_id: transaction.id
       });
 
       // Record transaction
-      await base44.asServiceRole.entities.Transaction.create({
+      const transaction = await base44.asServiceRole.entities.Transaction.create({
         type: 'income',
         amount: paymentAmount,
         category: 'sales',
         description: `Stripe payment for Invoice ${invoice.invoice_number} - ${invoice.customer_name}`,
         date: new Date().toISOString().split('T')[0],
-        payment_method: 'card'
+        payment_method: 'stripe',
+        stripe_payment_intent_id: session.payment_intent,
+        reconciliation_status: 'matched',
+        matched_invoice_id: invoiceId,
+        matched_invoice_number: invoice.invoice_number,
+        reconciled_by: 'auto',
+        reconciled_at: new Date().toISOString()
       });
 
       // Send confirmation email

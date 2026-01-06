@@ -73,14 +73,21 @@ Deno.serve(async (req) => {
       return Response.json({ error: transactionsData.error_message || 'Failed to get transactions' }, { status: 500 });
     }
 
-    // Category mapping
-    const categoryMap = {
+    // Category mapping for expenses
+    const expenseCategoryMap = {
       'Food and Drink': 'meals',
       'Travel': 'travel',
       'Transportation': 'transport',
       'Shops': 'supplies',
       'Service': 'other_expense',
       'Recreation': 'client_entertainment',
+    };
+    
+    // Income categories
+    const incomeCategoryMap = {
+      'Payment': 'sales',
+      'Transfer': 'sales',
+      'Deposit': 'sales',
     };
 
     // Save transactions
@@ -104,19 +111,28 @@ Deno.serve(async (req) => {
       const type = transaction.amount < 0 ? 'income' : 'expense';
       const amount = Math.abs(transaction.amount);
 
-      // Map category
+      // Map category intelligently
       const primaryCategory = transaction.category?.[0] || 'Service';
-      const category = categoryMap[primaryCategory] || 'other_expense';
+      let category;
+      
+      if (type === 'income') {
+        category = incomeCategoryMap[primaryCategory] || 'sales';
+      } else {
+        category = expenseCategoryMap[primaryCategory] || 'other_expense';
+      }
 
       // Create transaction
       await base44.asServiceRole.entities.Transaction.create({
         type,
         amount,
-        category: type === 'income' ? 'sales' : category,
-        description: `${transaction.name} (Bank Sync)`,
+        category,
+        description: `${transaction.name}`,
         date: transaction.date,
         payment_method: 'bank_transfer',
         notes: `Auto-synced from ${bankAccount.institution_name} ${bankAccount.account_mask}`,
+        bank_account_id: account_id,
+        plaid_transaction_id: transaction.transaction_id,
+        reconciliation_status: 'unreconciled'
       });
 
       syncedCount++;
