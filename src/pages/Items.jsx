@@ -253,7 +253,7 @@ export default function Items() {
         }
         
         const logoBase64 = btoa(binary);
-        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 3, 115, 34.5);
+        doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 10, 8, 132, 40);
       } catch (err) {
         console.log('Logo load error:', err);
       }
@@ -262,7 +262,7 @@ export default function Items() {
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(32);
       doc.setFont(undefined, 'bold');
-      doc.text('PRICE LIST', 195, 21, { align: 'right' });
+      doc.text('PRICE LIST', 195, 23, { align: 'right' });
 
       // ==========================================
       // INFO SECTIONS
