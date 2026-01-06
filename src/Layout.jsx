@@ -424,6 +424,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'Bank Sync', url: createPageUrl("BankSync"), icon: Building2 },
+        { title: 'Reconciliation', url: createPageUrl("PaymentReconciliation"), icon: CheckCircle2 },
       ]
     },
     {
