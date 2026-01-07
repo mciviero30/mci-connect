@@ -315,156 +315,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     user.employment_status !== 'deleted' &&
     user.onboarding_completed !== true;  // Definitive flag ONLY
 
-  // Check if we're on a Field page
-  const isFieldPage = location.pathname.includes('/Field');
-
-  // Prevent Layout from triggering Field remounts
-  const wasFieldPage = useRef(false);
-
-  // ATOMIC MIGRATION: Sync employee data on first login - OPTIMIZED
-  useEffect(() => {
-    if (isLoading || !user) return;
-
-    // Skip if already migrated
-    const migrationFlag = sessionStorage.getItem(`migrated_${user.id}`);
-    if (migrationFlag === 'done' || migrationFlag === 'processing') {
-      return;
-    }
-
-    const performMigration = async () => {
-      try {
-        sessionStorage.setItem(`migrated_${user.id}`, 'processing');
-
-        // Call backend migration function (idempotent)
-        await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
-        
-        sessionStorage.setItem(`migrated_${user.id}`, 'done');
-
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('❌ Migration failed:', error);
-        }
-        sessionStorage.removeItem(`migrated_${user.id}`);
-      }
-    };
-
-    performMigration();
-  }, [user?.id, isLoading]);
-
-  const { data: pendingExpenses } = useQuery({
-    queryKey: ['pendingExpensesCount', user?.email],
-    queryFn: async () => {
-      if (!user) return 0;
-      if (user.role === 'admin') {
-        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
-        return expenses.length;
-      } else {
-        const expenses = await base44.entities.Expense.filter({
-          employee_email: user.email,
-          status: 'pending'
-        }, '', 20);
-        return expenses.length;
-      }
-    },
-    enabled: !!user,
-    initialData: 0,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchInterval: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-
-  useEffect(() => {
-    const sidebar = sidebarContentRef.current;
-    if (sidebar) {
-      const savedScrollPosition = sessionStorage.getItem('sidebarScrollPosition');
-      
-      if (savedScrollPosition) {
-        // Restaurar posición exacta del scroll
-        requestAnimationFrame(() => {
-          sidebar.scrollTop = parseInt(savedScrollPosition, 10);
-          sessionStorage.removeItem('sidebarScrollPosition');
-        });
-      }
-    }
-  }, [location.pathname]);
-
-  // Field page state management - MUST be before early returns
-  useEffect(() => {
-    if (isFieldPage) {
-      // Mark Field as active to prevent provider re-initialization
-      if (!wasFieldPage.current) {
-        sessionStorage.setItem('field_active', 'true');
-        wasFieldPage.current = true;
-      }
-    } else if (wasFieldPage.current) {
-      // Only clear when actually leaving Field
-      sessionStorage.removeItem('field_active');
-      wasFieldPage.current = false;
-    }
-  }, [isFieldPage]);
-
-  // Memoize navigation to prevent recalculation - MUST be before early returns
-  const navigation = useMemo(() => {
-    const position = (displayUser?.position || user?.position || '').toLowerCase();
-    const department = (displayUser?.department || user?.department || '').toLowerCase();
-
-    // Role-based access (source of truth: role field)
-    const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
-    const isCEORole = userRole === 'ceo';
-    const isAdminRole = userRole === 'admin';
-    const isManagerRole = userRole === 'manager';
-
-    // Legacy position-based checks (fallback only)
-    const isManager = position.includes('manager') || position.includes('supervisor');
-    const isAdministrator = position.includes('administrator') || position.includes('admin');
-    const isHR = department === 'hr' || department === 'human resources';
-
-    // Full access: CEO role, Admin role, Manager role, or legacy position-based checks
-    const hasFullAccess = isCEORole || isAdminRole || isManagerRole || isManager || isAdministrator || isHR;
-
-    if (hasFullAccess) {
-      return adminNavigation;
-    }
-
-    return employeeNavigation;
-  }, [
-    displayUser?.position,
-    user?.position,
-    displayUser?.department,
-    user?.department,
-    displayUser?.role,
-    user?.role
-  ]);
-
-  // Profile image computation
-  const profileImage = useMemo(() => {
-    const effectiveUser = displayUser || user;
-    if (!effectiveUser) return null;
-    
-    // Check preferred image first
-    if (effectiveUser.preferred_profile_image === 'avatar' && effectiveUser.avatar_image_url) {
-      return effectiveUser.avatar_image_url;
-    }
-    
-    // Then check profile_photo_url
-    if (effectiveUser.profile_photo_url) {
-      return effectiveUser.profile_photo_url;
-    }
-    
-    // Fallback to avatar if exists
-    if (effectiveUser.avatar_image_url) {
-      return effectiveUser.avatar_image_url;
-    }
-    
-    return null;
-  }, [displayUser, user]);
-
-  const imageKey = (displayUser || user)?.profile_last_updated || (displayUser || user)?.id;
-
-
-
+  // Navigation arrays - MUST be defined before useMemo
   const adminNavigation = [
     {
       section: 'STRATEGY',
@@ -683,6 +534,156 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       ]
     }
   ];
+
+  // Check if we're on a Field page
+  const isFieldPage = location.pathname.includes('/Field');
+
+  // Prevent Layout from triggering Field remounts
+  const wasFieldPage = useRef(false);
+
+  // ATOMIC MIGRATION: Sync employee data on first login - OPTIMIZED
+  useEffect(() => {
+    if (isLoading || !user) return;
+
+    // Skip if already migrated
+    const migrationFlag = sessionStorage.getItem(`migrated_${user.id}`);
+    if (migrationFlag === 'done' || migrationFlag === 'processing') {
+      return;
+    }
+
+    const performMigration = async () => {
+      try {
+        sessionStorage.setItem(`migrated_${user.id}`, 'processing');
+
+        // Call backend migration function (idempotent)
+        await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
+        
+        sessionStorage.setItem(`migrated_${user.id}`, 'done');
+
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('❌ Migration failed:', error);
+        }
+        sessionStorage.removeItem(`migrated_${user.id}`);
+      }
+    };
+
+    performMigration();
+  }, [user?.id, isLoading]);
+
+  const { data: pendingExpenses } = useQuery({
+    queryKey: ['pendingExpensesCount', user?.email],
+    queryFn: async () => {
+      if (!user) return 0;
+      if (user.role === 'admin') {
+        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
+        return expenses.length;
+      } else {
+        const expenses = await base44.entities.Expense.filter({
+          employee_email: user.email,
+          status: 'pending'
+        }, '', 20);
+        return expenses.length;
+      }
+    },
+    enabled: !!user,
+    initialData: 0,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    const sidebar = sidebarContentRef.current;
+    if (sidebar) {
+      const savedScrollPosition = sessionStorage.getItem('sidebarScrollPosition');
+      
+      if (savedScrollPosition) {
+        // Restaurar posición exacta del scroll
+        requestAnimationFrame(() => {
+          sidebar.scrollTop = parseInt(savedScrollPosition, 10);
+          sessionStorage.removeItem('sidebarScrollPosition');
+        });
+      }
+    }
+  }, [location.pathname]);
+
+  // Field page state management - MUST be before early returns
+  useEffect(() => {
+    if (isFieldPage) {
+      // Mark Field as active to prevent provider re-initialization
+      if (!wasFieldPage.current) {
+        sessionStorage.setItem('field_active', 'true');
+        wasFieldPage.current = true;
+      }
+    } else if (wasFieldPage.current) {
+      // Only clear when actually leaving Field
+      sessionStorage.removeItem('field_active');
+      wasFieldPage.current = false;
+    }
+  }, [isFieldPage]);
+
+  // Memoize navigation to prevent recalculation - MUST be before early returns
+  const navigation = useMemo(() => {
+    const position = (displayUser?.position || user?.position || '').toLowerCase();
+    const department = (displayUser?.department || user?.department || '').toLowerCase();
+
+    // Role-based access (source of truth: role field)
+    const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
+    const isCEORole = userRole === 'ceo';
+    const isAdminRole = userRole === 'admin';
+    const isManagerRole = userRole === 'manager';
+
+    // Legacy position-based checks (fallback only)
+    const isManager = position.includes('manager') || position.includes('supervisor');
+    const isAdministrator = position.includes('administrator') || position.includes('admin');
+    const isHR = department === 'hr' || department === 'human resources';
+
+    // Full access: CEO role, Admin role, Manager role, or legacy position-based checks
+    const hasFullAccess = isCEORole || isAdminRole || isManagerRole || isManager || isAdministrator || isHR;
+
+    if (hasFullAccess) {
+      return adminNavigation;
+    }
+
+    return employeeNavigation;
+  }, [
+    displayUser?.position,
+    user?.position,
+    displayUser?.department,
+    user?.department,
+    displayUser?.role,
+    user?.role
+  ]);
+
+  // Profile image computation
+  const profileImage = useMemo(() => {
+    const effectiveUser = displayUser || user;
+    if (!effectiveUser) return null;
+    
+    // Check preferred image first
+    if (effectiveUser.preferred_profile_image === 'avatar' && effectiveUser.avatar_image_url) {
+      return effectiveUser.avatar_image_url;
+    }
+    
+    // Then check profile_photo_url
+    if (effectiveUser.profile_photo_url) {
+      return effectiveUser.profile_photo_url;
+    }
+    
+    // Fallback to avatar if exists
+    if (effectiveUser.avatar_image_url) {
+      return effectiveUser.avatar_image_url;
+    }
+    
+    return null;
+  }, [displayUser, user]);
+
+  const imageKey = (displayUser || user)?.profile_last_updated || (displayUser || user)?.id;
+
+
 
   if (isLoading) {
     return (
