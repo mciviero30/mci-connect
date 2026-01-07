@@ -258,8 +258,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
-  // Check if we're on a Field page
-  const isFieldPage = location.pathname.toLowerCase().includes('field');
+
 
   // Use auth user directly
   const displayUser = user;
@@ -729,6 +728,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
   const isAdmin = userRole === 'admin' || userRole === 'ceo';
 
+  // Check if we're on a Field page
+  const isFieldPage = location.pathname.includes('/Field');
+
   const getProfileImage = () => {
     const effectiveUser = displayUser || user;
     if (!effectiveUser) return null;
@@ -770,8 +772,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           <UniversalPushManager user={user} />
         </>
       )}
-        
+
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
+        {!isFieldPage && (
         <style>{`
           /* ============================================ */
           /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
@@ -961,9 +964,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
               </div>
             </div>
           </SidebarFooter>
-        </Sidebar>
+          </Sidebar>
+          )}
 
-        <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+          <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
           {!isFieldPage && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
@@ -1002,7 +1006,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           </main>
 
           {/* Bottom Navigation for Mobile */}
-          <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
+          {!isFieldPage && (
+            <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
+          )}
           </div>
           </SyncQueueProvider>
           </SidebarProvider>
