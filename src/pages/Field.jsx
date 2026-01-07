@@ -244,50 +244,21 @@ export default function Field() {
     <FieldErrorBoundary>
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto">
       <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
-      {/* Header - Improved mobile spacing and touch targets */}
-      <div className="px-3 sm:px-6 md:px-10 py-5 sm:py-6 md:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-5 sm:mb-6 md:mb-8 flex flex-col sm:flex-row items-center justify-between text-white gap-4 sm:gap-0 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
-        <Link to={createPageUrl('Dashboard')} className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 min-h-[44px] min-w-[44px] rounded-xl touch-manipulation active:scale-95 transition-transform">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
+      {/* Header - One-Hand Mode: Simplified, no top actions */}
+      <div className="px-3 sm:px-6 md:px-10 py-5 sm:py-6 md:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-5 sm:mb-6 md:mb-8 flex flex-col items-center justify-center text-white gap-2 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
         <img
           src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
           alt="MCI Field"
-          className="h-14 sm:h-16 md:h-20 object-contain"
+          className="h-12 sm:h-16 md:h-20 object-contain"
           style={{ 
             imageRendering: '-webkit-optimize-contrast'
           }}
         />
-        <div className="text-center sm:text-right">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wide text-white" style={{ letterSpacing: '0.05em' }}>DASHBOARD</h1>
-          <p className="text-slate-200 text-xs sm:text-sm mt-1">Central management for construction projects</p>
+        <div className="text-center">
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-bold tracking-wide text-white" style={{ letterSpacing: '0.05em' }}>FIELD DASHBOARD</h1>
         </div>
       </div>
-      {/* Search & Actions - Improved spacing and mobile layout */}
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <button
-            onClick={() => setShowQuickSearch(true)}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-800 transition-all min-h-[48px] shadow-md touch-manipulation active:scale-[0.98]"
-          >
-            <Search className="w-4 h-4" />
-            <span className="text-sm font-medium">Quick Search</span>
-            <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 bg-black rounded text-[10px] font-medium">
-              <Command className="w-3 h-3" />K
-            </kbd>
-          </button>
-          {user?.role !== 'customer' && (
-            <Button 
-              onClick={() => setShowNewProject(true)}
-              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[48px] text-sm sm:text-base px-5 w-full sm:w-auto rounded-xl touch-manipulation active:scale-[0.98] transition-transform"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              New Project
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* One-Hand Mode: Bottom actions only, no top search */}
 
       {/* Stats Cards - Enhanced spacing */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -317,61 +288,26 @@ export default function Field() {
         />
       </div>
 
-      {/* Tabs - Enhanced touch targets and spacing */}
+      {/* Tabs - One-Hand Mode: Bottom-aligned on mobile */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="bg-slate-800 dark:bg-slate-800/50 border border-slate-700 dark:border-slate-700 w-full grid grid-cols-3 gap-1 p-1 rounded-xl">
-          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[44px] rounded-lg touch-manipulation transition-all">
-            <Briefcase className="w-4 h-4 md:mr-2" />
+          <TabsTrigger value="projects" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[52px] rounded-lg touch-manipulation transition-all active:scale-95">
+            <Briefcase className="w-5 h-5 md:mr-2" />
             <span className="hidden sm:inline">Projects</span>
           </TabsTrigger>
-          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[44px] rounded-lg touch-manipulation transition-all">
-            <FileText className="w-4 h-4 md:mr-2" />
+          <TabsTrigger value="dimensions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[52px] rounded-lg touch-manipulation transition-all active:scale-95">
+            <FileText className="w-5 h-5 md:mr-2" />
             <span className="hidden sm:inline">Dimensions</span>
           </TabsTrigger>
-          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[44px] rounded-lg touch-manipulation transition-all">
-            <ClipboardList className="w-4 h-4 md:mr-2" />
+          <TabsTrigger value="checklists" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-500 data-[state=active]:text-white text-slate-300 text-xs md:text-sm min-h-[52px] rounded-lg touch-manipulation transition-all active:scale-95">
+            <ClipboardList className="w-5 h-5 md:mr-2" />
             <span className="hidden sm:inline">Checklists</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="projects" className="mt-6">
-          {/* Search and Filter Bar - Improved layout */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-white">My Projects</h2>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-              <div className="relative flex-1 sm:flex-none">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input 
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 w-full sm:w-64 h-11 rounded-xl"
-                />
-              </div>
-              <div className="flex bg-black rounded-xl p-1 shadow-md">
-                <button
-                  onClick={() => setFilter('active')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] touch-manipulation ${
-                    filter === 'active' 
-                      ? 'bg-slate-700 text-white shadow-sm' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Active
-                </button>
-                <button
-                  onClick={() => setFilter('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[44px] touch-manipulation ${
-                    filter === 'all' 
-                      ? 'bg-slate-700 text-white shadow-sm' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  All
-                </button>
-              </div>
-            </div>
-          </div>
+        <TabsContent value="projects" className="mt-6 pb-24">
+          {/* One-Hand Mode: No top search/filter - moved to bottom FAB */}
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-6">Projects</h2>
 
           {/* Projects Grid - Improved spacing */}
         {isLoading ? (
@@ -398,8 +334,66 @@ export default function Field() {
       </TabsContent>
     </Tabs>
 
+    {/* One-Hand Mode: Bottom Action Bar - All primary actions thumb-reachable */}
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
+      <div className="px-3 py-3">
+        <div className="flex gap-2 mb-2">
+          <button
+            onClick={() => setShowQuickSearch(true)}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 transition-all min-h-[52px] shadow-md touch-manipulation active:scale-95 font-semibold"
+          >
+            <Search className="w-5 h-5" />
+            <span>Search</span>
+          </button>
+          {user?.role !== 'customer' && (
+            <Button 
+              onClick={() => setShowNewProject(true)}
+              className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[52px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              New Project
+            </Button>
+          )}
+        </div>
+
+        {/* Filter Toggle - Bottom aligned */}
+        {activeTab === 'projects' && (
+          <div className="flex bg-black rounded-xl p-1 shadow-md">
+            <button
+              onClick={() => setFilter('active')}
+              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
+                filter === 'active' 
+                  ? 'bg-slate-700 text-white shadow-sm' 
+                  : 'text-slate-400'
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setFilter('all')}
+              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
+                filter === 'all' 
+                  ? 'bg-slate-700 text-white shadow-sm' 
+                  : 'text-slate-400'
+              }`}
+            >
+              All
+            </button>
+          </div>
+        )}
+
+        {/* Back to Dashboard - Always accessible */}
+        <Link to={createPageUrl('Dashboard')}>
+          <Button variant="ghost" className="w-full mt-2 text-slate-400 hover:text-white min-h-[48px] touch-manipulation active:scale-95">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
+    </div>
+
     {/* Quick Search Dialog */}
-      <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
+    <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
 
       {/* Quick Customer Dialog */}
       <Dialog open={showQuickCustomer} onOpenChange={setShowQuickCustomer}>
