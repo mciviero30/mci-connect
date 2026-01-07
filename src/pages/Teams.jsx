@@ -230,7 +230,7 @@ export default function Teams() {
 
         {/* MAIN TEAM FORM DIALOG */}
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900 dark:text-white">{editingTeam ? 'Edit Team' : 'New Team'}</DialogTitle>
             </DialogHeader>
@@ -350,7 +350,7 @@ export default function Teams() {
 
         {/* QUICK CAPACITY EDIT DIALOG */}
         <Dialog open={showCapacityDialog} onOpenChange={setShowCapacityDialog}>
-          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white">Update Team Capacity</DialogTitle>
               <DialogDescription className="text-slate-600 dark:text-slate-400">
