@@ -315,6 +315,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     user.employment_status !== 'deleted' &&
     user.onboarding_completed !== true;  // Definitive flag ONLY
 
+  // Check if we're on a Field page
+  const isFieldPage = location.pathname.includes('/Field');
+
+  // Prevent Layout from triggering Field remounts
+  const wasFieldPage = useRef(false);
+
   // ATOMIC MIGRATION: Sync employee data on first login - OPTIMIZED
   useEffect(() => {
     if (isLoading || !user) return;
@@ -384,15 +390,25 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     }
   }, [location.pathname]);
 
+  // Field page state management - MUST be before early returns
+  useEffect(() => {
+    if (isFieldPage) {
+      // Mark Field as active to prevent provider re-initialization
+      if (!wasFieldPage.current) {
+        sessionStorage.setItem('field_active', 'true');
+        wasFieldPage.current = true;
+      }
+    } else if (wasFieldPage.current) {
+      // Only clear when actually leaving Field
+      sessionStorage.removeItem('field_active');
+      wasFieldPage.current = false;
+    }
+  }, [isFieldPage]);
 
-
-
-
-  // Permission-based navigation
-  const getNavigationForUser = () => {
+  // Memoize navigation to prevent recalculation - MUST be before early returns
+  const navigation = useMemo(() => {
     const position = (displayUser?.position || user?.position || '').toLowerCase();
     const department = (displayUser?.department || user?.department || '').toLowerCase();
-    const isAdmin = user?.role === 'admin';
 
     // Role-based access (source of truth: role field)
     const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
@@ -413,7 +429,41 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     }
 
     return employeeNavigation;
-  };
+  }, [
+    displayUser?.position,
+    user?.position,
+    displayUser?.department,
+    user?.department,
+    displayUser?.role,
+    user?.role
+  ]);
+
+  // Profile image computation
+  const profileImage = useMemo(() => {
+    const effectiveUser = displayUser || user;
+    if (!effectiveUser) return null;
+    
+    // Check preferred image first
+    if (effectiveUser.preferred_profile_image === 'avatar' && effectiveUser.avatar_image_url) {
+      return effectiveUser.avatar_image_url;
+    }
+    
+    // Then check profile_photo_url
+    if (effectiveUser.profile_photo_url) {
+      return effectiveUser.profile_photo_url;
+    }
+    
+    // Fallback to avatar if exists
+    if (effectiveUser.avatar_image_url) {
+      return effectiveUser.avatar_image_url;
+    }
+    
+    return null;
+  }, [displayUser, user]);
+
+  const imageKey = (displayUser || user)?.profile_last_updated || (displayUser || user)?.id;
+
+
 
   const adminNavigation = [
     {
@@ -723,63 +773,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       </div>
     );
   }
-
-  // Memoize navigation to prevent recalculation
-  const navigation = useMemo(() => getNavigationForUser(), [
-    displayUser?.position,
-    user?.position,
-    displayUser?.department,
-    user?.department,
-    displayUser?.role,
-    user?.role
-  ]);
-
-  const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
-  const isAdmin = userRole === 'admin' || userRole === 'ceo';
-
-  // Check if we're on a Field page
-  const isFieldPage = location.pathname.includes('/Field');
-
-  // Prevent Layout from triggering Field remounts
-  const wasFieldPage = useRef(false);
-  useEffect(() => {
-    if (isFieldPage) {
-      // Mark Field as active to prevent provider re-initialization
-      if (!wasFieldPage.current) {
-        sessionStorage.setItem('field_active', 'true');
-        wasFieldPage.current = true;
-      }
-    } else if (wasFieldPage.current) {
-      // Only clear when actually leaving Field
-      sessionStorage.removeItem('field_active');
-      wasFieldPage.current = false;
-    }
-  }, [isFieldPage]);
-
-  const getProfileImage = () => {
-    const effectiveUser = displayUser || user;
-    if (!effectiveUser) return null;
-    
-    // Check preferred image first
-    if (effectiveUser.preferred_profile_image === 'avatar' && effectiveUser.avatar_image_url) {
-      return effectiveUser.avatar_image_url;
-    }
-    
-    // Then check profile_photo_url
-    if (effectiveUser.profile_photo_url) {
-      return effectiveUser.profile_photo_url;
-    }
-    
-    // Fallback to avatar if exists
-    if (effectiveUser.avatar_image_url) {
-      return effectiveUser.avatar_image_url;
-    }
-    
-    return null;
-  };
-
-  const profileImage = getProfileImage();
-  const imageKey = (displayUser || user)?.profile_last_updated || (displayUser || user)?.id;
 
   return (
     <SidebarProvider>
