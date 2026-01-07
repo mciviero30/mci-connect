@@ -107,25 +107,14 @@ class MobileLifecycleManager {
 
   captureStateSnapshot() {
     try {
-      // Capture scroll positions using data attributes ONLY
-      const scrollElements = document.querySelectorAll('[data-scrollable]');
-      scrollElements.forEach((el, index) => {
-        // Use data attribute or generate stable index key
-        const key = el.getAttribute('data-scroll-id') || `scrollable_${index}`;
-        this.stateSnapshots.set(`scroll_${key}`, el.scrollTop);
-        // Store reference for restoration
-        el.setAttribute('data-scroll-id', key);
-      });
-
-      // Capture active element (for form focus restoration)
+      // DISABLED: Scroll restoration removed to prevent querySelector errors
+      // Only capture active element by ID
       if (document.activeElement && document.activeElement.id) {
         this.stateSnapshots.set('activeElement', document.activeElement.id);
       }
 
-      // Mark snapshot in session
       sessionStorage.setItem('field_snapshot_time', Date.now().toString());
-      
-      console.log('[MobileLifecycle] State snapshot captured');
+      console.log('[MobileLifecycle] State snapshot captured (scroll disabled)');
     } catch (error) {
       console.error('[MobileLifecycle] Failed to capture snapshot:', error);
     }
@@ -133,19 +122,9 @@ class MobileLifecycleManager {
 
   restoreStateSnapshot() {
     try {
-      // Restore scroll positions using data attributes ONLY
+      // DISABLED: Scroll restoration removed to prevent querySelector errors
+      // Only restore focus by ID
       requestAnimationFrame(() => {
-        this.stateSnapshots.forEach((value, key) => {
-          if (key.startsWith('scroll_')) {
-            const scrollId = key.replace('scroll_', '');
-            const element = document.querySelector(`[data-scroll-id="${scrollId}"]`);
-            if (element) {
-              element.scrollTop = value;
-            }
-          }
-        });
-
-        // Restore focus
         const activeElementId = this.stateSnapshots.get('activeElement');
         if (activeElementId) {
           const element = document.getElementById(activeElementId);
@@ -155,7 +134,7 @@ class MobileLifecycleManager {
         }
       });
 
-      console.log('[MobileLifecycle] State snapshot restored');
+      console.log('[MobileLifecycle] State snapshot restored (scroll disabled)');
     } catch (error) {
       console.error('[MobileLifecycle] Failed to restore snapshot:', error);
     }
