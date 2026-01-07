@@ -813,8 +813,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       )}
 
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
-        {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
-        {!shouldHideSidebar && (
         <style>{`
           /* ============================================ */
           /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
@@ -931,8 +929,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         `}</style>
 
         <ProfileSyncManager user={user} />
-        
-        {!isFieldPage && (
+
+        {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
+        {!shouldHideSidebar && !isFieldPage && (
           <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50">
           <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
             <img
