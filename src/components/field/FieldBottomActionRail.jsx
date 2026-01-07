@@ -3,13 +3,13 @@ import { Camera, Mic, CheckSquare, Ruler, AlertTriangle } from 'lucide-react';
 import CreateTaskDialog from './CreateTaskDialog';
 import MobilePhotoCapture from './MobilePhotoCapture';
 import VoiceNoteRecorder from './VoiceNoteRecorder';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+import DimensionBottomSheet from './DimensionBottomSheet';
+import IncidentBottomSheet from './IncidentBottomSheet';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function FieldBottomActionRail({ jobId, jobName, onActionComplete }) {
   const [activeAction, setActiveAction] = useState(null);
+  const queryClient = useQueryClient();
 
   // Primary actions only - frequently used, critical path
   const actions = [
@@ -111,67 +111,30 @@ export default function FieldBottomActionRail({ jobId, jobName, onActionComplete
         }}
       />
 
-      {/* Dimension Dialog - Navigate to dimensions view */}
-      {activeAction === 'dimension' && (
-        <Dialog open onOpenChange={(open) => !open && setActiveAction(null)}>
-          <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Add Dimension</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              <p className="text-slate-300 text-sm">Navigate to the Dimensions panel to add measurements.</p>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveAction(null)}
-                  className="flex-1 border-slate-700 text-slate-300 min-h-[48px]"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    setActiveAction(null);
-                    onActionComplete?.('dimensions');
-                  }}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[48px]"
-                >
-                  Go to Dimensions
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Dimension Bottom Sheet */}
+      <DimensionBottomSheet
+        open={activeAction === 'dimension'}
+        onOpenChange={(open) => !open && setActiveAction(null)}
+        jobId={jobId}
+        jobName={jobName}
+        onSave={(data) => {
+          setActiveAction(null);
+          onActionComplete?.('dimensions');
+        }}
+      />
 
-      {/* Incident Dialog - Navigate to incident form */}
-      {activeAction === 'incident' && (
-        <Dialog open onOpenChange={(open) => !open && setActiveAction(null)}>
-          <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Report Incident</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-4">
-              <p className="text-slate-300 text-sm">This will open the incident reporting form.</p>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveAction(null)}
-                  className="flex-1 border-slate-700 text-slate-300 min-h-[48px]"
-                >
-                  Cancel
-                </Button>
-                <Link to={`${createPageUrl('CrearIncidente')}?job_id=${jobId}`} className="flex-1">
-                  <Button
-                    className="w-full bg-gradient-to-r from-red-600 to-rose-700 text-white min-h-[48px]"
-                  >
-                    Continue
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Incident Bottom Sheet */}
+      <IncidentBottomSheet
+        open={activeAction === 'incident'}
+        onOpenChange={(open) => !open && setActiveAction(null)}
+        jobId={jobId}
+        jobName={jobName}
+        onCreated={() => {
+          setActiveAction(null);
+          queryClient.invalidateQueries({ queryKey: ['safety-incidents', jobId] });
+          onActionComplete?.();
+        }}
+      />
     </>
   );
 }
