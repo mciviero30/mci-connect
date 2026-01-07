@@ -462,15 +462,21 @@ export default function CrearFactura() {
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       await queryClient.invalidateQueries({ queryKey: ['jobs'] });
       await queryClient.refetchQueries({ queryKey: ['invoices'] });
-      toast.success(language === 'es' ? 'Factura creada exitosamente' : 'Invoice created successfully');
+      toast.success({
+        title: language === 'es' ? 'Factura creada exitosamente' : 'Invoice created successfully',
+        variant: 'success'
+      });
       setTimeout(() => {
         navigate(createPageUrl(`VerFactura?id=${data.id}`));
       }, 800);
     },
     onError: (error) => {
       console.error('Error creating invoice:', error);
-      toast.error(safeErrorMessage(error));
-    }
+      toast.error({
+        title: 'Error',
+        description: safeErrorMessage(error),
+        variant: 'destructive'
+      });
   });
 
   // New handleSubmit function for initial creation with validation
@@ -484,14 +490,22 @@ export default function CrearFactura() {
     }
 
     if (!formData.customer_name || !formData.job_name) {
-      toast.error(language === 'es' ? 'Por favor completa el nombre del cliente y el nombre del trabajo.' : 'Please complete customer name and job name.');
+      toast.error({
+        title: 'Error',
+        description: language === 'es' ? 'Por favor completa el nombre del cliente y el nombre del trabajo.' : 'Please complete customer name and job name.',
+        variant: 'destructive'
+      });
       return;
     }
 
     // Unified validation using isValidLineItem
     const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
     if (invalid.length > 0) {
-      toast.error(language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields');
+      toast.error({
+        title: 'Error',
+        description: language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields',
+        variant: 'destructive'
+      });
       return;
     }
 
@@ -558,15 +572,21 @@ export default function CrearFactura() {
       
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       await queryClient.refetchQueries({ queryKey: ['invoices'] });
-      toast.success(language === 'es' ? 'Factura actualizada exitosamente' : 'Invoice updated successfully');
+      toast.success({
+        title: language === 'es' ? 'Factura actualizada exitosamente' : 'Invoice updated successfully',
+        variant: 'success'
+      });
       setTimeout(() => {
         navigate(createPageUrl(`VerFactura?id=${editId}`));
       }, 800);
     },
     onError: (error) => {
       console.error('Error updating invoice:', error);
-      toast.error(safeErrorMessage(error));
-    }
+      toast.error({
+        title: 'Error',
+        description: safeErrorMessage(error),
+        variant: 'destructive'
+      });
   });
 
   // Send mutation with normalization
@@ -701,13 +721,19 @@ export default function CrearFactura() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(language === 'es' ? 'Factura enviada exitosamente' : 'Invoice sent successfully');
+      toast.success({
+        title: language === 'es' ? 'Factura enviada exitosamente' : 'Invoice sent successfully',
+        variant: 'success'
+      });
       navigate(createPageUrl('Facturas'));
     },
     onError: (error) => {
       console.error('Error sending invoice:', error);
-      toast.error(safeErrorMessage(error, 'Failed to send invoice'));
-    }
+      toast.error({
+        title: 'Error',
+        description: safeErrorMessage(error, 'Failed to send invoice'),
+        variant: 'destructive'
+      });
   });
 
   const { subtotal, tax_amount, total } = calculateTotals();

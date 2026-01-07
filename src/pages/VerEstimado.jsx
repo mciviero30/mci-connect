@@ -122,7 +122,10 @@ Lawrenceville, Georgia 30043, U.S.A`
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quote', quoteId] });
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(t('quoteUpdated'));
+      toast({
+        title: t('quoteUpdated'),
+        variant: 'success'
+      });
     }
   });
 
@@ -274,7 +277,10 @@ Lawrenceville, Georgia 30043, U.S.A`
           : `\n🔗 Job synced with MCI Field`;
       }
       
-      toast.success(message);
+      toast({
+        title: message,
+        variant: 'success'
+      });
       
       // Navigate to the new invoice
       setTimeout(() => {
@@ -283,7 +289,11 @@ Lawrenceville, Georgia 30043, U.S.A`
     },
     onError: (error) => {
       console.error('❌ Error in convertToInvoiceMutation:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -311,7 +321,10 @@ Lawrenceville, Georgia 30043, U.S.A`
     },
     onSuccess: (newQuote) => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(t('quoteClonedSuccessfully'));
+      toast({
+        title: t('quoteClonedSuccessfully'),
+        variant: 'success'
+      });
       navigate(createPageUrl(`CrearEstimado?id=${newQuote.id}`));
     }
   });
@@ -320,7 +333,10 @@ Lawrenceville, Georgia 30043, U.S.A`
     mutationFn: () => base44.entities.Quote.delete(quoteId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(t('quoteDeleted'));
+      toast({
+        title: t('quoteDeleted'),
+        variant: 'success'
+      });
       navigate(createPageUrl('Estimados'));
     }
   });
@@ -364,10 +380,17 @@ Lawrenceville, Georgia 30043, U.S.A`
         a.remove();
       }, 100);
       
-      toast.success('PDF downloaded successfully');
+      toast({
+        title: 'PDF downloaded successfully',
+        variant: 'success'
+      });
     } catch (error) {
       console.error('PDF generation error:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   };
 
@@ -385,7 +408,10 @@ Lawrenceville, Georgia 30043, U.S.A`
       }
     } else {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success(t('linkCopiedToClipboard'));
+      toast({
+        title: t('linkCopiedToClipboard'),
+        variant: 'success'
+      });
     }
   };
 

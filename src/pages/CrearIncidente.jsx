@@ -90,11 +90,18 @@ export default function CrearIncidentePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['safetyIncidents'] });
-      toast.success('Incidente reportado exitosamente');
+      toast({
+        title: 'Incidente reportado exitosamente',
+        variant: 'success'
+      });
       navigate(createPageUrl('SafetyIncidents'));
     },
     onError: (error) => {
-      toast.error('Error: ' + error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     },
   });
 
@@ -135,7 +142,11 @@ export default function CrearIncidentePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.job_id || !formData.description) {
-      toast.error('Por favor completa todos los campos obligatorios');
+      toast({
+        title: 'Error',
+        description: 'Por favor completa todos los campos obligatorios',
+        variant: 'destructive'
+      });
       return;
     }
     createMutation.mutate(formData);

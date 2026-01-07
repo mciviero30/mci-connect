@@ -76,11 +76,18 @@ export default function CrearChangeOrderPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['changeOrders'] });
-      toast.success('Change Order creado exitosamente');
+      toast({
+        title: 'Change Order creado exitosamente',
+        variant: 'success'
+      });
       navigate(createPageUrl('ChangeOrders'));
     },
     onError: (error) => {
-      toast.error('Error: ' + error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     },
   });
 
@@ -150,7 +157,11 @@ export default function CrearChangeOrderPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.job_id || !formData.title || !formData.description) {
-      toast.error('Por favor completa todos los campos obligatorios');
+      toast({
+        title: 'Error',
+        description: 'Por favor completa todos los campos obligatorios',
+        variant: 'destructive'
+      });
       return;
     }
     createMutation.mutate(formData);

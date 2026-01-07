@@ -128,7 +128,10 @@ export default function VerFactura() {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       setPaymentDialog(false);
       setPaymentAmount('');
-      toast.success('Payment recorded successfully');
+      toast({
+        title: 'Payment recorded successfully',
+        variant: 'success'
+      });
     }
   });
 
@@ -158,7 +161,10 @@ export default function VerFactura() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success('Invoice sent successfully');
+      toast({
+        title: 'Invoice sent successfully',
+        variant: 'success'
+      });
     }
   });
 
@@ -195,7 +201,10 @@ export default function VerFactura() {
     },
     onSuccess: (newInvoice) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success('Invoice cloned successfully');
+      toast({
+        title: 'Invoice cloned successfully',
+        variant: 'success'
+      });
       navigate(createPageUrl(`CrearFactura?id=${newInvoice.id}`));
     }
   });
@@ -205,7 +214,10 @@ export default function VerFactura() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success('Invoice cancelled');
+      toast({
+        title: 'Invoice cancelled',
+        variant: 'success'
+      });
     }
   });
 
@@ -213,7 +225,10 @@ export default function VerFactura() {
     mutationFn: () => base44.entities.Invoice.delete(invoiceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success('Invoice deleted successfully');
+      toast({
+        title: 'Invoice deleted successfully',
+        variant: 'success'
+      });
       navigate(createPageUrl('Facturas'));
     }
   });
@@ -255,7 +270,10 @@ export default function VerFactura() {
       queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success('Job created and linked to invoice');
+      toast({
+        title: 'Job created and linked to invoice',
+        variant: 'success'
+      });
     }
   });
 
@@ -284,10 +302,17 @@ export default function VerFactura() {
         a.remove();
       }, 100);
       
-      toast.success('PDF downloaded successfully');
+      toast({
+        title: 'PDF downloaded successfully',
+        variant: 'success'
+      });
     } catch (error) {
       console.error('PDF generation error:', error);
-      toast.error(safeErrorMessage(error, 'Failed to generate PDF'));
+      toast({
+        title: 'Error',
+        description: safeErrorMessage(error, 'Failed to generate PDF'),
+        variant: 'destructive'
+      });
     }
   };
 
@@ -305,7 +330,10 @@ export default function VerFactura() {
       }
     } else {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link copied to clipboard');
+      toast({
+        title: 'Link copied to clipboard',
+        variant: 'success'
+      });
     }
   };
 
@@ -319,9 +347,11 @@ export default function VerFactura() {
     try {
       // Check if running in iframe
       if (window.self !== window.top) {
-        toast.error(language === 'es' 
-          ? 'Los pagos solo funcionan en la app publicada. Abre la app en una nueva pestaña.' 
-          : 'Payments only work in published app. Open app in a new tab.');
+        toast({
+          title: 'Error',
+          description: language === 'es' ? 'Los pagos solo funcionan en la app publicada. Abre la app en una nueva pestaña.' : 'Payments only work in published app. Open app in a new tab.',
+          variant: 'destructive'
+        });
         return;
       }
 
@@ -334,7 +364,11 @@ export default function VerFactura() {
       }
     } catch (error) {
       console.error('Stripe payment error:', error);
-      toast.error(safeErrorMessage(error, 'Failed to create payment session'));
+      toast({
+        title: 'Error',
+        description: safeErrorMessage(error, 'Failed to create payment session'),
+        variant: 'destructive'
+      });
     }
   };
 
