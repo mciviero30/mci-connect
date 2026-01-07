@@ -78,14 +78,14 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all hover:scale-125 z-10 ${
+      className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all active:scale-125 z-10 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center ${
         isDragging ? 'cursor-move scale-125' : 'cursor-pointer'
-      } ${isSelected ? 'scale-150 z-20 ring-2 ring-white ring-offset-2' : ''}`}
+      } ${isSelected ? 'scale-150 z-20 ring-4 ring-white' : ''}`}
       style={{ left: `${task.pin_x}%`, top: `${task.pin_y}%` }}
     >
-      <div className={`w-7 h-7 rounded-full ${statusConfig.className} shadow-xl flex items-center justify-center border-2 border-white`}>
+      <div className={`w-11 h-11 rounded-full ${statusConfig.className} shadow-2xl flex items-center justify-center border-4 border-white`}>
         <Icon 
-          className="w-4 h-4" 
+          className="w-6 h-6" 
           style={{ color: statusConfig.iconColor }}
           fill={statusConfig.filled ? statusConfig.iconColor : 'none'}
         />

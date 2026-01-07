@@ -432,11 +432,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   const getChecklistIcon = (status) => {
     if (status === 'completed') {
-      return <Check className="w-4 h-4 text-green-500" />;
+      return <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center"><Check className="w-5 h-5 text-white font-bold" /></div>;
     } else if (status === 'in_progress') {
-      return <Minus className="w-4 h-4 text-[#FFB800]" />;
+      return <div className="w-7 h-7 rounded-full bg-[#FFB800] flex items-center justify-center"><Minus className="w-5 h-5 text-black font-bold" /></div>;
     } else {
-      return <X className="w-4 h-4 text-red-500" />;
+      return <div className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center"><X className="w-5 h-5 text-white font-bold" /></div>;
     }
   };
 
@@ -570,17 +570,17 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   {task.checklist.map((item, idx) => (
                     <div 
                       key={idx} 
-                      className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-1 rounded"
+                      className="flex items-center gap-3 text-sm text-slate-900 dark:text-slate-100 font-medium cursor-pointer active:bg-slate-100 dark:active:bg-slate-700 p-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[48px] touch-manipulation active:scale-[0.98] transition-all bg-white dark:bg-slate-800"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         toggleChecklistItemStatus(idx);
                       }}
                     >
-                      <div className="w-5 h-5 flex items-center justify-center">
+                      <div className="w-7 h-7 flex items-center justify-center flex-shrink-0">
                         {getChecklistIcon(item.status)}
                       </div>
-                      <span>{item.text}</span>
+                      <span className="flex-1">{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -634,7 +634,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Enter message here..."
-                    className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    className="flex-1 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 min-h-[48px] text-base"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -644,24 +644,15 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   />
                   <Button
                     type="button"
-                    size="sm"
                     onClick={handleAddComment}
                     disabled={!newComment.trim() || createCommentMutation.isPending}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4"
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white min-w-[48px] min-h-[48px] text-xl font-bold touch-manipulation active:scale-95 transition-all"
                   >
                     ✓
                   </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="text-slate-600 dark:text-slate-400"
-                  >
-                    ✗
-                  </Button>
                 </div>
 
-                {/* Photo buttons */}
+                {/* Photo buttons - 44px touch targets */}
                 <div className="flex gap-2 mt-2">
                   <input
                     ref={fileInputRef}
@@ -673,12 +664,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   />
                   <Button
                     type="button"
-                    size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
+                    className="flex-1 min-h-[48px] bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white border-2 border-slate-500 font-semibold touch-manipulation active:scale-95 transition-all"
                   >
-                    <ImageIcon className="w-4 h-4 mr-2" />
+                    <ImageIcon className="w-5 h-5 mr-2" />
                     {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
                   </Button>
                   <input
@@ -691,12 +681,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   />
                   <Button
                     type="button"
-                    size="sm"
                     onClick={() => document.getElementById('camera-input')?.click()}
                     disabled={uploadingPhoto}
-                    className="text-xs h-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
+                    className="flex-1 min-h-[48px] bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 active:from-orange-800 active:to-yellow-700 text-black border-none font-bold shadow-lg touch-manipulation active:scale-95 transition-all"
                   >
-                    <Camera className="w-4 h-4 mr-2" />
+                    <Camera className="w-5 h-5 mr-2" />
                     Take Photo
                   </Button>
                 </div>

@@ -86,17 +86,17 @@ export default function FieldPhotosView({ jobId }) {
           {/* Mobile: Camera capture button with better touch target */}
           <Button 
             onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] px-5 rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 active:from-orange-800 active:to-yellow-700 text-black border-none shadow-2xl min-h-[56px] px-6 rounded-2xl w-full sm:w-auto touch-manipulation active:scale-[0.96] transition-all"
           >
             {isMobile ? (
               <>
-                <Camera className="w-5 h-5 mr-2" />
-                <span className="font-bold">Take Photo</span>
+                <Camera className="w-6 h-6 mr-3" />
+                <span className="font-bold text-lg">Take Photo</span>
               </>
             ) : (
               <>
-                <Plus className="w-5 h-5 mr-2" />
-                <span className="font-bold">Upload Photo</span>
+                <Plus className="w-6 h-6 mr-3" />
+                <span className="font-bold text-lg">Upload Photo</span>
               </>
             )}
           </Button>
@@ -160,19 +160,20 @@ export default function FieldPhotosView({ jobId }) {
             <div 
               key={photo.id}
               onClick={() => setSelectedPhoto(photo)}
-              className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group border-2 border-slate-700 hover:border-[#FFB800] shadow-lg hover:shadow-xl transition-all touch-manipulation active:scale-[0.98]"
+              className="relative rounded-2xl overflow-hidden cursor-pointer group border-4 border-slate-700 active:border-[#FFB800] shadow-2xl active:shadow-orange-500/30 transition-all touch-manipulation active:scale-[0.97] min-h-[200px]"
+              style={{ aspectRatio: '1' }}
             >
               <img 
                 src={photo.file_url}
                 alt={photo.caption || 'Photo'}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 {photo.caption && (
-                  <p className="text-sm font-semibold text-white mb-1 line-clamp-2 leading-tight">{photo.caption}</p>
+                  <p className="text-base font-bold text-white mb-2 line-clamp-2 leading-tight drop-shadow-lg">{photo.caption}</p>
                 )}
-                <p className="text-xs text-slate-300 flex items-center gap-2">
+                <p className="text-sm text-slate-100 flex items-center gap-2 font-semibold drop-shadow">
                   <span>{format(new Date(photo.created_date), 'MMM dd, yyyy')}</span>
                   {photo.created_by && (
                     <>
@@ -182,8 +183,8 @@ export default function FieldPhotosView({ jobId }) {
                   )}
                 </p>
                 {photo.location && (
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
+                  <p className="text-sm text-slate-200 mt-1 flex items-center gap-1 font-medium drop-shadow">
+                    <MapPin className="w-4 h-4" />
                     {photo.location}
                   </p>
                 )}

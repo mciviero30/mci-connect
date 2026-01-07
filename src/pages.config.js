@@ -40,7 +40,6 @@ import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
 import FieldExport from './pages/FieldExport';
-import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
 import GoLivePlaybook from './pages/GoLivePlaybook';
@@ -97,6 +96,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
+import FieldProject from './pages/FieldProject';
 import __Layout from './Layout.jsx';
 
 
@@ -143,7 +143,6 @@ export const PAGES = {
     "Facturas": Facturas,
     "Field": Field,
     "FieldExport": FieldExport,
-    "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
     "GoLivePlaybook": GoLivePlaybook,
@@ -200,6 +199,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
+    "FieldProject": FieldProject,
 }
 
 export const pagesConfig = {

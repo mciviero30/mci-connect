@@ -89,10 +89,10 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   };
 
   const priorityColors = {
-    urgent: 'bg-red-500/20 text-red-400 border-red-500/30',
-    high: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-    medium: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-    low: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+    urgent: 'bg-red-500 text-white border-red-300',
+    high: 'bg-orange-600 text-white border-orange-300',
+    medium: 'bg-amber-500 text-black border-amber-300',
+    low: 'bg-slate-600 text-white border-slate-400',
   };
 
   return (
@@ -104,60 +104,60 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
           <div className="relative flex-1 sm:flex-none">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input 
               placeholder="Search tasks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 w-full sm:w-56 h-11 rounded-xl"
+              className="pl-11 bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 w-full sm:w-56 min-h-[48px] rounded-xl text-base font-medium"
             />
           </div>
           <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-11 rounded-xl min-w-[140px]">
+            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[48px] rounded-xl min-w-[140px] font-semibold">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700 rounded-xl">
-              <SelectItem value="all" className="text-white">All Types</SelectItem>
-              <SelectItem value="task" className="text-white">📋 Task</SelectItem>
-              <SelectItem value="checklist" className="text-white">✅ Checklist</SelectItem>
-              <SelectItem value="inspection" className="text-white">🔍 Inspection</SelectItem>
+            <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
+              <SelectItem value="all" className="text-white min-h-[48px] text-base">All Types</SelectItem>
+              <SelectItem value="task" className="text-white min-h-[48px] text-base">📋 Task</SelectItem>
+              <SelectItem value="checklist" className="text-white min-h-[48px] text-base">✅ Checklist</SelectItem>
+              <SelectItem value="inspection" className="text-white min-h-[48px] text-base">🔍 Inspection</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-11 rounded-xl min-w-[140px]">
+            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[48px] rounded-xl min-w-[140px] font-semibold">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700 rounded-xl">
-              <SelectItem value="all" className="text-white">All Status</SelectItem>
-              <SelectItem value="pending" className="text-white">📋 Assigned</SelectItem>
-              <SelectItem value="in_progress" className="text-white">⚙️ Working</SelectItem>
-              <SelectItem value="completed" className="text-white">✅ Done</SelectItem>
+            <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
+              <SelectItem value="all" className="text-white min-h-[48px] text-base">All Status</SelectItem>
+              <SelectItem value="pending" className="text-white min-h-[48px] text-base">📋 Assigned</SelectItem>
+              <SelectItem value="in_progress" className="text-white min-h-[48px] text-base">⚙️ Working</SelectItem>
+              <SelectItem value="completed" className="text-white min-h-[48px] text-base">✅ Done</SelectItem>
             </SelectContent>
           </Select>
           <Button
             onClick={() => setShowMyTasks(!showMyTasks)}
             variant={showMyTasks ? "default" : "outline"}
-            className={`min-h-[44px] rounded-xl ${
+            className={`min-h-[48px] rounded-xl font-bold touch-manipulation active:scale-95 transition-all ${
               showMyTasks 
-                ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-none' 
-                : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
+                ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-none shadow-lg' 
+                : 'bg-slate-800 border-2 border-slate-600 text-white active:bg-slate-700'
             }`}
           >
-            <User className="w-4 h-4 mr-2" />
+            <User className="w-5 h-5 mr-2" />
             My Tasks
           </Button>
-          <div className="hidden sm:flex bg-slate-800 rounded-xl p-1 shadow-md">
+          <div className="hidden sm:flex bg-slate-800 rounded-xl p-1.5 shadow-md border-2 border-slate-700">
             <button
               onClick={() => setView('kanban')}
-              className={`p-2.5 rounded-lg min-h-[44px] transition-all ${view === 'kanban' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+              className={`min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg transition-all touch-manipulation active:scale-95 ${view === 'kanban' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 active:bg-slate-700 active:text-white'}`}
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-6 h-6" />
             </button>
             <button
               onClick={() => setView('list')}
-              className={`p-2.5 rounded-lg min-h-[44px] transition-all ${view === 'list' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+              className={`min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg transition-all touch-manipulation active:scale-95 ${view === 'list' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 active:bg-slate-700 active:text-white'}`}
             >
-              <List className="w-4 h-4" />
+              <List className="w-6 h-6" />
             </button>
           </div>
           {canEdit && (
@@ -219,30 +219,30 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                              setShowCreateTask(true);
                            }
                          }}
-                         className={`border-2 rounded-xl p-3 cursor-pointer hover:shadow-lg active:scale-[0.98] transition-all touch-manipulation ${
+                         className={`border-4 rounded-2xl p-4 cursor-pointer active:shadow-2xl active:scale-[0.97] transition-all touch-manipulation min-h-[72px] ${
                            task.created_by_client && task.task_type === 'punch_item'
-                             ? 'bg-purple-900/40 border-purple-500 hover:border-purple-400'
-                             : 'bg-slate-800 border-slate-700 hover:border-[#FFB800]'
+                             ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
+                             : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
                          }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0 shadow-md ${
-                              task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600' :
-                              task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-600' :
-                              'bg-gradient-to-br from-red-500 to-red-600'
+                          <div className="flex items-center gap-4">
+                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 shadow-xl border-2 border-white/20 ${
+                              task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-700' :
+                              task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-700' :
+                              'bg-gradient-to-br from-red-500 to-red-700'
                             }`}>
                               {wallNum}
                             </div>
                             <div className="flex-1 min-w-0">
-                             <div className="flex items-center gap-2 mb-1">
-                               <p className="text-white text-sm font-medium truncate">Wall {wallNum}</p>
+                             <div className="flex items-center gap-2 mb-1.5">
+                               <p className="text-white text-base font-bold truncate">Wall {wallNum}</p>
                                {task.created_by_client && task.task_type === 'punch_item' && (
-                                 <Badge className="bg-purple-600 text-white text-[10px] px-1.5 py-0">
+                                 <Badge className="bg-purple-500 text-white text-xs px-2 py-1 font-bold border-2 border-purple-300">
                                    CLIENT
                                  </Badge>
                                )}
                              </div>
-                             <Badge className={`${priorityColors[task.priority]} text-xs px-2 py-0.5`}>
+                             <Badge className={`${priorityColors[task.priority]} text-xs px-2.5 py-1 font-bold border-2`}>
                                {task.priority || 'normal'}
                              </Badge>
                             </div>

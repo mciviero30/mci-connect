@@ -45,37 +45,36 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
 
   return (
     <>
-      {/* Mobile Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700 shadow-2xl pb-safe">
-        <div className="flex items-center justify-around px-4 py-3 gap-2">
+      {/* Mobile Bottom Bar - Enhanced for outdoor use */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t-4 border-slate-700 shadow-2xl pb-safe">
+        <div className="flex items-center justify-around px-2 py-4 gap-1">
           {actions.map((action) => (
             <button
               key={action.id}
               onClick={() => setActiveAction(action.id)}
-              className="flex flex-col items-center gap-1 min-w-[60px] touch-manipulation active:scale-95 transition-transform"
+              className="flex flex-col items-center gap-2 flex-1 touch-manipulation active:scale-95 transition-transform active:opacity-80"
             >
-              <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-lg`}>
-                <action.icon className="w-5 h-5 text-white" />
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-2 border-white/20`}>
+                <action.icon className="w-7 h-7 text-white" />
               </div>
-              <span className="text-[10px] text-slate-300 font-medium">{action.label}</span>
+              <span className="text-xs text-slate-100 font-bold">{action.label}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* Desktop Floating Toolbar */}
-      <div className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 bg-slate-900/95 backdrop-blur-sm border border-slate-700 rounded-2xl p-3 shadow-2xl">
+      {/* Desktop Floating Toolbar - 48px touch targets */}
+      <div className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3 bg-slate-900 border-2 border-slate-700 rounded-2xl p-3 shadow-2xl">
         {actions.map((action) => (
           <button
             key={action.id}
             onClick={() => setActiveAction(action.id)}
-            className="group relative flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br hover:scale-110 transition-all shadow-lg"
-            style={{ background: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }}
+            className="group relative flex items-center justify-center min-w-[56px] min-h-[56px] rounded-xl active:scale-95 transition-all shadow-lg touch-manipulation"
             title={action.label}
           >
             <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${action.color}`} />
-            <action.icon className="w-6 h-6 text-white relative z-10" />
-            <span className="absolute right-full mr-3 px-3 py-1.5 bg-slate-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap">
+            <action.icon className="w-7 h-7 text-white relative z-10" />
+            <span className="absolute right-full mr-3 px-4 py-2 bg-slate-800 text-white text-base font-semibold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap border-2 border-slate-700 shadow-xl">
               {action.label}
             </span>
           </button>

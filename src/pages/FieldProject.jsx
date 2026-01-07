@@ -486,27 +486,27 @@ export default function FieldProject() {
             <button
               key={item.id}
               onClick={() => setActivePanel(item.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[48px] ${
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-bold transition-all min-h-[52px] touch-manipulation active:scale-[0.98] ${
                 activePanel === item.id
-                  ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/40 shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent'
+                  ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-2 border-orange-300 shadow-2xl shadow-orange-500/30'
+                  : 'text-slate-300 active:text-white active:bg-slate-800 border-2 border-transparent'
               }`}
             >
               <div className="flex items-center gap-3">
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-6 h-6" />
                 <span>{item.label}</span>
               </div>
               {item.count !== undefined && item.count > 0 && (
-                <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+                <span className={`text-sm px-3 py-1.5 rounded-full font-bold border-2 ${
                   activePanel === item.id
-                    ? 'bg-orange-500/40 text-orange-200'
-                    : 'bg-slate-700 text-slate-300'
+                    ? 'bg-black/20 text-white border-black/30'
+                    : 'bg-slate-700 text-slate-100 border-slate-600'
                 }`}>
                   {item.count}
                 </span>
               )}
               {item.badge && (
-                <span className="text-lg">{item.badge}</span>
+                <span className="text-xl">{item.badge}</span>
               )}
             </button>
           ))}

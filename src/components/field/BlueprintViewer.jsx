@@ -690,11 +690,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   return (
     <TooltipProvider>
     <div className="h-full flex relative">
-      {/* Left Toolbar - Like Fieldwire - Always visible */}
-      <div className="absolute left-2 top-16 z-50 flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg w-11 py-2">
+      {/* Left Toolbar - Mobile Optimized - 44px touch targets */}
+      <div className="absolute left-2 md:left-2 top-2 md:top-16 z-50 flex flex-col bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-2xl py-2 gap-1">
         {toolbarItems.map((item, idx) => {
           if (item.type === 'divider') {
-            return <div key={item.id} className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />;
+            return <div key={item.id} className="my-1 mx-2 border-t-2 border-slate-600" />;
           }
           
           const isActive = item.tool && activeTool === item.id;
@@ -717,19 +717,19 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                       }
                     }
                   }}
-                  className={`mx-1 p-2 rounded-lg transition-all relative ${
+                  className={`mx-1 min-w-[48px] min-h-[48px] rounded-xl transition-all relative touch-manipulation active:scale-95 flex items-center justify-center ${
                     isActive 
-                      ? 'bg-[#FFB800] text-white' 
-                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-gradient-to-br from-[#FFB800] to-[#FF8C00] text-white shadow-lg shadow-orange-500/30' 
+                      : 'text-slate-300 active:bg-slate-700 bg-slate-700/50'
                   }`}
                 >
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className="w-6 h-6" />
                   {item.badge && (
-                    <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-slate-800" />
                   )}
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right">
+              <TooltipContent side="right" className="bg-slate-800 border-slate-600 text-white">
                 <p>{item.label}</p>
               </TooltipContent>
             </Tooltip>
@@ -737,23 +737,23 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         })}
         
         {/* Divider before visibility */}
-        <div className="my-2 mx-2 border-t border-slate-200 dark:border-slate-700" />
+        <div className="my-1 mx-2 border-t-2 border-slate-600" />
         
         {/* Toggle Pins Visibility */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               onClick={() => setShowPins(!showPins)}
-              className={`mx-1 p-2 rounded-lg transition-all ${
+              className={`mx-1 min-w-[48px] min-h-[48px] rounded-xl transition-all touch-manipulation active:scale-95 flex items-center justify-center ${
                 showPins 
-                  ? 'text-[#FFB800]' 
-                  : 'text-slate-400'
+                  ? 'bg-gradient-to-br from-[#FFB800] to-[#FF8C00] text-white shadow-lg shadow-orange-500/30' 
+                  : 'bg-slate-700/50 text-slate-400 active:bg-slate-700'
               }`}
             >
-              {showPins ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              {showPins ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right">
+          <TooltipContent side="right" className="bg-slate-800 border-slate-600 text-white">
             <p>{showPins ? 'Hide Pins' : 'Show Pins'}</p>
           </TooltipContent>
         </Tooltip>
@@ -996,9 +996,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         </div>
 
         {(isPlacingPin || activeTool === 'pin') && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2">
-            <Crosshair className="w-4 h-4" />
-            Tap on the plan to place pin (ESC to cancel)
+          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#FFB800] to-[#FF8C00] text-black px-6 py-3 rounded-2xl shadow-2xl text-base font-bold flex items-center gap-3 border-2 border-white animate-pulse">
+            <Crosshair className="w-6 h-6" />
+            Tap to Place Pin
           </div>
         )}
 
