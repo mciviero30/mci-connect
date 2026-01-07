@@ -30,7 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/toast';
+import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Field() {
@@ -44,7 +44,6 @@ export default function Field() {
   const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });
   
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   // Global keyboard shortcut for quick search (Cmd+K / Ctrl+K)
   useEffect(() => {
