@@ -55,7 +55,10 @@ export default function DimensionBlueprintViewer({ dimension, jobId, onBack }) {
     mutationFn: (data) => base44.entities.PlanAnnotation.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dimension-annotations', dimension.id] });
-      toast.success('Annotation saved');
+      toast({
+        title: 'Annotation saved',
+        variant: 'success'
+      });
     },
   });
 
@@ -63,7 +66,10 @@ export default function DimensionBlueprintViewer({ dimension, jobId, onBack }) {
     mutationFn: (id) => base44.entities.PlanAnnotation.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dimension-annotations', dimension.id] });
-      toast.success('Annotation deleted');
+      toast({
+        title: 'Annotation deleted',
+        variant: 'success'
+      });
     },
   });
 
@@ -212,7 +218,10 @@ export default function DimensionBlueprintViewer({ dimension, jobId, onBack }) {
 
   const saveMeasurement = async () => {
     if (!pendingMeasurement || !measurementInput.feet) {
-      toast.error('Please enter measurement values');
+      toast({
+        title: 'Please enter measurement values',
+        variant: 'destructive'
+      });
       return;
     }
 
@@ -255,7 +264,10 @@ export default function DimensionBlueprintViewer({ dimension, jobId, onBack }) {
     if (!file) return;
 
     try {
-      toast.info('Uploading photo...');
+      toast({
+        title: 'Uploading photo...',
+        variant: 'info'
+      });
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       
       // Add photo annotation at center
@@ -274,9 +286,15 @@ export default function DimensionBlueprintViewer({ dimension, jobId, onBack }) {
         author_name: (await base44.auth.me()).full_name
       });
       
-      toast.success('Photo added');
+      toast({
+        title: 'Photo added',
+        variant: 'success'
+      });
     } catch (error) {
-      toast.error('Failed to upload photo');
+      toast({
+        title: 'Failed to upload photo',
+        variant: 'destructive'
+      });
       console.error(error);
     }
   };
