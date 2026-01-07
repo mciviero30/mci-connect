@@ -11,7 +11,6 @@ import {
   Clock, 
   CheckCheck,
   Briefcase,
-  AlertCircle,
   FolderOpen,
   Command,
   ClipboardList,
@@ -623,7 +622,7 @@ function EmptyState({ onCreateProject }) {
   return (
     <div className="bg-slate-900 border border-slate-700 rounded-2xl p-12 text-center shadow-lg">
       <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <AlertCircle className="w-10 h-10 text-orange-400" />
+        <FolderOpen className="w-10 h-10 text-orange-400" />
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">No projects assigned</h3>
       <p className="text-slate-300 mb-6 max-w-md mx-auto">
