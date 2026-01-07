@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import ProjectProgressBar from './ProjectProgressBar.jsx';
 import OverdueTasksAlert from './OverdueTasksAlert.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
