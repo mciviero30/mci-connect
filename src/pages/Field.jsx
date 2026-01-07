@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
+import { useToast } from '@/components/ui/toast';
 
 export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,6 +40,7 @@ export default function Field() {
   const [activeTab, setActiveTab] = useState('projects');
   
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Global keyboard shortcut for quick search (Cmd+K / Ctrl+K)
   useEffect(() => {
@@ -129,7 +131,20 @@ export default function Field() {
       queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
       setShowNewProject(false);
       setNewProject({ name: '', description: '', address: '' });
+      toast({
+        title: 'Project created',
+        description: 'Your project has been created successfully',
+        variant: 'success'
+      });
     },
+    onError: (error) => {
+      console.error('Error creating project:', error);
+      toast({
+        title: 'Error creating project',
+        description: error?.message || 'Failed to create project. Please try again.',
+        variant: 'destructive'
+      });
+    }
   });
 
   // Filter jobs
