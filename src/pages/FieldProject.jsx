@@ -29,7 +29,8 @@ import {
   QrCode,
   Brain,
   MapPin,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -366,6 +367,48 @@ export default function FieldProject() {
     window.location.href = createPageUrl('Field');
   };
 
+  // FAB action handler
+  const handleFABClick = () => {
+    if (activePanel === 'tasks') {
+      setShowCreateTask(true);
+    } else if (activePanel === 'photos') {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.capture = 'environment';
+      fileInput.onchange = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          try {
+            const { file_url } = await base44.integrations.Core.UploadFile({ file });
+            await base44.entities.Photo.create({
+              job_id: jobId,
+              photo_url: file_url,
+              uploaded_by: currentUser?.email,
+              uploaded_by_name: currentUser?.full_name,
+            });
+            queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
+          } catch (error) {
+            console.error('Photo upload failed:', error);
+          }
+        }
+      };
+      fileInput.click();
+    } else if (activePanel === 'activity') {
+      window.location.href = `${createPageUrl('CrearIncidente')}?job_id=${jobId}`;
+    }
+  };
+
+  // Determine FAB visibility and icon
+  const getFABConfig = () => {
+    if (activePanel === 'tasks') return { show: true, icon: Plus, label: 'Add Task' };
+    if (activePanel === 'photos') return { show: true, icon: Camera, label: 'Take Photo' };
+    if (activePanel === 'activity') return { show: true, icon: AlertCircle, label: 'New Incident' };
+    return { show: false };
+  };
+
+  const fabConfig = getFABConfig();
+
   return (
     <FieldErrorBoundary>
     <ThemeProvider appType="field">
@@ -503,6 +546,17 @@ export default function FieldProject() {
           queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
         }}
       />
+
+      {/* Context-Aware FAB */}
+      {fabConfig.show && (
+        <button
+          onClick={handleFABClick}
+          className="fixed bottom-24 right-6 md:bottom-8 z-50 w-16 h-16 bg-gradient-to-br from-orange-600 to-yellow-500 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform"
+          aria-label={fabConfig.label}
+        >
+          <fabConfig.icon className="w-7 h-7" />
+        </button>
+      )}
     </div>
     </FieldOfflineProvider>
     </ThemeProvider>
