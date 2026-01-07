@@ -107,13 +107,14 @@ class MobileLifecycleManager {
 
   captureStateSnapshot() {
     try {
-      // Capture scroll positions
-      const scrollElements = document.querySelectorAll('[data-scrollable="true"]');
-      scrollElements.forEach(el => {
-        if (el.id || el.className) {
-          const key = el.id || el.className;
-          this.stateSnapshots.set(`scroll_${key}`, el.scrollTop);
-        }
+      // Capture scroll positions using data attributes ONLY
+      const scrollElements = document.querySelectorAll('[data-scrollable]');
+      scrollElements.forEach((el, index) => {
+        // Use data attribute or generate stable index key
+        const key = el.getAttribute('data-scroll-id') || `scrollable_${index}`;
+        this.stateSnapshots.set(`scroll_${key}`, el.scrollTop);
+        // Store reference for restoration
+        el.setAttribute('data-scroll-id', key);
       });
 
       // Capture active element (for form focus restoration)
@@ -132,13 +133,12 @@ class MobileLifecycleManager {
 
   restoreStateSnapshot() {
     try {
-      // Restore scroll positions
+      // Restore scroll positions using data attributes ONLY
       requestAnimationFrame(() => {
         this.stateSnapshots.forEach((value, key) => {
           if (key.startsWith('scroll_')) {
-            const elementKey = key.replace('scroll_', '');
-            const element = document.getElementById(elementKey) || 
-                          document.querySelector(`.${elementKey}`);
+            const scrollId = key.replace('scroll_', '');
+            const element = document.querySelector(`[data-scroll-id="${scrollId}"]`);
             if (element) {
               element.scrollTop = value;
             }
