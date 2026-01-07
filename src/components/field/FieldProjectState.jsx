@@ -95,7 +95,7 @@ export function useFieldProjectState(jobId) {
       const savedScroll = sessionStorage.getItem(key);
       if (savedScroll) {
         requestAnimationFrame(() => {
-          const mainContent = document.querySelector('.field-main-content');
+          const mainContent = document.querySelector('[data-field-main]');
           if (mainContent) {
             mainContent.scrollTop = parseInt(savedScroll, 10);
           }
@@ -109,7 +109,7 @@ export function useFieldProjectState(jobId) {
   // Save scroll position on scroll (debounced)
   useEffect(() => {
     if (!jobId) return;
-    const mainContent = document.querySelector('.field-main-content');
+    const mainContent = document.querySelector('[data-field-main]');
     if (!mainContent) return;
 
     let scrollTimeout;
@@ -175,7 +175,7 @@ export function useFieldProjectState(jobId) {
       }
     };
 
-    const mainContent = document.querySelector('.field-main-content');
+    const mainContent = document.querySelector('[data-field-main]');
     if (mainContent) {
       mainContent.addEventListener('touchstart', handleTouchStart, { passive: true });
       mainContent.addEventListener('touchmove', handleTouchMove, { passive: true });

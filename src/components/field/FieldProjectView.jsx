@@ -293,7 +293,7 @@ export default function FieldProjectView({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pb-32 md:pb-0 field-main-content" style={{ height: '100vh', overflowY: 'auto' }}>
+      <div data-field-main className="flex-1 overflow-y-auto pb-32 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
         <FieldStatusBar jobId={jobId} />
         {renderPanel()}
       </div>
