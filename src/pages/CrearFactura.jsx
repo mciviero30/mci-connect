@@ -172,7 +172,10 @@ export default function CrearFactura() {
       items: updatedItems
     }));
 
-    toast.success(language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`);
+    toast({
+      title: language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`,
+      variant: 'success'
+    });
   };
 
   useEffect(() => {
@@ -472,11 +475,12 @@ export default function CrearFactura() {
     },
     onError: (error) => {
       console.error('Error creating invoice:', error);
-      toast.error({
+      toast({
         title: 'Error',
         description: safeErrorMessage(error),
         variant: 'destructive'
       });
+    }
   });
 
   // New handleSubmit function for initial creation with validation
@@ -582,11 +586,12 @@ export default function CrearFactura() {
     },
     onError: (error) => {
       console.error('Error updating invoice:', error);
-      toast.error({
+      toast({
         title: 'Error',
         description: safeErrorMessage(error),
         variant: 'destructive'
       });
+    }
   });
 
   // Send mutation with normalization
@@ -729,11 +734,12 @@ export default function CrearFactura() {
     },
     onError: (error) => {
       console.error('Error sending invoice:', error);
-      toast.error({
+      toast({
         title: 'Error',
         description: safeErrorMessage(error, 'Failed to send invoice'),
         variant: 'destructive'
       });
+    }
   });
 
   const { subtotal, tax_amount, total } = calculateTotals();
