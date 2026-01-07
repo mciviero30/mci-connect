@@ -62,10 +62,16 @@ export default function FieldDimensionView({ jobId }) {
       queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
       setShowUpload(false);
       setNewDimension({ name: '', description: '', file: null });
-      toast.success('Dimension drawing uploaded successfully');
+      toast({
+        title: 'Dimension drawing uploaded successfully',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error('Failed to upload dimension drawing');
+      toast({
+        title: 'Failed to upload dimension drawing',
+        variant: 'destructive'
+      });
       console.error('Upload error:', error);
     }
   });
@@ -74,7 +80,10 @@ export default function FieldDimensionView({ jobId }) {
     mutationFn: (id) => base44.entities.Plan.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
-      toast.success('Dimension drawing deleted');
+      toast({
+        title: 'Dimension drawing deleted',
+        variant: 'success'
+      });
     },
   });
 
@@ -107,7 +116,11 @@ export default function FieldDimensionView({ jobId }) {
     // Validate file
     const validation = validateFile(file);
     if (!validation.valid) {
-      toast.error(validation.error);
+      toast({
+        title: 'Error',
+        description: validation.error,
+        variant: 'destructive'
+      });
       return;
     }
 
@@ -136,14 +149,20 @@ export default function FieldDimensionView({ jobId }) {
     } catch (error) {
       console.error('Upload error:', error);
       clearInterval(progressInterval);
-      toast.error('Error uploading file');
+      toast({
+        title: 'Error uploading file',
+        variant: 'destructive'
+      });
     }
     setUploading(false);
   };
 
   const handleCreateDimension = async () => {
     if (!newDimension.file || !newDimension.name) {
-      toast.error('Please provide a name and upload a file');
+      toast({
+        title: 'Please provide a name and upload a file',
+        variant: 'destructive'
+      });
       return;
     }
 
