@@ -30,14 +30,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('active');
   const [showNewProject, setShowNewProject] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', description: '', address: '', customer_name: '' });
+  const [newProject, setNewProject] = useState({ name: '', description: '', address: '', customer_name: '', customer_id: '' });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [activeTab, setActiveTab] = useState('projects');
+  const [showQuickCustomer, setShowQuickCustomer] = useState(false);
+  const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });
   
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -57,6 +60,14 @@ export default function Field() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
+  });
+
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers'],
+    queryFn: () => base44.entities.Customer.list('first_name'),
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -125,12 +136,30 @@ export default function Field() {
     refetchOnWindowFocus: false
   });
 
+  const createCustomerMutation = useMutation({
+    mutationFn: (data) => base44.entities.Customer.create(data),
+    onSuccess: (newCustomer) => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setNewProject({
+        ...newProject,
+        customer_name: `${newCustomer.first_name} ${newCustomer.last_name}`,
+        customer_id: newCustomer.id
+      });
+      setShowQuickCustomer(false);
+      setQuickCustomer({ first_name: '', last_name: '', company: '', email: '', phone: '' });
+      toast.success('Customer created successfully');
+    },
+    onError: (error) => {
+      toast.error('Error creating customer: ' + error.message);
+    }
+  });
+
   const createJobMutation = useMutation({
     mutationFn: (data) => base44.entities.Job.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
       setShowNewProject(false);
-      setNewProject({ name: '', description: '', address: '', customer_name: '' });
+      setNewProject({ name: '', description: '', address: '', customer_name: '', customer_id: '' });
       toast({
         title: 'Project created',
         description: 'Your project has been created successfully',
@@ -342,6 +371,80 @@ export default function Field() {
     {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
 
+      {/* Quick Customer Dialog */}
+      <Dialog open={showQuickCustomer} onOpenChange={setShowQuickCustomer}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">Quick Create Customer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-slate-600 dark:text-slate-300">First Name *</Label>
+                <Input 
+                  value={quickCustomer.first_name}
+                  onChange={(e) => setQuickCustomer({...quickCustomer, first_name: e.target.value})}
+                  placeholder="John"
+                  className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  autoCapitalizeInput={true}
+                />
+              </div>
+              <div>
+                <Label className="text-slate-600 dark:text-slate-300">Last Name *</Label>
+                <Input 
+                  value={quickCustomer.last_name}
+                  onChange={(e) => setQuickCustomer({...quickCustomer, last_name: e.target.value})}
+                  placeholder="Doe"
+                  className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                  autoCapitalizeInput={true}
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-slate-600 dark:text-slate-300">Company *</Label>
+              <Input 
+                value={quickCustomer.company}
+                onChange={(e) => setQuickCustomer({...quickCustomer, company: e.target.value})}
+                placeholder="ABC Company"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                autoCapitalizeInput={true}
+              />
+            </div>
+            <div>
+              <Label className="text-slate-600 dark:text-slate-300">Email</Label>
+              <Input 
+                type="email"
+                value={quickCustomer.email}
+                onChange={(e) => setQuickCustomer({...quickCustomer, email: e.target.value})}
+                placeholder="customer@email.com"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+            <div>
+              <Label className="text-slate-600 dark:text-slate-300">Phone</Label>
+              <Input 
+                value={quickCustomer.phone}
+                onChange={(e) => setQuickCustomer({...quickCustomer, phone: e.target.value})}
+                placeholder="(555) 123-4567"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button variant="outline" onClick={() => setShowQuickCustomer(false)} className="border-slate-200 dark:border-slate-700">
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => createCustomerMutation.mutate(quickCustomer)}
+                disabled={!quickCustomer.first_name || !quickCustomer.last_name || !quickCustomer.company || createCustomerMutation.isPending}
+                className="bg-gradient-to-r from-green-500 to-emerald-500"
+              >
+                {createCustomerMutation.isPending ? 'Creating...' : 'Create Customer'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* New Project Dialog */}
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
@@ -360,14 +463,39 @@ export default function Field() {
               />
             </div>
             <div>
-              <Label className="text-slate-600 dark:text-slate-300">Customer Name *</Label>
-              <Input 
-                value={newProject.customer_name}
-                onChange={(e) => setNewProject({...newProject, customer_name: e.target.value})}
-                placeholder="e.g., John Smith"
-                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
-                required
-              />
+              <Label className="text-slate-600 dark:text-slate-300">Customer *</Label>
+              <div className="flex gap-2 mt-1.5">
+                <Select
+                  value={newProject.customer_name}
+                  onValueChange={(value) => {
+                    const customer = customers.find(c => `${c.first_name} ${c.last_name}` === value);
+                    setNewProject({
+                      ...newProject,
+                      customer_name: value,
+                      customer_id: customer?.id
+                    });
+                  }}
+                >
+                  <SelectTrigger className="flex-1 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <SelectValue placeholder="Select customer" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    {customers.map(c => (
+                      <SelectItem key={c.id} value={`${c.first_name} ${c.last_name}`}>
+                        {c.first_name} {c.last_name} {c.company && `- ${c.company}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  onClick={() => setShowQuickCustomer(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  New
+                </Button>
+              </div>
             </div>
             <div>
               <Label className="text-slate-600 dark:text-slate-300">Address</Label>
