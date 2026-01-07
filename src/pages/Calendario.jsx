@@ -823,7 +823,7 @@ export default function Calendario() {
           </div>
 
           <Dialog open={showEventTypeSelector} onOpenChange={setShowEventTypeSelector}>
-            <DialogContent className="max-w-md bg-white border-0 rounded-2xl shadow-2xl">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
               <DialogHeader>
                 <DialogTitle className="text-[#1E3A8A] text-xl font-bold">
                   {language === 'es' ? 'Seleccionar Tipo de Turno' : 'Select Shift Type'}
