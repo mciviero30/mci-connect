@@ -344,11 +344,23 @@ export default function FieldProjectView({
       {/* Photo Upload Progress */}
       <PhotoUploadProgress jobId={jobId} />
 
-      {/* Quick Action Bar */}
+      {/* Quick Action Bar - Legacy support */}
       <FieldQuickActionBar
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
         onActionComplete={handleActionComplete}
+      />
+
+      {/* Bottom Action Rail - One-Hand Mode primary actions */}
+      <FieldBottomActionRail 
+        jobId={jobId}
+        jobName={job?.name || job?.job_name_field}
+        onActionComplete={(panel) => {
+          if (panel === 'dimensions') {
+            setActivePanel('dimensions');
+          }
+          handleActionComplete();
+        }}
       />
     </div>
   );
