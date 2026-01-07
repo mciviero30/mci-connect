@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Map, CheckSquare, Camera, FileText, 
   MessageSquare, Users, BarChart3, Flag, ClipboardCheck, 
-  CheckCircle2, Activity, Brain, Menu, X, ClipboardList, MapPin, Mic
+  CheckCircle2, Activity, Brain, Menu, X, ClipboardList, MapPin, Mic, Ruler
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ const navItems = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'plans', label: 'Plans', icon: Map },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+  { id: 'dimensions', label: 'Dimensions', icon: Ruler },
   { id: 'milestones', label: 'Milestones', icon: Flag },
   { id: 'photos', label: 'Photos', icon: Camera },
   { id: 'voice', label: 'Voice Notes', icon: Mic },
@@ -31,8 +32,8 @@ const navItems = [
 const quickNavItems = [
   { id: 'overview', label: 'Home', icon: LayoutDashboard },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+  { id: 'dimensions', label: 'Dimensions', icon: Ruler },
   { id: 'photos', label: 'Photos', icon: Camera },
-  { id: 'plans', label: 'Plans', icon: Map },
 ];
 
 export function MobileBottomNav({ activeTab, onTabChange, taskCount, planCount }) {
