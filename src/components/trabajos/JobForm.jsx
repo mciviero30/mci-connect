@@ -274,12 +274,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             </div>
             <div>
               <Label className="text-slate-900 dark:text-white font-bold text-base">
-                {language === 'es' ? 'Radio de Geofencing' : 'Geofence Radius'}
+                Radio de Geofencing
               </Label>
               <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                {language === 'es' 
-                  ? 'Distancia máxima permitida para fichar entrada/salida' 
-                  : 'Maximum allowed distance for clock in/out'}
+                Distancia máxima permitida para fichar entrada/salida
               </p>
             </div>
           </div>
