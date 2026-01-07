@@ -42,6 +42,8 @@ import {
   Rocket,
   BookOpen,
   AlertTriangle,
+  Maximize2,
+  ArrowLeft,
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,7 +68,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { LanguageProvider, useLanguage } from "@/components/i18n/LanguageContext";
 import { PermissionsProvider } from "@/components/permissions/PermissionsContext";
-import { FieldModeProvider, useFieldMode } from "@/components/contexts/FieldModeContext";
+import { UIProvider, useUI } from "@/components/contexts/FieldModeContext";
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
@@ -256,7 +258,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const location = useLocation();
   const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
-  const { isFieldMode } = useFieldMode();
+  const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
@@ -811,6 +813,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       )}
 
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
+        {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
+        {!shouldHideSidebar && (
         <style>{`
           /* ============================================ */
           /* PREMIUM SOFT UI SYSTEM - GENTLE & MODERN    */
@@ -1000,11 +1004,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
                 </button>
               </div>
             </div>
-          </SidebarFooter>
-          </Sidebar>
-        )}
-
-        <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            </SidebarFooter>
+            </Sidebar>
+            )}
           {!isFieldPage && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
@@ -1018,14 +1020,53 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 flex items-center justify-between px-4 z-10">
-                <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[40px] min-h-[40px]">
-                  <Menu className="w-5 h-5 text-[#1E3A8A]" />
-                </SidebarTrigger>
-                <div className="flex-shrink-0">
+                {!shouldHideSidebar && (
+                  <SidebarTrigger className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[40px] min-h-[40px]">
+                    <Menu className="w-5 h-5 text-[#1E3A8A]" />
+                  </SidebarTrigger>
+                )}
+                <div className="flex-shrink-0 flex items-center gap-2">
+                  {!isFieldMode && !isFocusMode && (
+                    <button
+                      onClick={toggleFocusMode}
+                      className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[40px] min-h-[40px]"
+                      title="Focus Mode"
+                    >
+                      <Maximize2 className="w-5 h-5 text-[#1E3A8A]" />
+                    </button>
+                  )}
                   <NotificationBell user={user} />
                 </div>
               </div>
             </motion.header>
+          )}
+
+          {/* Focus Mode Toggle - Desktop Header */}
+          {!isFieldPage && !shouldHideSidebar && (
+            <div className="hidden md:flex absolute top-4 right-4 z-50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleFocusMode}
+                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-lg"
+              >
+                <Maximize2 className="w-4 h-4 mr-2" />
+                Focus Mode
+              </Button>
+            </div>
+          )}
+
+          {/* Exit Focus Mode - Floating Button */}
+          {isFocusMode && !isFieldMode && (
+            <div className="absolute top-4 left-4 z-50">
+              <Button
+                onClick={toggleFocusMode}
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-lg"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Exit Focus Mode
+              </Button>
+            </div>
           )}
 
           <div data-main-content className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" style={{ 
@@ -1095,7 +1136,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <FieldModeProvider>
+        <UIProvider>
           <LanguageProvider>
             <PermissionsProvider>
               <AgreementGate>
@@ -1107,7 +1148,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
               </AgreementGate>
             </PermissionsProvider>
           </LanguageProvider>
-        </FieldModeProvider>
+        </UIProvider>
       </ErrorBoundary>
     </ToastProvider>
   );

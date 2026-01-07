@@ -5,10 +5,10 @@ import { FieldContextProvider } from '@/components/field/FieldContextProvider.js
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import { useFieldProjectState } from '@/components/field/FieldProjectState.jsx';
 import FieldProjectView from '@/components/field/FieldProjectView.jsx';
-import { useFieldMode } from '@/components/contexts/FieldModeContext';
+import { useUI } from '@/components/contexts/FieldModeContext';
 
 export default function FieldProject() {
-  const { setIsFieldMode } = useFieldMode();
+  const { setIsFieldMode } = useUI();
   
   // Extract jobId from URL params
   const urlParams = new URLSearchParams(window.location.search);

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { useFieldMode } from '@/components/contexts/FieldModeContext';
+import { useUI } from '@/components/contexts/FieldModeContext';
 import { 
   Plus, 
   Search, 
@@ -38,7 +38,7 @@ import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryC
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 
 export default function Field() {
-  const { setIsFieldMode } = useFieldMode();
+  const { setIsFieldMode } = useUI();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Persistent filter state
