@@ -21,21 +21,22 @@ export default function FieldStatusBar({ jobId }) {
     };
   }, []);
 
-  // Check for unsynced changes in localStorage
+  // Check for unsynced changes from IndexedDB
   useEffect(() => {
-    const checkUnsyncedChanges = () => {
+    const checkUnsyncedChanges = async () => {
       try {
-        const syncQueue = JSON.parse(localStorage.getItem('syncQueue') || '[]');
-        setUnsyncedCount(syncQueue.length);
+        const { fieldStorage } = await import('./services/FieldStorageService');
+        const count = await fieldStorage.getUnsyncedCount(jobId);
+        setUnsyncedCount(count);
       } catch {
         setUnsyncedCount(0);
       }
     };
 
     checkUnsyncedChanges();
-    const interval = setInterval(checkUnsyncedChanges, 2000);
+    const interval = setInterval(checkUnsyncedChanges, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [jobId]);
 
   // Fetch blocking incidents
   const { data: blockingIncidents = [] } = useQuery({
