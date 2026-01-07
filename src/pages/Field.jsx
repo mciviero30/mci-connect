@@ -32,14 +32,28 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
+import { usePersistentState } from '@/components/field/hooks/usePersistentState';
 
 export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('active');
+  
+  // Persistent filter state
+  const [filter, setFilter, clearFilter] = usePersistentState('field_filter', 'active', { expiryHours: 48 });
+  
   const [showNewProject, setShowNewProject] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', description: '', address: '', customer_name: '', customer_id: '' });
+  
+  // Persistent new project form
+  const [newProject, setNewProject, clearNewProject] = usePersistentState(
+    'field_new_project',
+    { name: '', description: '', address: '', customer_name: '', customer_id: '' },
+    { expiryHours: 2 }
+  );
+  
   const [showQuickSearch, setShowQuickSearch] = useState(false);
-  const [activeTab, setActiveTab] = useState('projects');
+  
+  // Persistent active tab
+  const [activeTab, setActiveTab, clearActiveTab] = usePersistentState('field_active_tab', 'projects', { expiryHours: 48 });
+  
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });
   
@@ -164,10 +178,13 @@ export default function Field() {
 
   const createJobMutation = useMutation({
     mutationFn: (data) => base44.entities.Job.create(data),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
       setShowNewProject(false);
-      setNewProject({ name: '', description: '', address: '', customer_name: '', customer_id: '' });
+      
+      // Clear persistent form on successful save
+      await clearNewProject();
+      
       toast({
         title: 'Project created',
         description: 'Your project has been created successfully',

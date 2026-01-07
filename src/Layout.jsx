@@ -741,12 +741,18 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const isFieldPage = location.pathname.includes('/Field');
 
   // Prevent Layout from triggering Field remounts
+  const wasFieldPage = useRef(false);
   useEffect(() => {
     if (isFieldPage) {
       // Mark Field as active to prevent provider re-initialization
-      sessionStorage.setItem('field_active', 'true');
-    } else {
+      if (!wasFieldPage.current) {
+        sessionStorage.setItem('field_active', 'true');
+        wasFieldPage.current = true;
+      }
+    } else if (wasFieldPage.current) {
+      // Only clear when actually leaving Field
       sessionStorage.removeItem('field_active');
+      wasFieldPage.current = false;
     }
   }, [isFieldPage]);
 

@@ -68,6 +68,8 @@ import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
 import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
 import { FieldContextProvider } from '@/components/field/FieldContextProvider.jsx';
 import { useFieldStability } from '@/components/field/hooks/useFieldStability';
+import { usePersistentState } from '@/components/field/hooks/usePersistentState';
+import { fieldPersistence } from '@/components/field/services/FieldStatePersistence';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -78,18 +80,13 @@ export default function FieldProject() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
-  // Restore persisted state
-  const getPersistedState = () => {
-    try {
-      const key = `fieldProject_${jobId}`;
-      const saved = sessionStorage.getItem(key);
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  };
+  // Persistent state with auto-save
+  const [activePanel, setActivePanel, clearPanelState] = usePersistentState(
+    `field_panel_${jobId}`,
+    'overview',
+    { expiryHours: 48 }
+  );
   
-  const [activePanel, setActivePanel] = useState(() => getPersistedState().activePanel || 'overview');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
@@ -168,17 +165,12 @@ export default function FieldProject() {
                      (currentUser.role !== 'customer' && currentUser.role !== 'field_worker') ||
                      userAssignments.length > 0;
 
-  // Persist state changes
+  // Clean up expired data on mount
   useEffect(() => {
-    if (!jobId) return;
-    try {
-      const key = `fieldProject_${jobId}`;
-      const state = { activePanel };
-      sessionStorage.setItem(key, JSON.stringify(state));
-    } catch (error) {
-      console.error('Failed to persist state:', error);
+    if (jobId) {
+      fieldPersistence.cleanExpired().catch(console.error);
     }
-  }, [jobId, activePanel]);
+  }, [jobId]);
 
   // Restore scroll position
   useEffect(() => {
@@ -398,7 +390,8 @@ export default function FieldProject() {
   }
 
   // CONDITIONAL PANEL RENDERING - No routing, pure state-driven UI
-  const renderPanel = () => {
+  // Memoized to prevent unnecessary re-renders
+  const renderPanel = useCallback(() => {
     switch (activePanel) {
       case 'overview':
         return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
@@ -441,7 +434,7 @@ export default function FieldProject() {
       default:
         return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
     }
-  };
+  }, [activePanel, job, tasks, plans, jobId]);
 
   const handleBack = () => {
     // Use history navigation to avoid full reload
@@ -492,11 +485,17 @@ export default function FieldProject() {
 
   const fabConfig = getFABConfig();
 
+  // Prevent unmounting providers on navigation
+  const stableJobId = useRef(jobId);
+  useEffect(() => {
+    stableJobId.current = jobId;
+  }, [jobId]);
+
   return (
     <FieldErrorBoundary>
     <ThemeProvider appType="field">
-    <FieldOfflineProvider jobId={jobId}>
-    <FieldContextProvider jobId={jobId}>
+    <FieldOfflineProvider jobId={stableJobId.current}>
+    <FieldContextProvider jobId={stableJobId.current}>
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />

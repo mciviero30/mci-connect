@@ -180,7 +180,10 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   const createTaskMutation = useMutation({
     mutationFn: (data) => base44.entities.Task.create(data),
-    onSuccess: (newTask) => {
+    onSuccess: async (newTask) => {
+      // Clear persistent draft on successful save
+      await clearTaskDraft();
+      
       // Optimistic update without full invalidation
       queryClient.setQueryData(['field-tasks', jobId], (old) => old ? [...old, newTask] : [newTask]);
       queryClient.setQueryData(['work-units', jobId], (old) => old ? [...old, newTask] : [newTask]);

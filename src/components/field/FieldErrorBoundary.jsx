@@ -19,6 +19,17 @@ class FieldErrorBoundary extends React.Component {
     console.error('MCI Field Error (contained):', error, errorInfo);
     this.setState({ error, errorInfo });
     
+    // Persist error state for debugging
+    try {
+      sessionStorage.setItem('field_last_error', JSON.stringify({
+        message: error.toString(),
+        stack: error.stack,
+        timestamp: Date.now(),
+      }));
+    } catch (e) {
+      console.error('Failed to persist error:', e);
+    }
+    
     // Stop propagation to prevent Layout remount
     if (error && error.stopPropagation) {
       error.stopPropagation();
@@ -26,16 +37,18 @@ class FieldErrorBoundary extends React.Component {
   }
 
   handleReset = () => {
-    // Clear error state without reload
+    // Clear error state without reload - preserve all user data
     this.setState({ hasError: false, error: null, errorInfo: null });
     
-    // Preserve user state in sessionStorage
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const jobId = urlParams.get('id');
       if (jobId) {
-        const key = `fieldProject_${jobId}_errorRecovery`;
-        sessionStorage.setItem(key, Date.now().toString());
+        // Mark recovery attempt
+        sessionStorage.setItem(`field_error_recovery_${jobId}`, Date.now().toString());
+        
+        // Preserve all drafts and pending work
+        console.log('Error recovered - all drafts preserved');
       }
     } catch (e) {
       console.error('Failed to mark error recovery:', e);
