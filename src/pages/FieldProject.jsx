@@ -65,6 +65,7 @@ import FieldStatusBar from '@/components/field/FieldStatusBar.jsx';
 import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
 import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
+import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -571,6 +572,16 @@ export default function FieldProject() {
 
       {/* Photo Upload Progress */}
       <PhotoUploadProgress jobId={jobId} />
+
+      {/* Quick Action Bar */}
+      <FieldQuickActionBar
+        jobId={jobId}
+        onActionComplete={() => {
+          queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+          queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
+          queryClient.invalidateQueries({ queryKey: ['chat-messages', jobId] });
+        }}
+      />
     </div>
     </FieldOfflineProvider>
     </ThemeProvider>
