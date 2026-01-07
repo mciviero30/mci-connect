@@ -149,7 +149,7 @@ class FieldStorageService {
   }
 
   // Sync Queue Management
-  async addToSyncQueue(entityType, entityId, jobId, operation) {
+  async addToSyncQueue(entityType, entityId, jobId, operation, data = null) {
     const db = await this.ensureDB();
     const tx = db.transaction('sync_queue', 'readwrite');
     const store = tx.objectStore('sync_queue');
@@ -159,8 +159,10 @@ class FieldStorageService {
       entity_id: entityId,
       job_id: jobId,
       operation,
+      data,
       timestamp: Date.now(),
-      retries: 0
+      retries: 0,
+      failed: false
     });
   }
 
