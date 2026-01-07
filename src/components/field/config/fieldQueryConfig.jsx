@@ -3,6 +3,12 @@
  * Isolated query settings to prevent global side effects
  */
 
+// CRITICAL: Import query keys from centralized file
+import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
+
+// Re-export for backward compatibility
+export { FIELD_QUERY_KEYS };
+
 // Standard stable query configuration for Field
 export const FIELD_STABLE_QUERY_CONFIG = {
   staleTime: Infinity,
@@ -19,24 +25,6 @@ export const FIELD_SHORT_CACHE_CONFIG = {
   refetchOnMount: false,
   refetchOnWindowFocus: false,
   refetchOnReconnect: false,
-};
-
-// Field-scoped query key prefixes
-export const FIELD_QUERY_KEYS = {
-  USER: (jobId) => ['field-currentUser', jobId],
-  JOB: (jobId) => ['field-job', jobId],
-  TASKS: (jobId) => ['field-tasks', jobId],
-  WORK_UNITS: (jobId) => ['work-units', jobId],
-  PLANS: (jobId) => ['field-plans', jobId],
-  PHOTOS: (jobId) => ['field-photos', jobId],
-  DOCUMENTS: (jobId) => ['field-documents', jobId],
-  MEMBERS: (jobId) => ['field-members', jobId],
-  TEAM_MEMBERS: (jobId) => ['field-team-members', jobId],
-  CHAT: (jobId) => ['chat-messages', jobId],
-  COMPARISONS: (jobId) => ['field-photo-comparisons', jobId],
-  ASSIGNMENTS: (jobId) => ['user-job-access', jobId],
-  CUSTOMERS: () => ['field-customers'],
-  JOBS: () => ['field-jobs'],
 };
 
 /**

@@ -33,7 +33,8 @@ import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
-import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS } from '@/components/field/config/fieldQueryConfig';
+import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryConfig';
+import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 
 export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
