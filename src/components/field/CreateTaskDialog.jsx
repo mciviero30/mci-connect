@@ -15,6 +15,8 @@ import { canEditTasks, canToggleClientVisibility } from './rolePermissions';
 import { useAutoSave } from './hooks/useAutoSave';
 import SaveIndicator from './SaveIndicator';
 import { useFieldContext, withFieldContext } from './FieldContextProvider';
+import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
+import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
