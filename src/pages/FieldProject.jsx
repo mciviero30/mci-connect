@@ -61,6 +61,7 @@ import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.jsx';
 import MobileActionBar from '@/components/field/MobileActionBar.jsx';
 import DailyFieldReportView from '@/components/field/DailyFieldReportView.jsx';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
+import FieldStatusBar from '@/components/field/FieldStatusBar.jsx';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -505,6 +506,7 @@ export default function FieldProject() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto pb-32 md:pb-0 field-main-content" style={{ height: '100vh', overflowY: 'auto' }}>
+        <FieldStatusBar jobId={jobId} />
         {renderPanel()}
       </div>
 
