@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Map, CheckSquare, Camera, FileText, 
   MessageSquare, Users, BarChart3, Flag, ClipboardCheck, 
-  CheckCircle2, Activity, Brain, Menu, X, ClipboardList
+  CheckCircle2, Activity, Brain, Menu, X, ClipboardList, MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
