@@ -11,6 +11,7 @@ import TaskDetailPanel from './TaskDetailPanel.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
+import FiltersBottomSheet from './FiltersBottomSheet.jsx';
 import { canEditTasks } from './rolePermissions';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
 import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
@@ -28,6 +29,8 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [reviewingPunch, setReviewingPunch] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const { data: currentUser } = useQuery({
     queryKey: FIELD_QUERY_KEYS.USER(jobId),
@@ -122,40 +125,61 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
               className="pl-11 bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 w-full sm:w-56 min-h-[52px] rounded-xl text-base font-medium"
             />
           </div>
-          <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
-            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl min-w-[140px] font-semibold">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
-              <SelectItem value="all" className="text-white min-h-[48px] text-base">All Types</SelectItem>
-              <SelectItem value="task" className="text-white min-h-[48px] text-base">📋 Task</SelectItem>
-              <SelectItem value="checklist" className="text-white min-h-[48px] text-base">✅ Checklist</SelectItem>
-              <SelectItem value="inspection" className="text-white min-h-[48px] text-base">🔍 Inspection</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl min-w-[140px] font-semibold">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
-              <SelectItem value="all" className="text-white min-h-[48px] text-base">All Status</SelectItem>
-              <SelectItem value="pending" className="text-white min-h-[48px] text-base">📋 Assigned</SelectItem>
-              <SelectItem value="in_progress" className="text-white min-h-[48px] text-base">⚙️ Working</SelectItem>
-              <SelectItem value="completed" className="text-white min-h-[48px] text-base">✅ Done</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={() => setShowMyTasks(!showMyTasks)}
-            variant={showMyTasks ? "default" : "outline"}
-            className={`min-h-[52px] rounded-xl font-bold touch-manipulation active:scale-95 transition-all ${
-              showMyTasks 
-                ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-none shadow-lg' 
-                : 'bg-slate-800 border-2 border-slate-600 text-white active:bg-slate-700'
-            }`}
-          >
-            <User className="w-5 h-5 mr-2" />
-            My Tasks
-          </Button>
+          
+          {/* Mobile: Single Filter button opens bottom sheet */}
+          {isMobile ? (
+            <Button
+              onClick={() => setShowFilters(true)}
+              variant="outline"
+              className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl font-bold touch-manipulation active:scale-95"
+            >
+              <Filter className="w-5 h-5 mr-2" />
+              Filters
+              {(statusFilter !== 'all' || taskTypeFilter !== 'all' || showMyTasks) && (
+                <Badge className="ml-2 bg-orange-500 text-white">
+                  {[statusFilter !== 'all', taskTypeFilter !== 'all', showMyTasks].filter(Boolean).length}
+                </Badge>
+              )}
+            </Button>
+          ) : (
+            <>
+              <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
+                <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl min-w-[140px] font-semibold">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
+                  <SelectItem value="all" className="text-white min-h-[48px] text-base">All Types</SelectItem>
+                  <SelectItem value="task" className="text-white min-h-[48px] text-base">📋 Task</SelectItem>
+                  <SelectItem value="checklist" className="text-white min-h-[48px] text-base">✅ Checklist</SelectItem>
+                  <SelectItem value="inspection" className="text-white min-h-[48px] text-base">🔍 Inspection</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl min-w-[140px] font-semibold">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
+                  <SelectItem value="all" className="text-white min-h-[48px] text-base">All Status</SelectItem>
+                  <SelectItem value="pending" className="text-white min-h-[48px] text-base">📋 Assigned</SelectItem>
+                  <SelectItem value="in_progress" className="text-white min-h-[48px] text-base">⚙️ Working</SelectItem>
+                  <SelectItem value="completed" className="text-white min-h-[48px] text-base">✅ Done</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => setShowMyTasks(!showMyTasks)}
+                variant={showMyTasks ? "default" : "outline"}
+                className={`min-h-[52px] rounded-xl font-bold touch-manipulation active:scale-95 transition-all ${
+                  showMyTasks 
+                    ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-none shadow-lg' 
+                    : 'bg-slate-800 border-2 border-slate-600 text-white active:bg-slate-700'
+                }`}
+              >
+                <User className="w-5 h-5 mr-2" />
+                My Tasks
+              </Button>
+            </>
+          )}
+          
           <div className="flex bg-slate-800 rounded-xl p-1.5 shadow-md border-2 border-slate-700">
             <button
               onClick={() => setView('kanban')}
@@ -333,6 +357,31 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
         open={!!reviewingPunch}
         onOpenChange={(open) => !open && setReviewingPunch(null)}
       />
+
+      {/* Filters Bottom Sheet - Mobile only */}
+      {isMobile && (
+        <FiltersBottomSheet
+          open={showFilters}
+          onOpenChange={setShowFilters}
+          filters={{ status: statusFilter, type: taskTypeFilter }}
+          onFiltersChange={(newFilters) => {
+            setStatusFilter(newFilters.status || 'all');
+            setTaskTypeFilter(newFilters.type || 'all');
+          }}
+          filterOptions={{
+            status: [
+              { value: 'pending', label: '📋 Assigned' },
+              { value: 'in_progress', label: '⚙️ Working' },
+              { value: 'completed', label: '✅ Done' }
+            ],
+            type: [
+              { value: 'task', label: '📋 Task' },
+              { value: 'checklist', label: '✅ Checklist' },
+              { value: 'inspection', label: '🔍 Inspection' }
+            ]
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldBottomSheet from './FieldBottomSheet';
-import DimensionValueInput from './dimensions/DimensionValueInput';
-import MeasurementTypeSelector from './dimensions/MeasurementTypeSelector';
-import BenchmarkInput from './dimensions/BenchMarkInput';
+import { toast } from 'sonner';
 
 export default function DimensionBottomSheet({ 
   open, 
@@ -18,34 +19,66 @@ export default function DimensionBottomSheet({
   onSave 
 }) {
   const [formData, setFormData] = useState({
-    area: dimension?.area || '',
-    notes: dimension?.notes || '',
-    measurement_type: dimension?.measurement_type || 'FF-FF',
-    dimension_type: dimension?.dimension_type || 'horizontal',
-    value_feet: dimension?.value_feet || 0,
-    value_inches: dimension?.value_inches || 0,
-    value_fraction: dimension?.value_fraction || '0',
-    value_mm: dimension?.value_mm || 0,
-    benchmark_label: dimension?.benchmark_label || '',
-    device_type: dimension?.device_type || 'laser',
+    area: '',
+    notes: '',
+    measurement_type: 'FF-FF',
+    dimension_type: 'horizontal',
+    value_feet: 0,
+    value_inches: 0,
+    value_fraction: '0',
+    value_mm: 0,
+    benchmark_label: '',
+    device_type: 'laser',
+  });
+
+  React.useEffect(() => {
+    if (open && dimension) {
+      setFormData({
+        area: dimension.area || '',
+        notes: dimension.notes || '',
+        measurement_type: dimension.measurement_type || 'FF-FF',
+        dimension_type: dimension.dimension_type || 'horizontal',
+        value_feet: dimension.value_feet || 0,
+        value_inches: dimension.value_inches || 0,
+        value_fraction: dimension.value_fraction || '0',
+        value_mm: dimension.value_mm || 0,
+        benchmark_label: dimension.benchmark_label || '',
+        device_type: dimension.device_type || 'laser',
+      });
+    }
+  }, [open, dimension]);
+
+  const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  const createDimensionMutation = useMutation({
+    mutationFn: (data) => base44.entities.FieldDimension.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
+      toast.success('Dimension saved');
+      onOpenChange(false);
+      onSave?.();
+    },
   });
 
   const handleSave = () => {
     if (!formData.area) {
-      alert('Please enter location/area');
+      toast.error('Please enter location/area');
       return;
     }
 
-    const saveData = {
-      ...dimension,
-      ...formData,
+    createDimensionMutation.mutate({
       job_id: jobId,
       job_name: jobName,
       unit_system: unitSystem,
-    };
-
-    onSave(saveData);
-    onOpenChange(false);
+      measured_by: user?.email,
+      measured_by_name: user?.full_name,
+      ...formData,
+    });
   };
 
   return (
@@ -59,41 +92,92 @@ export default function DimensionBottomSheet({
         {/* Measurement Type */}
         <div>
           <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-            Measurement Type
+            Type
           </Label>
-          <MeasurementTypeSelector
-            type={formData.dimension_type}
-            selectedType={formData.measurement_type}
-            onTypeChange={(type) => setFormData({ ...formData, measurement_type: type })}
-          />
+          <Select 
+            value={formData.measurement_type} 
+            onValueChange={(v) => setFormData({ ...formData, measurement_type: v })}
+          >
+            <SelectTrigger className="min-h-[52px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="FF-FF" className="min-h-[48px]">Floor to Floor</SelectItem>
+              <SelectItem value="FF-CL" className="min-h-[48px]">Floor to Ceiling</SelectItem>
+              <SelectItem value="BM-C" className="min-h-[48px]">Benchmark to Ceiling</SelectItem>
+              <SelectItem value="BM-F" className="min-h-[48px]">Benchmark to Floor</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Benchmark (for vertical only) */}
-        {formData.dimension_type === 'vertical' && (
-          <BenchmarkInput
-            value={formData.benchmark_label}
-            onChange={(value) => setFormData({ ...formData, benchmark_label: value })}
-            jobId={jobId}
-          />
+        {/* Value Input */}
+        {unitSystem === 'imperial' ? (
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Value</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Input
+                  type="number"
+                  value={formData.value_feet}
+                  onChange={(e) => setFormData({ ...formData, value_feet: parseInt(e.target.value) || 0 })}
+                  placeholder="Feet"
+                  className="min-h-[52px]"
+                />
+                <p className="text-xs text-slate-500 mt-1">Feet</p>
+              </div>
+              <div>
+                <Input
+                  type="number"
+                  value={formData.value_inches}
+                  onChange={(e) => setFormData({ ...formData, value_inches: parseInt(e.target.value) || 0 })}
+                  placeholder="Inches"
+                  className="min-h-[52px]"
+                />
+                <p className="text-xs text-slate-500 mt-1">Inches</p>
+              </div>
+              <div>
+                <Select 
+                  value={formData.value_fraction} 
+                  onValueChange={(v) => setFormData({ ...formData, value_fraction: v })}
+                >
+                  <SelectTrigger className="min-h-[52px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">0</SelectItem>
+                    <SelectItem value="1/16">1/16</SelectItem>
+                    <SelectItem value="1/8">1/8</SelectItem>
+                    <SelectItem value="3/16">3/16</SelectItem>
+                    <SelectItem value="1/4">1/4</SelectItem>
+                    <SelectItem value="5/16">5/16</SelectItem>
+                    <SelectItem value="3/8">3/8</SelectItem>
+                    <SelectItem value="7/16">7/16</SelectItem>
+                    <SelectItem value="1/2">1/2</SelectItem>
+                    <SelectItem value="9/16">9/16</SelectItem>
+                    <SelectItem value="5/8">5/8</SelectItem>
+                    <SelectItem value="11/16">11/16</SelectItem>
+                    <SelectItem value="3/4">3/4</SelectItem>
+                    <SelectItem value="13/16">13/16</SelectItem>
+                    <SelectItem value="7/8">7/8</SelectItem>
+                    <SelectItem value="15/16">15/16</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 mt-1">Fraction</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Value (mm)</Label>
+            <Input
+              type="number"
+              value={formData.value_mm}
+              onChange={(e) => setFormData({ ...formData, value_mm: parseInt(e.target.value) || 0 })}
+              placeholder="Millimeters"
+              className="mt-1.5 min-h-[52px]"
+            />
+          </div>
         )}
-
-        {/* Dimension Value */}
-        <div>
-          <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
-            Measurement Value
-          </Label>
-          <DimensionValueInput
-            unitSystem={unitSystem}
-            feet={formData.value_feet}
-            inches={formData.value_inches}
-            fraction={formData.value_fraction}
-            mm={formData.value_mm}
-            onFeetChange={(v) => setFormData({ ...formData, value_feet: v })}
-            onInchesChange={(v) => setFormData({ ...formData, value_inches: v })}
-            onFractionChange={(v) => setFormData({ ...formData, value_fraction: v })}
-            onMmChange={(v) => setFormData({ ...formData, value_mm: v })}
-          />
-        </div>
 
         {/* Location/Area */}
         <div>
@@ -111,7 +195,7 @@ export default function DimensionBottomSheet({
         {/* Device Type */}
         <div>
           <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            Measuring Device
+            Device
           </Label>
           <Select 
             value={formData.device_type} 
@@ -122,7 +206,7 @@ export default function DimensionBottomSheet({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="laser" className="min-h-[48px]">📏 Laser</SelectItem>
-              <SelectItem value="tape" className="min-h-[48px]">📐 Tape Measure</SelectItem>
+              <SelectItem value="tape" className="min-h-[48px]">📐 Tape</SelectItem>
               <SelectItem value="digital" className="min-h-[48px]">📱 Digital</SelectItem>
             </SelectContent>
           </Select>
@@ -131,7 +215,7 @@ export default function DimensionBottomSheet({
         {/* Notes */}
         <div>
           <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            Notes (Optional)
+            Notes
           </Label>
           <Textarea
             value={formData.notes}
@@ -144,9 +228,10 @@ export default function DimensionBottomSheet({
         {/* Save Button */}
         <Button 
           onClick={handleSave}
+          disabled={createDimensionMutation.isPending}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[56px] touch-manipulation active:scale-95 font-bold shadow-lg"
         >
-          Save Dimension
+          {createDimensionMutation.isPending ? 'Saving...' : 'Save Dimension'}
         </Button>
       </div>
     </FieldBottomSheet>
