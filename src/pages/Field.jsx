@@ -555,11 +555,11 @@ function StatsCard({ label, value, icon: Icon, color }) {
         </div>
         <p className="text-[9px] md:text-xs font-bold text-slate-300 uppercase tracking-wider leading-tight">
           {label.split(' ').map((word, i) => (
-            <React.Fragment key={i}>
+            <span key={i}>
               {word}
               {i < label.split(' ').length - 1 && <br className="md:hidden" />}
               {i < label.split(' ').length - 1 && ' '}
-            </React.Fragment>
+            </span>
           ))}
         </p>
       </div>
