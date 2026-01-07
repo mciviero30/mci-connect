@@ -64,6 +64,7 @@ import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import FieldStatusBar from '@/components/field/FieldStatusBar.jsx';
 import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
+import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -89,6 +90,9 @@ export default function FieldProject() {
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
+
+  // Unsaved changes protection
+  useUnsavedChanges(jobId);
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
