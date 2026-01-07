@@ -59,6 +59,7 @@ import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
 import BeforeAfterPhotos from '@/components/field/BeforeAfterPhotos.jsx';
 import MobileActionBar from '@/components/field/MobileActionBar.jsx';
 import DailyFieldReportView from '@/components/field/DailyFieldReportView.jsx';
+import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 
 export default function FieldProject() {
   const [searchParams] = useSearchParams();
@@ -253,6 +254,7 @@ export default function FieldProject() {
   };
 
   return (
+    <FieldErrorBoundary>
     <ThemeProvider appType="field">
     <FieldOfflineProvider jobId={jobId}>
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto">
@@ -391,5 +393,6 @@ export default function FieldProject() {
     </div>
     </FieldOfflineProvider>
     </ThemeProvider>
+    </FieldErrorBoundary>
   );
 }

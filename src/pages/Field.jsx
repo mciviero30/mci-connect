@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 
 export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -219,6 +220,7 @@ export default function Field() {
   };
 
   return (
+    <FieldErrorBoundary>
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto">
       <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
       {/* Header - Improved mobile spacing and touch targets */}
