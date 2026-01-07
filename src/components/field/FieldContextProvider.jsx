@@ -60,7 +60,16 @@ export function FieldContextProvider({ children, jobId, blueprintId = null, area
 export function useFieldContext() {
   const context = useContext(FieldContext);
   if (!context) {
-    throw new Error('useFieldContext must be used within FieldContextProvider');
+    // Return safe defaults instead of throwing
+    return {
+      job_id: null,
+      blueprint_id: null,
+      area_id: null,
+      created_by: null,
+      created_by_name: null,
+      gps_latitude: null,
+      gps_longitude: null,
+    };
   }
   return context;
 }
