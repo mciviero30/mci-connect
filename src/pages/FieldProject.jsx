@@ -585,8 +585,8 @@ export default function FieldProject() {
         }}
       />
     </div>
-    </FieldContextProvider>
     </FieldOfflineProvider>
+    </FieldContextProvider>
     </ThemeProvider>
     </FieldErrorBoundary>
   );
