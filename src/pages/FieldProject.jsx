@@ -71,6 +71,7 @@ import { useFieldStability } from '@/components/field/hooks/useFieldStability';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
 import { fieldPersistence } from '@/components/field/services/FieldStatePersistence';
 import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS, updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
+import { useMobileLifecycle, usePreventRefetchOnResume } from '@/components/field/hooks/useMobileLifecycle';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -96,44 +97,31 @@ export default function FieldProject() {
   // Field stability - prevent reloads and state loss
   useFieldStability(jobId);
   
+  // Prevent query refetches on mobile resume
+  usePreventRefetchOnResume(queryClient);
+  
+  // Mobile lifecycle handling
+  useMobileLifecycle({
+    onBackground: () => {
+      console.log('[Field] App backgrounded - preserving state');
+      // State already persisted by usePersistentState hooks
+    },
+    onForeground: ({ duration }) => {
+      console.log(`[Field] App resumed after ${Math.round(duration/1000)}s`);
+      // State automatically restored by usePersistentState hooks
+    },
+    onLongBackground: ({ duration }) => {
+      console.log(`[Field] Long background detected (${Math.round(duration/1000)}s)`);
+      // All state already persisted - no action needed
+    },
+  });
+  
   // Unsaved changes protection
   useUnsavedChanges(jobId);
 
-  // Android back button handler - prevent accidental app exit
-  useEffect(() => {
-    const handlePopState = (e) => {
-      e.preventDefault();
-      // Navigate back to Field dashboard instead of exiting
-      navigate(createPageUrl('Field'));
-    };
+  // Android back button - handled by useFieldStability hook
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [navigate]);
-
-  // Visibility change handler - prevent state loss on app background/foreground
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // App resumed - restore state but don't refetch queries
-        console.log('MCI Field resumed - state preserved');
-      } else {
-        // App backgrounded - persist critical state
-        try {
-          const key = `fieldProject_${jobId}_persist`;
-          sessionStorage.setItem(key, JSON.stringify({
-            activePanel,
-            timestamp: Date.now()
-          }));
-        } catch (e) {
-          console.error('Failed to persist state on background:', e);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [jobId, activePanel]);
+  // Focus/blur - handled by useMobileLifecycle hook
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -165,36 +153,53 @@ export default function FieldProject() {
     }
   }, [jobId]);
 
-  // Restore scroll position
+  // Restore scroll position on mount and panel change
   useEffect(() => {
     if (!jobId) return;
-    const key = `fieldProject_scroll_${jobId}`;
-    const savedScroll = sessionStorage.getItem(key);
-    if (savedScroll) {
-      requestAnimationFrame(() => {
-        const mainContent = document.querySelector('.field-main-content');
-        if (mainContent) mainContent.scrollTop = parseInt(savedScroll, 10);
-      });
-    }
+    
+    const key = `field_scroll_${jobId}_${activePanel}`;
+    
+    // Delay restoration to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const savedScroll = sessionStorage.getItem(key);
+      if (savedScroll) {
+        requestAnimationFrame(() => {
+          const mainContent = document.querySelector('.field-main-content');
+          if (mainContent) {
+            mainContent.scrollTop = parseInt(savedScroll, 10);
+            console.log(`[Field] Scroll restored: ${activePanel}`);
+          }
+        });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [jobId, activePanel]);
 
-  // Save scroll position on scroll
+  // Save scroll position on scroll (debounced)
   useEffect(() => {
     if (!jobId) return;
     const mainContent = document.querySelector('.field-main-content');
     if (!mainContent) return;
 
+    let scrollTimeout;
     const handleScroll = () => {
-      try {
-        const key = `fieldProject_scroll_${jobId}`;
-        sessionStorage.setItem(key, mainContent.scrollTop.toString());
-      } catch (error) {
-        console.error('Failed to save scroll position:', error);
-      }
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        try {
+          const key = `field_scroll_${jobId}_${activePanel}`;
+          sessionStorage.setItem(key, mainContent.scrollTop.toString());
+        } catch (error) {
+          console.error('Failed to save scroll:', error);
+        }
+      }, 100);
     };
 
-    mainContent.addEventListener('scroll', handleScroll);
-    return () => mainContent.removeEventListener('scroll', handleScroll);
+    mainContent.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      clearTimeout(scrollTimeout);
+      mainContent.removeEventListener('scroll', handleScroll);
+    };
   }, [jobId, activePanel]);
 
   // Handle resize
@@ -571,7 +576,7 @@ export default function FieldProject() {
       {isMobile && (
         <MobileActionBar
           jobId={jobId}
-          onPhotoAdded={() => queryClient.setQueryData(['field-photos', jobId], (old) => old)}
+          onPhotoAdded={() => updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) => old)}
           onTaskCreated={() => setShowCreateTask(true)}
           onNoteAdded={() => setActivePanel('activity')}
         />

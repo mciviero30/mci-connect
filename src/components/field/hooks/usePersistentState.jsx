@@ -72,27 +72,56 @@ export function usePersistentState(key, initialValue, options = {}) {
     };
   }, [state, key, persist, expiryHours]);
 
-  // Immediate save on visibility change
+  // Immediate save on lifecycle events
   useEffect(() => {
     if (!persist) return;
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        try {
-          const data = {
-            value: state,
-            timestamp: Date.now(),
-            expiresAt: Date.now() + (expiryHours * 60 * 60 * 1000),
-          };
-          localStorage.setItem(key, JSON.stringify(data));
-        } catch (error) {
-          console.error('Failed to persist on background:', error);
-        }
+    const persistState = () => {
+      try {
+        const data = {
+          value: state,
+          timestamp: Date.now(),
+          expiresAt: Date.now() + (expiryHours * 60 * 60 * 1000),
+        };
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (error) {
+        console.error('Failed to persist state:', error);
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        console.log(`[PersistentState] Saving ${key} on visibility hidden`);
+        persistState();
+      }
+    };
+
+    const handleFreeze = () => {
+      console.log(`[PersistentState] Saving ${key} on freeze`);
+      persistState();
+    };
+
+    const handleBlur = () => {
+      console.log(`[PersistentState] Saving ${key} on blur`);
+      persistState();
+    };
+
+    const handlePageHide = () => {
+      console.log(`[PersistentState] Saving ${key} on pagehide`);
+      persistState();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('freeze', handleFreeze);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('pagehide', handlePageHide);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('freeze', handleFreeze);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('pagehide', handlePageHide);
+    };
   }, [key, state, persist, expiryHours]);
 
   // Clear state

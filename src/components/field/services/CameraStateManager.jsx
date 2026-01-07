@@ -14,18 +14,33 @@ class CameraStateManager {
     // Handle visibility changes
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
+        console.log('[CameraState] Visibility hidden - pausing streams');
         this.pauseAllStreams();
       } else if (document.visibilityState === 'visible') {
+        console.log('[CameraState] Visibility visible - resuming streams');
         this.resumeAllStreams();
       }
     });
 
     // Handle page freeze/resume (iOS Safari)
     window.addEventListener('freeze', () => {
+      console.log('[CameraState] Page frozen - pausing streams');
       this.pauseAllStreams();
     });
 
     window.addEventListener('resume', () => {
+      console.log('[CameraState] Page resumed - resuming streams');
+      this.resumeAllStreams();
+    });
+
+    // Handle focus/blur (additional safety)
+    window.addEventListener('blur', () => {
+      console.log('[CameraState] Window blurred - pausing streams');
+      this.pauseAllStreams();
+    });
+
+    window.addEventListener('focus', () => {
+      console.log('[CameraState] Window focused - resuming streams');
       this.resumeAllStreams();
     });
   }
@@ -79,6 +94,9 @@ class CameraStateManager {
     const resumePromises = Array.from(this.activeStreams.entries()).map(async ([id, entry]) => {
       if (entry.isPaused) {
         try {
+          // Add delay to prevent iOS camera race condition
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
           // Attempt to restart stream
           const newStream = await navigator.mediaDevices.getUserMedia(entry.config);
           entry.stream = newStream;
@@ -89,8 +107,13 @@ class CameraStateManager {
           if (callback) {
             callback(newStream);
           }
+          
+          console.log(`[CameraState] Stream ${id} resumed successfully`);
         } catch (error) {
-          console.error(`Failed to resume camera ${id}:`, error);
+          console.error(`[CameraState] Failed to resume camera ${id}:`, error);
+          
+          // Mark for manual recovery
+          sessionStorage.setItem(`camera_recovery_needed_${id}`, 'true');
         }
       }
     });

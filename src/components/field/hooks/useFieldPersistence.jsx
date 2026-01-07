@@ -58,13 +58,30 @@ export function useFieldPersistence(formId, jobId, initialState = {}) {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        // Immediately persist on background
+        console.log(`[FieldPersistence] Persisting ${formId} on background`);
         fieldPersistence.saveFormState(formId, jobId, state).catch(console.error);
       }
     };
 
+    const handleFreeze = () => {
+      console.log(`[FieldPersistence] Persisting ${formId} on freeze`);
+      fieldPersistence.saveFormState(formId, jobId, state).catch(console.error);
+    };
+
+    const handleBlur = () => {
+      console.log(`[FieldPersistence] Persisting ${formId} on blur`);
+      fieldPersistence.saveFormState(formId, jobId, state).catch(console.error);
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('freeze', handleFreeze);
+    window.addEventListener('blur', handleBlur);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('freeze', handleFreeze);
+      window.removeEventListener('blur', handleBlur);
+    };
   }, [formId, jobId, state]);
 
   // Clear state (on explicit save/cancel)
