@@ -462,7 +462,7 @@ export default function CrearFactura() {
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       await queryClient.invalidateQueries({ queryKey: ['jobs'] });
       await queryClient.refetchQueries({ queryKey: ['invoices'] });
-      toast.success({
+      toast({
         title: language === 'es' ? 'Factura creada exitosamente' : 'Invoice created successfully',
         variant: 'success'
       });
@@ -490,7 +490,7 @@ export default function CrearFactura() {
     }
 
     if (!formData.customer_name || !formData.job_name) {
-      toast.error({
+      toast({
         title: 'Error',
         description: language === 'es' ? 'Por favor completa el nombre del cliente y el nombre del trabajo.' : 'Please complete customer name and job name.',
         variant: 'destructive'
@@ -501,7 +501,7 @@ export default function CrearFactura() {
     // Unified validation using isValidLineItem
     const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
     if (invalid.length > 0) {
-      toast.error({
+      toast({
         title: 'Error',
         description: language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields',
         variant: 'destructive'
@@ -572,7 +572,7 @@ export default function CrearFactura() {
       
       await queryClient.invalidateQueries({ queryKey: ['invoices'] });
       await queryClient.refetchQueries({ queryKey: ['invoices'] });
-      toast.success({
+      toast({
         title: language === 'es' ? 'Factura actualizada exitosamente' : 'Invoice updated successfully',
         variant: 'success'
       });
@@ -721,7 +721,7 @@ export default function CrearFactura() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success({
+      toast({
         title: language === 'es' ? 'Factura enviada exitosamente' : 'Invoice sent successfully',
         variant: 'success'
       });
