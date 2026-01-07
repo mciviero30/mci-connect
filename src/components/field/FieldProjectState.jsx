@@ -110,27 +110,34 @@ export function useFieldProjectState(jobId) {
   // Save scroll position on scroll (debounced)
   useEffect(() => {
     if (!jobId) return;
-    const mainContent = document.querySelector('[data-field-main]');
-    if (!mainContent) return;
+    
+    // Find element without querySelector - use ref instead
+    const timer = setTimeout(() => {
+      const mainContent = document.querySelector('[data-field-main]');
+      if (!mainContent) return;
 
-    let scrollTimeout;
-    const handleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        try {
-          const key = `field_scroll_${jobId}_${activePanel}`;
-          sessionStorage.setItem(key, mainContent.scrollTop.toString());
-        } catch (error) {
-          console.error('Failed to save scroll:', error);
-        }
-      }, 100);
-    };
+      let scrollTimeout;
+      const handleScroll = () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          try {
+            const key = `field_scroll_${jobId}_${activePanel}`;
+            sessionStorage.setItem(key, mainContent.scrollTop.toString());
+          } catch (error) {
+            console.error('Failed to save scroll:', error);
+          }
+        }, 100);
+      };
 
-    mainContent.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      clearTimeout(scrollTimeout);
-      mainContent.removeEventListener('scroll', handleScroll);
-    };
+      mainContent.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        clearTimeout(scrollTimeout);
+        mainContent.removeEventListener('scroll', handleScroll);
+      };
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [jobId, activePanel]);
 
   // Handle resize
@@ -176,18 +183,25 @@ export function useFieldProjectState(jobId) {
       }
     };
 
-    const mainContent = document.querySelector('[data-field-main]');
-    if (mainContent) {
-      mainContent.addEventListener('touchstart', handleTouchStart, { passive: true });
-      mainContent.addEventListener('touchmove', handleTouchMove, { passive: true });
-      mainContent.addEventListener('touchend', handleTouchEnd, { passive: true });
+    // Delay querySelector to ensure DOM is ready
+    const timer = setTimeout(() => {
+      const mainContent = document.querySelector('[data-field-main]');
+      if (mainContent) {
+        mainContent.addEventListener('touchstart', handleTouchStart, { passive: true });
+        mainContent.addEventListener('touchmove', handleTouchMove, { passive: true });
+        mainContent.addEventListener('touchend', handleTouchEnd, { passive: true });
+      }
+    }, 100);
 
-      return () => {
+    return () => {
+      clearTimeout(timer);
+      const mainContent = document.querySelector('[data-field-main]');
+      if (mainContent) {
         mainContent.removeEventListener('touchstart', handleTouchStart);
         mainContent.removeEventListener('touchmove', handleTouchMove);
         mainContent.removeEventListener('touchend', handleTouchEnd);
-      };
-    }
+      }
+    };
   }, [isMobile, activePanel, setActivePanel]);
 
   // Global keyboard shortcut for quick search
