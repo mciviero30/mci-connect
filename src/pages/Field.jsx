@@ -35,7 +35,7 @@ export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('active');
   const [showNewProject, setShowNewProject] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', description: '', address: '' });
+  const [newProject, setNewProject] = useState({ name: '', description: '', address: '', customer_name: '' });
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [activeTab, setActiveTab] = useState('projects');
   
@@ -130,7 +130,7 @@ export default function Field() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
       setShowNewProject(false);
-      setNewProject({ name: '', description: '', address: '' });
+      setNewProject({ name: '', description: '', address: '', customer_name: '' });
       toast({
         title: 'Project created',
         description: 'Your project has been created successfully',
@@ -164,8 +164,18 @@ export default function Field() {
   const tasksCompleted = tasks.filter(t => t.status === 'completed').length;
 
   const handleCreateProject = () => {
+    if (!newProject.name || !newProject.customer_name) {
+      toast({
+        title: 'Missing required fields',
+        description: 'Please fill in Project Name and Customer Name',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     createJobMutation.mutate({
       name: newProject.name,
+      customer_name: newProject.customer_name,
       description: newProject.description,
       address: newProject.address,
       status: 'active',
@@ -334,18 +344,29 @@ export default function Field() {
 
       {/* New Project Dialog */}
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
-        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div>
-              <Label className="text-slate-600 dark:text-slate-300">Project Name</Label>
+              <Label className="text-slate-600 dark:text-slate-300">Project Name *</Label>
               <Input 
                 value={newProject.name}
                 onChange={(e) => setNewProject({...newProject, name: e.target.value})}
                 placeholder="e.g., Northwestern Mutual Tower"
                 className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-slate-600 dark:text-slate-300">Customer Name *</Label>
+              <Input 
+                value={newProject.customer_name}
+                onChange={(e) => setNewProject({...newProject, customer_name: e.target.value})}
+                placeholder="e.g., John Smith"
+                className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                required
               />
             </div>
             <div>
@@ -372,7 +393,7 @@ export default function Field() {
               </Button>
               <Button 
                 onClick={handleCreateProject}
-                disabled={!newProject.name || createJobMutation.isPending}
+                disabled={!newProject.name || !newProject.customer_name || createJobMutation.isPending}
                 className="soft-amber-gradient"
               >
                 {createJobMutation.isPending ? 'Creating...' : 'Create Project'}
