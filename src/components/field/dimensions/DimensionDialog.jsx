@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Camera, Mic, Video, Save, Trash2 } from 'lucide-react';
+import { Camera, Mic, Video, Save, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import MeasurementTypeSelector from './MeasurementTypeSelector';
 import UnitSystemToggle from './UnitSystemToggle';
 import DimensionValueInput from './DimensionValueInput';
 import BenchMarkInput from './BenchMarkInput';
+import MeasurementDiagram from './MeasurementDiagram';
+import { validateDimension, validateBenchMarkConfirmation } from './DimensionValidation';
 
 export default function DimensionDialog({ 
   open, 
@@ -35,6 +37,14 @@ export default function DimensionDialog({
   });
 
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [validation, setValidation] = useState({ isValid: true, errors: [], warnings: [] });
+  const [bmConfirmed, setBmConfirmed] = useState(false);
+
+  // Real-time validation
+  useEffect(() => {
+    const result = validateDimension(formData);
+    setValidation(result);
+  }, [formData]);
 
   const handleMediaUpload = async (file, type) => {
     try {
@@ -58,23 +68,33 @@ export default function DimensionDialog({
   };
 
   const handleSave = () => {
-    // Validation
-    if (!formData.measurement_type) {
-      toast.error('Please select a measurement type');
+    // Run validation
+    const validationResult = validateDimension(formData);
+    
+    if (!validationResult.isValid) {
+      toast.error('Please fix validation errors', {
+        description: validationResult.errors[0]?.message
+      });
       return;
     }
 
-    if (formData.unit_system === 'imperial' && !formData.value_feet && !formData.value_inches) {
-      toast.error('Please enter measurement values');
+    // Bench Mark confirmation check
+    const bmCheck = validateBenchMarkConfirmation(formData);
+    if (bmCheck.required && !bmConfirmed) {
+      toast.error('Confirmation Required', {
+        description: bmCheck.message
+      });
       return;
     }
 
-    if (formData.unit_system === 'metric' && !formData.value_mm) {
-      toast.error('Please enter measurement value');
-      return;
-    }
+    // Add audit metadata
+    const dimensionData = {
+      ...formData,
+      device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      language: navigator.language,
+    };
 
-    onSave(formData);
+    onSave(dimensionData);
   };
 
   return (
@@ -133,6 +153,11 @@ export default function DimensionDialog({
               onChange={(type) => setFormData({ ...formData, measurement_type: type })}
             />
 
+            {/* Visual Diagram */}
+            {formData.measurement_type && (
+              <MeasurementDiagram type={formData.measurement_type} />
+            )}
+
             {/* Value Input */}
             {formData.dimension_type === 'horizontal' ? (
               <DimensionValueInput
@@ -146,6 +171,58 @@ export default function DimensionDialog({
                 values={formData}
                 onChange={(vals) => setFormData({ ...formData, ...vals })}
               />
+            )}
+
+            {/* Validation Errors */}
+            {validation.errors.filter(e => e.severity === 'error').length > 0 && (
+              <div className="bg-red-50 dark:bg-red-950/30 border-2 border-red-500 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                  <span className="font-bold text-red-900 dark:text-red-100 text-sm">Validation Errors</span>
+                </div>
+                <ul className="space-y-1 ml-7">
+                  {validation.errors.filter(e => e.severity === 'error').map((err, idx) => (
+                    <li key={idx} className="text-sm text-red-700 dark:text-red-300">• {err.message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Validation Warnings */}
+            {validation.warnings.length > 0 && (
+              <div className="bg-yellow-50 dark:bg-yellow-950/30 border-2 border-yellow-500 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                  <span className="font-bold text-yellow-900 dark:text-yellow-100 text-sm">Review Recommended</span>
+                </div>
+                <ul className="space-y-1 ml-7">
+                  {validation.warnings.map((warn, idx) => (
+                    <li key={idx} className="text-sm text-yellow-700 dark:text-yellow-300">• {warn.message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Bench Mark Confirmation */}
+            {formData.measurement_type === 'BM-ONLY' && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border-2 border-amber-500 rounded-xl p-4">
+                <label className="flex items-start gap-3 cursor-pointer touch-manipulation">
+                  <input
+                    type="checkbox"
+                    checked={bmConfirmed}
+                    onChange={(e) => setBmConfirmed(e.target.checked)}
+                    className="w-6 h-6 mt-0.5 rounded border-2 border-amber-600 text-amber-600 focus:ring-2 focus:ring-amber-500 flex-shrink-0"
+                  />
+                  <div>
+                    <div className="font-bold text-amber-900 dark:text-amber-100 text-sm mb-1">
+                      Bench Mark Physically Marked
+                    </div>
+                    <div className="text-xs text-amber-700 dark:text-amber-300">
+                      I confirm the Bench Mark laser line is clearly marked on site with physical reference points
+                    </div>
+                  </div>
+                </label>
+              </div>
             )}
 
             {/* Area */}
@@ -210,11 +287,24 @@ export default function DimensionDialog({
           </Button>
           <Button 
             onClick={handleSave}
-            disabled={uploadingMedia}
-            className="flex-1 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white min-h-[48px]"
+            disabled={uploadingMedia || !validation.isValid}
+            className={`flex-1 min-h-[48px] ${
+              validation.isValid
+                ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white'
+                : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+            }`}
           >
-            <Save className="w-4 h-4 mr-2" />
-            Save Dimension
+            {validation.isValid ? (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Dimension
+              </>
+            ) : (
+              <>
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Fix Errors First
+              </>
+            )}
           </Button>
         </div>
       </DialogContent>

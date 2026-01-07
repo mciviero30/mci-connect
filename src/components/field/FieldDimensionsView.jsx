@@ -17,6 +17,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   const [activeDimension, setActiveDimension] = useState(null);
   const [editingDimension, setEditingDimension] = useState(null);
   const [projectUnitSystem, setProjectUnitSystem] = useState('imperial');
+  const [showProductionConfirm, setShowProductionConfirm] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -92,8 +93,20 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   };
 
   const handleExportPDF = async () => {
+    if (dimensions.length === 0) {
+      toast.error('No dimensions to export');
+      return;
+    }
+
+    // Show production confirmation
+    setShowProductionConfirm(true);
+  };
+
+  const handleConfirmProduction = async () => {
     try {
-      toast.info('Generating PDF...');
+      setShowProductionConfirm(false);
+      toast.info('Generating production PDF...');
+      
       const response = await base44.functions.invoke('exportDimensionsPDF', {
         jobId,
         jobName,
@@ -107,7 +120,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
       link.download = `dimensions_${jobName}_${Date.now()}.pdf`;
       link.click();
       
-      toast.success('PDF exported successfully');
+      toast.success('Production PDF generated successfully');
     } catch (error) {
       toast.error('Failed to export PDF', { description: error.message });
     }
@@ -230,33 +243,55 @@ export default function FieldDimensionsView({ jobId, jobName }) {
             Dimensions on this image ({filteredDimensions.length})
           </h3>
           <div className="space-y-2">
-            {filteredDimensions.map(dim => (
-              <Card key={dim.id} className="bg-slate-50 dark:bg-slate-900">
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-bold text-sm text-slate-900 dark:text-white">
-                        {formatDimensionValue(dim)}
-                      </span>
-                      <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">
-                        {dim.measurement_type}
-                      </span>
+            {filteredDimensions.map(dim => {
+              const validation = validateDimension(dim);
+              const hasErrors = !validation.isValid;
+              const hasWarnings = validation.hasWarnings;
+
+              return (
+                <Card 
+                  key={dim.id} 
+                  className={`bg-slate-50 dark:bg-slate-900 ${
+                    hasErrors ? 'border-2 border-red-500' : hasWarnings ? 'border-2 border-yellow-500' : ''
+                  }`}
+                >
+                  <CardContent className="p-3 flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        {hasErrors && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                        {!hasErrors && hasWarnings && <AlertTriangle className="w-4 h-4 text-yellow-500" />}
+                        {!hasErrors && !hasWarnings && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                        <span className="font-bold text-sm text-slate-900 dark:text-white">
+                          {formatDimensionValue(dim)}
+                        </span>
+                        <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">
+                          {dim.measurement_type}
+                        </span>
+                        {hasWarnings && (
+                          <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100 rounded font-bold">
+                            Review
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        {dim.area || 'No area specified'} • {format(new Date(dim.created_date), 'MMM d, h:mm a')}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                        By {dim.measured_by_name} • {dim.device_type || 'unknown'}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
-                      {dim.area || 'No area specified'} • {format(new Date(dim.created_date), 'MMM d, h:mm a')}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteDimensionMutation.mutate(dim.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteDimensionMutation.mutate(dim.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -269,6 +304,15 @@ export default function FieldDimensionsView({ jobId, jobName }) {
         jobId={jobId}
         jobName={jobName}
         onSave={handleSaveDimension}
+      />
+
+      {/* Production Confirmation */}
+      <ProductionConfirmationDialog
+        open={showProductionConfirm}
+        onOpenChange={setShowProductionConfirm}
+        dimensions={dimensions}
+        unitSystem={projectUnitSystem}
+        onConfirm={handleConfirmProduction}
       />
     </div>
   );
