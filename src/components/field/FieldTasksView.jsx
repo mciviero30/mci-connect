@@ -44,9 +44,14 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
         base44.entities.Task.update(id, data)
       );
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+    onSuccess: (_, variables) => {
+      // Optimistic update without full invalidation
+      queryClient.setQueryData(['field-tasks', jobId], (old) => 
+        old ? old.map(t => t.id === variables.id ? {...t, ...variables.data} : t) : old
+      );
+      queryClient.setQueryData(['work-units', jobId], (old) => 
+        old ? old.map(t => t.id === variables.id ? {...t, ...variables.data} : t) : old
+      );
     },
   });
 

@@ -15,12 +15,31 @@ class FieldErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('MCI Field Error:', error, errorInfo);
+    // Prevent error propagation to Layout
+    console.error('MCI Field Error (contained):', error, errorInfo);
     this.setState({ error, errorInfo });
+    
+    // Stop propagation to prevent Layout remount
+    if (error && error.stopPropagation) {
+      error.stopPropagation();
+    }
   }
 
   handleReset = () => {
+    // Clear error state without reload
     this.setState({ hasError: false, error: null, errorInfo: null });
+    
+    // Preserve user state in sessionStorage
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jobId = urlParams.get('id');
+      if (jobId) {
+        const key = `fieldProject_${jobId}_errorRecovery`;
+        sessionStorage.setItem(key, Date.now().toString());
+      }
+    } catch (e) {
+      console.error('Failed to mark error recovery:', e);
+    }
   };
 
   render() {

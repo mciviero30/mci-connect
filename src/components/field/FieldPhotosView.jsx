@@ -39,8 +39,11 @@ export default function FieldPhotosView({ jobId }) {
 
   const deletePhotoMutation = useMutation({
     mutationFn: (id) => base44.entities.Photo.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
+    onSuccess: (_, variables) => {
+      // Optimistic update without full invalidation
+      queryClient.setQueryData(['field-photos', jobId], (old) => 
+        old ? old.filter(p => p.id !== variables) : old
+      );
       setSelectedPhoto(null);
     },
   });

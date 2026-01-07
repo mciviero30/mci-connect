@@ -500,8 +500,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           pin_x: draggingPin.pin_x,
           pin_y: draggingPin.pin_y
         });
-        queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-        queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+        // Optimistic update without full invalidation
+        queryClient.setQueryData(['field-tasks', jobId], (old) => 
+          old ? old.map(t => t.id === draggingPin.id ? {...t, pin_x: draggingPin.pin_x, pin_y: draggingPin.pin_y} : t) : old
+        );
+        queryClient.setQueryData(['work-units', jobId], (old) => 
+          old ? old.map(t => t.id === draggingPin.id ? {...t, pin_x: draggingPin.pin_x, pin_y: draggingPin.pin_y} : t) : old
+        );
       } catch (error) {
         console.error('Error updating pin position:', error);
       }

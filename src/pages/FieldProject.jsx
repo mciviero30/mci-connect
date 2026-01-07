@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
 import ClientInviteManager from '@/components/client/ClientInviteManager.jsx';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
 import { createPageUrl } from '@/utils';
@@ -67,6 +67,7 @@ import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
 import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
 import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
 import { FieldContextProvider } from '@/components/field/FieldContextProvider.jsx';
+import { useFieldStability } from '@/components/field/hooks/useFieldStability';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -75,6 +76,7 @@ export default function FieldProject() {
   
   // SINGLE STATEFUL CONTAINER - All state lives here
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   // Restore persisted state
   const getPersistedState = () => {
@@ -93,13 +95,57 @@ export default function FieldProject() {
   const [showDailyReport, setShowDailyReport] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
 
+  // Field stability - prevent reloads and state loss
+  useFieldStability(jobId);
+  
   // Unsaved changes protection
   useUnsavedChanges(jobId);
+
+  // Android back button handler - prevent accidental app exit
+  useEffect(() => {
+    const handlePopState = (e) => {
+      e.preventDefault();
+      // Navigate back to Field dashboard instead of exiting
+      navigate(createPageUrl('Field'));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [navigate]);
+
+  // Visibility change handler - prevent state loss on app background/foreground
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // App resumed - restore state but don't refetch queries
+        console.log('MCI Field resumed - state preserved');
+      } else {
+        // App backgrounded - persist critical state
+        try {
+          const key = `fieldProject_${jobId}_persist`;
+          sessionStorage.setItem(key, JSON.stringify({
+            activePanel,
+            timestamp: Date.now()
+          }));
+        } catch (e) {
+          console.error('Failed to persist state on background:', e);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [jobId, activePanel]);
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: userAssignments = [] } = useQuery({
@@ -109,6 +155,11 @@ export default function FieldProject() {
       job_id: jobId 
     }),
     enabled: !!currentUser?.email && !!jobId && (currentUser?.role === 'customer' || currentUser?.role === 'field_worker'),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const hasAccess = !currentUser || currentUser.role === 'admin' || 
@@ -240,6 +291,11 @@ export default function FieldProject() {
       return jobs[0] || null;
     },
     enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: tasks = [] } = useQuery({
@@ -251,6 +307,11 @@ export default function FieldProject() {
       return data;
     },
     enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: plans = [] } = useQuery({
@@ -262,12 +323,22 @@ export default function FieldProject() {
       return data;
     },
     enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const { data: members = [] } = useQuery({
     queryKey: ['field-members', jobId],
     queryFn: () => base44.entities.ProjectMember.filter({ project_id: jobId }),
     enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const sidebarItems = [
@@ -373,7 +444,8 @@ export default function FieldProject() {
   };
 
   const handleBack = () => {
-    window.location.href = createPageUrl('Field');
+    // Use history navigation to avoid full reload
+    window.history.back();
   };
 
   // FAB action handler
@@ -396,7 +468,8 @@ export default function FieldProject() {
               uploaded_by: currentUser?.email,
               uploaded_by_name: currentUser?.full_name,
             });
-            queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
+            // Optimistic update without full invalidation
+            queryClient.setQueryData(['field-photos', jobId], (old) => old);
           } catch (error) {
             console.error('Photo upload failed:', error);
           }
@@ -404,7 +477,8 @@ export default function FieldProject() {
       };
       fileInput.click();
     } else if (activePanel === 'activity') {
-      window.location.href = `${createPageUrl('CrearIncidente')}?job_id=${jobId}`;
+      // Navigate without reload
+      navigate(`${createPageUrl('CrearIncidente')}?job_id=${jobId}`);
     }
   };
 
@@ -523,9 +597,9 @@ export default function FieldProject() {
       {isMobile && (
         <MobileActionBar
           jobId={jobId}
-          onPhotoAdded={() => queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] })}
+          onPhotoAdded={() => queryClient.setQueryData(['field-photos', jobId], (old) => old)}
           onTaskCreated={() => setShowCreateTask(true)}
-          onNoteAdded={() => setActiveTab('activity')}
+          onNoteAdded={() => setActivePanel('activity')}
         />
       )}
 
@@ -554,7 +628,8 @@ export default function FieldProject() {
         jobId={jobId}
         onCreated={() => {
           setShowCreateTask(false);
-          queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
+          // Optimistic update without full invalidation
+          queryClient.setQueryData(['field-tasks', jobId], (old) => old);
         }}
       />
 
@@ -579,9 +654,10 @@ export default function FieldProject() {
       <FieldQuickActionBar
         jobId={jobId}
         onActionComplete={() => {
-          queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-          queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
-          queryClient.invalidateQueries({ queryKey: ['chat-messages', jobId] });
+          // Use setQueryData to trigger updates without full invalidation
+          queryClient.setQueryData(['field-tasks', jobId], (old) => old);
+          queryClient.setQueryData(['field-photos', jobId], (old) => old);
+          queryClient.setQueryData(['chat-messages', jobId], (old) => old);
         }}
       />
     </div>

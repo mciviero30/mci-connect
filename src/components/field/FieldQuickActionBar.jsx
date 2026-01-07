@@ -5,6 +5,7 @@ import CreateTaskDialog from './CreateTaskDialog';
 import MobilePhotoCapture from './MobilePhotoCapture';
 import NoteDialog from './NoteDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 export default function FieldQuickActionBar({ jobId, onActionComplete }) {
@@ -114,7 +115,7 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
         }}
       />
 
-      {/* Incident Dialog - Navigate to incident page with job pre-filled */}
+      {/* Incident Dialog - Navigate WITHOUT reload */}
       {activeAction === 'incident' && (
         <Dialog open onOpenChange={(open) => !open && setActiveAction(null)}>
           <DialogContent className="bg-slate-900 border-slate-700 text-white">
@@ -127,18 +128,17 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
                 <Button
                   variant="outline"
                   onClick={() => setActiveAction(null)}
-                  className="flex-1 border-slate-700 text-slate-300"
+                  className="flex-1 border-slate-700 text-slate-300 min-h-[48px] touch-manipulation"
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={() => {
-                    window.location.href = `${createPageUrl('CrearIncidente')}?job_id=${jobId}`;
-                  }}
-                  className="flex-1 bg-gradient-to-r from-red-600 to-red-700 text-white"
-                >
-                  Continue
-                </Button>
+                <Link to={`${createPageUrl('CrearIncidente')}?job_id=${jobId}`} className="flex-1">
+                  <Button
+                    className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white min-h-[48px] touch-manipulation"
+                  >
+                    Continue
+                  </Button>
+                </Link>
               </div>
             </div>
           </DialogContent>

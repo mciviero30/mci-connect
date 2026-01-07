@@ -181,8 +181,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const createTaskMutation = useMutation({
     mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: (newTask) => {
-      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+      // Optimistic update without full invalidation
+      queryClient.setQueryData(['field-tasks', jobId], (old) => old ? [...old, newTask] : [newTask]);
+      queryClient.setQueryData(['work-units', jobId], (old) => old ? [...old, newTask] : [newTask]);
       onCreated?.(newTask?.id);
     },
   });
@@ -234,8 +235,13 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const deleteTaskMutation = useMutation({
     mutationFn: (id) => base44.entities.Task.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-      queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+      // Optimistic update without full invalidation
+      queryClient.setQueryData(['field-tasks', jobId], (old) => 
+        old ? old.filter(t => t.id !== existingTask?.id) : old
+      );
+      queryClient.setQueryData(['work-units', jobId], (old) => 
+        old ? old.filter(t => t.id !== existingTask?.id) : old
+      );
       onOpenChange(false);
     },
   });

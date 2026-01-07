@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -724,12 +724,31 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     );
   }
 
-  const navigation = getNavigationForUser();
+  // Memoize navigation to prevent recalculation
+  const navigation = useMemo(() => getNavigationForUser(), [
+    displayUser?.position,
+    user?.position,
+    displayUser?.department,
+    user?.department,
+    displayUser?.role,
+    user?.role
+  ]);
+
   const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
   const isAdmin = userRole === 'admin' || userRole === 'ceo';
 
   // Check if we're on a Field page
   const isFieldPage = location.pathname.includes('/Field');
+
+  // Prevent Layout from triggering Field remounts
+  useEffect(() => {
+    if (isFieldPage) {
+      // Mark Field as active to prevent provider re-initialization
+      sessionStorage.setItem('field_active', 'true');
+    } else {
+      sessionStorage.removeItem('field_active');
+    }
+  }, [isFieldPage]);
 
   const getProfileImage = () => {
     const effectiveUser = displayUser || user;
