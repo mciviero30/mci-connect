@@ -27,7 +27,9 @@ import {
   CheckCircle2,
   Activity,
   QrCode,
-  Brain
+  Brain,
+  MapPin,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
