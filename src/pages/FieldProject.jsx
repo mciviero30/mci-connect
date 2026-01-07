@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
 import ClientInviteManager from '@/components/client/ClientInviteManager.jsx';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
 import { createPageUrl } from '@/utils';
@@ -62,9 +62,12 @@ import DailyFieldReportView from '@/components/field/DailyFieldReportView.jsx';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 
 export default function FieldProject() {
-  const [searchParams] = useSearchParams();
-  const jobId = searchParams.get('id');
-  const [activeTab, setActiveTab] = useState('overview');
+  // Extract jobId from URL params (read-only)
+  const urlParams = new URLSearchParams(window.location.search);
+  const jobId = urlParams.get('id');
+  
+  // SINGLE STATEFUL CONTAINER - All state lives here
+  const [activePanel, setActivePanel] = useState('overview');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
@@ -204,8 +207,9 @@ export default function FieldProject() {
     return <AccessDenied />;
   }
 
-  const renderContent = () => {
-    switch (activeTab) {
+  // CONDITIONAL PANEL RENDERING - No routing, pure state-driven UI
+  const renderPanel = () => {
+    switch (activePanel) {
       case 'overview':
         return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
       case 'plans':
@@ -319,9 +323,9 @@ export default function FieldProject() {
           {sidebarItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => setActivePanel(item.id)}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all min-h-[48px] ${
-                activeTab === item.id
+                activePanel === item.id
                   ? 'bg-gradient-to-r from-orange-600/20 to-yellow-500/20 text-orange-400 border border-orange-500/40 shadow-md'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent'
               }`}
@@ -332,7 +336,7 @@ export default function FieldProject() {
               </div>
               {item.count !== undefined && item.count > 0 && (
                 <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
-                  activeTab === item.id
+                  activePanel === item.id
                     ? 'bg-orange-500/40 text-orange-200'
                     : 'bg-slate-700 text-slate-300'
                 }`}>
@@ -349,7 +353,7 @@ export default function FieldProject() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto pb-32 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
-        {renderContent()}
+        {renderPanel()}
       </div>
 
       {/* Mobile Action Bar */}
@@ -365,8 +369,8 @@ export default function FieldProject() {
       {/* Mobile Bottom Navigation */}
       {isMobile && (
         <MobileBottomNav 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
+          activeTab={activePanel}
+          onTabChange={setActivePanel}
           taskCount={tasks.length}
           planCount={plans.length}
         />
