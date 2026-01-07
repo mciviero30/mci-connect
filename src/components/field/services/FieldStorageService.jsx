@@ -330,6 +330,87 @@ class FieldStorageService {
       getRequest.onerror = () => reject(getRequest.error);
     });
   }
+
+  // Photo-specific storage with blob support
+  async savePhotoWithBlob(photoData, blob) {
+    const db = await this.ensureDB();
+    const tx = db.transaction('photos', 'readwrite');
+    const store = tx.objectStore('photos');
+
+    // Get GPS if available
+    let gps = null;
+    if (navigator.geolocation) {
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        gps = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
+      } catch (err) {
+        console.log('GPS not available:', err);
+      }
+    }
+
+    const record = {
+      ...photoData,
+      blob, // Store the actual blob
+      gps,
+      captured_at: new Date().toISOString(),
+      synced: false,
+      upload_progress: 0,
+      upload_status: 'pending' // pending, uploading, uploaded, error
+    };
+
+    await store.add(record);
+    
+    // Add to sync queue
+    await this.addToSyncQueue('photos', record.id, record.job_id, 'save');
+    
+    return record;
+  }
+
+  async updatePhotoUploadProgress(photoId, progress, status) {
+    const db = await this.ensureDB();
+    const tx = db.transaction('photos', 'readwrite');
+    const store = tx.objectStore('photos');
+
+    return new Promise((resolve, reject) => {
+      const getRequest = store.get(photoId);
+      
+      getRequest.onsuccess = () => {
+        const photo = getRequest.result;
+        if (!photo) return reject(new Error('Photo not found'));
+
+        photo.upload_progress = progress;
+        photo.upload_status = status;
+        
+        const putRequest = store.put(photo);
+        putRequest.onsuccess = () => resolve(photo);
+        putRequest.onerror = () => reject(putRequest.error);
+      };
+      
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+  }
+
+  async getPendingPhotos(jobId) {
+    const db = await this.ensureDB();
+    const tx = db.transaction('photos', 'readonly');
+    const store = tx.objectStore('photos');
+    const index = store.index('job_id');
+
+    return new Promise((resolve, reject) => {
+      const request = index.getAll(jobId);
+      request.onsuccess = () => {
+        const photos = request.result.filter(p => !p.synced && p.blob);
+        resolve(photos);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
 }
 
 export const fieldStorage = new FieldStorageService();

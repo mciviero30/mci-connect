@@ -1,10 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { Camera, MapPin, Loader2, X, Check, RotateCcw, ImagePlus } from 'lucide-react';
+import { Camera, MapPin, Loader2, X, Check, RotateCcw, ImagePlus, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { base44 } from '@/api/base44Client';
+import { fieldStorage } from './services/FieldStorageService';
 
 export default function MobilePhotoCapture({ 
   open, 
@@ -97,28 +98,42 @@ export default function MobilePhotoCapture({
     if (!capturedImage?.file) return;
 
     setUploading(true);
+    const isOnline = navigator.onLine;
+    
     try {
-      // Upload file
-      const { file_url } = await base44.integrations.Core.UploadFile({ 
-        file: capturedImage.file 
-      });
+      const blob = await capturedImage.file.arrayBuffer().then(ab => new Blob([ab]));
+      
+      if (isOnline) {
+        // Online: Upload immediately
+        const { file_url } = await base44.integrations.Core.UploadFile({ 
+          file: capturedImage.file 
+        });
 
-      // Create photo record
-      await base44.entities.Photo.create({
-        job_id: jobId,
-        file_url,
-        caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
-        location: locationText,
-        gps_latitude: location?.latitude,
-        gps_longitude: location?.longitude,
-        wall_number: wallNumber,
-      });
+        await base44.entities.Photo.create({
+          job_id: jobId,
+          file_url,
+          caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
+          location: locationText,
+          gps_latitude: location?.latitude,
+          gps_longitude: location?.longitude,
+          wall_number: wallNumber,
+        });
+      } else {
+        // Offline: Save to IndexedDB with blob
+        await fieldStorage.savePhotoWithBlob({
+          id: `temp_${Date.now()}`,
+          job_id: jobId,
+          caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
+          location: locationText,
+          wall_number: wallNumber,
+        }, blob);
+      }
 
       onPhotoCreated?.();
       handleClose();
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload photo. Please try again.');
+      alert(isOnline ? 'Failed to upload photo. Please try again.' : 'Failed to save photo offline.');
     } finally {
       setUploading(false);
     }
