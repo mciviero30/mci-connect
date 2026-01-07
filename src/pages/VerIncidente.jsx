@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
-import { Shield, CheckCircle, Calendar, User, MapPin, AlertTriangle, FileText } from 'lucide-react';
+import { Shield, CheckCircle, Calendar, User, MapPin, AlertTriangle, FileText, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -46,13 +46,19 @@ export default function VerIncidentePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['safetyIncident'] });
       queryClient.invalidateQueries({ queryKey: ['safetyIncidents'] });
-      toast.success('Incidente actualizado');
+      toast({
+        title: 'Incidente actualizado',
+        variant: 'success'
+      });
     },
   });
 
   const handleAddCorrectiveAction = () => {
     if (!correctiveAction.action) {
-      toast.error('Ingresa una acción correctiva');
+      toast({
+        title: 'Ingresa una acción correctiva',
+        variant: 'destructive'
+      });
       return;
     }
 
@@ -68,7 +74,10 @@ export default function VerIncidentePage() {
 
   const handleCloseIncident = () => {
     if (!rootCause) {
-      toast.error('Ingresa la causa raíz antes de cerrar');
+      toast({
+        title: 'Ingresa la causa raíz antes de cerrar',
+        variant: 'destructive'
+      });
       return;
     }
 

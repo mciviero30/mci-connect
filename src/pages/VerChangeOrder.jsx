@@ -47,7 +47,10 @@ export default function VerChangeOrderPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['changeOrder'] });
       queryClient.invalidateQueries({ queryKey: ['changeOrders'] });
-      toast.success('Change Order aprobado');
+      toast({
+        title: 'Change Order aprobado',
+        variant: 'success'
+      });
     },
   });
 
@@ -64,7 +67,10 @@ export default function VerChangeOrderPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['changeOrder'] });
       queryClient.invalidateQueries({ queryKey: ['changeOrders'] });
-      toast.success('Change Order rechazado');
+      toast({
+        title: 'Change Order rechazado',
+        variant: 'success'
+      });
     },
   });
 
