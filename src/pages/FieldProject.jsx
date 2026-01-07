@@ -158,6 +158,59 @@ export default function FieldProject() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Swipe gestures for panel navigation (mobile only)
+  useEffect(() => {
+    if (!isMobile) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    const panelOrder = ['overview', 'tasks', 'photos', 'activity', 'plans'];
+
+    const handleTouchStart = (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      touchEndX = e.touches[0].clientX;
+      touchEndY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      // Only recognize horizontal swipes (prevent interference with scroll)
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+        const currentIndex = panelOrder.indexOf(activePanel);
+        
+        if (deltaX > 0 && currentIndex > 0) {
+          // Swipe right - go to previous panel
+          setActivePanel(panelOrder[currentIndex - 1]);
+        } else if (deltaX < 0 && currentIndex < panelOrder.length - 1) {
+          // Swipe left - go to next panel
+          setActivePanel(panelOrder[currentIndex + 1]);
+        }
+      }
+    };
+
+    const mainContent = document.querySelector('.field-main-content');
+    if (mainContent) {
+      mainContent.addEventListener('touchstart', handleTouchStart, { passive: true });
+      mainContent.addEventListener('touchmove', handleTouchMove, { passive: true });
+      mainContent.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+      return () => {
+        mainContent.removeEventListener('touchstart', handleTouchStart);
+        mainContent.removeEventListener('touchmove', handleTouchMove);
+        mainContent.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [isMobile, activePanel]);
+
   // Global keyboard shortcut for quick search (Cmd+K / Ctrl+K)
   useEffect(() => {
     const handleKeyDown = (e) => {
