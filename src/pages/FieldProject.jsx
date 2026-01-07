@@ -54,6 +54,8 @@ import ClientApprovalsView from '@/components/field/ClientApprovalsView.jsx';
 import FieldActivityLogView from '@/components/field/FieldActivityLogView.jsx';
 import QRCodeScanner from '@/components/field/QRCodeScanner.jsx';
 import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
+import FieldVoiceNotesView from '@/components/field/FieldVoiceNotesView.jsx';
+import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 import { FieldOfflineProvider, OfflineStatusBadge, saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
 import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
@@ -317,7 +319,7 @@ export default function FieldProject() {
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
-    { id: 'dimensions', label: 'Site Dims', icon: FileText },
+    { id: 'dimensions', label: 'Dimensions', icon: FileText },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'before-after', label: 'Before/After', icon: Camera },
     { id: 'daily-reports', label: 'Daily Reports', icon: ClipboardList },
@@ -330,6 +332,7 @@ export default function FieldProject() {
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'voice', label: 'Voice Notes', icon: Camera },
     { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
   ];
 
@@ -380,7 +383,7 @@ export default function FieldProject() {
       case 'tasks':
         return <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />;
       case 'dimensions':
-        return <FieldDimensionView jobId={jobId} />;
+        return <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />;
       case 'photos':
         return <FieldPhotosView jobId={jobId} />;
       case 'before-after':
@@ -409,6 +412,8 @@ export default function FieldProject() {
         return <FieldActivityLogView jobId={jobId} />;
       case 'analytics':
         return <FieldAnalyticsView jobId={jobId} tasks={tasks} />;
+      case 'voice':
+        return <FieldVoiceNotesView jobId={jobId} />;
       case 'ai-assistant':
         return <FieldAIAssistant jobId={jobId} job={job} tasks={tasks} members={members} />;
       default:
