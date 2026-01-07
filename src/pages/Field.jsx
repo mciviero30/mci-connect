@@ -147,10 +147,18 @@ export default function Field() {
       });
       setShowQuickCustomer(false);
       setQuickCustomer({ first_name: '', last_name: '', company: '', email: '', phone: '' });
-      toast.success('Customer created successfully');
+      toast({
+        title: 'Customer created',
+        description: 'Customer created successfully',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error('Error creating customer: ' + error.message);
+      toast({
+        title: 'Error creating customer',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
