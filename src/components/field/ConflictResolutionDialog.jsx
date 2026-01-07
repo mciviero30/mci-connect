@@ -1,152 +1,85 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, User, CheckCircle2, Clock } from 'lucide-react';
-import { format } from 'date-fns';
+import { AlertTriangle } from 'lucide-react';
+import { fieldStorage } from './services/FieldStorageService';
 
-export default function ConflictResolutionDialog({ conflicts, open, onOpenChange, onResolve }) {
-  const [selectedResolution, setSelectedResolution] = useState({});
+export default function ConflictResolutionDialog({ conflict, onClose, onResolve }) {
+  const [resolution, setResolution] = useState(null);
 
-  if (!conflicts || conflicts.length === 0) return null;
+  if (!conflict) return null;
 
-  const handleResolve = () => {
-    onResolve(selectedResolution);
-    setSelectedResolution({});
-    onOpenChange(false);
+  const handleResolve = async (choice) => {
+    setResolution(choice);
+    
+    const finalData = choice === 'local' 
+      ? conflict.local_version 
+      : conflict.server_version;
+
+    await fieldStorage.resolveConflict(conflict.id, choice);
+    
+    // Update the entity with chosen version
+    await fieldStorage.update(conflict.entity_type, conflict.entity_id, {
+      ...finalData,
+      _conflict: false,
+      synced: choice === 'server'
+    });
+
+    onResolve?.(choice, finalData);
+    onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={!!conflict} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600">
             <AlertTriangle className="w-5 h-5" />
-            Sync Conflicts Detected
+            Sync Conflict Detected
           </DialogTitle>
+          <DialogDescription>
+            This item was modified on the server while you had unsaved changes. Choose which version to keep.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 pt-4">
-          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              <strong>{conflicts.length} conflict(s)</strong> detected during sync. Multiple users edited the same data while offline.
-              Choose which version to keep for each conflict.
-            </p>
-          </div>
-
-          {conflicts.map((conflict, idx) => (
-            <div key={idx} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-              <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-                <h3 className="font-semibold text-slate-900 dark:text-white">
-                  {conflict.entity} #{conflict.entityId}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {conflict.field && `Field: ${conflict.field}`}
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4 p-4">
-                {/* Version A */}
-                <div 
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedResolution[conflict.id] === 'versionA'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'
-                  }`}
-                  onClick={() => setSelectedResolution({
-                    ...selectedResolution,
-                    [conflict.id]: 'versionA'
-                  })}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge className="bg-blue-100 text-blue-800">Version A</Badge>
-                    {selectedResolution[conflict.id] === 'versionA' && (
-                      <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <User className="w-4 h-4 text-slate-500" />
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {conflict.versionA.user_name}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      Priority: {conflict.versionA.role_priority}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-3 text-xs text-slate-500 dark:text-slate-400">
-                    <Clock className="w-3 h-3" />
-                    {format(new Date(conflict.versionA.timestamp), 'MMM dd, h:mm a')}
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 rounded p-3 text-sm">
-                    <pre className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                      {JSON.stringify(conflict.versionA.data, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-
-                {/* Version B */}
-                <div 
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedResolution[conflict.id] === 'versionB'
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-green-300'
-                  }`}
-                  onClick={() => setSelectedResolution({
-                    ...selectedResolution,
-                    [conflict.id]: 'versionB'
-                  })}
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge className="bg-green-100 text-green-800">Version B</Badge>
-                    {selectedResolution[conflict.id] === 'versionB' && (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <User className="w-4 h-4 text-slate-500" />
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {conflict.versionB.user_name}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      Priority: {conflict.versionB.role_priority}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-3 text-xs text-slate-500 dark:text-slate-400">
-                    <Clock className="w-3 h-3" />
-                    {format(new Date(conflict.versionB.timestamp), 'MMM dd, h:mm a')}
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 rounded p-3 text-sm">
-                    <pre className="whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                      {JSON.stringify(conflict.versionB.data, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              </div>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          {/* Local Version */}
+          <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
+            <h3 className="font-bold text-sm mb-2">Your Local Version</h3>
+            <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <p className="font-mono text-xs max-h-48 overflow-auto">
+                {JSON.stringify(conflict.local_version, null, 2)}
+              </p>
             </div>
-          ))}
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
+            <Button 
+              onClick={() => handleResolve('local')}
+              className="w-full mt-3 bg-blue-600 hover:bg-blue-700"
+              disabled={resolution !== null}
             >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleResolve}
-              disabled={Object.keys(selectedResolution).length !== conflicts.length}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Resolve Conflicts
+              Keep My Changes
             </Button>
           </div>
+
+          {/* Server Version */}
+          <div className="border rounded-lg p-4 bg-slate-50 dark:bg-slate-900">
+            <h3 className="font-bold text-sm mb-2">Server Version</h3>
+            <div className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <p className="font-mono text-xs max-h-48 overflow-auto">
+                {JSON.stringify(conflict.server_version, null, 2)}
+              </p>
+            </div>
+            <Button 
+              onClick={() => handleResolve('server')}
+              className="w-full mt-3 bg-orange-600 hover:bg-orange-700"
+              disabled={resolution !== null}
+            >
+              Use Server Version
+            </Button>
+          </div>
+        </div>
+
+        <div className="text-xs text-slate-500 mt-2">
+          <strong>Detected:</strong> {new Date(conflict.detected_at).toLocaleString()}
         </div>
       </DialogContent>
     </Dialog>

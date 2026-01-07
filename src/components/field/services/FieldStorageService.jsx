@@ -8,7 +8,8 @@ const STORES = {
   photos: { keyPath: 'id', indexes: ['job_id', 'synced', 'uploaded_at'] },
   progress: { keyPath: 'id', indexes: ['job_id', 'synced', 'timestamp'] },
   notes: { keyPath: 'id', indexes: ['job_id', 'synced', 'created_at'] },
-  sync_queue: { keyPath: 'id', autoIncrement: true, indexes: ['entity_type', 'job_id', 'timestamp'] }
+  sync_queue: { keyPath: 'id', autoIncrement: true, indexes: ['entity_type', 'job_id', 'timestamp'] },
+  conflicts: { keyPath: 'id', autoIncrement: true, indexes: ['entity_type', 'entity_id', 'job_id', 'resolved'] }
 };
 
 class FieldStorageService {
@@ -267,6 +268,67 @@ class FieldStorageService {
         await store.delete(record.id);
       }
     }
+  }
+
+  // Conflict Management
+  async saveConflict(entityType, entityId, jobId, localVersion, serverVersion) {
+    const db = await this.ensureDB();
+    const tx = db.transaction('conflicts', 'readwrite');
+    const store = tx.objectStore('conflicts');
+
+    await store.add({
+      entity_type: entityType,
+      entity_id: entityId,
+      job_id: jobId,
+      local_version: localVersion,
+      server_version: serverVersion,
+      detected_at: new Date().toISOString(),
+      resolved: false
+    });
+  }
+
+  async getConflicts(jobId = null) {
+    const db = await this.ensureDB();
+    const tx = db.transaction('conflicts', 'readonly');
+    const store = tx.objectStore('conflicts');
+
+    return new Promise((resolve, reject) => {
+      if (jobId) {
+        const index = store.index('job_id');
+        const request = index.getAll(jobId);
+        request.onsuccess = () => resolve(request.result.filter(c => !c.resolved));
+        request.onerror = () => reject(request.error);
+      } else {
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result.filter(c => !c.resolved));
+        request.onerror = () => reject(request.error);
+      }
+    });
+  }
+
+  async resolveConflict(conflictId, resolution) {
+    const db = await this.ensureDB();
+    const tx = db.transaction('conflicts', 'readwrite');
+    const store = tx.objectStore('conflicts');
+
+    return new Promise((resolve, reject) => {
+      const getRequest = store.get(conflictId);
+      
+      getRequest.onsuccess = () => {
+        const conflict = getRequest.result;
+        if (!conflict) return reject(new Error('Conflict not found'));
+
+        conflict.resolved = true;
+        conflict.resolution = resolution;
+        conflict.resolved_at = new Date().toISOString();
+        
+        const putRequest = store.put(conflict);
+        putRequest.onsuccess = () => resolve(conflict);
+        putRequest.onerror = () => reject(putRequest.error);
+      };
+      
+      getRequest.onerror = () => reject(getRequest.error);
+    });
   }
 }
 

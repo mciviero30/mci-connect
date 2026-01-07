@@ -86,7 +86,23 @@ class SyncQueueService {
       const { id, synced, created_at, updated_at, blob, _pending, ...cleanData } = data;
       result = await base44.entities[entityName].create(cleanData);
     } else if (operation === 'update') {
-      const { synced, blob, _pending, ...cleanData } = data;
+      // Check for conflicts before update
+      const serverData = await base44.entities[entityName].filter({ id: entity_id });
+      const serverVersion = serverData[0];
+      
+      if (serverVersion && serverVersion.updated_at > data.updated_at) {
+        // CONFLICT DETECTED: Server version is newer
+        console.warn(`⚠️ Conflict detected: ${entity_type}/${entity_id}`);
+        
+        await fieldStorage.saveConflict(entity_type, entity_id, job_id, data, serverVersion);
+        await fieldStorage.removeSyncQueueItem(item.id);
+        
+        // Mark record with conflict flag
+        await fieldStorage.update(entity_type, entity_id, { _conflict: true });
+        return;
+      }
+      
+      const { synced, blob, _pending, _conflict, ...cleanData } = data;
       result = await base44.entities[entityName].update(entity_id, cleanData);
     }
 

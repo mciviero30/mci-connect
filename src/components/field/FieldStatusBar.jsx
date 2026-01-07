@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 export default function FieldStatusBar({ jobId }) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [unsyncedCount, setUnsyncedCount] = useState(0);
+  const [conflictCount, setConflictCount] = useState(0);
 
   // Monitor online status
   useEffect(() => {
@@ -28,8 +29,12 @@ export default function FieldStatusBar({ jobId }) {
         const { fieldStorage } = await import('./services/FieldStorageService');
         const count = await fieldStorage.getUnsyncedCount(jobId);
         setUnsyncedCount(count);
+        
+        const conflicts = await fieldStorage.getConflicts(jobId);
+        setConflictCount(conflicts.length);
       } catch {
         setUnsyncedCount(0);
+        setConflictCount(0);
       }
     };
 
@@ -50,7 +55,7 @@ export default function FieldStatusBar({ jobId }) {
     refetchInterval: 30000, // Refresh every 30s
   });
 
-  const hasIssues = !isOnline || unsyncedCount > 0 || blockingIncidents.length > 0;
+  const hasIssues = !isOnline || unsyncedCount > 0 || blockingIncidents.length > 0 || conflictCount > 0;
 
   if (!hasIssues) return null;
 
@@ -77,6 +82,14 @@ export default function FieldStatusBar({ jobId }) {
         <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/30 animate-pulse">
           <AlertTriangle className="w-4 h-4" />
           <span className="text-xs font-bold">{blockingIncidents.length} Critical Issue{blockingIncidents.length !== 1 ? 's' : ''}</span>
+        </div>
+      )}
+
+      {/* Sync Conflicts */}
+      {conflictCount > 0 && (
+        <div className="flex items-center gap-2 text-red-400 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/30">
+          <AlertTriangle className="w-4 h-4" />
+          <span className="text-xs font-bold">{conflictCount} Conflict{conflictCount !== 1 ? 's' : ''}</span>
         </div>
       )}
     </div>
