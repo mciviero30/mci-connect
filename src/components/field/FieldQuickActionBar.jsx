@@ -3,51 +3,12 @@ import { Camera, FileText, CheckSquare, AlertTriangle, Map } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import CreateTaskDialog from './CreateTaskDialog';
 import MobilePhotoCapture from './MobilePhotoCapture';
+import NoteDialog from './NoteDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { base44 } from '@/api/base44Client';
-import { fieldStorage } from './services/FieldStorageService';
 import { createPageUrl } from '@/utils';
 
 export default function FieldQuickActionBar({ jobId, onActionComplete }) {
   const [activeAction, setActiveAction] = useState(null);
-  const [noteText, setNoteText] = useState('');
-  const [saving, setSaving] = useState(false);
-  const isOnline = navigator.onLine;
-
-  const handleSaveNote = async () => {
-    if (!noteText.trim()) return;
-    
-    setSaving(true);
-    try {
-      if (isOnline) {
-        await base44.entities.ChatMessage.create({
-          project_id: jobId,
-          job_id: jobId,
-          message: noteText,
-          content: noteText,
-          channel: 'general',
-          sender_email: (await base44.auth.me()).email,
-          sender_name: (await base44.auth.me()).full_name,
-        });
-      } else {
-        await fieldStorage.save('notes', {
-          id: `temp_${Date.now()}`,
-          job_id: jobId,
-          message: noteText,
-          content: noteText,
-        });
-      }
-      
-      setNoteText('');
-      setActiveAction(null);
-      onActionComplete?.();
-    } catch (error) {
-      console.error('Failed to save note:', error);
-      alert('Failed to save note');
-    }
-    setSaving(false);
-  };
 
   const actions = [
     {
@@ -143,39 +104,16 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
         }}
       />
 
-      {/* Note Dialog */}
-      <Dialog open={activeAction === 'note'} onOpenChange={(open) => !open && setActiveAction(null)}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
-          <DialogHeader>
-            <DialogTitle>Add Quick Note</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <Textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Type your note..."
-              className="bg-slate-800 border-slate-700 text-white min-h-[120px]"
-              autoFocus
-            />
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setActiveAction(null)}
-                className="flex-1 border-slate-700 text-slate-300"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveNote}
-                disabled={!noteText.trim() || saving}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white"
-              >
-                {saving ? 'Saving...' : isOnline ? 'Save Note' : 'Save Offline'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Note Dialog - Auto-save on input */}
+      <NoteDialog
+        open={activeAction === 'note'}
+        onOpenChange={(open) => !open && setActiveAction(null)}
+        jobId={jobId}
+        onComplete={() => {
+          setActiveAction(null);
+          onActionComplete?.();
+        }}
+      />
 
       {/* Incident Dialog - Navigate to incident page with job pre-filled */}
       {activeAction === 'incident' && (
