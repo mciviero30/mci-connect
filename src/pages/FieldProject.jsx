@@ -560,6 +560,9 @@ export default function FieldProject() {
           <fabConfig.icon className="w-7 h-7" />
         </button>
       )}
+
+      {/* Universal Sync Indicator */}
+      <UniversalSyncIndicator jobId={jobId} />
     </div>
     </FieldOfflineProvider>
     </ThemeProvider>
