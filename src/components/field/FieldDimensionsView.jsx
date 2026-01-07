@@ -4,10 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Ruler, Download, Image as ImageIcon, FileText, Trash2 } from 'lucide-react';
+import { Plus, Ruler, Download, Image as ImageIcon, FileText, Trash2, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import DimensionCanvas from './dimensions/DimensionCanvas';
 import DimensionDialog from './dimensions/DimensionDialog';
+import DimensionLegend from './dimensions/DimensionLegend';
+import ProductionConfirmationDialog from './dimensions/ProductionConfirmationDialog';
+import { validateDimension } from './dimensions/DimensionValidation';
 import { FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
 import { format } from 'date-fns';
 
@@ -213,6 +216,11 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* Legend */}
+        <div className="mt-4">
+          <DimensionLegend unitSystem={projectUnitSystem} />
         </div>
       </div>
 
