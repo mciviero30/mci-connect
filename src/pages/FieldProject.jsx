@@ -67,8 +67,6 @@ import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
 import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
 import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
 import { FieldContextProvider } from '@/components/field/FieldContextProvider.jsx';
-import MobileNativeOptimizations from '@/components/field/MobileNativeOptimizations.jsx';
-import MobileKeyboardHandler from '@/components/field/MobileKeyboardHandler.jsx';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -77,47 +75,6 @@ export default function FieldProject() {
   
   // SINGLE STATEFUL CONTAINER - All state lives here
   const queryClient = useQueryClient();
-  
-  // Handle Android back button
-  useEffect(() => {
-    const handleBackButton = (e) => {
-      // Prevent default back behavior
-      e.preventDefault();
-      
-      // Custom back logic - close dialogs first, then navigate
-      if (showCreateTask || showDailyReport || showQuickSearch) {
-        setShowCreateTask(false);
-        setShowDailyReport(false);
-        setShowQuickSearch(false);
-      } else {
-        window.location.href = createPageUrl('Field');
-      }
-    };
-    
-    // Listen for popstate (Android back button)
-    window.addEventListener('popstate', handleBackButton);
-    
-    // Push a dummy state to catch back button
-    window.history.pushState({ page: 'field-project' }, '');
-    
-    return () => {
-      window.removeEventListener('popstate', handleBackButton);
-    };
-  }, [showCreateTask, showDailyReport, showQuickSearch]);
-  
-  // Handle app resume from background
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        // App resumed - refresh critical data without full reload
-        queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
-        queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [jobId, queryClient]);
   
   // Restore persisted state
   const getPersistedState = () => {
@@ -466,13 +423,7 @@ export default function FieldProject() {
     <ThemeProvider appType="field">
     <FieldOfflineProvider jobId={jobId}>
     <FieldContextProvider jobId={jobId}>
-    <MobileNativeOptimizations />
-    <MobileKeyboardHandler />
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto" style={{ 
-      WebkitOverflowScrolling: 'touch',
-      WebkitTapHighlightColor: 'transparent',
-      touchAction: 'pan-y',
-    }}>
+    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
       
@@ -563,17 +514,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div 
-        className="flex-1 overflow-y-auto pb-32 md:pb-0 field-main-content" 
-        data-scrollable="true"
-        style={{ 
-          height: '100vh', 
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehaviorY: 'contain',
-          touchAction: 'pan-y',
-        }}
-      >
+      <div className="flex-1 overflow-y-auto pb-32 md:pb-0 field-main-content" style={{ height: '100vh', overflowY: 'auto' }}>
         <FieldStatusBar jobId={jobId} />
         {renderPanel()}
       </div>

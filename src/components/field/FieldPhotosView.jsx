@@ -77,10 +77,7 @@ export default function FieldPhotosView({ jobId }) {
   };
 
   return (
-    <div className="p-4 sm:p-6" style={{
-      WebkitOverflowScrolling: 'touch',
-      overscrollBehavior: 'contain',
-    }}>
+    <div className="p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
         <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
           <h1 className="text-2xl font-bold text-black">Photos</h1>

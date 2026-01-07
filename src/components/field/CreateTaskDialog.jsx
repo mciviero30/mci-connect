@@ -468,10 +468,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden" style={{
-        WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain',
-      }}>
+      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
         <VisuallyHidden>
           <DialogTitle>Task Details</DialogTitle>
           <DialogDescription>{canEdit ? 'Edit task information and checklist' : 'View task information'}</DialogDescription>
@@ -513,15 +510,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
             </div>
 
             {/* Checklist Section */}
-            <div 
-              className="flex-1 overflow-y-auto p-6" 
-              data-scrollable="true"
-              style={{ 
-                maxHeight: 'calc(90vh - 80px)',
-                WebkitOverflowScrolling: 'touch',
-                overscrollBehaviorY: 'contain',
-              }}
-            >
+            <div className="flex-1 overflow-y-auto p-6" style={{ maxHeight: 'calc(90vh - 80px)' }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white">Checklist:</h3>
                 <div className="flex items-center gap-2">
@@ -758,15 +747,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               </div>
             </div>
             
-            <div 
-              className="flex-1 overflow-y-auto p-4 space-y-3" 
-              data-scrollable="true"
-              style={{ 
-                maxHeight: 'calc(90vh - 200px)',
-                WebkitOverflowScrolling: 'touch',
-                overscrollBehaviorY: 'contain',
-              }}
-            >
+            <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: 'calc(90vh - 200px)' }}>
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>

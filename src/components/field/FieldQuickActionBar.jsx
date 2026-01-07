@@ -45,24 +45,14 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
 
   return (
     <>
-      {/* Mobile Bottom Bar - Enhanced for outdoor use + iOS safe area */}
-      <div 
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t-4 border-slate-700 shadow-2xl"
-        style={{
-          paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
-          WebkitTapHighlightColor: 'transparent',
-        }}
-      >
+      {/* Mobile Bottom Bar - Enhanced for outdoor use */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t-4 border-slate-700 shadow-2xl pb-safe">
         <div className="flex items-center justify-around px-2 py-4 gap-1">
           {actions.map((action) => (
             <button
               key={action.id}
               onClick={() => setActiveAction(action.id)}
               className="flex flex-col items-center gap-2 flex-1 touch-manipulation active:scale-95 transition-transform active:opacity-80"
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                WebkitTouchCallout: 'none',
-              }}
             >
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-2 border-white/20`}>
                 <action.icon className="w-7 h-7 text-white" />
