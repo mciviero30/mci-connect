@@ -17,6 +17,7 @@ import SaveIndicator from './SaveIndicator';
 import { useFieldContext, withFieldContext } from './FieldContextProvider';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
+import FieldBottomSheet from './FieldBottomSheet';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -477,6 +478,134 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       deleteTaskMutation.mutate(task.id);
     }
   };
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  if (isMobile) {
+    return (
+      <FieldBottomSheet open={open} onOpenChange={handleClose} title={task.id ? task.title || 'Task Details' : 'New Task'}>
+        {!canEdit && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-lg mb-4">
+            <p className="text-xs text-amber-800 dark:text-amber-300 font-semibold text-center">
+              🔒 Read-Only Mode - Only supervisors can edit
+            </p>
+          </div>
+        )}
+
+        {/* Mobile Single Column Layout */}
+        <div className="space-y-4">
+          {/* Title */}
+          <div>
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Wall Number</Label>
+            <Input 
+              value={task.title}
+              onChange={(e) => handleFieldChange('title', e.target.value)}
+              placeholder="Wall 101"
+              className="mt-1.5 text-lg font-bold min-h-[52px]"
+              disabled={!canEdit || detectingWallNumber}
+            />
+          </div>
+
+          {/* Status */}
+          <div>
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Status</Label>
+            <Select value={task.status} onValueChange={(v) => handleFieldChange('status', v)} disabled={!canEdit}>
+              <SelectTrigger className="mt-1.5 min-h-[52px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending" className="min-h-[48px]">📋 Assigned</SelectItem>
+                <SelectItem value="in_progress" className="min-h-[48px]">⚙️ Working</SelectItem>
+                <SelectItem value="completed" className="min-h-[48px]">✅ Done</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Priority */}
+          <div>
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Priority</Label>
+            <Select value={task.priority} onValueChange={(v) => handleFieldChange('priority', v)} disabled={!canEdit}>
+              <SelectTrigger className="mt-1.5 min-h-[52px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low" className="min-h-[48px]">🟢 Low</SelectItem>
+                <SelectItem value="medium" className="min-h-[48px]">🟡 Medium</SelectItem>
+                <SelectItem value="high" className="min-h-[48px]">🟠 High</SelectItem>
+                <SelectItem value="urgent" className="min-h-[48px]">🔴 Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Checklist Template */}
+          <div>
+            <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Checklist Template</Label>
+            <Select onValueChange={handleTemplateSelect}>
+              <SelectTrigger className="mt-1.5 min-h-[52px]">
+                <SelectValue placeholder="Select template..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="glass_wall" className="min-h-[48px]">🪟 Glass Wall</SelectItem>
+                <SelectItem value="solid_wall" className="min-h-[48px]">🧱 Solid Wall</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Checklist Items */}
+          {task.checklist.length > 0 && (
+            <div>
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">Progress</Label>
+              <div className="space-y-2">
+                {task.checklist.map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => canEdit && toggleChecklistItemStatus(idx)}
+                    disabled={!canEdit}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 min-h-[56px] touch-manipulation active:scale-[0.98] transition-all"
+                  >
+                    {getChecklistIcon(item.status)}
+                    <span className="flex-1 text-left text-sm font-medium text-slate-700 dark:text-slate-300">{item.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Save/Delete Actions */}
+          {task.id && (
+            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+              {canEdit ? (
+                <>
+                  <Button 
+                    onClick={handleSave}
+                    disabled={updateTaskMutation.isPending}
+                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white min-h-[56px] touch-manipulation active:scale-95 font-bold"
+                  >
+                    {updateTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button
+                    onClick={handleDeleteTask}
+                    disabled={deleteTaskMutation.isPending}
+                    variant="outline"
+                    className="border-red-500/50 text-red-600 min-h-[56px] touch-manipulation active:scale-95"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  onClick={handleClose}
+                  className="w-full min-h-[56px] touch-manipulation active:scale-95"
+                >
+                  Close
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </FieldBottomSheet>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
