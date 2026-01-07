@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -12,6 +12,8 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Tesseract from 'tesseract.js';
 import { Switch } from '@/components/ui/switch';
 import { canEditTasks, canToggleClientVisibility } from './rolePermissions';
+import { useAutoSave } from './hooks/useAutoSave';
+import SaveIndicator from './SaveIndicator';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -69,6 +71,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [newComment, setNewComment] = useState('');
   const [detectingWallNumber, setDetectingWallNumber] = useState(false);
+
+  // Auto-save for new tasks (not existing tasks from pins)
+  const { autoSave, loadDraft, clearDraft, isSaving, lastSaved, isOnline } = useAutoSave({
+    entityType: 'tasks',
+    jobId,
+    enabled: open && !existingTask && !pinPosition,
+    debounceMs: 2000
+  });
 
   // Fetch current user
   const { data: currentUser } = useQuery({
@@ -265,8 +275,10 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     }
   }, [open, pinPosition, existingTask]);
 
-  // Load existing task data
-  React.useEffect(() => {
+  // Load existing task data or draft
+  useEffect(() => {
+    if (!open) return;
+    
     if (existingTask) {
       setTask({
         id: existingTask.id,
@@ -285,8 +297,15 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         visible_to_client: existingTask.visible_to_client || false,
         internal_notes: existingTask.internal_notes || '',
       });
+    } else if (!pinPosition) {
+      // Load draft only for standalone task creation
+      loadDraft().then(draft => {
+        if (draft) {
+          setTask(draft);
+        }
+      });
     }
-  }, [existingTask]);
+  }, [existingTask, open, pinPosition]);
 
   // Update task data when mutation succeeds (for new tasks)
   React.useEffect(() => {
@@ -303,7 +322,17 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const canEdit = canEditTasks(currentUser);
   const canToggleVisibility = canToggleClientVisibility(currentUser);
 
-  const handleSave = () => {
+  const handleFieldChange = (field, value) => {
+    const updated = { ...task, [field]: value };
+    setTask(updated);
+    
+    // Auto-save for standalone task creation (not pin-based)
+    if (!existingTask && !pinPosition && updated.title) {
+      autoSave(updated);
+    }
+  };
+
+  const handleSave = async () => {
     if (!task.id) return;
     if (!canEdit) return; // Block unauthorized edits
     
@@ -315,10 +344,22 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       cost: task.cost ? parseFloat(task.cost) || undefined : undefined,
     };
     
-    updateTaskMutation.mutate({
+    await updateTaskMutation.mutateAsync({
       id: task.id,
       data: dataToSave
     });
+    
+    await clearDraft();
+  };
+
+  const handleClose = async () => {
+    if (!existingTask && !pinPosition && task.title) {
+      // Keep draft on close for standalone tasks
+      onOpenChange(false);
+    } else {
+      await clearDraft();
+      onOpenChange(false);
+    }
   };
 
   const handlePhotoUpload = async (e) => {
@@ -424,7 +465,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
         <VisuallyHidden>
           <DialogTitle>Task Details</DialogTitle>
@@ -457,7 +498,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 ) : (
                   <Input 
                     value={task.title}
-                    onChange={(e) => setTask({...task, title: e.target.value})}
+                    onChange={(e) => handleFieldChange('title', e.target.value)}
                     placeholder="Enter wall number"
                     className="text-xl font-semibold border-none bg-transparent p-0 h-auto focus-visible:ring-0 text-slate-900 dark:text-white"
                     disabled={!canEdit}
@@ -685,7 +726,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
           {/* Right Column - Task Attributes */}
           <div className="w-80 flex flex-col bg-slate-50 dark:bg-slate-800/50">
             <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="font-semibold text-slate-900 dark:text-white">Task Attributes</h3>
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Task Attributes</h3>
+                {!existingTask && !pinPosition && (
+                  <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} isOnline={isOnline} />
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 {task.id && canEdit && (
                   <Button 
@@ -699,7 +745,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 )}
                 {task.id && !canEdit && (
                   <Button 
-                    onClick={() => onOpenChange(false)}
+                    onClick={handleClose}
                     size="sm"
                     variant="outline"
                     className="px-6"
@@ -714,7 +760,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {/* Status */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Status</label>
-                <Select value={task.status} onValueChange={(v) => setTask({...task, status: v})} disabled={!canEdit}>
+                <Select value={task.status} onValueChange={(v) => handleFieldChange('status', v)} disabled={!canEdit}>
                 <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                   <SelectValue />
                 </SelectTrigger>
@@ -729,7 +775,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {/* Priority */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Priority</label>
-                <Select value={task.priority} onValueChange={(v) => setTask({...task, priority: v})}>
+                <Select value={task.priority} onValueChange={(v) => handleFieldChange('priority', v)}>
                   <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
@@ -745,7 +791,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {/* Task Type */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Type</label>
-                <Select value={task.task_type} onValueChange={(v) => setTask({...task, task_type: v})}>
+                <Select value={task.task_type} onValueChange={(v) => handleFieldChange('task_type', v)}>
                   <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
@@ -760,7 +806,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {/* Category */}
               <div>
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Category</label>
-                <Select value={task.category} onValueChange={(v) => setTask({...task, category: v})}>
+                <Select value={task.category} onValueChange={(v) => handleFieldChange('category', v)}>
                   <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
@@ -777,7 +823,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Assignee</label>
                 <Input 
                   value={task.assigned_to}
-                  onChange={(e) => setTask({...task, assigned_to: e.target.value})}
+                  onChange={(e) => handleFieldChange('assigned_to', e.target.value)}
                   placeholder="user@example.com"
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
@@ -789,7 +835,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <Input 
                   type="date"
                   value={task.due_date}
-                  onChange={(e) => setTask({...task, due_date: e.target.value})}
+                  onChange={(e) => handleFieldChange('due_date', e.target.value)}
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
               </div>
@@ -802,7 +848,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 </label>
                 <Input 
                   value={task.manpower}
-                  onChange={(e) => setTask({...task, manpower: e.target.value})}
+                  onChange={(e) => handleFieldChange('manpower', e.target.value)}
                   placeholder="e.g., 2 workers"
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
@@ -816,7 +862,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 </label>
                 <Input 
                   value={task.cost}
-                  onChange={(e) => setTask({...task, cost: e.target.value})}
+                  onChange={(e) => handleFieldChange('cost', e.target.value)}
                   placeholder="e.g., $500"
                   className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                 />
@@ -839,7 +885,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       </div>
                       <Switch
                         checked={task.visible_to_client}
-                        onCheckedChange={(checked) => setTask({...task, visible_to_client: checked})}
+                        onCheckedChange={(checked) => handleFieldChange('visible_to_client', checked)}
                         disabled={!canToggleVisibility}
                       />
                     </div>
@@ -858,7 +904,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                     </label>
                     <Textarea
                       value={task.internal_notes}
-                      onChange={(e) => setTask({...task, internal_notes: e.target.value})}
+                      onChange={(e) => handleFieldChange('internal_notes', e.target.value)}
                       placeholder="Issues, rework, internal communications..."
                       className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 h-20 text-sm"
                     />
