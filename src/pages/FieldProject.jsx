@@ -422,6 +422,7 @@ export default function FieldProject() {
     <FieldErrorBoundary>
     <ThemeProvider appType="field">
     <FieldOfflineProvider jobId={jobId}>
+    <FieldContextProvider jobId={jobId}>
     <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto">
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
