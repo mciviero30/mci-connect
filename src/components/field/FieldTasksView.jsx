@@ -12,7 +12,8 @@ import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
 import { canEditTasks } from './rolePermissions';
-import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS, updateFieldQueryData } from './config/fieldQueryConfig';
+import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
+import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided

@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import PhotoComparisonView from './PhotoComparison.jsx';
 import MobilePhotoCapture from './MobilePhotoCapture.jsx';
 import BeforeAfterPhotoManager from './BeforeAfterPhotoManager.jsx';
+import { updateFieldQueryData } from './config/fieldQueryConfig';
 
 export default function FieldPhotosView({ jobId }) {
   const [showUpload, setShowUpload] = useState(false);
