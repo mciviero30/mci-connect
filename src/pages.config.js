@@ -97,6 +97,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
+import FieldBottomActionRail from './pages/FieldBottomActionRail';
 import __Layout from './Layout.jsx';
 
 
@@ -200,6 +201,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
+    "FieldBottomActionRail": FieldBottomActionRail,
 }
 
 export const pagesConfig = {
