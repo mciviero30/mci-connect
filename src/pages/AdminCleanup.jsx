@@ -338,10 +338,10 @@ export default function AdminCleanup() {
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
-      <div className="max-w-7xl mx-auto"> {/* Changed to max-w-7xl to accommodate new sections */}
+      <div className="max-w-7xl mx-auto">
         <PageHeader
-          title={language === 'es' ? 'Limpieza de Datos' : 'Data Cleanup'}
-          description={language === 'es' ? 'Herramientas de auditoría y limpieza de datos' : 'Data auditing and cleanup tools'}
+          title="Limpieza de Datos"
+          description="Herramientas de auditoría y limpieza de datos"
           icon={AlertTriangle}
         />
 
