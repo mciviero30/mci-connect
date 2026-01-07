@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/toast';
 
 export default function MobileActionBar({ jobId, onPhotoAdded, onTaskCreated, onNoteAdded }) {
-  const { success, error } = useToast();
+  const toast = useToast();
   const photoInputRef = useRef(null);
   const [uploading, setUploading] = React.useState(false);
 
@@ -21,10 +21,16 @@ export default function MobileActionBar({ jobId, onPhotoAdded, onTaskCreated, on
         file_url,
         caption: `Photo - ${new Date().toLocaleString()}`,
       });
-      success('Photo uploaded!');
+      toast({
+        title: 'Photo uploaded!',
+        variant: 'success'
+      });
       onPhotoAdded?.();
     } catch (err) {
-      error('Failed to upload photo');
+      toast({
+        title: 'Failed to upload photo',
+        variant: 'destructive'
+      });
     } finally {
       setUploading(false);
     }
