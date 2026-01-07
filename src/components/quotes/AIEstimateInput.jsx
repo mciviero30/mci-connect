@@ -437,7 +437,7 @@ export default function AIEstimateInput({ onQuoteGenerated, language = 'en' }) {
 
         {/* Catalog Search Dialog */}
         <Dialog open={showCatalogSearch !== null} onOpenChange={() => setShowCatalogSearch(null)}>
-          <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white">
                 {language === 'es' ? 'Seleccionar del Catálogo' : 'Select from Catalog'}

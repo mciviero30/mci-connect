@@ -202,7 +202,7 @@ export default function AssignmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold text-[#1E3A8A] flex items-center gap-3">

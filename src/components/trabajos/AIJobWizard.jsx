@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -677,7 +676,7 @@ ${language === 'es' ? 'Responde en español.' : 'Respond in English.'}
 
       {/* NEW: Quick Customer Creation Dialog */}
       <Dialog open={showCustomerForm} onOpenChange={setShowCustomerForm}>
-        <DialogContent className="max-w-2xl bg-white border-slate-200">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-slate-200">
           <DialogHeader>
             <DialogTitle className="text-2xl text-slate-900">
               {language === 'es' ? 'Crear Cliente Rápido' : 'Quick Create Customer'}
