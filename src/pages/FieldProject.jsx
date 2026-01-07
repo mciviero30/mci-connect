@@ -62,6 +62,7 @@ import MobileActionBar from '@/components/field/MobileActionBar.jsx';
 import DailyFieldReportView from '@/components/field/DailyFieldReportView.jsx';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import FieldStatusBar from '@/components/field/FieldStatusBar.jsx';
+import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
