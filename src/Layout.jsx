@@ -66,6 +66,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
 import { LanguageProvider, useLanguage } from "@/components/i18n/LanguageContext";
 import { PermissionsProvider } from "@/components/permissions/PermissionsContext";
+import { FieldModeProvider, useFieldMode } from "@/components/contexts/FieldModeContext";
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select";
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileOptimizations from "@/components/shared/MobileOptimizations";
@@ -255,6 +256,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   const location = useLocation();
   const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
+  const { isFieldMode } = useFieldMode();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
@@ -289,6 +291,22 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  // CRITICAL: Field Mode Theme Override (scoped, no leakage)
+  useEffect(() => {
+    if (isFieldMode) {
+      // Apply field dark theme (scoped to Field pages only)
+      document.documentElement.classList.add('dark');
+    } else {
+      // Restore user's preferred theme when leaving Field
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [isFieldMode]);
 
   const { data: clientMemberships = [] } = useQuery({
     queryKey: ['client-memberships-check', user?.email],
@@ -1077,17 +1095,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <LanguageProvider>
-          <PermissionsProvider>
-            <AgreementGate>
-              <TaxProfileGate>
-                <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                  {children}
-                </LayoutContent>
-              </TaxProfileGate>
-            </AgreementGate>
-          </PermissionsProvider>
-        </LanguageProvider>
+        <FieldModeProvider>
+          <LanguageProvider>
+            <PermissionsProvider>
+              <AgreementGate>
+                <TaxProfileGate>
+                  <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                    {children}
+                  </LayoutContent>
+                </TaxProfileGate>
+              </AgreementGate>
+            </PermissionsProvider>
+          </LanguageProvider>
+        </FieldModeProvider>
       </ErrorBoundary>
     </ToastProvider>
   );

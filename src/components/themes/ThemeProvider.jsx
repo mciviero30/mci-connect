@@ -17,46 +17,39 @@ export const ThemeProvider = ({ children, appType }) => {
   );
 
   useEffect(() => {
-    // Aplicar variables CSS al root
+    // CRITICAL: ThemeProvider MUST NOT modify document.documentElement directly
+    // Layout controls dark mode based on isFieldMode flag
+    // This only applies CSS variables, NOT dark class
+    
     const root = document.documentElement;
     const theme = currentTheme;
 
-    // Aplicar colores primarios
+    // Apply CSS custom properties only
     Object.entries(theme.colors.primary).forEach(([key, value]) => {
       root.style.setProperty(`--color-primary-${key}`, value);
     });
 
-    // Aplicar colores de fondo
     Object.entries(theme.colors.background).forEach(([key, value]) => {
       root.style.setProperty(`--color-bg-${key}`, value);
     });
 
-    // Aplicar colores de texto
     Object.entries(theme.colors.text).forEach(([key, value]) => {
       root.style.setProperty(`--color-text-${key}`, value);
     });
 
-    // Aplicar bordes
     Object.entries(theme.colors.border).forEach(([key, value]) => {
       root.style.setProperty(`--color-border-${key}`, value);
     });
 
-    // Aplicar gradientes
     Object.entries(theme.gradients).forEach(([key, value]) => {
       root.style.setProperty(`--gradient-${key}`, value);
     });
 
-    // Aplicar sombras
     Object.entries(theme.shadows).forEach(([key, value]) => {
       root.style.setProperty(`--shadow-${key}`, value);
     });
 
-    // Aplicar modo (light/dark)
-    if (theme.mode === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    // DO NOT apply dark class here - Layout handles it
   }, [currentTheme]);
 
   const value = {
