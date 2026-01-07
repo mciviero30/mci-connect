@@ -929,11 +929,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         `}</style>
 
         <ProfileSyncManager user={user} />
-
+        
         {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
         {!shouldHideSidebar && !isFieldPage && (
           <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50">
-          <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
+            <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
               alt="MCI Connect"
@@ -1004,8 +1004,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
               </div>
             </div>
             </SidebarFooter>
-            </Sidebar>
-            )}
+          </Sidebar>
+        )}
+        
+        <main className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden ${shouldHideSidebar ? 'w-full' : ''}`}>
           {!isFieldPage && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
@@ -1080,17 +1082,17 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
-          </main>
 
           {/* Bottom Navigation for Mobile */}
           {!isFieldPage && (
             <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           )}
-          </div>
-          </SyncQueueProvider>
-          </SidebarProvider>
-          );
-          };
+        </main>
+      </div>
+      </SyncQueueProvider>
+    </SidebarProvider>
+  );
+};
 
           export default function Layout({ children, currentPageName }) {
   const { data: user, isLoading, error } = useQuery({
