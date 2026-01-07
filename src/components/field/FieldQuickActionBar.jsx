@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { Camera, FileText, CheckSquare, AlertTriangle, Map } from 'lucide-react';
+import { Camera, FileText, CheckSquare, AlertTriangle, Map, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CreateTaskDialog from './CreateTaskDialog';
 import MobilePhotoCapture from './MobilePhotoCapture';
 import NoteDialog from './NoteDialog';
+import VoiceNoteRecorder from './VoiceNoteRecorder';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
-export default function FieldQuickActionBar({ jobId, onActionComplete }) {
+export default function FieldQuickActionBar({ jobId, jobName, onActionComplete }) {
   const [activeAction, setActiveAction] = useState(null);
 
   const actions = [
@@ -17,6 +18,12 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
       icon: Camera,
       label: 'Photo',
       color: 'from-blue-500 to-blue-600',
+    },
+    {
+      id: 'voice',
+      icon: Mic,
+      label: 'Voice',
+      color: 'from-orange-500 to-red-500',
     },
     {
       id: 'note',
@@ -35,12 +42,6 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
       icon: AlertTriangle,
       label: 'Incident',
       color: 'from-red-500 to-red-600',
-    },
-    {
-      id: 'blueprint',
-      icon: Map,
-      label: 'Plans',
-      color: 'from-amber-500 to-amber-600',
     },
   ];
 
@@ -109,6 +110,18 @@ export default function FieldQuickActionBar({ jobId, onActionComplete }) {
         open={activeAction === 'note'}
         onOpenChange={(open) => !open && setActiveAction(null)}
         jobId={jobId}
+        onComplete={() => {
+          setActiveAction(null);
+          onActionComplete?.();
+        }}
+      />
+
+      {/* Voice Note Recorder */}
+      <VoiceNoteRecorder
+        open={activeAction === 'voice'}
+        onOpenChange={(open) => !open && setActiveAction(null)}
+        jobId={jobId}
+        jobName={jobName}
         onComplete={() => {
           setActiveAction(null);
           onActionComplete?.();

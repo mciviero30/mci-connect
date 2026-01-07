@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   LayoutDashboard, Map, CheckSquare, Camera, FileText, 
   MessageSquare, Users, BarChart3, Flag, ClipboardCheck, 
-  CheckCircle2, Activity, Brain, Menu, X, ClipboardList, MapPin
+  CheckCircle2, Activity, Brain, Menu, X, ClipboardList, MapPin, Mic
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ const navItems = [
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'milestones', label: 'Milestones', icon: Flag },
   { id: 'photos', label: 'Photos', icon: Camera },
+  { id: 'voice', label: 'Voice Notes', icon: Mic },
   { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
   { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },

@@ -632,11 +632,13 @@ export default function FieldProject() {
       {/* Quick Action Bar */}
       <FieldQuickActionBar
         jobId={jobId}
+        jobName={job?.name || job?.job_name_field}
         onActionComplete={() => {
           // Scoped updates - Field isolation
           updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old);
           updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) => old);
           updateFieldQueryData(queryClient, jobId, 'CHAT', (old) => old);
+          queryClient.invalidateQueries({ queryKey: ['field-voice-notes', jobId], exact: true });
         }}
       />
     </div>
