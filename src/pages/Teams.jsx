@@ -56,7 +56,10 @@ export default function Teams() {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       setShowDialog(false);
       setEditingTeam(null);
-      toast.success("Team created successfully");
+      toast({
+        title: "Team created successfully",
+        variant: 'success'
+      });
     }
   });
 
@@ -67,7 +70,10 @@ export default function Teams() {
       setShowDialog(false);
       setEditingTeam(null);
       setShowCapacityDialog(false);
-      toast.success("Team updated successfully");
+      toast({
+        title: "Team updated successfully",
+        variant: 'success'
+      });
     }
   });
 
@@ -101,10 +107,17 @@ export default function Teams() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
-      toast.success("Team deleted successfully");
+      toast({
+        title: "Team deleted successfully",
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -118,7 +131,10 @@ export default function Teams() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       setShowCapacityDialog(false);
-      toast.success("Team capacity updated");
+      toast({
+        title: "Team capacity updated",
+        variant: 'success'
+      });
     }
   });
 
