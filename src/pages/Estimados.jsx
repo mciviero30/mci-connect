@@ -82,11 +82,17 @@ export default function Estimados() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(t('deletedSuccessfully'));
+      toast({
+        title: t('deletedSuccessfully'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
       if (!error.message?.includes('not found')) {
-        toast.error(language === 'es' ? 'Error al eliminar' : 'Delete failed');
+        toast({
+          title: language === 'es' ? 'Error al eliminar' : 'Delete failed',
+          variant: 'destructive'
+        });
       }
     }
   });
@@ -111,7 +117,10 @@ export default function Estimados() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
-      toast.success(language === 'es' ? '✅ Estimado duplicado' : '✅ Quote duplicated');
+      toast({
+        title: language === 'es' ? '✅ Estimado duplicado' : '✅ Quote duplicated',
+        variant: 'success'
+      });
     },
   });
 
@@ -166,7 +175,10 @@ export default function Estimados() {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success(t('convertedToInvoice'));
+      toast({
+        title: t('convertedToInvoice'),
+        variant: 'success'
+      });
       window.open(createPageUrl(`VerFactura?id=${newInvoice.id}`), '_blank');
     },
   });

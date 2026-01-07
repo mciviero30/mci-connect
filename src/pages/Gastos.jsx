@@ -91,7 +91,10 @@ export default function Gastos() {
       setShowExpenseForm(false);
       setShowCreateDialog(false);
       setSelectedEmployee(null);
-      toast.success(t('success'));
+      toast({
+        title: t('success'),
+        variant: 'success'
+      });
     }
   });
 
@@ -99,7 +102,10 @@ export default function Gastos() {
     mutationFn: ({ id, status, notes }) => base44.entities.Expense.update(id, { status, notes }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      toast.success(t('expenseUpdated'));
+      toast({
+        title: t('expenseUpdated'),
+        variant: 'success'
+      });
     }
   });
 

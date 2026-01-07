@@ -67,11 +67,18 @@ export default function Clientes() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
-      toast.success(t('customerCreated'));
+      toast({
+        title: t('customerCreated'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error creating customer:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -85,11 +92,18 @@ export default function Clientes() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
-      toast.success(t('customerUpdated'));
+      toast({
+        title: t('customerUpdated'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error updating customer:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -101,11 +115,18 @@ export default function Clientes() {
     onSuccess: () => {
       console.log('Customer deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['customers'] });
-      toast.success(t('customerDeleted'));
+      toast({
+        title: t('customerDeleted'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error deleting customer:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 

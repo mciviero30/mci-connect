@@ -122,12 +122,17 @@ export default function Items() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companySettings'] });
       setShowLaborRateDialog(false);
-      toast.success(language === 'es'
-        ? 'Tasa laboral actualizada exitosamente'
-        : 'Labor rate updated successfully');
+      toast({
+        title: language === 'es' ? 'Tasa laboral actualizada exitosamente' : 'Labor rate updated successfully',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error(error.message || (language === 'es' ? 'Error al actualizar tasa laboral' : 'Failed to update labor rate'));
+      toast({
+        title: 'Error',
+        description: error.message || (language === 'es' ? 'Error al actualizar tasa laboral' : 'Failed to update labor rate'),
+        variant: 'destructive'
+      });
     }
   });
 
@@ -160,14 +165,17 @@ export default function Items() {
           }
         }
 
-        toast.success(language === 'es'
-          ? `Sincronización completa: ${updatedCount} precios actualizados`
-          : `Sync complete: ${updatedCount} prices updated`);
+        toast({
+          title: language === 'es' ? `Sincronización completa: ${updatedCount} precios actualizados` : `Sync complete: ${updatedCount} prices updated`,
+          variant: 'success'
+        });
       }
     } catch (error) {
-      toast.error(language === 'es'
-        ? `Error al sincronizar: ${error.message}`
-        : `Sync error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: language === 'es' ? `Error al sincronizar: ${error.message}` : `Sync error: ${error.message}`,
+        variant: 'destructive'
+      });
     } finally {
       setIsSyncing(false);
     }
@@ -418,14 +426,17 @@ export default function Items() {
       // Save PDF
       doc.save(`MCI_Price_List_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
 
-      toast.success(language === 'es'
-        ? `Lista de precios exportada: ${filteredItems.length} items`
-        : `Price list exported: ${filteredItems.length} items`);
+      toast({
+        title: language === 'es' ? `Lista de precios exportada: ${filteredItems.length} items` : `Price list exported: ${filteredItems.length} items`,
+        variant: 'success'
+      });
     } catch (error) {
       console.error('PDF Export Error:', error);
-      toast.error(language === 'es'
-        ? 'Error al exportar lista de precios'
-        : 'Failed to export price list');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'Error al exportar lista de precios' : 'Failed to export price list',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -503,11 +514,18 @@ export default function Items() {
       queryClient.invalidateQueries({ queryKey: ['quoteItemPriceLogs'] });
       setShowForm(false);
       resetFormData();
-      toast.success(language === 'es' ? 'Item creado y registrado' : 'Item created and logged');
+      toast({
+        title: language === 'es' ? 'Item creado y registrado' : 'Item created and logged',
+        variant: 'success'
+      });
     },
     onError: (error) => {
       if (!error.message.includes('cancelled')) {
-        toast.error(error.message || (language === 'es' ? 'Error al crear item' : 'Failed to create item'));
+        toast({
+          title: 'Error',
+          description: error.message || (language === 'es' ? 'Error al crear item' : 'Failed to create item'),
+          variant: 'destructive'
+        });
       }
     }
   });
@@ -579,11 +597,18 @@ export default function Items() {
       setShowForm(false);
       setEditingItem(null);
       resetFormData();
-      toast.success(language === 'es' ? 'Item actualizado y registrado' : 'Item updated and logged');
+      toast({
+        title: language === 'es' ? 'Item actualizado y registrado' : 'Item updated and logged',
+        variant: 'success'
+      });
     },
     onError: (error) => {
       if (!error.message.includes('cancelled')) {
-        toast.error(error.message || (language === 'es' ? 'Error al actualizar item' : 'Failed to update item'));
+        toast({
+          title: 'Error',
+          description: error.message || (language === 'es' ? 'Error al actualizar item' : 'Failed to update item'),
+          variant: 'destructive'
+        });
       }
     }
   });
@@ -623,10 +648,17 @@ export default function Items() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quoteItems'] });
-      toast.success(language === 'es' ? 'Item eliminado exitosamente' : 'Item deleted successfully');
+      toast({
+        title: language === 'es' ? 'Item eliminado exitosamente' : 'Item deleted successfully',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -670,17 +702,29 @@ export default function Items() {
   const saveAndNavigate = (direction) => {
     // Validate required fields
     if (!formData.name || !formData.unit_price || !formData.supplier) {
-      toast.error(language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.',
+        variant: 'destructive'
+      });
       return;
     }
 
     if (isLaborOrService && !formData.installation_time) {
-      toast.error(language === 'es' ? 'El tiempo de instalación es requerido para items de Labor/Servicio.' : 'Installation time is required for Labor/Service items.');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'El tiempo de instalación es requerido para items de Labor/Servicio.' : 'Installation time is required for Labor/Service items.',
+        variant: 'destructive'
+      });
       return;
     }
 
     if (!isLaborOrService && !formData.cost_per_unit) {
-      toast.error(language === 'es' ? 'El costo por unidad es requerido.' : 'Cost per unit is required.');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'El costo por unidad es requerido.' : 'Cost per unit is required.',
+        variant: 'destructive'
+      });
       return;
     }
 
@@ -717,7 +761,10 @@ export default function Items() {
           queryClient.invalidateQueries({ queryKey: ['quoteItemPriceLogs'] });
           // Navigate to next/previous item without closing dialog
           handleEdit(targetItem);
-          toast.success(language === 'es' ? 'Item guardado' : 'Item saved');
+          toast({
+            title: language === 'es' ? 'Item guardado' : 'Item saved',
+            variant: 'success'
+          });
         }
       }
     );
@@ -727,19 +774,31 @@ export default function Items() {
     e.preventDefault();
 
     if (!formData.name || !formData.unit_price || !formData.supplier) {
-      toast.error(language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'Por favor, rellene todos los campos obligatorios.' : 'Please fill in all required fields.',
+        variant: 'destructive'
+      });
       return;
     }
 
     // For labor/services, validate installation_time instead of cost_per_unit
     if (isLaborOrService && !formData.installation_time) {
-      toast.error(language === 'es' ? 'El tiempo de instalación es requerido para items de Labor/Servicio.' : 'Installation time is required for Labor/Service items.');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'El tiempo de instalación es requerido para items de Labor/Servicio.' : 'Installation time is required for Labor/Service items.',
+        variant: 'destructive'
+      });
       return;
     }
 
     // For materials, validate cost_per_unit
     if (!isLaborOrService && !formData.cost_per_unit) {
-      toast.error(language === 'es' ? 'El costo por unidad es requerido.' : 'Cost per unit is required.');
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'El costo por unidad es requerido.' : 'Cost per unit is required.',
+        variant: 'destructive'
+      });
       return;
     }
 
@@ -1605,7 +1664,11 @@ export default function Items() {
                   onClick={() => {
                     const rate = parseFloat(laborRateInput);
                     if (isNaN(rate) || rate < 0) {
-                      toast.error(language === 'es' ? 'Ingrese una tasa válida (número positivo)' : 'Enter a valid rate (positive number)');
+                      toast({
+                        title: 'Error',
+                        description: language === 'es' ? 'Ingrese una tasa válida (número positivo)' : 'Enter a valid rate (positive number)',
+                        variant: 'destructive'
+                      });
                       return;
                     }
                     updateLaborRateMutation.mutate(rate);

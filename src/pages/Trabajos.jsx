@@ -103,11 +103,18 @@ export default function Trabajos() {
       setShowForm(false);
       setShowAIWizard(false);
       setEditingJob(null);
-      toast.success(t('jobCreated'));
+      toast({
+        title: t('jobCreated'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error creating job:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -135,10 +142,17 @@ export default function Trabajos() {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       setShowForm(false); // Changed from setShowDialog to setShowForm for consistency
       setEditingJob(null);
-      toast.success(t('jobUpdated'));
+      toast({
+        title: t('jobUpdated'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -150,11 +164,18 @@ export default function Trabajos() {
     onSuccess: () => {
       console.log('Job deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success(language === 'es' ? 'Trabajo eliminado' : 'Job deleted');
+      toast({
+        title: language === 'es' ? 'Trabajo eliminado' : 'Job deleted',
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error deleting job:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -168,11 +189,18 @@ export default function Trabajos() {
     onSuccess: () => {
       console.log('Job archived successfully');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success(language === 'es' ? 'Trabajo archivado' : 'Job archived');
+      toast({
+        title: language === 'es' ? 'Trabajo archivado' : 'Job archived',
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error archiving job:', error);
-      toast.error(`Error: ${error.message}`);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 

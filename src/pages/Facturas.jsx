@@ -62,11 +62,18 @@ export default function Facturas() {
     mutationFn: (id) => base44.entities.Invoice.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(t('deletedSuccessfully'));
+      toast({
+        title: t('deletedSuccessfully'),
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error deleting invoice:', error);
-      toast.error(safeErrorMessage(error, 'Failed to delete invoice'));
+      toast({
+        title: 'Error',
+        description: safeErrorMessage(error, 'Failed to delete invoice'),
+        variant: 'destructive'
+      });
     }
   });
 
@@ -94,11 +101,18 @@ export default function Facturas() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(language === 'es' ? '✅ Factura duplicada' : '✅ Invoice duplicated');
+      toast({
+        title: language === 'es' ? '✅ Factura duplicada' : '✅ Invoice duplicated',
+        variant: 'success'
+      });
     },
     onError: (error) => {
       console.error('Error duplicating invoice:', error);
-      toast.error(safeErrorMessage(error, 'Failed to duplicate invoice'));
+      toast({
+        title: 'Error',
+        description: safeErrorMessage(error, 'Failed to duplicate invoice'),
+        variant: 'destructive'
+      });
     }
   });
 
@@ -133,14 +147,21 @@ export default function Facturas() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      toast.success(language === 'es' ? 'Pago registrado exitosamente' : 'Payment registered successfully');
+      toast({
+        title: language === 'es' ? 'Pago registrado exitosamente' : 'Payment registered successfully',
+        variant: 'success'
+      });
       setPaymentDialogOpen(false);
       setPaymentInvoice(null);
       setPaymentAmount("");
     },
     onError: (error) => {
       console.error('Error recording payment:', error);
-      toast.error(safeErrorMessage(error, 'Failed to record payment'));
+      toast({
+        title: 'Error',
+        description: safeErrorMessage(error, 'Failed to record payment'),
+        variant: 'destructive'
+      });
     }
   });
 

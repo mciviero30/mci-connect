@@ -79,10 +79,17 @@ export default function TimeTracking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
-      toast.success(language === 'es' ? '✅ Entrada registrada' : '✅ Clocked in');
+      toast({
+        title: language === 'es' ? '✅ Entrada registrada' : '✅ Clocked in',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -114,10 +121,17 @@ export default function TimeTracking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
-      toast.success(language === 'es' ? '¡Salida registrada!' : 'Clocked out!');
+      toast({
+        title: language === 'es' ? '¡Salida registrada!' : 'Clocked out!',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      toast.error((language === 'es' ? 'Error: ' : 'Error: ') + error.message);
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
@@ -137,7 +151,10 @@ export default function TimeTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
-      toast.success(language === 'es' ? 'Pausa iniciada' : 'Break started');
+      toast({
+        title: language === 'es' ? 'Pausa iniciada' : 'Break started',
+        variant: 'success'
+      });
     },
   });
 
@@ -164,7 +181,10 @@ export default function TimeTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
-      toast.success(language === 'es' ? 'Pausa terminada' : 'Break ended');
+      toast({
+        title: language === 'es' ? 'Pausa terminada' : 'Break ended',
+        variant: 'success'
+      });
     },
   });
 

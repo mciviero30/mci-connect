@@ -172,12 +172,19 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       // Force immediate refetch
       await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
-      toast.success(employee ? 'Employee updated!' : 'Employee created! Check "Pending" tab to invite them.');
+      toast({
+        title: employee ? 'Employee updated!' : 'Employee created! Check "Pending" tab to invite them.',
+        variant: 'success'
+      });
       onClose();
     },
     onError: (error) => {
       console.error('Error saving employee:', error);
-      toast.error('Error: ' + (error.message || 'Could not save employee'));
+      toast({
+        title: 'Error',
+        description: error.message || 'Could not save employee',
+        variant: 'destructive'
+      });
     }
   });
 
