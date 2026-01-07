@@ -96,7 +96,10 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="p-6 flex flex-col h-full" style={{
+      WebkitOverflowScrolling: 'touch',
+      overscrollBehavior: 'contain',
+    }}>
       {/* Header - Enhanced with better mobile layout */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
         <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
@@ -198,7 +201,14 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                     {columnTasks.length}
                   </Badge>
                 </div>
-                <div className="space-y-2.5 max-h-[calc(100vh-300px)] overflow-y-auto">
+                <div 
+                  className="space-y-2.5 max-h-[calc(100vh-300px)] overflow-y-auto" 
+                  data-scrollable="true"
+                  style={{
+                    WebkitOverflowScrolling: 'touch',
+                    overscrollBehaviorY: 'contain',
+                  }}
+                >
                   {columnTasks.length === 0 ? (
                     <div className="text-center py-8 text-slate-400 text-sm">
                       No {column.label.toLowerCase()} tasks

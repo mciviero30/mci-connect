@@ -545,7 +545,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
   // Touch handlers for mobile
   const handleTouchStart = (e) => {
+    // Don't interfere with button touches
+    if (e.target.closest('button')) return;
+    
     if (e.touches.length === 2) {
+      // Prevent default to avoid browser zoom
+      e.preventDefault();
+      
       // Pinch zoom start
       const distance = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
@@ -555,6 +561,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     } else if (e.touches.length === 1 && !isPlacingPin) {
       // Pan start
       setIsDragging(true);
+      setHasDragged(false);
       setTouchStart({
         x: e.touches[0].clientX - position.x,
         y: e.touches[0].clientY - position.y
@@ -602,12 +609,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   };
 
   const handleTouchEnd = (e) => {
+    const wasDragging = isDragging;
     setIsDragging(false);
     setTouchStart(null);
     setLastTouchDistance(null);
     
-    // Handle tap for placing pin
-    if (isPlacingPin && e.changedTouches.length === 1) {
+    // Handle tap for placing pin (only if didn't pan)
+    if (isPlacingPin && e.changedTouches.length === 1 && !hasDragged) {
+      e.preventDefault(); // Prevent ghost clicks
       const touch = e.changedTouches[0];
       const rect = imageRef.current?.getBoundingClientRect();
       if (rect) {
@@ -616,8 +625,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         setPendingPinPosition({ x, y });
         setShowCreateTask(true);
         setIsPlacingPin(false);
+        setCursorPosition(null);
       }
     }
+    
+    // Reset drag state after brief delay
+    setTimeout(() => {
+      setHasDragged(false);
+    }, 50);
   };
 
   const handleImageClick = (e) => {
@@ -835,7 +850,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           </button>
         </div>
 
-        {/* Canvas - Touch enabled */}
+        {/* Canvas - Touch enabled with native behavior */}
         <div 
           ref={containerRef}
           className={`flex-1 overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -848,7 +863,13 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           onTouchEnd={handleTouchEnd}
           onClick={handleDoubleTap}
           tabIndex={0}
-          style={{ outline: 'none' }}
+          style={{ 
+            outline: 'none',
+            WebkitUserSelect: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'none',
+          }}
         >
           {/* Loading State */}
           {loadingState === 'loading' && (

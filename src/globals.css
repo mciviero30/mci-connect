@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================ */
+/* NATIVE MOBILE OPTIMIZATION - iOS & Android  */
+/* ============================================ */
+
 /* iOS PWA Full Screen Support */
 @supports (-webkit-touch-callout: none) {
   html {
@@ -11,6 +15,103 @@
   body {
     min-height: 100vh;
     min-height: -webkit-fill-available;
+  }
+}
+
+/* Prevent iOS zoom on input focus (16px minimum) */
+input, select, textarea, button {
+  font-size: 16px !important;
+}
+
+/* Fast tap response - Remove 300ms delay */
+* {
+  touch-action: manipulation;
+}
+
+/* Prevent long-press context menus on images and links */
+img, a {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in editable areas only */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Smooth momentum scrolling (iOS) */
+.scroll-container, [data-scrollable="true"] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Prevent scroll chaining */
+body, html {
+  overscroll-behavior: none;
+}
+
+/* iOS safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Active state visual feedback */
+button:active, 
+.touch-manipulation:active,
+[role="button"]:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* Prevent double-tap zoom on buttons */
+button, [role="button"] {
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+}
+
+/* Android keyboard stability */
+body.keyboard-open {
+  position: fixed;
+  width: 100%;
+}
+
+/* Prevent pull-to-refresh */
+body {
+  overscroll-behavior-y: none;
+}
+
+/* iOS viewport height fix (accounts for browser UI) */
+:root {
+  --vh: 1vh;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
+/* High contrast mode for outdoor visibility */
+@media (prefers-contrast: more) {
+  button, .btn {
+    border-width: 3px !important;
+    font-weight: 700 !important;
+  }
+  
+  .text-slate-400 {
+    color: rgb(148, 163, 184) !important;
+  }
+  
+  .text-slate-300 {
+    color: rgb(203, 213, 225) !important;
   }
 }
 
