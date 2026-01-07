@@ -16,7 +16,8 @@ import {
   Command,
   ClipboardList,
   FileText,
-  ArrowLeft
+  ArrowLeft,
+  MapPin
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
