@@ -36,6 +36,7 @@ import { calculateLineItemQuantity } from "@/components/domain/calculations/quan
 import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
 import { computeQuoteDerived, createComputeInput, getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDerived";
 import ItemsMatchImporter from "@/components/quotes/ItemsMatchImporter";
+import { useDraftPersistence } from "@/components/hooks/useDraftPersistence";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -128,6 +129,23 @@ export default function CrearEstimado() {
   const [travelTimeHours, setTravelTimeHours] = useState(0);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
+  
+  // Draft persistence - auto-save to localStorage
+  const { clearDraft } = useDraftPersistence({
+    draftKey: editId ? `quote-draft-${editId}` : 'quote-draft-new',
+    formData,
+    enabled: !editId, // Only for new quotes (not edits)
+    onRestore: (restoredData) => {
+      setFormData(restoredData);
+      toast({
+        title: language === 'es' ? 'Borrador restaurado' : 'Draft restored',
+        description: language === 'es' 
+          ? 'Se restauró tu trabajo anterior' 
+          : 'Your previous work was restored',
+        variant: 'success'
+      });
+    },
+  });
   
   // ============================================================================
   // CAPA 3 - useMemo ÚNICO EN QUOTE ROOT
@@ -333,6 +351,7 @@ export default function CrearEstimado() {
     },
     onSuccess: async (data) => {
       console.log('Quote creation successful, invalidating queries...');
+      clearDraft(); // Clear draft after successful save
       await queryClient.invalidateQueries({ queryKey: ['quotes'] });
       await queryClient.refetchQueries({ queryKey: ['quotes'] });
       toast({
@@ -364,6 +383,7 @@ export default function CrearEstimado() {
       return await base44.entities.Quote.update(editId, normalizedData);
     },
     onSuccess: async (data) => {
+      clearDraft(); // Clear draft after successful save
       await queryClient.invalidateQueries({ queryKey: ['quotes'] });
       await queryClient.invalidateQueries({ queryKey: ['quote', editId] });
       await queryClient.refetchQueries({ queryKey: ['quotes'] });
