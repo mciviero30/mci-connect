@@ -22,6 +22,7 @@ import {
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
 import FieldDimensionView from '@/components/field/FieldDimensionView';
+import FieldBottomActionRail from '@/components/field/FieldBottomActionRail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -394,6 +395,17 @@ export default function Field() {
 
     {/* Quick Search Dialog */}
     <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
+
+    {/* Bottom Action Rail - Persistent for quick actions */}
+    <FieldBottomActionRail 
+      jobId={null}
+      jobName="Field Dashboard"
+      onActionComplete={(panel) => {
+        if (panel === 'dimensions') {
+          setActiveTab('dimensions');
+        }
+      }}
+    />
 
       {/* Quick Customer Dialog */}
       <Dialog open={showQuickCustomer} onOpenChange={setShowQuickCustomer}>
