@@ -541,6 +541,7 @@ export default function Field() {
       </Dialog>
       </div>
     </div>
+    </FieldErrorBoundary>
   );
 }
 
