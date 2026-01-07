@@ -19,9 +19,20 @@ export default function MobileOptimizations() {
       // Only prevent pull-to-refresh at the DOCUMENT level, not in scrollable containers
       if (window.scrollY === 0 && y > startY && (y - startY) > 10) {
         const target = e.target;
-        const scrollableParent = target.closest('[data-scrollable]');
         
-        if (!scrollableParent) {
+        // Use data attribute selector safely - no Tailwind classes
+        let element = target;
+        let hasScrollableParent = false;
+        
+        while (element && element !== document.body) {
+          if (element.hasAttribute && element.hasAttribute('data-scrollable')) {
+            hasScrollableParent = true;
+            break;
+          }
+          element = element.parentElement;
+        }
+        
+        if (!hasScrollableParent) {
           e.preventDefault();
         }
       }
