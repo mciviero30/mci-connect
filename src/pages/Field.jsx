@@ -545,7 +545,8 @@ export default function Field() {
   );
 }
 
-function StatsCard({ label, value, icon: Icon, color }) {
+function StatsCard({ label, value, icon, color }) {
+  const Icon = icon;
   return (
     <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-3 md:p-4 shadow-lg hover:shadow-xl transition-shadow">
       <div className="flex flex-col gap-1.5">
