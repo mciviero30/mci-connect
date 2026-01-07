@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { canEditTasks, canToggleClientVisibility } from './rolePermissions';
 import { useAutoSave } from './hooks/useAutoSave';
 import SaveIndicator from './SaveIndicator';
+import { useFieldContext, withFieldContext } from './FieldContextProvider';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -71,6 +72,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [newComment, setNewComment] = useState('');
   const [detectingWallNumber, setDetectingWallNumber] = useState(false);
+  const fieldContext = useFieldContext();
 
   // Auto-save for new tasks (not existing tasks from pins)
   const { autoSave, loadDraft, clearDraft, isSaving, lastSaved, isOnline } = useAutoSave({
@@ -259,21 +261,21 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
           return;
         }
         
-        createTaskMutation.mutate({
+        const taskData = withFieldContext({
           title: autoTitle,
-          job_id: jobId,
           blueprint_id: blueprintId,
           pin_x: pinPosition?.x,
           pin_y: pinPosition?.y,
-          status: 'in_progress',
           priority: 'high',
           category: 'installation',
-        });
+        }, fieldContext, 'tasks');
+        
+        createTaskMutation.mutate(taskData);
       };
       
       autoCreateTask();
     }
-  }, [open, pinPosition, existingTask]);
+  }, [open, pinPosition, existingTask, fieldContext]);
 
   // Load existing task data or draft
   useEffect(() => {

@@ -66,6 +66,7 @@ import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.js
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
 import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
 import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
+import { FieldContextProvider } from '@/components/field/FieldContextProvider.jsx';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -583,6 +584,7 @@ export default function FieldProject() {
         }}
       />
     </div>
+    </FieldContextProvider>
     </FieldOfflineProvider>
     </ThemeProvider>
     </FieldErrorBoundary>

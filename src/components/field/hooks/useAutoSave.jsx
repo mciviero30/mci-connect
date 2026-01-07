@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fieldStorage } from '../services/FieldStorageService';
 import { base44 } from '@/api/base44Client';
+import { useFieldContext, withFieldContext } from '../FieldContextProvider';
 
 export function useAutoSave({ 
   entityType, 
@@ -8,6 +9,7 @@ export function useAutoSave({
   enabled = true,
   debounceMs = 2000 
 }) {
+  const fieldContext = useFieldContext();
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [draftId, setDraftId] = useState(null);
@@ -19,12 +21,12 @@ export function useAutoSave({
     if (!enabled || !jobId) return null;
     
     const id = `draft_${Date.now()}`;
-    const draft = { ...data, id, job_id: jobId };
+    const draft = withFieldContext({ ...data, id }, fieldContext, entityType);
     
     await fieldStorage.save(entityType, draft);
     setDraftId(id);
     return id;
-  }, [entityType, jobId, enabled]);
+  }, [entityType, jobId, enabled, fieldContext]);
 
   // Auto-save with debounce
   const autoSave = useCallback(async (data) => {
@@ -40,13 +42,14 @@ export function useAutoSave({
       setIsSaving(true);
       try {
         let id = draftId;
+        const enrichedData = withFieldContext(data, fieldContext, entityType);
         
         // Create draft if doesn't exist
         if (!id) {
-          id = await createDraft(data);
+          id = await createDraft(enrichedData);
         } else {
           // Update existing draft
-          await fieldStorage.update(entityType, id, data);
+          await fieldStorage.update(entityType, id, enrichedData);
         }
         
         setLastSaved(new Date());
@@ -56,7 +59,7 @@ export function useAutoSave({
         setIsSaving(false);
       }
     }, debounceMs);
-  }, [enabled, jobId, draftId, entityType, debounceMs, createDraft]);
+  }, [enabled, jobId, draftId, entityType, debounceMs, createDraft, fieldContext]);
 
   // Load existing draft
   const loadDraft = useCallback(async () => {

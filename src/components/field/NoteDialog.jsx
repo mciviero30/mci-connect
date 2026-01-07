@@ -3,12 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { useAutoSave } from './hooks/useAutoSave';
 import SaveIndicator from './SaveIndicator';
+import { useFieldContext } from './FieldContextProvider';
 
 export default function NoteDialog({ open, onOpenChange, jobId, onComplete }) {
   const [noteText, setNoteText] = useState('');
+  const fieldContext = useFieldContext();
   
   const { autoSave, loadDraft, clearDraft, isSaving, lastSaved, isOnline } = useAutoSave({
     entityType: 'notes',
