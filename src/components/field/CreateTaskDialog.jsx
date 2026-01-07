@@ -84,8 +84,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   // Fetch current user
   const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: FIELD_QUERY_KEYS.USER(jobId),
     queryFn: () => base44.auth.me(),
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   // Fetch task comments
@@ -182,11 +183,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     mutationFn: (data) => base44.entities.Task.create(data),
     onSuccess: async (newTask) => {
       // Clear persistent draft on successful save
-      await clearTaskDraft();
+      if (clearTaskDraft) await clearTaskDraft();
       
-      // Optimistic update without full invalidation
-      queryClient.setQueryData(['field-tasks', jobId], (old) => old ? [...old, newTask] : [newTask]);
-      queryClient.setQueryData(['work-units', jobId], (old) => old ? [...old, newTask] : [newTask]);
+      // Scoped optimistic update - Field isolation
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old ? [...old, newTask] : [newTask]);
+      updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => old ? [...old, newTask] : [newTask]);
       onCreated?.(newTask?.id);
     },
   });
@@ -238,11 +239,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const deleteTaskMutation = useMutation({
     mutationFn: (id) => base44.entities.Task.delete(id),
     onSuccess: () => {
-      // Optimistic update without full invalidation
-      queryClient.setQueryData(['field-tasks', jobId], (old) => 
+      // Scoped optimistic update - Field isolation
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
         old ? old.filter(t => t.id !== existingTask?.id) : old
       );
-      queryClient.setQueryData(['work-units', jobId], (old) => 
+      updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => 
         old ? old.filter(t => t.id !== existingTask?.id) : old
       );
       onOpenChange(false);

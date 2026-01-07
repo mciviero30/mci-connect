@@ -12,6 +12,7 @@ import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
 import { canEditTasks } from './rolePermissions';
+import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS, updateFieldQueryData } from './config/fieldQueryConfig';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   // Use new unified hook, fall back to legacy tasks if provided
@@ -28,8 +29,9 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   const [reviewingPunch, setReviewingPunch] = useState(null);
 
   const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: FIELD_QUERY_KEYS.USER(jobId),
     queryFn: () => base44.auth.me(),
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const queryClient = useQueryClient();
@@ -45,11 +47,11 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
       );
     },
     onSuccess: (_, variables) => {
-      // Optimistic update without full invalidation
-      queryClient.setQueryData(['field-tasks', jobId], (old) => 
+      // Scoped optimistic update - Field isolation
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
         old ? old.map(t => t.id === variables.id ? {...t, ...variables.data} : t) : old
       );
-      queryClient.setQueryData(['work-units', jobId], (old) => 
+      updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => 
         old ? old.map(t => t.id === variables.id ? {...t, ...variables.data} : t) : old
       );
     },

@@ -70,6 +70,7 @@ import { FieldContextProvider } from '@/components/field/FieldContextProvider.js
 import { useFieldStability } from '@/components/field/hooks/useFieldStability';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
 import { fieldPersistence } from '@/components/field/services/FieldStatePersistence';
+import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS, updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -136,27 +137,19 @@ export default function FieldProject() {
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: FIELD_QUERY_KEYS.USER(jobId),
     queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const { data: userAssignments = [] } = useQuery({
-    queryKey: ['user-job-access', currentUser?.email, jobId],
+    queryKey: FIELD_QUERY_KEYS.ASSIGNMENTS(jobId),
     queryFn: () => base44.entities.JobAssignment.filter({ 
       employee_email: currentUser.email,
       job_id: jobId 
     }),
     enabled: !!currentUser?.email && !!jobId && (currentUser?.role === 'customer' || currentUser?.role === 'field_worker'),
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const hasAccess = !currentUser || currentUser.role === 'admin' || 
@@ -277,60 +270,42 @@ export default function FieldProject() {
   }, []);
 
   const { data: job, isLoading } = useQuery({
-    queryKey: ['field-job', jobId],
+    queryKey: FIELD_QUERY_KEYS.JOB(jobId),
     queryFn: async () => {
       const jobs = await base44.entities.Job.filter({ id: jobId });
       return jobs[0] || null;
     },
     enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const { data: tasks = [] } = useQuery({
-    queryKey: ['field-tasks', jobId],
+    queryKey: FIELD_QUERY_KEYS.TASKS(jobId),
     queryFn: async () => {
       const data = await base44.entities.Task.filter({ job_id: jobId }, '-created_date');
-      // Cache for offline use
       saveOfflineData('tasks', data);
       return data;
     },
     enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const { data: plans = [] } = useQuery({
-    queryKey: ['field-plans', jobId],
+    queryKey: FIELD_QUERY_KEYS.PLANS(jobId),
     queryFn: async () => {
       const data = await base44.entities.Plan.filter({ job_id: jobId }, 'order');
-      // Cache for offline use
       saveOfflineData('plans', data);
       return data;
     },
     enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const { data: members = [] } = useQuery({
-    queryKey: ['field-members', jobId],
+    queryKey: FIELD_QUERY_KEYS.MEMBERS(jobId),
     queryFn: () => base44.entities.ProjectMember.filter({ project_id: jobId }),
     enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const sidebarItems = [
@@ -461,8 +436,8 @@ export default function FieldProject() {
               uploaded_by: currentUser?.email,
               uploaded_by_name: currentUser?.full_name,
             });
-            // Optimistic update without full invalidation
-            queryClient.setQueryData(['field-photos', jobId], (old) => old);
+            // Scoped optimistic update - Field isolation
+            updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) => old);
           } catch (error) {
             console.error('Photo upload failed:', error);
           }
@@ -627,8 +602,8 @@ export default function FieldProject() {
         jobId={jobId}
         onCreated={() => {
           setShowCreateTask(false);
-          // Optimistic update without full invalidation
-          queryClient.setQueryData(['field-tasks', jobId], (old) => old);
+          // Scoped optimistic update - Field isolation
+          updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old);
         }}
       />
 
@@ -653,10 +628,10 @@ export default function FieldProject() {
       <FieldQuickActionBar
         jobId={jobId}
         onActionComplete={() => {
-          // Use setQueryData to trigger updates without full invalidation
-          queryClient.setQueryData(['field-tasks', jobId], (old) => old);
-          queryClient.setQueryData(['field-photos', jobId], (old) => old);
-          queryClient.setQueryData(['chat-messages', jobId], (old) => old);
+          // Scoped updates - Field isolation
+          updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old);
+          updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) => old);
+          updateFieldQueryData(queryClient, jobId, 'CHAT', (old) => old);
         }}
       />
     </div>

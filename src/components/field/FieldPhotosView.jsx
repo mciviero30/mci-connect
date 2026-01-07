@@ -40,8 +40,8 @@ export default function FieldPhotosView({ jobId }) {
   const deletePhotoMutation = useMutation({
     mutationFn: (id) => base44.entities.Photo.delete(id),
     onSuccess: (_, variables) => {
-      // Optimistic update without full invalidation
-      queryClient.setQueryData(['field-photos', jobId], (old) => 
+      // Scoped optimistic update - Field isolation
+      updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) => 
         old ? old.filter(p => p.id !== variables) : old
       );
       setSelectedPhoto(null);

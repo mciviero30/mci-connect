@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
+import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS } from '@/components/field/config/fieldQueryConfig';
 
 export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,46 +73,35 @@ export default function Field() {
   }, []);
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: FIELD_QUERY_KEYS.USER(),
     queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const { data: customers = [] } = useQuery({
-    queryKey: ['customers'],
+    queryKey: FIELD_QUERY_KEYS.CUSTOMERS(),
     queryFn: () => base44.entities.Customer.list('first_name'),
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  // Fetch job assignments for restricted users
   const { data: userAssignments = [] } = useQuery({
-    queryKey: ['user-job-assignments', user?.email],
+    queryKey: ['field-user-assignments', user?.email],
     queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }),
     enabled: !!user?.email && (user?.role === 'customer' || user?.role === 'field_worker'),
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  // ADMIN BYPASS: Admins see ALL jobs, others see assigned jobs only
   const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['field-jobs', user?.email],
+    queryKey: FIELD_QUERY_KEYS.JOBS(),
     queryFn: async () => {
-      // ✅ ADMIN BYPASS - Show all jobs for admins
       if (user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator') {
         return await base44.entities.Job.list('-created_date');
       }
       
-      // Managers see all jobs
       if (user?.position === 'manager') {
         return base44.entities.Job.list('-created_date');
       }
       
-      // Customers and field workers see only assigned jobs
       if (user?.role === 'customer' || user?.role === 'field_worker') {
         const assignedJobIds = [...new Set(userAssignments.map(a => a.job_id))];
         if (assignedJobIds.length === 0) return [];
@@ -122,38 +112,35 @@ export default function Field() {
         return assignedJobs.flat();
       }
       
-      // Default: all jobs
       return base44.entities.Job.list('-created_date');
     },
     enabled: !!user,
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  // CRITICAL: Only fetch tasks linked to assigned jobs
   const { data: tasks = [] } = useQuery({
-    queryKey: ['field-tasks', jobs.map(j => j.id).join(',')],
+    queryKey: ['field-all-tasks', jobs.map(j => j.id).join(',')],
     queryFn: async () => {
       if (jobs.length === 0) return [];
       
-      // Fetch tasks only for jobs user has access to
       const jobIds = jobs.map(j => j.id);
       const allTasks = await base44.entities.Task.list('-created_date');
       
-      // Filter: only tasks belonging to accessible jobs
       return allTasks.filter(task => task.job_id && jobIds.includes(task.job_id));
     },
     enabled: jobs.length > 0,
-    staleTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const createCustomerMutation = useMutation({
     mutationFn: (data) => base44.entities.Customer.create(data),
     onSuccess: (newCustomer) => {
-      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      // ONLY invalidate Field-scoped customer query - strict isolation
+      queryClient.invalidateQueries({ 
+        queryKey: FIELD_QUERY_KEYS.CUSTOMERS(), 
+        exact: true,
+        refetchType: 'active' 
+      });
       setNewProject({
         ...newProject,
         customer_name: `${newCustomer.first_name} ${newCustomer.last_name}`,
@@ -179,11 +166,16 @@ export default function Field() {
   const createJobMutation = useMutation({
     mutationFn: (data) => base44.entities.Job.create(data),
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
+      // ONLY invalidate Field-scoped jobs query - strict isolation
+      queryClient.invalidateQueries({ 
+        queryKey: FIELD_QUERY_KEYS.JOBS(), 
+        exact: true,
+        refetchType: 'active'
+      });
       setShowNewProject(false);
       
       // Clear persistent form on successful save
-      await clearNewProject();
+      if (clearNewProject) await clearNewProject();
       
       toast({
         title: 'Project created',

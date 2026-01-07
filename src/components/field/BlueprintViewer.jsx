@@ -500,11 +500,12 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           pin_x: draggingPin.pin_x,
           pin_y: draggingPin.pin_y
         });
-        // Optimistic update without full invalidation
-        queryClient.setQueryData(['field-tasks', jobId], (old) => 
+        // Scoped optimistic update - Field isolation
+        const { updateFieldQueryData } = await import('./config/fieldQueryConfig');
+        updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
           old ? old.map(t => t.id === draggingPin.id ? {...t, pin_x: draggingPin.pin_x, pin_y: draggingPin.pin_y} : t) : old
         );
-        queryClient.setQueryData(['work-units', jobId], (old) => 
+        updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => 
           old ? old.map(t => t.id === draggingPin.id ? {...t, pin_x: draggingPin.pin_x, pin_y: draggingPin.pin_y} : t) : old
         );
       } catch (error) {
