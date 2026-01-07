@@ -927,6 +927,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             ref={sidebarContentRef} 
             className="px-3 pt-0 pb-3 sidebar-scroll-content overflow-y-auto overflow-x-hidden flex-1 scroll-smooth bg-transparent"
             data-scrollable="true"
+            data-sidebar-scroll="true"
           >
             <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} sidebarContentRef={sidebarContentRef} />
           </SidebarContent>
