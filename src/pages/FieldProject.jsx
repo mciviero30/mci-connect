@@ -336,45 +336,16 @@ export default function FieldProject() {
     { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
   ];
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mb-4" />
-          <p className="text-slate-300 text-sm">Loading project...</p>
-        </div>
-      </div>
-    );
-  }
+  // Prevent unmounting providers on navigation - MUST be before early returns
+  const stableJobId = useRef(jobId);
+  useEffect(() => {
+    stableJobId.current = jobId;
+  }, [jobId]);
 
-  if (!job) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center p-6">
-        <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl p-12 text-center max-w-md">
-          <div className="w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-10 h-10 text-red-400" />
-          </div>
-          <h3 className="text-xl font-bold text-white mb-2">Project Not Found</h3>
-          <p className="text-slate-400 mb-6">The project you're looking for doesn't exist or has been removed.</p>
-          <Link to={createPageUrl('Field')}>
-            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[48px] px-6 rounded-xl">
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Projects
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Security: Block access if user doesn't have permission
-  if (currentUser && !hasAccess) {
-    return <AccessDenied />;
-  }
-
-  // CONDITIONAL PANEL RENDERING - No routing, pure state-driven UI
-  // Memoized to prevent unnecessary re-renders
+  // CONDITIONAL PANEL RENDERING - Memoized to prevent unnecessary re-renders - MUST be before early returns
   const renderPanel = useCallback(() => {
+    if (!job || !jobId) return null;
+    
     switch (activePanel) {
       case 'overview':
         return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
@@ -419,7 +390,43 @@ export default function FieldProject() {
       default:
         return <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />;
     }
-  }, [activePanel, job, tasks, plans, jobId]);
+  }, [activePanel, job, tasks, plans, jobId, members]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin mb-4" />
+          <p className="text-slate-300 text-sm">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-xl p-12 text-center max-w-md">
+          <div className="w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-10 h-10 text-red-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Project Not Found</h3>
+          <p className="text-slate-400 mb-6">The project you're looking for doesn't exist or has been removed.</p>
+          <Link to={createPageUrl('Field')}>
+            <Button className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-lg min-h-[48px] px-6 rounded-xl">
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Projects
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Security: Block access if user doesn't have permission
+  if (currentUser && !hasAccess) {
+    return <AccessDenied />;
+  }
 
   const handleBack = () => {
     // Use history navigation to avoid full reload
@@ -469,12 +476,6 @@ export default function FieldProject() {
   };
 
   const fabConfig = getFABConfig();
-
-  // Prevent unmounting providers on navigation
-  const stableJobId = useRef(jobId);
-  useEffect(() => {
-    stableJobId.current = jobId;
-  }, [jobId]);
 
   return (
     <FieldErrorBoundary>
