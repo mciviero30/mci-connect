@@ -143,7 +143,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
 
   return (
     <div className="h-full flex flex-col bg-slate-100 dark:bg-slate-900">
-      {/* Header */}
+      {/* Header - Primary action removed (moved to bottom rail) */}
       <div className="flex-shrink-0 p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
@@ -156,12 +156,12 @@ export default function FieldDimensionsView({ jobId, jobName }) {
             </p>
           </div>
 
+          {/* Secondary actions - Unit system & Export */}
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            {/* Unit System Toggle */}
             <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               <button
                 onClick={() => setProjectUnitSystem('imperial')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all min-h-[44px] ${
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
                   projectUnitSystem === 'imperial'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-slate-600 dark:text-slate-400'
@@ -171,7 +171,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               </button>
               <button
                 onClick={() => setProjectUnitSystem('metric')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all min-h-[44px] ${
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
                   projectUnitSystem === 'metric'
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-slate-600 dark:text-slate-400'
@@ -181,23 +181,13 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               </button>
             </div>
 
-            {/* Export PDF */}
             <Button
               onClick={handleExportPDF}
               variant="outline"
-              className="min-h-[44px]"
+              className="min-h-[52px] touch-manipulation active:scale-95 font-semibold"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-5 h-5 mr-2" />
               Export PDF
-            </Button>
-
-            {/* New Dimension */}
-            <Button
-              onClick={() => handleStartDimension('horizontal')}
-              className="bg-gradient-to-r from-orange-500 to-yellow-500 min-h-[44px]"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Dimension
             </Button>
           </div>
         </div>

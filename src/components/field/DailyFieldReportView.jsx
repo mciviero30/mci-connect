@@ -74,81 +74,81 @@ export default function DailyFieldReportView({ jobId, isClientView = false }) {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header - Primary action removed (moved to bottom rail) */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Daily Field Reports</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">Automated daily activity summaries</p>
         </div>
-        {!isClientView && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Generate Report
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Generate Daily Report</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Report Date</Label>
-                  <Input 
-                    type="date" 
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Weather Conditions</Label>
-                  <Input 
-                    placeholder="e.g., Sunny, 72°F"
-                    value={weather}
-                    onChange={(e) => setWeather(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Crew Size</Label>
-                  <Input 
-                    type="number"
-                    placeholder="Number of crew members"
-                    value={crewSize}
-                    onChange={(e) => setCrewSize(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label>Manager Note (Optional)</Label>
-                  <Textarea 
-                    placeholder="Add notes about today's work..."
-                    value={managerNote}
-                    onChange={(e) => setManagerNote(e.target.value)}
-                    rows={4}
-                  />
-                </div>
-                <Button 
-                  onClick={handleGenerateReport}
-                  disabled={generateReportMutation.isPending}
-                  className="w-full"
-                >
-                  {generateReportMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Generate Report
-                    </>
-                  )}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
+      
+      {/* Generate Report Dialog - Triggered from bottom rail */}
+      {!isClientView && (
+        <Dialog open={editingReport} onOpenChange={setEditingReport}>
+          <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+            <DialogHeader>
+              <DialogTitle>Generate Daily Report</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Report Date</Label>
+                <Input 
+                  type="date" 
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="min-h-[48px]"
+                />
+              </div>
+              <div>
+                <Label>Weather Conditions</Label>
+                <Input 
+                  placeholder="e.g., Sunny, 72°F"
+                  value={weather}
+                  onChange={(e) => setWeather(e.target.value)}
+                  className="min-h-[48px]"
+                />
+              </div>
+              <div>
+                <Label>Crew Size</Label>
+                <Input 
+                  type="number"
+                  placeholder="Number of crew members"
+                  value={crewSize}
+                  onChange={(e) => setCrewSize(e.target.value)}
+                  className="min-h-[48px]"
+                />
+              </div>
+              <div>
+                <Label>Manager Note (Optional)</Label>
+                <Textarea 
+                  placeholder="Add notes about today's work..."
+                  value={managerNote}
+                  onChange={(e) => setManagerNote(e.target.value)}
+                  rows={4}
+                  className="min-h-[48px]"
+                />
+              </div>
+              <Button 
+                onClick={handleGenerateReport}
+                disabled={generateReportMutation.isPending}
+                className="w-full min-h-[52px] touch-manipulation active:scale-95"
+              >
+                {generateReportMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5 mr-2" />
+                    Generate Report
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Date Selector */}
       <div className="flex items-center gap-2">

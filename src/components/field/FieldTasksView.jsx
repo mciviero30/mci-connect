@@ -105,23 +105,25 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
 
   return (
     <div className="p-6 flex flex-col h-full">
-      {/* Header - Enhanced with better mobile layout */}
-      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
+      {/* Header - Primary actions removed (moved to bottom rail) */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg w-fit">
           <h1 className="text-2xl font-bold text-black">Tasks</h1>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+        
+        {/* Secondary actions - Filters and view controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap">
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <Input 
               placeholder="Search tasks..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-11 bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 w-full sm:w-56 min-h-[48px] rounded-xl text-base font-medium"
+              className="pl-11 bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 w-full sm:w-56 min-h-[52px] rounded-xl text-base font-medium"
             />
           </div>
           <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
-            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[48px] rounded-xl min-w-[140px] font-semibold">
+            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl min-w-[140px] font-semibold">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
@@ -132,7 +134,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[48px] rounded-xl min-w-[140px] font-semibold">
+            <SelectTrigger className="bg-slate-800 border-2 border-slate-600 text-white min-h-[52px] rounded-xl min-w-[140px] font-semibold">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-2 border-slate-700 rounded-xl">
@@ -145,7 +147,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
           <Button
             onClick={() => setShowMyTasks(!showMyTasks)}
             variant={showMyTasks ? "default" : "outline"}
-            className={`min-h-[48px] rounded-xl font-bold touch-manipulation active:scale-95 transition-all ${
+            className={`min-h-[52px] rounded-xl font-bold touch-manipulation active:scale-95 transition-all ${
               showMyTasks 
                 ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-none shadow-lg' 
                 : 'bg-slate-800 border-2 border-slate-600 text-white active:bg-slate-700'
@@ -154,29 +156,20 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
             <User className="w-5 h-5 mr-2" />
             My Tasks
           </Button>
-          <div className="hidden sm:flex bg-slate-800 rounded-xl p-1.5 shadow-md border-2 border-slate-700">
+          <div className="flex bg-slate-800 rounded-xl p-1.5 shadow-md border-2 border-slate-700">
             <button
               onClick={() => setView('kanban')}
-              className={`min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg transition-all touch-manipulation active:scale-95 ${view === 'kanban' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 active:bg-slate-700 active:text-white'}`}
+              className={`min-w-[52px] min-h-[52px] flex items-center justify-center rounded-lg transition-all touch-manipulation active:scale-95 ${view === 'kanban' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 active:bg-slate-700 active:text-white'}`}
             >
               <LayoutGrid className="w-6 h-6" />
             </button>
             <button
               onClick={() => setView('list')}
-              className={`min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg transition-all touch-manipulation active:scale-95 ${view === 'list' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 active:bg-slate-700 active:text-white'}`}
+              className={`min-w-[52px] min-h-[52px] flex items-center justify-center rounded-lg transition-all touch-manipulation active:scale-95 ${view === 'list' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 active:bg-slate-700 active:text-white'}`}
             >
               <List className="w-6 h-6" />
             </button>
           </div>
-          {canEdit && (
-            <Button 
-              onClick={() => setShowCreateTask(true)}
-              className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black border-none shadow-lg min-h-[48px] rounded-xl w-full sm:w-auto touch-manipulation active:scale-[0.98] transition-transform"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              <span className="font-bold">New Task</span>
-            </Button>
-          )}
         </div>
       </div>
 

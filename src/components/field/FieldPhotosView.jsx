@@ -82,28 +82,10 @@ export default function FieldPhotosView({ jobId }) {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+      {/* Header - Primary action removed (moved to bottom rail) */}
+      <div className="flex items-center gap-4 mb-6">
         <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg">
           <h1 className="text-2xl font-bold text-black">Photos</h1>
-        </div>
-        <div className="flex gap-2">
-          {/* Mobile: Camera capture button with better touch target */}
-          <Button 
-            onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 active:from-orange-800 active:to-yellow-700 text-black border-none shadow-2xl min-h-[56px] px-6 rounded-2xl w-full sm:w-auto touch-manipulation active:scale-[0.96] transition-all"
-          >
-            {isMobile ? (
-              <>
-                <Camera className="w-6 h-6 mr-3" />
-                <span className="font-bold text-lg">Take Photo</span>
-              </>
-            ) : (
-              <>
-                <Plus className="w-6 h-6 mr-3" />
-                <span className="font-bold text-lg">Upload Photo</span>
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
@@ -329,17 +311,17 @@ export default function FieldPhotosView({ jobId }) {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      if (confirm('Delete this photo?')) {
+                      if (confirm('Delete this photo? This cannot be undone.')) {
                         deletePhotoMutation.mutate(selectedPhoto.id);
                       }
                     }}
                     disabled={deletePhotoMutation.isPending}
-                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 min-h-[44px]"
+                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 min-h-[52px] touch-manipulation active:scale-95 font-semibold"
                   >
                     {deletePhotoMutation.isPending ? (
-                      <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin mr-2" />
+                      <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin mr-2" />
                     ) : (
-                      <Trash2 className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-5 h-5 mr-2" />
                     )}
                     Delete
                   </Button>

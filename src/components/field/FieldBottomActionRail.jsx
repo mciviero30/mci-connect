@@ -11,12 +11,13 @@ import { createPageUrl } from '@/utils';
 export default function FieldBottomActionRail({ jobId, jobName, onActionComplete }) {
   const [activeAction, setActiveAction] = useState(null);
 
+  // Primary actions only - frequently used, critical path
   const actions = [
     {
       id: 'camera',
       icon: Camera,
       color: 'from-blue-600 to-cyan-600',
-      label: 'Camera',
+      label: 'Photo',
     },
     {
       id: 'audio',
@@ -34,7 +35,7 @@ export default function FieldBottomActionRail({ jobId, jobName, onActionComplete
       id: 'dimension',
       icon: Ruler,
       color: 'from-purple-600 to-pink-600',
-      label: 'Dimension',
+      label: 'Measure',
     },
     {
       id: 'incident',
@@ -46,31 +47,32 @@ export default function FieldBottomActionRail({ jobId, jobName, onActionComplete
 
   return (
     <>
-      {/* Mobile: Bottom-Right Rail */}
-      <div className="md:hidden fixed bottom-20 right-3 z-40 flex flex-col gap-2">
+      {/* Mobile: Bottom-Right Rail - 56px buttons for thumb reach */}
+      <div className="md:hidden fixed bottom-4 right-3 z-[60] flex flex-col gap-3">
         {actions.map((action) => (
           <button
             key={action.id}
             onClick={() => setActiveAction(action.id)}
-            className={`group relative w-14 h-14 rounded-full bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-2 border-white/30 touch-manipulation active:scale-90 transition-transform`}
+            className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 border-white/40 touch-manipulation active:scale-90 transition-all`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
             aria-label={action.label}
           >
-            <action.icon className="w-6 h-6 text-white" strokeWidth={2.5} />
+            <action.icon className="w-7 h-7 text-white" strokeWidth={2.5} />
           </button>
         ))}
       </div>
 
       {/* Tablet/Desktop: Bottom-Center Rail */}
-      <div className="hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-40 gap-3 bg-slate-900/95 backdrop-blur-sm border-2 border-slate-700 rounded-2xl p-3 shadow-2xl">
+      <div className="hidden md:flex fixed bottom-8 left-1/2 -translate-x-1/2 z-[60] gap-4 bg-slate-900/95 backdrop-blur-sm border-3 border-slate-700 rounded-2xl p-4 shadow-2xl">
         {actions.map((action) => (
           <button
             key={action.id}
             onClick={() => setActiveAction(action.id)}
-            className={`group relative w-16 h-16 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-lg active:scale-95 transition-transform`}
+            className={`relative flex flex-col items-center justify-center gap-1 w-20 h-20 rounded-xl bg-gradient-to-br ${action.color} shadow-lg active:scale-95 transition-transform touch-manipulation`}
             aria-label={action.label}
           >
-            <action.icon className="w-7 h-7 text-white" strokeWidth={2.5} />
+            <action.icon className="w-8 h-8 text-white" strokeWidth={2.5} />
+            <span className="text-[10px] text-white font-bold">{action.label}</span>
           </button>
         ))}
       </div>

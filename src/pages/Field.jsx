@@ -335,13 +335,13 @@ export default function Field() {
       </TabsContent>
     </Tabs>
 
-    {/* One-Hand Mode: Bottom Action Bar - All primary actions thumb-reachable */}
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
+    {/* One-Hand Mode: Simplified Bottom Bar - Essential navigation only */}
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
       <div className="px-3 py-3">
         <div className="flex gap-2 mb-2">
           <button
             onClick={() => setShowQuickSearch(true)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 border border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 transition-all min-h-[52px] shadow-md touch-manipulation active:scale-95 font-semibold"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-slate-800 border border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 transition-all min-h-[56px] shadow-md touch-manipulation active:scale-95 font-semibold"
           >
             <Search className="w-5 h-5" />
             <span>Search</span>
@@ -349,20 +349,20 @@ export default function Field() {
           {user?.role !== 'customer' && (
             <Button 
               onClick={() => setShowNewProject(true)}
-              className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[52px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
+              className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[56px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
             >
               <Plus className="w-5 h-5 mr-2" />
-              New Project
+              Project
             </Button>
           )}
         </div>
 
-        {/* Filter Toggle - Bottom aligned */}
+        {/* Filter Toggle - Conditional display */}
         {activeTab === 'projects' && (
-          <div className="flex bg-black rounded-xl p-1 shadow-md">
+          <div className="flex bg-black rounded-xl p-1 shadow-md mb-2">
             <button
               onClick={() => setFilter('active')}
-              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
+              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[52px] touch-manipulation active:scale-95 ${
                 filter === 'active' 
                   ? 'bg-slate-700 text-white shadow-sm' 
                   : 'text-slate-400'
@@ -372,7 +372,7 @@ export default function Field() {
             </button>
             <button
               onClick={() => setFilter('all')}
-              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
+              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[52px] touch-manipulation active:scale-95 ${
                 filter === 'all' 
                   ? 'bg-slate-700 text-white shadow-sm' 
                   : 'text-slate-400'
@@ -383,11 +383,11 @@ export default function Field() {
           </div>
         )}
 
-        {/* Back to Dashboard - Always accessible */}
+        {/* Back Navigation */}
         <Link to={createPageUrl('Dashboard')}>
-          <Button variant="ghost" className="w-full mt-2 text-slate-400 hover:text-white min-h-[48px] touch-manipulation active:scale-95">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+          <Button variant="ghost" className="w-full text-slate-400 hover:text-white min-h-[52px] touch-manipulation active:scale-95 font-medium">
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Dashboard
           </Button>
         </Link>
       </div>
