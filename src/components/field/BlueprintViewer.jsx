@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
@@ -18,6 +18,11 @@ import LiveCollaborators from './LiveCollaborators.jsx';
 import AILearningEngine from './AILearningEngine.jsx';
 import ClientPunchDialog from '../client/ClientPunchDialog.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
+import MeasurementOverlay from './overlays/MeasurementOverlay.jsx';
+import LayerControls from './overlays/LayerControls.jsx';
+import MeasurementDetailDialog from './overlays/MeasurementDetailDialog.jsx';
+import MeasurementLegend from './overlays/MeasurementLegend.jsx';
+import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 
 // Constants for retry logic
 const MAX_RETRIES = 3;
@@ -45,6 +50,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const [showAILearning, setShowAILearning] = useState(false);
   const [hasNewAIPatterns, setHasNewAIPatterns] = useState(false);
   
+  // Measurement overlay state
+  const [layers, setLayers] = useState({
+    tasks: true,
+    horizontal: true,
+    vertical: true,
+    benchmarks: true,
+    photos: false,
+    incidents: false
+  });
+  const [selectedMeasurement, setSelectedMeasurement] = useState(null);
+  const [selectedMeasurementType, setSelectedMeasurementType] = useState(null);
+  
   // Loading states
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
   const [loadProgress, setLoadProgress] = useState(0);
@@ -69,6 +86,31 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const [touchStart, setTouchStart] = useState(null);
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  // Fetch measurements data
+  const { data: horizontalMeasurements = [] } = useQuery({
+    queryKey: FIELD_QUERY_KEYS.FIELD_DIMENSIONS(jobId),
+    queryFn: () => base44.entities.FieldDimension.filter({ project_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
+  const { data: verticalMeasurements = [] } = useQuery({
+    queryKey: FIELD_QUERY_KEYS.VERTICAL_MEASUREMENTS(jobId),
+    queryFn: () => base44.entities.VerticalMeasurement.filter({ project_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
+  const { data: benchmarks = [] } = useQuery({
+    queryKey: FIELD_QUERY_KEYS.BENCHMARKS(jobId),
+    queryFn: () => base44.entities.Benchmark.filter({ project_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
 
   // Validate file type
   const isValidFileType = (url) => {
@@ -693,6 +735,40 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     }
   };
 
+  const handleLayerToggle = (layerId) => {
+    setLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
+  };
+
+  const handleMeasurementTap = (measurement, type) => {
+    setSelectedMeasurement(measurement);
+    setSelectedMeasurementType(type);
+  };
+
+  const handleMeasurementLongPress = (measurement, type) => {
+    // Future: open edit dialog
+    setSelectedMeasurement(measurement);
+    setSelectedMeasurementType(type);
+  };
+
+  const handleDeleteMeasurement = async (measurement) => {
+    try {
+      if (selectedMeasurementType === 'horizontal') {
+        await base44.entities.FieldDimension.delete(measurement.id);
+        queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.FIELD_DIMENSIONS(jobId) });
+      } else if (selectedMeasurementType === 'vertical') {
+        await base44.entities.VerticalMeasurement.delete(measurement.id);
+        queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.VERTICAL_MEASUREMENTS(jobId) });
+      } else if (selectedMeasurementType === 'benchmark') {
+        await base44.entities.Benchmark.delete(measurement.id);
+        queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.BENCHMARKS(jobId) });
+      }
+      setSelectedMeasurement(null);
+      setSelectedMeasurementType(null);
+    } catch (error) {
+      console.error('Error deleting measurement:', error);
+    }
+  };
+
   return (
     <TooltipProvider>
     <div className="h-full flex relative">
@@ -778,6 +854,9 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
       {/* Live Collaborators */}
       <LiveCollaborators planId={plan?.id} jobId={jobId} />
+
+      {/* Layer Controls */}
+      <LayerControls layers={layers} onLayerToggle={handleLayerToggle} />
 
       {/* Filters Bar */}
       {showFilters && (
@@ -945,8 +1024,20 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                     }}
                   />
                 )}
+                {/* Measurement Overlay */}
+                <MeasurementOverlay
+                  measurements={horizontalMeasurements}
+                  verticalMeasurements={verticalMeasurements}
+                  benchmarks={benchmarks}
+                  imageSize={imageSize}
+                  zoom={zoom}
+                  visible={layers.horizontal || layers.vertical || layers.benchmarks}
+                  onMeasurementTap={handleMeasurementTap}
+                  onMeasurementLongPress={handleMeasurementLongPress}
+                />
+                
                 {/* Task Pins - works for both images and PDF canvas */}
-                {showPins && filteredTasks.map((task) => {
+                {showPins && layers.tasks && filteredTasks.map((task) => {
                   const displayTask = draggingPin?.id === task.id ? draggingPin : task;
                   return (
                     <TaskPin 
@@ -1010,24 +1101,15 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
 
 
-        {/* Legend - Visible when client punches exist */}
-        {tasks.some(t => t.created_by_client && t.task_type === 'punch_item') && (
-          <div className="absolute bottom-4 right-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg border border-slate-200 dark:border-slate-700">
-            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Pin Legend</p>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-purple-500 border-2 border-purple-700 animate-pulse" />
-                <span className="text-slate-600 dark:text-slate-400">Client Punch (New)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-amber-500 border-2 border-amber-700" />
-                <span className="text-slate-600 dark:text-slate-400">Internal Task</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-green-700" />
-                <span className="text-slate-600 dark:text-slate-400">Completed</span>
-              </div>
-            </div>
+        {/* Measurement Legend - Always visible when measurements exist */}
+        {(horizontalMeasurements.length > 0 || verticalMeasurements.length > 0 || benchmarks.length > 0) && (
+          <div className="absolute bottom-4 right-4 max-w-xs">
+            <MeasurementLegend 
+              showHorizontal={horizontalMeasurements.length > 0 && layers.horizontal}
+              showVertical={verticalMeasurements.length > 0 && layers.vertical}
+              showBenchmarks={benchmarks.length > 0 && layers.benchmarks}
+              compact={true}
+            />
           </div>
         )}
 
@@ -1084,6 +1166,21 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         punchItem={reviewingPunch}
         open={!!reviewingPunch}
         onOpenChange={(open) => !open && setReviewingPunch(null)}
+      />
+
+      {/* Measurement Detail Dialog */}
+      <MeasurementDetailDialog
+        measurement={selectedMeasurement}
+        type={selectedMeasurementType}
+        open={!!selectedMeasurement}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedMeasurement(null);
+            setSelectedMeasurementType(null);
+          }
+        }}
+        onDelete={handleDeleteMeasurement}
+        canEdit={!isClientView}
       />
     </div>
     </TooltipProvider>

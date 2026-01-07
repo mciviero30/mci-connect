@@ -1,3 +1,4 @@
+
 /**
  * MCI Field Query Keys - Single Source of Truth
  * 
@@ -6,6 +7,9 @@
  */
 
 export const FIELD_QUERY_KEYS = {
+  FIELD_DIMENSIONS: (jobId) => ['field-dimensions', jobId],
+  VERTICAL_MEASUREMENTS: (jobId) => ['vertical-measurements', jobId],
+  BENCHMARKS: (jobId) => ['benchmarks', jobId],
   USER: (jobId) => ['field-currentUser', jobId],
   JOB: (jobId) => ['field-job', jobId],
   TASKS: (jobId) => ['field-tasks', jobId],
