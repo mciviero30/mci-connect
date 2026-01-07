@@ -55,6 +55,7 @@ import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
+import FieldBottomActionRail from '@/pages/FieldBottomActionRail.jsx';
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 
 export default function FieldProjectView({
