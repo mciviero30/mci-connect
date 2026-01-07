@@ -559,43 +559,61 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 {task.checklist.map((item, idx) => (
                   <button
                     key={idx}
-                    onClick={() => canEdit && toggleChecklistItemStatus(idx)}
+                    onClick={() => {
+                      if (canEdit) {
+                        if (navigator.vibrate) navigator.vibrate(10);
+                        toggleChecklistItemStatus(idx);
+                      }
+                    }}
                     disabled={!canEdit}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 min-h-[56px] touch-manipulation active:scale-[0.98] transition-all"
+                    className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 min-h-[64px] touch-manipulation active:scale-[0.97] active:bg-slate-50 dark:active:bg-slate-700 transition-all"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
                     {getChecklistIcon(item.status)}
-                    <span className="flex-1 text-left text-sm font-medium text-slate-700 dark:text-slate-300">{item.text}</span>
+                    <span className="flex-1 text-left text-base font-medium text-slate-700 dark:text-slate-300">{item.text}</span>
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Save/Delete Actions */}
+          {/* Save/Delete Actions - Safe spacing for gloved hands */}
           {task.id && (
-            <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
               {canEdit ? (
                 <>
                   <Button 
-                    onClick={handleSave}
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate(15);
+                      handleSave();
+                    }}
                     disabled={updateTaskMutation.isPending}
-                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white min-h-[56px] touch-manipulation active:scale-95 font-bold"
+                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white min-h-[60px] touch-manipulation active:scale-95 font-bold shadow-lg"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
                     {updateTaskMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                   <Button
-                    onClick={handleDeleteTask}
+                    onClick={() => {
+                      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+                      handleDeleteTask();
+                    }}
                     disabled={deleteTaskMutation.isPending}
                     variant="outline"
-                    className="border-red-500/50 text-red-600 min-h-[56px] touch-manipulation active:scale-95"
+                    className="border-2 border-red-500/50 text-red-600 min-h-[60px] min-w-[60px] touch-manipulation active:scale-95 active:bg-red-50 dark:active:bg-red-900/20"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-6 h-6" />
                   </Button>
                 </>
               ) : (
                 <Button 
-                  onClick={handleClose}
-                  className="w-full min-h-[56px] touch-manipulation active:scale-95"
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(10);
+                    handleClose();
+                  }}
+                  className="w-full min-h-[60px] touch-manipulation active:scale-95"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   Close
                 </Button>

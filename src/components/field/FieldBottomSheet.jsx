@@ -83,9 +83,14 @@ export default function FieldBottomSheet({
                   {title}
                 </h2>
                 <button
-                  onClick={() => onOpenChange(false)}
-                  className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors touch-manipulation active:scale-90"
+                  onClick={() => {
+                    // Haptic feedback
+                    if (navigator.vibrate) navigator.vibrate(10);
+                    onOpenChange(false);
+                  }}
+                  className="p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all touch-manipulation active:scale-90 active:bg-slate-200 dark:active:bg-slate-700 min-w-[48px] min-h-[48px]"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
+                  aria-label="Close"
                 >
                   <X className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                 </button>

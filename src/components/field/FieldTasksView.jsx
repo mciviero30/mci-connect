@@ -233,22 +233,25 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                       const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
                       return (
                         <div
-                         key={task.id}
-                         draggable
-                         onDragStart={(e) => handleDragStart(e, task)}
-                         onClick={() => {
-                           if (task.created_by_client && task.task_type === 'punch_item') {
-                             setReviewingPunch(task);
-                           } else {
-                             setEditingTask(task);
-                             setShowCreateTask(true);
-                           }
-                         }}
-                         className={`border-4 rounded-2xl p-4 cursor-pointer active:shadow-2xl active:scale-[0.97] transition-all touch-manipulation min-h-[72px] ${
-                           task.created_by_client && task.task_type === 'punch_item'
-                             ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
-                             : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
-                         }`}
+                        key={task.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, task)}
+                        onClick={() => {
+                          // Haptic feedback
+                          if (navigator.vibrate) navigator.vibrate(10);
+                          if (task.created_by_client && task.task_type === 'punch_item') {
+                            setReviewingPunch(task);
+                          } else {
+                            setEditingTask(task);
+                            setShowCreateTask(true);
+                          }
+                        }}
+                        className={`border-4 rounded-2xl p-5 cursor-pointer active:shadow-2xl active:scale-[0.96] transition-all touch-manipulation min-h-[80px] ${
+                          task.created_by_client && task.task_type === 'punch_item'
+                            ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
+                            : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
+                        }`}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                         >
                           <div className="flex items-center gap-4">
                             <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 shadow-xl border-2 border-white/20 ${

@@ -225,11 +225,15 @@ export default function DimensionBottomSheet({
           />
         </div>
 
-        {/* Save Button */}
+        {/* Save Button - Safe spacing */}
         <Button 
-          onClick={handleSave}
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(15);
+            handleSave();
+          }}
           disabled={createDimensionMutation.isPending}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[56px] touch-manipulation active:scale-95 font-bold shadow-lg"
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[64px] touch-manipulation active:scale-95 font-bold shadow-lg active:shadow-xl"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           {createDimensionMutation.isPending ? 'Saving...' : 'Save Dimension'}
         </Button>

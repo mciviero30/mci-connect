@@ -335,21 +335,28 @@ export default function Field() {
       </TabsContent>
     </Tabs>
 
-    {/* One-Hand Mode: Simplified Bottom Bar - Essential navigation only */}
+    {/* One-Hand Mode: Safe Bottom Bar - Spaced for gloved operation */}
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
-      <div className="px-3 py-3">
-        <div className="flex gap-2 mb-2">
+      <div className="px-4 py-4">
+        <div className="flex gap-3 mb-3">
           <button
-            onClick={() => setShowQuickSearch(true)}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3.5 bg-slate-800 border border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 transition-all min-h-[56px] shadow-md touch-manipulation active:scale-95 font-semibold"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              setShowQuickSearch(true);
+            }}
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-4 bg-slate-800 border-2 border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 active:border-slate-500 transition-all min-h-[60px] shadow-md touch-manipulation active:scale-95 font-semibold"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <Search className="w-5 h-5" />
             <span>Search</span>
           </button>
           {user?.role !== 'customer' && (
             <Button 
-              onClick={() => setShowNewProject(true)}
-              className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[56px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(10);
+                setShowNewProject(true);
+              }}
+              className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[60px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
             >
               <Plus className="w-5 h-5 mr-2" />
               Project
@@ -357,35 +364,50 @@ export default function Field() {
           )}
         </div>
 
-        {/* Filter Toggle - Conditional display */}
+        {/* Filter Toggle - Safe spacing */}
         {activeTab === 'projects' && (
-          <div className="flex bg-black rounded-xl p-1 shadow-md mb-2">
+          <div className="flex bg-black rounded-xl p-1.5 shadow-md mb-3">
             <button
-              onClick={() => setFilter('active')}
-              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[52px] touch-manipulation active:scale-95 ${
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(10);
+                setFilter('active');
+              }}
+              className={`flex-1 px-5 py-3.5 rounded-lg text-sm font-bold transition-all min-h-[56px] touch-manipulation active:scale-95 ${
                 filter === 'active' 
                   ? 'bg-slate-700 text-white shadow-sm' 
                   : 'text-slate-400'
               }`}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               Active
             </button>
             <button
-              onClick={() => setFilter('all')}
-              className={`flex-1 px-4 py-3 rounded-lg text-sm font-bold transition-all min-h-[52px] touch-manipulation active:scale-95 ${
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(10);
+                setFilter('all');
+              }}
+              className={`flex-1 px-5 py-3.5 rounded-lg text-sm font-bold transition-all min-h-[56px] touch-manipulation active:scale-95 ${
                 filter === 'all' 
                   ? 'bg-slate-700 text-white shadow-sm' 
                   : 'text-slate-400'
               }`}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               All
             </button>
           </div>
         )}
 
-        {/* Back Navigation */}
+        {/* Back Navigation - Thumb-safe */}
         <Link to={createPageUrl('Dashboard')}>
-          <Button variant="ghost" className="w-full text-slate-400 hover:text-white min-h-[52px] touch-manipulation active:scale-95 font-medium">
+          <Button 
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+            }}
+            variant="ghost" 
+            className="w-full text-slate-400 hover:text-white hover:bg-slate-800 min-h-[56px] touch-manipulation active:scale-95 font-medium rounded-xl"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Dashboard
           </Button>

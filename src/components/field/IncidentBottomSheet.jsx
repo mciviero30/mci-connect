@@ -197,10 +197,16 @@ export default function IncidentBottomSheet({
           )}
         </div>
 
-        {/* Submit */}
+        {/* Submit - Confirmation for critical action */}
         <Button 
-          onClick={handleSubmit}
-          className="w-full bg-gradient-to-r from-red-600 to-rose-700 text-white min-h-[56px] touch-manipulation active:scale-95 font-bold shadow-lg"
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+            if (confirm('Submit this incident report? This will notify management immediately.')) {
+              handleSubmit();
+            }
+          }}
+          className="w-full bg-gradient-to-r from-red-600 to-rose-700 text-white min-h-[64px] touch-manipulation active:scale-95 font-bold shadow-lg active:shadow-xl"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           Submit Incident Report
         </Button>

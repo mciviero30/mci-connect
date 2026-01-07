@@ -214,6 +214,25 @@ export default function FieldProjectView({
       {/* Mobile Header */}
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
+      {/* Mobile Back Button - Thumb-reachable bottom-left */}
+      {isMobile && (
+        <button
+          onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(10);
+            handleBack();
+          }}
+          className="fixed bottom-4 left-4 z-[55] w-14 h-14 bg-slate-900 border-2 border-slate-700 rounded-2xl flex items-center justify-center shadow-2xl touch-manipulation active:scale-90 active:bg-slate-800 transition-all"
+          style={{ 
+            WebkitTapHighlightColor: 'transparent',
+            minWidth: '56px',
+            minHeight: '56px'
+          }}
+          aria-label="Back to projects"
+        >
+          <ArrowLeft className="w-6 h-6 text-white" strokeWidth={2.5} />
+        </button>
+      )}
+
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-72 bg-slate-900 border-r border-slate-700 flex-col shadow-xl overflow-y-auto">
         <div className="p-5 border-b border-slate-700 bg-gradient-to-br from-black to-slate-900 flex-shrink-0 sticky top-0 z-10">

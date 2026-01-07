@@ -145,9 +145,12 @@ export default function FieldPhotosView({ jobId }) {
           {photos.map((photo) => (
             <div 
               key={photo.id}
-              onClick={() => setSelectedPhoto(photo)}
-              className="relative rounded-2xl overflow-hidden cursor-pointer group border-4 border-slate-700 active:border-[#FFB800] shadow-2xl active:shadow-orange-500/30 transition-all touch-manipulation active:scale-[0.97] min-h-[200px]"
-              style={{ aspectRatio: '1' }}
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(10);
+                setSelectedPhoto(photo);
+              }}
+              className="relative rounded-2xl overflow-hidden cursor-pointer group border-4 border-slate-700 active:border-[#FFB800] shadow-2xl active:shadow-orange-500/30 transition-all touch-manipulation active:scale-[0.96] min-h-[200px]"
+              style={{ aspectRatio: '1', WebkitTapHighlightColor: 'transparent' }}
             >
               <img 
                 src={photo.file_url}

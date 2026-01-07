@@ -116,22 +116,30 @@ export default function FiltersBottomSheet({
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+        {/* Action Buttons - Safe spacing for gloves */}
+        <div className="flex gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
           <Button
-            onClick={handleClear}
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              handleClear();
+            }}
             variant="outline"
-            className="flex-1 min-h-[56px] touch-manipulation active:scale-95 font-semibold"
+            className="flex-1 min-h-[60px] touch-manipulation active:scale-95 font-semibold border-2 active:bg-slate-50 dark:active:bg-slate-700"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <X className="w-5 h-5 mr-2" />
-            Clear All
+            Clear
           </Button>
           <Button 
-            onClick={handleApply}
-            className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 text-black min-h-[56px] touch-manipulation active:scale-95 font-bold shadow-lg"
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              handleApply();
+            }}
+            className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 text-black min-h-[60px] touch-manipulation active:scale-95 font-bold shadow-lg active:shadow-xl"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             <Filter className="w-5 h-5 mr-2" />
-            Apply Filters
+            Apply
           </Button>
         </div>
       </div>

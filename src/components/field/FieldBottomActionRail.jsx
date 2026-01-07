@@ -47,14 +47,22 @@ export default function FieldBottomActionRail({ jobId, jobName, onActionComplete
 
   return (
     <>
-      {/* Mobile: Bottom-Right Rail - 56px buttons for thumb reach */}
-      <div className="md:hidden fixed bottom-4 right-3 z-[60] flex flex-col gap-3">
+      {/* Mobile: Bottom-Right Rail - Safe zone with haptic feedback */}
+      <div className="md:hidden fixed bottom-20 right-4 z-[60] flex flex-col gap-4">
         {actions.map((action) => (
           <button
             key={action.id}
-            onClick={() => setActiveAction(action.id)}
-            className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 border-white/40 touch-manipulation active:scale-90 transition-all`}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            onClick={() => {
+              // Haptic feedback
+              if (navigator.vibrate) navigator.vibrate(10);
+              setActiveAction(action.id);
+            }}
+            className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 border-white/40 touch-manipulation active:scale-90 active:shadow-3xl transition-all`}
+            style={{ 
+              WebkitTapHighlightColor: 'transparent',
+              minWidth: '64px',
+              minHeight: '64px'
+            }}
             aria-label={action.label}
           >
             <action.icon className="w-7 h-7 text-white" strokeWidth={2.5} />
