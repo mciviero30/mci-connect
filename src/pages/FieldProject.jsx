@@ -63,6 +63,7 @@ import DailyFieldReportView from '@/components/field/DailyFieldReportView.jsx';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import FieldStatusBar from '@/components/field/FieldStatusBar.jsx';
 import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
+import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
 
 export default function FieldProject() {
   // Extract jobId from URL params (read-only)
@@ -563,6 +564,9 @@ export default function FieldProject() {
 
       {/* Universal Sync Indicator */}
       <UniversalSyncIndicator jobId={jobId} />
+
+      {/* Photo Upload Progress */}
+      <PhotoUploadProgress jobId={jobId} />
     </div>
     </FieldOfflineProvider>
     </ThemeProvider>

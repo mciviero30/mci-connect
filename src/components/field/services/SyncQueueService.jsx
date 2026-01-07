@@ -82,9 +82,37 @@ class SyncQueueService {
 
     let result;
     if (operation === 'save') {
-      // Remove local-only fields
-      const { id, synced, created_at, updated_at, blob, _pending, ...cleanData } = data;
-      result = await base44.entities[entityName].create(cleanData);
+      // Special handling for photos with blobs
+      if (entity_type === 'photos' && data.blob) {
+        await fieldStorage.updatePhotoUploadProgress(entity_id, 0, 'uploading');
+        
+        try {
+          // Convert blob to file for upload
+          const file = new File([data.blob], `photo_${entity_id}.jpg`, { type: 'image/jpeg' });
+          
+          // Upload file with progress tracking
+          const { file_url } = await base44.integrations.Core.UploadFile({ file });
+          
+          await fieldStorage.updatePhotoUploadProgress(entity_id, 100, 'uploaded');
+          
+          // Create Photo entity with metadata
+          const { id, synced, blob, upload_progress, upload_status, created_at, updated_at, _pending, ...cleanData } = data;
+          result = await base44.entities.Photo.create({
+            ...cleanData,
+            file_url,
+            gps_latitude: data.gps?.latitude,
+            gps_longitude: data.gps?.longitude,
+            gps_accuracy: data.gps?.accuracy,
+          });
+        } catch (error) {
+          await fieldStorage.updatePhotoUploadProgress(entity_id, 0, 'error');
+          throw error;
+        }
+      } else {
+        // Remove local-only fields
+        const { id, synced, created_at, updated_at, blob, _pending, ...cleanData } = data;
+        result = await base44.entities[entityName].create(cleanData);
+      }
     } else if (operation === 'update') {
       // Check for conflicts before update
       const serverData = await base44.entities[entityName].filter({ id: entity_id });
