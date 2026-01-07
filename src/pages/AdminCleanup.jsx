@@ -25,10 +25,11 @@ export default function AdminCleanup() {
   const [progress, setProgress] = useState('');
   const [isCleaningUp, setIsCleaningUp] = useState(false);
 
-  // Default language for PageHeader, as it's not passed in the original component
-  const language = 'es'; 
-
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity
+  });
 
   // NEW: Prompt #65 - Duplicate Detection and Orphaned Records
   const [duplicates, setDuplicates] = useState({ customers: [], employees: [] });
