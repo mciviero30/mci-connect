@@ -67,12 +67,24 @@ export default function FieldProject() {
   const jobId = urlParams.get('id');
   
   // SINGLE STATEFUL CONTAINER - All state lives here
-  const [activePanel, setActivePanel] = useState('overview');
+  const queryClient = useQueryClient();
+  
+  // Restore persisted state
+  const getPersistedState = () => {
+    try {
+      const key = `fieldProject_${jobId}`;
+      const saved = sessionStorage.getItem(key);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  };
+  
+  const [activePanel, setActivePanel] = useState(() => getPersistedState().activePanel || 'overview');
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
-  const queryClient = useQueryClient();
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -94,6 +106,50 @@ export default function FieldProject() {
                      currentUser.position === 'manager' ||
                      (currentUser.role !== 'customer' && currentUser.role !== 'field_worker') ||
                      userAssignments.length > 0;
+
+  // Persist state changes
+  useEffect(() => {
+    if (!jobId) return;
+    try {
+      const key = `fieldProject_${jobId}`;
+      const state = { activePanel };
+      sessionStorage.setItem(key, JSON.stringify(state));
+    } catch (error) {
+      console.error('Failed to persist state:', error);
+    }
+  }, [jobId, activePanel]);
+
+  // Restore scroll position
+  useEffect(() => {
+    if (!jobId) return;
+    const key = `fieldProject_scroll_${jobId}`;
+    const savedScroll = sessionStorage.getItem(key);
+    if (savedScroll) {
+      requestAnimationFrame(() => {
+        const mainContent = document.querySelector('.field-main-content');
+        if (mainContent) mainContent.scrollTop = parseInt(savedScroll, 10);
+      });
+    }
+  }, [jobId, activePanel]);
+
+  // Save scroll position on scroll
+  useEffect(() => {
+    if (!jobId) return;
+    const mainContent = document.querySelector('.field-main-content');
+    if (!mainContent) return;
+
+    const handleScroll = () => {
+      try {
+        const key = `fieldProject_scroll_${jobId}`;
+        sessionStorage.setItem(key, mainContent.scrollTop.toString());
+      } catch (error) {
+        console.error('Failed to save scroll position:', error);
+      }
+    };
+
+    mainContent.addEventListener('scroll', handleScroll);
+    return () => mainContent.removeEventListener('scroll', handleScroll);
+  }, [jobId, activePanel]);
 
   // Handle resize
   useEffect(() => {
@@ -352,7 +408,7 @@ export default function FieldProject() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pb-32 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
+      <div className="flex-1 overflow-y-auto pb-32 md:pb-0 field-main-content" style={{ height: '100vh', overflowY: 'auto' }}>
         {renderPanel()}
       </div>
 
