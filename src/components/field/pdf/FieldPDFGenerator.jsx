@@ -21,7 +21,12 @@ export async function generateFieldPDF(normalizedData, options = {}) {
   // Page 1: Cover + Metadata
   renderCoverPage(doc, normalizedData);
   
-  // Page 2+: Dimensions by area
+  // Page 2: Legend & Guide
+  doc.addPage();
+  currentPage++;
+  renderLegendPage(doc, normalizedData, currentPage);
+  
+  // Page 3+: Dimensions by area
   const dimensionPages = renderDimensionPages(doc, normalizedData);
   currentPage += dimensionPages;
   
@@ -383,6 +388,171 @@ function hexToRgb(hex) {
     g: parseInt(result[2], 16),
     b: parseInt(result[3], 16)
   } : { r: 0, g: 0, b: 0 };
+}
+
+/**
+ * Render legend page
+ */
+function renderLegendPage(doc, data, pageNum) {
+  const { generateLegendFromData, generateProductionNotes } = require('./FieldPDFLegendGenerator');
+  
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 80;
+  
+  // Page title
+  doc.setFillColor(99, 102, 241); // Indigo background
+  doc.rect(0, 60, pageWidth, 40, 'F');
+  
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('LEGEND & PRODUCTION GUIDE', pageWidth / 2, y + 10, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+  y += 40;
+  
+  // Generate legend
+  const legend = generateLegendFromData(data.dimensions, data.benchmarks);
+  
+  // Measurement Types Section
+  y += 20;
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Measurement Types', 40, y);
+  y += 18;
+  
+  legend.measurement_types.forEach(type => {
+    if (y > 650) {
+      doc.addPage();
+      y = 100;
+    }
+    
+    // Color indicator
+    const rgb = hexToRgb(type.color);
+    doc.setFillColor(rgb.r, rgb.g, rgb.b);
+    doc.roundedRect(40, y - 8, 4, 12, 1, 1, 'F');
+    
+    // Type code and name
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(type.code, 50, y);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(type.name, 100, y);
+    
+    // Description
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(type.description, 100, y + 8);
+    
+    doc.setTextColor(0, 0, 0);
+    y += 20;
+  });
+  
+  // Benchmark Colors Section
+  if (legend.benchmarks.length > 0) {
+    y += 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Benchmark Color Codes', 40, y);
+    y += 18;
+    
+    legend.benchmarks.forEach(bm => {
+      if (y > 700) {
+        doc.addPage();
+        y = 100;
+      }
+      
+      // Color dot
+      const rgb = hexToRgb(bm.color_code);
+      doc.setFillColor(rgb.r, rgb.g, rgb.b);
+      doc.circle(43, y - 2, 4, 'F');
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(bm.label, 55, y);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${bm.type} - ${bm.elevation}`, 120, y);
+      doc.setFontSize(7);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`(${bm.area})`, 220, y);
+      doc.setTextColor(0, 0, 0);
+      
+      y += 15;
+    });
+  }
+  
+  // Unit Systems
+  if (y > 600) {
+    doc.addPage();
+    y = 100;
+  }
+  
+  y += 10;
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Measurement Units', 40, y);
+  y += 18;
+  
+  legend.unit_systems.forEach(system => {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${system.system}:`, 50, y);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(system.format, 120, y);
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Example: ${system.example}`, 220, y);
+    doc.setTextColor(0, 0, 0);
+    
+    y += 15;
+  });
+  
+  // Production Notes
+  if (y > 400) {
+    doc.addPage();
+    y = 100;
+  }
+  
+  y += 15;
+  doc.setFillColor(254, 243, 199);
+  doc.rect(40, y - 10, pageWidth - 80, 25, 'F');
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('IMPORTANT PRODUCTION NOTES', 50, y + 5);
+  y += 30;
+  
+  const notes = generateProductionNotes();
+  
+  notes.forEach(section => {
+    if (y > 650) {
+      doc.addPage();
+      y = 100;
+    }
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(section.title, 50, y);
+    y += 15;
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    
+    section.points.forEach(point => {
+      const lines = doc.splitTextToSize(`• ${point}`, pageWidth - 110);
+      lines.forEach(line => {
+        if (y > 720) {
+          doc.addPage();
+          y = 100;
+        }
+        doc.text(line, 60, y);
+        y += 11;
+      });
+    });
+    
+    y += 8;
+  });
 }
 
 /**
