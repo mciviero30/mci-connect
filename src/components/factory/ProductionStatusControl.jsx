@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Dialog,
   DialogContent,
@@ -18,8 +19,10 @@ import {
   Factory,
   PackageCheck,
   ShieldCheck,
-  Wrench
+  Wrench,
+  Lock
 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { 
   changeProductionStatus, 
   getNextStatuses, 
@@ -35,6 +38,25 @@ export default function ProductionStatusControl({ dimensionSet, onStatusChanged 
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [notes, setNotes] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [permissions, setPermissions] = useState(null);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+  
+  // Check permissions on mount
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+  
+  const checkPermissions = async () => {
+    try {
+      const user = await base44.auth.me();
+      const userPermissions = await getUserPermissions(user);
+      setPermissions(userPermissions);
+    } catch (error) {
+      console.error('Failed to check permissions:', error);
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
   
   const currentStatus = dimensionSet.production_status || PRODUCTION_STATUS.PENDING;
   const currentBadge = getStatusBadgeProps(currentStatus);
