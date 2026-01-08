@@ -169,6 +169,8 @@ export default function FieldProjectView({
         return <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />;
       case 'dimensions':
         return <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />;
+      case 'site-notes':
+        return <SiteNotesRecorder jobId={jobId} area={null} />;
       case 'intelligence':
         return <MeasurementIntelligencePanel dimensions={[]} benchmarks={[]} jobId={jobId} />;
       case 'completeness':
