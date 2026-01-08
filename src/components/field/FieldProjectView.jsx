@@ -249,8 +249,60 @@ export default function FieldProjectView({
 
   const fabConfig = getFABConfig();
 
+  // Render main sections in vertical scroll (Work Mode)
+  const renderWorkContent = () => (
+    <div className="space-y-6 px-3 sm:px-4 md:px-6 pb-32">
+      {/* Progress Summary */}
+      <FieldProjectOverview job={job} tasks={tasks} plans={plans} onOpenDailyReport={() => setShowDailyReport(true)} />
+      
+      {/* Tasks Section */}
+      <section>
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <CheckSquare className="w-5 h-5 text-orange-400" />
+          Tasks
+          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 ml-2">
+            {tasks.length}
+          </Badge>
+        </h2>
+        <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />
+      </section>
+
+      {/* Dimensions Section */}
+      <section>
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <FileText className="w-5 h-5 text-purple-400" />
+          Dimensions
+        </h2>
+        <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />
+      </section>
+
+      {/* Plans Section */}
+      {plans.length > 0 && (
+        <section>
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <Map className="w-5 h-5 text-blue-400" />
+            Plans
+            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/40 ml-2">
+              {plans.length}
+            </Badge>
+          </h2>
+          <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />
+        </section>
+      )}
+
+      {/* Checklists Section */}
+      <section>
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+          <ClipboardCheck className="w-5 h-5 text-green-400" />
+          Checklists
+        </h2>
+        <FieldChecklistsView jobId={jobId} />
+      </section>
+    </div>
+  );
+
   return (
-    <div data-field-scope="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto dark">
+    <div data-field-scope="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col overflow-hidden dark">
       {/* Field Exit Control - Persistent, Always Visible */}
       <Link to={createPageUrl('Dashboard')}>
         <Button 
@@ -269,128 +321,63 @@ export default function FieldProjectView({
       <OfflineStatusBadge />
       
       {/* Session Restoration Indicator */}
-      {/* CRITICAL: User knows when app is recovering their work context */}
       <SessionRestorationIndicator 
         isRestoring={isRestoringSession}
         restoredContext={restoredContext}
       />
-      
-      {/* Context Bar - Always shows where user is */}
-      {/* CRITICAL: User never confused about current location */}
-      {isMobile && (
-        <FieldContextBar 
-          jobName={job?.name || job?.job_name_field}
-          currentPanel={activePanel}
-          currentArea={currentArea}
-          currentMode={currentMode}
-          hasUnsavedChanges={hasUnsaved}
-        />
-      )}
 
-      {/* Safe Back Button - Never causes data loss */}
-      {/* CRITICAL: Warns on unsaved, shows destination, auto-saves */}
-      {isMobile && (
-        <SafeBackButton
-          hasUnsavedChanges={hasUnsaved}
-          destination="Field"
-          destinationLabel="Projects"
-          className="fixed bottom-24 left-3 z-[60]"
-        />
-      )}
-
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex w-72 bg-slate-900 border-r border-slate-700 flex-col shadow-xl overflow-y-auto">
-        <div className="p-5 border-b border-slate-700 bg-gradient-to-br from-black to-slate-900 flex-shrink-0 sticky top-0 z-10">
-          <Link to={createPageUrl('Field')}>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white mb-4 min-h-[40px] hover:bg-slate-800 rounded-lg transition-all w-full justify-start">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Projects
-            </Button>
-          </Link>
-          <div className="space-y-3">
-            <div>
-              <h2 className="font-bold text-white text-lg leading-tight mb-3">{job.name || job.job_name_field}</h2>
+      {/* Fixed Header - Project Name + Status */}
+      <div className="flex-shrink-0 sticky top-0 z-50 bg-gradient-to-br from-black to-slate-900 border-b border-slate-700 shadow-xl">
+        <div className="px-3 sm:px-4 md:px-6 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-white truncate mb-1">
+                {job.name || job.job_name_field}
+              </h1>
               {job.address && (
                 <a 
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-2 text-slate-300 hover:text-[#FFB800] transition-colors text-sm mb-3 p-2 bg-slate-800/50 rounded-lg hover:bg-slate-800 group"
+                  className="flex items-center gap-2 text-slate-300 hover:text-orange-400 transition-colors text-sm group"
                 >
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 group-hover:text-[#FFB800]" />
-                  <span className="line-clamp-2 leading-relaxed">{job.address}</span>
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0 group-hover:text-orange-400" />
+                  <span className="truncate">{job.address}</span>
                 </a>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Badge className={`text-xs px-3 py-1.5 font-bold ${
-                job.status === 'active' 
-                  ? 'bg-green-500/20 text-green-400 border-green-500/40'
-                  : job.status === 'completed'
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/40'
-                  : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
-              }`}>
-                {job.status === 'active' ? '🟢 Active' : 
-                 job.status === 'completed' ? '✅ Completed' : 
-                 job.status}
-              </Badge>
-              {job.client_name_field && (
-                <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5" />
-                  {job.client_name_field}
-                </p>
-              )}
-            </div>
+            <Badge className={`flex-shrink-0 text-xs px-3 py-1.5 font-bold ${
+              job.status === 'active' 
+                ? 'bg-green-500/20 text-green-400 border-green-500/40'
+                : job.status === 'completed'
+                ? 'bg-blue-500/20 text-blue-400 border-blue-500/40'
+                : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
+            }`}>
+              {job.status === 'active' ? '🟢 Active' : 
+               job.status === 'completed' ? '✅ Completed' : 
+               job.status}
+            </Badge>
           </div>
+          {job.client_name_field && (
+            <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-2">
+              <Users className="w-3.5 h-3.5" />
+              {job.client_name_field}
+            </p>
+          )}
         </div>
-
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActivePanel(item.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-base font-bold transition-all min-h-[52px] touch-manipulation active:scale-[0.98] ${
-                activePanel === item.id
-                  ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-2 border-orange-300 shadow-2xl shadow-orange-500/30'
-                  : 'text-slate-300 active:text-white active:bg-slate-800 border-2 border-transparent'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <item.icon className="w-6 h-6" />
-                <span>{item.label}</span>
-              </div>
-              {item.count !== undefined && item.count > 0 && (
-                <span className={`text-sm px-3 py-1.5 rounded-full font-bold border-2 ${
-                  activePanel === item.id
-                    ? 'bg-black/20 text-white border-black/30'
-                    : 'bg-slate-700 text-slate-100 border-slate-600'
-                }`}>
-                  {item.count}
-                </span>
-              )}
-              {item.badge && (
-                <span className="text-xl">{item.badge}</span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div data-field-main className="flex-1 overflow-y-auto pb-32 md:pb-0" style={{ height: '100vh', overflowY: 'auto' }}>
         <FieldStatusBar jobId={jobId} />
-        {renderPanel()}
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <MobileBottomNav 
-          activeTab={activePanel}
-          onTabChange={setActivePanel}
-          taskCount={tasks.length}
-          planCount={plans.length}
-        />
-      )}
+      {/* Main Content - Scrollable Vertical Flow */}
+      <div data-field-main className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {isDebugMode ? renderPanel() : renderWorkContent()}
+      </div>
+
+      {/* Universal Sync Indicator */}
+      <UniversalSyncIndicator jobId={jobId} />
+
+      {/* Photo Upload Progress */}
+      <PhotoUploadProgress jobId={jobId} />
 
       {/* Daily Report Dialog */}
       <DailyReportGenerator 
@@ -411,18 +398,7 @@ export default function FieldProjectView({
         }}
       />
 
-      {/* Context-Aware FAB - DEPRECATED */}
-      {/* Replaced by FieldBottomActionRail for one-hand navigation */}
-      {/* FAB removed to prevent overlap with bottom action rail */}
-
-      {/* Universal Sync Indicator */}
-      <UniversalSyncIndicator jobId={jobId} />
-
-      {/* Photo Upload Progress */}
-      <PhotoUploadProgress jobId={jobId} />
-
-      {/* Bottom Action Rail - Context-Aware, One-Hand Mode */}
-      {/* CRITICAL: Highlights relevant actions, shows active state, single-panel enforcement */}
+      {/* Bottom Action Rail - Fixed, Always Visible */}
       <FieldBottomActionRail 
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
