@@ -30,11 +30,28 @@ import { getFactoryViewData } from '@/components/factory/FactoryViewService';
 import { validateDataIntegrity } from '@/components/factory/FactoryDataIntegrity';
 import { getDimensionSetStatus, getStatusBadgeData } from '@/components/factory/FactoryStatusMarkers';
 import { generateProductionPDF } from '@/components/field/pdf/FieldPDFPipeline';
+import { getUserPermissions } from '@/components/factory/FactoryPermissionsService';
+import { logFactoryAction } from '@/components/factory/FactoryAuditLogger';
 
 export default function FactoryView() {
   const [searchParams] = useSearchParams();
   const dimensionSetId = searchParams.get('set');
   const [activeTab, setActiveTab] = useState('dimensions');
+  const [userPermissions, setUserPermissions] = useState(null);
+  
+  // Check user permissions
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        const user = await base44.auth.me();
+        const permissions = await getUserPermissions(user);
+        setUserPermissions(permissions);
+      } catch (error) {
+        console.error('Failed to check permissions:', error);
+      }
+    };
+    checkPermissions();
+  }, []);
 
   // Fetch dimension set with read-only service
   const { data: dimensionSet, isLoading: setLoading } = useQuery({
@@ -355,12 +372,14 @@ export default function FactoryView() {
         </Tabs>
       </div>
 
-      {/* Read-only indicator */}
+      {/* Access mode indicator */}
       <div className="fixed bottom-4 right-4">
-        <Badge className="bg-slate-800 text-white shadow-lg">
-          <Lock className="w-3 h-3 mr-1" />
-          Read-Only Mode
-        </Badge>
+        {userPermissions && (
+          <Badge className={userPermissions.is_factory_user ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-white shadow-lg'}>
+            <Lock className="w-3 h-3 mr-1" />
+            {userPermissions.is_factory_user ? 'Factory Access' : 'Read-Only Mode'}
+          </Badge>
+        )}
       </div>
     </div>
   );
@@ -726,9 +745,28 @@ function ExportPanel({ dimensionSet, factoryData }) {
     
     setExporting(true);
     try {
+      const user = await base44.auth.me();
+      const permissions = await getUserPermissions(user);
+      
+      if (!permissions.can_export) {
+        alert('❌ Unauthorized: Export requires factory role');
+        setExporting(false);
+        return;
+      }
+      
       const result = await generateFactoryPDF(factoryData, {
         include_annotations: true,
         legal_document: true
+      });
+
+      // Audit log
+      await logFactoryAction('production_pdf_exported', {
+        dimension_set_id: dimensionSet.id,
+        job_id: dimensionSet.job_id,
+        details: {
+          revision: dimensionSet.version_number,
+          document_id: result.metadata.document_id
+        }
       });
 
       // Download
@@ -744,7 +782,7 @@ function ExportPanel({ dimensionSet, factoryData }) {
       alert('Factory production PDF generated successfully');
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Export failed: ' + error.message);
+      alert('❌ ' + error.message);
     } finally {
       setExporting(false);
     }

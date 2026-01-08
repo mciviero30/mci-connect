@@ -27,6 +27,8 @@ import {
   PRODUCTION_STATUS 
 } from './FactoryProductionLifecycle';
 import { validateProductionGate, requiresGateValidation } from './FactoryValidationGates';
+import { requireFactoryRole, getUserPermissions } from './FactoryPermissionsService';
+import { logFactoryAction } from './FactoryAuditLogger';
 
 export default function ProductionStatusControl({ dimensionSet, onStatusChanged }) {
   const [changingStatus, setChangingStatus] = useState(false);
@@ -41,39 +43,45 @@ export default function ProductionStatusControl({ dimensionSet, onStatusChanged 
   const handleStatusChange = async () => {
     if (!selectedStatus) return;
     
-    // Validate gates if required
-    if (requiresGateValidation(selectedStatus)) {
-      const validation = await validateProductionGate(dimensionSet.id, selectedStatus);
+    setChangingStatus(true);
+    
+    try {
+      const user = await base44.auth.me();
       
-      if (!validation.passed) {
-        const errorList = validation.errors.join('\n• ');
-        alert(
-          `❌ PRODUCTION GATE BLOCKED\n\n` +
-          `Cannot advance to ${getStatusBadgeProps(selectedStatus).label}\n\n` +
-          `Failures:\n• ${errorList}\n\n` +
-          `All validation checks must pass before fabrication can begin.`
-        );
-        setChangingStatus(false);
-        return;
-      }
+      // CRITICAL: Permission check
+      await requireFactoryRole(user, 'change production status');
       
-      if (validation.warnings.length > 0) {
-        const proceed = confirm(
-          `⚠️ VALIDATION WARNINGS\n\n` +
-          validation.warnings.join('\n• ') +
-          `\n\nDo you want to proceed?`
-        );
+      // Validate gates if required
+      if (requiresGateValidation(selectedStatus)) {
+        const validation = await validateProductionGate(dimensionSet.id, selectedStatus);
         
-        if (!proceed) {
+        if (!validation.passed) {
+          const errorList = validation.errors.join('\n• ');
+          alert(
+            `❌ PRODUCTION GATE BLOCKED\n\n` +
+            `Cannot advance to ${getStatusBadgeProps(selectedStatus).label}\n\n` +
+            `Failures:\n• ${errorList}\n\n` +
+            `All validation checks must pass before fabrication can begin.`
+          );
           setChangingStatus(false);
           return;
         }
+        
+        if (validation.warnings.length > 0) {
+          const proceed = confirm(
+            `⚠️ VALIDATION WARNINGS\n\n` +
+            validation.warnings.join('\n• ') +
+            `\n\nDo you want to proceed?`
+          );
+          
+          if (!proceed) {
+            setChangingStatus(false);
+            return;
+          }
+        }
       }
-    }
-    
-    setChangingStatus(true);
-    try {
-      const user = await base44.auth.me();
+      
+      const fromStatus = dimensionSet.production_status;
       
       await changeProductionStatus(
         dimensionSet.id,
@@ -81,6 +89,17 @@ export default function ProductionStatusControl({ dimensionSet, onStatusChanged 
         user,
         notes
       );
+      
+      // Audit log
+      await logFactoryAction('production_status_changed', {
+        dimension_set_id: dimensionSet.id,
+        job_id: dimensionSet.job_id,
+        details: {
+          from_status: fromStatus,
+          to_status: selectedStatus,
+          notes: notes
+        }
+      });
       
       setDialogOpen(false);
       setNotes('');
@@ -92,7 +111,7 @@ export default function ProductionStatusControl({ dimensionSet, onStatusChanged 
       
     } catch (error) {
       console.error('Failed to change status:', error);
-      alert('Failed to change status: ' + error.message);
+      alert('❌ ' + error.message);
     } finally {
       setChangingStatus(false);
     }
@@ -115,6 +134,49 @@ export default function ProductionStatusControl({ dimensionSet, onStatusChanged 
     }
   };
   
+  if (permissionsLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center text-slate-500">Checking permissions...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (!permissions?.can_change_status) {
+    return (
+      <Card className="border-amber-200 bg-amber-50">
+        <CardHeader>
+          <CardTitle>Production Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert className="border-amber-200 bg-amber-50">
+            <Lock className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <div className="font-bold mb-2">Read-Only Access</div>
+              You do not have factory role privileges to change production status.
+              Only factory managers can modify production workflow.
+            </AlertDescription>
+          </Alert>
+          
+          <div className="mt-4 space-y-2">
+            <div className="text-sm">
+              <span className="text-slate-600">Current Status:</span>
+              <Badge className={`ml-2 ${getStatusBadgeProps(dimensionSet.production_status || PRODUCTION_STATUS.PENDING).className}`}>
+                {getStatusBadgeProps(dimensionSet.production_status || PRODUCTION_STATUS.PENDING).label}
+              </Badge>
+            </div>
+            <div className="text-sm">
+              <span className="text-slate-600">Your Role:</span>
+              <span className="ml-2 font-semibold">{permissions.role}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
