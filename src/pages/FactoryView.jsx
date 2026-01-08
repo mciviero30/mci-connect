@@ -12,10 +12,12 @@ import {
   Factory, 
   Lock, 
   FileCheck, 
+  FileText,
   Ruler,
   AlertTriangle,
   ShieldCheck,
-  Download
+  Download,
+  Package
 } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { getFactoryViewData } from '@/components/factory/FactoryViewService';
@@ -216,13 +218,48 @@ export default function FactoryView() {
         </div>
       )}
 
+      {/* Production Summary */}
+      {factoryData?.production_summary && (
+        <div className="max-w-screen-2xl mx-auto px-6 py-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Production Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <div className="text-2xl font-bold">{factoryData.production_summary.total_groups}</div>
+                  <div className="text-sm text-slate-600">Fabrication Groups</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">{factoryData.production_summary.fabricable_groups}</div>
+                  <div className="text-sm text-slate-600">Ready to Fabricate</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{factoryData.production_summary.total_dimensions}</div>
+                  <div className="text-sm text-slate-600">Total Dimensions</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{Object.keys(factoryData.production_summary.by_area).length}</div>
+                  <div className="text-sm text-slate-600">Areas</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="max-w-screen-2xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
+            <TabsTrigger value="groups" className="gap-2">
+              <Package className="w-4 h-4" />
+              Production Groups ({factoryData?.production_groups?.length || 0})
+            </TabsTrigger>
             <TabsTrigger value="dimensions" className="gap-2">
               <Ruler className="w-4 h-4" />
-              Dimensions ({factoryData?.dimensions?.length || 0})
+              All Dimensions ({factoryData?.dimensions?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="benchmarks" className="gap-2">
               <ShieldCheck className="w-4 h-4" />
@@ -237,6 +274,14 @@ export default function FactoryView() {
               Export
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="groups">
+            <ProductionGroups 
+              groups={factoryData?.production_groups || []} 
+              job={factoryData?.job}
+              dimensionSet={dimensionSet}
+            />
+          </TabsContent>
 
           <TabsContent value="dimensions">
             <DimensionsTable dimensions={factoryData?.dimensions || []} />
