@@ -134,44 +134,17 @@ Format as JSON.`,
  * Extract Dimension entity
  */
 async function extractDimension(intent, sessionMetadata, base44Client) {
-  const result = await base44Client.integrations.Core.InvokeLLM({
-    prompt: `Extract dimension measurement from: "${intent.text_english}"
-
-Provide:
-- value_feet (integer)
-- value_inches (integer)
-- value_fraction (string like "1/8", "1/4", "0")
-- measurement_type (FF-FF/FF-CL/CL-FF/CL-CL/BM-C/BM-F/F-C)
-- dimension_type (horizontal/vertical/diagonal)
-- location_description
-
-Format as JSON.`,
-    response_json_schema: {
-      type: "object",
-      properties: {
-        value_feet: { type: "number" },
-        value_inches: { type: "number" },
-        value_fraction: { type: "string" },
-        measurement_type: { type: "string" },
-        dimension_type: { type: "string" },
-        location_description: { type: "string" }
-      }
-    }
-  });
+  // Use specialized dimension parser
+  const { parseDimension, createDimensionDraft } = await import('./VoiceDimensionParser.js');
   
-  return {
-    ...result,
-    job_id: sessionMetadata.job_id,
-    area: sessionMetadata.area || result.location_description,
-    unit_system: 'imperial',
-    device_type: 'manual',
-    status: 'draft',
-    measured_by: sessionMetadata.recorded_by,
-    measured_by_name: sessionMetadata.recorded_by_name,
-    measurement_date: sessionMetadata.session_start,
-    created_from: 'voice_note',
-    draft: true
-  };
+  const parsed = await parseDimension(
+    intent.text_english,
+    intent.text_original,
+    sessionMetadata.detected_language,
+    base44Client
+  );
+  
+  return createDimensionDraft(parsed, sessionMetadata);
 }
 
 /**
