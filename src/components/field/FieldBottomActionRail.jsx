@@ -47,25 +47,30 @@ export default function FieldBottomActionRail({ jobId, jobName, onActionComplete
 
   return (
     <>
-      {/* Mobile: Bottom-Right Rail - Safe zone with haptic feedback */}
-      <div className="md:hidden fixed bottom-20 right-4 z-[60] flex flex-col gap-4">
+      {/* Mobile: Bottom-Right Floating Action Rail - Thumb-First Design */}
+      {/* CRITICAL: Positioned for right-thumb reach, 44px+ targets, glove-safe spacing */}
+      <div className="md:hidden fixed bottom-24 right-3 z-[60] flex flex-col gap-3">
         {actions.map((action) => (
           <button
             key={action.id}
             onClick={() => {
-              // Haptic feedback
+              // Haptic feedback (10ms vibration)
               if (navigator.vibrate) navigator.vibrate(10);
               setActiveAction(action.id);
             }}
             className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 border-white/40 touch-manipulation active:scale-90 active:shadow-3xl transition-all`}
             style={{ 
               WebkitTapHighlightColor: 'transparent',
-              minWidth: '64px',
-              minHeight: '64px'
+              minWidth: '64px',  // Exceeds 44px minimum
+              minHeight: '64px', // Exceeds 44px minimum
             }}
             aria-label={action.label}
           >
             <action.icon className="w-7 h-7 text-white" strokeWidth={2.5} />
+            {/* Label overlay on press (accessibility) */}
+            <div className="absolute -left-24 top-1/2 -translate-y-1/2 bg-slate-900/95 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-active:opacity-100 transition-opacity pointer-events-none">
+              {action.label}
+            </div>
           </button>
         ))}
       </div>

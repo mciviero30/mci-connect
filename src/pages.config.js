@@ -40,7 +40,6 @@ import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import FactoryView from './pages/FactoryView';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
-import FieldBottomActionRail from './pages/FieldBottomActionRail';
 import FieldExport from './pages/FieldExport';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
@@ -146,7 +145,6 @@ export const PAGES = {
     "FactoryView": FactoryView,
     "Facturas": Facturas,
     "Field": Field,
-    "FieldBottomActionRail": FieldBottomActionRail,
     "FieldExport": FieldExport,
     "FieldProject": FieldProject,
     "Formularios": Formularios,

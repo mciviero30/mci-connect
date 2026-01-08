@@ -62,7 +62,7 @@ import FieldQuickActionBar from '@/components/field/FieldQuickActionBar.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
-import FieldBottomActionRail from '@/pages/FieldBottomActionRail.jsx';
+import FieldBottomActionRail from './FieldBottomActionRail';
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 
 export default function FieldProjectView({
@@ -238,17 +238,18 @@ export default function FieldProjectView({
       {isMobile && <MobileHeader job={job} onBack={handleBack} />}
 
       {/* Mobile Back Button - Thumb-reachable bottom-left */}
+      {/* CRITICAL: 56px target, left-thumb reach, 3px gap from edge */}
       {isMobile && (
         <button
           onClick={() => {
             if (navigator.vibrate) navigator.vibrate(10);
             handleBack();
           }}
-          className="fixed bottom-4 left-4 z-[55] w-14 h-14 bg-slate-900 border-2 border-slate-700 rounded-2xl flex items-center justify-center shadow-2xl touch-manipulation active:scale-90 active:bg-slate-800 transition-all"
+          className="fixed bottom-24 left-3 z-[60] w-14 h-14 bg-slate-900/95 backdrop-blur-sm border-2 border-slate-700 rounded-2xl flex items-center justify-center shadow-2xl touch-manipulation active:scale-90 active:bg-slate-800 active:border-orange-500 transition-all"
           style={{ 
             WebkitTapHighlightColor: 'transparent',
-            minWidth: '56px',
-            minHeight: '56px'
+            minWidth: '56px',  // Exceeds 44px minimum
+            minHeight: '56px', // Exceeds 44px minimum
           }}
           aria-label="Back to projects"
         >
@@ -369,16 +370,9 @@ export default function FieldProjectView({
         }}
       />
 
-      {/* Context-Aware FAB */}
-      {fabConfig.show && (
-        <button
-          onClick={handleFABClick}
-          className="fixed bottom-24 right-6 md:bottom-8 z-50 w-16 h-16 bg-gradient-to-br from-orange-600 to-yellow-500 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-transform"
-          aria-label={fabConfig.label}
-        >
-          <fabConfig.icon className="w-7 h-7" />
-        </button>
-      )}
+      {/* Context-Aware FAB - DEPRECATED */}
+      {/* Replaced by FieldBottomActionRail for one-hand navigation */}
+      {/* FAB removed to prevent overlap with bottom action rail */}
 
       {/* Universal Sync Indicator */}
       <UniversalSyncIndicator jobId={jobId} />
@@ -386,14 +380,8 @@ export default function FieldProjectView({
       {/* Photo Upload Progress */}
       <PhotoUploadProgress jobId={jobId} />
 
-      {/* Quick Action Bar - Legacy support */}
-      <FieldQuickActionBar
-        jobId={jobId}
-        jobName={job?.name || job?.job_name_field}
-        onActionComplete={handleActionComplete}
-      />
-
       {/* Bottom Action Rail - One-Hand Mode primary actions */}
+      {/* CRITICAL: Persistent across all Field views, thumb-reachable */}
       <FieldBottomActionRail 
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}

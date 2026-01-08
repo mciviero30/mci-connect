@@ -335,17 +335,21 @@ export default function Field() {
       </TabsContent>
     </Tabs>
 
-    {/* One-Hand Mode: Safe Bottom Bar - Spaced for gloved operation */}
+    {/* One-Hand Mode: Safe Bottom Bar - Thumb-First Design */}
+    {/* CRITICAL: All primary actions bottom-accessible, 60px+ targets, glove-safe spacing */}
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
-      <div className="px-4 py-4">
+      <div className="px-3 py-4">
         <div className="flex gap-3 mb-3">
           <button
             onClick={() => {
               if (navigator.vibrate) navigator.vibrate(10);
               setShowQuickSearch(true);
             }}
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-4 bg-slate-800 border-2 border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 active:border-slate-500 transition-all min-h-[60px] shadow-md touch-manipulation active:scale-95 font-semibold"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-4 bg-slate-800 border-2 border-slate-600 rounded-xl text-slate-300 active:bg-slate-700 active:border-orange-500 transition-all min-h-[60px] shadow-md touch-manipulation active:scale-95 font-semibold"
+            style={{ 
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '60px',  // Glove-safe
+            }}
           >
             <Search className="w-5 h-5" />
             <span>Search</span>
@@ -357,6 +361,7 @@ export default function Field() {
                 setShowNewProject(true);
               }}
               className="flex-1 bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[60px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
+              style={{ minHeight: '60px' }}
             >
               <Plus className="w-5 h-5 mr-2" />
               Project
@@ -364,7 +369,8 @@ export default function Field() {
           )}
         </div>
 
-        {/* Filter Toggle - Safe spacing */}
+        {/* Filter Toggle - Glove-Safe Spacing */}
+        {/* CRITICAL: 56px targets, 12px spacing, clear active states */}
         {activeTab === 'projects' && (
           <div className="flex bg-black rounded-xl p-1.5 shadow-md mb-3">
             <button
@@ -375,9 +381,12 @@ export default function Field() {
               className={`flex-1 px-5 py-3.5 rounded-lg text-sm font-bold transition-all min-h-[56px] touch-manipulation active:scale-95 ${
                 filter === 'active' 
                   ? 'bg-slate-700 text-white shadow-sm' 
-                  : 'text-slate-400'
+                  : 'text-slate-400 active:bg-slate-800'
               }`}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '56px',  // Exceeds 44px minimum
+              }}
             >
               Active
             </button>
@@ -389,24 +398,31 @@ export default function Field() {
               className={`flex-1 px-5 py-3.5 rounded-lg text-sm font-bold transition-all min-h-[56px] touch-manipulation active:scale-95 ${
                 filter === 'all' 
                   ? 'bg-slate-700 text-white shadow-sm' 
-                  : 'text-slate-400'
+                  : 'text-slate-400 active:bg-slate-800'
               }`}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '56px',  // Exceeds 44px minimum
+              }}
             >
               All
             </button>
           </div>
         )}
 
-        {/* Back Navigation - Thumb-safe */}
+        {/* Back Navigation - Thumb-Safe */}
+        {/* CRITICAL: 56px target, full-width for easy tap */}
         <Link to={createPageUrl('Dashboard')}>
           <Button 
             onClick={() => {
               if (navigator.vibrate) navigator.vibrate(10);
             }}
             variant="ghost" 
-            className="w-full text-slate-400 hover:text-white hover:bg-slate-800 min-h-[56px] touch-manipulation active:scale-95 font-medium rounded-xl"
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            className="w-full text-slate-400 hover:text-white hover:bg-slate-800 active:bg-slate-700 active:text-white min-h-[56px] touch-manipulation active:scale-95 font-medium rounded-xl"
+            style={{ 
+              WebkitTapHighlightColor: 'transparent',
+              minHeight: '56px',  // Exceeds 44px minimum
+            }}
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Dashboard
