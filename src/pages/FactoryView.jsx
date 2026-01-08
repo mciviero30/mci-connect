@@ -270,6 +270,116 @@ export default function FactoryView() {
   );
 }
 
+function ProductionGroups({ groups, job, dimensionSet }) {
+  const { prepareGroupForExport } = require('@/components/factory/FactoryProductionGrouping');
+  
+  const handleExportGroup = async (group) => {
+    const packet = prepareGroupForExport(group, job, dimensionSet);
+    
+    // TODO: Generate PDF for this specific group
+    console.log('Export packet:', packet);
+    toast.success(`Preparing ${packet.packet_name} for export`);
+  };
+  
+  return (
+    <div className="space-y-6">
+      {groups.map((group) => (
+        <Card key={group.id} className={!group.is_fabricable ? 'border-amber-200 bg-amber-50/50' : ''}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">{group.name}</CardTitle>
+                <div className="text-sm text-slate-600 mt-1">
+                  {group.metadata.dimension_count} dimensions • {group.metadata.total_linear_feet} linear feet
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {group.is_fabricable ? (
+                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                    <ShieldCheck className="w-3 h-3 mr-1" />
+                    Fabricable
+                  </Badge>
+                ) : (
+                  <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    Review Required
+                  </Badge>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportGroup(group)}
+                  disabled={!group.is_fabricable}
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Export PDF
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex items-center gap-4 text-sm text-slate-600">
+              <span>Type: <strong>{group.unit_type}</strong></span>
+              <span>•</span>
+              <span>Captured: <strong>{new Date(group.metadata.field_capture_date).toLocaleDateString()}</strong></span>
+              <span>•</span>
+              <span>By: <strong>{group.metadata.captured_by.join(', ')}</strong></span>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">#</th>
+                    <th className="px-4 py-3 text-left font-semibold">Type</th>
+                    <th className="px-4 py-3 text-left font-semibold">Imperial</th>
+                    <th className="px-4 py-3 text-left font-semibold">Metric</th>
+                    <th className="px-4 py-3 text-left font-semibold">Tolerance</th>
+                    <th className="px-4 py-3 text-left font-semibold">Material</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {group.dimensions.map((dim, idx) => (
+                    <tr key={dim.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="px-4 py-3 font-mono text-slate-600 font-bold">{idx + 1}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {dim.measurement_type}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 font-bold font-mono text-lg">
+                        {dim.display_value_imperial || formatImperial(dim)}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-slate-600">
+                        {dim.display_value_metric || `${dim.value_mm}mm`}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-500">
+                        {dim.tolerance ? `±${dim.tolerance.plus}/${dim.tolerance.minus}` : 'Standard'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {dim.material_type || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+      
+      {groups.length === 0 && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            No production groups found. Dimensions must be production-ready to appear in groups.
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
+  );
+}
+
 function DimensionsTable({ dimensions }) {
   // Group by area for better organization
   const dimensionsByArea = dimensions.reduce((acc, dim) => {

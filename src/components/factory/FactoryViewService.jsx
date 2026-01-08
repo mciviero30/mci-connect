@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { validateFactoryAccess } from './FactoryPermissions';
 import { MODES } from './FactoryModeContext';
 import { filterForProduction, getLatestRevision, validateProductionReadiness } from './FactoryProductionFilter';
+import { groupDimensionsForProduction, getProductionSummary } from './FactoryProductionGrouping';
 
 /**
  * Fetch dimensions for Factory view
@@ -240,6 +241,10 @@ export async function getFactoryViewData(dimensionSetId) {
     // Validate production readiness
     const readiness = validateProductionReadiness(dimensionSet, dimensions);
     
+    // Group for production
+    const productionGroups = groupDimensionsForProduction(filtered.dimensions);
+    const productionSummary = getProductionSummary(productionGroups);
+    
     return {
       ...filtered,
       dimension_set: { ...filtered.dimension_set, _readonly: true },
@@ -249,6 +254,8 @@ export async function getFactoryViewData(dimensionSetId) {
       job: filtered.job ? { ...filtered.job, _readonly: true } : null,
       status: getDataStatus(dimensionSet),
       production_readiness: readiness,
+      production_groups: productionGroups,
+      production_summary: productionSummary,
       metadata: {
         ...filtered.metadata,
         is_production_ready: dimensionSet.is_locked
