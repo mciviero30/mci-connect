@@ -995,7 +995,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         )}
         
         <main className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden ${shouldHideSidebar ? 'w-full' : ''}`}>
-          {!isFieldPage && (
+          {/* Mobile Header: Hidden when sidebar is hidden (Field/Focus Mode) */}
+          {!shouldHideSidebar && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1029,8 +1030,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             </motion.header>
           )}
 
-          {/* Focus Mode Toggle - Desktop Header */}
-          {!isFieldPage && !shouldHideSidebar && (
+          {/* Focus Mode Toggle - Desktop (not shown in Field Mode) */}
+          {!shouldHideSidebar && (
             <div className="hidden md:flex absolute top-4 right-4 z-50">
               <Button
                 variant="ghost"
@@ -1070,8 +1071,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
 
-          {/* Bottom Navigation for Mobile */}
-          {!isFieldPage && (
+          {/* Bottom Navigation: Hidden in Field/Focus Mode */}
+          {!shouldHideSidebar && (
             <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           )}
         </main>
