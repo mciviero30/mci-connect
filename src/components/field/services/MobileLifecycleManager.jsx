@@ -1,15 +1,26 @@
 /**
  * Mobile Lifecycle Manager
  * Handles app background/foreground transitions without state loss
+ * 
+ * Real jobsite conditions:
+ * - Incoming calls
+ * - Screen lock
+ * - App switching
+ * - Offline/online transitions
+ * - Long background periods
  */
 
 class MobileLifecycleManager {
   constructor() {
     this.state = {
       isBackground: false,
+      isOnline: navigator.onLine,
       lastForegroundTime: Date.now(),
       lastBackgroundTime: null,
+      lastOnlineTime: Date.now(),
+      lastOfflineTime: null,
       interruptionCount: 0,
+      offlineCount: 0,
     };
     
     this.listeners = new Map();
@@ -32,6 +43,10 @@ class MobileLifecycleManager {
     // Page lifecycle events (Chrome/Android)
     document.addEventListener('pagehide', () => this.handlePageHide());
     document.addEventListener('pageshow', () => this.handlePageShow());
+    
+    // Online/offline (network changes)
+    window.addEventListener('online', () => this.handleOnline());
+    window.addEventListener('offline', () => this.handleOffline());
   }
 
   handleVisibilityChange() {
@@ -77,7 +92,14 @@ class MobileLifecycleManager {
   onBackground() {
     if (this.state.isBackground) return;
     
-    console.log('[MobileLifecycle] App backgrounded');
+    if (import.meta.env?.DEV) {
+      console.log('[MobileLifecycle] 🔽 App backgrounded', {
+        time: new Date().toISOString(),
+        online: this.state.isOnline,
+        interruptionCount: this.state.interruptionCount + 1,
+      });
+    }
+    
     this.state.isBackground = true;
     this.state.lastBackgroundTime = Date.now();
     this.state.interruptionCount++;
@@ -86,14 +108,25 @@ class MobileLifecycleManager {
     this.captureStateSnapshot();
     
     // Notify listeners
-    this.notifyListeners('background');
+    this.notifyListeners('background', { 
+      online: this.state.isOnline,
+      timestamp: Date.now() 
+    });
   }
 
   onForeground() {
     if (!this.state.isBackground) return;
     
     const duration = Date.now() - (this.state.lastBackgroundTime || 0);
-    console.log(`[MobileLifecycle] App foregrounded (was background for ${Math.round(duration/1000)}s)`);
+    
+    if (import.meta.env?.DEV) {
+      console.log('[MobileLifecycle] 🔼 App foregrounded', {
+        time: new Date().toISOString(),
+        duration: `${Math.round(duration/1000)}s`,
+        online: this.state.isOnline,
+        wasLongBackground: duration > 30000,
+      });
+    }
     
     this.state.isBackground = false;
     this.state.lastForegroundTime = Date.now();
@@ -102,28 +135,80 @@ class MobileLifecycleManager {
     this.restoreStateSnapshot();
     
     // Notify listeners
-    this.notifyListeners('foreground', { duration });
+    this.notifyListeners('foreground', { 
+      duration,
+      online: this.state.isOnline,
+      timestamp: Date.now(),
+      wasLongBackground: duration > 30000,
+    });
+  }
+
+  handleOnline() {
+    if (this.state.isOnline) return;
+    
+    const offlineDuration = this.state.lastOfflineTime 
+      ? Date.now() - this.state.lastOfflineTime 
+      : 0;
+    
+    if (import.meta.env?.DEV) {
+      console.log('[MobileLifecycle] 📶 Network online', {
+        time: new Date().toISOString(),
+        offlineDuration: `${Math.round(offlineDuration/1000)}s`,
+      });
+    }
+    
+    this.state.isOnline = true;
+    this.state.lastOnlineTime = Date.now();
+    
+    this.notifyListeners('online', { 
+      offlineDuration,
+      timestamp: Date.now() 
+    });
+  }
+
+  handleOffline() {
+    if (!this.state.isOnline) return;
+    
+    if (import.meta.env?.DEV) {
+      console.log('[MobileLifecycle] 📵 Network offline', {
+        time: new Date().toISOString(),
+        wasBackground: this.state.isBackground,
+      });
+    }
+    
+    this.state.isOnline = false;
+    this.state.lastOfflineTime = Date.now();
+    this.state.offlineCount++;
+    
+    this.notifyListeners('offline', { 
+      timestamp: Date.now(),
+      wasBackground: this.state.isBackground,
+    });
   }
 
   captureStateSnapshot() {
     try {
-      // DISABLED: Scroll restoration removed to prevent querySelector errors
-      // Only capture active element by ID
+      // Capture active element by ID only (no querySelector)
       if (document.activeElement && document.activeElement.id) {
         this.stateSnapshots.set('activeElement', document.activeElement.id);
       }
 
+      // Mark snapshot time for debugging
       sessionStorage.setItem('field_snapshot_time', Date.now().toString());
-      console.log('[MobileLifecycle] State snapshot captured (scroll disabled)');
+      
+      if (import.meta.env?.DEV) {
+        console.log('[MobileLifecycle] ✅ State snapshot captured', {
+          hasActiveElement: !!this.stateSnapshots.get('activeElement'),
+        });
+      }
     } catch (error) {
-      console.error('[MobileLifecycle] Failed to capture snapshot:', error);
+      console.error('[MobileLifecycle] ❌ Failed to capture snapshot:', error);
     }
   }
 
   restoreStateSnapshot() {
     try {
-      // DISABLED: Scroll restoration removed to prevent querySelector errors
-      // Only restore focus by ID
+      // Restore focus by ID only (no querySelector)
       requestAnimationFrame(() => {
         const activeElementId = this.stateSnapshots.get('activeElement');
         if (activeElementId) {
@@ -134,9 +219,14 @@ class MobileLifecycleManager {
         }
       });
 
-      console.log('[MobileLifecycle] State snapshot restored (scroll disabled)');
+      if (import.meta.env?.DEV) {
+        const snapshotAge = Date.now() - parseInt(sessionStorage.getItem('field_snapshot_time') || '0');
+        console.log('[MobileLifecycle] ✅ State snapshot restored', {
+          ageSeconds: Math.round(snapshotAge / 1000),
+        });
+      }
     } catch (error) {
-      console.error('[MobileLifecycle] Failed to restore snapshot:', error);
+      console.error('[MobileLifecycle] ❌ Failed to restore snapshot:', error);
     }
   }
 
