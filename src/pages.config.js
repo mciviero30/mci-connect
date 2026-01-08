@@ -72,6 +72,7 @@ import Nomina from './pages/Nomina';
 import NotificationCenter from './pages/NotificationCenter';
 import NotificationSettings from './pages/NotificationSettings';
 import OnboardingWizard from './pages/OnboardingWizard';
+import OperationalModesDoc from './pages/OperationalModesDoc';
 import PaymentReconciliation from './pages/PaymentReconciliation';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
@@ -99,7 +100,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import OperationalModesDoc from './pages/OperationalModesDoc';
 import __Layout from './Layout.jsx';
 
 
@@ -178,6 +178,7 @@ export const PAGES = {
     "NotificationCenter": NotificationCenter,
     "NotificationSettings": NotificationSettings,
     "OnboardingWizard": OnboardingWizard,
+    "OperationalModesDoc": OperationalModesDoc,
     "PaymentReconciliation": PaymentReconciliation,
     "PayrollAutoFlow": PayrollAutoFlow,
     "PerDiem": PerDiem,
@@ -205,7 +206,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "OperationalModesDoc": OperationalModesDoc,
 }
 
 export const pagesConfig = {
