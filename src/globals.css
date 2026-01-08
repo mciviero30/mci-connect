@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================ */
+/* FIELD MODE SCOPED DARK THEME - NO LEAKAGE   */
+/* ============================================ */
+
+/* Field applies dark mode ONLY to its own subtree via data-field-mode attribute */
+[data-field-mode="true"],
+[data-field-mode="true"] *,
+[data-field-scope="true"],
+[data-field-scope="true"] *,
+[data-field-error="true"],
+[data-field-error="true"] * {
+  color-scheme: dark;
+}
+
+/* Ensure Field dark styles don't leak to Layout/Sidebar */
+:not([data-field-mode]) :not([data-field-scope]) :not([data-field-error]) {
+  /* Normal app theme */
+}
+
 /* iOS PWA Full Screen Support */
 @supports (-webkit-touch-callout: none) {
   html {

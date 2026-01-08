@@ -243,7 +243,7 @@ export default function Field() {
 
   return (
     <FieldErrorBoundary>
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto">
+    <div data-field-mode="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto dark">
       <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
       {/* Header - One-Hand Mode: Simplified, no top actions */}
       <div className="px-3 sm:px-6 md:px-10 py-5 sm:py-6 md:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-5 sm:mb-6 md:mb-8 flex flex-col items-center justify-center text-white gap-2 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>

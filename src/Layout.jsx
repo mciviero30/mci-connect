@@ -294,21 +294,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // CRITICAL: Field Mode Theme Override (scoped, no leakage)
-  useEffect(() => {
-    if (isFieldMode) {
-      // Apply field dark theme (scoped to Field pages only)
-      document.documentElement.classList.add('dark');
-    } else {
-      // Restore user's preferred theme when leaving Field
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-  }, [isFieldMode]);
+  // REMOVED: Global theme mutation - Field uses scoped dark class via data-attribute
+  // Field pages apply dark mode via data-field-mode attribute, not global dark class
 
   const { data: clientMemberships = [] } = useQuery({
     queryKey: ['client-memberships-check', user?.email],

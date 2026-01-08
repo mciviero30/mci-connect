@@ -58,7 +58,7 @@ class FieldErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <div data-field-error="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center p-6 dark">
           <div className="max-w-lg w-full bg-slate-800 border-2 border-red-500/30 rounded-2xl p-8 shadow-2xl text-center">
             <div className="w-20 h-20 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-red-500/30">
               <AlertTriangle className="w-12 h-12 text-red-400" />

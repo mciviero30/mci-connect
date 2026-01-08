@@ -28,16 +28,18 @@ export default function FieldProject() {
 
   return (
     <FieldErrorBoundary>
-      <ThemeProvider appType="field">
-        <FieldOfflineProvider jobId={state.stableJobId.current}>
-          <FieldContextProvider jobId={state.stableJobId.current}>
-            <FieldProjectView 
-              {...state}
-              jobId={jobId}
-            />
-          </FieldContextProvider>
-        </FieldOfflineProvider>
-      </ThemeProvider>
+      <div data-field-mode="true" className="dark">
+        <ThemeProvider appType="field">
+          <FieldOfflineProvider jobId={state.stableJobId.current}>
+            <FieldContextProvider jobId={state.stableJobId.current}>
+              <FieldProjectView 
+                {...state}
+                jobId={jobId}
+              />
+            </FieldContextProvider>
+          </FieldOfflineProvider>
+        </ThemeProvider>
+      </div>
     </FieldErrorBoundary>
   );
 }
