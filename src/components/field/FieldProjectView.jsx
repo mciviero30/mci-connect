@@ -241,6 +241,17 @@ export default function FieldProjectView({
 
   return (
     <div data-field-scope="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col md:flex-row overflow-y-auto dark">
+      {/* Field Exit Control - Persistent, Always Visible */}
+      <Link to={createPageUrl('Dashboard')}>
+        <Button 
+          className="fixed top-4 left-4 z-[70] bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-2xl backdrop-blur-sm min-h-[44px] px-4 rounded-xl touch-manipulation"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          <span className="hidden sm:inline">Back to MCI Connect</span>
+          <span className="sm:hidden">Back</span>
+        </Button>
+      </Link>
+
       {/* Quick Search Dialog */}
       <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
       
