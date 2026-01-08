@@ -60,6 +60,7 @@ import KnowledgeLibrary from './pages/KnowledgeLibrary';
 import KnowledgeSubmit from './pages/KnowledgeSubmit';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
+import MeasurementPackage from './pages/MeasurementPackage';
 import MiScorecard from './pages/MiScorecard';
 import MileageApproval from './pages/MileageApproval';
 import MisGastos from './pages/MisGastos';
@@ -99,7 +100,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import MeasurementPackage from './pages/MeasurementPackage';
 import __Layout from './Layout.jsx';
 
 
@@ -166,6 +166,7 @@ export const PAGES = {
     "KnowledgeSubmit": KnowledgeSubmit,
     "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
+    "MeasurementPackage": MeasurementPackage,
     "MiScorecard": MiScorecard,
     "MileageApproval": MileageApproval,
     "MisGastos": MisGastos,
@@ -205,7 +206,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "MeasurementPackage": MeasurementPackage,
 }
 
 export const pagesConfig = {

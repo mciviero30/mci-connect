@@ -7,6 +7,7 @@ import { useFieldProjectState } from '@/components/field/FieldProjectState.jsx';
 import FieldProjectView from '@/components/field/FieldProjectView.jsx';
 import { useUI } from '@/components/contexts/FieldModeContext';
 import FieldLifecycleValidator from '@/components/field/FieldLifecycleValidator';
+import FieldDataLossValidator from '@/components/field/FieldDataLossValidator';
 
 export default function FieldProject() {
   const { setIsFieldMode } = useUI();
@@ -37,8 +38,9 @@ export default function FieldProject() {
                 {...state}
                 jobId={jobId}
               />
-              {/* Dev-only lifecycle monitor */}
+              {/* Dev-only validators */}
               <FieldLifecycleValidator jobId={jobId} />
+              <FieldDataLossValidator jobId={jobId} />
             </FieldContextProvider>
           </FieldOfflineProvider>
         </ThemeProvider>
