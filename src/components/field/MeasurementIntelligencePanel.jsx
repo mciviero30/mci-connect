@@ -1,4 +1,6 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -11,23 +13,40 @@ import {
 } from 'lucide-react';
 import { analyzeMeasurements, getIntelligenceStatusBadge } from './services/MeasurementIntelligence';
 
-export default function MeasurementIntelligencePanel({ dimensions, benchmarks }) {
-  if (!dimensions || dimensions.length === 0) {
+export default function MeasurementIntelligencePanel({ dimensions: dimensionsProp, benchmarks: benchmarksProp, jobId }) {
+  const { data: dimensions = [] } = useQuery({
+    queryKey: ['field-dimensions', jobId],
+    queryFn: () => base44.entities.FieldDimension.filter({ job_id: jobId }),
+    enabled: !!jobId,
+  });
+
+  const { data: benchmarks = [] } = useQuery({
+    queryKey: ['field-benchmarks', jobId],
+    queryFn: () => base44.entities.Benchmark.filter({ job_id: jobId }),
+    enabled: !!jobId,
+  });
+
+  const dimsToAnalyze = dimensionsProp || dimensions;
+  const benchmarksToAnalyze = benchmarksProp || benchmarks;
+
+  if (!dimsToAnalyze || dimsToAnalyze.length === 0) {
     return (
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          No measurements available for analysis.
-        </AlertDescription>
-      </Alert>
+      <div className="p-6">
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            No measurements available for analysis.
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
-  const analysis = analyzeMeasurements(dimensions, benchmarks);
+  const analysis = analyzeMeasurements(dimsToAnalyze, benchmarksToAnalyze);
   const overallBadge = getIntelligenceStatusBadge(analysis.overall_status);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Advisory Notice */}
       <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
         <Brain className="h-4 w-4 text-blue-600" />
@@ -60,7 +79,7 @@ export default function MeasurementIntelligencePanel({ dimensions, benchmarks })
               <div className="text-sm text-slate-600">Areas</div>
             </div>
             <div>
-              <div className="text-2xl font-bold">{dimensions.length}</div>
+              <div className="text-2xl font-bold">{dimsToAnalyze.length}</div>
               <div className="text-sm text-slate-600">Dimensions</div>
             </div>
             <div>
