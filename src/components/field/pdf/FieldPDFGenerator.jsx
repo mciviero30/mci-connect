@@ -133,59 +133,131 @@ function renderCoverPage(doc, data) {
  * Render dimension pages
  */
 function renderDimensionPages(doc, data) {
+  const { groupDimensionsForProduction, calculateWallSequences, formatDimensionRow } = require('./FieldPDFLayoutEngine');
+  
   let pagesAdded = 0;
+  const pageWidth = doc.internal.pageSize.getWidth();
   
   // Group dimensions by area
-  const byArea = {};
-  data.dimensions.forEach(dim => {
-    if (!byArea[dim.area]) byArea[dim.area] = [];
-    byArea[dim.area].push(dim);
-  });
+  const areaGroups = groupDimensionsForProduction(data.dimensions);
   
-  Object.entries(byArea).forEach(([area, dims]) => {
+  areaGroups.forEach(areaGroup => {
     doc.addPage();
     pagesAdded++;
     
-    const pageWidth = doc.internal.pageSize.getWidth();
     let y = 100; // Start below header
     
     // Area title
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Area: ${area}`, 40, y);
-    y += 30;
+    doc.text(`Area: ${areaGroup.area_name}`, 40, y);
+    y += 25;
     
-    // Table header
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Type', 40, y);
-    doc.text('Value', 120, y);
-    doc.text('Measured By', 220, y);
-    doc.text('Date', 340, y);
-    doc.text('Status', 460, y);
+    // Wall-to-Wall Dimensions
+    if (areaGroup.wall_dimensions.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Wall-to-Wall Dimensions', 40, y);
+      y += 20;
+      
+      // Table header
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('#', 40, y);
+      doc.text('Type', 60, y);
+      doc.text('Imperial', 120, y);
+      doc.text('Metric', 200, y);
+      doc.text('Tolerance', 270, y);
+      doc.text('Benchmark', 340, y);
+      doc.text('Notes', 420, y);
+      
+      y += 5;
+      doc.setLineWidth(0.5);
+      doc.line(40, y, pageWidth - 40, y);
+      y += 12;
+      
+      // Wall sequences
+      const sequences = calculateWallSequences(areaGroup.wall_dimensions);
+      
+      Object.entries(sequences).forEach(([type, dims]) => {
+        if (dims.length === 0) return;
+        
+        dims.forEach((dim, idx) => {
+          if (y > 700) {
+            doc.addPage();
+            pagesAdded++;
+            y = 100;
+          }
+          
+          const row = formatDimensionRow(dim, idx);
+          
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.text(row.index.toString(), 40, y);
+          doc.text(row.type, 60, y);
+          doc.setFont('helvetica', 'bold');
+          doc.text(row.imperial, 120, y);
+          doc.setFont('helvetica', 'normal');
+          doc.text(row.metric, 200, y);
+          doc.text(row.tolerance, 270, y);
+          doc.text(row.benchmark, 340, y);
+          doc.setFontSize(7);
+          doc.text(row.notes, 420, y);
+          
+          y += 15;
+        });
+        
+        y += 5; // Space between types
+      });
+      
+      y += 10;
+    }
     
-    y += 5;
-    doc.setLineWidth(0.5);
-    doc.line(40, y, pageWidth - 40, y);
-    y += 15;
-    
-    // Dimension rows
-    doc.setFont('helvetica', 'normal');
-    dims.forEach(dim => {
-      if (y > 700) { // New page if needed
+    // Vertical Dimensions
+    if (areaGroup.vertical_dimensions.length > 0) {
+      if (y > 600) {
         doc.addPage();
         pagesAdded++;
         y = 100;
       }
       
-      doc.text(dim.measurement_type, 40, y);
-      doc.text(dim.display_value, 120, y);
-      doc.text(dim.measured_by, 220, y);
-      doc.text(dim.measurement_date, 340, y);
-      doc.text(dim.status, 460, y);
-      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Vertical Dimensions', 40, y);
       y += 20;
-    });
+      
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('#', 40, y);
+      doc.text('Type', 60, y);
+      doc.text('Imperial', 120, y);
+      doc.text('Metric', 200, y);
+      doc.text('Benchmark', 270, y);
+      
+      y += 5;
+      doc.line(40, y, pageWidth - 40, y);
+      y += 12;
+      
+      areaGroup.vertical_dimensions.forEach((dim, idx) => {
+        if (y > 700) {
+          doc.addPage();
+          pagesAdded++;
+          y = 100;
+        }
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text((idx + 1).toString(), 40, y);
+        doc.text(dim.measurement_type, 60, y);
+        doc.setFont('helvetica', 'bold');
+        doc.text(dim.display_value_imperial, 120, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(dim.display_value_metric, 200, y);
+        doc.text(dim.benchmark_label || '-', 270, y);
+        
+        y += 15;
+      });
+    }
   });
   
   return pagesAdded;
@@ -200,8 +272,16 @@ function renderBenchmarksPage(doc, data, pageNum) {
   
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Benchmarks', 40, y);
-  y += 30;
+  doc.text('Benchmark Reference Points', 40, y);
+  y += 25;
+  
+  // Note
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(100, 100, 100);
+  doc.text('All vertical measurements reference these benchmarks', 40, y);
+  doc.setTextColor(0, 0, 0);
+  y += 20;
   
   // Table header
   doc.setFontSize(9);
@@ -210,23 +290,42 @@ function renderBenchmarksPage(doc, data, pageNum) {
   doc.text('Type', 120, y);
   doc.text('Elevation', 200, y);
   doc.text('Area', 280, y);
-  doc.text('Established By', 360, y);
+  doc.text('Established By', 380, y);
+  doc.text('Date', 480, y);
   
   y += 5;
   doc.setLineWidth(0.5);
   doc.line(40, y, pageWidth - 40, y);
-  y += 15;
+  y += 12;
   
   // Benchmark rows
   doc.setFont('helvetica', 'normal');
-  data.benchmarks.forEach(bm => {
-    doc.text(bm.label, 40, y);
-    doc.text(bm.type, 120, y);
-    doc.text(`${bm.elevation} ${bm.elevation_unit}`, 200, y);
-    doc.text(bm.area, 280, y);
-    doc.text(bm.established_by, 360, y);
+  doc.setFontSize(8);
+  
+  data.benchmarks.forEach((bm, idx) => {
+    if (y > 700) {
+      doc.addPage();
+      y = 100;
+    }
     
-    y += 20;
+    // Highlight row background
+    if (idx % 2 === 0) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(35, y - 8, pageWidth - 70, 15, 'F');
+    }
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text(bm.label, 40, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(bm.type, 120, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${bm.elevation} ${bm.elevation_unit}`, 200, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(bm.area, 280, y);
+    doc.text(bm.established_by, 380, y);
+    doc.text(bm.established_date, 480, y);
+    
+    y += 18;
   });
 }
 

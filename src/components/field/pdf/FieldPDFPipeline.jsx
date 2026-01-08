@@ -32,30 +32,44 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       photos: dataset.photos.length
     });
     
-    // Step 2: Normalize
+    // Step 2: Pre-flight validation
+    const { preFlightValidation } = await import('./FieldPDFValidator');
+    const validation = preFlightValidation(dataset);
+    
+    if (!validation.can_generate) {
+      throw new Error(`PDF validation failed: ${validation.errors.join(', ')}`);
+    }
+    
+    if (validation.warnings.length > 0) {
+      console.warn('PDF validation warnings:', validation.warnings);
+    }
+    
+    // Step 3: Normalize
     const normalizedData = normalizeForPDF(dataset);
     
-    console.log('Data normalized');
+    console.log('Data normalized and sorted');
     
-    // Step 3: Generate PDF
+    // Step 4: Generate PDF
     const pdfResult = await generateFieldPDF(normalizedData, options);
     
     console.log('PDF generated:', {
       pages: normalizedData.metadata.page_count,
-      size: pdfResult.blob.size
+      size: pdfResult.blob.size,
+      document_id: normalizedData.metadata.document_id
     });
     
-    // Step 4: Audit trail
+    // Step 5: Audit trail
     await logPDFGeneration(pdfResult, normalizedData);
     
-    console.log('PDF generation logged');
+    console.log('PDF generation logged to audit trail');
     
     return {
       success: true,
       pdf: pdfResult.pdf,
       blob: pdfResult.blob,
       metadata: pdfResult.metadata,
-      document_id: normalizedData.metadata.document_id
+      document_id: normalizedData.metadata.document_id,
+      validation
     };
     
   } catch (error) {

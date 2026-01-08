@@ -107,9 +107,24 @@ async function collectDimensions(dimensionSetId) {
   const dimensions = await queryLocalStore(STORES.DIMENSIONS, 'job_id', set.job_id);
   
   // Filter to only dimensions in this set
-  return dimensions.filter(d => 
+  const filtered = dimensions.filter(d => 
     dimensionIds.includes(d.id) || dimensionIds.includes(d.local_id)
   );
+  
+  // Validate each dimension
+  filtered.forEach(dim => {
+    if (!dim.measurement_type) {
+      throw new Error(`Dimension ${dim.local_id} missing measurement_type`);
+    }
+    if (!dim.unit_system) {
+      throw new Error(`Dimension ${dim.local_id} missing unit_system`);
+    }
+    if (!dim.area) {
+      throw new Error(`Dimension ${dim.local_id} missing area reference`);
+    }
+  });
+  
+  return filtered;
 }
 
 /**

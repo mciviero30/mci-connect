@@ -80,21 +80,54 @@ function normalizeDimensions(dimensions) {
     value_fraction: d.value_fraction || '0',
     value_mm: d.value_mm || 0,
     unit_system: d.unit_system || 'imperial',
-    display_value: formatDimensionValue(d),
+    display_value_imperial: formatImperialValue(d),
+    display_value_metric: `${d.value_mm || 0} mm`,
+    benchmark_label: d.benchmark_label || null,
+    benchmark_id: d.benchmark_id || null,
     measured_by: d.measured_by_name || d.measured_by || 'Unknown',
     measurement_date: formatDate(d.measurement_date || d.created_date),
     status: d.status || 'draft',
-    notes: d.notes || ''
+    notes: d.notes || '',
+    tolerance_plus: d.tolerance?.plus || 0,
+    tolerance_minus: d.tolerance?.minus || 0
   }));
   
-  // Sort: by area, then measurement type, then value
+  // Sort: by area, then measurement type order, then value
   return normalized.sort((a, b) => {
     if (a.area !== b.area) return a.area.localeCompare(b.area);
-    if (a.measurement_type !== b.measurement_type) {
-      return a.measurement_type.localeCompare(b.measurement_type);
-    }
-    return a.value_feet - b.value_feet;
+    
+    const typeOrder = ['FF-FF', 'FF-CL', 'CL-FF', 'CL-CL', 'BM-C', 'BM-F', 'F-C', 'BM'];
+    const aIndex = typeOrder.indexOf(a.measurement_type);
+    const bIndex = typeOrder.indexOf(b.measurement_type);
+    
+    if (aIndex !== bIndex) return aIndex - bIndex;
+    
+    const totalA = (a.value_feet || 0) * 12 + (a.value_inches || 0);
+    const totalB = (b.value_feet || 0) * 12 + (b.value_inches || 0);
+    return totalA - totalB;
   });
+}
+
+/**
+ * Format imperial value
+ */
+function formatImperialValue(dimension) {
+  const feet = dimension.value_feet || 0;
+  const inches = dimension.value_inches || 0;
+  const fraction = dimension.value_fraction || '0';
+  
+  let display = '';
+  if (feet > 0) display += `${feet}'`;
+  if (inches > 0 || fraction !== '0') {
+    if (feet > 0) display += ' ';
+    display += `${inches}`;
+    if (fraction !== '0') display += ` ${fraction}`;
+    display += '"';
+  } else if (feet === 0) {
+    display = '0"';
+  }
+  
+  return display.trim();
 }
 
 /**
