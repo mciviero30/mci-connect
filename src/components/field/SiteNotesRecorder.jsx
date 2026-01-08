@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mic, Square, Loader2, FileAudio, Info } from 'lucide-react';
+import { Mic, Square, Loader2, FileAudio, Info, MapPin, Ruler, AlertTriangle, ShieldAlert, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
+import StructuredNotesDisplay from './StructuredNotesDisplay';
 
 export default function SiteNotesRecorder({ jobId, area }) {
   const [recording, setRecording] = useState(false);
@@ -135,6 +136,12 @@ export default function SiteNotesRecorder({ jobId, area }) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatTimestamp = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Recording Control */}
@@ -228,13 +235,21 @@ export default function SiteNotesRecorder({ jobId, area }) {
                   </div>
                   
                   {session.transcript_raw && (
-                    <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded border">
-                      <div className="text-xs font-semibold text-slate-600 mb-1">
-                        Raw Transcription:
-                      </div>
-                      <div className="text-sm text-slate-700 dark:text-slate-300">
-                        {session.transcript_raw}
-                      </div>
+                    <div className="mt-3 space-y-3">
+                      {/* Structured Notes */}
+                      {session.structured_notes && (
+                        <StructuredNotesDisplay notes={session.structured_notes} />
+                      )}
+                      
+                      {/* Raw Transcription */}
+                      <details className="p-3 bg-white dark:bg-slate-800 rounded border">
+                        <summary className="text-xs font-semibold text-slate-600 cursor-pointer">
+                          Raw Transcription (Click to expand)
+                        </summary>
+                        <div className="text-sm text-slate-700 dark:text-slate-300 mt-2">
+                          {session.transcript_raw}
+                        </div>
+                      </details>
                     </div>
                   )}
                   

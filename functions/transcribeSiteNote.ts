@@ -59,6 +59,16 @@ Deno.serve(async (req) => {
         detected_language: detectLanguage(rawTranscript)
       });
 
+      // Trigger structured extraction
+      try {
+        await base44.functions.invoke('extractStructuredSiteNotes', {
+          session_id: session_id
+        });
+      } catch (extractError) {
+        console.error('Structured extraction failed:', extractError);
+        // Don't fail transcription if extraction fails
+      }
+
       return Response.json({
         success: true,
         session_id: session_id,
