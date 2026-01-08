@@ -712,6 +712,8 @@ function ExportPanel({ dimensionSet, factoryData }) {
       return;
     }
     
+    const { generateFactoryPDF } = await import('@/components/factory/FactoryPDFGenerator');
+    
     setExporting(true);
     try {
       const user = await base44.auth.me();
