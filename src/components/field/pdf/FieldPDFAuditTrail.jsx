@@ -55,12 +55,16 @@ export async function logPDFGeneration(pdfResult, normalizedData) {
       revision_number: normalizedData.metadata.revision_number,
       generated_at: Date.now(),
       generated_by: normalizedData.metadata.generated_by,
-      offline_generated: normalizedData.metadata.offline_generated,
+      offline_generated: normalizedData.metadata.offline_generated || false,
+      pending_sync: normalizedData.metadata.offline_generated || false,
       page_count: normalizedData.metadata.page_count,
       dimension_count: normalizedData.dimensions.length,
       benchmark_count: normalizedData.benchmarks.length,
       data_hash: hashDataset(normalizedData),
       file_size: pdfResult.blob.size,
+      
+      // Change tracking
+      change_summary: normalizedData.metadata.change_summary?.summary_text || 'Initial revision',
       
       // Extended metadata
       full_metadata: fullMetadata,

@@ -147,11 +147,21 @@ function renderCoverPage(doc, data) {
     doc.text(`REV ${data.metadata.revision_number}`, 220, statusY + 2, { align: 'center' });
   }
   
-  // Offline indicator
+  // Offline indicator with pending sync status
   if (data.metadata.offline_generated) {
-    doc.setTextColor(255, 140, 0);
-    doc.setFontSize(8);
-    doc.text('Generated Offline', pageWidth / 2, pageHeight - 20, { align: 'center' });
+    const statusY = pageHeight - 30;
+    
+    doc.setFillColor(255, 237, 213); // Orange background
+    doc.roundedRect(pageWidth / 2 - 80, statusY - 12, 160, 20, 3, 3, 'F');
+    
+    doc.setTextColor(194, 65, 12);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('⚠ GENERATED OFFLINE', pageWidth / 2, statusY, { align: 'center' });
+    
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Pending sync to server', pageWidth / 2, statusY + 8, { align: 'center' });
   }
 }
 
