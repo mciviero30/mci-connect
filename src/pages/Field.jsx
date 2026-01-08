@@ -37,6 +37,7 @@ import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
 import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryConfig';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
+import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
@@ -90,6 +91,9 @@ export default function Field() {
     queryFn: () => base44.auth.me(),
     ...FIELD_STABLE_QUERY_CONFIG,
   });
+
+  // Debug mode detection
+  const isDebugMode = useFieldDebugMode(user);
 
   const { data: customers = [] } = useQuery({
     queryKey: FIELD_QUERY_KEYS.CUSTOMERS(),

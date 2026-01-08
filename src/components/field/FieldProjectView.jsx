@@ -67,6 +67,7 @@ import FieldContextBar from './FieldContextBar';
 import SafeBackButton from './SafeBackButton';
 import SessionRestorationIndicator from './SessionRestorationIndicator';
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
+import { useFieldDebugMode, filterFieldPanels } from '@/components/field/hooks/useFieldDebugMode';
 
 export default function FieldProjectView({
   // State
@@ -144,8 +145,11 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // Sidebar items configuration
-  const sidebarItems = [
+  // Debug mode detection
+  const isDebugMode = useFieldDebugMode(currentUser);
+
+  // Sidebar items configuration - ALL items
+  const allSidebarItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
@@ -170,6 +174,9 @@ export default function FieldProjectView({
     { id: 'voice', label: 'Voice Notes', icon: Camera },
     { id: 'ai-assistant', label: 'AI Assistant', icon: Brain, badge: '✨' },
   ];
+
+  // Filter panels based on debug mode
+  const sidebarItems = filterFieldPanels(allSidebarItems, isDebugMode);
 
   // Panel rendering logic
   const renderPanel = () => {
