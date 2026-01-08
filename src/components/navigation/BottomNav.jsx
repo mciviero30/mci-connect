@@ -58,33 +58,31 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
 
   return (
     <>
-      {/* Bottom Navigation Bar - Fixed at bottom */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg pb-safe">
-        <div className="grid grid-cols-5 h-16 px-1">
+      {/* Bottom Navigation Bar - Fixed at bottom - FIELD OPTIMIZED */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t-2 border-slate-300 dark:border-slate-700 shadow-2xl pb-safe">
+        <div className="grid grid-cols-5 h-20 px-2">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);
             return (
               <Link
                 key={item.title}
                 to={item.url}
-                className={`flex flex-col items-center justify-center gap-0.5 relative transition-all min-w-0 ${
+                className={`flex flex-col items-center justify-center gap-1 relative transition-all min-h-[56px] min-w-[56px] rounded-xl active:scale-95 ${
                   active 
-                    ? 'text-[#507DB4] dark:text-[#6B9DD8]' 
-                    : 'text-slate-500 dark:text-slate-400'
+                    ? 'text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/80 dark:bg-blue-900/30' 
+                    : 'text-slate-700 dark:text-slate-400'
                 }`}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {active && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-b-full" />
-                )}
                 <div className="relative">
-                  <item.icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} />
+                  <item.icon className={`w-6 h-6 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
                   {item.badge && (
-                    <Badge className="absolute -top-1.5 -right-1.5 h-3.5 min-w-3.5 px-0.5 text-[9px] bg-red-500 text-white border-0 flex items-center justify-center">
-                      {item.badge}
+                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1 text-[10px] bg-red-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
+                      {item.badge > 9 ? '9+' : item.badge}
                     </Badge>
                   )}
                 </div>
-                <span className={`text-[9px] font-medium ${active ? 'font-bold' : ''} truncate max-w-full px-0.5 text-center`}>
+                <span className={`text-[11px] ${active ? 'font-bold' : 'font-semibold'} truncate max-w-full px-1 text-center`}>
                   {item.title}
                 </span>
               </Link>
@@ -94,9 +92,9 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
           {/* More Menu */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400 min-w-0">
-                <Menu className="w-5 h-5" />
-                <span className="text-[9px] font-medium truncate max-w-full px-0.5">More</span>
+              <button className="flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-400 min-h-[56px] min-w-[56px] rounded-xl active:scale-95 transition-all" style={{ WebkitTapHighlightColor: 'transparent' }}>
+                <Menu className="w-6 h-6" strokeWidth={2} />
+                <span className="text-[11px] font-semibold truncate max-w-full px-1">More</span>
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="bg-white dark:bg-slate-900 h-[85vh] rounded-t-3xl">
@@ -121,18 +119,19 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
                               key={item.title}
                               to={item.url}
                               onClick={() => setSheetOpen(false)}
-                              className={`flex items-center justify-between px-4 py-3 rounded-lg mx-2 transition-all ${
+                              className={`flex items-center justify-between px-4 py-4 rounded-xl mx-2 transition-all min-h-[56px] active:scale-95 ${
                                 active
-                                  ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white'
-                                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                  ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
+                                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-200'
                               }`}
+                              style={{ WebkitTapHighlightColor: 'transparent' }}
                             >
                               <div className="flex items-center gap-3">
-                                <item.icon className="w-5 h-5" />
-                                <span className="font-medium">{item.title}</span>
+                                <item.icon className="w-6 h-6" strokeWidth={2.5} />
+                                <span className="font-semibold text-base">{item.title}</span>
                               </div>
                               {active && (
-                                <div className="w-2 h-2 rounded-full bg-white" />
+                                <div className="w-2.5 h-2.5 rounded-full bg-white shadow-md" />
                               )}
                             </Link>
                           );
@@ -148,7 +147,7 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
       </div>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
-      <div className="md:hidden h-16" />
+      <div className="md:hidden h-20" />
     </>
   );
 };
