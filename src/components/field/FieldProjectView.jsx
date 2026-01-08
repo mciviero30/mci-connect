@@ -63,6 +63,8 @@ import AccessDenied from '@/components/field/AccessDenied';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
 import FieldBottomActionRail from './FieldBottomActionRail';
+import FieldContextBar from './FieldContextBar';
+import SafeBackButton from './SafeBackButton';
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 
 export default function FieldProjectView({
@@ -76,6 +78,7 @@ export default function FieldProjectView({
   setShowDailyReport,
   showCreateTask,
   setShowCreateTask,
+  hasUnsaved,  // NEW: Passed from useUnsavedChanges
   
   // Data
   job,
@@ -93,6 +96,9 @@ export default function FieldProjectView({
   handleActionComplete,
   queryClient,
 }) {
+  // Track active modes for context awareness
+  const [currentMode, setCurrentMode] = React.useState(null); // viewing, editing, recording, capturing, measuring
+  const [currentArea, setCurrentArea] = React.useState(null);
   // Loading state
   if (isLoading) {
     return (
@@ -234,27 +240,27 @@ export default function FieldProjectView({
       {/* Offline Status Indicator */}
       <OfflineStatusBadge />
       
-      {/* Mobile Header */}
-      {isMobile && <MobileHeader job={job} onBack={handleBack} />}
-
-      {/* Mobile Back Button - Thumb-reachable bottom-left */}
-      {/* CRITICAL: 56px target, left-thumb reach, 3px gap from edge */}
+      {/* Context Bar - Always shows where user is */}
+      {/* CRITICAL: User never confused about current location */}
       {isMobile && (
-        <button
-          onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(10);
-            handleBack();
-          }}
-          className="fixed bottom-24 left-3 z-[60] w-14 h-14 bg-slate-900/95 backdrop-blur-sm border-2 border-slate-700 rounded-2xl flex items-center justify-center shadow-2xl touch-manipulation active:scale-90 active:bg-slate-800 active:border-orange-500 transition-all"
-          style={{ 
-            WebkitTapHighlightColor: 'transparent',
-            minWidth: '56px',  // Exceeds 44px minimum
-            minHeight: '56px', // Exceeds 44px minimum
-          }}
-          aria-label="Back to projects"
-        >
-          <ArrowLeft className="w-6 h-6 text-white" strokeWidth={2.5} />
-        </button>
+        <FieldContextBar 
+          jobName={job?.name || job?.job_name_field}
+          currentPanel={activePanel}
+          currentArea={currentArea}
+          currentMode={currentMode}
+          hasUnsavedChanges={hasUnsaved}
+        />
+      )}
+
+      {/* Safe Back Button - Never causes data loss */}
+      {/* CRITICAL: Warns on unsaved, shows destination, auto-saves */}
+      {isMobile && (
+        <SafeBackButton
+          hasUnsavedChanges={hasUnsaved}
+          destination="Field"
+          destinationLabel="Projects"
+          className="fixed bottom-24 left-3 z-[60]"
+        />
       )}
 
       {/* Desktop Sidebar */}
@@ -380,11 +386,15 @@ export default function FieldProjectView({
       {/* Photo Upload Progress */}
       <PhotoUploadProgress jobId={jobId} />
 
-      {/* Bottom Action Rail - One-Hand Mode primary actions */}
-      {/* CRITICAL: Persistent across all Field views, thumb-reachable */}
+      {/* Bottom Action Rail - Context-Aware, One-Hand Mode */}
+      {/* CRITICAL: Highlights relevant actions, shows active state */}
       <FieldBottomActionRail 
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
+        currentPanel={activePanel}
+        isRecording={currentMode === 'recording'}
+        isCapturing={currentMode === 'capturing'}
+        isMeasuring={currentMode === 'measuring'}
         onActionComplete={(panel) => {
           if (panel === 'dimensions') {
             setActivePanel('dimensions');

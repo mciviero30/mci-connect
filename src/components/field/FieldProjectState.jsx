@@ -37,7 +37,7 @@ export function useFieldProjectState(jobId) {
   useFieldLifecycle({ jobId, queryClient });
   
   // Unsaved changes protection
-  useUnsavedChanges(jobId);
+  const hasUnsaved = useUnsavedChanges(jobId);
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -294,6 +294,7 @@ export function useFieldProjectState(jobId) {
     showCreateTask,
     setShowCreateTask,
     stableJobId,
+    hasUnsaved,  // NEW: Unsaved changes flag
     
     // Data
     job,

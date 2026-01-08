@@ -7,72 +7,107 @@ import DimensionBottomSheet from './DimensionBottomSheet';
 import IncidentBottomSheet from './IncidentBottomSheet';
 import { useQueryClient } from '@tanstack/react-query';
 
-export default function FieldBottomActionRail({ jobId, jobName, onActionComplete }) {
+export default function FieldBottomActionRail({ 
+  jobId, 
+  jobName, 
+  onActionComplete,
+  currentPanel,  // NEW: Context-aware highlighting
+  isRecording,   // NEW: Active state tracking
+  isCapturing,   // NEW: Active state tracking
+  isMeasuring    // NEW: Active state tracking
+}) {
   const [activeAction, setActiveAction] = useState(null);
   const queryClient = useQueryClient();
 
-  // Primary actions only - frequently used, critical path
+  // Primary actions - context-aware relevance
   const actions = [
     {
       id: 'camera',
       icon: Camera,
       color: 'from-blue-600 to-cyan-600',
       label: 'Photo',
+      relevantPanels: ['photos', 'overview', 'tasks', 'before-after'],
+      activeState: isCapturing,
     },
     {
       id: 'audio',
       icon: Mic,
       color: 'from-orange-600 to-red-600',
       label: 'Audio',
+      relevantPanels: ['site-notes', 'voice', 'overview'],
+      activeState: isRecording,
     },
     {
       id: 'task',
       icon: CheckSquare,
       color: 'from-green-600 to-emerald-600',
       label: 'Task',
+      relevantPanels: ['tasks', 'overview'],
+      activeState: false,
     },
     {
       id: 'dimension',
       icon: Ruler,
       color: 'from-purple-600 to-pink-600',
       label: 'Measure',
+      relevantPanels: ['dimensions', 'overview', 'plans'],
+      activeState: isMeasuring,
     },
     {
       id: 'incident',
       icon: AlertTriangle,
       color: 'from-red-600 to-rose-700',
       label: 'Incident',
+      relevantPanels: ['activity', 'overview'],
+      activeState: false,
     },
   ];
 
   return (
     <>
       {/* Mobile: Bottom-Right Floating Action Rail - Thumb-First Design */}
-      {/* CRITICAL: Positioned for right-thumb reach, 44px+ targets, glove-safe spacing */}
+      {/* CRITICAL: Positioned for right-thumb reach, context-aware highlighting */}
       <div className="md:hidden fixed bottom-24 right-3 z-[60] flex flex-col gap-3">
-        {actions.map((action) => (
-          <button
-            key={action.id}
-            onClick={() => {
-              // Haptic feedback (10ms vibration)
-              if (navigator.vibrate) navigator.vibrate(10);
-              setActiveAction(action.id);
-            }}
-            className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 border-white/40 touch-manipulation active:scale-90 active:shadow-3xl transition-all`}
-            style={{ 
-              WebkitTapHighlightColor: 'transparent',
-              minWidth: '64px',  // Exceeds 44px minimum
-              minHeight: '64px', // Exceeds 44px minimum
-            }}
-            aria-label={action.label}
-          >
-            <action.icon className="w-7 h-7 text-white" strokeWidth={2.5} />
-            {/* Label overlay on press (accessibility) */}
-            <div className="absolute -left-24 top-1/2 -translate-y-1/2 bg-slate-900/95 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-active:opacity-100 transition-opacity pointer-events-none">
-              {action.label}
-            </div>
-          </button>
-        ))}
+        {actions.map((action) => {
+          const isRelevant = !currentPanel || action.relevantPanels.includes(currentPanel);
+          const isActive = action.activeState;
+          
+          return (
+            <button
+              key={action.id}
+              onClick={() => {
+                // Haptic feedback (10ms vibration)
+                if (navigator.vibrate) navigator.vibrate(10);
+                setActiveAction(action.id);
+              }}
+              className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 touch-manipulation active:scale-90 transition-all ${
+                isActive 
+                  ? 'border-white animate-pulse' 
+                  : isRelevant 
+                  ? 'border-white/40' 
+                  : 'border-white/20 opacity-60'
+              }`}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                minWidth: '64px',
+                minHeight: '64px',
+              }}
+              aria-label={action.label}
+            >
+              <action.icon className="w-7 h-7 text-white" strokeWidth={isRelevant ? 2.5 : 2} />
+              
+              {/* Active indicator dot */}
+              {isActive && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full shadow-lg animate-pulse" />
+              )}
+              
+              {/* Tooltip on long press / hover */}
+              <div className="absolute -left-20 top-1/2 -translate-y-1/2 bg-slate-900/95 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 pointer-events-none transition-opacity whitespace-nowrap">
+                {action.label}
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Tablet/Desktop: Bottom-Center Rail */}

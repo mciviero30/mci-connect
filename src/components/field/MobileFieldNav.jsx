@@ -39,6 +39,7 @@ const quickNavItems = [
 export function MobileBottomNav({ activeTab, onTabChange, taskCount, planCount }) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-slate-800 border-t-2 border-slate-700 px-2 py-3 z-50 md:hidden safe-area-bottom shadow-2xl">
+      {/* CRITICAL: Clear active state, generous touch targets (72x64px), haptic feedback */}
       <div className="flex justify-around items-center">
         {quickNavItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -46,13 +47,20 @@ export function MobileBottomNav({ activeTab, onTabChange, taskCount, planCount }
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => {
+                if (navigator.vibrate) navigator.vibrate(10);
+                onTabChange(item.id);
+              }}
               className={`flex flex-col items-center py-3 px-3 rounded-xl transition-all min-w-[72px] min-h-[64px] touch-manipulation active:scale-95 ${
                 isActive 
-                  ? 'text-[#FFB800] bg-orange-500/20' 
-                  : 'text-slate-400'
+                  ? 'text-[#FFB800] bg-orange-500/20 shadow-lg' 
+                  : 'text-slate-400 active:bg-slate-800'
               }`}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                minHeight: '64px',  // Exceeds 44px
+              }}
+              aria-label={`${item.label}${isActive ? ' (active)' : ''}`}
             >
               <div className="relative">
                 <item.icon className={`w-7 h-7 ${isActive ? 'scale-110' : ''} transition-transform`} strokeWidth={isActive ? 2.5 : 2} />
@@ -81,6 +89,7 @@ export function MobileMenuSheet({ activeTab, onTabChange, taskCount, planCount }
   const [open, setOpen] = React.useState(false);
 
   const handleSelect = (id) => {
+    if (navigator.vibrate) navigator.vibrate(10);
     onTabChange(id);
     setOpen(false);
   };
@@ -88,14 +97,32 @@ export function MobileMenuSheet({ activeTab, onTabChange, taskCount, planCount }
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="flex flex-col items-center py-2 px-3 rounded-lg text-slate-500 dark:text-slate-400">
-          <Menu className="w-5 h-5" />
-          <span className="text-[10px] mt-1">More</span>
+        <button 
+          className="flex flex-col items-center py-3 px-3 rounded-xl text-slate-400 active:bg-slate-800 min-w-[72px] min-h-[64px] touch-manipulation active:scale-95 transition-all"
+          style={{ 
+            WebkitTapHighlightColor: 'transparent',
+            minHeight: '64px',
+          }}
+          aria-label="More panels"
+        >
+          <Menu className="w-6 h-6" />
+          <span className="text-[11px] mt-1.5 font-medium">More</span>
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[70vh] bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-t-2xl">
+      <SheetContent side="bottom" className="h-[70vh] bg-slate-900 border-slate-700 rounded-t-2xl">
         <div className="py-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 px-2">Menu</h3>
+          <div className="flex items-center justify-between mb-4 px-2">
+            <h3 className="text-lg font-semibold text-white">All Panels</h3>
+            <button 
+              onClick={() => setOpen(false)}
+              className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5 text-slate-400" />
+            </button>
+          </div>
+          
+          {/* CRITICAL: 56px touch targets, clear active state, organized grid */}
           <div className="grid grid-cols-3 gap-3">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
@@ -104,22 +131,29 @@ export function MobileMenuSheet({ activeTab, onTabChange, taskCount, planCount }
                 <button
                   key={item.id}
                   onClick={() => handleSelect(item.id)}
-                  className={`flex flex-col items-center p-4 rounded-xl transition-all ${
+                  className={`flex flex-col items-center p-4 rounded-xl transition-all min-h-[72px] touch-manipulation active:scale-95 ${
                     isActive 
-                      ? 'bg-[#FFB800]/20 text-[#FFB800] border border-[#FFB800]/30' 
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-white shadow-lg' 
+                      : 'bg-slate-800 text-slate-400 active:bg-slate-700'
                   }`}
+                  style={{ 
+                    WebkitTapHighlightColor: 'transparent',
+                    minHeight: '72px',  // Glove-safe
+                  }}
+                  aria-label={`${item.label}${isActive ? ' (active)' : ''}`}
                 >
                   <div className="relative">
-                    <item.icon className="w-6 h-6 mb-1" />
+                    <item.icon className="w-6 h-6 mb-1" strokeWidth={isActive ? 2.5 : 2} />
                     {count > 0 && (
-                      <span className="absolute -top-1 -right-2 bg-[#FFB800] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                        {count}
+                      <span className="absolute -top-1 -right-2 bg-white text-slate-900 text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold shadow-md">
+                        {count > 9 ? '9+' : count}
                       </span>
                     )}
                   </div>
-                  <span className="text-xs font-medium">{item.label}</span>
-                  {item.badge && <span className="text-xs">{item.badge}</span>}
+                  <span className={`text-xs ${isActive ? 'font-bold' : 'font-medium'} text-center leading-tight`}>
+                    {item.label}
+                  </span>
+                  {item.badge && <span className="text-xs mt-0.5">{item.badge}</span>}
                 </button>
               );
             })}
@@ -133,7 +167,8 @@ export function MobileMenuSheet({ activeTab, onTabChange, taskCount, planCount }
 export function MobileHeader({ job, onBack }) {
   return (
     <div className="md:hidden bg-gradient-to-br from-slate-900 to-black border-b border-slate-700 px-3 py-3 sticky top-0 z-40 shadow-lg">
-      {/* One-Hand Mode: Minimal header - Back moved to bottom bar */}
+      {/* DEPRECATED: Replaced by FieldContextBar */}
+      {/* Header kept for legacy compatibility but hidden when FieldContextBar present */}
       <div className="flex items-center gap-3">
         <div className="flex-1 min-w-0">
           <h1 className="font-bold text-white text-base leading-tight mb-1">
