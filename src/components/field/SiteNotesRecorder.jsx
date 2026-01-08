@@ -15,6 +15,7 @@ export default function SiteNotesRecorder({ jobId, area }) {
   const [duration, setDuration] = useState(0);
   const [sessions, setSessions] = useState([]);
   const [linkingSession, setLinkingSession] = useState(null);
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -113,6 +114,7 @@ export default function SiteNotesRecorder({ jobId, area }) {
         audio_url: audioUrl,
         recorded_by: user.email,
         recorded_by_name: user.full_name,
+        preferred_language: selectedLanguage,
         processing_status: 'processing'
       });
       
@@ -160,6 +162,20 @@ export default function SiteNotesRecorder({ jobId, area }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Language Selection */}
+          <div className="mb-4">
+            <label className="text-sm font-semibold mb-2 block">Recording Language</label>
+            <select
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              disabled={recording}
+              className="w-full p-3 border rounded-lg"
+            >
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Español</option>
+            </select>
+          </div>
+
           <Alert className="mb-4 border-blue-200 bg-blue-50">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-sm">
