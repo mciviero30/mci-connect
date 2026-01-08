@@ -17,8 +17,10 @@ import {
   AlertTriangle,
   ShieldCheck,
   Download,
-  Package
+  Package,
+  Clock
 } from 'lucide-react';
+import ProductionStatusControl from '@/components/factory/ProductionStatusControl';
 import { createPageUrl } from '@/utils';
 import { getFactoryViewData } from '@/components/factory/FactoryViewService';
 import { validateDataIntegrity } from '@/components/factory/FactoryDataIntegrity';
@@ -41,7 +43,7 @@ export default function FactoryView() {
   });
 
   // Fetch factory view data
-  const { data: factoryData, isLoading: dataLoading } = useQuery({
+  const { data: factoryData, isLoading: dataLoading, refetch: refetchFactoryData } = useQuery({
     queryKey: ['factory-view-data', dimensionSetId],
     queryFn: () => getFactoryViewData(dimensionSetId),
     enabled: !!dimensionSetId
@@ -318,7 +320,15 @@ export default function FactoryView() {
           </TabsContent>
 
           <TabsContent value="validation">
-            <ValidationPanel validation={validation} dimensionSet={dimensionSet} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ValidationPanel validation={validation} dimensionSet={dimensionSet} />
+              <ProductionStatusControl 
+                dimensionSet={dimensionSet} 
+                onStatusChanged={() => {
+                  refetchFactoryData();
+                }}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="export">
