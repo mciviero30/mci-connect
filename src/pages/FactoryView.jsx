@@ -497,31 +497,39 @@ function DimensionsTable({ dimensions }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {areaDims.map((dim, idx) => (
-                    <tr key={dim.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="px-4 py-3 font-mono text-slate-600 font-bold">{idx + 1}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {dim.measurement_type}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 font-bold font-mono text-lg">
-                        {dim.display_value_imperial || formatImperial(dim)}
-                      </td>
-                      <td className="px-4 py-3 font-mono text-slate-600">
-                        {dim.display_value_metric || `${dim.value_mm}mm`}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500">
-                        {dim.tolerance ? `±${dim.tolerance.plus}/${dim.tolerance.minus} ${dim.tolerance.unit}` : 'Standard'}
-                      </td>
-                      <td className="px-4 py-3 text-xs">
-                        {dim.benchmark_label || '-'}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">
-                        {dim.production_notes || '-'}
-                      </td>
-                    </tr>
-                  ))}
+                  {areaDims.map((dim, idx) => {
+                    const { formatDimensionWithLabels } = require('@/components/factory/FactoryPrecisionRules');
+                    const formatted = formatDimensionWithLabels(dim);
+                    
+                    return (
+                      <tr key={dim.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <td className="px-4 py-3 font-mono text-slate-600 font-bold">{idx + 1}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {dim.measurement_type}
+                          </Badge>
+                          <div className="text-xs text-slate-500 mt-1">
+                            {formatted.type_label}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-bold font-mono text-lg">
+                          {formatted.imperial}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-slate-600">
+                          {formatted.metric}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-500">
+                          {dim.tolerance ? `±${dim.tolerance.plus}/${dim.tolerance.minus} ${dim.tolerance.unit}` : 'Standard'}
+                        </td>
+                        <td className="px-4 py-3 text-xs">
+                          {formatted.benchmark_reference || dim.benchmark_label || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">
+                          {dim.production_notes || '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
