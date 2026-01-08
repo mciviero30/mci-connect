@@ -8,6 +8,8 @@ import { Mic, Square, Loader2, FileAudio, Info, MapPin, Ruler, AlertTriangle, Sh
 import { toast } from 'sonner';
 import StructuredNotesDisplay from './StructuredNotesDisplay';
 import SiteNoteContextLinker from './SiteNoteContextLinker';
+import SiteNoteMediaCapture from './SiteNoteMediaCapture';
+import SiteNoteMediaLinkApproval from './SiteNoteMediaLinkApproval';
 
 export default function SiteNotesRecorder({ jobId, area }) {
   const [recording, setRecording] = useState(false);
@@ -16,6 +18,7 @@ export default function SiteNotesRecorder({ jobId, area }) {
   const [sessions, setSessions] = useState([]);
   const [linkingSession, setLinkingSession] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [capturedMedia, setCapturedMedia] = useState([]);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -64,6 +67,7 @@ export default function SiteNotesRecorder({ jobId, area }) {
       startTimeRef.current = Date.now();
       setRecording(true);
       setDuration(0);
+      setCapturedMedia([]);
       
       timerRef.current = setInterval(() => {
         setDuration(Math.floor((Date.now() - startTimeRef.current) / 1000));
@@ -115,6 +119,7 @@ export default function SiteNotesRecorder({ jobId, area }) {
         recorded_by: user.email,
         recorded_by_name: user.full_name,
         preferred_language: selectedLanguage,
+        captured_media: capturedMedia,
         processing_status: 'processing'
       });
       
@@ -217,6 +222,27 @@ export default function SiteNotesRecorder({ jobId, area }) {
               </div>
             )}
           </div>
+
+          {/* Media Capture During Recording */}
+          {recording && (
+            <div className="mt-4">
+              <SiteNoteMediaCapture
+                recordingDuration={duration}
+                onMediaCaptured={(media) => {
+                  setCapturedMedia(prev => [...prev, { 
+                    ...media, 
+                    media_id: `media_${Date.now()}` 
+                  }]);
+                }}
+                disabled={false}
+              />
+              {capturedMedia.length > 0 && (
+                <div className="mt-2 text-xs text-slate-600">
+                  {capturedMedia.length} evidence item{capturedMedia.length > 1 ? 's' : ''} captured
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -287,6 +313,14 @@ export default function SiteNotesRecorder({ jobId, area }) {
                   
                   {session.transcript_raw && (
                     <div className="mt-3 space-y-3">
+                      {/* Media Link Approval */}
+                      {session.suggested_media_links && session.suggested_media_links.length > 0 && (
+                        <SiteNoteMediaLinkApproval
+                          session={session}
+                          onApproved={loadSessions}
+                        />
+                      )}
+
                       {/* Structured Notes */}
                       {session.structured_notes && (
                         <StructuredNotesDisplay 

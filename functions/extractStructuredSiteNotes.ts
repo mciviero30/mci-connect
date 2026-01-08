@@ -185,9 +185,47 @@ Return the same JSON structure with translated content fields only.`;
       }
 
       // Update session with structured notes
+      // Suggest media links based on timing
+      let suggestedMediaLinks = [];
+      if (session.captured_media && session.captured_media.length > 0) {
+        const allNotes = [];
+        Object.entries(result).forEach(([category, items]) => {
+          if (Array.isArray(items)) {
+            items.forEach((item, index) => {
+              allNotes.push({
+                category,
+                index,
+                timestamp: item.timestamp_seconds,
+                content: item.content
+              });
+            });
+          }
+        });
+
+        session.captured_media.forEach(media => {
+          const closestNote = allNotes.reduce((closest, note) => {
+            const timeDiff = Math.abs(note.timestamp - media.timestamp_seconds);
+            if (!closest || timeDiff < Math.abs(closest.timestamp - media.timestamp_seconds)) {
+              return { ...note, timeDiff };
+            }
+            return closest;
+          }, null);
+
+          if (closestNote && closestNote.timeDiff <= 30) {
+            suggestedMediaLinks.push({
+              media_id: media.media_id,
+              note_category: closestNote.category,
+              note_index: closestNote.index,
+              reason: `Captured ${closestNote.timeDiff}s ${closestNote.timeDiff === 0 ? 'during' : 'before/after'} this note`
+            });
+          }
+        });
+      }
+
       const updateData = {
         structured_notes: result,
         suggested_area: suggestedArea,
+        suggested_media_links: suggestedMediaLinks,
         processing_status: 'completed'
       };
 
