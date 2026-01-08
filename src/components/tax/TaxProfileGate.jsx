@@ -23,8 +23,9 @@ export default function TaxProfileGate({ children }) {
   const userEmail = user?.email || null;
   const userRole = user?.role || null;
   const isTaxOnboardingPage = location?.pathname?.includes('TaxOnboarding') || false;
+  const isFieldRoute = location?.pathname?.includes('/Field') || false;
   const isExempt = userRole === 'ceo' || userRole === 'admin';
-  const shouldFetchProfile = !!userEmail && !isExempt;
+  const shouldFetchProfile = !!userEmail && !isExempt && !isFieldRoute;
 
 
 
@@ -97,8 +98,14 @@ export default function TaxProfileGate({ children }) {
       userEmail,
       isLoading,
       isExempt,
+      isFieldRoute,
       taxProfileCompleted: taxProfile?.completed
     });
+  }
+  
+  // CRITICAL: Field routes are sandboxed - skip all gate logic
+  if (isFieldRoute) {
+    return children;
   }
   
   // Defensive: if no user, fail open (allow access)

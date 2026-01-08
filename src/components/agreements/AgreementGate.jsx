@@ -33,6 +33,9 @@ export default function AgreementGate({ children }) {
   const userId = user?.id;
   const userFullName = user?.full_name;
   const userPosition = user?.position;
+
+  // CRITICAL: Check for Field route - skip gate for Field (sandboxed)
+  const isFieldRoute = typeof window !== 'undefined' && window.location.pathname.includes('/Field');
   
   // Fetch signatures - simple, no complex enabled logic
   const { data: signatures = [], isLoading } = useQuery({
@@ -112,6 +115,11 @@ export default function AgreementGate({ children }) {
   };
 
   const handlePrint = () => window.print();
+
+  // CRITICAL: Field routes are sandboxed - skip all gate logic
+  if (isFieldRoute) {
+    return children;
+  }
 
   // Defensive checks
   if (!userEmail) return children;
