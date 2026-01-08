@@ -17,11 +17,20 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
   try {
     console.log(`Starting PDF generation: Job ${jobId}, Set ${dimensionSetId}`);
     
+    const { getNextRevisionNumber, storeRevision, generateChangeSummary, getRevisionHistory } = await import('./FieldPDFRevisionControl');
+    
+    // Get revision number
+    const revisionNumber = await getNextRevisionNumber(dimensionSetId);
+    
+    // Get previous revision for change comparison
+    const revisionHistory = await getRevisionHistory(dimensionSetId);
+    const previousRevision = revisionHistory.length > 0 ? revisionHistory[0] : null;
+    
     // Step 1: Collect data
     const dataset = await collectPDFData(jobId, dimensionSetId, {
       user_email: user.email,
       user_name: user.full_name,
-      revision_number: options.revision_number,
+      revision_number: revisionNumber,
       include_photos: options.include_photos || false,
       include_plans: options.include_plans || false
     });
@@ -56,21 +65,45 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       console.warn('PDF validation warnings:', allWarnings);
     }
     
-    // Step 3: Normalize
+    // Step 3: Generate change summary
+    const changeSummary = generateChangeSummary(
+      previousRevision?.data_snapshot,
+      dataset
+    );
+    
+    console.log('Change summary:', changeSummary.summary_text);
+    
+    // Step 4: Normalize
     const normalizedData = normalizeForPDF(dataset);
+    normalizedData.metadata.change_summary = changeSummary;
     
     console.log('Data normalized and sorted');
     
-    // Step 4: Generate PDF
+    // Step 5: Generate PDF
     const pdfResult = await generateFieldPDF(normalizedData, options);
     
     console.log('PDF generated:', {
       pages: normalizedData.metadata.page_count,
       size: pdfResult.blob.size,
-      document_id: normalizedData.metadata.document_id
+      document_id: normalizedData.metadata.document_id,
+      revision: revisionNumber
     });
     
-    // Step 5: Audit trail
+    // Step 6: Store revision
+    await storeRevision({
+      dimension_set_id: dimensionSetId,
+      job_id: jobId,
+      revision_number: revisionNumber,
+      created_by: user.full_name,
+      pdf_blob: pdfResult.blob,
+      metadata: pdfResult.metadata,
+      change_summary: changeSummary,
+      data_snapshot: dataset
+    });
+    
+    console.log('Revision stored:', revisionNumber);
+    
+    // Step 7: Audit trail
     await logPDFGeneration(pdfResult, normalizedData);
     
     console.log('PDF generation logged to audit trail');
@@ -81,6 +114,8 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       blob: pdfResult.blob,
       metadata: pdfResult.metadata,
       document_id: normalizedData.metadata.document_id,
+      revision_number: revisionNumber,
+      change_summary: changeSummary.summary_text,
       validation
     };
     
