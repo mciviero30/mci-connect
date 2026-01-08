@@ -10,18 +10,26 @@
 export async function extractEntities(intents, sessionMetadata, base44Client) {
   const entities = [];
   
+  // Import confidence scoring
+  const { enrichWithConfidence } = await import('./SiteNotesConfidenceScoring.js');
+  
   for (const intent of intents) {
     try {
       const extracted = await extractEntityForIntent(intent, sessionMetadata, base44Client);
       if (extracted) {
-        entities.push({
+        const entity = {
           entity_type: intent.intent,
           entity_data: extracted,
           confidence: intent.confidence,
           source_text: intent.text_english,
           source_text_original: intent.text_original,
-          timestamp: sessionMetadata.session_start
-        });
+          timestamp: sessionMetadata.session_start,
+          detected_language: sessionMetadata.detected_language
+        };
+        
+        // Enrich with confidence scoring
+        const enriched = enrichWithConfidence(entity, intent);
+        entities.push(enriched);
       }
     } catch (error) {
       console.error(`Failed to extract entity for ${intent.intent}:`, error);
@@ -243,6 +251,12 @@ export async function createDraftEntities(entities, base44Client) {
         entity_type: entity.entity_type,
         entity_data: entity.entity_data,
         confidence: entity.confidence,
+        confidence_score: entity.confidence_score,
+        confidence_level: entity.confidence_level,
+        requires_review: entity.requires_review,
+        source: entity.source || 'ai',
+        action_recommendation: entity.action_recommendation,
+        review_message: entity.review_message,
         source_text: entity.source_text,
         source_text_original: entity.source_text_original,
         timestamp: entity.timestamp,
@@ -255,6 +269,8 @@ export async function createDraftEntities(entities, base44Client) {
       drafts.push({
         draft_id: draftId,
         entity_type: entity.entity_type,
+        confidence_score: entity.confidence_score,
+        requires_review: entity.requires_review,
         status: 'draft_pending_review'
       });
       
