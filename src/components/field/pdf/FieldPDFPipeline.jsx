@@ -121,22 +121,6 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
     
   } catch (error) {
     console.error('PDF generation failed:', error);
-    
-    // Queue for retry if offline
-    if (!navigator.onLine) {
-      await queuePDFGeneration(jobId, dimensionSetId, {
-        user_email: user.email,
-        user_name: user.full_name,
-        ...options
-      });
-      
-      return {
-        success: false,
-        queued: true,
-        error: 'Offline - queued for generation'
-      };
-    }
-    
     throw error;
   }
 }
