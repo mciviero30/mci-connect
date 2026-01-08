@@ -122,8 +122,58 @@ export function createProductionLegend() {
     { code: 'BM-C', description: 'Benchmark to Ceiling', color: '#EF4444' },
     { code: 'BM-F', description: 'Benchmark to Floor', color: '#EC4899' },
     { code: 'F-C', description: 'Floor to Ceiling', color: '#06B6D4' },
-    { code: 'BM', description: 'Benchmark Reference', color: '#6B7280' }
+    { code: 'BM', description: 'Benchmark Reference Only', color: '#6B7280' }
   ];
+}
+
+/**
+ * Enrich benchmarks with usage data
+ */
+export function enrichBenchmarksWithUsage(benchmarks, dimensions) {
+  return benchmarks.map(bm => {
+    // Count how many dimensions reference this benchmark
+    const referenceCount = dimensions.filter(d => 
+      d.benchmark_id === bm.id || d.benchmark_label === bm.label
+    ).length;
+    
+    return {
+      ...bm,
+      reference_count: referenceCount,
+      is_used: referenceCount > 0
+    };
+  });
+}
+
+/**
+ * Format benchmark for production table
+ */
+export function formatBenchmarkRow(benchmark, index) {
+  return {
+    index: index + 1,
+    label: benchmark.label,
+    type: formatBenchmarkType(benchmark.type),
+    elevation: `${benchmark.elevation} ${benchmark.elevation_unit}`,
+    area: benchmark.area,
+    color_code: benchmark.color_code,
+    reference_count: benchmark.reference_count,
+    description: benchmark.description || '-',
+    established_by: benchmark.established_by,
+    date: benchmark.established_date
+  };
+}
+
+/**
+ * Format benchmark type
+ */
+function formatBenchmarkType(type) {
+  const typeMap = {
+    'laser': 'Laser Line',
+    'floor_mark': 'Floor Mark',
+    'physical_mark': 'Physical Mark',
+    'transit': 'Transit Point'
+  };
+  
+  return typeMap[type] || type;
 }
 
 /**

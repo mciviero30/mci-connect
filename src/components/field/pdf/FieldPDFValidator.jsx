@@ -75,6 +75,7 @@ export function validateForPDFExport(dimensionSet, dimensions) {
  * Validate benchmark references
  */
 export function validateBenchmarkReferences(dimensions, benchmarks) {
+  const errors = [];
   const warnings = [];
   
   // Create benchmark lookup
@@ -84,17 +85,40 @@ export function validateBenchmarkReferences(dimensions, benchmarks) {
     if (bm.label) benchmarkMap[bm.label] = bm;
   });
   
-  // Check each dimension's benchmark reference
+  // Check each dimension's benchmark requirement
   dimensions.forEach(dim => {
-    if (dim.benchmark_id) {
-      if (!benchmarkMap[dim.benchmark_id]) {
-        warnings.push(`Dimension ${dim.local_id} references missing benchmark ${dim.benchmark_id}`);
+    const requiresBenchmark = ['BM-C', 'BM-F', 'F-C'].includes(dim.measurement_type);
+    
+    if (requiresBenchmark) {
+      // MUST have benchmark reference
+      if (!dim.benchmark_id && !dim.benchmark_label) {
+        errors.push(`${dim.measurement_type} dimension missing benchmark reference (area: ${dim.area})`);
+      } else {
+        // Verify benchmark exists
+        const benchmarkExists = benchmarkMap[dim.benchmark_id] || benchmarkMap[dim.benchmark_label];
+        if (!benchmarkExists) {
+          errors.push(`Dimension references non-existent benchmark: ${dim.benchmark_label || dim.benchmark_id}`);
+        }
       }
     }
   });
   
+  // Check for unused benchmarks
+  benchmarks.forEach(bm => {
+    const isReferenced = dimensions.some(d => 
+      d.benchmark_id === bm.id || 
+      d.benchmark_id === bm.local_id ||
+      d.benchmark_label === bm.label
+    );
+    
+    if (!isReferenced && bm.type !== 'reference_only') {
+      warnings.push(`Benchmark ${bm.label} is not referenced by any dimensions`);
+    }
+  });
+  
   return {
-    valid: warnings.length === 0,
+    valid: errors.length === 0,
+    errors,
     warnings
   };
 }

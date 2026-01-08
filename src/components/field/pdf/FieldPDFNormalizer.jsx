@@ -157,16 +157,30 @@ function formatDimensionValue(dimension) {
  * Normalize benchmarks
  */
 function normalizeBenchmarks(benchmarks) {
-  return benchmarks.map(b => ({
+  return benchmarks.map((b, idx) => ({
     id: b.id || b.local_id,
-    label: b.label || 'N/A',
-    type: b.type || 'N/A',
+    label: b.label || `BM-${idx + 1}`,
+    type: b.type || 'laser',
     elevation: b.elevation || 0,
     elevation_unit: b.elevation_unit || 'in',
     area: b.area || 'N/A',
+    description: b.description || '',
+    color_code: getBenchmarkColorCode(b.label || `BM-${idx + 1}`),
+    is_active: b.is_active !== false,
     established_by: b.established_by_name || b.established_by || 'Unknown',
-    established_date: formatDate(b.established_date || b.created_date)
+    established_date: formatDate(b.established_date || b.created_date),
+    reference_count: 0 // Will be calculated
   })).sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/**
+ * Get benchmark color code
+ */
+function getBenchmarkColorCode(label) {
+  // Deterministic color based on label
+  const colors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'];
+  const hash = label.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return colors[hash % colors.length];
 }
 
 /**

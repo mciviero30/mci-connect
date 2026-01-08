@@ -35,10 +35,18 @@ async function initAuditTrail() {
  */
 export async function logPDFGeneration(pdfResult, normalizedData) {
   const db = await initAuditTrail();
+  const { generatePDFMetadata, generateBenchmarkManifest } = await import('./FieldPDFMetadataGenerator');
   
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([AUDIT_STORE], 'readwrite');
     const store = transaction.objectStore(AUDIT_STORE);
+    
+    // Generate comprehensive metadata
+    const fullMetadata = generatePDFMetadata(normalizedData, pdfResult);
+    const benchmarkManifest = generateBenchmarkManifest(
+      normalizedData.benchmarks,
+      normalizedData.dimensions
+    );
     
     const auditRecord = {
       document_id: normalizedData.metadata.document_id,
@@ -52,7 +60,11 @@ export async function logPDFGeneration(pdfResult, normalizedData) {
       dimension_count: normalizedData.dimensions.length,
       benchmark_count: normalizedData.benchmarks.length,
       data_hash: hashDataset(normalizedData),
-      file_size: pdfResult.blob.size
+      file_size: pdfResult.blob.size,
+      
+      // Extended metadata
+      full_metadata: fullMetadata,
+      benchmark_manifest: benchmarkManifest
     };
     
     const request = store.add(auditRecord);

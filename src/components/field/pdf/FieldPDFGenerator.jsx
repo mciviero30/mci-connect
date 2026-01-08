@@ -267,66 +267,122 @@ function renderDimensionPages(doc, data) {
  * Render benchmarks page
  */
 function renderBenchmarksPage(doc, data, pageNum) {
+  const { enrichBenchmarksWithUsage, formatBenchmarkRow } = require('./FieldPDFLayoutEngine');
+  
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 100;
   
+  // Page header
+  doc.setFillColor(239, 68, 68); // Red background for benchmark section
+  doc.rect(0, 80, pageWidth, 35, 'F');
+  
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('Benchmark Reference Points', 40, y);
-  y += 25;
-  
-  // Note
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(100, 100, 100);
-  doc.text('All vertical measurements reference these benchmarks', 40, y);
+  doc.setTextColor(255, 255, 255);
+  doc.text('BENCHMARK REFERENCE POINTS', 40, y);
   doc.setTextColor(0, 0, 0);
-  y += 20;
+  y += 35;
+  
+  // Important note box
+  doc.setFillColor(254, 243, 199); // Amber background
+  doc.rect(40, y, pageWidth - 80, 30, 'F');
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(146, 64, 14);
+  doc.text('IMPORTANT: All vertical measurements (BM-C, BM-F, F-C) reference these benchmarks.', 50, y + 12);
+  doc.text('Verify benchmark elevations before production.', 50, y + 22);
+  doc.setTextColor(0, 0, 0);
+  y += 40;
+  
+  // Enrich with usage data
+  const enrichedBenchmarks = enrichBenchmarksWithUsage(data.benchmarks, data.dimensions);
   
   // Table header
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('Label', 40, y);
+  doc.text('●', 40, y);
+  doc.text('Label', 55, y);
   doc.text('Type', 120, y);
-  doc.text('Elevation', 200, y);
-  doc.text('Area', 280, y);
-  doc.text('Established By', 380, y);
+  doc.text('Elevation', 180, y);
+  doc.text('Area', 250, y);
+  doc.text('Used By', 320, y);
+  doc.text('Established', 380, y);
   doc.text('Date', 480, y);
   
   y += 5;
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(1);
   doc.line(40, y, pageWidth - 40, y);
   y += 12;
   
-  // Benchmark rows
+  // Benchmark rows with color coding
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   
-  data.benchmarks.forEach((bm, idx) => {
+  enrichedBenchmarks.forEach((bm, idx) => {
     if (y > 700) {
       doc.addPage();
       y = 100;
     }
     
-    // Highlight row background
+    const row = formatBenchmarkRow(bm, idx);
+    
+    // Zebra striping
     if (idx % 2 === 0) {
       doc.setFillColor(248, 250, 252);
-      doc.rect(35, y - 8, pageWidth - 70, 15, 'F');
+      doc.rect(35, y - 8, pageWidth - 70, 16, 'F');
     }
     
+    // Color indicator
+    const rgb = hexToRgb(bm.color_code);
+    doc.setFillColor(rgb.r, rgb.g, rgb.b);
+    doc.circle(43, y - 2, 3, 'F');
+    
+    // Row data
+    doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'bold');
-    doc.text(bm.label, 40, y);
+    doc.text(row.label, 55, y);
+    
     doc.setFont('helvetica', 'normal');
-    doc.text(bm.type, 120, y);
+    doc.text(row.type, 120, y);
+    
     doc.setFont('helvetica', 'bold');
-    doc.text(`${bm.elevation} ${bm.elevation_unit}`, 200, y);
+    doc.text(row.elevation, 180, y);
+    
     doc.setFont('helvetica', 'normal');
-    doc.text(bm.area, 280, y);
-    doc.text(bm.established_by, 380, y);
-    doc.text(bm.established_date, 480, y);
+    doc.text(row.area, 250, y);
+    
+    // Reference count
+    if (row.reference_count > 0) {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(34, 197, 94);
+      doc.text(`${row.reference_count} dims`, 320, y);
+      doc.setTextColor(0, 0, 0);
+    } else {
+      doc.setTextColor(150, 150, 150);
+      doc.text('Unused', 320, y);
+      doc.setTextColor(0, 0, 0);
+    }
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text(row.established_by, 380, y);
+    doc.setFontSize(8);
+    doc.text(row.date, 480, y);
     
     y += 18;
   });
+}
+
+/**
+ * Convert hex to RGB
+ */
+function hexToRgb(hex) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 0, b: 0 };
 }
 
 /**

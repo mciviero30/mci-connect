@@ -34,14 +34,26 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
     
     // Step 2: Pre-flight validation
     const { preFlightValidation } = await import('./FieldPDFValidator');
+    const { validateBenchmarkCompleteness, validateBenchmarkElevations } = await import('./FieldPDFBenchmarkValidator');
+    
     const validation = preFlightValidation(dataset);
     
     if (!validation.can_generate) {
       throw new Error(`PDF validation failed: ${validation.errors.join(', ')}`);
     }
     
-    if (validation.warnings.length > 0) {
-      console.warn('PDF validation warnings:', validation.warnings);
+    // Benchmark-specific validation
+    const benchmarkValidation = validateBenchmarkCompleteness(dataset.benchmarks, dataset.dimensions);
+    const elevationValidation = validateBenchmarkElevations(dataset.benchmarks);
+    
+    const allWarnings = [
+      ...validation.warnings,
+      ...benchmarkValidation.warnings,
+      ...elevationValidation.warnings
+    ];
+    
+    if (allWarnings.length > 0) {
+      console.warn('PDF validation warnings:', allWarnings);
     }
     
     // Step 3: Normalize
