@@ -142,10 +142,36 @@ async function collectPhotos(jobId) {
 }
 
 /**
- * Collect plans
+ * Collect plans (with dimension set linkage)
  */
 async function collectPlans(jobId) {
   return await queryLocalStore(STORES.PLANS, 'job_id', jobId);
+}
+
+/**
+ * Collect dimension-specific photos
+ */
+async function collectDimensionPhotos(jobId) {
+  const allDimensions = await queryLocalStore(STORES.DIMENSIONS, 'job_id', jobId);
+  
+  // Extract photo URLs from dimensions
+  const photoMap = {};
+  
+  allDimensions.forEach(dim => {
+    if (dim.photo_urls && Array.isArray(dim.photo_urls)) {
+      dim.photo_urls.forEach(url => {
+        photoMap[url] = {
+          type: 'dimension',
+          dimension_id: dim.id || dim.local_id,
+          area: dim.area,
+          measurement_type: dim.measurement_type,
+          url
+        };
+      });
+    }
+  });
+  
+  return Object.values(photoMap);
 }
 
 /**

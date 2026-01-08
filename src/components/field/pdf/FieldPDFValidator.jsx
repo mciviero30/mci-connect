@@ -154,6 +154,64 @@ export function validateDataCompleteness(normalizedData) {
 }
 
 /**
+ * Validate photo attachments
+ */
+export function validatePhotoAttachments(photos, dimensions, benchmarks) {
+  const warnings = [];
+  
+  // Validate dimension photos
+  photos.dimension_photos.forEach(photo => {
+    const dimension = dimensions.find(d => 
+      d.id === photo.dimension_id || d.local_id === photo.dimension_id
+    );
+    
+    if (!dimension) {
+      warnings.push(`Photo references non-existent dimension: ${photo.dimension_id}`);
+    }
+  });
+  
+  // Validate benchmark photos
+  photos.benchmark_photos.forEach(photo => {
+    const benchmark = benchmarks.find(b => 
+      b.id === photo.benchmark_id || b.local_id === photo.benchmark_id
+    );
+    
+    if (!benchmark) {
+      warnings.push(`Photo references non-existent benchmark: ${photo.benchmark_id}`);
+    }
+  });
+  
+  return {
+    valid: warnings.length === 0,
+    warnings
+  };
+}
+
+/**
+ * Validate plan overlays
+ */
+export function validatePlanOverlays(plans, dimensions) {
+  const warnings = [];
+  
+  plans.forEach(plan => {
+    plan.dimension_overlays.forEach(overlay => {
+      const dimension = dimensions.find(d => 
+        d.id === overlay.dimension_id || d.local_id === overlay.dimension_id
+      );
+      
+      if (!dimension) {
+        warnings.push(`Plan "${plan.name}" references non-existent dimension: ${overlay.dimension_id}`);
+      }
+    });
+  });
+  
+  return {
+    valid: warnings.length === 0,
+    warnings
+  };
+}
+
+/**
  * Pre-flight validation
  */
 export function preFlightValidation(dataset) {
@@ -172,14 +230,28 @@ export function preFlightValidation(dataset) {
     benchmarks: dataset.benchmarks
   });
   
+  const photoValidation = validatePhotoAttachments(
+    dataset.photos,
+    dataset.dimensions,
+    dataset.benchmarks
+  );
+  
+  const planValidation = validatePlanOverlays(
+    dataset.plans,
+    dataset.dimensions
+  );
+  
   const allErrors = [
     ...dimensionValidation.errors,
-    ...benchmarkValidation.warnings,
+    ...benchmarkValidation.errors,
     ...completenessValidation.issues
   ];
   
   const allWarnings = [
-    ...dimensionValidation.warnings
+    ...dimensionValidation.warnings,
+    ...benchmarkValidation.warnings,
+    ...photoValidation.warnings,
+    ...planValidation.warnings
   ];
   
   return {
@@ -189,7 +261,9 @@ export function preFlightValidation(dataset) {
     validations: {
       dimensions: dimensionValidation,
       benchmarks: benchmarkValidation,
-      completeness: completenessValidation
+      completeness: completenessValidation,
+      photos: photoValidation,
+      plans: planValidation
     }
   };
 }
