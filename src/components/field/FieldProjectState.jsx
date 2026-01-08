@@ -7,20 +7,27 @@ import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from '@/components/fi
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 import { useFieldLifecycle } from '@/components/field/hooks/useFieldLifecycle';
 import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
+import { useFieldSession } from '@/components/field/hooks/useFieldSession';
 import { fieldPersistence } from '@/components/field/services/FieldStatePersistence';
 import { saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
+import { FieldSessionManager } from '@/components/field/services/FieldSessionManager';
 import { createPageUrl } from '@/utils';
 
 export function useFieldProjectState(jobId) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
-  // Persistent state with auto-save
+  // Session-aware state management
   const [activePanel, setActivePanel] = usePersistentState(
     `field_panel_${jobId}`,
     'overview',
     { expiryHours: 48 }
   );
+  
+  const [currentMode, setCurrentMode] = useState(null); // viewing, editing, recording, capturing, measuring
+  const [currentArea, setCurrentArea] = useState(null);
+  const [isRestoringSession, setIsRestoringSession] = useState(false);
+  const [restoredContext, setRestoredContext] = useState(null);
   
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showQuickSearch, setShowQuickSearch] = useState(false);
@@ -38,6 +45,34 @@ export function useFieldProjectState(jobId) {
   
   // Unsaved changes protection
   const hasUnsaved = useUnsavedChanges(jobId);
+
+  // Session awareness - continuous work session tracking
+  const session = useFieldSession({
+    jobId,
+    activePanel,
+    currentMode,
+    currentArea,
+    hasUnsaved,
+    onContextRestore: useCallback((context) => {
+      // Restore session context
+      setIsRestoringSession(true);
+      
+      if (context.activePanel && context.activePanel !== activePanel) {
+        setActivePanel(context.activePanel);
+      }
+      if (context.currentMode) {
+        setCurrentMode(context.currentMode);
+      }
+      if (context.currentArea) {
+        setCurrentArea(context.currentArea);
+      }
+      
+      setRestoredContext(context);
+      
+      // Clear restoration flag after brief delay
+      setTimeout(() => setIsRestoringSession(false), 500);
+    }, [activePanel, setActivePanel]),
+  });
 
   // Security check: verify user has access to this job
   const { data: currentUser } = useQuery({
@@ -239,10 +274,14 @@ export function useFieldProjectState(jobId) {
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  // Event handlers
+  // Event handlers with session awareness
   const handleBack = useCallback(() => {
-    window.history.back();
-  }, []);
+    // Use safe exit handler from session
+    const canExit = session.handleSafeExit('Field');
+    
+    // If canExit is false, SafeBackButton will handle warnings
+    // If true, already navigated
+  }, [session]);
 
   const handleFABClick = useCallback(() => {
     if (activePanel === 'tasks') {
@@ -286,6 +325,10 @@ export function useFieldProjectState(jobId) {
     // State
     activePanel,
     setActivePanel,
+    currentMode,
+    setCurrentMode,
+    currentArea,
+    setCurrentArea,
     isMobile,
     showQuickSearch,
     setShowQuickSearch,
@@ -294,7 +337,12 @@ export function useFieldProjectState(jobId) {
     showCreateTask,
     setShowCreateTask,
     stableJobId,
-    hasUnsaved,  // NEW: Unsaved changes flag
+    hasUnsaved,
+    
+    // Session awareness
+    isRestoringSession,
+    restoredContext,
+    session,
     
     // Data
     job,

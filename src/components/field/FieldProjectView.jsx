@@ -65,12 +65,17 @@ import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
 import FieldBottomActionRail from './FieldBottomActionRail';
 import FieldContextBar from './FieldContextBar';
 import SafeBackButton from './SafeBackButton';
+import SessionRestorationIndicator from './SessionRestorationIndicator';
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 
 export default function FieldProjectView({
   // State
   activePanel,
   setActivePanel,
+  currentMode,
+  setCurrentMode,
+  currentArea,
+  setCurrentArea,
   isMobile,
   showQuickSearch,
   setShowQuickSearch,
@@ -78,7 +83,12 @@ export default function FieldProjectView({
   setShowDailyReport,
   showCreateTask,
   setShowCreateTask,
-  hasUnsaved,  // NEW: Passed from useUnsavedChanges
+  hasUnsaved,
+  
+  // Session awareness
+  isRestoringSession,
+  restoredContext,
+  session,
   
   // Data
   job,
@@ -96,9 +106,6 @@ export default function FieldProjectView({
   handleActionComplete,
   queryClient,
 }) {
-  // Track active modes for context awareness
-  const [currentMode, setCurrentMode] = React.useState(null); // viewing, editing, recording, capturing, measuring
-  const [currentArea, setCurrentArea] = React.useState(null);
   // Loading state
   if (isLoading) {
     return (
@@ -239,6 +246,13 @@ export default function FieldProjectView({
       
       {/* Offline Status Indicator */}
       <OfflineStatusBadge />
+      
+      {/* Session Restoration Indicator */}
+      {/* CRITICAL: User knows when app is recovering their work context */}
+      <SessionRestorationIndicator 
+        isRestoring={isRestoringSession}
+        restoredContext={restoredContext}
+      />
       
       {/* Context Bar - Always shows where user is */}
       {/* CRITICAL: User never confused about current location */}
