@@ -21,6 +21,7 @@ import {
   Clock
 } from 'lucide-react';
 import ProductionStatusControl from '@/components/factory/ProductionStatusControl';
+import FactoryAnnotations from '@/components/factory/FactoryAnnotations';
 import { createPageUrl } from '@/utils';
 import { getFactoryViewData } from '@/components/factory/FactoryViewService';
 import { validateDataIntegrity } from '@/components/factory/FactoryDataIntegrity';
@@ -534,8 +535,16 @@ function DimensionsTable({ dimensions }) {
                         <td className="px-4 py-3 text-xs">
                           {formatted.benchmark_reference || dim.benchmark_label || '-'}
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">
-                          {dim.production_notes || '-'}
+                        <td className="px-4 py-3 text-xs">
+                          <div className="space-y-2">
+                            {dim.production_notes && (
+                              <div className="text-slate-500">{dim.production_notes}</div>
+                            )}
+                            <FactoryAnnotations 
+                              dimension={dim} 
+                              onUpdated={() => refetchFactoryData()} 
+                            />
+                          </div>
                         </td>
                       </tr>
                     );
