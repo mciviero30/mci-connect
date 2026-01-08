@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { getFactoryViewData } from '@/components/factory/FactoryViewService';
-import { validateFactoryData } from '@/components/factory/FactoryDataIntegrity';
-import { getDataStatusBadge } from '@/components/factory/FactoryStatusMarkers';
+import { validateDataIntegrity } from '@/components/factory/FactoryDataIntegrity';
+import { getDimensionSetStatus, getStatusBadgeData } from '@/components/factory/FactoryStatusMarkers';
 import { generateProductionPDF } from '@/components/field/pdf/FieldPDFPipeline';
 
 export default function FactoryView() {
@@ -48,7 +48,7 @@ export default function FactoryView() {
   // Validate data integrity
   const { data: validation } = useQuery({
     queryKey: ['factory-validation', dimensionSetId],
-    queryFn: () => validateFactoryData(dimensionSetId),
+    queryFn: () => validateDataIntegrity(dimensionSetId, base44),
     enabled: !!dimensionSetId
   });
 
@@ -76,7 +76,14 @@ export default function FactoryView() {
     );
   }
 
-  const statusBadge = getDataStatusBadge(dimensionSet);
+  const status = getDimensionSetStatus(dimensionSet);
+  const statusBadge = getStatusBadgeData(status);
+  
+  // Convert to badge component props
+  const badgeClassName = statusBadge.color === 'green' ? 'bg-green-100 text-green-800 border-green-200' :
+                         statusBadge.color === 'blue' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                         statusBadge.color === 'yellow' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                         'bg-slate-100 text-slate-800 border-slate-200';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -108,8 +115,7 @@ export default function FactoryView() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Badge className={statusBadge.className}>
-                {statusBadge.icon}
+              <Badge className={badgeClassName}>
                 {statusBadge.label}
               </Badge>
               
