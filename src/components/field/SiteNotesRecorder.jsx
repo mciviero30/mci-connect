@@ -10,6 +10,7 @@ import StructuredNotesDisplay from './StructuredNotesDisplay';
 import SiteNoteContextLinker from './SiteNoteContextLinker';
 import SiteNoteMediaCapture from './SiteNoteMediaCapture';
 import SiteNoteMediaLinkApproval from './SiteNoteMediaLinkApproval';
+import SiteNoteReviewDialog from './SiteNoteReviewDialog';
 
 export default function SiteNotesRecorder({ jobId, area }) {
   const [recording, setRecording] = useState(false);
@@ -17,6 +18,7 @@ export default function SiteNotesRecorder({ jobId, area }) {
   const [duration, setDuration] = useState(0);
   const [sessions, setSessions] = useState([]);
   const [linkingSession, setLinkingSession] = useState(null);
+  const [reviewingSession, setReviewingSession] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [capturedMedia, setCapturedMedia] = useState([]);
   
@@ -280,20 +282,33 @@ export default function SiteNotesRecorder({ jobId, area }) {
                       By: {session.recorded_by_name}
                     </div>
                     
-                    {!session.area_confirmed && session.processing_status === 'completed' && (
-                      <Button
-                        size="sm"
-                        onClick={() => setLinkingSession(session)}
-                        className="bg-blue-600 text-white h-7 text-xs"
-                      >
-                        <MapPin className="w-3 h-3 mr-1" />
-                        Link Context
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {!session.area_confirmed && session.processing_status === 'completed' && (
+                        <Button
+                          size="sm"
+                          onClick={() => setLinkingSession(session)}
+                          className="bg-blue-600 text-white h-7 text-xs"
+                        >
+                          <MapPin className="w-3 h-3 mr-1" />
+                          Link Context
+                        </Button>
+                      )}
+                      
+                      {!session.review_status && session.processing_status === 'completed' && (
+                        <Button
+                          size="sm"
+                          onClick={() => setReviewingSession(session)}
+                          className="bg-amber-600 text-white h-7 text-xs"
+                        >
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Review Required
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Area Status */}
-                  <div className="mb-2">
+                  {/* Area & Review Status */}
+                  <div className="mb-2 flex items-center gap-2">
                     {session.area_confirmed ? (
                       <Badge className="bg-green-100 text-green-800">
                         <MapPin className="w-3 h-3 mr-1" />
@@ -307,6 +322,18 @@ export default function SiteNotesRecorder({ jobId, area }) {
                     ) : (
                       <Badge className="bg-slate-100 text-slate-800">
                         Area: Unassigned
+                      </Badge>
+                    )}
+                    
+                    {session.review_status && (
+                      <Badge className={
+                        session.review_status === 'approved' ? 'bg-green-100 text-green-800' :
+                        session.review_status === 'approved_with_edits' ? 'bg-blue-100 text-blue-800' :
+                        'bg-amber-100 text-amber-800'
+                      }>
+                        {session.review_status === 'approved' ? '✓ Approved' :
+                         session.review_status === 'approved_with_edits' ? '✓ Approved (Edited)' :
+                         '⚠ Needs Follow-up'}
                       </Badge>
                     )}
                   </div>
@@ -363,6 +390,19 @@ export default function SiteNotesRecorder({ jobId, area }) {
           onOpenChange={(open) => !open && setLinkingSession(null)}
           onLinked={() => {
             setLinkingSession(null);
+            loadSessions();
+          }}
+        />
+      )}
+
+      {/* Review Dialog */}
+      {reviewingSession && (
+        <SiteNoteReviewDialog
+          session={reviewingSession}
+          open={!!reviewingSession}
+          onOpenChange={(open) => !open && setReviewingSession(null)}
+          onReviewed={() => {
+            setReviewingSession(null);
             loadSessions();
           }}
         />
