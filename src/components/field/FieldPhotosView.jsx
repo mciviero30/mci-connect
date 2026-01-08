@@ -25,8 +25,9 @@ export default function FieldPhotosView({ jobId }) {
   const queryClient = useQueryClient();
 
   const { data: photos = [], isLoading } = useQuery({
-    queryKey: ['field-photos', jobId],
+    queryKey: FIELD_QUERY_KEYS.PHOTOS(jobId),
     queryFn: () => base44.entities.Photo.filter({ job_id: jobId }, '-created_date'),
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
   const createPhotoMutation = useMutation({
@@ -49,21 +50,22 @@ export default function FieldPhotosView({ jobId }) {
     },
   });
 
-  const handleFileUpload = async (e) => {
+  // Stable upload handler
+  const handleFileUpload = useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setNewPhoto({ ...newPhoto, file_url });
+      setNewPhoto(prev => ({ ...prev, file_url }));
     } catch (error) {
       console.error('Upload error:', error);
     }
     setUploading(false);
-  };
+  }, []);
 
-  const handleCreatePhoto = () => {
+  const handleCreatePhoto = useCallback(() => {
     if (!newPhoto.file_url) return;
     
     // CRITICAL: Always link photo to job
@@ -78,7 +80,7 @@ export default function FieldPhotosView({ jobId }) {
       caption: newPhoto.caption,
       location: newPhoto.location,
     });
-  };
+  }, [jobId, newPhoto, createPhotoMutation]);
 
   return (
     <div className="p-4 sm:p-6">
@@ -143,42 +145,14 @@ export default function FieldPhotosView({ jobId }) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {photos.map((photo) => (
-            <div 
+            <PhotoCard
               key={photo.id}
+              photo={photo}
               onClick={() => {
                 if (navigator.vibrate) navigator.vibrate(10);
                 setSelectedPhoto(photo);
               }}
-              className="relative rounded-2xl overflow-hidden cursor-pointer group border-4 border-slate-700 active:border-[#FFB800] shadow-2xl active:shadow-orange-500/30 transition-all touch-manipulation active:scale-[0.96] min-h-[200px]"
-              style={{ aspectRatio: '1', WebkitTapHighlightColor: 'transparent' }}
-            >
-              <img 
-                src={photo.file_url}
-                alt={photo.caption || 'Photo'}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                {photo.caption && (
-                  <p className="text-base font-bold text-white mb-2 line-clamp-2 leading-tight drop-shadow-lg">{photo.caption}</p>
-                )}
-                <p className="text-sm text-slate-100 flex items-center gap-2 font-semibold drop-shadow">
-                  <span>{format(new Date(photo.created_date), 'MMM dd, yyyy')}</span>
-                  {photo.created_by && (
-                    <>
-                      <span>•</span>
-                      <span className="truncate">{photo.created_by.split('@')[0]}</span>
-                    </>
-                  )}
-                </p>
-                {photo.location && (
-                  <p className="text-sm text-slate-200 mt-1 flex items-center gap-1 font-medium drop-shadow">
-                    <MapPin className="w-4 h-4" />
-                    {photo.location}
-                  </p>
-                )}
-              </div>
-            </div>
+            />
           ))}
         </div>
       )}

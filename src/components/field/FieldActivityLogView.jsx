@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
@@ -19,6 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
+import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
+import { useRenderOptimization } from './performance/useRenderOptimization';
 
 const actionIcons = {
   created: Upload,
@@ -54,28 +57,66 @@ const actionColors = {
   commented: 'text-purple-400 bg-purple-500/20',
 };
 
+// Memoized ActivityItem
+const ActivityItem = memo(({ activity }) => {
+  const ActionIcon = actionIcons[activity.action] || Activity;
+  const EntityIcon = entityIcons[activity.entity_type] || FileText;
+  const colorClass = actionColors[activity.action] || 'text-slate-400 bg-slate-500/20';
+
+  return (
+    <div className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all">
+      <div className={`p-2 rounded-lg ${colorClass.split(' ')[1]}`}>
+        <ActionIcon className={`w-4 h-4 ${colorClass.split(' ')[0]}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-white">{activity.description}</p>
+        <div className="flex items-center gap-3 mt-1">
+          <div className="flex items-center gap-1 text-xs text-slate-500">
+            <EntityIcon className="w-3 h-3" />
+            <span className="capitalize">{activity.entity_type}</span>
+          </div>
+          <span className="text-xs text-slate-500">•</span>
+          <span className="text-xs text-slate-500">{activity.user_name}</span>
+          <span className="text-xs text-slate-500">•</span>
+          <span className="text-xs text-slate-500">
+            {format(new Date(activity.created_date), "HH:mm")}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+});
+ActivityItem.displayName = 'ActivityItem';
+
 export default function FieldActivityLogView({ jobId }) {
+  useRenderOptimization('FieldActivityLogView');
   const [entityFilter, setEntityFilter] = useState('all');
   const [actionFilter, setActionFilter] = useState('all');
 
   const { data: activities = [], isLoading } = useQuery({
-    queryKey: ['field-activity-log', jobId],
+    queryKey: FIELD_QUERY_KEYS.ACTIVITY_LOG(jobId),
     queryFn: () => base44.entities.FieldActivityLog.filter({ job_id: jobId }, '-created_date', 100),
+    ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  const filteredActivities = activities.filter(activity => {
-    const matchesEntity = entityFilter === 'all' || activity.entity_type === entityFilter;
-    const matchesAction = actionFilter === 'all' || activity.action === actionFilter;
-    return matchesEntity && matchesAction;
-  });
+  // Memoized filtering - prevents re-computation
+  const filteredActivities = useMemo(() => {
+    return activities.filter(activity => {
+      const matchesEntity = entityFilter === 'all' || activity.entity_type === entityFilter;
+      const matchesAction = actionFilter === 'all' || activity.action === actionFilter;
+      return matchesEntity && matchesAction;
+    });
+  }, [activities, entityFilter, actionFilter]);
 
-  // Group activities by date
-  const groupedActivities = filteredActivities.reduce((groups, activity) => {
-    const date = format(new Date(activity.created_date), 'yyyy-MM-dd');
-    if (!groups[date]) groups[date] = [];
-    groups[date].push(activity);
-    return groups;
-  }, {});
+  // Memoized grouping - expensive operation
+  const groupedActivities = useMemo(() => {
+    return filteredActivities.reduce((groups, activity) => {
+      const date = format(new Date(activity.created_date), 'yyyy-MM-dd');
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(activity);
+      return groups;
+    }, {});
+  }, [filteredActivities]);
 
   return (
     <div className="p-6">
@@ -135,37 +176,9 @@ export default function FieldActivityLogView({ jobId }) {
               </div>
 
               <div className="space-y-2">
-                {dayActivities.map(activity => {
-                  const ActionIcon = actionIcons[activity.action] || Activity;
-                  const EntityIcon = entityIcons[activity.entity_type] || FileText;
-                  const colorClass = actionColors[activity.action] || 'text-slate-400 bg-slate-500/20';
-
-                  return (
-                    <div 
-                      key={activity.id}
-                      className="flex items-start gap-3 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:border-slate-600 transition-all"
-                    >
-                      <div className={`p-2 rounded-lg ${colorClass.split(' ')[1]}`}>
-                        <ActionIcon className={`w-4 h-4 ${colorClass.split(' ')[0]}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white">{activity.description}</p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <div className="flex items-center gap-1 text-xs text-slate-500">
-                            <EntityIcon className="w-3 h-3" />
-                            <span className="capitalize">{activity.entity_type}</span>
-                          </div>
-                          <span className="text-xs text-slate-500">•</span>
-                          <span className="text-xs text-slate-500">{activity.user_name}</span>
-                          <span className="text-xs text-slate-500">•</span>
-                          <span className="text-xs text-slate-500">
-                            {format(new Date(activity.created_date), "HH:mm")}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {dayActivities.map(activity => (
+                  <ActivityItem key={activity.id} activity={activity} />
+                ))}
               </div>
             </div>
           ))}

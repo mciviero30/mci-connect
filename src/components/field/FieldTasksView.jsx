@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Filter, LayoutGrid, List, Search, User } from 'lucide-react';
@@ -15,8 +15,60 @@ import FiltersBottomSheet from './FiltersBottomSheet.jsx';
 import { canEditTasks } from './rolePermissions';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
 import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
+import { useRenderOptimization } from './performance/useRenderOptimization';
+
+// Memoized TaskCard to prevent re-renders
+const TaskCard = memo(({ task, onClick, onDragStart, isClientPunch }) => {
+  const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+  
+  const priorityColors = {
+    urgent: 'bg-red-500 text-white border-red-300',
+    high: 'bg-orange-600 text-white border-orange-300',
+    medium: 'bg-amber-500 text-black border-amber-300',
+    low: 'bg-slate-600 text-white border-slate-400',
+  };
+
+  return (
+    <div
+      draggable
+      onDragStart={onDragStart}
+      onClick={onClick}
+      className={`border-4 rounded-2xl p-5 cursor-pointer active:shadow-2xl active:scale-[0.96] transition-all touch-manipulation min-h-[80px] ${
+        isClientPunch
+          ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
+          : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
+      }`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
+    >
+      <div className="flex items-center gap-4">
+        <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 shadow-xl border-2 border-white/20 ${
+          task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-700' :
+          task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-700' :
+          'bg-gradient-to-br from-red-500 to-red-700'
+        }`}>
+          {wallNum}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5">
+            <p className="text-white text-base font-bold truncate">Wall {wallNum}</p>
+            {isClientPunch && (
+              <Badge className="bg-purple-500 text-white text-xs px-2 py-1 font-bold border-2 border-purple-300">
+                CLIENT
+              </Badge>
+            )}
+          </div>
+          <Badge className={`${priorityColors[task.priority]} text-xs px-2.5 py-1 font-bold border-2`}>
+            {task.priority || 'normal'}
+          </Badge>
+        </div>
+      </div>
+    </div>
+  );
+});
+TaskCard.displayName = 'TaskCard';
 
 export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
+  useRenderOptimization('FieldTasksView');
   // Use new unified hook, fall back to legacy tasks if provided
   const { workUnits, updateMutation: workUnitUpdate } = useWorkUnits(jobId, { type: 'task' });
   const tasks = legacyTasks?.length > 0 ? legacyTasks : workUnits;
@@ -61,23 +113,25 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
     },
   });
 
-  // Extract wall number for sorting
-  const getWallNumber = (title) => {
+  // Memoized wall number extraction
+  const getWallNumber = useCallback((title) => {
     const match = title?.match(/(\d+)/);
     return match ? parseInt(match[1], 10) : 999999;
-  };
+  }, []);
 
-  // Filter and sort tasks by wall number
-  const filteredTasks = tasks
-    .filter(task => {
-      const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-      const matchesType = taskTypeFilter === 'all' || task.task_type === taskTypeFilter;
-      const matchesUser = !showMyTasks || task.assigned_to === currentUser?.email;
-      return matchesSearch && matchesStatus && matchesPriority && matchesType && matchesUser;
-    })
-    .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
+  // Memoized filter and sort - prevents re-computation on every render
+  const filteredTasks = useMemo(() => {
+    return tasks
+      .filter(task => {
+        const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+        const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+        const matchesType = taskTypeFilter === 'all' || task.task_type === taskTypeFilter;
+        const matchesUser = !showMyTasks || task.assigned_to === currentUser?.email;
+        return matchesSearch && matchesStatus && matchesPriority && matchesType && matchesUser;
+      })
+      .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
+  }, [tasks, searchTerm, statusFilter, priorityFilter, taskTypeFilter, showMyTasks, currentUser?.email, getWallNumber]);
 
   const columns = [
     { id: 'pending', label: 'Assigned', color: 'red', emoji: '📋' },
@@ -85,26 +139,20 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
     { id: 'completed', label: 'Done', color: 'green', emoji: '✅' },
   ];
 
-  const handleDragStart = (e, task) => {
+  // Stable drag handlers
+  const handleDragStart = useCallback((e, task) => {
     e.dataTransfer.setData('taskId', task.id);
-  };
+  }, []);
 
-  const handleDrop = (e, status) => {
+  const handleDrop = useCallback((e, status) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
     updateTaskMutation.mutate({ id: taskId, data: { status } });
-  };
+  }, [updateTaskMutation]);
 
-  const handleDragOver = (e) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault();
-  };
-
-  const priorityColors = {
-    urgent: 'bg-red-500 text-white border-red-300',
-    high: 'bg-orange-600 text-white border-orange-300',
-    medium: 'bg-amber-500 text-black border-amber-300',
-    low: 'bg-slate-600 text-white border-slate-400',
-  };
+  }, []);
 
   return (
     <div className="p-6 flex flex-col h-full">
@@ -229,53 +277,26 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                       No {column.label.toLowerCase()} tasks
                     </div>
                   ) : (
-                    columnTasks.sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title)).map((task) => {
-                      const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+                    columnTasks.map((task) => {
+                      const isClientPunch = task.created_by_client && task.task_type === 'punch_item';
+                      
                       return (
-                        <div
-                        key={task.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task)}
-                        onClick={() => {
-                          // Haptic feedback
-                          if (navigator.vibrate) navigator.vibrate(10);
-                          if (task.created_by_client && task.task_type === 'punch_item') {
-                            setReviewingPunch(task);
-                          } else {
-                            setEditingTask(task);
-                            setShowCreateTask(true);
-                          }
-                        }}
-                        className={`border-4 rounded-2xl p-5 cursor-pointer active:shadow-2xl active:scale-[0.96] transition-all touch-manipulation min-h-[80px] ${
-                          task.created_by_client && task.task_type === 'punch_item'
-                            ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
-                            : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
-                        }`}
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 shadow-xl border-2 border-white/20 ${
-                              task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-700' :
-                              task.status === 'in_progress' ? 'bg-gradient-to-br from-blue-500 to-blue-700' :
-                              'bg-gradient-to-br from-red-500 to-red-700'
-                            }`}>
-                              {wallNum}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                             <div className="flex items-center gap-2 mb-1.5">
-                               <p className="text-white text-base font-bold truncate">Wall {wallNum}</p>
-                               {task.created_by_client && task.task_type === 'punch_item' && (
-                                 <Badge className="bg-purple-500 text-white text-xs px-2 py-1 font-bold border-2 border-purple-300">
-                                   CLIENT
-                                 </Badge>
-                               )}
-                             </div>
-                             <Badge className={`${priorityColors[task.priority]} text-xs px-2.5 py-1 font-bold border-2`}>
-                               {task.priority || 'normal'}
-                             </Badge>
-                            </div>
-                          </div>
-                        </div>
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onDragStart={(e) => handleDragStart(e, task)}
+                          onClick={() => {
+                            // Haptic feedback
+                            if (navigator.vibrate) navigator.vibrate(10);
+                            if (isClientPunch) {
+                              setReviewingPunch(task);
+                            } else {
+                              setEditingTask(task);
+                              setShowCreateTask(true);
+                            }
+                          }}
+                          isClientPunch={isClientPunch}
+                        />
                       );
                     })
                   )}
