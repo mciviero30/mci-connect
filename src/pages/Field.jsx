@@ -22,7 +22,7 @@ import {
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
 import FieldDimensionView from '@/components/field/FieldDimensionView';
-import FieldBottomActionRail from './FieldBottomActionRail';
+import FieldBottomActionRail from '@/components/field/FieldBottomActionRail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
