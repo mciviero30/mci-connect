@@ -9,6 +9,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import PageHeader from "@/components/shared/PageHeader";
 import { startOfMonth, endOfMonth } from "date-fns";
+import { AdminOnlyUI } from "@/components/policies/UIVisibilityWrapper";
 
 // Fix Leaflet default marker icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -166,13 +167,22 @@ export default function ExecutiveControlTower() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
-      <div className="max-w-7xl mx-auto">
-        <PageHeader
-          title="Executive Control Tower"
-          description="Real-time overview for CEO and administrators"
-          icon={Shield}
-        />
+    <AdminOnlyUI fallback={
+      <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <Shield className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Admin Access Required</h2>
+          <p className="text-slate-600 dark:text-slate-400">This page is only accessible to administrators.</p>
+        </div>
+      </div>
+    }>
+      <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
+        <div className="max-w-7xl mx-auto">
+          <PageHeader
+            title="Executive Control Tower"
+            description="Real-time overview for CEO and administrators"
+            icon={Shield}
+          />
 
         {/* Top Row - Key Metrics */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
@@ -498,7 +508,8 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </AdminOnlyUI>
   );
 }

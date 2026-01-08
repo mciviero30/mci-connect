@@ -12,6 +12,7 @@ import FieldPerformanceMonitor from '@/components/field/performance/FieldPerform
 import FieldStressTest from '@/components/field/performance/FieldStressTest';
 import OfflineSyncValidator from '@/components/field/offline/OfflineSyncValidator';
 import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
+import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
 
 export default function FieldProject() {
   const { setIsFieldMode } = useUI();
@@ -45,16 +46,14 @@ export default function FieldProject() {
                 {...state}
                 jobId={jobId}
               />
-              {/* Debug-only monitoring & validation - ONLY visible in debug mode */}
-              {isDebugMode && (
-                <>
-                  <FieldPerformanceMonitor componentName="FieldProject" />
-                  <FieldLifecycleValidator jobId={jobId} />
-                  <FieldDataLossValidator jobId={jobId} />
-                  <OfflineSyncValidator />
-                  <FieldStressTest jobId={jobId} />
-                </>
-              )}
+              {/* Debug-only monitoring & validation - UI Policy Enforced */}
+              <DebugUI>
+                <FieldPerformanceMonitor componentName="FieldProject" />
+                <FieldLifecycleValidator jobId={jobId} />
+                <FieldDataLossValidator jobId={jobId} />
+                <OfflineSyncValidator />
+                <FieldStressTest jobId={jobId} />
+              </DebugUI>
             </FieldContextProvider>
           </FieldOfflineProvider>
         </ThemeProvider>
