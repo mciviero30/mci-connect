@@ -4,6 +4,7 @@
  * Read-only access to all Field data types for Factory consumption
  */
 
+import { base44 } from '@/api/base44Client';
 import { validateFactoryAccess } from './FactoryPermissions';
 import { MODES } from './FactoryModeContext';
 
@@ -188,6 +189,53 @@ export async function checkSuperseded(dimensionSetId, base44Client) {
   } catch (error) {
     console.error('Failed to check superseded status:', error);
     return false;
+  }
+}
+
+/**
+ * Get complete Factory view data
+ */
+export async function getFactoryViewData(dimensionSetId) {
+  try {
+    const dimensionSet = await base44.entities.DimensionSet.filter({ 
+      id: dimensionSetId 
+    }).then(sets => sets[0]);
+    
+    if (!dimensionSet) {
+      throw new Error('Dimension set not found');
+    }
+    
+    const access = validateFactoryAccess(dimensionSet, MODES.FACTORY);
+    if (!access.allowed) {
+      throw new Error(access.reason);
+    }
+    
+    // Fetch all related data
+    const [dimensions, benchmarks, job] = await Promise.all([
+      base44.entities.FieldDimension.filter({
+        id: { $in: dimensionSet.dimension_ids || [] }
+      }),
+      base44.entities.Benchmark.filter({
+        job_id: dimensionSet.job_id
+      }),
+      base44.entities.Job.filter({ id: dimensionSet.job_id }).then(jobs => jobs[0])
+    ]);
+    
+    return {
+      dimension_set: { ...dimensionSet, _readonly: true },
+      dimensions: dimensions.map(d => ({ ...d, _readonly: true })),
+      benchmarks: benchmarks.map(b => ({ ...b, _readonly: true })),
+      job: job ? { ...job, _readonly: true } : null,
+      status: getDataStatus(dimensionSet),
+      metadata: {
+        total_dimensions: dimensions.length,
+        total_benchmarks: benchmarks.length,
+        is_production_ready: dimensionSet.is_locked
+      }
+    };
+  } catch (error) {
+    console.error('Failed to get Factory view data:', error);
+    throw error;
   }
 }
 
