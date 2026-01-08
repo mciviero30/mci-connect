@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { base44 } from '@/api/base44Client';
 import { fieldStorage } from './services/FieldStorageService';
+import { SaveGuarantee } from './services/SaveGuarantee';
+import SaveConfirmation from './SaveConfirmation';
 
 export default function MobilePhotoCapture({ 
   open, 
@@ -21,6 +23,9 @@ export default function MobilePhotoCapture({
   const [location, setLocation] = useState(null);
   const [caption, setCaption] = useState('');
   const [locationText, setLocationText] = useState('');
+  const [saveProgress, setSaveProgress] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationType, setConfirmationType] = useState('success');
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -97,51 +102,65 @@ export default function MobilePhotoCapture({
   const handleUpload = async () => {
     if (!capturedImage?.file) return;
 
-    setUploading(true);
-    const isOnline = navigator.onLine;
-    
-    try {
-      const blob = await capturedImage.file.arrayBuffer().then(ab => new Blob([ab]));
-      
-      if (isOnline) {
-        // Online: Upload immediately
+    const photoData = {
+      job_id: jobId,
+      caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
+      location: locationText,
+      gps_latitude: location?.latitude,
+      gps_longitude: location?.longitude,
+      wall_number: wallNumber,
+    };
+
+    // BLOCKING SAVE: UI waits for confirmation
+    const result = await SaveGuarantee.guaranteeSave({
+      entityType: 'Photo',
+      entityData: photoData,
+      jobId,
+      apiCall: async () => {
+        // Upload file first
         const { file_url } = await base44.integrations.Core.UploadFile({ 
           file: capturedImage.file 
         });
-
-        await base44.entities.Photo.create({
-          job_id: jobId,
+        
+        // Then create photo record
+        return await base44.entities.Photo.create({
+          ...photoData,
           file_url,
-          caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
-          location: locationText,
-          gps_latitude: location?.latitude,
-          gps_longitude: location?.longitude,
-          wall_number: wallNumber,
         });
-      } else {
-        // Offline: Save to IndexedDB with blob
-        await fieldStorage.savePhotoWithBlob({
-          id: `temp_${Date.now()}`,
-          job_id: jobId,
-          caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
-          location: locationText,
-          wall_number: wallNumber,
-        }, blob);
-      }
-
-      onPhotoCreated?.();
-      handleClose();
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert(isOnline ? 'Failed to upload photo. Please try again.' : 'Failed to save photo offline.');
-    } finally {
-      setUploading(false);
+      },
+      draftKey: `photo_${jobId}`,
+      onProgress: setSaveProgress,
+    });
+    
+    if (result.success) {
+      // Show success confirmation
+      setConfirmationType(result.savedOffline ? 'offline' : 'success');
+      setShowConfirmation(true);
+      
+      // Close modal after brief confirmation
+      setTimeout(() => {
+        onPhotoCreated?.();
+        handleClose();
+      }, 1500);
+      
+    } else {
+      // Save failed
+      setSaveProgress(null);
+      toast.error(result.error || 'Failed to save photo');
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-md mx-auto p-0 overflow-hidden">
+    <>
+      {/* Save Confirmation Feedback */}
+      <SaveConfirmation 
+        show={showConfirmation}
+        type={confirmationType}
+        onComplete={() => setShowConfirmation(false)}
+      />
+      
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 max-w-md mx-auto p-0 overflow-hidden">
         {/* Step: Capture */}
         {step === 'capture' && (
           <div className="p-6">
@@ -305,23 +324,41 @@ export default function MobilePhotoCapture({
                 </Button>
                 <Button 
                   onClick={handleUpload}
-                  disabled={uploading}
-                  className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                  disabled={saveProgress !== null}
+                  className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white disabled:opacity-70"
                 >
-                  {uploading ? (
+                  {saveProgress === 'validating' && (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Validating...
+                    </>
+                  )}
+                  {saveProgress === 'persisting' && (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  )}
+                  {saveProgress === 'uploading' && (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Uploading...
                     </>
-                  ) : (
-                    'Save Photo'
                   )}
+                  {saveProgress === 'confirming' && (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Confirming...
+                    </>
+                  )}
+                  {!saveProgress && 'Save Photo'}
                 </Button>
               </div>
             </div>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

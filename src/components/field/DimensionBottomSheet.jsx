@@ -8,6 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldBottomSheet from './FieldBottomSheet';
 import { toast } from 'sonner';
+import { SaveGuarantee } from './services/SaveGuarantee';
+import SaveConfirmation from './SaveConfirmation';
+import { Loader2 } from 'lucide-react';
 
 export default function DimensionBottomSheet({ 
   open, 
@@ -30,6 +33,11 @@ export default function DimensionBottomSheet({
     benchmark_label: '',
     device_type: 'laser',
   });
+  
+  // Save state tracking
+  const [saveProgress, setSaveProgress] = useState(null); // null | 'validating' | 'persisting' | 'uploading' | 'confirming' | 'complete'
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationType, setConfirmationType] = useState('success');
 
   React.useEffect(() => {
     if (open && dimension) {
@@ -57,38 +65,70 @@ export default function DimensionBottomSheet({
 
   const createDimensionMutation = useMutation({
     mutationFn: (data) => base44.entities.FieldDimension.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
-      toast.success('Dimension saved');
-      onOpenChange(false);
-      onSave?.();
-    },
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.area) {
       toast.error('Please enter location/area');
       return;
     }
 
-    createDimensionMutation.mutate({
+    const dimensionData = {
       job_id: jobId,
       job_name: jobName,
       unit_system: unitSystem,
       measured_by: user?.email,
       measured_by_name: user?.full_name,
       ...formData,
+    };
+
+    // BLOCKING SAVE: UI waits for confirmation
+    const result = await SaveGuarantee.guaranteeSave({
+      entityType: 'FieldDimension',
+      entityData: dimensionData,
+      jobId,
+      apiCall: () => createDimensionMutation.mutateAsync(dimensionData),
+      draftKey: `dimension_${jobId}`,
+      onProgress: setSaveProgress,
     });
+    
+    if (result.success) {
+      // Invalidate AFTER save confirmed
+      queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
+      
+      // Show success confirmation
+      setConfirmationType(result.savedOffline ? 'offline' : 'success');
+      setShowConfirmation(true);
+      
+      // Close modal after brief confirmation
+      setTimeout(() => {
+        onOpenChange(false);
+        onSave?.();
+      }, 1500);
+      
+    } else {
+      // Save failed
+      setSaveProgress(null);
+      toast.error(result.error || 'Failed to save dimension');
+    }
   };
 
   return (
-    <FieldBottomSheet 
-      open={open} 
-      onOpenChange={onOpenChange}
-      title="Add Dimension"
-      maxHeight="85vh"
-    >
-      <div className="space-y-5">
+    <>
+      {/* Save Confirmation Feedback */}
+      <SaveConfirmation 
+        show={showConfirmation}
+        type={confirmationType}
+        onComplete={() => setShowConfirmation(false)}
+      />
+      
+      <FieldBottomSheet 
+        open={open} 
+        onOpenChange={onOpenChange}
+        title="Add Dimension"
+        maxHeight="85vh"
+      >
+        <div className="space-y-5">
         {/* Measurement Type */}
         <div>
           <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">
@@ -225,19 +265,51 @@ export default function DimensionBottomSheet({
           />
         </div>
 
-        {/* Save Button - Safe spacing */}
+        {/* Save Button - BLOCKS until confirmed */}
+        {/* CRITICAL: No close until save completes or fails */}
         <Button 
           onClick={() => {
             if (navigator.vibrate) navigator.vibrate(15);
             handleSave();
           }}
-          disabled={createDimensionMutation.isPending}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[64px] touch-manipulation active:scale-95 font-bold shadow-lg active:shadow-xl"
+          disabled={saveProgress !== null}
+          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[64px] touch-manipulation active:scale-95 font-bold shadow-lg active:shadow-xl disabled:opacity-70"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          {createDimensionMutation.isPending ? 'Saving...' : 'Save Dimension'}
+          {saveProgress === 'validating' && (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Validating...
+            </>
+          )}
+          {saveProgress === 'persisting' && (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Saving locally...
+            </>
+          )}
+          {saveProgress === 'uploading' && (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Uploading...
+            </>
+          )}
+          {saveProgress === 'queuing' && (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Queuing offline...
+            </>
+          )}
+          {saveProgress === 'confirming' && (
+            <>
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              Confirming...
+            </>
+          )}
+          {!saveProgress && 'Save Dimension'}
         </Button>
       </div>
     </FieldBottomSheet>
+    </>
   );
 }
