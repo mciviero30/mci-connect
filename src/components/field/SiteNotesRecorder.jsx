@@ -7,12 +7,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Mic, Square, Loader2, FileAudio, Info, MapPin, Ruler, AlertTriangle, ShieldAlert, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
 import StructuredNotesDisplay from './StructuredNotesDisplay';
+import SiteNoteContextLinker from './SiteNoteContextLinker';
 
 export default function SiteNotesRecorder({ jobId, area }) {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [duration, setDuration] = useState(0);
   const [sessions, setSessions] = useState([]);
+  const [linkingSession, setLinkingSession] = useState(null);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -219,19 +221,52 @@ export default function SiteNotesRecorder({ jobId, area }) {
                         {new Date(session.session_start).toLocaleString()}
                       </span>
                     </div>
-                    <Badge className={
-                      session.processing_status === 'completed' ? 'bg-green-100 text-green-800' :
-                      session.processing_status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                      'bg-slate-100 text-slate-800'
-                    }>
-                      {session.processing_status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className={
+                        session.processing_status === 'completed' ? 'bg-green-100 text-green-800' :
+                        session.processing_status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                        'bg-slate-100 text-slate-800'
+                      }>
+                        {session.processing_status}
+                      </Badge>
+                    </div>
                   </div>
                   
-                  <div className="text-xs text-slate-600 mb-2">
-                    Duration: {formatDuration(session.duration_seconds)} • 
-                    By: {session.recorded_by_name} •
-                    Area: {session.area || 'General'}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs text-slate-600">
+                      Duration: {formatDuration(session.duration_seconds)} • 
+                      By: {session.recorded_by_name}
+                    </div>
+                    
+                    {!session.area_confirmed && session.processing_status === 'completed' && (
+                      <Button
+                        size="sm"
+                        onClick={() => setLinkingSession(session)}
+                        className="bg-blue-600 text-white h-7 text-xs"
+                      >
+                        <MapPin className="w-3 h-3 mr-1" />
+                        Link Context
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Area Status */}
+                  <div className="mb-2">
+                    {session.area_confirmed ? (
+                      <Badge className="bg-green-100 text-green-800">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        {session.area}
+                      </Badge>
+                    ) : session.suggested_area ? (
+                      <Badge className="bg-amber-100 text-amber-800">
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        Suggested: {session.suggested_area} (not confirmed)
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-slate-100 text-slate-800">
+                        Area: Unassigned
+                      </Badge>
+                    )}
                   </div>
                   
                   {session.transcript_raw && (
@@ -263,6 +298,19 @@ export default function SiteNotesRecorder({ jobId, area }) {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Context Linking Dialog */}
+      {linkingSession && (
+        <SiteNoteContextLinker
+          session={linkingSession}
+          open={!!linkingSession}
+          onOpenChange={(open) => !open && setLinkingSession(null)}
+          onLinked={() => {
+            setLinkingSession(null);
+            loadSessions();
+          }}
+        />
       )}
     </div>
   );

@@ -45,6 +45,8 @@ CRITICAL RULES:
 3. Include approximate timestamp in seconds for each note
 4. If something wasn't mentioned, don't include it
 5. No corrections or modifications to what was said
+6. Extract area/room names if explicitly mentioned in speech
+7. Every note must reference a timestamp from the audio
 
 Transcript:
 "${session.transcript_raw}"
@@ -138,16 +140,24 @@ Return ONLY valid JSON matching this exact structure (empty arrays if category n
         }
       });
 
+      // Suggest area if found in area_specific notes
+      let suggestedArea = null;
+      if (result.area_specific && result.area_specific.length > 0) {
+        suggestedArea = result.area_specific[0].area;
+      }
+
       // Update session with structured notes
       await base44.asServiceRole.entities.SiteNoteSession.update(session_id, {
         structured_notes: result,
+        suggested_area: suggestedArea,
         processing_status: 'completed'
       });
 
       return Response.json({
         success: true,
         session_id: session_id,
-        structured_notes: result
+        structured_notes: result,
+        suggested_area: suggestedArea
       });
 
     } catch (error) {
