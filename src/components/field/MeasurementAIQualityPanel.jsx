@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   XCircle,
-  Loader2
+  Loader2,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   generateAIQualityReport,
@@ -19,11 +20,15 @@ import {
   getConsistencyBadge,
   getSeverityBadge
 } from './services/MeasurementAIQualityControl';
+import MeasurementConfirmationDialog from './MeasurementConfirmationDialog';
+import MeasurementConfirmationBadge from './MeasurementConfirmationBadge';
 
 export default function MeasurementAIQualityPanel({ jobId }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [report, setReport] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
+  const [confirmingDimension, setConfirmingDimension] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: dimensions = [] } = useQuery({
     queryKey: ['field-dimensions', jobId],
@@ -117,7 +122,25 @@ export default function MeasurementAIQualityPanel({ jobId }) {
 
       {/* Quality Report */}
       {report && report.status === 'success' && (
-        <QualityReportDisplay report={report} />
+        <QualityReportDisplay 
+          report={report} 
+          dimensions={dimensions}
+          onRequestConfirmation={(dim) => setConfirmingDimension(dim)}
+        />
+      )}
+
+      {/* Confirmation Dialog */}
+      {confirmingDimension && (
+        <MeasurementConfirmationDialog
+          open={!!confirmingDimension}
+          onOpenChange={(open) => !open && setConfirmingDimension(null)}
+          dimension={confirmingDimension}
+          aiReport={report?.report}
+          onConfirmed={() => {
+            setConfirmingDimension(null);
+            queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
+          }}
+        />
       )}
 
       {report && report.status === 'error' && (
@@ -141,10 +164,19 @@ export default function MeasurementAIQualityPanel({ jobId }) {
   );
 }
 
-function QualityReportDisplay({ report }) {
+function QualityReportDisplay({ report, dimensions, onRequestConfirmation }) {
   const { report: aiReport } = report;
   const confidenceBadge = getConfidenceBadge(aiReport.overall_confidence);
   const consistencyBadge = getConsistencyBadge(aiReport.consistency_status);
+
+  // Get dimensions for the analyzed area
+  const areaDimensions = dimensions.filter(d => 
+    report.area === 'All Areas' || d.area === report.area
+  );
+
+  const pendingConfirmations = areaDimensions.filter(d => 
+    !d.human_confirmation_status || d.human_confirmation_status === 'pending'
+  );
 
   return (
     <div className="space-y-4">
@@ -277,14 +309,100 @@ function QualityReportDisplay({ report }) {
         </Card>
       )}
 
+      {/* Human Confirmation Required */}
+      {pendingConfirmations.length > 0 && (
+        <Card className="border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-blue-600" />
+              Human Confirmation Required ({pendingConfirmations.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert className="border-blue-200 bg-blue-50 mb-4">
+              <AlertDescription className="text-sm">
+                After AI review, technician or supervisor confirmation is mandatory.
+                Your confirmation overrides AI advisory and becomes part of the permanent record.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="space-y-2">
+              {pendingConfirmations.slice(0, 5).map(dim => (
+                <div key={dim.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
+                  <div>
+                    <div className="font-semibold text-sm">
+                      {dim.measurement_type} - {formatDimension(dim)}
+                    </div>
+                    <div className="text-xs text-slate-600">
+                      {dim.area}
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => onRequestConfirmation(dim)}
+                    className="bg-blue-600 text-white"
+                  >
+                    <ShieldCheck className="w-4 h-4 mr-1" />
+                    Confirm
+                  </Button>
+                </div>
+              ))}
+              {pendingConfirmations.length > 5 && (
+                <div className="text-xs text-slate-500 text-center pt-2">
+                  + {pendingConfirmations.length - 5} more measurements pending confirmation
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Confirmed Measurements */}
+      {areaDimensions.some(d => d.human_confirmation_status && d.human_confirmation_status !== 'pending') && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Confirmed Measurements</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {areaDimensions
+                .filter(d => d.human_confirmation_status && d.human_confirmation_status !== 'pending')
+                .map(dim => (
+                  <div key={dim.id} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="font-semibold text-sm">
+                        {dim.measurement_type} - {formatDimension(dim)}
+                      </div>
+                      <MeasurementConfirmationBadge dimension={dim} />
+                    </div>
+                    <MeasurementConfirmationBadge dimension={dim} showDetails />
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Disclaimer */}
       <Alert className="border-slate-200 bg-slate-50">
         <Info className="h-4 w-4" />
         <AlertDescription className="text-xs text-slate-600">
-          This AI analysis is advisory only. All measurements require human verification.
+          AI analysis is advisory only. Human confirmation is mandatory and overrides AI output.
           MCI does not design or fabricate - this tool only evaluates captured data quality.
         </AlertDescription>
       </Alert>
     </div>
   );
+}
+
+function formatDimension(dim) {
+  if (dim.unit_system === 'imperial') {
+    const ft = dim.value_feet || 0;
+    const inches = dim.value_inches || 0;
+    const frac = dim.value_fraction || '0';
+    let result = `${ft}' ${inches}"`;
+    if (frac !== '0') result = `${ft}' ${inches} ${frac}"`;
+    return result;
+  }
+  return `${dim.value_mm || 0}mm`;
 }
