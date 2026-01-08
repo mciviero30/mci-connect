@@ -146,17 +146,62 @@ Return ONLY valid JSON matching this exact structure (empty arrays if category n
         suggestedArea = result.area_specific[0].area;
       }
 
+      // Translate structured notes if needed
+      const detectedLang = session.detected_language || 'en';
+      const targetLang = detectedLang === 'es' ? 'en' : 'es';
+      
+      let translatedNotes = null;
+      if (detectedLang !== targetLang) {
+        try {
+          const translationPrompt = `Translate the following structured notes from ${detectedLang === 'es' ? 'Spanish' : 'English'} to ${targetLang === 'es' ? 'Spanish' : 'English'}.
+
+CRITICAL: Preserve the exact structure and timestamps. Only translate the "content" and "area" fields.
+
+Original notes:
+${JSON.stringify(result, null, 2)}
+
+Return the same JSON structure with translated content fields only.`;
+
+          translatedNotes = await base44.integrations.Core.InvokeLLM({
+            prompt: translationPrompt,
+            response_json_schema: {
+              type: "object",
+              properties: {
+                language: { type: "string" },
+                general_observations: { type: "array" },
+                area_specific: { type: "array" },
+                measurement_comments: { type: "array" },
+                condition_issues: { type: "array" },
+                safety_concerns: { type: "array" },
+                installation_constraints: { type: "array" }
+              }
+            }
+          });
+          
+          translatedNotes.language = targetLang;
+        } catch (error) {
+          console.error('Translation failed:', error);
+        }
+      }
+
       // Update session with structured notes
-      await base44.asServiceRole.entities.SiteNoteSession.update(session_id, {
+      const updateData = {
         structured_notes: result,
         suggested_area: suggestedArea,
         processing_status: 'completed'
-      });
+      };
+
+      if (translatedNotes) {
+        updateData.structured_notes_translated = translatedNotes;
+      }
+
+      await base44.asServiceRole.entities.SiteNoteSession.update(session_id, updateData);
 
       return Response.json({
         success: true,
         session_id: session_id,
         structured_notes: result,
+        structured_notes_translated: translatedNotes,
         suggested_area: suggestedArea
       });
 

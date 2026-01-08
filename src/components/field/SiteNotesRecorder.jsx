@@ -273,7 +273,12 @@ export default function SiteNotesRecorder({ jobId, area }) {
                     <div className="mt-3 space-y-3">
                       {/* Structured Notes */}
                       {session.structured_notes && (
-                        <StructuredNotesDisplay notes={session.structured_notes} />
+                        <StructuredNotesDisplay 
+                          notes={session.structured_notes}
+                          notesTranslated={session.structured_notes_translated}
+                          detectedLanguage={session.detected_language || 'en'}
+                          session={session}
+                        />
                       )}
                       
                       {/* Raw Transcription */}
