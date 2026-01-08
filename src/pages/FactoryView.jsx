@@ -152,6 +152,24 @@ export default function FactoryView() {
         </div>
       </div>
 
+      {/* Production Filter Info */}
+      {factoryData?.metadata && (
+        <div className="max-w-screen-2xl mx-auto px-6 py-4">
+          <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
+            <ShieldCheck className="h-4 w-4 text-blue-600" />
+            <AlertDescription>
+              <div className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                Production Filter Active
+              </div>
+              <div className="text-sm text-blue-700 dark:text-blue-300">
+                Showing {factoryData.metadata.filtered_counts.dimensions} of {factoryData.metadata.original_counts.dimensions} dimensions
+                ({factoryData.metadata.original_counts.dimensions - factoryData.metadata.filtered_counts.dimensions} filtered out)
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {/* Validation Alert */}
       {validation && validation.integrity_score < 100 && (
         <div className="max-w-screen-2xl mx-auto px-6 py-4">
@@ -168,6 +186,25 @@ export default function FactoryView() {
                   ))}
                 </ul>
               )}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {/* Production Readiness Alert */}
+      {factoryData?.production_readiness && !factoryData.production_readiness.is_ready && (
+        <div className="max-w-screen-2xl mx-auto px-6 py-4">
+          <Alert className="border-red-200 bg-red-50 dark:bg-red-950/20">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertDescription>
+              <div className="font-semibold text-red-900 dark:text-red-100 mb-2">
+                Not Production Ready
+              </div>
+              <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                {factoryData.production_readiness.issues.map((issue, idx) => (
+                  <li key={idx}>• {issue}</li>
+                ))}
+              </ul>
             </AlertDescription>
           </Alert>
         </div>
@@ -228,56 +265,83 @@ export default function FactoryView() {
 }
 
 function DimensionsTable({ dimensions }) {
+  // Group by area for better organization
+  const dimensionsByArea = dimensions.reduce((acc, dim) => {
+    if (!acc[dim.area]) {
+      acc[dim.area] = [];
+    }
+    acc[dim.area].push(dim);
+    return acc;
+  }, {});
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Production Dimensions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-800">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold">#</th>
-                <th className="px-4 py-3 text-left font-semibold">Area</th>
-                <th className="px-4 py-3 text-left font-semibold">Type</th>
-                <th className="px-4 py-3 text-left font-semibold">Imperial</th>
-                <th className="px-4 py-3 text-left font-semibold">Metric</th>
-                <th className="px-4 py-3 text-left font-semibold">Tolerance</th>
-                <th className="px-4 py-3 text-left font-semibold">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {dimensions.map((dim, idx) => (
-                <tr key={dim.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-4 py-3 font-mono text-slate-600">{idx + 1}</td>
-                  <td className="px-4 py-3">{dim.area}</td>
-                  <td className="px-4 py-3">
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {dim.measurement_type}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 font-bold font-mono">
-                    {dim.display_value_imperial || formatImperial(dim)}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-slate-600">
-                    {dim.display_value_metric || `${dim.value_mm}mm`}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
-                    {dim.tolerance ? `±${dim.tolerance.plus}/${dim.tolerance.minus} ${dim.tolerance.unit}` : '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge className={getStatusColor(dim.status)}>
-                      {dim.status || 'draft'}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      {Object.entries(dimensionsByArea).map(([area, areaDims]) => (
+        <Card key={area}>
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {area}
+              <Badge className="ml-3 bg-slate-100 text-slate-800">
+                {areaDims.length} dimensions
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">#</th>
+                    <th className="px-4 py-3 text-left font-semibold">Type</th>
+                    <th className="px-4 py-3 text-left font-semibold">Imperial</th>
+                    <th className="px-4 py-3 text-left font-semibold">Metric</th>
+                    <th className="px-4 py-3 text-left font-semibold">Tolerance</th>
+                    <th className="px-4 py-3 text-left font-semibold">Benchmark</th>
+                    <th className="px-4 py-3 text-left font-semibold">Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {areaDims.map((dim, idx) => (
+                    <tr key={dim.id || idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="px-4 py-3 font-mono text-slate-600 font-bold">{idx + 1}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {dim.measurement_type}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 font-bold font-mono text-lg">
+                        {dim.display_value_imperial || formatImperial(dim)}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-slate-600">
+                        {dim.display_value_metric || `${dim.value_mm}mm`}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-500">
+                        {dim.tolerance ? `±${dim.tolerance.plus}/${dim.tolerance.minus} ${dim.tolerance.unit}` : 'Standard'}
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {dim.benchmark_label || '-'}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">
+                        {dim.production_notes || '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+      
+      {dimensions.length === 0 && (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            No production-ready dimensions found. All dimensions must be verified or production_ready status.
+          </AlertDescription>
+        </Alert>
+      )}
+    </div>
   );
 }
 
@@ -292,6 +356,7 @@ function BenchmarksTable({ benchmarks }) {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 dark:bg-slate-800">
               <tr>
+                <th className="px-4 py-3 text-left font-semibold">●</th>
                 <th className="px-4 py-3 text-left font-semibold">Label</th>
                 <th className="px-4 py-3 text-left font-semibold">Type</th>
                 <th className="px-4 py-3 text-left font-semibold">Elevation</th>
@@ -302,15 +367,23 @@ function BenchmarksTable({ benchmarks }) {
             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
               {benchmarks.map((bm) => (
                 <tr key={bm.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-4 py-3 font-bold">{bm.label}</td>
+                  <td className="px-4 py-3">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: bm.color_code || '#94a3b8' }}
+                    />
+                  </td>
+                  <td className="px-4 py-3 font-bold text-lg">{bm.label}</td>
                   <td className="px-4 py-3">
                     <Badge variant="outline">{bm.benchmark_type}</Badge>
                   </td>
-                  <td className="px-4 py-3 font-mono font-bold">
+                  <td className="px-4 py-3 font-mono font-bold text-lg">
                     {bm.elevation} {bm.elevation_unit}
                   </td>
                   <td className="px-4 py-3">{bm.area}</td>
                   <td className="px-4 py-3 text-xs text-slate-500">
+                    {bm.established_by_name || bm.established_by}
+                    <br />
                     {bm.established_date ? new Date(bm.established_date).toLocaleDateString() : 'N/A'}
                   </td>
                 </tr>
@@ -318,6 +391,15 @@ function BenchmarksTable({ benchmarks }) {
             </tbody>
           </table>
         </div>
+        
+        {benchmarks.length === 0 && (
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              No production benchmarks found. Only established benchmarks with complete data are shown.
+            </AlertDescription>
+          </Alert>
+        )}
       </CardContent>
     </Card>
   );
@@ -330,13 +412,13 @@ function ValidationPanel({ validation, dimensionSet }) {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Data Integrity Report</CardTitle>
+          <CardTitle>Production Readiness Report</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold">Overall Score</span>
+                <span className="text-sm font-semibold">Data Integrity Score</span>
                 <span className="text-2xl font-bold">{validation.integrity_score}%</span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
@@ -350,7 +432,7 @@ function ValidationPanel({ validation, dimensionSet }) {
             {validation.errors.length > 0 && (
               <div>
                 <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                  Errors ({validation.errors.length})
+                  Critical Issues ({validation.errors.length})
                 </h4>
                 <ul className="space-y-1 text-sm text-red-700 dark:text-red-300">
                   {validation.errors.map((error, idx) => (
@@ -374,6 +456,15 @@ function ValidationPanel({ validation, dimensionSet }) {
                   ))}
                 </ul>
               </div>
+            )}
+            
+            {validation.errors.length === 0 && validation.warnings.length === 0 && (
+              <Alert className="border-green-200 bg-green-50 dark:bg-green-950/20">
+                <ShieldCheck className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800 dark:text-green-200">
+                  All validation checks passed. Data is production-ready.
+                </AlertDescription>
+              </Alert>
             )}
           </div>
         </CardContent>

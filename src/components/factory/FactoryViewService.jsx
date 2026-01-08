@@ -7,6 +7,7 @@
 import { base44 } from '@/api/base44Client';
 import { validateFactoryAccess } from './FactoryPermissions';
 import { MODES } from './FactoryModeContext';
+import { filterForProduction, getLatestRevision, validateProductionReadiness } from './FactoryProductionFilter';
 
 /**
  * Fetch dimensions for Factory view
@@ -193,7 +194,7 @@ export async function checkSuperseded(dimensionSetId, base44Client) {
 }
 
 /**
- * Get complete Factory view data
+ * Get complete Factory view data (production-filtered)
  */
 export async function getFactoryViewData(dimensionSetId) {
   try {
@@ -211,25 +212,45 @@ export async function getFactoryViewData(dimensionSetId) {
     }
     
     // Fetch all related data
-    const [dimensions, benchmarks, job] = await Promise.all([
+    const [dimensions, benchmarks, job, photos] = await Promise.all([
       base44.entities.FieldDimension.filter({
         id: { $in: dimensionSet.dimension_ids || [] }
       }),
       base44.entities.Benchmark.filter({
         job_id: dimensionSet.job_id
       }),
-      base44.entities.Job.filter({ id: dimensionSet.job_id }).then(jobs => jobs[0])
+      base44.entities.Job.filter({ id: dimensionSet.job_id }).then(jobs => jobs[0]),
+      base44.entities.Photo.filter({
+        job_id: dimensionSet.job_id
+      })
     ]);
     
+    // Apply production filters
+    const rawData = {
+      dimension_set: dimensionSet,
+      dimensions,
+      benchmarks,
+      photos,
+      job,
+      metadata: {}
+    };
+    
+    const filtered = filterForProduction(rawData);
+    
+    // Validate production readiness
+    const readiness = validateProductionReadiness(dimensionSet, dimensions);
+    
     return {
-      dimension_set: { ...dimensionSet, _readonly: true },
-      dimensions: dimensions.map(d => ({ ...d, _readonly: true })),
-      benchmarks: benchmarks.map(b => ({ ...b, _readonly: true })),
-      job: job ? { ...job, _readonly: true } : null,
+      ...filtered,
+      dimension_set: { ...filtered.dimension_set, _readonly: true },
+      dimensions: filtered.dimensions.map(d => ({ ...d, _readonly: true })),
+      benchmarks: filtered.benchmarks.map(b => ({ ...b, _readonly: true })),
+      photos: filtered.photos.map(p => ({ ...p, _readonly: true })),
+      job: filtered.job ? { ...filtered.job, _readonly: true } : null,
       status: getDataStatus(dimensionSet),
+      production_readiness: readiness,
       metadata: {
-        total_dimensions: dimensions.length,
-        total_benchmarks: benchmarks.length,
+        ...filtered.metadata,
         is_production_ready: dimensionSet.is_locked
       }
     };
