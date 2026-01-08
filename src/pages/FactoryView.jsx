@@ -716,25 +716,22 @@ function ExportPanel({ dimensionSet, factoryData }) {
     
     setExporting(true);
     try {
-      const user = await base44.auth.me();
-      
-      const result = await generateProductionPDF(
-        dimensionSet.job_id,
-        dimensionSet.id,
-        user,
-        { include_photos: false }
-      );
+      const result = await generateFactoryPDF(factoryData, {
+        include_annotations: true,
+        legal_document: true
+      });
 
       // Download
       const url = window.URL.createObjectURL(result.blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${dimensionSet.name}_Rev${result.revision_number}.pdf`;
+      a.download = `FACTORY-${dimensionSet.name}-REV${dimensionSet.version_number}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
 
+      alert('Factory production PDF generated successfully');
     } catch (error) {
       console.error('Export failed:', error);
       alert('Export failed: ' + error.message);
