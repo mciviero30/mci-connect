@@ -150,7 +150,8 @@ async function processBatch(operations, base44Client, user) {
  * HARDENED: Idempotency enforcement + precision preservation
  */
 async function syncOperation(operation, base44Client, user) {
-  const { entity_type, operation_type, entity_data, local_id, idempotency_key, checksum } = operation;
+  const { entity_type, operation_type, local_id, idempotency_key, checksum } = operation;
+  let entity_data = operation.entity_data;
   
   // Map to entity name
   const entityName = mapEntityType(entity_type);
