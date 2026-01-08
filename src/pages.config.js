@@ -37,6 +37,7 @@ import EmployeeProfile from './pages/EmployeeProfile';
 import Estimados from './pages/Estimados';
 import ExecutiveControlTower from './pages/ExecutiveControlTower';
 import ExecutiveDashboard from './pages/ExecutiveDashboard';
+import FactoryView from './pages/FactoryView';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
 import FieldBottomActionRail from './pages/FieldBottomActionRail';
@@ -98,7 +99,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import FactoryView from './pages/FactoryView';
+import MeasurementPackage from './pages/MeasurementPackage';
 import __Layout from './Layout.jsx';
 
 
@@ -142,6 +143,7 @@ export const PAGES = {
     "Estimados": Estimados,
     "ExecutiveControlTower": ExecutiveControlTower,
     "ExecutiveDashboard": ExecutiveDashboard,
+    "FactoryView": FactoryView,
     "Facturas": Facturas,
     "Field": Field,
     "FieldBottomActionRail": FieldBottomActionRail,
@@ -203,7 +205,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "FactoryView": FactoryView,
+    "MeasurementPackage": MeasurementPackage,
 }
 
 export const pagesConfig = {

@@ -19,7 +19,8 @@ import {
   Brain,
   MapPin,
   AlertCircle,
-  Plus
+  Plus,
+  PackageCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +47,7 @@ import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
 import MeasurementIntelligencePanel from '@/components/field/MeasurementIntelligencePanel.jsx';
 import MeasurementCompletenessPanel from '@/components/field/MeasurementCompletenessPanel.jsx';
 import MeasurementAIQualityPanel from '@/components/field/MeasurementAIQualityPanel.jsx';
+import MeasurementPackageGenerator from '@/components/field/MeasurementPackageGenerator.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 import { OfflineStatusBadge } from '@/components/field/FieldOfflineManager.jsx';
 import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
@@ -136,6 +138,7 @@ export default function FieldProjectView({
     { id: 'intelligence', label: 'Intelligence', icon: Brain },
     { id: 'completeness', label: 'Completeness', icon: CheckCircle2 },
     { id: 'ai-quality', label: 'AI Quality', icon: Brain, badge: '✨' },
+    { id: 'package', label: 'Package Export', icon: PackageCheck },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'before-after', label: 'Before/After', icon: Camera },
     { id: 'daily-reports', label: 'Daily Reports', icon: ClipboardList },
@@ -169,6 +172,8 @@ export default function FieldProjectView({
         return <MeasurementCompletenessPanel dimensions={[]} benchmarks={[]} photos={[]} jobId={jobId} />;
       case 'ai-quality':
         return <MeasurementAIQualityPanel jobId={jobId} />;
+      case 'package':
+        return <MeasurementPackageGenerator jobId={jobId} />;
       case 'photos':
         return <FieldPhotosView jobId={jobId} />;
       case 'before-after':
