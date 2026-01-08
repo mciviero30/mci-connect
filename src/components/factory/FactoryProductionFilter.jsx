@@ -4,6 +4,8 @@
  * Filters data to show ONLY production-ready information
  */
 
+import { validateDimensionPrecision } from './FactoryPrecisionRules';
+
 /**
  * Filter dimensions for production
  */
@@ -30,6 +32,12 @@ export function filterProductionDimensions(dimensions) {
     
     // Must have area reference
     if (!dim.area) {
+      return false;
+    }
+    
+    // Must pass precision validation (no critical violations)
+    const precisionCheck = validateDimensionPrecision(dim);
+    if (precisionCheck.has_critical) {
       return false;
     }
     

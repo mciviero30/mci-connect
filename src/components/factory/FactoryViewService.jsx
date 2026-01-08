@@ -9,6 +9,7 @@ import { validateFactoryAccess } from './FactoryPermissions';
 import { MODES } from './FactoryModeContext';
 import { filterForProduction, getLatestRevision, validateProductionReadiness } from './FactoryProductionFilter';
 import { groupDimensionsForProduction, getProductionSummary } from './FactoryProductionGrouping';
+import { generatePrecisionReport } from './FactoryPrecisionRules';
 
 /**
  * Fetch dimensions for Factory view
@@ -245,6 +246,9 @@ export async function getFactoryViewData(dimensionSetId) {
     const productionGroups = groupDimensionsForProduction(filtered.dimensions);
     const productionSummary = getProductionSummary(productionGroups);
     
+    // Validate precision
+    const precisionReport = generatePrecisionReport(filtered.dimensions);
+    
     return {
       ...filtered,
       dimension_set: { ...filtered.dimension_set, _readonly: true },
@@ -256,6 +260,7 @@ export async function getFactoryViewData(dimensionSetId) {
       production_readiness: readiness,
       production_groups: productionGroups,
       production_summary: productionSummary,
+      precision_report: precisionReport,
       metadata: {
         ...filtered.metadata,
         is_production_ready: dimensionSet.is_locked

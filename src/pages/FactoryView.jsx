@@ -218,6 +218,32 @@ export default function FactoryView() {
         </div>
       )}
 
+      {/* Precision Violations Alert */}
+      {factoryData?.precision_report && !factoryData.precision_report.can_export && (
+        <div className="max-w-screen-2xl mx-auto px-6 py-4">
+          <Alert className="border-red-200 bg-red-50 dark:bg-red-950/20">
+            <Lock className="h-4 w-4 text-red-600" />
+            <AlertDescription>
+              <div className="font-semibold text-red-900 dark:text-red-100 mb-2">
+                ⛔ EXPORT BLOCKED - Precision Violations Detected
+              </div>
+              <div className="text-sm text-red-700 dark:text-red-300 space-y-2">
+                <div className="font-bold">
+                  {factoryData.precision_report.critical_count} critical precision violation(s) must be resolved
+                </div>
+                <ul className="space-y-1 ml-4">
+                  {Object.entries(factoryData.precision_report.violations_by_rule).map(([rule, violations]) => (
+                    violations[0].severity === 'critical' && (
+                      <li key={rule}>• {violations.length}x {violations[0].message}</li>
+                    )
+                  ))}
+                </ul>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {/* Production Summary */}
       {factoryData?.production_summary && (
         <div className="max-w-screen-2xl mx-auto px-6 py-4">
@@ -317,13 +343,22 @@ export default function FactoryView() {
 
 function ProductionGroups({ groups, job, dimensionSet }) {
   const { prepareGroupForExport } = require('@/components/factory/FactoryProductionGrouping');
+  const { validateGroupPrecision, formatDimensionWithLabels } = require('@/components/factory/FactoryPrecisionRules');
   
   const handleExportGroup = async (group) => {
+    // Check precision before export
+    const precisionCheck = validateGroupPrecision(group);
+    
+    if (!precisionCheck.can_export) {
+      alert(`Export blocked: ${precisionCheck.critical_count} critical precision violation(s) detected. All dimensions must pass precision rules.`);
+      return;
+    }
+    
     const packet = prepareGroupForExport(group, job, dimensionSet);
     
     // TODO: Generate PDF for this specific group
     console.log('Export packet:', packet);
-    toast.success(`Preparing ${packet.packet_name} for export`);
+    alert(`Preparing ${packet.packet_name} for export`);
   };
   
   return (
@@ -636,8 +671,16 @@ function ValidationPanel({ validation, dimensionSet }) {
 
 function ExportPanel({ dimensionSet, factoryData }) {
   const [exporting, setExporting] = useState(false);
+  
+  // Check if export is blocked by precision violations
+  const canExport = factoryData?.precision_report?.can_export !== false;
 
   const handleExport = async () => {
+    if (!canExport) {
+      alert('Export blocked: Critical precision violations detected. All dimensions must pass precision rules before export.');
+      return;
+    }
+    
     setExporting(true);
     try {
       const user = await base44.auth.me();
@@ -674,19 +717,65 @@ function ExportPanel({ dimensionSet, factoryData }) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {!canExport && (
+            <Alert className="border-red-200 bg-red-50">
+              <Lock className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong>Export Blocked</strong>
+                <br />
+                {factoryData.precision_report.critical_count} critical precision violation(s) must be resolved before export.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Button 
             onClick={handleExport} 
-            disabled={exporting}
+            disabled={exporting || !canExport}
             className="w-full"
           >
-            <Download className="w-4 h-4 mr-2" />
-            {exporting ? 'Generating PDF...' : 'Export Production PDF'}
+            {canExport ? (
+              <>
+                <Download className="w-4 h-4 mr-2" />
+                {exporting ? 'Generating PDF...' : 'Export Production PDF'}
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4 mr-2" />
+                Export Blocked
+              </>
+            )}
           </Button>
           
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Exports a production-ready PDF with all dimensions, benchmarks, and validation data.
             PDF will be revision-controlled and immutable.
           </p>
+          
+          {factoryData?.precision_report && (
+            <div className="pt-4 border-t">
+              <h4 className="font-semibold mb-2">Precision Report</h4>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Valid Dimensions:</span>
+                  <span className="font-bold text-green-600">
+                    {factoryData.precision_report.valid_dimensions}/{factoryData.precision_report.total_dimensions}
+                  </span>
+                </div>
+                {factoryData.precision_report.critical_count > 0 && (
+                  <div className="flex justify-between text-red-600">
+                    <span>Critical Violations:</span>
+                    <span className="font-bold">{factoryData.precision_report.critical_count}</span>
+                  </div>
+                )}
+                {factoryData.precision_report.warning_count > 0 && (
+                  <div className="flex justify-between text-amber-600">
+                    <span>Warnings:</span>
+                    <span className="font-bold">{factoryData.precision_report.warning_count}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
