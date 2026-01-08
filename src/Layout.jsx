@@ -87,6 +87,7 @@ import { migratePendingToUser, normalizeEmail } from "@/components/utils/profile
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
+import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -1035,7 +1036,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           )}
 
           {/* Focus Mode Toggle - Desktop (not shown in Field Mode) */}
-          {!shouldHideSidebar && (
+          {!shouldHideSidebar && !isFocusMode && (
             <div className="hidden md:flex absolute top-4 right-4 z-50">
               <Button
                 variant="ghost"
@@ -1049,17 +1050,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             </div>
           )}
 
-          {/* Exit Focus Mode - Floating Button */}
+          {/* Focus Mode Indicator & Exit - Unified Component */}
           {isFocusMode && !isFieldMode && (
-            <div className="absolute top-4 left-4 z-50">
-              <Button
-                onClick={toggleFocusMode}
-                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-lg"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Exit Focus Mode
-              </Button>
-            </div>
+            <FocusModeIndicator isActive={true} onExit={toggleFocusMode} />
           )}
 
           <div data-main-content className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" style={{ 
