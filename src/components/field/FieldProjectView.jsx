@@ -20,7 +20,8 @@ import {
   MapPin,
   AlertCircle,
   Plus,
-  PackageCheck
+  PackageCheck,
+  Mic
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +49,7 @@ import MeasurementIntelligencePanel from '@/components/field/MeasurementIntellig
 import MeasurementCompletenessPanel from '@/components/field/MeasurementCompletenessPanel.jsx';
 import MeasurementAIQualityPanel from '@/components/field/MeasurementAIQualityPanel.jsx';
 import MeasurementPackageGenerator from '@/components/field/MeasurementPackageGenerator.jsx';
+import SiteNotesRecorder from '@/components/field/SiteNotesRecorder.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 import { OfflineStatusBadge } from '@/components/field/FieldOfflineManager.jsx';
 import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
@@ -135,6 +137,7 @@ export default function FieldProjectView({
     { id: 'plans', label: 'Plans', icon: Map, count: plans.length },
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
     { id: 'dimensions', label: 'Dimensions', icon: FileText },
+    { id: 'site-notes', label: 'Site Notes', icon: Mic },
     { id: 'intelligence', label: 'Intelligence', icon: Brain },
     { id: 'completeness', label: 'Completeness', icon: CheckCircle2 },
     { id: 'ai-quality', label: 'AI Quality', icon: Brain, badge: '✨' },
