@@ -12,10 +12,14 @@ import { fieldPersistence } from '@/components/field/services/FieldStatePersiste
 import { saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
 import { FieldSessionManager } from '@/components/field/services/FieldSessionManager';
 import { createPageUrl } from '@/utils';
+import { useFieldPanelManager } from '@/components/field/hooks/useFieldPanelManager';
 
 export function useFieldProjectState(jobId) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+  // Strict single-panel management
+  const panelManager = useFieldPanelManager();
   
   // Session-aware state management
   const [activePanel, setActivePanel] = usePersistentState(
@@ -343,6 +347,9 @@ export function useFieldProjectState(jobId) {
     isRestoringSession,
     restoredContext,
     session,
+    
+    // Panel management - Strict single-panel rule
+    panelManager,
     
     // Data
     job,

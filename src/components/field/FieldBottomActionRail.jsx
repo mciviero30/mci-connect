@@ -14,10 +14,19 @@ export default function FieldBottomActionRail({
   currentPanel,  // NEW: Context-aware highlighting
   isRecording,   // NEW: Active state tracking
   isCapturing,   // NEW: Active state tracking
-  isMeasuring    // NEW: Active state tracking
+  isMeasuring,   // NEW: Active state tracking
+  panelManager   // NEW: Strict single-panel control
 }) {
   const [activeAction, setActiveAction] = useState(null);
   const queryClient = useQueryClient();
+
+  // Handle panel opening - close any other open panel first
+  const handleOpenPanel = (panelId) => {
+    if (panelManager) {
+      panelManager.openPanelExclusive(panelId, 'dialog');
+    }
+    setActiveAction(panelId);
+  };
 
   // Primary actions - context-aware relevance
   const actions = [
@@ -78,7 +87,7 @@ export default function FieldBottomActionRail({
               onClick={() => {
                 // Haptic feedback (10ms vibration)
                 if (navigator.vibrate) navigator.vibrate(10);
-                setActiveAction(action.id);
+                handleOpenPanel(action.id);
               }}
               className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-2xl border-3 touch-manipulation active:scale-90 transition-all ${
                 isActive 
@@ -115,7 +124,7 @@ export default function FieldBottomActionRail({
         {actions.map((action) => (
           <button
             key={action.id}
-            onClick={() => setActiveAction(action.id)}
+            onClick={() => handleOpenPanel(action.id)}
             className={`relative flex flex-col items-center justify-center gap-1 w-20 h-20 rounded-xl bg-gradient-to-br ${action.color} shadow-lg active:scale-95 transition-transform touch-manipulation`}
             aria-label={action.label}
           >
@@ -127,8 +136,13 @@ export default function FieldBottomActionRail({
 
       {/* Photo Dialog */}
       <MobilePhotoCapture
-        open={activeAction === 'camera'}
-        onOpenChange={(open) => !open && setActiveAction(null)}
+        open={panelManager ? panelManager.isPanelOpen('camera') : activeAction === 'camera'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveAction(null);
+            panelManager?.closePanel();
+          }
+        }}
         jobId={jobId}
         onPhotoCreated={() => {
           setActiveAction(null);
@@ -138,8 +152,13 @@ export default function FieldBottomActionRail({
 
       {/* Task Dialog */}
       <CreateTaskDialog
-        open={activeAction === 'task'}
-        onOpenChange={(open) => !open && setActiveAction(null)}
+        open={panelManager ? panelManager.isPanelOpen('task') : activeAction === 'task'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveAction(null);
+            panelManager?.closePanel();
+          }
+        }}
         jobId={jobId}
         onCreated={() => {
           setActiveAction(null);
@@ -149,8 +168,13 @@ export default function FieldBottomActionRail({
 
       {/* Voice Note Recorder */}
       <VoiceNoteRecorder
-        open={activeAction === 'audio'}
-        onOpenChange={(open) => !open && setActiveAction(null)}
+        open={panelManager ? panelManager.isPanelOpen('audio') : activeAction === 'audio'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveAction(null);
+            panelManager?.closePanel();
+          }
+        }}
         jobId={jobId}
         jobName={jobName}
         onComplete={() => {
@@ -161,8 +185,13 @@ export default function FieldBottomActionRail({
 
       {/* Dimension Bottom Sheet */}
       <DimensionBottomSheet
-        open={activeAction === 'dimension'}
-        onOpenChange={(open) => !open && setActiveAction(null)}
+        open={panelManager ? panelManager.isPanelOpen('dimension') : activeAction === 'dimension'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveAction(null);
+            panelManager?.closePanel();
+          }
+        }}
         jobId={jobId}
         jobName={jobName}
         onSave={(data) => {
@@ -173,8 +202,13 @@ export default function FieldBottomActionRail({
 
       {/* Incident Bottom Sheet */}
       <IncidentBottomSheet
-        open={activeAction === 'incident'}
-        onOpenChange={(open) => !open && setActiveAction(null)}
+        open={panelManager ? panelManager.isPanelOpen('incident') : activeAction === 'incident'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveAction(null);
+            panelManager?.closePanel();
+          }
+        }}
         jobId={jobId}
         jobName={jobName}
         onCreated={() => {

@@ -91,6 +91,9 @@ export default function FieldProjectView({
   restoredContext,
   session,
   
+  // Panel management
+  panelManager,
+  
   // Data
   job,
   tasks,
@@ -419,7 +422,7 @@ export default function FieldProjectView({
       <PhotoUploadProgress jobId={jobId} />
 
       {/* Bottom Action Rail - Context-Aware, One-Hand Mode */}
-      {/* CRITICAL: Highlights relevant actions, shows active state */}
+      {/* CRITICAL: Highlights relevant actions, shows active state, single-panel enforcement */}
       <FieldBottomActionRail 
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
@@ -427,6 +430,7 @@ export default function FieldProjectView({
         isRecording={currentMode === 'recording'}
         isCapturing={currentMode === 'capturing'}
         isMeasuring={currentMode === 'measuring'}
+        panelManager={panelManager}
         onActionComplete={(panel) => {
           if (panel === 'dimensions') {
             setActivePanel('dimensions');

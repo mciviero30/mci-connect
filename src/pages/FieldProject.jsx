@@ -11,6 +11,7 @@ import FieldDataLossValidator from '@/components/field/FieldDataLossValidator';
 import FieldPerformanceMonitor from '@/components/field/performance/FieldPerformanceMonitor';
 import FieldStressTest from '@/components/field/performance/FieldStressTest';
 import OfflineSyncValidator from '@/components/field/offline/OfflineSyncValidator';
+import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 
 export default function FieldProject() {
   const { setIsFieldMode } = useUI();
@@ -21,6 +22,9 @@ export default function FieldProject() {
   
   // All hooks live in this custom hook
   const state = useFieldProjectState(jobId);
+  
+  // Debug mode detection
+  const isDebugMode = useFieldDebugMode(state.currentUser);
 
   // CRITICAL: Set Field Mode on mount, clear on unmount
   useEffect(() => {
@@ -41,12 +45,16 @@ export default function FieldProject() {
                 {...state}
                 jobId={jobId}
               />
-              {/* Dev-only monitoring & validation */}
-              <FieldPerformanceMonitor componentName="FieldProject" />
-              <FieldLifecycleValidator jobId={jobId} />
-              <FieldDataLossValidator jobId={jobId} />
-              <OfflineSyncValidator />
-              <FieldStressTest jobId={jobId} />
+              {/* Debug-only monitoring & validation - ONLY visible in debug mode */}
+              {isDebugMode && (
+                <>
+                  <FieldPerformanceMonitor componentName="FieldProject" />
+                  <FieldLifecycleValidator jobId={jobId} />
+                  <FieldDataLossValidator jobId={jobId} />
+                  <OfflineSyncValidator />
+                  <FieldStressTest jobId={jobId} />
+                </>
+              )}
             </FieldContextProvider>
           </FieldOfflineProvider>
         </ThemeProvider>
