@@ -17,7 +17,7 @@
  */
 
 import { fieldStorage } from './FieldStorageService';
-import { queueOperation } from '../offline/FieldOperationQueue';
+import { enqueueOperation } from '../offline/FieldOperationQueue';
 
 export const SaveGuarantee = {
   /**
@@ -95,17 +95,16 @@ export const SaveGuarantee = {
     onProgress?.('queuing');
     
     try {
-      await queueOperation({
-        operation_type: 'create',
-        entity_type: entityType,
-        entity_data: {
+      await enqueueOperation(
+        entityType,
+        'create',
+        {
           ...entityData,
           local_id: localId,
+          job_id: jobId,
         },
-        local_id: localId,
-        idempotency_key: idempotencyKey,
-        job_id: jobId,
-      });
+        localId
+      );
       
       onProgress?.('complete');
       
