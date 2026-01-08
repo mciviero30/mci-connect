@@ -6,6 +6,7 @@ import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import { useFieldProjectState } from '@/components/field/FieldProjectState.jsx';
 import FieldProjectView from '@/components/field/FieldProjectView.jsx';
 import { useUI } from '@/components/contexts/FieldModeContext';
+import FieldLifecycleValidator from '@/components/field/FieldLifecycleValidator';
 
 export default function FieldProject() {
   const { setIsFieldMode } = useUI();
@@ -36,6 +37,8 @@ export default function FieldProject() {
                 {...state}
                 jobId={jobId}
               />
+              {/* Dev-only lifecycle monitor */}
+              <FieldLifecycleValidator jobId={jobId} />
             </FieldContextProvider>
           </FieldOfflineProvider>
         </ThemeProvider>

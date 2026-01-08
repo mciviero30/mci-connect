@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
-import { useFieldStability } from '@/components/field/hooks/useFieldStability';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
-import { useMobileLifecycle, usePreventRefetchOnResume } from '@/components/field/hooks/useMobileLifecycle';
+import { useFieldLifecycle } from '@/components/field/hooks/useFieldLifecycle';
 import { useUnsavedChanges } from '@/components/field/hooks/useUnsavedChanges';
 import { fieldPersistence } from '@/components/field/services/FieldStatePersistence';
 import { saveOfflineData } from '@/components/field/FieldOfflineManager.jsx';
@@ -34,24 +33,8 @@ export function useFieldProjectState(jobId) {
     stableJobId.current = jobId;
   }, [jobId]);
 
-  // Field stability - prevent reloads and state loss
-  useFieldStability(jobId);
-  
-  // Prevent query refetches on mobile resume
-  usePreventRefetchOnResume(queryClient);
-  
-  // Mobile lifecycle handling
-  useMobileLifecycle({
-    onBackground: () => {
-      console.log('[Field] App backgrounded - preserving state');
-    },
-    onForeground: ({ duration }) => {
-      console.log(`[Field] App resumed after ${Math.round(duration/1000)}s`);
-    },
-    onLongBackground: ({ duration }) => {
-      console.log(`[Field] Long background detected (${Math.round(duration/1000)}s)`);
-    },
-  });
+  // Comprehensive mobile lifecycle protection
+  useFieldLifecycle({ jobId, queryClient });
   
   // Unsaved changes protection
   useUnsavedChanges(jobId);

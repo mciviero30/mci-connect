@@ -10,12 +10,15 @@ import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 export { FIELD_QUERY_KEYS };
 
 // Standard stable query configuration for Field
+// CRITICAL: Prevents all refetches - essential for mobile lifecycle stability
 export const FIELD_STABLE_QUERY_CONFIG = {
-  staleTime: Infinity,
-  gcTime: Infinity,
-  refetchOnMount: false,
-  refetchOnWindowFocus: false,
-  refetchOnReconnect: false,
+  staleTime: Infinity,          // Data never goes stale
+  gcTime: Infinity,              // Cache never garbage collected
+  refetchOnMount: false,         // No refetch when component mounts
+  refetchOnWindowFocus: false,   // No refetch on app foreground
+  refetchOnReconnect: false,     // No refetch on network reconnect
+  refetchInterval: false,        // No polling
+  retry: false,                  // No retries (fail fast)
 };
 
 // Short-lived query config (for frequently updated data)
