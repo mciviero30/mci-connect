@@ -44,6 +44,7 @@ import FieldAIAssistant from '@/components/field/FieldAIAssistant.jsx';
 import FieldVoiceNotesView from '@/components/field/FieldVoiceNotesView.jsx';
 import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
 import MeasurementIntelligencePanel from '@/components/field/MeasurementIntelligencePanel.jsx';
+import MeasurementCompletenessPanel from '@/components/field/MeasurementCompletenessPanel.jsx';
 import { MobileBottomNav, MobileHeader } from '@/components/field/MobileFieldNav.jsx';
 import { OfflineStatusBadge } from '@/components/field/FieldOfflineManager.jsx';
 import DailyReportGenerator from '@/components/field/DailyReportGenerator.jsx';
@@ -132,6 +133,7 @@ export default function FieldProjectView({
     { id: 'tasks', label: 'Tasks', icon: CheckSquare, count: tasks.length },
     { id: 'dimensions', label: 'Dimensions', icon: FileText },
     { id: 'intelligence', label: 'Intelligence', icon: Brain },
+    { id: 'completeness', label: 'Completeness', icon: CheckCircle2 },
     { id: 'photos', label: 'Photos', icon: Camera },
     { id: 'before-after', label: 'Before/After', icon: Camera },
     { id: 'daily-reports', label: 'Daily Reports', icon: ClipboardList },
@@ -161,6 +163,8 @@ export default function FieldProjectView({
         return <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />;
       case 'intelligence':
         return <MeasurementIntelligencePanel dimensions={[]} benchmarks={[]} jobId={jobId} />;
+      case 'completeness':
+        return <MeasurementCompletenessPanel dimensions={[]} benchmarks={[]} photos={[]} jobId={jobId} />;
       case 'photos':
         return <FieldPhotosView jobId={jobId} />;
       case 'before-after':
