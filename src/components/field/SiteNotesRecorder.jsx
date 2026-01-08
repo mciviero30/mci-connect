@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mic, Square, Loader2, FileAudio, Info, MapPin, Ruler, AlertTriangle, ShieldAlert, Wrench } from 'lucide-react';
+import { Mic, Square, Loader2, FileAudio, Info, MapPin, Ruler, AlertTriangle, ShieldAlert, Wrench, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import StructuredNotesDisplay from './StructuredNotesDisplay';
 import SiteNoteContextLinker from './SiteNoteContextLinker';
@@ -151,6 +151,29 @@ export default function SiteNotesRecorder({ jobId, area }) {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleExportPDF = async (sessionId) => {
+    try {
+      const response = await base44.functions.invoke('generateSiteNotesPDF', {
+        session_id: sessionId
+      });
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `site-note-${sessionId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export PDF');
+    }
   };
 
   return (
@@ -302,6 +325,18 @@ export default function SiteNotesRecorder({ jobId, area }) {
                         >
                           <AlertTriangle className="w-3 h-3 mr-1" />
                           Review Required
+                        </Button>
+                      )}
+
+                      {session.review_status && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleExportPDF(session.id)}
+                          className="h-7 text-xs"
+                        >
+                          <Download className="w-3 h-3 mr-1" />
+                          Export PDF
                         </Button>
                       )}
                     </div>

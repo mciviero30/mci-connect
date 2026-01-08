@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import SiteNotesPackageDisplay from '@/components/field/SiteNotesPackageDisplay';
 import { Button } from '@/components/ui/button';
 import { 
   Package, 
