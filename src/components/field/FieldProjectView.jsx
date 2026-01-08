@@ -68,6 +68,7 @@ import SafeBackButton from './SafeBackButton';
 import SessionRestorationIndicator from './SessionRestorationIndicator';
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 import { useFieldDebugMode, filterFieldPanels } from '@/components/field/hooks/useFieldDebugMode';
+import { DebugUI, AdminOnlyUI } from '@/components/policies/UIVisibilityWrapper';
 
 export default function FieldProjectView({
   // State
@@ -373,11 +374,18 @@ export default function FieldProjectView({
         {isDebugMode ? renderPanel() : renderWorkContent()}
       </div>
 
-      {/* Universal Sync Indicator */}
+      {/* Universal Sync Indicator - Production UI */}
       <UniversalSyncIndicator jobId={jobId} />
 
-      {/* Photo Upload Progress */}
+      {/* Photo Upload Progress - Production UI */}
       <PhotoUploadProgress jobId={jobId} />
+
+      {/* Debug UI - Only visible in debug mode */}
+      <DebugUI>
+        <div className="fixed bottom-4 left-4 z-50 bg-slate-900/90 backdrop-blur-sm border border-yellow-500 rounded-lg px-3 py-2 text-xs text-yellow-400">
+          🔧 Debug Mode Active
+        </div>
+      </DebugUI>
 
       {/* Daily Report Dialog */}
       <DailyReportGenerator 

@@ -48,6 +48,7 @@ import RecognitionFeed from "../components/recognition/RecognitionFeed";
 import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidget";
 import GiveKudosDialog from "../components/recognition/GiveKudosDialog";
 import QuickActions from "../components/dashboard/QuickActions";
+import { useUIVisibility, DebugUI, AdminOnlyUI } from "@/components/policies/UIVisibilityWrapper";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -86,6 +87,9 @@ export default function Dashboard() {
   const isAdmin = user?.role === 'admin' || 
     ['CEO', 'administrator', 'manager'].includes(user?.position) ||
     user?.department === 'HR';
+
+  // UI Visibility Policy
+  const { canSeeDebug, canSeeAdmin } = useUIVisibility();
 
   // Load dashboard preferences
   const { data: dashboardPrefs, isLoading: prefsLoading } = useQuery({

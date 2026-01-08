@@ -1061,6 +1061,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             overscrollBehaviorY: 'contain'
           }}>
             <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0 pb-20 md:pb-0">
+              {/* Focus Mode Indicator - Always visible when active */}
+              {isFocusMode && !isFieldMode && (
+                <FocusModeIndicator isActive={true} onExit={toggleFocusMode} />
+              )}
               {children}
             </div>
           </div>
