@@ -105,7 +105,23 @@ export async function collectMeasurementPackage(jobId, area = null) {
         })),
         total_photos: filteredPhotos.length
       },
+      site_notes: siteNotes
+        .filter(s => s.review_status && s.review_status !== 'needs_followup')
+        .map(s => ({
+          ...s,
+          _readonly: true
+        })),
       field_notes: {
+        dimension_notes: filteredDimensions
+          .filter(d => d.notes || d.production_notes)
+          .map(d => ({
+            dimension_id: d.id,
+            measurement_type: d.measurement_type,
+            notes: d.notes,
+            production_notes: d.production_notes
+          }))
+      },
+      deprecated_field_notes: {
         site_notes: siteNotes.map(s => ({
           id: s.id,
           area: s.area,

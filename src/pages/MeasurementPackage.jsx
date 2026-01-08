@@ -159,9 +159,21 @@ export default function MeasurementPackagePage() {
                 <div className="text-3xl font-bold text-amber-600">{packageData.summary.confirmation_rate}%</div>
                 <div className="text-xs text-slate-600">Confirmed</div>
               </div>
+              <div className="text-center p-4 bg-slate-50 dark:bg-slate-950/20 rounded-lg">
+                <div className="text-3xl font-bold text-slate-600">{packageData.site_notes?.length || 0}</div>
+                <div className="text-xs text-slate-600">Site Notes</div>
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Site Notes Section */}
+        {packageData.site_notes && packageData.site_notes.length > 0 && (
+          <SiteNotesPackageDisplay 
+            siteNotes={packageData.site_notes} 
+            readOnly={true}
+          />
+        )}
 
         {/* Human Confirmations */}
         <Card>
