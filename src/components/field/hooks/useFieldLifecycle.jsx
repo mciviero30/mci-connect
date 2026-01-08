@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useMobileLifecycle } from './useMobileLifecycle';
 import { useFieldStability } from './useFieldStability';
+import { FieldSessionManager } from '../services/FieldSessionManager';
 
 /**
  * Comprehensive Field Lifecycle Hook
@@ -37,6 +38,11 @@ export function useFieldLifecycle({ jobId, queryClient }) {
       
       // Mark background state for offline sync
       sessionStorage.setItem(`field_background_${jobId}`, Date.now().toString());
+      
+      // Keep session active (just backgrounded, not exited)
+      FieldSessionManager.updateSession({
+        backgroundedAt: Date.now(),
+      });
     },
 
     onForeground: (data) => {
@@ -53,6 +59,9 @@ export function useFieldLifecycle({ jobId, queryClient }) {
 
       // Clear background marker
       sessionStorage.removeItem(`field_background_${jobId}`);
+      
+      // Reactivate session
+      FieldSessionManager.reactivateSession();
 
       // CRITICAL: Do NOT refetch queries - state is preserved
       // No query invalidation, no cache clearing
