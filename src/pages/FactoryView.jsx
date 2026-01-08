@@ -18,11 +18,13 @@ import {
   ShieldCheck,
   Download,
   Package,
-  Clock
+  Clock,
+  GitCompare
 } from 'lucide-react';
 import ProductionStatusControl from '@/components/factory/ProductionStatusControl';
 import FactoryAnnotations from '@/components/factory/FactoryAnnotations';
 import ValidationGateDisplay from '@/components/factory/ValidationGateDisplay';
+import FactoryComparisonView from '@/components/factory/FactoryComparisonView';
 import { createPageUrl } from '@/utils';
 import { getFactoryViewData } from '@/components/factory/FactoryViewService';
 import { validateDataIntegrity } from '@/components/factory/FactoryDataIntegrity';
@@ -299,6 +301,10 @@ export default function FactoryView() {
               <FileCheck className="w-4 h-4" />
               Validation
             </TabsTrigger>
+            <TabsTrigger value="comparison" className="gap-2">
+              <GitCompare className="w-4 h-4" />
+              Comparison
+            </TabsTrigger>
             <TabsTrigger value="export" className="gap-2">
               <Download className="w-4 h-4" />
               Export
@@ -334,6 +340,10 @@ export default function FactoryView() {
                 />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="comparison">
+            <FactoryComparisonView dimensionSet={dimensionSet} />
           </TabsContent>
 
           <TabsContent value="export">
