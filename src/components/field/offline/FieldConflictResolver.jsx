@@ -41,11 +41,42 @@ export async function resolveConflict(conflict, localData, user) {
 
 /**
  * Resolve version conflict
+ * HARDENED: Never overwrites field-created data
  */
 function resolveVersionConflict(conflict, localData, user) {
   const serverData = conflict.server;
   const serverVersion = serverData.version || 1;
   const localVersion = localData.version || 1;
+  
+  // CRITICAL: Field data always wins for measurements
+  // Office can annotate, but cannot change field-captured values
+  const isFieldMeasurement = localData.measured_by || localData.recorded_by;
+  
+  if (isFieldMeasurement) {
+    // Field-captured data: preserve local, merge server annotations only
+    const resolved = {
+      ...localData,
+      // Merge factory annotations if present (non-destructive)
+      factory_production_notes: serverData.factory_production_notes || localData.factory_production_notes,
+      factory_cut_instructions: serverData.factory_cut_instructions || localData.factory_cut_instructions,
+      factory_annotations_shared: serverData.factory_annotations_shared || localData.factory_annotations_shared,
+      // Version bump
+      version: Math.max(serverVersion, localVersion) + 1,
+      notes: `${localData.notes || ''}\n[Sync: Field data preserved, factory annotations merged]`,
+    };
+    
+    return {
+      action: 'update',
+      resolved_data: resolved,
+      conflict_log: {
+        type: 'field_wins',
+        server_version: serverVersion,
+        local_version: localVersion,
+        resolution: 'field_data_preserved',
+        timestamp: Date.now(),
+      }
+    };
+  }
   
   // Server is newer - create new version
   if (serverVersion > localVersion) {

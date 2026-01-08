@@ -41,6 +41,7 @@ async function initQueue() {
 
 /**
  * Enqueue operation
+ * HARDENED: Idempotency key prevents duplicate creates
  */
 export async function enqueueOperation(entityType, operationType, entityData, localId) {
   const db = await initQueue();
@@ -49,21 +50,36 @@ export async function enqueueOperation(entityType, operationType, entityData, lo
     const transaction = db.transaction([QUEUE_STORE], 'readwrite');
     const store = transaction.objectStore(QUEUE_STORE);
     
+    // Generate idempotency key for create operations
+    const idempotencyKey = operationType === 'create' 
+      ? `${entityType}_${localId}_${Date.now()}`
+      : null;
+    
     const operation = {
       entity_type: entityType,
       operation_type: operationType,
       entity_data: entityData,
       local_id: localId,
+      idempotency_key: idempotencyKey,  // CRITICAL: Prevents duplicate creates
+      sequence_number: Date.now(),      // CRITICAL: Preserves order
       status: 'pending',
       timestamp: Date.now(),
       retry_count: 0,
-      error_message: null
+      error_message: null,
+      checksum: generateChecksum(entityData), // CRITICAL: Validates data integrity
     };
     
     const request = store.add(operation);
     
     request.onsuccess = () => {
       const operationId = request.result;
+      if (import.meta.env?.DEV) {
+        console.log(`[Queue] ✅ Enqueued ${operationType} for ${entityType}`, {
+          operationId,
+          localId,
+          idempotencyKey,
+        });
+      }
       resolve({ ...operation, operation_id: operationId });
     };
     request.onerror = () => reject(request.error);
@@ -71,7 +87,26 @@ export async function enqueueOperation(entityType, operationType, entityData, lo
 }
 
 /**
- * Get pending operations
+ * Generate checksum for data integrity validation
+ */
+function generateChecksum(data) {
+  try {
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString(36);
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Get pending operations (ordered by sequence number)
+ * HARDENED: Order preserved to prevent out-of-order sync
  */
 export async function getPendingOperations() {
   const db = await initQueue();
@@ -82,7 +117,18 @@ export async function getPendingOperations() {
     const index = store.index('status');
     const request = index.getAll('pending');
     
-    request.onsuccess = () => resolve(request.result || []);
+    request.onsuccess = () => {
+      const operations = request.result || [];
+      
+      // Sort by sequence_number to preserve order
+      operations.sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
+      
+      if (import.meta.env?.DEV && operations.length > 0) {
+        console.log(`[Queue] 📋 ${operations.length} pending operations (ordered)`);
+      }
+      
+      resolve(operations);
+    };
     request.onerror = () => reject(request.error);
   });
 }

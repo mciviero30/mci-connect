@@ -10,6 +10,7 @@ import FieldLifecycleValidator from '@/components/field/FieldLifecycleValidator'
 import FieldDataLossValidator from '@/components/field/FieldDataLossValidator';
 import FieldPerformanceMonitor from '@/components/field/performance/FieldPerformanceMonitor';
 import FieldStressTest from '@/components/field/performance/FieldStressTest';
+import OfflineSyncValidator from '@/components/field/offline/OfflineSyncValidator';
 
 export default function FieldProject() {
   const { setIsFieldMode } = useUI();
@@ -44,6 +45,7 @@ export default function FieldProject() {
               <FieldPerformanceMonitor componentName="FieldProject" />
               <FieldLifecycleValidator jobId={jobId} />
               <FieldDataLossValidator jobId={jobId} />
+              <OfflineSyncValidator />
               <FieldStressTest jobId={jobId} />
             </FieldContextProvider>
           </FieldOfflineProvider>

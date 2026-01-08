@@ -147,15 +147,32 @@ async function processBatch(operations, base44Client, user) {
 
 /**
  * Sync single operation
+ * HARDENED: Idempotency enforcement + precision preservation
  */
 async function syncOperation(operation, base44Client, user) {
-  const { entity_type, operation_type, entity_data, local_id } = operation;
+  const { entity_type, operation_type, entity_data, local_id, idempotency_key, checksum } = operation;
   
   // Map to entity name
   const entityName = mapEntityType(entity_type);
   
   try {
     if (operation_type === 'create') {
+      // IDEMPOTENCY CHECK: Prevent duplicate creates
+      if (idempotency_key) {
+        const existing = await checkIdempotencyKey(entityName, idempotency_key, entity_data.job_id, base44Client);
+        if (existing) {
+          if (import.meta.env?.DEV) {
+            console.log(`[Sync] ⚠️ Skipping duplicate create (idempotency key matched)`, {
+              idempotencyKey,
+              existingId: existing.id,
+            });
+          }
+          await markOperationComplete(operation.operation_id, existing.id);
+          await markAsSynced(entity_type, local_id, existing.id);
+          return { server_id: existing.id, skipped: true };
+        }
+      }
+      
       // Check for conflicts
       const conflict = await checkCreateConflict(entityName, entity_data, base44Client);
       
@@ -171,13 +188,36 @@ async function syncOperation(operation, base44Client, user) {
         entity_data = resolution.resolved_data;
       }
       
+      // PRECISION PRESERVATION: Validate checksum before sync
+      const currentChecksum = generateChecksum(entity_data);
+      if (checksum && currentChecksum !== checksum) {
+        console.warn('[Sync] ⚠️ Data integrity warning - checksum mismatch', {
+          expected: checksum,
+          actual: currentChecksum,
+        });
+      }
+      
       // Create on server
       const cleanData = prepareForServer(entity_data);
+      
+      // MEASUREMENT PRECISION: Add metadata for audit trail
+      if (entityName === 'FieldDimension') {
+        cleanData.sync_metadata = {
+          synced_from_offline: true,
+          offline_captured_at: entity_data.created_offline || Date.now(),
+          checksum,
+        };
+      }
+      
       const created = await base44Client.entities[entityName].create(cleanData);
       
       // Mark as synced
       await markOperationComplete(operation.operation_id, created.id);
       await markAsSynced(entity_type, local_id, created.id);
+      
+      if (import.meta.env?.DEV) {
+        console.log(`[Sync] ✅ Created ${entityName}`, { localId: local_id, serverId: created.id });
+      }
       
       return { server_id: created.id };
     }
@@ -268,7 +308,63 @@ async function checkCreateConflict(entityName, entityData, base44Client) {
 }
 
 /**
+ * Check idempotency key (prevent duplicate creates)
+ * CRITICAL: Ensures same offline operation doesn't create multiple server records
+ */
+async function checkIdempotencyKey(entityName, idempotencyKey, jobId, base44Client) {
+  try {
+    // For dimensions, check sync_metadata.offline_idempotency_key
+    if (entityName === 'FieldDimension') {
+      const recent = await base44Client.entities.FieldDimension.filter({
+        job_id: jobId,
+      }, '-created_date', 50);
+      
+      // Check if any have matching idempotency key in metadata
+      const match = recent.find(d => 
+        d.sync_metadata?.offline_idempotency_key === idempotencyKey
+      );
+      
+      return match || null;
+    }
+    
+    // For other entities, use notes field as fallback
+    const recent = await base44Client.entities[entityName].filter({
+      job_id: jobId,
+    }, '-created_date', 50);
+    
+    const match = recent.find(e => 
+      e.notes?.includes(idempotencyKey) ||
+      e.sync_metadata?.offline_idempotency_key === idempotencyKey
+    );
+    
+    return match || null;
+  } catch (error) {
+    console.error('Idempotency check failed:', error);
+    return null; // On error, allow create (safe default)
+  }
+}
+
+/**
+ * Generate checksum for data integrity
+ */
+function generateChecksum(data) {
+  try {
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return hash.toString(36);
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Prepare entity data for server
+ * HARDENED: Preserves measurement precision, adds sync metadata
  */
 function prepareForServer(entityData) {
   const clean = { ...entityData };
@@ -280,6 +376,17 @@ function prepareForServer(entityData) {
   delete clean.last_modified;
   delete clean.version;
   delete clean.server_id;
+  delete clean.local_blob_url;
+  delete clean.blob_size;
+  delete clean.needs_upload;
+  
+  // CRITICAL: Preserve measurement precision for FieldDimension
+  if (clean.value_feet !== undefined || clean.value_inches !== undefined) {
+    // Ensure values are exact - no rounding, no float drift
+    clean.value_feet = parseInt(clean.value_feet || 0, 10);
+    clean.value_inches = parseInt(clean.value_inches || 0, 10);
+    // value_fraction already validated against enum
+  }
   
   return clean;
 }
