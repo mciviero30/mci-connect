@@ -22,40 +22,13 @@ export const useFieldMode = useUI;
 export const UIProvider = ({ children }) => {
   const [isFieldMode, setIsFieldMode] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(() => {
-    const stored = sessionStorage.getItem('focusMode');
-    if (!stored || stored === 'false') return false;
-    
-    try {
-      const parsed = JSON.parse(stored);
-      if (typeof parsed === 'object' && parsed.timestamp) {
-        const ONE_HOUR = 60 * 60 * 1000;
-        
-        // Expire after 1 hour
-        if (Date.now() - parsed.timestamp > ONE_HOUR) {
-          sessionStorage.removeItem('focusMode');
-          return false;
-        }
-        
-        return parsed.active === true;
-      }
-      
-      // Legacy boolean format - treat as active
-      return stored === 'true';
-    } catch {
-      return stored === 'true';
-    }
+    // Persist Focus Mode per session
+    return sessionStorage.getItem('focusMode') === 'true';
   });
 
-  // Persist Focus Mode to session storage with timestamp
+  // Persist Focus Mode to session storage
   useEffect(() => {
-    if (isFocusMode) {
-      sessionStorage.setItem('focusMode', JSON.stringify({
-        active: true,
-        timestamp: Date.now()
-      }));
-    } else {
-      sessionStorage.removeItem('focusMode');
-    }
+    sessionStorage.setItem('focusMode', isFocusMode ? 'true' : 'false');
   }, [isFocusMode]);
 
   // Computed: sidebar should be hidden if Field OR Focus mode

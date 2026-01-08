@@ -298,14 +298,14 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   // Field pages apply dark mode via data-field-mode attribute, not global dark class
 
   const { data: clientMemberships = [] } = useQuery({
-    queryKey: ['client-memberships-check', user?.email, user?.role],
+    queryKey: ['client-memberships-check', user?.email],
     queryFn: () => base44.entities.ProjectMember.filter({ 
       user_email: user?.email,
       role: 'client'
     }),
     enabled: !!user?.email && user?.role !== 'admin',
-    staleTime: 300000,
-    gcTime: 600000,
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
@@ -567,9 +567,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
         
         sessionStorage.setItem(`migrated_${user.id}`, 'done');
-
-        // Invalidate user query to reflect profile updates
-        queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'active' });
 
       } catch (error) {
         if (import.meta.env.DEV) {
