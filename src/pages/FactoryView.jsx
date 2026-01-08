@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import ProductionStatusControl from '@/components/factory/ProductionStatusControl';
 import FactoryAnnotations from '@/components/factory/FactoryAnnotations';
+import ValidationGateDisplay from '@/components/factory/ValidationGateDisplay';
 import { createPageUrl } from '@/utils';
 import { getFactoryViewData } from '@/components/factory/FactoryViewService';
 import { validateDataIntegrity } from '@/components/factory/FactoryDataIntegrity';
@@ -321,14 +322,17 @@ export default function FactoryView() {
           </TabsContent>
 
           <TabsContent value="validation">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ValidationPanel validation={validation} dimensionSet={dimensionSet} />
-              <ProductionStatusControl 
-                dimensionSet={dimensionSet} 
-                onStatusChanged={() => {
-                  refetchFactoryData();
-                }}
-              />
+            <div className="space-y-6">
+              <ValidationGateDisplay dimensionSet={dimensionSet} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ValidationPanel validation={validation} dimensionSet={dimensionSet} />
+                <ProductionStatusControl 
+                  dimensionSet={dimensionSet} 
+                  onStatusChanged={() => {
+                    refetchFactoryData();
+                  }}
+                />
+              </div>
             </div>
           </TabsContent>
 

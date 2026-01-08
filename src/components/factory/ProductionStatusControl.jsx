@@ -26,6 +26,7 @@ import {
   getStatusBadgeProps,
   PRODUCTION_STATUS 
 } from './FactoryProductionLifecycle';
+import { validateProductionGate, requiresGateValidation } from './FactoryValidationGates';
 
 export default function ProductionStatusControl({ dimensionSet, onStatusChanged }) {
   const [changingStatus, setChangingStatus] = useState(false);
@@ -39,6 +40,36 @@ export default function ProductionStatusControl({ dimensionSet, onStatusChanged 
   
   const handleStatusChange = async () => {
     if (!selectedStatus) return;
+    
+    // Validate gates if required
+    if (requiresGateValidation(selectedStatus)) {
+      const validation = await validateProductionGate(dimensionSet.id, selectedStatus);
+      
+      if (!validation.passed) {
+        const errorList = validation.errors.join('\n• ');
+        alert(
+          `❌ PRODUCTION GATE BLOCKED\n\n` +
+          `Cannot advance to ${getStatusBadgeProps(selectedStatus).label}\n\n` +
+          `Failures:\n• ${errorList}\n\n` +
+          `All validation checks must pass before fabrication can begin.`
+        );
+        setChangingStatus(false);
+        return;
+      }
+      
+      if (validation.warnings.length > 0) {
+        const proceed = confirm(
+          `⚠️ VALIDATION WARNINGS\n\n` +
+          validation.warnings.join('\n• ') +
+          `\n\nDo you want to proceed?`
+        );
+        
+        if (!proceed) {
+          setChangingStatus(false);
+          return;
+        }
+      }
+    }
     
     setChangingStatus(true);
     try {
