@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { mobileLifecycle } from './services/MobileLifecycleManager';
+import { useFieldDebugMode } from './hooks/useFieldDebugMode';
 import { Badge } from '@/components/ui/badge';
 import { Activity, Wifi, WifiOff, Eye, EyeOff } from 'lucide-react';
 
@@ -14,7 +15,8 @@ import { Activity, Wifi, WifiOff, Eye, EyeOff } from 'lucide-react';
  * - No unwanted remounts
  * - No refetches
  */
-export default function FieldLifecycleValidator({ jobId }) {
+export default function FieldLifecycleValidator({ jobId, user }) {
+  const isDebugMode = useFieldDebugMode(user);
   const [events, setEvents] = useState([]);
   const [stats, setStats] = useState({
     backgroundCount: 0,
@@ -81,13 +83,14 @@ export default function FieldLifecycleValidator({ jobId }) {
     };
   }, []);
 
-  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
-  if (!import.meta.env?.DEV) return null;
+  // Only render debug UI if in debug mode
+  if (!isDebugMode) return null;
 
-  // Component is logging-only in DEV mode.
-  // All UI is in FieldDebugDrawer.
-  return null;
-}
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-2">
+        <Activity className="w-4 h-4 text-green-400" />
+        <span className="font-bold text-white">Lifecycle Monitor</span>
         <Badge className="ml-auto bg-green-500/20 text-green-300 text-[10px]">
           {jobId?.slice(0, 8)}
         </Badge>
@@ -136,4 +139,4 @@ export default function FieldLifecycleValidator({ jobId }) {
       )}
     </div>
   );
-}
+  }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fieldPersistence } from './services/FieldStatePersistence';
 import { fieldStorage } from './services/FieldStorageService';
+import { useFieldDebugMode } from './hooks/useFieldDebugMode';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Shield, AlertTriangle, CheckCircle2, Database, RefreshCw } from 'lucide-react';
@@ -17,7 +18,8 @@ import { toast } from 'sonner';
  * - Recovery mechanisms ready
  * - No in-memory-only state
  */
-export default function FieldDataLossValidator({ jobId }) {
+export default function FieldDataLossValidator({ jobId, user }) {
+  const isDebugMode = useFieldDebugMode(user);
   const [stats, setStats] = useState({
     draftsCount: 0,
     unsyncedCount: 0,
@@ -183,13 +185,16 @@ export default function FieldDataLossValidator({ jobId }) {
     }
   };
 
-  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
-  if (!import.meta.env?.DEV) return null;
+  // Only render debug UI if in debug mode
+  if (!isDebugMode) return null;
 
-  // Component is logging-only in DEV mode.
-  // All UI is in FieldDebugDrawer.
-  return null;
-}
+  const overallHealth = stats.indexedDBHealthy && stats.sessionStorageHealthy;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-2">
+        <Shield className={`w-4 h-4 ${overallHealth ? 'text-green-400' : 'text-red-400'}`} />
+        <span className="font-bold text-white">Data Loss Protection</span>
         <Badge className={`ml-auto text-[10px] ${overallHealth ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
           {overallHealth ? 'ACTIVE' : 'DEGRADED'}
         </Badge>
@@ -277,4 +282,4 @@ export default function FieldDataLossValidator({ jobId }) {
       )}
     </div>
   );
-}
+  }

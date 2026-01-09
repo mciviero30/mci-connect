@@ -3,6 +3,7 @@ import { getQueueStats, getPendingOperations, getFailedOperations } from './Fiel
 import { getConflictHistory } from './FieldConflictResolver';
 import { getOnlineStatus, subscribeToConnectivity } from './FieldConnectivityMonitor';
 import { getSyncStatus, subscribeToSync, SYNC_STATUS } from './FieldSyncEngine';
+import { useFieldDebugMode } from '../hooks/useFieldDebugMode';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
@@ -28,7 +29,8 @@ import { toast } from 'sonner';
  * - Network transition handling
  * - Sync completion rate
  */
-export default function OfflineSyncValidator() {
+export default function OfflineSyncValidator({ user }) {
+  const isDebugMode = useFieldDebugMode(user);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -278,9 +280,9 @@ export default function OfflineSyncValidator() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+            </div>
+            </div>
+            )}
+            </div>
+            );
+            }
