@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import ModernQuoteCard from "../components/quotes/ModernQuoteCard";
 import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
+import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 
 
 export default function Estimados() {
@@ -350,18 +351,22 @@ export default function Estimados() {
         </Card>
 
         {/* Quotes Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {filteredQuotes.map(quote => (
-            <ModernQuoteCard
-              key={quote.id}
-              quote={quote}
-              onDuplicate={(q) => duplicateMutation.mutate(q)}
-              onDelete={(q) => deleteMutation.mutate(q.id)}
-              onConvert={(q) => convertToInvoiceMutation.mutate(q)}
-              isAdmin={isAdmin}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <SkeletonDocumentList count={6} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            {filteredQuotes.map(quote => (
+              <ModernQuoteCard
+                key={quote.id}
+                quote={quote}
+                onDuplicate={(q) => duplicateMutation.mutate(q)}
+                onDelete={(q) => deleteMutation.mutate(q.id)}
+                onConvert={(q) => convertToInvoiceMutation.mutate(q)}
+                isAdmin={isAdmin}
+              />
+            ))}
+          </div>
+        )}
 
         {filteredQuotes.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

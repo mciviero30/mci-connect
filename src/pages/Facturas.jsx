@@ -20,6 +20,7 @@ import { Dialog } from "@/components/ui/dialog";
 import ModernInvoiceCard from "../components/invoices/ModernInvoiceCard";
 import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
+import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
@@ -379,20 +380,24 @@ export default function Facturas() {
 
         {/* Invoices Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {filteredInvoices.map(invoice => (
-            <ModernInvoiceCard
-              key={invoice.id}
-              invoice={invoice}
-              onDuplicate={(inv) => duplicateMutation.mutate(inv)}
-              onDelete={(inv) => deleteMutation.mutate(inv.id)}
-              onRegisterPayment={(inv) => {
-                setPaymentInvoice(inv);
-                setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
-                setPaymentDialogOpen(true);
-              }}
-              isAdmin={isAdmin}
-            />
-          ))}
+          {isLoading ? (
+            <SkeletonDocumentList count={6} />
+          ) : (
+            filteredInvoices.map(invoice => (
+              <ModernInvoiceCard
+                key={invoice.id}
+                invoice={invoice}
+                onDuplicate={(inv) => duplicateMutation.mutate(inv)}
+                onDelete={(inv) => deleteMutation.mutate(inv.id)}
+                onRegisterPayment={(inv) => {
+                  setPaymentInvoice(inv);
+                  setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
+                  setPaymentDialogOpen(true);
+                }}
+                isAdmin={isAdmin}
+              />
+            ))
+          )}
         </div>
 
         {filteredInvoices.length === 0 && !isLoading && (

@@ -95,7 +95,7 @@ export const SkeletonDashboard = () => (
 
 // Field Project Skeleton
 export const SkeletonFieldProject = () => (
-  <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 dark">
+  <div data-field-mode="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 dark pb-20">
     {/* Header Skeleton */}
     <div className="bg-slate-800 border-b border-slate-700 p-4 flex items-center gap-3">
       <Skeleton className="rounded-lg" width="44px" height="44px" />
@@ -108,24 +108,58 @@ export const SkeletonFieldProject = () => (
     
     {/* Progress Summary Skeleton */}
     <div className="p-4 space-y-3">
-      <Skeleton className="rounded-lg h-24" />
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
+        <div className="grid grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="rounded h-3" width="80%" />
+              <Skeleton className="rounded h-8" width="60%" />
+            </div>
+          ))}
+        </div>
+      </div>
       
       {/* Tasks Skeleton */}
       <div className="space-y-2 mt-4">
-        {[...Array(3)].map((_, i) => (
+        <Skeleton className="rounded h-5 mb-3" width="120px" />
+        {[...Array(4)].map((_, i) => (
           <div key={i} className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center gap-3">
             <Skeleton className="rounded-full" width="32px" height="32px" />
             <div className="flex-1 space-y-2">
               <Skeleton className="rounded h-4" width="70%" />
               <Skeleton className="rounded h-3" width="50%" />
             </div>
-            <Skeleton className="rounded-full" width="20px" height="20px" />
+            <Skeleton className="rounded-full" width="60px" height="24px" />
+          </div>
+        ))}
+      </div>
+      
+      {/* Dimensions Section Skeleton */}
+      <div className="space-y-2 mt-6">
+        <Skeleton className="rounded h-5 mb-3" width="140px" />
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-slate-800 border border-slate-700 rounded-lg p-3">
+              <Skeleton className="rounded h-3 mb-2" width="50%" />
+              <Skeleton className="rounded h-6" width="80px" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+    
+    {/* Bottom Action Rail - ALWAYS VISIBLE, NO SKELETON */}
+    <div className="fixed bottom-0 left-0 right-0 z-[60] bg-black border-t-2 border-slate-700 shadow-2xl pb-safe">
+      <div className="flex items-center justify-around px-1 py-2">
+        {['Photo', 'Audio', 'Task', 'Measure', 'Incident'].map((label, i) => (
+          <div key={i} className="flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] max-w-[100px]">
+            <Skeleton className="rounded-lg" width="24px" height="24px" />
+            <Skeleton className="rounded h-2" width="50px" />
           </div>
         ))}
       </div>
     </div>
     
-    {/* Bottom Action Rail - ALWAYS VISIBLE, NO SKELETON */}
     <style>{`
       @keyframes shimmer {
         0% { background-position: -200% 0; }
