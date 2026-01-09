@@ -19,27 +19,31 @@ import { useRenderOptimization } from './performance/useRenderOptimization';
 
 // Memoized TaskCard to prevent re-renders
 const TaskCard = memo(({ task, onClick, onDragStart, isClientPunch }) => {
-  const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
-  
-  const priorityColors = {
-    urgent: 'bg-red-500 text-white border-red-300',
-    high: 'bg-orange-600 text-white border-orange-300',
-    medium: 'bg-amber-500 text-black border-amber-300',
-    low: 'bg-slate-600 text-white border-slate-400',
-  };
+const wallNum = task.title?.match(/(\d+)/)?.[1] || '?';
+const isSyncing = task._syncing;
+const isOptimistic = task._optimistic;
 
-  return (
-    <div
-      draggable
-      onDragStart={onDragStart}
-      onClick={onClick}
-      className={`border-4 rounded-2xl p-5 cursor-pointer active:shadow-2xl active:scale-[0.96] transition-all touch-manipulation min-h-[80px] ${
-        isClientPunch
-          ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
-          : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
-      }`}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
-    >
+const priorityColors = {
+  urgent: 'bg-red-500 text-white border-red-300',
+  high: 'bg-orange-600 text-white border-orange-300',
+  medium: 'bg-amber-500 text-black border-amber-300',
+  low: 'bg-slate-600 text-white border-slate-400',
+};
+
+return (
+  <div
+    draggable
+    onDragStart={onDragStart}
+    onClick={onClick}
+    className={`border-4 rounded-2xl p-5 cursor-pointer transition-all touch-manipulation min-h-[80px] ${
+      isClientPunch
+        ? 'bg-purple-900/60 border-purple-400 active:border-purple-300 shadow-lg shadow-purple-500/20'
+        : isSyncing || isOptimistic
+        ? 'bg-slate-800/60 border-slate-600 border-dashed shadow-lg opacity-80'
+        : 'bg-slate-800 border-slate-600 active:border-[#FFB800] shadow-lg'
+    } ${!isSyncing && !isOptimistic ? 'active:scale-[0.96] active:shadow-2xl' : ''}`}
+    style={{ WebkitTapHighlightColor: 'transparent' }}
+  >
       <div className="flex items-center gap-4">
         <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0 shadow-xl border-2 border-white/20 ${
           task.status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-700' :
@@ -54,6 +58,11 @@ const TaskCard = memo(({ task, onClick, onDragStart, isClientPunch }) => {
             {isClientPunch && (
               <Badge className="bg-purple-500 text-white text-xs px-2 py-1 font-bold border-2 border-purple-300">
                 CLIENT
+              </Badge>
+            )}
+            {(isSyncing || isOptimistic) && (
+              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 text-[9px] px-1.5 py-0.5 font-bold animate-pulse">
+                SYNCING
               </Badge>
             )}
           </div>
@@ -97,18 +106,33 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, data }) => {
-      // Try WorkUnit first, fallback to Task
       return base44.entities.WorkUnit.update(id, data).catch(() => 
         base44.entities.Task.update(id, data)
       );
     },
-    onSuccess: (_, variables) => {
-      // Scoped optimistic update - Field isolation
+    
+    // OPTIMISTIC UPDATE - Immediate status change
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
+      
+      // Instant visual update
       updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
-        old ? old.map(t => t.id === variables.id ? {...t, ...variables.data} : t) : old
+        old ? old.map(t => t.id === id ? {...t, ...data, _syncing: true} : t) : old
       );
       updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => 
-        old ? old.map(t => t.id === variables.id ? {...t, ...variables.data} : t) : old
+        old ? old.map(t => t.id === id ? {...t, ...data, _syncing: true} : t) : old
+      );
+      
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(10);
+    },
+    
+    onSuccess: (_, variables) => {
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
+        old ? old.map(t => t.id === variables.id ? {...t, ...variables.data, _syncing: false} : t) : old
+      );
+      updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => 
+        old ? old.map(t => t.id === variables.id ? {...t, ...variables.data, _syncing: false} : t) : old
       );
     },
   });
