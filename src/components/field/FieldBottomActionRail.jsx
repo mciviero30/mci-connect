@@ -5,13 +5,14 @@ import MobilePhotoCapture from './MobilePhotoCapture';
 import VoiceNoteRecorder from './VoiceNoteRecorder';
 import DimensionBottomSheet from './DimensionBottomSheet';
 import IncidentBottomSheet from './IncidentBottomSheet';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { DisabledButton, validationRules } from '@/components/validation/PreventiveValidation';
 import { OfflineStatusBadge } from './FieldOfflineManager';
-import { canAddContent } from './rolePermissions';
+import { canAddContent as checkCanAddContent } from './rolePermissions';
+import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 
 export default function FieldBottomActionRail({ 
   jobId, 
@@ -24,13 +25,24 @@ export default function FieldBottomActionRail({
   onIncidentClick,
 }) {
   const [activeAction, setActiveAction] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const queryClient = useQueryClient();
-
-  // Load current user for permissions
-  React.useEffect(() => {
-    base44.auth.me().then(user => setCurrentUser(user)).catch(() => {});
-  }, []);
+  
+  // Fetch current user for permissions
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    ...FIELD_STABLE_QUERY_CONFIG,
+  });
+  
+  // Check if user can add content
+  const canAddContent = checkCanAddContent(currentUser) && jobStatus === 'active' 
+    ? { valid: true, reason: '' }
+    : { 
+        valid: false, 
+        reason: !checkCanAddContent(currentUser) 
+          ? 'Only team members can add content' 
+          : 'Job must be active to add content'
+      };
 
   // Immediate action handler with feedback
   const handleAction = (actionId) => {
@@ -85,17 +97,8 @@ export default function FieldBottomActionRail({
             const isActive = activeAction === action.id;
             const Icon = action.icon;
             
-            // Check permissions
-            const hasPermission = canAddContent(currentUser);
-            const isJobInactive = jobStatus !== 'active';
-            
-            // Disable actions if job is not active or user lacks permission
-            const isDisabled = (!hasPermission || isJobInactive) && action.id !== 'incident';
-            const disabledReason = !hasPermission 
-              ? 'Only employees can add content' 
-              : isJobInactive 
-              ? 'Job must be active to add content' 
-              : '';
+            // Disable actions if job is not active
+            const isDisabled = !canAddContent.valid && action.id !== 'incident';
             
             return (
               <button
@@ -104,7 +107,7 @@ export default function FieldBottomActionRail({
                   if (isDisabled) {
                     // Visual + haptic feedback for disabled action
                     haptic.error();
-                    microToast.info(disabledReason, 2000);
+                    microToast.info(canAddContent.reason, 2000);
                   } else {
                     handleAction(action.id);
                   }
