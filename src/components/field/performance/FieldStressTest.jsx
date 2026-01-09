@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useFieldDebugMode } from '../hooks/useFieldDebugMode';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -17,10 +18,14 @@ import { toast } from 'sonner';
  * 4. Network on/off cycles
  * 5. Concurrent mutations
  */
-export default function FieldStressTest({ jobId }) {
+export default function FieldStressTest({ jobId, currentUser }) {
+  const isDebugMode = useFieldDebugMode(currentUser);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState([]);
+
+  // Only render in debug mode for admins
+  if (!isDebugMode) return null;
 
   const addResult = (test, status, message) => {
     setResults(prev => [...prev, {
@@ -172,8 +177,6 @@ export default function FieldStressTest({ jobId }) {
       requestAnimationFrame(countFrame);
     });
   };
-
-  if (!import.meta.env?.DEV) return null;
 
   const passCount = results.filter(r => r.status === 'pass').length;
   const failCount = results.filter(r => r.status === 'fail').length;
