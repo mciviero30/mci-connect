@@ -79,11 +79,16 @@ return (
 });
 TaskCard.displayName = 'TaskCard';
 
-export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
+export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, currentUser }) {
   useRenderOptimization('FieldTasksView');
   // Use new unified hook, fall back to legacy tasks if provided
   const { workUnits, updateMutation: workUnitUpdate } = useWorkUnits(jobId, { type: 'task' });
+  // ONLY use backend tasks - never demo/mock data in production
   const tasks = legacyTasks?.length > 0 ? legacyTasks : workUnits;
+  
+  // Debug mode: allow demo tasks only for admins with ?debug=true
+  const isDebugMode = import.meta.env.DEV && currentUser?.role === 'admin' && new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('debug') === 'true';
+  const showEmptyState = tasks.length === 0;
   const [view, setView] = useState('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
