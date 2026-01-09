@@ -70,6 +70,20 @@ import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig
 import { useFieldDebugMode, filterFieldPanels } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI, AdminOnlyUI } from '@/components/policies/UIVisibilityWrapper';
 
+/**
+ * SMART RE-ENTRY: Restore panel from URL params
+ */
+const useSmartReentry = (setActivePanel) => {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const panelParam = urlParams.get('panel');
+    
+    if (panelParam && ['overview', 'tasks', 'photos', 'plans', 'dimensions', 'reports', 'chat', 'members', 'documents', 'forms', 'budget', 'analytics'].includes(panelParam)) {
+      setActivePanel(panelParam);
+    }
+  }, [setActivePanel]);
+};
+
 export default function FieldProjectView({
   // State
   activePanel,
