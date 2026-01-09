@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { DisabledButton, validationRules } from '@/components/validation/PreventiveValidation';
+import { ExitSafetyCheck } from '@/components/feedback/SilentConfirmation';
 import { OfflineStatusBadge } from './FieldOfflineManager';
 
 export default function FieldBottomActionRail({ 

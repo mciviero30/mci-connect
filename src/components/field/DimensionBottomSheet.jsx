@@ -12,6 +12,7 @@ import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { InlineValidation, commonRules } from '@/components/validation/InlineValidation';
+import { useAutoClearForm } from '@/components/feedback/SilentConfirmation';
 import { SaveGuarantee } from './services/SaveGuarantee';
 import SaveConfirmation from './SaveConfirmation';
 import { Loader2 } from 'lucide-react';

@@ -23,6 +23,7 @@ import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { NavigationBlocker } from '@/components/validation/NavigationBlocker';
+import { SilentConfirmation, useAutoClearForm } from '@/components/feedback/SilentConfirmation';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
