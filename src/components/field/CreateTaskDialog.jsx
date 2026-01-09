@@ -60,6 +60,7 @@ const CHECKLIST_TEMPLATES = {
 export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintId, pinPosition, onCreated, planImageUrl, pdfCanvas, existingTask }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
+  const { isSubmitting, handleSubmit: preventDoubleSubmit } = useDoubleSubmitPrevention();
   const [task, setTask] = useState({
     title: '',
     description: '',
@@ -459,20 +460,22 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     if (!task.id) return;
     if (!canEdit) return; // Block unauthorized edits
     
-    const dataToSave = {
-      ...task,
-      checklist: task.checklist.length > 0 ? task.checklist : undefined,
-      photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
-      manpower: task.manpower || undefined,
-      cost: task.cost ? parseFloat(task.cost) || undefined : undefined,
-    };
-    
-    await updateTaskMutation.mutateAsync({
-      id: task.id,
-      data: dataToSave
+    return preventDoubleSubmit(async () => {
+      const dataToSave = {
+        ...task,
+        checklist: task.checklist.length > 0 ? task.checklist : undefined,
+        photo_urls: task.photo_urls.length > 0 ? task.photo_urls : undefined,
+        manpower: task.manpower || undefined,
+        cost: task.cost ? parseFloat(task.cost) || undefined : undefined,
+      };
+      
+      await updateTaskMutation.mutateAsync({
+        id: task.id,
+        data: dataToSave
+      });
+      
+      await clearDraft();
     });
-    
-    await clearDraft();
   };
 
   const handleClose = async () => {
