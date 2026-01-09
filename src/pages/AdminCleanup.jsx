@@ -343,7 +343,7 @@ export default function AdminCleanup() {
         <PageHeader
           title="Limpieza de Datos"
           description="Herramientas de auditoría y limpieza de datos"
-          icon={AlertTriangle}
+          icon={({ className }) => <AlertTriangle className={className} />}
         />
 
         {/* Existing Cleanup Functionality */}
