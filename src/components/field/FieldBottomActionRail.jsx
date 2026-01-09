@@ -12,7 +12,8 @@ import { microToast } from '@/components/feedback/MicroToast';
 import { DisabledButton, validationRules } from '@/components/validation/PreventiveValidation';
 import { OfflineStatusBadge } from './FieldOfflineManager';
 import { canAddContent as checkCanAddContent } from './rolePermissions';
-import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
+import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
+import { FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
 
 export default function FieldBottomActionRail({ 
   jobId, 
