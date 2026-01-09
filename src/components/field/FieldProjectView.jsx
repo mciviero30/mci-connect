@@ -316,36 +316,10 @@ export default function FieldProjectView({
         }}
       />
 
-      {/* BOTTOM ACTION RAIL - Fixed, Touch-Optimized */}
+      {/* BOTTOM ACTION RAIL - Fixed, Always Visible, One-Hand Optimized */}
       <FieldBottomActionRail 
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
-        onPhotoClick={() => {
-          // Open photo capture (replaces content, no overlay)
-          switchPanel('photo-capture');
-        }}
-        onAudioClick={() => {
-          // Open audio note (replaces content, no overlay)
-          switchPanel('audio-note');
-        }}
-        onTaskClick={() => {
-          setShowCreateTask(true);
-        }}
-        onMeasureClick={() => {
-          // Open dimension tool (replaces content, no overlay)
-          switchPanel('work');
-          // Scroll to dimensions
-          setTimeout(() => {
-            document.querySelector('[data-field-main]')?.scrollTo({ 
-              top: document.querySelector('[data-section="dimensions"]')?.offsetTop - 80,
-              behavior: 'smooth'
-            });
-          }, 100);
-        }}
-        onIncidentClick={() => {
-          // Open incident form (replaces content, no overlay)
-          switchPanel('incident');
-        }}
       />
     </div>
   );
