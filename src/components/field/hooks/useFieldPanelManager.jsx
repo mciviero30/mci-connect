@@ -1,63 +1,36 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
- * FIELD PANEL MANAGER - Strict Single Panel Rule
- * 
- * Enforces that only ONE secondary panel can be open at a time
- * Prevents visual chaos from overlapping modals/sheets
- * 
- * Panel types:
- * - 'dialog' - Full modals (Task, Photo, etc.)
- * - 'sheet' - Bottom sheets (Dimension, Incident)
- * - 'inline' - Sidebar panels (no conflict)
+ * CENTRAL PANEL MANAGER
+ * Ensures ONLY ONE PANEL ACTIVE AT A TIME
+ * Prevents visual chaos and overlays
  */
+export const useFieldPanelManager = (initialPanel = 'work') => {
+  const [activePanel, setActivePanel] = useState(initialPanel);
+  const [previousPanel, setPreviousPanel] = useState(null);
 
-export function useFieldPanelManager() {
-  const [openPanel, setOpenPanel] = useState(null);
-  const panelTypeRef = useRef(null);
+  // Switch panel - ALWAYS close others
+  const switchPanel = useCallback((panelId) => {
+    setPreviousPanel(activePanel);
+    setActivePanel(panelId);
+  }, [activePanel]);
 
-  // Open a panel - automatically closes any other open panel
-  const openPanelExclusive = useCallback((panelId, panelType = 'dialog') => {
-    // If same panel, do nothing
-    if (openPanel === panelId) return;
-
-    // Close current panel first
-    if (openPanel) {
-      setOpenPanel(null);
-      panelTypeRef.current = null;
-      
-      // Brief delay before opening new panel for smooth transition
-      setTimeout(() => {
-        setOpenPanel(panelId);
-        panelTypeRef.current = panelType;
-      }, 150);
-    } else {
-      setOpenPanel(panelId);
-      panelTypeRef.current = panelType;
-    }
-  }, [openPanel]);
-
-  // Close current panel
+  // Close current panel - return to work view
   const closePanel = useCallback(() => {
-    setOpenPanel(null);
-    panelTypeRef.current = null;
+    setActivePanel('work');
+    setPreviousPanel(null);
   }, []);
 
-  // Check if specific panel is open
-  const isPanelOpen = useCallback((panelId) => {
-    return openPanel === panelId;
-  }, [openPanel]);
-
-  // Get current panel type
-  const getCurrentPanelType = useCallback(() => {
-    return panelTypeRef.current;
-  }, []);
+  // Check if specific panel is active
+  const isPanelActive = useCallback((panelId) => {
+    return activePanel === panelId;
+  }, [activePanel]);
 
   return {
-    openPanel,
-    openPanelExclusive,
+    activePanel,
+    previousPanel,
+    switchPanel,
     closePanel,
-    isPanelOpen,
-    getCurrentPanelType,
+    isPanelActive,
   };
-}
+};
