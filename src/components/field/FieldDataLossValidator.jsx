@@ -183,8 +183,15 @@ export default function FieldDataLossValidator({ jobId }) {
     }
   };
 
+  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
   if (!import.meta.env?.DEV) return null;
 
+  // Component is logging-only in DEV mode.
+  // All UI is in FieldDebugDrawer.
+  return null;
+
+  /*
+  // OLD FLOATING PANEL CODE - REMOVED
   const overallHealth = stats.indexedDBHealthy && stats.sessionStorageHealthy;
 
   return (
