@@ -760,8 +760,34 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               )}
             </div>
           )}
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
+          </div>
+          </FieldBottomSheet>
+          </>
+          );
+          }
+
+          return (
+          <>
+          {/* Save Confirmation */}
+          <SaveConfirmation 
+          show={showSaveConfirmation}
+          type={saveConfirmationType}
+          onComplete={() => setShowSaveConfirmation(false)}
+          />
+
+          {/* Navigation blocker for unsaved changes */}
+          <NavigationBlocker
+          when={!!task.title && !task.id}
+          onSave={handleSave}
+          onDiscard={() => {
+          clearDraft();
+          onOpenChange(false);
+          }}
+          message="You have an unsaved task"
+          />
+
+          <Dialog open={open} onOpenChange={handleClose}>
+          <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
         <VisuallyHidden>
           <DialogTitle>Task Details</DialogTitle>
           <DialogDescription>{canEdit ? 'Edit task information and checklist' : 'View task information'}</DialogDescription>
