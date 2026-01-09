@@ -101,16 +101,19 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
   const [showFilters, setShowFilters] = useState(false);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-  const { data: currentUser } = useQuery({
+  const { data: queryUser } = useQuery({
     queryKey: FIELD_QUERY_KEYS.USER(jobId),
     queryFn: () => base44.auth.me(),
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
+  // Use prop currentUser or fetched queryUser
+  const user = currentUser || queryUser;
+
   const queryClient = useQueryClient();
   
   // Check permissions
-  const canEdit = canEditTasks(currentUser);
+  const canEdit = canEditTasks(user);
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, data }) => {
@@ -162,7 +165,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
         const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
         const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
         const matchesType = taskTypeFilter === 'all' || task.task_type === taskTypeFilter;
-        const matchesUser = !showMyTasks || task.assigned_to === currentUser?.email;
+        const matchesUser = !showMyTasks || task.assigned_to === user?.email;
         return matchesSearch && matchesStatus && matchesPriority && matchesType && matchesUser;
       })
       .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
