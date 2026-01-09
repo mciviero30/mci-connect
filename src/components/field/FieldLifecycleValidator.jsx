@@ -81,8 +81,15 @@ export default function FieldLifecycleValidator({ jobId }) {
     };
   }, []);
 
+  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
   if (!import.meta.env?.DEV) return null;
 
+  // Component is logging-only in DEV mode.
+  // All UI is in FieldDebugDrawer.
+  return null;
+
+  /*
+  // OLD FLOATING PANEL CODE - REMOVED
   return (
     <div className="fixed bottom-4 right-4 z-[60] max-w-xs bg-slate-900/95 backdrop-blur-sm border-2 border-green-500/50 rounded-xl shadow-2xl p-4 text-xs">
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
