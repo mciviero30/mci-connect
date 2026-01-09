@@ -139,4 +139,4 @@ export default function FieldLifecycleValidator({ jobId, user }) {
       )}
     </div>
   );
-  }
+}

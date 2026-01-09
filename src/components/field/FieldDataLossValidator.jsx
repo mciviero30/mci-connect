@@ -282,4 +282,4 @@ export default function FieldDataLossValidator({ jobId, user }) {
       )}
     </div>
   );
-  }
+}
