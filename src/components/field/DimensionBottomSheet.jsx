@@ -69,9 +69,14 @@ export default function DimensionBottomSheet({
 
   const handleSave = async () => {
     if (!formData.area) {
-      toast.error('Please enter location/area');
+      toast.error('Please enter location/area', { duration: 2000 });
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
       return;
     }
+
+    // Immediate feedback
+    setSaveProgress('validating');
+    if (navigator.vibrate) navigator.vibrate(10);
 
     const dimensionData = {
       job_id: jobId,
@@ -93,6 +98,9 @@ export default function DimensionBottomSheet({
     });
     
     if (result.success) {
+      // Haptic success
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      
       // Invalidate AFTER save confirmed
       queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
       
@@ -100,16 +108,19 @@ export default function DimensionBottomSheet({
       setConfirmationType(result.savedOffline ? 'offline' : 'success');
       setShowConfirmation(true);
       
+      toast.success('Measurement saved', { duration: 2000 });
+      
       // Close modal after brief confirmation
       setTimeout(() => {
         onOpenChange(false);
         onSave?.();
-      }, 1500);
+      }, 1200);
       
     } else {
       // Save failed
       setSaveProgress(null);
-      toast.error(result.error || 'Failed to save dimension');
+      toast.error(result.error || 'Failed to save dimension', { duration: 3000 });
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10, 50, 10]);
     }
   };
 
