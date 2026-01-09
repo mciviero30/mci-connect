@@ -88,7 +88,6 @@ export default function FieldLifecycleValidator({ jobId }) {
   // All UI is in FieldDebugDrawer.
   return null;
 }
-        <span className="font-bold text-white">Lifecycle Monitor</span>
         <Badge className="ml-auto bg-green-500/20 text-green-300 text-[10px]">
           {jobId?.slice(0, 8)}
         </Badge>
