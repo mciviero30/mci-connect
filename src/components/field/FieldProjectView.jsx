@@ -35,13 +35,7 @@ import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
 
 // Debug-only imports
-import MeasurementIntelligencePanel from '@/components/field/MeasurementIntelligencePanel.jsx';
-import MeasurementCompletenessPanel from '@/components/field/MeasurementCompletenessPanel.jsx';
-import MeasurementAIQualityPanel from '@/components/field/MeasurementAIQualityPanel.jsx';
-import FieldLifecycleValidator from '@/components/field/FieldLifecycleValidator';
-import FieldDataLossValidator from '@/components/field/FieldDataLossValidator';
-import FieldPerformanceMonitor from '@/components/field/performance/FieldPerformanceMonitor';
-import OfflineSyncValidator from '@/components/field/offline/OfflineSyncValidator';
+import FieldDebugDrawer from '@/components/field/FieldDebugDrawer.jsx';
 
 
 
