@@ -289,15 +289,12 @@ export default function FieldProjectView({
         <PhotoUploadProgress jobId={jobId} />
       </div>
 
-      {/* Debug UI - Monitoring Only (Log-based, no visual overlays) */}
-      {isDebugMode && (
-        <>
-          <FieldLifecycleValidator jobId={jobId} />
-          <FieldDataLossValidator jobId={jobId} />
-          <FieldPerformanceMonitor componentName="FieldProjectView" />
-          <OfflineSyncValidator />
-        </>
-      )}
+      {/* Debug Drawer - Isolated, non-intrusive */}
+      <FieldDebugDrawer 
+        isVisible={showDebugDrawer} 
+        onClose={() => setShowDebugDrawer(false)}
+        currentUser={currentUser}
+      />
 
       {/* Quick Create Task Dialog - ONE ACTIVE OVERLAY */}
       <CreateTaskDialog
