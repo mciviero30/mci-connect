@@ -53,7 +53,7 @@ export default function TransactionForm({ transaction, onSubmit, onCancel, isPro
     });
   };
 
-  const categories = formData.type === "income" ? incomeCategories : expenseCategories;
+  const currentCategories = formData.type === "income" ? incomeCategories : expenseCategories;
 
   return (
     <Card className="border-0 shadow-none">
@@ -100,7 +100,7 @@ export default function TransactionForm({ transaction, onSubmit, onCancel, isPro
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-800">
-                  {categories.map(cat => (
+                  {currentCategories.map(cat => (
                     <SelectItem key={cat.value} value={cat.value} className="text-white hover:bg-slate-800">
                       {cat.label}
                     </SelectItem>
