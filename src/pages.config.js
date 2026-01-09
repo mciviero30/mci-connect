@@ -41,6 +41,7 @@ import FactoryView from './pages/FactoryView';
 import Facturas from './pages/Facturas';
 import Field from './pages/Field';
 import FieldExport from './pages/FieldExport';
+import FieldMeasurements from './pages/FieldMeasurements';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
@@ -100,7 +101,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import FieldMeasurements from './pages/FieldMeasurements';
 import __Layout from './Layout.jsx';
 
 
@@ -148,6 +148,7 @@ export const PAGES = {
     "Facturas": Facturas,
     "Field": Field,
     "FieldExport": FieldExport,
+    "FieldMeasurements": FieldMeasurements,
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
@@ -207,7 +208,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "FieldMeasurements": FieldMeasurements,
 }
 
 export const pagesConfig = {

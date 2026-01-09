@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
-import FieldDimensionView from '@/components/field/FieldDimensionView';
+import FieldNav from '@/components/field/FieldNav.jsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -420,8 +420,18 @@ export default function Field() {
         </Button>
       ) : null}
 
-      {/* TODAY'S JOBS - Max 3, Simple */}
-      {filteredJobs.slice(0, 3).length > 0 && (
+      {/* NAV BAR - Sticky Section Selector */}
+      <div className="mb-6">
+        <FieldNav 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          language={language}
+          onNewTask={() => setShowNewProject(true)}
+        />
+      </div>
+
+      {/* CONTENT AREA - Based on Active Tab */}
+      {activeTab === 'jobs' && filteredJobs.slice(0, 3).length > 0 && (
         <div className="mb-6">
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
             {language === 'es' ? 'Trabajos de hoy' : "Today's Jobs"}
@@ -454,86 +464,64 @@ export default function Field() {
         </div>
       )}
 
-      {/* QUICK SECONDARY ACTIONS - 3 buttons */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-        <Button
-          onClick={() => setActiveTab('measurements')}
-          variant="outline"
-          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all text-xs sm:text-base"
-        >
-          <Ruler className="w-5 h-5 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Measurements</span>
-          <span className="sm:hidden">📐</span>
-        </Button>
-        <Button
-          onClick={() => setActiveTab('checklists')}
-          variant="outline"
-          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all text-xs sm:text-base"
-        >
-          <ClipboardList className="w-5 h-5 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Checklists</span>
-          <span className="sm:hidden">✓</span>
-        </Button>
-        <Button
-          onClick={() => setShowQuickSearch(true)}
-          variant="outline"
-          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all text-xs sm:text-base"
-        >
-          <Search className="w-5 h-5 mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Search</span>
-          <span className="sm:hidden">🔍</span>
-        </Button>
-      </div>
-
-      {/* Hidden Tabs for Navigation Only */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="hidden">
-        <TabsContent value="projects" />
-        <TabsContent value="measurements" />
-        <TabsContent value="checklists">
-          <GlobalChecklistsManager />
-        </TabsContent>
-      </Tabs>
-
-      {/* Show alternative views when tabs change */}
+      {/* MEASUREMENTS SECTION */}
       {activeTab === 'measurements' && (
-        <div className="pb-6">
-          <Button
-            onClick={() => setActiveTab('projects')}
-            variant="outline"
-            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {language === 'es' ? 'Volver' : 'Back'}
-          </Button>
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
-            <p className="text-red-300 text-sm font-bold">
-              📐 Field Measurements Module
-            </p>
-            <p className="text-red-200 text-xs mt-2">
-              Select a job from the list above to view or create measurements.
-            </p>
+        <div className="mb-6">
+          <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
+            {language === 'es' ? 'Mediciones disponibles' : 'Available Measurements'}
+          </h2>
+          <div className="space-y-3">
+            {filteredJobs.slice(0, 5).map((job) => (
+              <Link key={job.id} to={createPageUrl(`FieldMeasurements?id=${job.id}`)}>
+                <div className="bg-slate-800 border border-purple-600/30 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all cursor-pointer shadow-md min-h-[72px]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-white truncate mb-1 flex items-center gap-2">
+                        <Ruler className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        {job.name || job.job_name_field}
+                      </h3>
+                      <p className="text-xs text-slate-400 truncate">
+                        {language === 'es' ? 'Entrada de servicio' : 'Service Input'}
+                      </p>
+                    </div>
+                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 border px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0">
+                      📐
+                    </Badge>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-          <div className="text-center text-slate-400 py-8">
-            {language === 'es' ? 'Selecciona un proyecto para ver mediciones' : 'Select a project to view measurements'}
-          </div>
+          {filteredJobs.length > 5 && (
+            <Button
+              onClick={() => setShowQuickSearch(true)}
+              variant="outline"
+              className="w-full bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 mt-4"
+            >
+              {language === 'es' ? `Ver todos los ${filteredJobs.length} trabajos` : `View all ${filteredJobs.length} jobs`}
+            </Button>
+          )}
         </div>
       )}
+
+      {/* CHECKLISTS SECTION */}
       {activeTab === 'checklists' && (
         <div className="pb-6">
-          <Button
-            onClick={() => setActiveTab('projects')}
-            variant="outline"
-            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {language === 'es' ? 'Volver' : 'Back'}
-          </Button>
           <GlobalChecklistsManager />
         </div>
       )}
 
+      {/* SEARCH SECTION */}
+      {activeTab === 'search' && (
+        <div className="pb-6">
+          <QuickSearchDialog open={true} onOpenChange={() => setActiveTab('jobs')} />
+        </div>
+      )}
+
+
+
       {/* All Jobs Link - Secondary Access */}
-      {activeTab === 'projects' && filteredJobs.length > 3 && (
+      {activeTab === 'jobs' && filteredJobs.length > 3 && (
         <div className="text-center mb-6">
           <Button
             onClick={() => setShowQuickSearch(true)}
@@ -547,7 +535,7 @@ export default function Field() {
       )}
 
     {/* Mobile Bottom Bar - Create Project Only */}
-    {user?.role !== 'customer' && activeTab === 'projects' && (
+    {user?.role !== 'customer' && activeTab === 'jobs' && (
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
         <div className="px-3 py-3">
           <Button 
