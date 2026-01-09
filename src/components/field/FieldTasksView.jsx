@@ -366,7 +366,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
       )}
 
       {/* List View */}
-      {view === 'list' && (
+      {!showEmptyState && view === 'list' && (
         <div className="flex-1 bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 rounded-xl overflow-hidden shadow-lg">
           <table className="w-full">
             <thead>
