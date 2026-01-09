@@ -48,6 +48,14 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
   });
 
   const startRecording = async () => {
+    // Immediate visual feedback
+    setStep('recording');
+    setIsRecording(true);
+    setRecordingTime(0);
+    
+    // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate(10);
+    
     try {
       audioChunksRef.current = [];
 
@@ -74,12 +82,8 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         await processRecording();
       };
 
-      mediaRecorder.start(1000); // Collect data every 1s
+      mediaRecorder.start(1000);
       mediaRecorderRef.current = mediaRecorder;
-
-      setIsRecording(true);
-      setStep('recording');
-      setRecordingTime(0);
 
       // Start timer
       timerRef.current = setInterval(() => {
@@ -89,6 +93,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
       console.log('[VoiceNote] Recording started');
     } catch (error) {
       console.error('Failed to start recording:', error);
+      setStep('error');
       toast.error('Failed to access microphone', {
         description: 'Please allow microphone access and try again',
       });
@@ -97,8 +102,14 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+      // Immediate visual transition
+      setStep('processing');
       setIsRecording(false);
+      
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      
+      mediaRecorderRef.current.stop();
       clearInterval(timerRef.current);
 
       // Stop all tracks
@@ -129,16 +140,22 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
       });
 
       if (response.data.success) {
+        // Immediate completion feedback
         setStep('completed');
-        toast.success('Voice note processed successfully', {
+        
+        // Haptic success
+        if (navigator.vibrate) navigator.vibrate([10, 50, 10, 50, 10]);
+        
+        toast.success('Note saved offline', {
           description: `${response.data.analysis.tasks?.length || 0} tasks, ${response.data.analysis.issues?.length || 0} issues detected`,
+          duration: 2000,
         });
         
         setTimeout(() => {
           onComplete?.(response.data);
           onOpenChange(false);
           resetState();
-        }, 2000);
+        }, 1500);
       } else {
         throw new Error(response.data.error || 'Processing failed');
       }
