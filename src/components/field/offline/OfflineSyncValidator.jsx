@@ -155,7 +155,6 @@ export default function OfflineSyncValidator() {
   // All UI is in FieldDebugDrawer.
   return null;
 }
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Database className="w-4 h-4 text-cyan-400" />
         <span className="font-bold text-white">Offline Sync</span>
         <Badge className={`ml-auto text-[10px] ${

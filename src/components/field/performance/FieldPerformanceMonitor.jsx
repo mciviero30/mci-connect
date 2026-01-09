@@ -120,7 +120,6 @@ export default function FieldPerformanceMonitor({ componentName = 'Field' }) {
   // All UI is in FieldDebugDrawer.
   return null;
 }
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Zap className="w-4 h-4 text-purple-400" />
         <span className="font-bold text-white">Performance</span>
         <Badge className="ml-auto bg-purple-500/20 text-purple-300 text-[10px]">

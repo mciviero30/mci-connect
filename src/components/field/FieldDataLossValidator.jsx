@@ -190,7 +190,6 @@ export default function FieldDataLossValidator({ jobId }) {
   // All UI is in FieldDebugDrawer.
   return null;
 }
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Shield className={`w-4 h-4 ${overallHealth ? 'text-green-400' : 'text-red-400'}`} />
         <span className="font-bold text-white">Data Loss Protection</span>
         <Badge className={`ml-auto text-[10px] ${overallHealth ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>

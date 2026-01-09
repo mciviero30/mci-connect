@@ -88,7 +88,6 @@ export default function FieldLifecycleValidator({ jobId }) {
   // All UI is in FieldDebugDrawer.
   return null;
 }
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Activity className="w-4 h-4 text-green-400" />
         <span className="font-bold text-white">Lifecycle Monitor</span>
         <Badge className="ml-auto bg-green-500/20 text-green-300 text-[10px]">
