@@ -114,35 +114,45 @@ export default function MobilePhotoCapture({
   const handleUpload = async () => {
     if (!capturedImage?.file) return;
 
-    const photoData = {
-      job_id: jobId,
-      caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
-      location: locationText,
-      gps_latitude: location?.latitude,
-      gps_longitude: location?.longitude,
-      wall_number: wallNumber,
-    };
+    // Prevent double submit
+    const submitResult = await preventDoubleSubmit(async () => {
+      const photoData = {
+        job_id: jobId,
+        caption: caption || (wallNumber ? `Wall ${wallNumber}` : ''),
+        location: locationText,
+        gps_latitude: location?.latitude,
+        gps_longitude: location?.longitude,
+        wall_number: wallNumber,
+      };
 
-    // BLOCKING SAVE: UI waits for confirmation
-    const result = await SaveGuarantee.guaranteeSave({
-      entityType: 'Photo',
-      entityData: photoData,
-      jobId,
-      apiCall: async () => {
-        // Upload file first
-        const { file_url } = await base44.integrations.Core.UploadFile({ 
-          file: capturedImage.file 
-        });
-        
-        // Then create photo record
-        return await base44.entities.Photo.create({
-          ...photoData,
-          file_url,
-        });
-      },
-      draftKey: `photo_${jobId}`,
-      onProgress: setSaveProgress,
+      // BLOCKING SAVE: UI waits for confirmation
+      return await SaveGuarantee.guaranteeSave({
+        entityType: 'Photo',
+        entityData: photoData,
+        jobId,
+        apiCall: async () => {
+          // Upload file first
+          const { file_url } = await base44.integrations.Core.UploadFile({ 
+            file: capturedImage.file 
+          });
+          
+          // Then create photo record
+          return await base44.entities.Photo.create({
+            ...photoData,
+            file_url,
+          });
+        },
+        draftKey: `photo_${jobId}`,
+        onProgress: setSaveProgress,
+      });
     });
+
+    if (submitResult.prevented) {
+      microToast.info(submitResult.reason, 1500);
+      return;
+    }
+
+    const result = submitResult.result;
     
     if (result.success) {
       // Immediate success feedback
@@ -152,7 +162,14 @@ export default function MobilePhotoCapture({
       // Haptic success
       haptic.success();
       
-      // Close modal after brief confirmation
+      // Visual toast
+      if (result.savedOffline) {
+        microToast.offline('Photo saved', 1500);
+      } else {
+        microToast.success('Photo saved', 1500);
+      }
+      
+      // Close modal after brief confirmation - CONTINUITY IS CONFIRMATION
       setTimeout(() => {
         onPhotoCreated?.();
         handleClose();
@@ -162,7 +179,7 @@ export default function MobilePhotoCapture({
       // Save failed
       setSaveProgress(null);
       haptic.error();
-      microToast.error(result.error || 'Failed to save photo', 3000);
+      microToast.error(humanize.error(result.error || 'Failed to save photo'), 3000);
     }
   };
 
@@ -368,12 +385,13 @@ export default function MobilePhotoCapture({
                     </>
                   )}
                   {saveProgress === 'confirming' && (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Confirming...
-                    </>
+                   <>
+                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                     Confirming...
+                   </>
                   )}
-                  {!saveProgress && 'Save Photo'}
+                  {isSubmitting && !saveProgress && 'Processing...'}
+                  {!saveProgress && !isSubmitting && 'Save Photo'}
                 </Button>
               </div>
             </div>

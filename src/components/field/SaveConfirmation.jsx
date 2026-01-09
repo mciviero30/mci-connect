@@ -54,7 +54,7 @@ export default function SaveConfirmation({
     },
   };
 
-  const { icon: Icon, color, userText } = config[type];
+  const { icon: Icon, bg, message: configMessage } = configs[type] || configs.success;
 
   return (
     <AnimatePresence>
@@ -64,11 +64,11 @@ export default function SaveConfirmation({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -5 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 backdrop-blur-md border border-slate-700/50 radius-md shadow-enterprise-xl px-4 py-2.5"
+          className={`fixed top-20 left-1/2 -translate-x-1/2 z-[80] ${bg} backdrop-blur-md radius-md shadow-enterprise-xl px-5 py-3`}
         >
-          <div className="flex items-center gap-2">
-            <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-            <span className="text-white font-semibold text-sm">{userText}</span>
+          <div className="flex items-center gap-3">
+            {Icon}
+            <span className="text-white font-bold text-base">{configMessage}</span>
           </div>
         </motion.div>
       )}

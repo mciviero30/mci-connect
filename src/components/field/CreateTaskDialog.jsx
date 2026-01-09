@@ -23,6 +23,7 @@ import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { NavigationBlocker } from '@/components/validation/NavigationBlocker';
+import SaveConfirmation from './SaveConfirmation';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -80,6 +81,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [newComment, setNewComment] = useState('');
   const [detectingWallNumber, setDetectingWallNumber] = useState(false);
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
+  const [saveConfirmationType, setSaveConfirmationType] = useState('success');
   const fieldContext = useFieldContext();
 
   // Auto-save for new tasks (not existing tasks from pins)
@@ -252,6 +255,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
       queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
+      
+      // Show save confirmation
+      setSaveConfirmationType('success');
+      setShowSaveConfirmation(true);
+      
+      // Reset form - CONTINUITY IS CONFIRMATION
       setTask({
         title: '',
         description: '',
@@ -270,7 +279,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       });
       setShowNewItemInput(false);
       setNewChecklistItem('');
-      onOpenChange(false);
+      
+      // Close after brief confirmation
+      setTimeout(() => onOpenChange(false), 1200);
     },
     
     onError: () => {
@@ -604,6 +615,14 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   if (isMobile) {
     return (
+      <>
+        {/* Save Confirmation */}
+        <SaveConfirmation 
+          show={showSaveConfirmation}
+          type={saveConfirmationType}
+          onComplete={() => setShowSaveConfirmation(false)}
+        />
+        
       <FieldBottomSheet open={open} onOpenChange={handleClose} title={task.id ? task.title || 'Task Details' : 'New Task'}>
         {!canEdit && (
           <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 rounded-lg mb-4">
@@ -741,12 +760,6 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               )}
             </div>
           )}
-        </div>
-      </FieldBottomSheet>
-    );
-  }
-
-  return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white max-w-5xl h-[90vh] p-0 overflow-hidden [&>button]:hidden">
         <VisuallyHidden>
@@ -1029,11 +1042,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 {task.id && canEdit && (
                   <Button 
                     onClick={handleSave}
-                    disabled={updateTaskMutation.isPending}
+                    disabled={updateTaskMutation.isPending || isSubmitting}
                     size="sm"
                     className="bg-[#FFB800] hover:bg-[#E5A600] text-white px-6"
                   >
-                    {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
+                    {updateTaskMutation.isPending || isSubmitting ? 'Saving...' : 'Done'}
                   </Button>
                 )}
                 {task.id && !canEdit && (

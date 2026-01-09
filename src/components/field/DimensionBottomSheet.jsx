@@ -125,13 +125,14 @@ export default function DimensionBottomSheet({
       setConfirmationType(result.savedOffline ? 'offline' : 'success');
       setShowConfirmation(true);
       
+      // Visual toast feedback
       if (result.savedOffline) {
-        microToast.offline('Measurement saved', 2000);
+        microToast.offline('Measurement saved', 1500);
       } else {
         microToast.success('Measurement saved', 1500);
       }
       
-      // Close modal after brief confirmation
+      // Close modal after brief confirmation - CONTINUITY IS CONFIRMATION
       setTimeout(() => {
         onOpenChange(false);
         onSave?.();

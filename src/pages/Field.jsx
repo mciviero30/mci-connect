@@ -34,6 +34,7 @@ import { FieldSessionManager } from '@/components/field/services/FieldSessionMan
 import FieldReentryPrompt from '@/components/field/FieldReentryPrompt';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { SkeletonFieldProject } from '@/components/shared/SkeletonComponents';
+import { ExitConfirmation, useExitConfirmation } from '@/components/feedback/ExitConfirmation';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
@@ -90,6 +91,7 @@ export default function Field() {
   
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -294,23 +296,29 @@ export default function Field() {
   const tasksInProgress = tasks.filter(t => t.status === 'in_progress').length;
   const tasksCompleted = tasks.filter(t => t.status === 'completed').length;
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     if (!newProject.name || !newProject.customer_name) {
-      toast({
-        title: 'Missing required fields',
-        description: 'Please fill in Project Name and Customer Name',
-        variant: 'destructive'
-      });
+      toast.error('Some info is missing — add project name and customer', { duration: 2500 });
       return;
     }
     
-    createJobMutation.mutate({
-      name: newProject.name,
-      customer_name: newProject.customer_name,
-      description: newProject.description,
-      address: newProject.address,
-      status: 'active',
-    });
+    try {
+      await createJobMutation.mutateAsync({
+        name: newProject.name,
+        customer_name: newProject.customer_name,
+        description: newProject.description,
+        address: newProject.address,
+        status: 'active',
+      });
+      
+      // Success feedback with continuity
+      toast.success('Project created', { duration: 1500 });
+      
+      // Clear form - CONTINUITY IS CONFIRMATION
+      setNewProject({ name: '', description: '', address: '', customer_name: '', customer_id: '' });
+    } catch (error) {
+      toast.error("Couldn't create project — try again", { duration: 2500 });
+    }
   };
 
   return (
@@ -326,17 +334,44 @@ export default function Field() {
       )}
 
     <div data-field-mode="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto dark">
-      {/* Field Exit Control - Persistent, Always Visible */}
-      <Link to={createPageUrl('Dashboard')}>
-        <Button 
-          onClick={() => setIsFieldMode(false)}
-          className="fixed top-4 left-4 z-[70] bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-2xl backdrop-blur-sm min-h-[44px] px-4 rounded-xl touch-manipulation"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Back to MCI Connect</span>
-          <span className="sm:hidden">Back</span>
-        </Button>
-      </Link>
+      {/* Field Exit Control - Intelligent, Non-Blocking */}
+      <Button 
+        onClick={() => {
+          // Check for active session
+          const session = FieldSessionManager.getSession();
+          if (session?.isActive || previousSession?.isActive) {
+            // Show exit confirmation
+            setShowExitConfirmation(true);
+          } else {
+            // Safe to exit immediately
+            setIsFieldMode(false);
+            navigate(createPageUrl('Dashboard'));
+          }
+        }}
+        className="fixed top-4 left-4 z-[70] bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-2xl backdrop-blur-sm min-h-[44px] px-4 rounded-xl touch-manipulation"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        <span className="hidden sm:inline">Back to MCI Connect</span>
+        <span className="sm:hidden">Back</span>
+      </Button>
+      
+      {/* Exit Confirmation - Only if active work */}
+      <ExitConfirmation
+        open={showExitConfirmation}
+        onOpenChange={setShowExitConfirmation}
+        pendingWork={previousSession?.context ? ['Active field session'] : []}
+        offlineItems={0}
+        unsavedChanges={false}
+        onConfirmExit={() => {
+          FieldSessionManager.clearSession();
+          setIsFieldMode(false);
+          navigate(createPageUrl('Dashboard'));
+        }}
+        onStay={() => {
+          setShowExitConfirmation(false);
+          if (previousSession) handleResumeSession();
+        }}
+      />
 
       <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
       {/* HEADER - Simple, Clear Status */}
@@ -663,9 +698,13 @@ export default function Field() {
               <Button 
                 onClick={handleCreateProject}
                 disabled={!newProject.name || !newProject.customer_name || createJobMutation.isPending}
-                className="soft-amber-gradient"
+                className="soft-amber-gradient disabled:opacity-70"
               >
-                {createJobMutation.isPending ? 'Creating...' : 'Create Project'}
+                {createJobMutation.isPending 
+                  ? 'Creating...' 
+                  : !newProject.name || !newProject.customer_name
+                  ? 'Fill required fields'
+                  : 'Create Project'}
               </Button>
             </div>
           </div>

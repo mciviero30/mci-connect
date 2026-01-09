@@ -82,13 +82,20 @@ export default function FieldBottomActionRail({
             return (
               <button
                 key={action.id}
-                onClick={() => !isDisabled && handleAction(action.id)}
-                disabled={isDisabled}
+                onClick={() => {
+                  if (isDisabled) {
+                    // Visual + haptic feedback for disabled action
+                    haptic.error();
+                    microToast.info(canAddContent.reason, 2000);
+                  } else {
+                    handleAction(action.id);
+                  }
+                }}
                 className={`flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] max-w-[100px] rounded-xl touch-manipulation transition-all ${
                   isActive 
                     ? 'bg-orange-600 text-black scale-105 shadow-lg' 
                     : isDisabled
-                    ? 'text-slate-500 opacity-50 cursor-not-allowed'
+                    ? 'text-slate-500 opacity-50'
                     : 'text-white active:bg-slate-800'
                 } ${!isDisabled && 'active:scale-95'}`}
                 style={{ 
@@ -97,7 +104,6 @@ export default function FieldBottomActionRail({
                   minHeight: '64px',
                 }}
                 aria-label={action.label}
-                title={isDisabled ? canAddContent.reason : action.label}
               >
                 <Icon 
                   className={`w-6 h-6 ${isActive ? 'text-black' : 'text-white'}`} 

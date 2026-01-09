@@ -61,6 +61,8 @@ export default function FieldProjectView({
   // CENTRAL PANEL MANAGER - ONE ACTIVE PANEL AT A TIME
   const [activePanel, setActivePanel] = React.useState('work');
   const [showCreateTask, setShowCreateTask] = React.useState(false);
+  const [showExitConfirmation, setShowExitConfirmation] = React.useState(false);
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
   // Panel switcher - closes others automatically
   const switchPanel = (panelId) => {
@@ -70,6 +72,30 @@ export default function FieldProjectView({
   // Close panel - return to work view
   const closePanel = () => {
     setActivePanel('work');
+  };
+
+  // Monitor online status
+  React.useEffect(() => {
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
+
+  // Handle safe exit
+  const handleSafeExit = () => {
+    // Check for unsaved work
+    const session = FieldSessionManager.getSession();
+    if (session?.hasUnsavedWork) {
+      setShowExitConfirmation(true);
+    } else {
+      // Safe to exit - clear session and navigate
+      FieldSessionManager.clearSession();
+      window.history.back();
+    }
   };
   // Loading state
   if (isLoading) {
@@ -188,15 +214,14 @@ export default function FieldProjectView({
     <div data-field-scope="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col overflow-hidden dark">
       {/* HEADER FIJO - Simple, Clear */}
       <div className="flex-shrink-0 sticky top-0 z-50 bg-gradient-to-br from-black to-slate-900 border-b border-slate-700 shadow-xl">
-        {/* Back Button - Top Left */}
-        <Link to={createPageUrl('Field')}>
-          <Button 
-            className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-xl backdrop-blur-sm min-h-[48px] px-3 rounded-xl touch-manipulation"
-          >
-            <ArrowLeft className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Back to MCI Field</span>
-          </Button>
-        </Link>
+        {/* Back Button - Top Left - Smart Exit */}
+        <Button 
+          onClick={handleSafeExit}
+          className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-xl backdrop-blur-sm min-h-[48px] px-3 rounded-xl touch-manipulation"
+        >
+          <ArrowLeft className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">Back to MCI Field</span>
+        </Button>
 
         {/* Project Info */}
         <div className="px-3 sm:px-4 md:px-6 py-4 pt-16 sm:pt-4">
@@ -320,6 +345,21 @@ export default function FieldProjectView({
       <FieldBottomActionRail 
         jobId={jobId}
         jobName={job?.name || job?.job_name_field}
+        jobStatus={job?.status}
+      />
+      
+      {/* Exit Confirmation - Only when needed */}
+      <ExitConfirmation
+        open={showExitConfirmation}
+        onOpenChange={setShowExitConfirmation}
+        pendingWork={[]}
+        offlineItems={0}
+        unsavedChanges={false}
+        onConfirmExit={() => {
+          FieldSessionManager.clearSession();
+          window.history.back();
+        }}
+        onStay={() => setShowExitConfirmation(false)}
       />
     </div>
   );
