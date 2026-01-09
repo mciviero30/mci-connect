@@ -113,8 +113,15 @@ export default function FieldPerformanceMonitor({ componentName = 'Field' }) {
     return () => clearInterval(interval);
   }, []);
 
+  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
   if (!import.meta.env?.DEV) return null;
 
+  // Component is logging-only in DEV mode.
+  // All UI is in FieldDebugDrawer.
+  return null;
+
+  /*
+  // OLD FLOATING PANEL CODE - REMOVED
   const fpsStatus = metrics.fps >= 55 ? 'excellent' : metrics.fps >= 45 ? 'good' : metrics.fps >= 30 ? 'fair' : 'poor';
   const renderStatus = metrics.avgRenderTime < 10 ? 'excellent' : metrics.avgRenderTime < 16 ? 'good' : metrics.avgRenderTime < 50 ? 'fair' : 'poor';
 
