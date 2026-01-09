@@ -56,6 +56,7 @@ export default function FieldProjectView({
   const [activePanel, setActivePanel] = React.useState('work');
   const [showCreateTask, setShowCreateTask] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+  const [showDebugDrawer, setShowDebugDrawer] = React.useState(false);
   
   // Debug mode detection - MUST BE BEFORE EARLY RETURNS
   const isDebugMode = useFieldDebugMode(currentUser);
