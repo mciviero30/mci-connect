@@ -3,17 +3,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { 
   ArrowLeft,
-  CheckSquare,
-  Camera,
-  FileText,
   Loader2,
-  ClipboardCheck,
-  MapPin,
   AlertCircle,
   Plus,
-  Mic,
-  X as XIcon,
-  TrendingUp
+  X as XIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import FieldProjectOverview from '@/components/field/FieldProjectOverview.jsx';
 import FieldPlansView from '@/components/field/FieldPlansView.jsx';
 import FieldTasksView from '@/components/field/FieldTasksView.jsx';
-import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
 import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
+import FieldInstallation from '@/components/field/FieldInstallation.jsx';
 import { OfflineStatusBadge } from '@/components/field/FieldOfflineManager.jsx';
 import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
@@ -126,62 +119,15 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // WORK MODE: Vertical scroll of all sections
+  // WORK MODE: Installation view (no measurements)
   const renderWorkMode = () => (
-    <div className="space-y-5 px-3 sm:px-4 md:px-6 pb-32">
-      {/* 1. Progress Summary - Compact */}
-      <section className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-        <FieldProjectOverview job={job} tasks={tasks} plans={plans} compact={true} />
-      </section>
-      
-      {/* 2. Tasks Section */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <CheckSquare className="w-5 h-5 text-orange-400" />
-            Tasks
-          </h2>
-          <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 px-2 py-0.5 text-xs">
-            {tasks.filter(t => t.status !== 'completed').length}
-          </Badge>
-        </div>
-        <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} />
-      </section>
-
-      {/* 3. Dimensions Section */}
-      <section data-section="dimensions">
-        <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-purple-400" />
-          Dimensions
-        </h2>
-        <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />
-      </section>
-
-      {/* 4. Plans Section */}
-      {plans.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-400" />
-              Plans
-            </h2>
-            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/40 px-2 py-0.5 text-xs">
-              {plans.length}
-            </Badge>
-          </div>
-          <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />
-        </section>
-      )}
-
-      {/* 5. Checklists Section */}
-      <section>
-        <h2 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-          <ClipboardCheck className="w-5 h-5 text-green-400" />
-          Checklists
-        </h2>
-        <FieldChecklistsView jobId={jobId} />
-      </section>
-    </div>
+    <FieldInstallation 
+      job={job} 
+      tasks={tasks} 
+      plans={plans} 
+      jobId={jobId} 
+      currentUser={currentUser}
+    />
   );
 
   // DEBUG MODE: Individual panel rendering
