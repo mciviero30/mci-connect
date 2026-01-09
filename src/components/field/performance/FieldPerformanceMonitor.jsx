@@ -119,14 +119,7 @@ export default function FieldPerformanceMonitor({ componentName = 'Field' }) {
   // Component is logging-only in DEV mode.
   // All UI is in FieldDebugDrawer.
   return null;
-
-  /*
-  // OLD FLOATING PANEL CODE - REMOVED
-  const fpsStatus = metrics.fps >= 55 ? 'excellent' : metrics.fps >= 45 ? 'good' : metrics.fps >= 30 ? 'fair' : 'poor';
-  const renderStatus = metrics.avgRenderTime < 10 ? 'excellent' : metrics.avgRenderTime < 16 ? 'good' : metrics.avgRenderTime < 50 ? 'fair' : 'poor';
-
-  return (
-    <div className="fixed top-20 left-4 z-[60] max-w-xs bg-slate-900/95 backdrop-blur-sm border-2 border-purple-500/50 rounded-xl shadow-2xl p-4 text-xs">
+}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Zap className="w-4 h-4 text-purple-400" />
         <span className="font-bold text-white">Performance</span>
