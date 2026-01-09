@@ -58,7 +58,7 @@ export const ExitConfirmation = ({
           
           <DialogDescription className="text-center text-sm">
             {isSafe && 'Safe to exit'}
-            {hasOffline && "These will sync automatically when you're back online"}
+            {hasOffline && 'These will sync automatically when you are back online'}
             {!isSafe && !hasOffline && 'Your work will be lost if you leave now'}
           </DialogDescription>
         </DialogHeader>
