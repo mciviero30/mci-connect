@@ -72,6 +72,22 @@ export const isClient = (user) => {
 };
 
 /**
+ * Check if user can add content (create tasks, dimensions, photos)
+ * All authenticated users except clients can add content
+ */
+export const canAddContent = (user) => {
+  if (!user) return false;
+  
+  const role = (user.role || '').toLowerCase();
+  
+  // Clients cannot add content
+  if (role === 'customer') return false;
+  
+  // All other authenticated users can add content
+  return true;
+};
+
+/**
  * Get role priority for conflict resolution
  * Higher number = higher priority
  */
