@@ -688,10 +688,10 @@ function EmptyState({ onCreateProject, language }) {
         <Briefcase className="w-8 h-8 text-orange-400" />
       </div>
       <h3 className="text-lg font-bold text-white mb-2">
-        {language === 'es' ? 'Sin proyectos asignados' : 'No projects assigned'}
+        {language === 'es' ? 'No hay proyectos hoy' : 'No projects today'}
       </h3>
       <p className="text-sm text-slate-400 mb-4">
-        {language === 'es' ? 'Crea tu primer proyecto para comenzar' : 'Create your first project to get started'}
+        {language === 'es' ? 'Comienza creando tu primer proyecto' : 'Get started by creating your first project'}
       </p>
     </div>
   );

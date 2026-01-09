@@ -10,6 +10,7 @@ import { SaveGuarantee } from './services/SaveGuarantee';
 import SaveConfirmation from './SaveConfirmation';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
+import { humanize } from '@/components/feedback/HumanStates';
 
 export default function MobilePhotoCapture({ 
   open, 

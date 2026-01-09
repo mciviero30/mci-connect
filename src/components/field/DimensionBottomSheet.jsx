@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import FieldBottomSheet from './FieldBottomSheet';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
+import { humanize } from '@/components/feedback/HumanStates';
 import { SaveGuarantee } from './services/SaveGuarantee';
 import SaveConfirmation from './SaveConfirmation';
 import { Loader2 } from 'lucide-react';
@@ -71,7 +72,7 @@ export default function DimensionBottomSheet({
   const handleSave = async () => {
     if (!formData.area) {
       haptic.error();
-      microToast.error('Please enter location/area', 2000);
+      microToast.error('Some info is missing — add location', 2000);
       return;
     }
 
@@ -125,7 +126,7 @@ export default function DimensionBottomSheet({
       // Save failed
       setSaveProgress(null);
       haptic.error();
-      microToast.error(result.error || 'Failed to save dimension', 3000);
+      microToast.error(humanize.error(result.error || 'Failed to save dimension'), 3000);
     }
   };
 

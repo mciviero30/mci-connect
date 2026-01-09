@@ -27,13 +27,14 @@ export default function FieldBottomActionRail({
     // Haptic feedback
     haptic.light();
     
-    // Close any open action
+    // Close any open action (with visual confirmation)
     if (activeAction && activeAction !== actionId) {
       setActiveAction(null);
+      // Brief pause for state transition
+      setTimeout(() => setActiveAction(actionId), 100);
+    } else {
+      setActiveAction(actionId);
     }
-    
-    // Execute action
-    setActiveAction(actionId);
   };
 
   // 5 CORE ACTIONS - Fixed, Always Visible

@@ -20,6 +20,7 @@ import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQ
 import FieldBottomSheet from './FieldBottomSheet';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
+import { humanize } from '@/components/feedback/HumanStates';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -225,7 +226,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         old ? old.filter(t => t.id !== context.tempTask.id) : old
       );
       haptic.error();
-      microToast.error('Failed to create task', 3000);
+      microToast.error("Couldn't create task — try again", 3000);
     },
   });
 
@@ -272,7 +273,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     
     onError: () => {
       haptic.error();
-      microToast.error('Failed to save', 3000);
+      microToast.error("Couldn't save — we'll retry", 3000);
     },
   });
 
@@ -317,7 +318,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         old.filter(c => c.id !== context.tempComment.id)
       );
       haptic.error();
-      microToast.error('Failed to post comment', 2000);
+      microToast.error("Couldn't post comment — try again", 2000);
     },
   });
 
@@ -342,7 +343,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     
     onError: (error, id, context) => {
       haptic.error();
-      microToast.error('Failed to delete', 2000);
+      microToast.error("Couldn't delete — try again", 2000);
       queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
     },
   });
@@ -507,7 +508,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         photo_urls: prev.photo_urls.filter(p => !p._uploading)
       }));
       haptic.error();
-      microToast.error('Upload failed', 3000);
+      microToast.error("Couldn't upload photos — try again", 3000);
     } finally {
       setUploadingPhoto(false);
     }

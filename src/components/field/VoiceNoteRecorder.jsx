@@ -8,6 +8,7 @@ import { Mic, MicOff, Loader2, CheckCircle2, AlertCircle, MapPin, Clock } from '
 import { base44 } from '@/api/base44Client';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
+import { humanize } from '@/components/feedback/HumanStates';
 import { useMobileLifecycle } from './hooks/useMobileLifecycle';
 
 export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, onComplete }) {
@@ -96,7 +97,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
       console.error('Failed to start recording:', error);
       setStep('error');
       haptic.error();
-      microToast.error('Microphone access denied', 3000);
+      microToast.error('Microphone access needed — check settings', 3000);
     }
   };
 
@@ -146,7 +147,9 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         // Haptic success
         haptic.success();
         
-        microToast.offline(`Note saved - ${response.data.analysis.tasks?.length || 0} tasks, ${response.data.analysis.issues?.length || 0} issues`, 2000);
+        const taskCount = response.data.analysis.tasks?.length || 0;
+        const issueCount = response.data.analysis.issues?.length || 0;
+        microToast.offline(`Note saved — ${taskCount} ${taskCount === 1 ? 'task' : 'tasks'}, ${issueCount} ${issueCount === 1 ? 'issue' : 'issues'}`, 2000);
         
         setTimeout(() => {
           onComplete?.(response.data);
