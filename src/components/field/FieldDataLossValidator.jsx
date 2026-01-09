@@ -189,13 +189,7 @@ export default function FieldDataLossValidator({ jobId }) {
   // Component is logging-only in DEV mode.
   // All UI is in FieldDebugDrawer.
   return null;
-
-  /*
-  // OLD FLOATING PANEL CODE - REMOVED
-  const overallHealth = stats.indexedDBHealthy && stats.sessionStorageHealthy;
-
-  return (
-    <div className="fixed top-4 left-4 z-[60] max-w-sm bg-slate-900/95 backdrop-blur-sm border-2 border-blue-500/50 rounded-xl shadow-2xl p-4 text-xs">
+}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Shield className={`w-4 h-4 ${overallHealth ? 'text-green-400' : 'text-red-400'}`} />
         <span className="font-bold text-white">Data Loss Protection</span>
