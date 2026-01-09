@@ -41,7 +41,11 @@ import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
+  const { language } = useLanguage();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showReentryPrompt, setShowReentryPrompt] = useState(false);
+  const [previousSession, setPreviousSession] = useState(null);
   
   // Persistent filter state
   const [filter, setFilter, clearFilter] = usePersistentState('field_filter', 'active', { expiryHours: 48 });
@@ -54,6 +58,25 @@ export default function Field() {
       setIsFieldMode(false);
     };
   }, [setIsFieldMode]);
+
+  // Check for previous Field session on mount
+  useEffect(() => {
+    const checkPreviousSession = () => {
+      try {
+        const session = FieldSessionManager.getSession();
+        
+        // Only show re-entry if session exists and is active
+        if (session && session.isActive && session.jobId) {
+          setPreviousSession(session);
+          setShowReentryPrompt(true);
+        }
+      } catch (error) {
+        console.error('Failed to check previous session:', error);
+      }
+    };
+
+    checkPreviousSession();
+  }, []);
   
   const [showNewProject, setShowNewProject] = useState(false);
   
@@ -73,6 +96,47 @@ export default function Field() {
   const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });
   
   const queryClient = useQueryClient();
+
+  // Handle resume session
+  const handleResumeSession = () => {
+    if (!previousSession || !previousSession.jobId) return;
+    
+    // Build restoration URL
+    const params = new URLSearchParams({
+      id: previousSession.jobId,
+      panel: previousSession.context?.activePanel || 'overview',
+    });
+
+    if (previousSession.context?.selectedPlanId) {
+      params.append('plan', previousSession.context.selectedPlanId);
+    }
+
+    setShowReentryPrompt(false);
+    
+    // Navigate with full context restoration
+    navigate(`${createPageUrl('FieldProject')}?${params.toString()}`);
+  };
+
+  // Handle start fresh
+  const handleStartFresh = () => {
+    // Clear ONLY visual state, keep data intact
+    if (previousSession) {
+      FieldSessionManager.updateSession({
+        context: {
+          activePanel: 'overview',
+          scrollPositions: {},
+          openModals: [],
+          currentArea: null,
+          currentMode: null,
+          selectedPlanId: null,
+        },
+        activeIntent: null,
+      });
+    }
+    
+    setShowReentryPrompt(false);
+    setPreviousSession(null);
+  };
 
   // Global keyboard shortcut for quick search (Cmd+K / Ctrl+K)
   useEffect(() => {
@@ -147,6 +211,14 @@ export default function Field() {
     },
     enabled: jobs.length > 0,
     ...FIELD_STABLE_QUERY_CONFIG,
+  });
+
+  // Fetch job name for re-entry prompt
+  const { data: previousJob } = useQuery({
+    queryKey: ['previous-field-job', previousSession?.jobId],
+    queryFn: () => base44.entities.Job.filter({ id: previousSession.jobId }).then(jobs => jobs[0]),
+    enabled: !!previousSession?.jobId && showReentryPrompt,
+    staleTime: 300000,
   });
 
   const createCustomerMutation = useMutation({
@@ -247,6 +319,16 @@ export default function Field() {
 
   return (
     <FieldErrorBoundary>
+      {/* Re-entry Prompt - Smart Session Restoration */}
+      {showReentryPrompt && previousSession && (
+        <FieldReentryPrompt
+          session={previousSession}
+          jobName={previousJob?.name || (language === 'es' ? 'Proyecto activo' : 'Active project')}
+          onResume={handleResumeSession}
+          onStartFresh={handleStartFresh}
+        />
+      )}
+
     <div data-field-mode="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto dark">
       {/* Field Exit Control - Persistent, Always Visible */}
       <Link to={createPageUrl('Dashboard')}>
