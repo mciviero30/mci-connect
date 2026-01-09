@@ -49,6 +49,7 @@ import TopRecognitionsWidget from "../components/recognition/TopRecognitionsWidg
 import GiveKudosDialog from "../components/recognition/GiveKudosDialog";
 import QuickActions from "../components/dashboard/QuickActions";
 import { useUIVisibility, DebugUI, AdminOnlyUI } from "@/components/policies/UIVisibilityWrapper";
+import FieldWorkIndicator from "@/components/dashboard/FieldWorkIndicator";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -768,6 +769,9 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Field Work Indicator - Non-Intrusive */}
+        <FieldWorkIndicator />
 
         {/* Quick Actions for Employees - Mobile-First */}
         {!isAdmin && (
