@@ -36,25 +36,22 @@ export default function SaveConfirmation({
   const config = {
     success: {
       icon: CheckCircle2,
-      color: 'from-green-600 to-emerald-600',
-      text: message || 'Saved',
-      userText: message || '✓ Saved'
+      bg: 'bg-gradient-to-r from-green-600 to-emerald-600',
+      message: message || '✓ Saved'
     },
     offline: {
       icon: CloudOff,
-      color: 'from-amber-600 to-orange-600',
-      text: message || 'Queued offline',
-      userText: message || 'Saved locally'
+      bg: 'bg-gradient-to-r from-amber-600 to-orange-600',
+      message: message || 'Saved locally'
     },
     error: {
       icon: AlertCircle,
-      color: 'from-red-600 to-rose-600',
-      text: message || 'Save failed',
-      userText: message || 'Not saved'
+      bg: 'bg-gradient-to-r from-red-600 to-rose-600',
+      message: message || 'Not saved'
     },
   };
 
-  const { icon: Icon, bg, message: configMessage } = configs[type] || configs.success;
+  const { icon: Icon, bg, message: configMessage } = config[type] || config.success;
 
   return (
     <AnimatePresence>
