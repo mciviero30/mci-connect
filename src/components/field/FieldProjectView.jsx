@@ -211,6 +211,16 @@ export default function FieldProjectView({
           <span className="hidden sm:inline">Back to MCI Field</span>
         </Button>
 
+        {/* Debug Toggle - Top Right (Admin/Debug Only) */}
+        {isDebugMode && (
+          <Button 
+            onClick={() => setShowDebugDrawer(!showDebugDrawer)}
+            className="absolute top-4 right-4 z-10 bg-yellow-600/20 hover:bg-yellow-600/30 text-yellow-400 border border-yellow-500/50 shadow-xl backdrop-blur-sm min-h-[48px] px-3 rounded-xl touch-manipulation text-xs"
+          >
+            🔧 Debug
+          </Button>
+        )}
+
         {/* Project Info */}
         <div className="px-3 sm:px-4 md:px-6 py-4 pt-16 sm:pt-4">
           <div className="flex items-start justify-between gap-3">
