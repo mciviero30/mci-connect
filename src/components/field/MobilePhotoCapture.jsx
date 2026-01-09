@@ -81,6 +81,12 @@ export default function MobilePhotoCapture({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Immediate visual transition
+    setStep('preview');
+    
+    // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate(10);
+
     // Create preview
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -89,7 +95,6 @@ export default function MobilePhotoCapture({
         file: file,
         fromCamera
       });
-      setStep('preview');
     };
     reader.readAsDataURL(file);
 
@@ -133,20 +138,23 @@ export default function MobilePhotoCapture({
     });
     
     if (result.success) {
-      // Show success confirmation
+      // Immediate success feedback
       setConfirmationType(result.savedOffline ? 'offline' : 'success');
       setShowConfirmation(true);
+      
+      // Haptic success
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
       
       // Close modal after brief confirmation
       setTimeout(() => {
         onPhotoCreated?.();
         handleClose();
-      }, 1500);
+      }, 1200);
       
     } else {
       // Save failed
       setSaveProgress(null);
-      toast.error(result.error || 'Failed to save photo');
+      toast.error(result.error || 'Failed to save photo', { duration: 3000 });
     }
   };
 
@@ -238,8 +246,11 @@ export default function MobilePhotoCapture({
                 Retake
               </Button>
               <Button 
-                onClick={() => setStep('details')}
-                className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white"
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(10);
+                  setStep('details');
+                }}
+                className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white active:scale-95 transition-transform"
               >
                 <Check className="w-4 h-4 mr-2" />
                 Use Photo
@@ -323,9 +334,12 @@ export default function MobilePhotoCapture({
                   Back
                 </Button>
                 <Button 
-                  onClick={handleUpload}
+                  onClick={() => {
+                    if (navigator.vibrate) navigator.vibrate(10);
+                    handleUpload();
+                  }}
                   disabled={saveProgress !== null}
-                  className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white disabled:opacity-70"
+                  className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white disabled:opacity-70 active:scale-95 transition-transform"
                 >
                   {saveProgress === 'validating' && (
                     <>
