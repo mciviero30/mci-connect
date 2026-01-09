@@ -154,15 +154,7 @@ export default function OfflineSyncValidator() {
   // Component is logging-only in DEV mode.
   // All UI is in FieldDebugDrawer.
   return null;
-
-  /*
-  // OLD FLOATING PANEL CODE - REMOVED
-  const syncRate = stats.total > 0 
-    ? Math.round((stats.completed / stats.total) * 100)
-    : 100;
-
-  return (
-    <div className="fixed top-36 left-4 z-[60] max-w-xs bg-slate-900/95 backdrop-blur-sm border-2 border-cyan-500/50 rounded-xl shadow-2xl p-4 text-xs">
+}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-700">
         <Database className="w-4 h-4 text-cyan-400" />
         <span className="font-bold text-white">Offline Sync</span>
