@@ -16,6 +16,8 @@ import { canEditTasks } from './rolePermissions';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
 import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
 import { useRenderOptimization } from './performance/useRenderOptimization';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 
 // Memoized TaskCard to prevent re-renders
 const TaskCard = memo(({ task, onClick, onDragStart, isClientPunch }) => {
@@ -124,7 +126,10 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
       );
       
       // Haptic feedback
-      if (navigator.vibrate) navigator.vibrate(10);
+      haptic.light();
+      
+      // Visual confirmation
+      microToast.success('Status updated', 1200);
     },
     
     onSuccess: (_, variables) => {
@@ -171,6 +176,11 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
   const handleDrop = useCallback((e, status) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
+    
+    // Immediate feedback on drop
+    haptic.medium();
+    microToast.success('Task moved', 1200);
+    
     updateTaskMutation.mutate({ id: taskId, data: { status } });
   }, [updateTaskMutation]);
 
@@ -311,7 +321,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans }) {
                           onDragStart={(e) => handleDragStart(e, task)}
                           onClick={() => {
                             // Haptic feedback
-                            if (navigator.vibrate) navigator.vibrate(10);
+                            haptic.light();
                             if (isClientPunch) {
                               setReviewingPunch(task);
                             } else {

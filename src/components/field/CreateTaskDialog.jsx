@@ -18,7 +18,8 @@ import { useFieldContext, withFieldContext } from './FieldContextProvider';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
 import FieldBottomSheet from './FieldBottomSheet';
-import { toast } from 'sonner';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -201,8 +202,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old ? [tempTask, ...old] : [tempTask]);
       
       // Haptic + toast
-      if (navigator.vibrate) navigator.vibrate(10);
-      toast.success('Task created', { duration: 2000 });
+      haptic.success();
+      microToast.success('Task created', 1500);
       
       return { tempTask };
     },
@@ -223,7 +224,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
         old ? old.filter(t => t.id !== context.tempTask.id) : old
       );
-      toast.error('Failed to create task', { duration: 3000 });
+      haptic.error();
+      microToast.error('Failed to create task', 3000);
     },
   });
 
@@ -240,8 +242,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       );
       
       // Haptic + toast
-      if (navigator.vibrate) navigator.vibrate(10);
-      toast.success('Saved', { duration: 1500 });
+      haptic.medium();
+      microToast.success('Saved', 1500);
     },
     
     onSuccess: () => {
@@ -269,7 +271,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     },
     
     onError: () => {
-      toast.error('Failed to save', { duration: 3000 });
+      haptic.error();
+      microToast.error('Failed to save', 3000);
     },
   });
 
@@ -296,8 +299,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       
       queryClient.setQueryData(['task-comments', task.id], (old = []) => [tempComment, ...old]);
       
-      if (navigator.vibrate) navigator.vibrate(10);
+      haptic.light();
       setNewComment('');
+      microToast.success('Comment posted', 1200);
       
       return { tempComment };
     },
@@ -312,7 +316,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       queryClient.setQueryData(['task-comments', task.id], (old = []) => 
         old.filter(c => c.id !== context.tempComment.id)
       );
-      toast.error('Failed to post comment', { duration: 2000 });
+      haptic.error();
+      microToast.error('Failed to post comment', 2000);
     },
   });
 
@@ -328,15 +333,16 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         old ? old.filter(t => t.id !== id) : old
       );
       
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
-      toast.success('Task deleted', { duration: 2000 });
+      haptic.success();
+      microToast.success('Task deleted', 2000);
       onOpenChange(false);
       
       return { deletedId: id };
     },
     
     onError: (error, id, context) => {
-      toast.error('Failed to delete', { duration: 2000 });
+      haptic.error();
+      microToast.error('Failed to delete', 2000);
       queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
     },
   });
@@ -476,8 +482,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       photo_urls: [...prev.photo_urls, ...tempUrls.map(url => ({ url, _uploading: true }))]
     }));
     
-    if (navigator.vibrate) navigator.vibrate(10);
-    toast.success(`Uploading ${files.length} photo${files.length > 1 ? 's' : ''}...`, { duration: 2000 });
+    haptic.light();
+    microToast.info(`Uploading ${files.length} photo${files.length > 1 ? 's' : ''}...`, 2000);
 
     setUploadingPhoto(true);
     try {
@@ -493,13 +499,15 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         photo_urls: [...prev.photo_urls.filter(p => !p._uploading), ...uploadedUrls]
       }));
       
-      toast.success('Photos uploaded', { duration: 2000 });
+      haptic.success();
+      microToast.success('Photos uploaded', 1500);
     } catch (error) {
       setTask(prev => ({
         ...prev,
         photo_urls: prev.photo_urls.filter(p => !p._uploading)
       }));
-      toast.error('Upload failed', { duration: 3000 });
+      haptic.error();
+      microToast.error('Upload failed', 3000);
     } finally {
       setUploadingPhoto(false);
     }
@@ -542,7 +550,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     setTask(prev => ({ ...prev, checklist: newChecklist }));
     
     // Haptic feedback
-    if (navigator.vibrate) navigator.vibrate(10);
+    haptic.light();
     
     // Auto-save checklist changes if editing existing task
     if (task.id) {
@@ -694,7 +702,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <>
                   <Button 
                     onClick={() => {
-                      if (navigator.vibrate) navigator.vibrate(15);
+                      haptic.medium();
                       handleSave();
                     }}
                     disabled={updateTaskMutation.isPending}
@@ -705,7 +713,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   </Button>
                   <Button
                     onClick={() => {
-                      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+                      haptic.heavy();
                       handleDeleteTask();
                     }}
                     disabled={deleteTaskMutation.isPending}
@@ -719,7 +727,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               ) : (
                 <Button 
                   onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(10);
+                    haptic.light();
                     handleClose();
                   }}
                   className="w-full min-h-[60px] touch-manipulation active:scale-95"
@@ -839,13 +847,13 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   {task.checklist.map((item, idx) => (
                     <div 
                      key={idx} 
-                     className={`flex items-center gap-3 text-sm font-medium cursor-pointer p-3 rounded-lg border-2 min-h-[56px] touch-manipulation transition-all ${
+                     className={`flex items-center gap-3 text-sm font-medium cursor-pointer p-3 rounded-lg border-2 min-h-[56px] touch-manipulation transition-all relative overflow-hidden ${
                        item.status === 'completed' 
                          ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-slate-700 dark:text-slate-200'
                          : item.status === 'in_progress'
                          ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-slate-900 dark:text-white'
                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'
-                     } active:scale-[0.98] active:opacity-80`}
+                     } active:scale-[0.98]`}
                      onClick={(e) => {
                        e.preventDefault();
                        e.stopPropagation();

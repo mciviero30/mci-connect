@@ -6,7 +6,8 @@ import VoiceNoteRecorder from './VoiceNoteRecorder';
 import DimensionBottomSheet from './DimensionBottomSheet';
 import IncidentBottomSheet from './IncidentBottomSheet';
 import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 import { OfflineStatusBadge } from './FieldOfflineManager';
 
 export default function FieldBottomActionRail({ 
@@ -22,9 +23,9 @@ export default function FieldBottomActionRail({
   const queryClient = useQueryClient();
 
   // Immediate action handler with feedback
-  const handleAction = (actionId, callback) => {
+  const handleAction = (actionId) => {
     // Haptic feedback
-    if (navigator.vibrate) navigator.vibrate(10);
+    haptic.light();
     
     // Close any open action
     if (activeAction && activeAction !== actionId) {
@@ -33,7 +34,6 @@ export default function FieldBottomActionRail({
     
     // Execute action
     setActiveAction(actionId);
-    callback?.();
   };
 
   // 5 CORE ACTIONS - Fixed, Always Visible
@@ -42,31 +42,26 @@ export default function FieldBottomActionRail({
       id: 'camera',
       icon: Camera,
       label: 'Photo',
-      action: () => handleAction('camera', onPhotoClick),
     },
     {
       id: 'audio',
       icon: Mic,
       label: 'Audio',
-      action: () => handleAction('audio', onAudioClick),
     },
     {
       id: 'task',
       icon: CheckSquare,
       label: 'Task',
-      action: () => handleAction('task', onTaskClick),
     },
     {
       id: 'measure',
       icon: Ruler,
       label: 'Measure',
-      action: () => handleAction('measure', onMeasureClick),
     },
     {
       id: 'incident',
       icon: AlertTriangle,
       label: 'Incident',
-      action: () => handleAction('incident', onIncidentClick),
     },
   ];
 
@@ -82,7 +77,7 @@ export default function FieldBottomActionRail({
             return (
               <button
                 key={action.id}
-                onClick={action.action}
+                onClick={() => handleAction(action.id)}
                 className={`flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] max-w-[100px] rounded-xl touch-manipulation transition-all ${
                   isActive 
                     ? 'bg-orange-600 text-black scale-105 shadow-lg' 
@@ -120,15 +115,11 @@ export default function FieldBottomActionRail({
       <MobilePhotoCapture
         open={activeAction === 'camera'}
         onOpenChange={(open) => {
-          if (!open) {
-            setActiveAction(null);
-            toast.success('Photo saved offline', { duration: 2000 });
-          }
+          if (!open) setActiveAction(null);
         }}
         jobId={jobId}
         onPhotoCreated={() => {
           setActiveAction(null);
-          toast.success('Photo saved offline', { duration: 2000 });
         }}
       />
 
@@ -141,7 +132,6 @@ export default function FieldBottomActionRail({
         jobId={jobId}
         onCreated={() => {
           setActiveAction(null);
-          toast.success('Task created', { duration: 2000 });
         }}
       />
 
@@ -155,7 +145,6 @@ export default function FieldBottomActionRail({
         jobName={jobName}
         onComplete={() => {
           setActiveAction(null);
-          toast.success('Note saved offline', { duration: 2000 });
         }}
       />
 
@@ -169,7 +158,6 @@ export default function FieldBottomActionRail({
         jobName={jobName}
         onSave={(data) => {
           setActiveAction(null);
-          toast.success('Measurement saved', { duration: 2000 });
         }}
       />
 
@@ -184,7 +172,6 @@ export default function FieldBottomActionRail({
         onCreated={() => {
           setActiveAction(null);
           queryClient.invalidateQueries({ queryKey: ['safety-incidents', jobId] });
-          toast.success('Incident reported', { duration: 2000 });
         }}
       />
     </>

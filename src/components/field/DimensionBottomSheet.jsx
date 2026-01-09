@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldBottomSheet from './FieldBottomSheet';
-import { toast } from 'sonner';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 import { SaveGuarantee } from './services/SaveGuarantee';
 import SaveConfirmation from './SaveConfirmation';
 import { Loader2 } from 'lucide-react';
@@ -69,14 +70,14 @@ export default function DimensionBottomSheet({
 
   const handleSave = async () => {
     if (!formData.area) {
-      toast.error('Please enter location/area', { duration: 2000 });
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      haptic.error();
+      microToast.error('Please enter location/area', 2000);
       return;
     }
 
     // Immediate feedback
     setSaveProgress('validating');
-    if (navigator.vibrate) navigator.vibrate(10);
+    haptic.medium();
 
     const dimensionData = {
       job_id: jobId,
@@ -99,7 +100,7 @@ export default function DimensionBottomSheet({
     
     if (result.success) {
       // Haptic success
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      haptic.success();
       
       // Invalidate AFTER save confirmed
       queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId] });
@@ -108,7 +109,11 @@ export default function DimensionBottomSheet({
       setConfirmationType(result.savedOffline ? 'offline' : 'success');
       setShowConfirmation(true);
       
-      toast.success('Measurement saved', { duration: 2000 });
+      if (result.savedOffline) {
+        microToast.offline('Measurement saved', 2000);
+      } else {
+        microToast.success('Measurement saved', 1500);
+      }
       
       // Close modal after brief confirmation
       setTimeout(() => {
@@ -119,8 +124,8 @@ export default function DimensionBottomSheet({
     } else {
       // Save failed
       setSaveProgress(null);
-      toast.error(result.error || 'Failed to save dimension', { duration: 3000 });
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10, 50, 10]);
+      haptic.error();
+      microToast.error(result.error || 'Failed to save dimension', 3000);
     }
   };
 
@@ -280,7 +285,7 @@ export default function DimensionBottomSheet({
         {/* CRITICAL: No close until save completes or fails */}
         <Button 
           onClick={() => {
-            if (navigator.vibrate) navigator.vibrate(15);
+            haptic.medium();
             handleSave();
           }}
           disabled={saveProgress !== null}

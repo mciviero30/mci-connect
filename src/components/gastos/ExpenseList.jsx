@@ -9,25 +9,33 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { notifyExpenseStatus } from '../notifications/notificationHelpers'; // NEW IMPORT
+import { notifyExpenseStatus } from '../notifications/notificationHelpers';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 
 export default function ExpenseList({ expenses, onApprove, onReject, showEmployeeName = false, isAdmin = false, loading, showActions = true, renderSmartApproval = null }) {
   const { t } = useLanguage();
   const [rejectDialog, setRejectDialog] = useState({ open: false, expense: null });
   const [rejectNotes, setRejectNotes] = useState('');
 
-  // NEW: Wrapper function for onApprove that also sends notifications
+  // Wrapper function for onApprove with feedback
   const handleApprove = async (expense) => {
+    haptic.success();
+    microToast.success('Expense approved', 1500);
+    
     await onApprove(expense);
     try {
-      await notifyExpenseStatus(expense, 'approved', null); // 'null' for rejection reason as it's an approval
+      await notifyExpenseStatus(expense, 'approved', null);
     } catch (error) {
       console.error('Failed to send notification for approved expense:', error);
     }
   };
 
-  // NEW: Wrapper function for onReject that also sends notifications
+  // Wrapper function for onReject with feedback
   const handleReject = async (expense, reason) => {
+    haptic.medium();
+    microToast.success('Expense rejected', 1500);
+    
     await onReject(expense, reason);
     try {
       await notifyExpenseStatus(expense, 'rejected', reason);
@@ -222,10 +230,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                               <div className="flex justify-end gap-2">
                                 <Button
                                  size="sm"
-                                 onClick={() => {
-                                   if (navigator.vibrate) navigator.vibrate(10);
-                                   handleApprove(expense);
-                                 }}
+                                 onClick={() => handleApprove(expense)}
                                  className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform"
                                 >
                                  <CheckCircle className="w-4 h-4 mr-1" />
@@ -234,7 +239,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                                 <Button
                                  size="sm"
                                  onClick={() => {
-                                   if (navigator.vibrate) navigator.vibrate(10);
+                                   haptic.light();
                                    setRejectDialog({ open: true, expense });
                                  }}
                                  variant="outline"

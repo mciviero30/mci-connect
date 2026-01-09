@@ -8,6 +8,8 @@ import { base44 } from '@/api/base44Client';
 import { fieldStorage } from './services/FieldStorageService';
 import { SaveGuarantee } from './services/SaveGuarantee';
 import SaveConfirmation from './SaveConfirmation';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 
 export default function MobilePhotoCapture({ 
   open, 
@@ -85,7 +87,7 @@ export default function MobilePhotoCapture({
     setStep('preview');
     
     // Haptic feedback
-    if (navigator.vibrate) navigator.vibrate(10);
+    haptic.light();
 
     // Create preview
     const reader = new FileReader();
@@ -143,7 +145,7 @@ export default function MobilePhotoCapture({
       setShowConfirmation(true);
       
       // Haptic success
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      haptic.success();
       
       // Close modal after brief confirmation
       setTimeout(() => {
@@ -154,7 +156,8 @@ export default function MobilePhotoCapture({
     } else {
       // Save failed
       setSaveProgress(null);
-      toast.error(result.error || 'Failed to save photo', { duration: 3000 });
+      haptic.error();
+      microToast.error(result.error || 'Failed to save photo', 3000);
     }
   };
 
@@ -247,7 +250,7 @@ export default function MobilePhotoCapture({
               </Button>
               <Button 
                 onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(10);
+                  haptic.light();
                   setStep('details');
                 }}
                 className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white active:scale-95 transition-transform"
@@ -335,7 +338,7 @@ export default function MobilePhotoCapture({
                 </Button>
                 <Button 
                   onClick={() => {
-                    if (navigator.vibrate) navigator.vibrate(10);
+                    haptic.medium();
                     handleUpload();
                   }}
                   disabled={saveProgress !== null}

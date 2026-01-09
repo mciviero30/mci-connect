@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Mic, MicOff, Loader2, CheckCircle2, AlertCircle, MapPin, Clock } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
+import { haptic } from '@/components/feedback/HapticFeedback';
+import { microToast } from '@/components/feedback/MicroToast';
 import { useMobileLifecycle } from './hooks/useMobileLifecycle';
 
 export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, onComplete }) {
@@ -54,7 +55,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
     setRecordingTime(0);
     
     // Haptic feedback
-    if (navigator.vibrate) navigator.vibrate(10);
+    haptic.medium();
     
     try {
       audioChunksRef.current = [];
@@ -94,9 +95,8 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
     } catch (error) {
       console.error('Failed to start recording:', error);
       setStep('error');
-      toast.error('Failed to access microphone', {
-        description: 'Please allow microphone access and try again',
-      });
+      haptic.error();
+      microToast.error('Microphone access denied', 3000);
     }
   };
 
@@ -107,7 +107,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
       setIsRecording(false);
       
       // Haptic feedback
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      haptic.medium();
       
       mediaRecorderRef.current.stop();
       clearInterval(timerRef.current);
@@ -144,12 +144,9 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         setStep('completed');
         
         // Haptic success
-        if (navigator.vibrate) navigator.vibrate([10, 50, 10, 50, 10]);
+        haptic.success();
         
-        toast.success('Note saved offline', {
-          description: `${response.data.analysis.tasks?.length || 0} tasks, ${response.data.analysis.issues?.length || 0} issues detected`,
-          duration: 2000,
-        });
+        microToast.offline(`Note saved - ${response.data.analysis.tasks?.length || 0} tasks, ${response.data.analysis.issues?.length || 0} issues`, 2000);
         
         setTimeout(() => {
           onComplete?.(response.data);
