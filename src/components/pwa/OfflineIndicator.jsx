@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { WifiOff, Wifi, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { WifiOff, Wifi, CheckCircle2, AlertTriangle, Cloud, CloudOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSyncQueue } from './SyncQueueManager';
 import ConflictResolutionDialog from '../field/ConflictResolutionDialog';
@@ -10,7 +10,7 @@ export default function OfflineIndicator() {
   const [showIndicator, setShowIndicator] = useState(!navigator.onLine);
   const [showConflicts, setShowConflicts] = useState(false);
   const [justSynced, setJustSynced] = useState(false);
-  const { pendingCount, isSyncing, conflicts, syncNow, clearConflicts } = useSyncQueue();
+  const { pendingCount, isSyncing, conflicts, clearConflicts } = useSyncQueue();
   const { language } = useLanguage();
 
   useEffect(() => {
@@ -53,43 +53,101 @@ export default function OfflineIndicator() {
     }
   }, [isOnline, isSyncing, pendingCount, showIndicator, justSynced]);
 
-  const config = {
-    success: {
-      icon: CheckCircle2,
-      color: 'from-green-600 to-emerald-600',
-      userText: '✓ Saved'
-    },
-    offline: {
-      icon: CloudOff,
-      color: 'from-amber-600 to-orange-600',
-      userText: 'Saved locally'
-    },
-    error: {
-      icon: AlertCircle,
-      color: 'from-red-600 to-rose-600',
-      userText: 'Not saved'
-    },
-  };
+  // Show conflicts button if any
+  const hasConflicts = conflicts && conflicts.length > 0;
 
-  const { icon: Icon, color, userText } = config[type];
+  if (!showIndicator && isOnline && pendingCount === 0 && !hasConflicts) {
+    return null;
+  }
 
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 backdrop-blur-md border border-slate-700/50 radius-md shadow-enterprise-xl px-4 py-2.5"
-        >
-          <div className="flex items-center gap-2">
-            <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-            <span className="text-white font-semibold text-sm">{userText}</span>
-          </div>
-        </motion.div>
+    <>
+      {/* Conflicts Alert - Fixed position */}
+      {hasConflicts && (
+        <div className="fixed bottom-24 md:bottom-20 right-4 z-[60]">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="flex items-center gap-2 px-3 py-2 radius-md shadow-enterprise-lg bg-red-600 text-white cursor-pointer hover:shadow-enterprise-xl transition-all"
+            onClick={() => setShowConflicts(true)}
+          >
+            <AlertTriangle className="w-4 h-4" strokeWidth={2.5} />
+            <span className="text-xs font-bold">
+              {language === 'es' ? 'Revisar conflictos' : 'Review conflicts'}
+            </span>
+          </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+
+      {/* Micro-Feedback: Minimal, Silent, Clear */}
+      <AnimatePresence>
+        {showIndicator && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed top-4 right-4 z-[60] pointer-events-none"
+          >
+            <div className={`radius-md shadow-enterprise-lg backdrop-blur-md border-2 overflow-hidden ${
+              justSynced || (isOnline && pendingCount === 0)
+                ? 'bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-700'
+                : isOnline && pendingCount > 0
+                ? 'bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-700'
+                : 'bg-amber-50/95 dark:bg-amber-900/95 border-amber-300 dark:border-amber-700'
+            }`}>
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${
+                    justSynced || (isOnline && pendingCount === 0)
+                      ? 'bg-green-600'
+                      : isOnline && pendingCount > 0
+                      ? 'bg-blue-600'
+                      : 'bg-amber-600'
+                  }`}>
+                    {justSynced || (isOnline && pendingCount === 0) ? (
+                      <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    ) : isOnline && pendingCount > 0 ? (
+                      <Wifi className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    ) : (
+                      <WifiOff className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    )}
+                  </div>
+
+                  <span className={`text-xs font-bold ${
+                    justSynced || (isOnline && pendingCount === 0)
+                      ? 'text-green-900 dark:text-green-100'
+                      : isOnline && pendingCount > 0
+                      ? 'text-blue-900 dark:text-blue-100'
+                      : 'text-amber-900 dark:text-amber-100'
+                  }`}>
+                    {justSynced
+                      ? (language === 'es' ? '✓ Todo guardado' : '✓ All saved')
+                      : isOnline && pendingCount === 0
+                      ? (language === 'es' ? 'Sincronizado' : 'Synced')
+                      : isOnline && pendingCount > 0
+                      ? (language === 'es' ? `Guardando ${pendingCount}` : `Saving ${pendingCount}`)
+                      : (language === 'es' ? 'Modo offline' : 'Offline mode')
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Conflict Resolution Dialog */}
+      <ConflictResolutionDialog
+        conflicts={conflicts}
+        open={showConflicts}
+        onOpenChange={setShowConflicts}
+        onResolve={(resolutions) => {
+          console.log('Manual conflict resolution:', resolutions);
+          clearConflicts();
+        }}
+      />
+    </>
   );
 }
 
@@ -111,19 +169,5 @@ export function InlineSaveFeedback({ status }) {
       <Icon className={`w-3.5 h-3.5 ${color} ${status === 'saving' ? 'animate-spin' : ''}`} strokeWidth={2.5} />
       <span className={`text-xs font-semibold ${color}`}>{text}</span>
     </div>
-  );
-}
-
-      {/* Conflict Resolution Dialog */}
-      <ConflictResolutionDialog
-        conflicts={conflicts}
-        open={showConflicts}
-        onOpenChange={setShowConflicts}
-        onResolve={(resolutions) => {
-          console.log('Manual conflict resolution:', resolutions);
-          clearConflicts();
-        }}
-      />
-    </>
   );
 }
