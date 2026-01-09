@@ -1279,29 +1279,29 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                       <p className="text-[10px] text-slate-600 dark:text-slate-400 py-1.5 text-center font-medium truncate px-2 border-t border-slate-200 dark:border-slate-700">{plan.name}</p>
                     )}
                   </div>
-                  </div>
-                  )}
+                </div>
+              )}
 
-                  {/* Delete Button */}
-                  {task.id && canEdit && (
-                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <Button
-                        onClick={handleDeleteTask}
-                        disabled={deleteTaskMutation.isPending}
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-red-300 dark:border-red-500/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        {deleteTaskMutation.isPending ? 'Deleting...' : 'Delete Task'}
-                      </Button>
-                    </div>
-                  )}
-                  </div>
-                  </div>
-                  </div>
-                  </DialogContent>
-                  </Dialog>
-                  </>
-                  );
-                  }
+              {/* Delete Button */}
+              {task.id && canEdit && (
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <Button
+                    onClick={handleDeleteTask}
+                    disabled={deleteTaskMutation.isPending}
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-red-300 dark:border-red-500/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {deleteTaskMutation.isPending ? 'Deleting...' : 'Delete Task'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
+  );
+}
