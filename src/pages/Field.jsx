@@ -11,7 +11,8 @@ import {
   ClipboardList,
   ArrowLeft,
   MapPin,
-  RotateCcw
+  RotateCcw,
+  Ruler
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
