@@ -1067,11 +1067,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 {task.id && canEdit && (
                   <Button 
                     onClick={handleSave}
-                    disabled={updateTaskMutation.isPending || isSubmitting}
+                    disabled={updateTaskMutation.isPending}
                     size="sm"
                     className="bg-[#FFB800] hover:bg-[#E5A600] text-white px-6"
                   >
-                    {updateTaskMutation.isPending || isSubmitting ? 'Saving...' : 'Done'}
+                    {updateTaskMutation.isPending ? 'Saving...' : 'Done'}
                   </Button>
                 )}
                 {task.id && !canEdit && (
