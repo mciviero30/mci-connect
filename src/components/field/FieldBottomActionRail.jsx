@@ -28,12 +28,9 @@ export default function FieldBottomActionRail({
   const [activeAction, setActiveAction] = useState(null);
   const queryClient = useQueryClient();
   
-  // Fetch current user for permissions
-  const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    ...FIELD_STABLE_QUERY_CONFIG,
-  });
+  // Get current user from existing query cache (already fetched in parent)
+  const currentUser = queryClient.getQueryData(['currentUser']) || 
+                      queryClient.getQueryData(FIELD_QUERY_KEYS.USER(jobId));
   
   // Check if user can add content
   const canAddContent = checkCanAddContent(currentUser) && jobStatus === 'active' 
