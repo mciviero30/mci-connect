@@ -1,36 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useUI } from '@/components/contexts/FieldModeContext';
 import { 
   Plus, 
   Search, 
-  TrendingUp, 
-  CheckCircle2, 
-  Clock, 
-  CheckCheck,
   Briefcase,
-  FolderOpen,
-  Command,
   ClipboardList,
-  FileText,
   ArrowLeft,
-  MapPin
+  MapPin,
+  RotateCcw
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
 import FieldDimensionView from '@/components/field/FieldDimensionView';
-import FieldBottomActionRail from '@/components/field/FieldBottomActionRail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { motion } from 'framer-motion';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
@@ -38,6 +30,9 @@ import { usePersistentState } from '@/components/field/hooks/usePersistentState'
 import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryConfig';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
+import { FieldSessionManager } from '@/components/field/services/FieldSessionManager';
+import FieldReentryPrompt from '@/components/field/FieldReentryPrompt';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
@@ -455,13 +450,43 @@ export default function Field() {
 
       {/* Show alternative views when tabs change */}
       {activeTab === 'dimensions' && (
-        <div className="pb-24">
+        <div className="pb-6">
+          <Button
+            onClick={() => setActiveTab('projects')}
+            variant="outline"
+            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {language === 'es' ? 'Volver' : 'Back'}
+          </Button>
           <FieldDimensionView jobId={null} />
         </div>
       )}
       {activeTab === 'checklists' && (
-        <div className="pb-24">
+        <div className="pb-6">
+          <Button
+            onClick={() => setActiveTab('projects')}
+            variant="outline"
+            className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {language === 'es' ? 'Volver' : 'Back'}
+          </Button>
           <GlobalChecklistsManager />
+        </div>
+      )}
+
+      {/* All Jobs Link - Secondary Access */}
+      {activeTab === 'projects' && filteredJobs.length > 3 && (
+        <div className="text-center mb-6">
+          <Button
+            onClick={() => setShowQuickSearch(true)}
+            variant="outline"
+            className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
+          >
+            <Search className="w-4 h-4 mr-2" />
+            {language === 'es' ? `Ver todos los ${filteredJobs.length} trabajos` : `View all ${filteredJobs.length} jobs`}
+          </Button>
         </div>
       )}
 
@@ -474,7 +499,7 @@ export default function Field() {
               if (navigator.vibrate) navigator.vibrate(10);
               setShowNewProject(true);
             }}
-            className="w-full bg-gradient-to-r from-orange-600 to-yellow-500 active:from-orange-700 active:to-yellow-600 text-black shadow-lg min-h-[60px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
+            className="w-full bg-slate-800 border-2 border-slate-600 hover:bg-slate-700 text-white shadow-lg min-h-[60px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
           >
             <Plus className="w-5 h-5 mr-2" />
             {language === 'es' ? 'Crear Proyecto' : 'Create Project'}
@@ -485,17 +510,6 @@ export default function Field() {
 
     {/* Quick Search Dialog */}
     <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
-
-    {/* Bottom Action Rail - Persistent for quick actions */}
-    <FieldBottomActionRail 
-      jobId={null}
-      jobName="Field Dashboard"
-      onActionComplete={(panel) => {
-        if (panel === 'dimensions') {
-          setActiveTab('dimensions');
-        }
-      }}
-    />
 
       {/* Quick Customer Dialog */}
       <Dialog open={showQuickCustomer} onOpenChange={setShowQuickCustomer}>
@@ -664,57 +678,7 @@ export default function Field() {
 
 
 
-function ProjectCard({ job, index, userRole }) {
-  const jobName = job.name || job.job_name_field || 'Untitled';
-  const statusColors = {
-    active: 'bg-green-500/20 text-green-400 border-green-500/30',
-    completed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    on_hold: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    archived: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-  };
 
-  const isCustomer = userRole === 'customer';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-    >
-      <Link to={createPageUrl(`FieldProject?id=${job.id}`)}>
-        <div className="bg-[#1e293b] border border-slate-700/50 rounded-xl p-5 hover:bg-slate-700/50 hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer group shadow-lg touch-manipulation">
-          <div className="flex items-start justify-between mb-4">
-            <div className="p-2.5 bg-gradient-to-br from-[#FFB800]/20 to-[#FF8C00]/20 rounded-xl shadow-sm">
-              <FolderOpen className="w-5 h-5 text-[#FFB800]" />
-            </div>
-            <Badge className={`${statusColors[job.status] || statusColors.active} px-2.5 py-1 rounded-full text-xs font-bold`}>
-              {job.status === 'active' ? 'Active' : 
-               job.status === 'completed' ? 'Completed' : 
-               job.status === 'on_hold' ? 'On Hold' : 'Archived'}
-            </Badge>
-          </div>
-          <h3 className="text-base font-bold text-white group-hover:text-[#FFB800] transition-colors mb-2 line-clamp-2 leading-snug">
-            {jobName}
-          </h3>
-          <p className="text-sm text-slate-400 line-clamp-2 mb-3 leading-relaxed">
-            {job.address || job.description || 'No address'}
-          </p>
-          {/* Hide sensitive data for customers */}
-          {!isCustomer && job.client_name_field && (
-            <p className="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-700/50">
-              Client: <span className="text-slate-400">{job.client_name_field}</span>
-            </p>
-          )}
-          {!isCustomer && job.contract_amount && (
-            <p className="text-xs text-slate-500 mt-1.5">
-              Budget: <span className="text-[#FFB800] font-semibold">${job.contract_amount.toLocaleString()}</span>
-            </p>
-          )}
-        </div>
-      </Link>
-    </motion.div>
-  );
-}
 
 function EmptyState({ onCreateProject, language }) {
   return (
