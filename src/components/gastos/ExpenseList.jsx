@@ -124,9 +124,21 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={showEmployeeName ? 10 : 9} className="text-center h-24 text-slate-500">{t('loading')}...</TableCell> {/* MODIFIED: uses showEmployeeName */}
-                </TableRow>
+                // NO GENERIC LOADER - Show skeleton rows
+                [...Array(5)].map((_, i) => (
+                  <TableRow key={i}>
+                    {showEmployeeName && <TableCell><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>}
+                    <TableCell><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
+                    <TableCell><div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
+                    <TableCell><div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
+                    <TableCell><div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
+                    <TableCell className="text-right"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded ml-auto animate-pulse" /></TableCell>
+                    <TableCell><div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
+                    <TableCell><div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
+                    {showActions && <TableCell><div className="h-8 w-32 bg-slate-200 dark:bg-slate-700 rounded ml-auto animate-pulse" /></TableCell>}
+                  </TableRow>
+                ))
               ) : expenses?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={showEmployeeName ? 10 : 9} className="text-center h-24 text-slate-500"> {/* MODIFIED: uses showEmployeeName */}
@@ -209,21 +221,27 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                             renderSmartApproval ? renderSmartApproval(expense) : (
                               <div className="flex justify-end gap-2">
                                 <Button
-                                  size="sm"
-                                  onClick={() => handleApprove(expense)}
-                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                 size="sm"
+                                 onClick={() => {
+                                   if (navigator.vibrate) navigator.vibrate(10);
+                                   handleApprove(expense);
+                                 }}
+                                 className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform"
                                 >
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  {t('approve')}
+                                 <CheckCircle className="w-4 h-4 mr-1" />
+                                 {t('approve')}
                                 </Button>
                                 <Button
-                                  size="sm"
-                                  onClick={() => setRejectDialog({ open: true, expense })}
-                                  variant="outline"
-                                  className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                                 size="sm"
+                                 onClick={() => {
+                                   if (navigator.vibrate) navigator.vibrate(10);
+                                   setRejectDialog({ open: true, expense });
+                                 }}
+                                 variant="outline"
+                                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-95 transition-transform"
                                 >
-                                  <XCircle className="w-4 h-4 mr-1" />
-                                  {t('reject')}
+                                 <XCircle className="w-4 h-4 mr-1" />
+                                 {t('reject')}
                                 </Button>
                               </div>
                             )
