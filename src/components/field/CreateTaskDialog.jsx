@@ -18,6 +18,7 @@ import { useFieldContext, withFieldContext } from './FieldContextProvider';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 import { FIELD_STABLE_QUERY_CONFIG, updateFieldQueryData } from './config/fieldQueryConfig';
 import FieldBottomSheet from './FieldBottomSheet';
+import { toast } from 'sonner';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -184,19 +185,65 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   const createTaskMutation = useMutation({
     mutationFn: (data) => base44.entities.Task.create(data),
-    onSuccess: async (newTask) => {
-      // Clear persistent draft on successful save
-      if (clearTaskDraft) await clearTaskDraft();
+    
+    // OPTIMISTIC UPDATE - Immediate feedback
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
       
-      // Scoped optimistic update - Field isolation
-      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old ? [...old, newTask] : [newTask]);
+      const tempTask = {
+        id: `temp_${Date.now()}`,
+        ...variables,
+        _optimistic: true,
+        _syncing: true,
+      };
+      
+      // Instant visual update
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old ? [tempTask, ...old] : [tempTask]);
+      
+      // Haptic + toast
+      if (navigator.vibrate) navigator.vibrate(10);
+      toast.success('Task created', { duration: 2000 });
+      
+      return { tempTask };
+    },
+    
+    onSuccess: async (newTask, variables, context) => {
+      // Replace optimistic with real
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
+        old ? old.map(t => t.id === context.tempTask.id ? newTask : t) : [newTask]
+      );
       updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => old ? [...old, newTask] : [newTask]);
+      
+      if (clearTaskDraft) await clearTaskDraft();
       onCreated?.(newTask?.id);
+    },
+    
+    onError: (error, variables, context) => {
+      // Rollback optimistic
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
+        old ? old.filter(t => t.id !== context.tempTask.id) : old
+      );
+      toast.error('Failed to create task', { duration: 3000 });
     },
   });
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
+    
+    // OPTIMISTIC UPDATE - Immediate feedback
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
+      
+      // Instant visual update
+      updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
+        old ? old.map(t => t.id === id ? { ...t, ...data, _syncing: true } : t) : old
+      );
+      
+      // Haptic + toast
+      if (navigator.vibrate) navigator.vibrate(10);
+      toast.success('Saved', { duration: 1500 });
+    },
+    
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
       queryClient.invalidateQueries({ queryKey: ['work-units', jobId] });
@@ -220,6 +267,10 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
       setNewChecklistItem('');
       onOpenChange(false);
     },
+    
+    onError: () => {
+      toast.error('Failed to save', { duration: 3000 });
+    },
   });
 
   // Mutación para actualizaciones parciales (no cierra el diálogo)
@@ -233,23 +284,60 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
 
   const createCommentMutation = useMutation({
     mutationFn: (commentData) => base44.entities.TaskComment.create(commentData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task-comments', task.id] });
+    
+    // OPTIMISTIC UPDATE - Immediate feedback
+    onMutate: async (variables) => {
+      const tempComment = {
+        id: `temp_${Date.now()}`,
+        ...variables,
+        created_date: new Date().toISOString(),
+        _optimistic: true,
+      };
+      
+      queryClient.setQueryData(['task-comments', task.id], (old = []) => [tempComment, ...old]);
+      
+      if (navigator.vibrate) navigator.vibrate(10);
       setNewComment('');
+      
+      return { tempComment };
+    },
+    
+    onSuccess: (newComment, variables, context) => {
+      queryClient.setQueryData(['task-comments', task.id], (old = []) => 
+        old.map(c => c.id === context.tempComment.id ? newComment : c)
+      );
+    },
+    
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(['task-comments', task.id], (old = []) => 
+        old.filter(c => c.id !== context.tempComment.id)
+      );
+      toast.error('Failed to post comment', { duration: 2000 });
     },
   });
 
   const deleteTaskMutation = useMutation({
     mutationFn: (id) => base44.entities.Task.delete(id),
-    onSuccess: () => {
-      // Scoped optimistic update - Field isolation
+    
+    // OPTIMISTIC UPDATE - Immediate removal
+    onMutate: async (id) => {
       updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => 
-        old ? old.filter(t => t.id !== existingTask?.id) : old
+        old ? old.filter(t => t.id !== id) : old
       );
       updateFieldQueryData(queryClient, jobId, 'WORK_UNITS', (old) => 
-        old ? old.filter(t => t.id !== existingTask?.id) : old
+        old ? old.filter(t => t.id !== id) : old
       );
+      
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      toast.success('Task deleted', { duration: 2000 });
       onOpenChange(false);
+      
+      return { deletedId: id };
+    },
+    
+    onError: (error, id, context) => {
+      toast.error('Failed to delete', { duration: 2000 });
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
     },
   });
 
@@ -381,6 +469,16 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    // Immediate visual feedback
+    const tempUrls = files.map(f => URL.createObjectURL(f));
+    setTask(prev => ({
+      ...prev,
+      photo_urls: [...prev.photo_urls, ...tempUrls.map(url => ({ url, _uploading: true }))]
+    }));
+    
+    if (navigator.vibrate) navigator.vibrate(10);
+    toast.success(`Uploading ${files.length} photo${files.length > 1 ? 's' : ''}...`, { duration: 2000 });
+
     setUploadingPhoto(true);
     try {
       const uploadedUrls = [];
@@ -388,12 +486,20 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
         uploadedUrls.push(file_url);
       }
+      
+      // Replace temp with real URLs
       setTask(prev => ({
         ...prev,
-        photo_urls: [...prev.photo_urls, ...uploadedUrls]
+        photo_urls: [...prev.photo_urls.filter(p => !p._uploading), ...uploadedUrls]
       }));
+      
+      toast.success('Photos uploaded', { duration: 2000 });
     } catch (error) {
-      console.error('Error uploading photos:', error);
+      setTask(prev => ({
+        ...prev,
+        photo_urls: prev.photo_urls.filter(p => !p._uploading)
+      }));
+      toast.error('Upload failed', { duration: 3000 });
     } finally {
       setUploadingPhoto(false);
     }
@@ -423,7 +529,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
   const toggleChecklistItemStatus = (index) => {
     const newChecklist = [...task.checklist];
     const currentStatus = newChecklist[index].status;
-    // Cycle: not_started -> in_progress -> completed -> not_started
+    
+    // Immediate visual update
     if (currentStatus === 'not_started') {
       newChecklist[index].status = 'in_progress';
     } else if (currentStatus === 'in_progress') {
@@ -433,6 +540,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     }
     
     setTask(prev => ({ ...prev, checklist: newChecklist }));
+    
+    // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate(10);
     
     // Auto-save checklist changes if editing existing task
     if (task.id) {
@@ -728,13 +838,19 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 <div className="space-y-2">
                   {task.checklist.map((item, idx) => (
                     <div 
-                      key={idx} 
-                      className="flex items-center gap-3 text-sm text-slate-900 dark:text-slate-100 font-medium cursor-pointer active:bg-slate-100 dark:active:bg-slate-700 p-3 rounded-lg border-2 border-slate-200 dark:border-slate-700 min-h-[48px] touch-manipulation active:scale-[0.98] transition-all bg-white dark:bg-slate-800"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleChecklistItemStatus(idx);
-                      }}
+                     key={idx} 
+                     className={`flex items-center gap-3 text-sm font-medium cursor-pointer p-3 rounded-lg border-2 min-h-[56px] touch-manipulation transition-all ${
+                       item.status === 'completed' 
+                         ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-slate-700 dark:text-slate-200'
+                         : item.status === 'in_progress'
+                         ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-slate-900 dark:text-white'
+                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'
+                     } active:scale-[0.98] active:opacity-80`}
+                     onClick={(e) => {
+                       e.preventDefault();
+                       e.stopPropagation();
+                       toggleChecklistItemStatus(idx);
+                     }}
                     >
                       <div className="w-7 h-7 flex items-center justify-center flex-shrink-0">
                         {getChecklistIcon(item.status)}
@@ -852,21 +968,37 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                 {/* Photos Grid */}
                 {task.photo_urls.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-4">
-                    {task.photo_urls.map((url, idx) => (
-                      <div key={idx} className="relative group">
-                        <img
-                          src={url}
-                          alt={`Photo ${idx + 1}`}
-                          className="w-full h-20 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-                        />
-                        <button
-                          onClick={() => handleRemovePhoto(idx)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+                    {task.photo_urls.map((photoData, idx) => {
+                      const url = typeof photoData === 'string' ? photoData : photoData.url;
+                      const isUploading = photoData?._uploading;
+                      
+                      return (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Photo ${idx + 1}`}
+                            className={`w-full h-20 object-cover rounded-lg border ${
+                              isUploading 
+                                ? 'border-orange-500 opacity-60' 
+                                : 'border-slate-200 dark:border-slate-700'
+                            }`}
+                          />
+                          {isUploading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
+                              <Loader2 className="w-5 h-5 text-white animate-spin" />
+                            </div>
+                          )}
+                          {!isUploading && (
+                            <button
+                              onClick={() => handleRemovePhoto(idx)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

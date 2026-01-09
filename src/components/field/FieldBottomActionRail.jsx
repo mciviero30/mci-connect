@@ -73,8 +73,8 @@ export default function FieldBottomActionRail({
   return (
     <>
       {/* BOTTOM ACTION RAIL - Fixed, Always Visible, Thumb-Optimized */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
-        <div className="flex items-center justify-around px-2 py-3">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-black border-t-2 border-slate-700 shadow-2xl pb-safe">
+        <div className="flex items-center justify-around px-1 py-2">
           {actions.map((action) => {
             const isActive = activeAction === action.id;
             const Icon = action.icon;
@@ -83,11 +83,11 @@ export default function FieldBottomActionRail({
               <button
                 key={action.id}
                 onClick={action.action}
-                className={`flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] max-w-[100px] rounded-xl touch-manipulation active:scale-95 transition-all ${
+                className={`flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] max-w-[100px] rounded-xl touch-manipulation transition-all ${
                   isActive 
-                    ? 'bg-orange-600 text-white shadow-lg' 
-                    : 'text-slate-300 hover:bg-slate-800 active:bg-slate-700'
-                }`}
+                    ? 'bg-orange-600 text-black scale-105 shadow-lg' 
+                    : 'text-white active:bg-slate-800'
+                } active:scale-95`}
                 style={{ 
                   WebkitTapHighlightColor: 'transparent',
                   minWidth: '56px',
@@ -96,24 +96,21 @@ export default function FieldBottomActionRail({
                 aria-label={action.label}
               >
                 <Icon 
-                  className={`w-6 h-6 ${isActive ? 'text-white' : 'text-slate-300'}`} 
+                  className={`w-6 h-6 ${isActive ? 'text-black' : 'text-white'}`} 
                   strokeWidth={2.5} 
                 />
-                <span className="text-[10px] font-bold uppercase tracking-wide">
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isActive ? 'text-black' : 'text-slate-300'
+                }`}>
                   {action.label}
                 </span>
-                
-                {/* Active indicator */}
-                {isActive && (
-                  <div className="absolute top-1 right-1/2 translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full" />
-                )}
               </button>
             );
           })}
         </div>
         
         {/* Offline Status - Integrated, Non-Intrusive */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 pointer-events-none">
           <OfflineStatusBadge />
         </div>
       </div>
