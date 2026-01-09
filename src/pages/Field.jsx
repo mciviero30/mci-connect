@@ -11,8 +11,7 @@ import {
   ClipboardList,
   ArrowLeft,
   MapPin,
-  RotateCcw,
-  Ruler
+  RotateCcw
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -88,7 +87,7 @@ export default function Field() {
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   
   // Persistent active tab
-  const [activeTab, setActiveTab, clearActiveTab] = usePersistentState('field_active_tab', 'projects', { expiryHours: 48 });
+  const [activeTab, setActiveTab, clearActiveTab] = usePersistentState('field_active_tab', 'jobs', { expiryHours: 48 });
   
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });

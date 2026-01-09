@@ -130,19 +130,8 @@ export default function FieldProjectView({
     />
   );
 
-  // DEBUG MODE: Individual panel rendering
-  const renderDebugPanel = () => {
-    switch (activePanel) {
-      case 'intelligence':
-        return <MeasurementIntelligencePanel dimensions={[]} benchmarks={[]} jobId={jobId} />;
-      case 'completeness':
-        return <MeasurementCompletenessPanel dimensions={[]} benchmarks={[]} photos={[]} jobId={jobId} />;
-      case 'ai-quality':
-        return <MeasurementAIQualityPanel jobId={jobId} />;
-      default:
-        return renderWorkMode();
-    }
-  };
+  // Work mode only - no debug panels in this view
+  // Debug panels are accessed via FieldDebugDrawer
 
   return (
     <div data-field-scope="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col overflow-hidden dark">
@@ -191,36 +180,9 @@ export default function FieldProjectView({
         </div>
       </div>
 
-      {/* MAIN CONTENT - Scrollable, ONE VIEW AT A TIME */}
+      {/* MAIN CONTENT - Installation view only */}
       <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {activePanel === 'work' && renderWorkMode()}
-        {activePanel === 'intelligence' && isDebugMode && (
-          <div className="p-4">
-            <Button onClick={closePanel} variant="outline" className="mb-4 bg-slate-800 border-slate-700 text-white">
-              <XIcon className="w-4 h-4 mr-2" />
-              Close
-            </Button>
-            <MeasurementIntelligencePanel dimensions={[]} benchmarks={[]} jobId={jobId} />
-          </div>
-        )}
-        {activePanel === 'completeness' && isDebugMode && (
-          <div className="p-4">
-            <Button onClick={closePanel} variant="outline" className="mb-4 bg-slate-800 border-slate-700 text-white">
-              <XIcon className="w-4 h-4 mr-2" />
-              Close
-            </Button>
-            <MeasurementCompletenessPanel dimensions={[]} benchmarks={[]} photos={[]} jobId={jobId} />
-          </div>
-        )}
-        {activePanel === 'ai-quality' && isDebugMode && (
-          <div className="p-4">
-            <Button onClick={closePanel} variant="outline" className="mb-4 bg-slate-800 border-slate-700 text-white">
-              <XIcon className="w-4 h-4 mr-2" />
-              Close
-            </Button>
-            <MeasurementAIQualityPanel jobId={jobId} />
-          </div>
-        )}
+        {renderWorkMode()}
       </div>
 
       {/* Persistent Bottom Elements - ALWAYS VISIBLE */}
