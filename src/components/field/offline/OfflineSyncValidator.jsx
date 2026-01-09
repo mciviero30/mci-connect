@@ -150,13 +150,18 @@ export default function OfflineSyncValidator({ user }) {
     }
   };
 
-  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
-  if (!import.meta.env?.DEV) return null;
+  // Only render debug UI if in debug mode
+  if (!isDebugMode) return null;
 
-  // Component is logging-only in DEV mode.
-  // All UI is in FieldDebugDrawer.
-  return null;
-}
+  const syncRate = stats.total > 0 
+    ? Math.round((stats.completed / stats.total) * 100) 
+    : 100;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 bg-slate-800/50 rounded-lg p-2">
+        <Database className="w-4 h-4 text-cyan-400" />
+        <span className="font-bold text-white">Offline Sync</span>
         <Badge className={`ml-auto text-[10px] ${
           isOnline ? 'bg-green-500/20 text-green-300' : 'bg-orange-500/20 text-orange-300'
         }`}>
@@ -280,9 +285,9 @@ export default function OfflineSyncValidator({ user }) {
                 </div>
               </div>
             ))}
-            </div>
-            </div>
-            )}
-            </div>
-            );
-            }
+          </div>
+        </div>
+      )}
+    </div>
+  );
+  }
