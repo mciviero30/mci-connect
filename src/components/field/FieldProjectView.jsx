@@ -166,6 +166,9 @@ export default function FieldProjectView({
   // Debug mode detection
   const isDebugMode = useFieldDebugMode(currentUser);
 
+  // SMART RE-ENTRY: Restore panel from URL params
+  useSmartReentry(setActivePanel);
+
   // Sidebar items configuration - ALL items
   const allSidebarItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
