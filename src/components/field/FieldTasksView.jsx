@@ -18,6 +18,7 @@ import { FIELD_QUERY_KEYS } from './fieldQueryKeys';
 import { useRenderOptimization } from './performance/useRenderOptimization';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
+import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 
 // Memoized TaskCard to prevent re-renders
 const TaskCard = memo(({ task, onClick, onDragStart, isClientPunch }) => {

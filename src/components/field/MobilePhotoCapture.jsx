@@ -11,6 +11,7 @@ import SaveConfirmation from './SaveConfirmation';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
+import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 
 export default function MobilePhotoCapture({ 
   open, 
@@ -29,6 +30,9 @@ export default function MobilePhotoCapture({
   const [saveProgress, setSaveProgress] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState('success');
+  
+  // Prevent double submit
+  const { isSubmitting, preventDoubleSubmit } = useDoubleSubmitPrevention(1000);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -342,7 +346,7 @@ export default function MobilePhotoCapture({
                     haptic.medium();
                     handleUpload();
                   }}
-                  disabled={saveProgress !== null}
+                  disabled={saveProgress !== null || isSubmitting}
                   className="flex-1 bg-[#FFB800] hover:bg-[#E5A600] text-white disabled:opacity-70 active:scale-95 transition-transform"
                 >
                   {saveProgress === 'validating' && (

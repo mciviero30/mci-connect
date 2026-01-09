@@ -10,6 +10,8 @@ import FieldBottomSheet from './FieldBottomSheet';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
+import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
+import { InlineValidation, commonRules } from '@/components/validation/InlineValidation';
 import { SaveGuarantee } from './services/SaveGuarantee';
 import SaveConfirmation from './SaveConfirmation';
 import { Loader2 } from 'lucide-react';
@@ -37,9 +39,12 @@ export default function DimensionBottomSheet({
   });
   
   // Save state tracking
-  const [saveProgress, setSaveProgress] = useState(null); // null | 'validating' | 'persisting' | 'uploading' | 'confirming' | 'complete'
+  const [saveProgress, setSaveProgress] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState('success');
+  
+  // Prevent double submit
+  const { isSubmitting, preventDoubleSubmit } = useDoubleSubmitPrevention(1000);
 
   React.useEffect(() => {
     if (open && dimension) {
@@ -76,28 +81,38 @@ export default function DimensionBottomSheet({
       return;
     }
 
-    // Immediate feedback
-    setSaveProgress('validating');
-    haptic.medium();
+    // Prevent double submit
+    const submitResult = await preventDoubleSubmit(async () => {
+      // Immediate feedback
+      setSaveProgress('validating');
+      haptic.medium();
 
-    const dimensionData = {
-      job_id: jobId,
-      job_name: jobName,
-      unit_system: unitSystem,
-      measured_by: user?.email,
-      measured_by_name: user?.full_name,
-      ...formData,
-    };
+      const dimensionData = {
+        job_id: jobId,
+        job_name: jobName,
+        unit_system: unitSystem,
+        measured_by: user?.email,
+        measured_by_name: user?.full_name,
+        ...formData,
+      };
 
-    // BLOCKING SAVE: UI waits for confirmation
-    const result = await SaveGuarantee.guaranteeSave({
-      entityType: 'FieldDimension',
-      entityData: dimensionData,
-      jobId,
-      apiCall: () => createDimensionMutation.mutateAsync(dimensionData),
-      draftKey: `dimension_${jobId}`,
-      onProgress: setSaveProgress,
+      // BLOCKING SAVE: UI waits for confirmation
+      return await SaveGuarantee.guaranteeSave({
+        entityType: 'FieldDimension',
+        entityData: dimensionData,
+        jobId,
+        apiCall: () => createDimensionMutation.mutateAsync(dimensionData),
+        draftKey: `dimension_${jobId}`,
+        onProgress: setSaveProgress,
+      });
     });
+
+    if (submitResult.prevented) {
+      microToast.info(submitResult.reason, 1500);
+      return;
+    }
+
+    const result = submitResult.result;
     
     if (result.success) {
       // Haptic success
@@ -247,6 +262,11 @@ export default function DimensionBottomSheet({
             placeholder="e.g., Main hallway, Room 101"
             className="mt-1.5 min-h-[52px]"
           />
+          <InlineValidation
+            value={formData.area}
+            validate={(val) => !!val?.trim()}
+            errorMessage="Location is required to save"
+          />
         </div>
 
         {/* Device Type */}
@@ -289,7 +309,7 @@ export default function DimensionBottomSheet({
             haptic.medium();
             handleSave();
           }}
-          disabled={saveProgress !== null}
+          disabled={saveProgress !== null || isSubmitting || !formData.area?.trim()}
           className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white min-h-[64px] touch-manipulation active:scale-95 font-bold shadow-lg active:shadow-xl disabled:opacity-70"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
@@ -323,7 +343,10 @@ export default function DimensionBottomSheet({
               Confirming...
             </>
           )}
-          {!saveProgress && 'Save Dimension'}
+          {isSubmitting && !saveProgress && 'Processing...'}
+          {!saveProgress && !isSubmitting && (
+            formData.area?.trim() ? 'Save Dimension' : 'Add location first'
+          )}
         </Button>
       </div>
     </FieldBottomSheet>

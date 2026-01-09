@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
+import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { useMobileLifecycle } from './hooks/useMobileLifecycle';
 
 export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, onComplete }) {

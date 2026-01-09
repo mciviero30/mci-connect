@@ -18,29 +18,62 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
   const [rejectDialog, setRejectDialog] = useState({ open: false, expense: null });
   const [rejectNotes, setRejectNotes] = useState('');
 
+  // Prevent double approval/rejection (local state)
+  const [processingExpenses, setProcessingExpenses] = React.useState(new Set());
+
   // Wrapper function for onApprove with feedback
   const handleApprove = async (expense) => {
+    // Prevent double tap
+    if (processingExpenses.has(expense.id)) {
+      microToast.info('Already processing', 1000);
+      return;
+    }
+
+    setProcessingExpenses(prev => new Set(prev).add(expense.id));
     haptic.success();
-    microToast.success('Expense approved', 1500);
     
-    await onApprove(expense);
     try {
+      await onApprove(expense);
       await notifyExpenseStatus(expense, 'approved', null);
+      microToast.success('Expense approved', 1500);
     } catch (error) {
-      console.error('Failed to send notification for approved expense:', error);
+      console.error('Failed to approve:', error);
+      haptic.error();
+      microToast.error("Couldn't approve — try again", 2000);
+    } finally {
+      setProcessingExpenses(prev => {
+        const next = new Set(prev);
+        next.delete(expense.id);
+        return next;
+      });
     }
   };
 
   // Wrapper function for onReject with feedback
   const handleReject = async (expense, reason) => {
+    // Prevent double tap
+    if (processingExpenses.has(expense.id)) {
+      microToast.info('Already processing', 1000);
+      return;
+    }
+
+    setProcessingExpenses(prev => new Set(prev).add(expense.id));
     haptic.medium();
-    microToast.success('Expense rejected', 1500);
     
-    await onReject(expense, reason);
     try {
+      await onReject(expense, reason);
       await notifyExpenseStatus(expense, 'rejected', reason);
+      microToast.success('Expense rejected', 1500);
     } catch (error) {
-      console.error('Failed to send notification for rejected expense:', error);
+      console.error('Failed to reject:', error);
+      haptic.error();
+      microToast.error("Couldn't reject — try again", 2000);
+    } finally {
+      setProcessingExpenses(prev => {
+        const next = new Set(prev);
+        next.delete(expense.id);
+        return next;
+      });
     }
   };
 
@@ -231,10 +264,11 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                                 <Button
                                  size="sm"
                                  onClick={() => handleApprove(expense)}
-                                 className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform"
+                                 disabled={processingExpenses.has(expense.id)}
+                                 className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform disabled:opacity-70"
                                 >
                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                 {t('approve')}
+                                 {processingExpenses.has(expense.id) ? 'Approving...' : t('approve')}
                                 </Button>
                                 <Button
                                  size="sm"
