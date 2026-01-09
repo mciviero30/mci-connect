@@ -61,7 +61,6 @@ export default function FieldProjectView({
   // CENTRAL PANEL MANAGER - ONE ACTIVE PANEL AT A TIME
   const [activePanel, setActivePanel] = React.useState('work');
   const [showCreateTask, setShowCreateTask] = React.useState(false);
-  const [showExitConfirmation, setShowExitConfirmation] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
   // Panel switcher - closes others automatically
@@ -87,13 +86,7 @@ export default function FieldProjectView({
 
   // Handle safe exit
   const handleSafeExit = () => {
-    // Check for unsaved work
-    const session = FieldSessionManager.getSession();
-    if (session?.hasUnsavedWork) {
-      setShowExitConfirmation(true);
-    } else {
-      // Safe to exit - clear session and navigate
-      FieldSessionManager.clearSession();
+    if (window.confirm('Exit Field? Any unsaved work will be lost.')) {
       window.history.back();
     }
   };
@@ -348,19 +341,7 @@ export default function FieldProjectView({
         jobStatus={job?.status}
       />
       
-      {/* Exit Confirmation - Only when needed */}
-      <ExitConfirmation
-        open={showExitConfirmation}
-        onOpenChange={setShowExitConfirmation}
-        pendingWork={[]}
-        offlineItems={0}
-        unsavedChanges={false}
-        onConfirmExit={() => {
-          FieldSessionManager.clearSession();
-          window.history.back();
-        }}
-        onStay={() => setShowExitConfirmation(false)}
-      />
+
     </div>
   );
 }
