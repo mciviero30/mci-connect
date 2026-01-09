@@ -1,24 +1,37 @@
 import { useState, useEffect } from 'react';
-import { WifiOff, Wifi, Cloud, CloudOff, RefreshCw, AlertTriangle } from 'lucide-react';
+import { WifiOff, Wifi, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSyncQueue } from './SyncQueueManager';
 import ConflictResolutionDialog from '../field/ConflictResolutionDialog';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 export default function OfflineIndicator() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showIndicator, setShowIndicator] = useState(!navigator.onLine);
   const [showConflicts, setShowConflicts] = useState(false);
+  const [justSynced, setJustSynced] = useState(false);
   const { pendingCount, isSyncing, conflicts, syncNow, clearConflicts } = useSyncQueue();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      setTimeout(() => setShowIndicator(false), 3000);
+      setShowIndicator(true);
+      
+      // Show "synced" confirmation briefly when online
+      if (pendingCount === 0) {
+        setJustSynced(true);
+        setTimeout(() => {
+          setJustSynced(false);
+          setShowIndicator(false);
+        }, 2500);
+      }
     };
 
     const handleOffline = () => {
       setIsOnline(false);
       setShowIndicator(true);
+      setJustSynced(false);
     };
 
     window.addEventListener('online', handleOnline);
@@ -28,118 +41,78 @@ export default function OfflineIndicator() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [pendingCount]);
 
-  // Show conflicts button if any
-  const hasConflicts = conflicts && conflicts.length > 0;
+  // Auto-hide when sync completes
+  useEffect(() => {
+    if (isOnline && !isSyncing && pendingCount === 0 && showIndicator && !justSynced) {
+      const timer = setTimeout(() => {
+        setShowIndicator(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOnline, isSyncing, pendingCount, showIndicator, justSynced]);
 
-  if (!showIndicator && isOnline && pendingCount === 0 && !hasConflicts) {
-    return null;
-  }
+  const config = {
+    success: {
+      icon: CheckCircle2,
+      color: 'from-green-600 to-emerald-600',
+      userText: '✓ Saved'
+    },
+    offline: {
+      icon: CloudOff,
+      color: 'from-amber-600 to-orange-600',
+      userText: 'Saved locally'
+    },
+    error: {
+      icon: AlertCircle,
+      color: 'from-red-600 to-rose-600',
+      userText: 'Not saved'
+    },
+  };
+
+  const { icon: Icon, color, userText } = config[type];
 
   return (
-    <>
-      {/* Conflicts Alert - Fixed position */}
-      {hasConflicts && (
-        <div className="fixed bottom-24 md:bottom-20 right-4 z-[9999]">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full shadow-xl bg-gradient-to-r from-red-500 to-red-600 text-white cursor-pointer hover:shadow-2xl transition-all"
-            onClick={() => setShowConflicts(true)}
-          >
-            <AlertTriangle className="w-4 h-4 animate-pulse" />
-            <span className="text-sm font-bold">{conflicts.length} Conflict(s)</span>
-          </motion.div>
-        </div>
-      )}
-
-      {/* Sync Status Banner */}
-      <AnimatePresence>
-      <motion.div
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -100, opacity: 0 }}
-        className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none"
-      >
-        <div className="px-safe pt-safe">
-          <div className={`mx-4 mt-4 rounded-2xl shadow-2xl backdrop-blur-xl border-2 overflow-hidden pointer-events-auto ${
-            isOnline 
-              ? 'bg-green-50/95 border-green-300 dark:bg-green-900/95 dark:border-green-700' 
-              : 'bg-amber-50/95 border-amber-300 dark:bg-amber-900/95 dark:border-amber-700'
-          }`}>
-            <div className="px-4 py-3">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-xl ${
-                  isOnline 
-                    ? 'bg-green-100 dark:bg-green-800' 
-                    : 'bg-amber-100 dark:bg-amber-800'
-                }`}>
-                  {isOnline ? (
-                    <Wifi className="w-5 h-5 text-green-700 dark:text-green-300" />
-                  ) : (
-                    <WifiOff className="w-5 h-5 text-amber-700 dark:text-amber-300" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className={`font-bold text-sm ${
-                    isOnline 
-                      ? 'text-green-900 dark:text-green-100' 
-                      : 'text-amber-900 dark:text-amber-100'
-                  }`}>
-                    {isOnline ? '✅ Conexión restaurada' : '⚠️ Sin conexión'}
-                  </p>
-                  <p className={`text-xs mt-0.5 ${
-                    isOnline 
-                      ? 'text-green-700 dark:text-green-300' 
-                      : 'text-amber-700 dark:text-amber-300'
-                  }`}>
-                    {isOnline 
-                      ? pendingCount > 0 
-                        ? `Sincronizando ${pendingCount} cambios...` 
-                        : 'Todos los cambios sincronizados'
-                      : 'Los cambios se guardarán localmente'
-                    }
-                  </p>
-                </div>
-
-                {isOnline && pendingCount > 0 && (
-                  <button
-                    onClick={syncNow}
-                    disabled={isSyncing}
-                    className="p-2 rounded-xl bg-green-100 dark:bg-green-800 hover:bg-green-200 dark:hover:bg-green-700 transition-colors disabled:opacity-50"
-                  >
-                    <RefreshCw className={`w-4 h-4 text-green-700 dark:text-green-300 ${isSyncing ? 'animate-spin' : ''}`} />
-                  </button>
-                )}
-
-                {!isOnline && pendingCount > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-200 dark:bg-amber-800">
-                    <CloudOff className="w-3.5 h-3.5 text-amber-800 dark:text-amber-200" />
-                    <span className="text-xs font-bold text-amber-900 dark:text-amber-100">
-                      {pendingCount}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Progress bar for syncing */}
-            {isSyncing && (
-              <div className="h-1 bg-green-200 dark:bg-green-800 overflow-hidden">
-                <motion.div
-                  className="h-full bg-green-500"
-                  initial={{ width: '0%' }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: 1, repeat: Infinity }}
-                />
-              </div>
-            )}
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 backdrop-blur-md border border-slate-700/50 radius-md shadow-enterprise-xl px-4 py-2.5"
+        >
+          <div className="flex items-center gap-2">
+            <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+            <span className="text-white font-semibold text-sm">{userText}</span>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </AnimatePresence>
+  );
+}
+
+// Lightweight version for inline feedback (no modal overlay)
+export function InlineSaveFeedback({ status }) {
+  if (status === 'idle') return null;
+
+  const config = {
+    saving: { icon: Cloud, color: 'text-blue-600', text: 'Saving' },
+    saved: { icon: CheckCircle2, color: 'text-green-600', text: 'Saved' },
+    offline: { icon: CloudOff, color: 'text-amber-600', text: 'Queued' },
+    error: { icon: AlertCircle, color: 'text-red-600', text: 'Error' },
+  };
+
+  const { icon: Icon, color, text } = config[status] || config.saved;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Icon className={`w-3.5 h-3.5 ${color} ${status === 'saving' ? 'animate-spin' : ''}`} strokeWidth={2.5} />
+      <span className={`text-xs font-semibold ${color}`}>{text}</span>
+    </div>
+  );
+}
 
       {/* Conflict Resolution Dialog */}
       <ConflictResolutionDialog

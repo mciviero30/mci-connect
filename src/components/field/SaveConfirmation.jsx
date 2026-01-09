@@ -38,35 +38,37 @@ export default function SaveConfirmation({
       icon: CheckCircle2,
       color: 'from-green-600 to-emerald-600',
       text: message || 'Saved',
+      userText: message || '✓ Saved'
     },
     offline: {
       icon: CloudOff,
       color: 'from-amber-600 to-orange-600',
       text: message || 'Queued offline',
+      userText: message || 'Saved locally'
     },
     error: {
       icon: AlertCircle,
       color: 'from-red-600 to-rose-600',
       text: message || 'Save failed',
+      userText: message || 'Not saved'
     },
   };
 
-  const { icon: Icon, color, text } = config[type];
+  const { icon: Icon, color, userText } = config[type];
 
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: -10 }}
+          initial={{ opacity: 0, scale: 0.95, y: -5 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: -10 }}
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 backdrop-blur-sm border border-slate-700 rounded-xl px-4 py-3 shadow-2xl"
+          exit={{ opacity: 0, scale: 0.95, y: -5 }}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[80] bg-slate-900/95 backdrop-blur-md border border-slate-700/50 radius-md shadow-enterprise-xl px-4 py-2.5"
         >
-          <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 bg-gradient-to-br ${color} rounded-lg flex items-center justify-center`}>
-              <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
-            </div>
-            <span className="text-white font-semibold text-sm">{text}</span>
+          <div className="flex items-center gap-2">
+            <Icon className="w-5 h-5 text-white" strokeWidth={2.5} />
+            <span className="text-white font-semibold text-sm">{userText}</span>
           </div>
         </motion.div>
       )}
