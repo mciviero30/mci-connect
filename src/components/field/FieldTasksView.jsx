@@ -285,8 +285,27 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
         </div>
       </div>
 
-      {/* Kanban View - Enhanced with clear states */}
-      {view === 'kanban' && (
+      {/* Empty State - NO REAL TASKS */}
+      {showEmptyState && (
+        <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-slate-700 to-slate-800 border-2 border-slate-600 rounded-xl">
+          <div className="text-center space-y-4">
+            <p className="text-slate-400 text-lg font-medium">No tasks yet</p>
+            <p className="text-slate-500 text-sm">Create your first task to get started</p>
+            {canEdit && (
+              <Button
+                onClick={() => setShowCreateTask(true)}
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold rounded-xl min-h-[48px] px-6"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Create First Task
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Kanban View - ONLY REAL TASKS */}
+      {!showEmptyState && view === 'kanban' && (
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 overflow-x-auto">
           {columns.map((column) => {
             const columnTasks = filteredTasks.filter(t => t.status === column.id);
@@ -326,7 +345,6 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
                           task={task}
                           onDragStart={(e) => handleDragStart(e, task)}
                           onClick={() => {
-                            // Haptic feedback
                             haptic.light();
                             if (isClientPunch) {
                               setReviewingPunch(task);
