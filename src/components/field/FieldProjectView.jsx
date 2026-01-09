@@ -58,10 +58,13 @@ export default function FieldProjectView({
   // Handlers
   queryClient,
 }) {
-  // CENTRAL PANEL MANAGER - ONE ACTIVE PANEL AT A TIME
+  // HOOKS MUST BE FIRST - BEFORE ANY EARLY RETURNS
   const [activePanel, setActivePanel] = React.useState('work');
   const [showCreateTask, setShowCreateTask] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+  
+  // Debug mode detection - MUST BE BEFORE EARLY RETURNS
+  const isDebugMode = useFieldDebugMode(currentUser);
 
   // Panel switcher - closes others automatically
   const switchPanel = (panelId) => {
@@ -127,9 +130,6 @@ export default function FieldProjectView({
   if (currentUser && !hasAccess) {
     return <AccessDenied />;
   }
-
-  // Debug mode detection
-  const isDebugMode = useFieldDebugMode(currentUser);
 
   // WORK MODE: Vertical scroll of all sections
   const renderWorkMode = () => (
