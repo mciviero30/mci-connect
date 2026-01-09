@@ -4,7 +4,10 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Ruler, Download, Image as ImageIcon, FileText, Trash2, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Plus, Ruler, Download, Image as ImageIcon, FileText, Trash2, Info, CheckCircle2, AlertTriangle, Upload, Loader2, X } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import DimensionCanvas from './dimensions/DimensionCanvas';
 import DimensionDialog from './dimensions/DimensionDialog';
@@ -21,6 +24,9 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   const [editingDimension, setEditingDimension] = useState(null);
   const [projectUnitSystem, setProjectUnitSystem] = useState('imperial');
   const [showProductionConfirm, setShowProductionConfirm] = useState(false);
+  const [showUploadPlan, setShowUploadPlan] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [newPlan, setNewPlan] = useState({ name: '', file: null });
 
   const queryClient = useQueryClient();
 
@@ -72,6 +78,19 @@ export default function FieldDimensionsView({ jobId, jobName }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId], exact: true });
       toast.success('Dimension deleted');
+    },
+  });
+
+  const createPlanMutation = useMutation({
+    mutationFn: (data) => base44.entities.Plan.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
+      setShowUploadPlan(false);
+      setNewPlan({ name: '', file: null });
+      toast.success('Plan uploaded successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to upload plan: ' + error.message);
     },
   });
 
@@ -192,9 +211,9 @@ export default function FieldDimensionsView({ jobId, jobName }) {
           </div>
         </div>
 
-        {/* Image Selector */}
-        <div className="mt-4">
-          <Select value={selectedImage || ''} onValueChange={setSelectedImage}>
+        {/* Image Selector with Upload Button */}
+        <div className="mt-4 flex gap-3">
+          <Select value={selectedImage || ''} onValueChange={setSelectedImage} className="flex-1">
             <SelectTrigger className="h-12">
               <SelectValue placeholder="Select drawing or photo to dimension..." />
             </SelectTrigger>
@@ -206,6 +225,13 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            onClick={() => setShowUploadPlan(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold min-h-[48px] px-4 rounded-lg"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Upload Drawing
+          </Button>
         </div>
 
         {/* Legend */}
@@ -312,6 +338,108 @@ export default function FieldDimensionsView({ jobId, jobName }) {
         unitSystem={projectUnitSystem}
         onConfirm={handleConfirmProduction}
       />
+
+      {/* Upload Plan Dialog */}
+      <Dialog open={showUploadPlan} onOpenChange={setShowUploadPlan}>
+        <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle>Upload Drawing</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label className="text-slate-600 dark:text-slate-300">Drawing Name</Label>
+              <Input 
+                value={newPlan.name}
+                onChange={(e) => setNewPlan({...newPlan, name: e.target.value})}
+                placeholder="e.g., Floor Plan Level 1"
+                className="mt-1.5"
+              />
+            </div>
+            <div>
+              <Label className="text-slate-600 dark:text-slate-300">Image File</Label>
+              <div className="mt-1.5">
+                {newPlan.file ? (
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                    <img 
+                      src={newPlan.file} 
+                      alt="Preview" 
+                      className="w-full h-full object-contain"
+                    />
+                    <button 
+                      onClick={() => setNewPlan({...newPlan, file: null})}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 rounded-full hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:border-blue-400 transition-colors">
+                    {uploading ? (
+                      <div className="flex flex-col items-center">
+                        <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-2" />
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Uploading...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                        <span className="text-sm text-slate-600 dark:text-slate-300">Click to upload image</span>
+                        <span className="text-xs text-slate-500 mt-1">JPG, PNG, PDF (max 100MB)</span>
+                      </>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*,.pdf"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        
+                        setUploading(true);
+                        try {
+                          const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                          setNewPlan({
+                            ...newPlan,
+                            file: file_url,
+                            name: newPlan.name || file.name.split('.')[0]
+                          });
+                        } catch (error) {
+                          toast.error('Upload failed: ' + error.message);
+                        }
+                        setUploading(false);
+                      }}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button variant="outline" onClick={() => setShowUploadPlan(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!newPlan.file || !newPlan.name) {
+                    toast.error('Please enter name and select file');
+                    return;
+                  }
+                  createPlanMutation.mutate({
+                    job_id: jobId,
+                    name: newPlan.name,
+                    file_url: newPlan.file,
+                    order: plans.length,
+                    image_url: newPlan.file,
+                  });
+                }}
+                disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {createPlanMutation.isPending ? 'Saving...' : 'Save Drawing'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
