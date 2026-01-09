@@ -265,18 +265,128 @@
 /* ============================================ */
 
 @layer utilities {
-  /* Soft Blue */
-  .soft-blue-gradient {
-    background: linear-gradient(to bottom right, hsl(var(--soft-blue-from)), hsl(var(--soft-blue-to)));
-    border: 2px solid hsl(var(--soft-blue-border));
-    color: hsl(var(--soft-blue-text));
-  }
-  
-  .soft-blue-bg {
-    background: hsl(var(--soft-blue-from));
-    border-color: hsl(var(--soft-blue-border));
-    color: hsl(var(--soft-blue-text));
-  }
+        /* ============================================ */
+        /* UNIFIED SPACING SYSTEM                      */
+        /* ============================================ */
+        .spacing-xs { @apply gap-2 p-2; }        /* 8px */
+        .spacing-sm { @apply gap-3 p-3; }        /* 12px */
+        .spacing-md { @apply gap-4 p-4; }        /* 16px */
+        .spacing-lg { @apply gap-6 p-6; }        /* 24px */
+        .spacing-xl { @apply gap-8 p-8; }        /* 32px */
+
+        /* ============================================ */
+        /* UNIFIED SHADOW SYSTEM                       */
+        /* ============================================ */
+        .shadow-enterprise-sm {
+          box-shadow: 0 1px 2px 0 rgba(30, 58, 138, 0.08);
+        }
+        .shadow-enterprise-md {
+          box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.12), 0 2px 4px -2px rgba(30, 58, 138, 0.08);
+        }
+        .shadow-enterprise-lg {
+          box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.15), 0 4px 6px -4px rgba(30, 58, 138, 0.10);
+        }
+        .shadow-enterprise-xl {
+          box-shadow: 0 20px 25px -5px rgba(30, 58, 138, 0.18), 0 8px 10px -6px rgba(30, 58, 138, 0.12);
+        }
+
+        /* Dark mode shadows */
+        .dark .shadow-enterprise-sm {
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.20);
+        }
+        .dark .shadow-enterprise-md {
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.30), 0 2px 4px -2px rgba(0, 0, 0, 0.20);
+        }
+        .dark .shadow-enterprise-lg {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.40), 0 4px 6px -4px rgba(0, 0, 0, 0.30);
+        }
+        .dark .shadow-enterprise-xl {
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.50), 0 8px 10px -6px rgba(0, 0, 0, 0.40);
+        }
+
+        /* ============================================ */
+        /* UNIFIED BORDER RADIUS SYSTEM                */
+        /* ============================================ */
+        .radius-sm { @apply rounded-lg; }        /* 8px */
+        .radius-md { @apply rounded-xl; }        /* 12px */
+        .radius-lg { @apply rounded-2xl; }       /* 16px */
+        .radius-xl { @apply rounded-3xl; }       /* 24px */
+
+        /* ============================================ */
+        /* TYPOGRAPHY HIERARCHY                        */
+        /* ============================================ */
+
+        /* Headings */
+        .text-h1 {
+          @apply text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight;
+          letter-spacing: -0.02em;
+        }
+        .text-h2 {
+          @apply text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight;
+          letter-spacing: -0.01em;
+        }
+        .text-h3 {
+          @apply text-lg sm:text-xl font-semibold text-slate-900 dark:text-white;
+        }
+        .text-h4 {
+          @apply text-base sm:text-lg font-semibold text-slate-900 dark:text-white;
+        }
+
+        /* Body Text */
+        .text-body-lg {
+          @apply text-base text-slate-700 dark:text-slate-300 leading-relaxed;
+        }
+        .text-body {
+          @apply text-sm text-slate-700 dark:text-slate-300 leading-normal;
+        }
+        .text-body-sm {
+          @apply text-xs text-slate-600 dark:text-slate-400 leading-normal;
+        }
+
+        /* Status & Labels */
+        .text-label {
+          @apply text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider;
+        }
+        .text-status {
+          @apply text-[10px] font-bold uppercase tracking-widest;
+        }
+
+        /* Field Mode Typography (High Contrast) */
+        .text-field-h1 {
+          @apply text-2xl sm:text-3xl font-bold text-white tracking-tight;
+        }
+        .text-field-h2 {
+          @apply text-xl sm:text-2xl font-bold text-white tracking-tight;
+        }
+        .text-field-body {
+          @apply text-sm text-slate-200 leading-relaxed;
+        }
+
+        /* ============================================ */
+        /* ENTERPRISE CARD SYSTEM                      */
+        /* ============================================ */
+        .card-enterprise {
+          @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 radius-md shadow-enterprise-md;
+        }
+        .card-enterprise-hover {
+          @apply card-enterprise hover:shadow-enterprise-lg transition-all duration-200;
+        }
+        .card-field {
+          @apply bg-slate-800 border border-slate-700 radius-md shadow-enterprise-lg;
+        }
+
+        /* Soft Blue */
+        .soft-blue-gradient {
+          background: linear-gradient(to bottom right, hsl(var(--soft-blue-from)), hsl(var(--soft-blue-to)));
+          border: 2px solid hsl(var(--soft-blue-border));
+          color: hsl(var(--soft-blue-text));
+        }
+
+        .soft-blue-bg {
+          background: hsl(var(--soft-blue-from));
+          border-color: hsl(var(--soft-blue-border));
+          color: hsl(var(--soft-blue-text));
+        }
   
   /* Soft Green */
   .soft-green-gradient {
@@ -396,86 +506,157 @@
   
   /* Buttons Soft */
   .btn-soft-blue {
-    @apply soft-blue-gradient hover:opacity-90 transition-opacity shadow-lg;
+    @apply soft-blue-gradient hover:opacity-90 transition-opacity shadow-enterprise-md;
   }
-  
+
   .btn-soft-green {
-    @apply soft-green-gradient hover:opacity-90 transition-opacity shadow-lg;
+    @apply soft-green-gradient hover:opacity-90 transition-opacity shadow-enterprise-md;
   }
-  
+
   .btn-soft-red {
-    @apply soft-red-gradient hover:opacity-90 transition-opacity shadow-lg;
+    @apply soft-red-gradient hover:opacity-90 transition-opacity shadow-enterprise-md;
+  }
+
+  /* ============================================ */
+  /* ENTERPRISE BUTTON SYSTEM                    */
+  /* ============================================ */
+  .btn-primary {
+    @apply bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90;
+    @apply text-white font-semibold shadow-enterprise-md;
+    @apply radius-md min-h-[48px] px-6;
+    @apply active:scale-95 transition-all;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600;
+    @apply text-slate-900 dark:text-white font-semibold shadow-enterprise-sm;
+    @apply radius-md min-h-[48px] px-6;
+    @apply hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all;
+  }
+
+  .btn-tertiary {
+    @apply bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800;
+    @apply text-slate-700 dark:text-slate-300 font-medium;
+    @apply radius-md min-h-[44px] px-4;
+    @apply hover:bg-slate-200 dark:hover:bg-slate-800 transition-all;
+  }
+
+  .btn-field {
+    @apply bg-gradient-to-r from-[#FF8C00] to-[#FFB347] hover:from-[#FF8C00]/90 hover:to-[#FFB347]/90;
+    @apply text-white font-bold shadow-enterprise-lg;
+    @apply radius-md min-h-[56px] px-6;
+    @apply active:scale-95 transition-all;
   }
 
   /* ============================================ */
   /* VISUAL HIERARCHY SYSTEM                      */
   /* ============================================ */
-  
+
   /* PRIMARY - Main action (ONE per screen) */
   .hierarchy-primary {
-    @apply bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg font-semibold transition-all;
+    @apply bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90;
+    @apply text-white font-semibold shadow-enterprise-md radius-md;
+    @apply active:scale-95 transition-all;
   }
-  
+
   /* SECONDARY - Information cards */
   .hierarchy-secondary {
-    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm;
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700;
+    @apply shadow-enterprise-sm radius-md;
   }
-  
+
   /* TERTIARY - Status indicators (subtle) */
   .hierarchy-tertiary {
-    @apply bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 text-xs;
+    @apply bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400;
+    @apply text-xs radius-sm px-2 py-1;
   }
-  
+
   /* DEBUG - Technical monitoring (hidden) */
   .hierarchy-debug {
-    @apply bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-400 dark:border-yellow-600 text-xs opacity-80;
+    @apply bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-400 dark:border-yellow-600;
+    @apply text-xs opacity-80 radius-sm;
   }
-  
+
   /* ALERT COLORS - Only for real alerts */
   .alert-critical {
     @apply bg-red-50 dark:bg-red-900/20 border-2 border-red-500 text-red-900 dark:text-red-200;
+    @apply radius-md shadow-enterprise-md;
   }
-  
+
   .alert-warning {
     @apply bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-500 text-amber-900 dark:text-amber-200;
+    @apply radius-md shadow-enterprise-md;
   }
-  
+
   .alert-success {
     @apply bg-green-50 dark:bg-green-900/20 border-2 border-green-500 text-green-900 dark:text-green-200;
+    @apply radius-md shadow-enterprise-md;
   }
-  
+
   .alert-info {
     @apply bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 text-blue-900 dark:text-blue-200;
+    @apply radius-md shadow-enterprise-md;
+  }
+
+  /* ============================================ */
+  /* ENTERPRISE PANEL SYSTEM                     */
+  /* ============================================ */
+  .panel-header {
+    @apply border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50 dark:bg-slate-900/50;
+  }
+
+  .panel-content {
+    @apply px-6 py-4;
+  }
+
+  .panel-footer {
+    @apply border-t border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50 dark:bg-slate-900/50;
+  }
+
+  /* ============================================ */
+  /* INPUT SYSTEM - Consistent Forms             */
+  /* ============================================ */
+  .input-enterprise {
+    @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600;
+    @apply text-slate-900 dark:text-white radius-md px-4 py-3;
+    @apply focus:ring-2 focus:ring-[#507DB4] focus:border-transparent;
+    @apply transition-all min-h-[48px];
   }
 }
 
-/* Professional scrollbar styling */
+/* ============================================ */
+/* ENTERPRISE SCROLLBAR STYLING                */
+/* ============================================ */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(37, 99, 235, 0.05);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(30, 58, 138, 0.05);
   border-radius: 4px;
 }
 
+::-webkit-scrollbar-thumb {
+  background: rgba(30, 58, 138, 0.20);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(37, 99, 235, 0.4);
+  background: rgba(30, 58, 138, 0.40);
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: rgba(96, 165, 250, 0.05);
+  background: rgba(15, 23, 42, 0.50);
+  border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(96, 165, 250, 0.2);
+  background: rgba(71, 85, 105, 0.50);
+  border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(96, 165, 250, 0.4);
+  background: rgba(100, 116, 139, 0.70);
 }
