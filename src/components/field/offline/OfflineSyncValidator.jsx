@@ -148,8 +148,15 @@ export default function OfflineSyncValidator() {
     }
   };
 
+  // CRITICAL: NO UI IN PRODUCTION - LOGGING ONLY
   if (!import.meta.env?.DEV) return null;
 
+  // Component is logging-only in DEV mode.
+  // All UI is in FieldDebugDrawer.
+  return null;
+
+  /*
+  // OLD FLOATING PANEL CODE - REMOVED
   const syncRate = stats.total > 0 
     ? Math.round((stats.completed / stats.total) * 100)
     : 100;
