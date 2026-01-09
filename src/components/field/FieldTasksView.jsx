@@ -169,7 +169,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
         return matchesSearch && matchesStatus && matchesPriority && matchesType && matchesUser;
       })
       .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
-  }, [tasks, searchTerm, statusFilter, priorityFilter, taskTypeFilter, showMyTasks, currentUser?.email, getWallNumber]);
+  }, [tasks, searchTerm, statusFilter, priorityFilter, taskTypeFilter, showMyTasks, user?.email, getWallNumber]);
 
   const columns = [
     { id: 'pending', label: 'Assigned', color: 'red', emoji: '📋' },
