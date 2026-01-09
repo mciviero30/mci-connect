@@ -11,7 +11,8 @@ import {
   ClipboardList,
   ArrowLeft,
   MapPin,
-  RotateCcw
+  RotateCcw,
+  Ruler
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -453,39 +454,48 @@ export default function Field() {
         </div>
       )}
 
-      {/* QUICK SECONDARY ACTIONS - Max 2 */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      {/* QUICK SECONDARY ACTIONS - 3 buttons */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+        <Button
+          onClick={() => setActiveTab('measurements')}
+          variant="outline"
+          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all text-xs sm:text-base"
+        >
+          <Ruler className="w-5 h-5 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Measurements</span>
+          <span className="sm:hidden">📐</span>
+        </Button>
         <Button
           onClick={() => setActiveTab('checklists')}
           variant="outline"
-          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all"
+          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all text-xs sm:text-base"
         >
-          <ClipboardList className="w-5 h-5 mr-2" />
-          {language === 'es' ? 'Checklists' : 'Checklists'}
+          <ClipboardList className="w-5 h-5 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Checklists</span>
+          <span className="sm:hidden">✓</span>
         </Button>
         <Button
           onClick={() => setShowQuickSearch(true)}
           variant="outline"
-          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all"
+          className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 min-h-[56px] rounded-xl active:scale-[0.98] transition-all text-xs sm:text-base"
         >
-          <Search className="w-5 h-5 mr-2" />
-          {language === 'es' ? 'Buscar' : 'Search'}
+          <Search className="w-5 h-5 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Search</span>
+          <span className="sm:hidden">🔍</span>
         </Button>
       </div>
 
       {/* Hidden Tabs for Navigation Only */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="hidden">
         <TabsContent value="projects" />
-        <TabsContent value="dimensions">
-          <FieldDimensionView jobId={null} />
-        </TabsContent>
+        <TabsContent value="measurements" />
         <TabsContent value="checklists">
           <GlobalChecklistsManager />
         </TabsContent>
       </Tabs>
 
       {/* Show alternative views when tabs change */}
-      {activeTab === 'dimensions' && (
+      {activeTab === 'measurements' && (
         <div className="pb-6">
           <Button
             onClick={() => setActiveTab('projects')}
@@ -495,7 +505,17 @@ export default function Field() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             {language === 'es' ? 'Volver' : 'Back'}
           </Button>
-          <FieldDimensionView jobId={null} />
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-4">
+            <p className="text-red-300 text-sm font-bold">
+              📐 Field Measurements Module
+            </p>
+            <p className="text-red-200 text-xs mt-2">
+              Select a job from the list above to view or create measurements.
+            </p>
+          </div>
+          <div className="text-center text-slate-400 py-8">
+            {language === 'es' ? 'Selecciona un proyecto para ver mediciones' : 'Select a project to view measurements'}
+          </div>
         </div>
       )}
       {activeTab === 'checklists' && (
