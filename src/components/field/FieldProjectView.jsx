@@ -284,44 +284,15 @@ export default function FieldProjectView({
         <PhotoUploadProgress jobId={jobId} />
       </div>
 
-      {/* Debug UI - Monitoring Only */}
-      <DebugUI>
-        <div className="fixed top-20 right-4 z-50 space-y-2">
-          <div className="bg-slate-900/95 backdrop-blur-sm border border-yellow-500 rounded-lg px-3 py-2 text-xs text-yellow-400 shadow-xl">
-            🔧 Debug Mode
-          </div>
-          <Button
-            onClick={() => switchPanel('intelligence')}
-            size="sm"
-            variant="outline"
-            className="w-full bg-slate-900 border-purple-500 text-purple-400 hover:bg-purple-900/20"
-          >
-            Intelligence
-          </Button>
-          <Button
-            onClick={() => switchPanel('completeness')}
-            size="sm"
-            variant="outline"
-            className="w-full bg-slate-900 border-blue-500 text-blue-400 hover:bg-blue-900/20"
-          >
-            Completeness
-          </Button>
-          <Button
-            onClick={() => switchPanel('ai-quality')}
-            size="sm"
-            variant="outline"
-            className="w-full bg-slate-900 border-pink-500 text-pink-400 hover:bg-pink-900/20"
-          >
-            AI Quality
-          </Button>
-        </div>
-        
-        {/* Debug Validators - Hidden UI, Log Only */}
-        <FieldLifecycleValidator jobId={jobId} />
-        <FieldDataLossValidator jobId={jobId} />
-        <FieldPerformanceMonitor componentName="FieldProjectView" />
-        <OfflineSyncValidator />
-      </DebugUI>
+      {/* Debug UI - Monitoring Only (Log-based, no visual overlays) */}
+      {isDebugMode && (
+        <>
+          <FieldLifecycleValidator jobId={jobId} />
+          <FieldDataLossValidator jobId={jobId} />
+          <FieldPerformanceMonitor componentName="FieldProjectView" />
+          <OfflineSyncValidator />
+        </>
+      )}
 
       {/* Quick Create Task Dialog - ONE ACTIVE OVERLAY */}
       <CreateTaskDialog
