@@ -33,6 +33,7 @@ import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { FieldSessionManager } from '@/components/field/services/FieldSessionManager';
 import FieldReentryPrompt from '@/components/field/FieldReentryPrompt';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { SkeletonFieldProject } from '@/components/shared/SkeletonComponents';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
