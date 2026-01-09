@@ -21,7 +21,6 @@ import FieldBottomSheet from './FieldBottomSheet';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
-import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { NavigationBlocker } from '@/components/validation/NavigationBlocker';
 import SaveConfirmation from './SaveConfirmation';
 
