@@ -75,6 +75,18 @@ export default function FieldProjectView({
     };
   }, []);
 
+  // Listen for navigation events from overview cards
+  React.useEffect(() => {
+    const handleFieldNavigate = (event) => {
+      const { panel } = event.detail;
+      if (panel) {
+        switchPanel(panel);
+      }
+    };
+    window.addEventListener('field:navigate', handleFieldNavigate);
+    return () => window.removeEventListener('field:navigate', handleFieldNavigate);
+  }, []);
+
   // Handle safe exit
   const handleSafeExit = () => {
     if (window.confirm('Exit Field? Any unsaved work will be lost.')) {
@@ -119,16 +131,61 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // WORK MODE: Installation view (no measurements)
-  const renderWorkMode = () => (
-    <FieldInstallation 
-      job={job} 
-      tasks={tasks} 
-      plans={plans} 
-      jobId={jobId} 
-      currentUser={currentUser}
-    />
-  );
+  // Render active panel
+  const renderActivePanel = () => {
+    switch (activePanel) {
+      case 'plans':
+        return (
+          <div className="relative h-full">
+            <Button 
+              onClick={closePanel}
+              className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg backdrop-blur-sm min-h-[44px] px-4 rounded-xl"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />
+          </div>
+        );
+      case 'tasks':
+        return (
+          <div className="relative h-full">
+            <Button 
+              onClick={closePanel}
+              className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg backdrop-blur-sm min-h-[44px] px-4 rounded-xl"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />
+          </div>
+        );
+      case 'checklists':
+        return (
+          <div className="relative h-full">
+            <Button 
+              onClick={closePanel}
+              className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg backdrop-blur-sm min-h-[44px] px-4 rounded-xl"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            <FieldChecklistsView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />
+          </div>
+        );
+      case 'work':
+      default:
+        return (
+          <FieldInstallation 
+            job={job} 
+            tasks={tasks} 
+            plans={plans} 
+            jobId={jobId} 
+            currentUser={currentUser}
+          />
+        );
+    }
+  };
 
   // Work mode only - no debug panels in this view
   // Debug panels are accessed via FieldDebugDrawer
@@ -169,9 +226,9 @@ export default function FieldProjectView({
         </div>
       </div>
 
-      {/* MAIN CONTENT - Installation view only */}
+      {/* MAIN CONTENT - Dynamic panel based on navigation */}
       <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {renderWorkMode()}
+        {renderActivePanel()}
       </div>
 
       {/* Persistent Bottom Elements - ALWAYS VISIBLE */}
