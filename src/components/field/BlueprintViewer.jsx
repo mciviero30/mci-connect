@@ -772,8 +772,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   return (
     <TooltipProvider>
     <div className="h-full flex relative">
-      {/* Left Toolbar - Mobile Optimized - 44px touch targets */}
-      <div className="absolute left-2 md:left-2 top-2 md:top-16 z-50 flex flex-col bg-slate-800 border-2 border-slate-600 rounded-2xl shadow-2xl py-2 gap-1">
+      {/* Left Toolbar - Mobile Optimized - High Contrast */}
+      <div className="absolute left-2 md:left-2 top-16 md:top-20 z-50 flex flex-col bg-gradient-to-b from-slate-900 to-black border-2 border-slate-700 rounded-2xl shadow-2xl py-2 gap-1">
         {toolbarItems.map((item, idx) => {
           if (item.type === 'divider') {
             return <div key={item.id} className="my-1 mx-2 border-t-2 border-slate-600" />;
@@ -801,8 +801,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                   }}
                   className={`mx-1 min-w-[48px] min-h-[48px] rounded-xl transition-all relative touch-manipulation active:scale-95 flex items-center justify-center ${
                     isActive 
-                      ? 'bg-gradient-to-br from-[#FFB800] to-[#FF8C00] text-white shadow-lg shadow-orange-500/30' 
-                      : 'text-slate-300 active:bg-slate-700 bg-slate-700/50'
+                      ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black shadow-xl shadow-orange-500/40 border-2 border-orange-400' 
+                      : 'text-slate-300 active:bg-slate-700 bg-slate-800 hover:bg-slate-700'
                   }`}
                 >
                   <item.icon className="w-6 h-6" />
@@ -828,8 +828,8 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
               onClick={() => setShowPins(!showPins)}
               className={`mx-1 min-w-[48px] min-h-[48px] rounded-xl transition-all touch-manipulation active:scale-95 flex items-center justify-center ${
                 showPins 
-                  ? 'bg-gradient-to-br from-[#FFB800] to-[#FF8C00] text-white shadow-lg shadow-orange-500/30' 
-                  : 'bg-slate-700/50 text-slate-400 active:bg-slate-700'
+                  ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black shadow-xl shadow-orange-500/40 border-2 border-orange-400' 
+                  : 'bg-slate-800 text-slate-400 active:bg-slate-700 hover:bg-slate-700'
               }`}
             >
               {showPins ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
@@ -870,32 +870,34 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
       {/* Main Viewer */}
       <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
-        {/* Top Header - Simplified */}
-        <div className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-2 md:gap-3">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden md:inline ml-2">Back</span>
+        {/* Top Header - High Contrast */}
+        <div className="flex items-center justify-between p-3 md:p-4 bg-gradient-to-r from-slate-900 to-slate-800 border-b-2 border-slate-700 shadow-xl">
+          <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+            <Button 
+              onClick={onBack} 
+              className="bg-slate-700 hover:bg-slate-600 text-white border-2 border-slate-600 shadow-lg min-h-[48px] min-w-[48px] rounded-xl flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
             </Button>
-            <span className="text-slate-900 dark:text-white font-medium text-sm md:text-base truncate max-w-[150px] md:max-w-none">{plan.name}</span>
+            <span className="text-white font-bold text-lg truncate">{plan.name}</span>
           </div>
           
-          {/* Right side tools */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 dark:text-slate-400">
-              <Search className="w-4 h-4" />
-            </Button>
             <button
               onClick={() => setShowPins(!showPins)}
-              className={`p-2 rounded-lg ${showPins ? 'text-[#FFB800]' : 'text-slate-400'}`}
+              className={`p-2 rounded-lg transition-all flex-shrink-0 ${
+                showPins 
+                  ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black shadow-lg' 
+                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+              }`}
             >
-              {showPins ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              {showPins ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
             </button>
           </div>
         </div>
         
-        {/* Mobile Toolbar - Bottom - Hidden since we have left toolbar */}
-        <div className="hidden fixed bottom-20 left-2 right-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex justify-around z-40">
+        {/* Mobile Toolbar - REMOVED - use left toolbar only */}
+        <div className="hidden">
           <button
             onClick={() => { setActiveTool('select'); setIsPlacingPin(false); }}
             className={`p-2 rounded-lg ${activeTool === 'select' ? 'bg-[#FFB800] text-white' : 'text-slate-600'}`}
@@ -920,10 +922,10 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           </button>
         </div>
 
-        {/* Canvas - Touch enabled */}
+        {/* Canvas - Touch enabled - PADDING FOR BOTTOM RAIL */}
         <div 
           ref={containerRef}
-          className={`flex-1 overflow-hidden touch-none ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 overflow-hidden touch-none pb-20 ${activeTool === 'pin' || isPlacingPin ? 'cursor-crosshair' : isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -1093,7 +1095,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         </div>
 
         {(isPlacingPin || activeTool === 'pin') && (
-          <div className="absolute bottom-24 md:bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#FFB800] to-[#FF8C00] text-black px-6 py-3 rounded-2xl shadow-2xl text-base font-bold flex items-center gap-3 border-2 border-white animate-pulse">
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-yellow-500 text-black px-6 py-3 rounded-2xl shadow-2xl text-base font-bold flex items-center gap-3 border-2 border-white/50 animate-pulse">
             <Crosshair className="w-6 h-6" />
             Tap to Place Pin
           </div>

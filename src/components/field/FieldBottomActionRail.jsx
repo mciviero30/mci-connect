@@ -88,8 +88,8 @@ export default function FieldBottomActionRail({
 
   return (
     <>
-      {/* BOTTOM ACTION RAIL - Fixed, Always Visible, Thumb-Optimized */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-black border-t-2 border-slate-700 shadow-2xl pb-safe">
+      {/* BOTTOM ACTION RAIL - Fixed, Always Visible, High Contrast */}
+      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-black to-slate-900 border-t-2 border-orange-600/30 shadow-2xl pb-safe">
         <div className="flex items-center justify-around px-1 py-2">
           {actions.map((action) => {
             const isActive = activeAction === action.id;
@@ -112,10 +112,10 @@ export default function FieldBottomActionRail({
                 }}
                 className={`flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] max-w-[100px] rounded-xl touch-manipulation transition-all ${
                   isActive 
-                    ? 'bg-orange-600 text-black scale-105 shadow-lg' 
+                    ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black scale-105 shadow-xl shadow-orange-500/40' 
                     : isDisabled
-                    ? 'text-slate-500 opacity-50'
-                    : 'text-white active:bg-slate-800'
+                    ? 'text-slate-600 opacity-40'
+                    : 'text-slate-200 active:bg-slate-800 hover:bg-slate-800/50'
                 } ${!isDisabled && 'active:scale-95'}`}
                 style={{ 
                   WebkitTapHighlightColor: 'transparent',
