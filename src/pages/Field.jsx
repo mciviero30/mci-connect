@@ -335,27 +335,6 @@ export default function Field() {
       )}
 
     <div data-field-mode="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto dark">
-      {/* Field Exit Control - Intelligent, Non-Blocking */}
-      <Button 
-        onClick={() => {
-          // Check for active session
-          const session = FieldSessionManager.getSession();
-          if (session?.isActive || previousSession?.isActive) {
-            // Show exit confirmation
-            setShowExitConfirmation(true);
-          } else {
-            // Safe to exit immediately
-            setIsFieldMode(false);
-            navigate(createPageUrl('Dashboard'));
-          }
-        }}
-        className="fixed top-4 left-4 z-[70] bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-2xl backdrop-blur-sm min-h-[44px] px-4 rounded-xl touch-manipulation"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        <span className="hidden sm:inline">Back to MCI Connect</span>
-        <span className="sm:hidden">Back</span>
-      </Button>
-      
       {/* Exit Confirmation - Only if active work */}
       <ExitConfirmation
         open={showExitConfirmation}
@@ -376,23 +355,46 @@ export default function Field() {
 
       <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
       {/* HEADER - Simple, Clear Status */}
-      <div className="px-3 sm:px-6 md:px-10 py-6 sm:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-6 flex flex-col items-center justify-center text-white gap-3" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
-        <img
-          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
-          alt="MCI Field"
-          className="h-16 sm:h-20 object-contain"
-          style={{ imageRendering: '-webkit-optimize-contrast' }}
-        />
-        <div className="text-center">
-          <h1 className="text-2xl sm:text-4xl font-bold tracking-wide text-white mb-1" style={{ letterSpacing: '0.05em' }}>
-            MCI FIELD
-          </h1>
-          <p className="text-sm sm:text-base text-slate-300 font-medium">
-            {activeProjects > 0 
-              ? (language === 'es' ? `Tienes ${activeProjects} trabajo${activeProjects > 1 ? 's' : ''} activo${activeProjects > 1 ? 's' : ''}` : `You have ${activeProjects} active job${activeProjects > 1 ? 's' : ''}`)
-              : (language === 'es' ? 'Sin trabajos activos hoy' : 'No active jobs today')
+      <div className="px-3 sm:px-6 md:px-10 py-6 sm:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-6 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
+        {/* Back Button - Positioned top-left inside header */}
+        <Button 
+          onClick={() => {
+            // Check for active session
+            const session = FieldSessionManager.getSession();
+            if (session?.isActive || previousSession?.isActive) {
+              // Show exit confirmation
+              setShowExitConfirmation(true);
+            } else {
+              // Safe to exit immediately
+              setIsFieldMode(false);
+              navigate(createPageUrl('Dashboard'));
             }
-          </p>
+          }}
+          className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 bg-slate-700/80 hover:bg-slate-600 text-white border border-slate-500/50 shadow-lg backdrop-blur-sm min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 rounded-lg touch-manipulation transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
+          <span className="hidden sm:inline text-sm font-medium">Back to MCI Connect</span>
+          <span className="sm:hidden text-sm font-medium">Back</span>
+        </Button>
+
+        <div className="flex flex-col items-center justify-center text-white gap-3">
+          <img
+            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/62c6ebd3e_Gemini_Generated_Image_r5bq71r5bq71r5bq.png"
+            alt="MCI Field"
+            className="h-16 sm:h-20 object-contain"
+            style={{ imageRendering: '-webkit-optimize-contrast' }}
+          />
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-wide text-white mb-1" style={{ letterSpacing: '0.05em' }}>
+              MCI FIELD
+            </h1>
+            <p className="text-sm sm:text-base text-slate-300 font-medium">
+              {activeProjects > 0 
+                ? (language === 'es' ? `Tienes ${activeProjects} trabajo${activeProjects > 1 ? 's' : ''} activo${activeProjects > 1 ? 's' : ''}` : `You have ${activeProjects} active job${activeProjects > 1 ? 's' : ''}`)
+                : (language === 'es' ? 'Sin trabajos activos hoy' : 'No active jobs today')
+              }
+            </p>
+          </div>
         </div>
       </div>
 
