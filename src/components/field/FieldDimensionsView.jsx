@@ -218,16 +218,21 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               <SelectValue placeholder="Select drawing or photo to dimension..." />
             </SelectTrigger>
             <SelectContent 
-              className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-h-[60vh] overflow-y-auto"
+              className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-h-[60vh]"
               position="popper"
               sideOffset={5}
+              style={{ 
+                overflowY: 'auto', 
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-y'
+              }}
             >
-              <div className="py-1">
+              <div className="py-1" style={{ touchAction: 'pan-y' }}>
                 {imageOptions.map(opt => (
                   <SelectItem 
                     key={opt.value} 
                     value={opt.value} 
-                    className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 py-3 px-4 cursor-pointer"
+                    className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 py-3 px-4 cursor-pointer min-h-[48px]"
                   >
                     {opt.type === 'plan' ? '📐' : '📷'} {opt.label}
                   </SelectItem>
