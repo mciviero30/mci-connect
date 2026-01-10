@@ -96,41 +96,8 @@ export default function GlobalChecklistsManager() {
     },
   });
 
-  // Auto-create defaults if none exist - RUN ONLY ONCE
-  const [defaultsCreated, setDefaultsCreated] = React.useState(false);
-  
-  React.useEffect(() => {
-    const createDefaults = async () => {
-      // Only create defaults once when templates are empty
-      if (templates.length === 0 && !isLoading && !defaultsCreated) {
-        setDefaultsCreated(true); // Set flag BEFORE creating to prevent double-run
-        
-        for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
-          try {
-            await base44.entities.WorkUnit.create({
-              type: 'checklist',
-              is_template: true,
-              is_global: true,
-              title: template.name,
-              description: template.description,
-              category: template.category,
-              checklist_items: template.items.map(item => ({
-                id: item.id,
-                text: item.text,
-                checked: false,
-                required: item.required
-              })),
-            });
-          } catch (error) {
-            console.error('Error creating default template:', error);
-          }
-        }
-        queryClient.invalidateQueries({ queryKey: ['global-checklist-templates'] });
-      }
-    };
-
-    createDefaults();
-  }, [templates.length, isLoading, defaultsCreated]);
+  // REMOVED: Auto-create defaults (was causing duplicates)
+  // User can create templates manually or use "Borrar Todos" button to reset
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => base44.entities.WorkUnit.create(data),
@@ -277,9 +244,13 @@ export default function GlobalChecklistsManager() {
 
       {templates.length === 0 ? (
         <div className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-12 text-center">
-          <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4 animate-pulse" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Loading templates...</h3>
-          <p className="text-slate-500 dark:text-slate-400">Creating default checklists</p>
+          <ClipboardCheck className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No templates yet</h3>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">Create your first checklist template</p>
+          <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Template
+          </Button>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
