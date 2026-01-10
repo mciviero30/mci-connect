@@ -52,7 +52,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
 
   const { data: plans = [] } = useQuery({
     queryKey: ['field-plans', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }),
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }, '-created_date'),
     enabled: !!jobId,
     ...FIELD_STABLE_QUERY_CONFIG,
   });
@@ -217,9 +217,9 @@ export default function FieldDimensionsView({ jobId, jobName }) {
             <SelectTrigger className="h-12">
               <SelectValue placeholder="Select drawing or photo to dimension..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-h-[300px]">
               {imageOptions.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>
+                <SelectItem key={opt.value} value={opt.value} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
                   {opt.type === 'plan' ? '📐' : '📷'} {opt.label}
                 </SelectItem>
               ))}
