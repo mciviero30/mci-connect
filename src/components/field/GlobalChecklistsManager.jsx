@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 const categoryLabels = {
   glass_wall: 'Glass Wall',
@@ -149,6 +150,26 @@ export default function GlobalChecklistsManager() {
     },
   });
 
+  const deleteAllTemplatesMutation = useMutation({
+    mutationFn: async () => {
+      // Delete all global checklist templates
+      for (const template of templates) {
+        try {
+          await base44.entities.WorkUnit.delete(template.id);
+        } catch (error) {
+          console.error('Error deleting template:', template.id, error);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['global-checklist-templates'] });
+      toast.success('All templates deleted');
+    },
+    onError: () => {
+      toast.error('Failed to delete templates');
+    },
+  });
+
   const resetForm = () => {
     setNewChecklist({ name: '', description: '', category: 'glass_wall' });
     setChecklistItems([{ id: '1', text: '', required: false }]);
@@ -224,10 +245,27 @@ export default function GlobalChecklistsManager() {
             Global templates available in all projects
           </p>
         </div>
-        <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          New Template
-        </Button>
+        <div className="flex gap-2">
+          {templates.length > 0 && (
+            <Button 
+              onClick={() => {
+                if (window.confirm(`¿Borrar TODOS los ${templates.length} templates? Esta acción no se puede deshacer.`)) {
+                  deleteAllTemplatesMutation.mutate();
+                }
+              }}
+              disabled={deleteAllTemplatesMutation.isPending}
+              variant="outline"
+              className="bg-red-900/20 border-2 border-red-500/50 text-red-400 hover:bg-red-900/40 hover:border-red-400"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              {deleteAllTemplatesMutation.isPending ? 'Borrando...' : 'Borrar Todos'}
+            </Button>
+          )}
+          <Button onClick={() => setShowCreate(true)} className="bg-[#FFB800] hover:bg-[#E5A600] text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            New Template
+          </Button>
+        </div>
       </div>
 
       {templates.length === 0 ? (
