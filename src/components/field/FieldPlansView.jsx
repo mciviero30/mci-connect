@@ -131,16 +131,23 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       if (progressInterval) clearInterval(progressInterval);
       setUploadProgress(100);
-      setNewPlan({ 
-        ...newPlan, 
-        file: file_url, 
-        name: newPlan.name || file.name.split('.')[0],
-        fileSize: file.size 
+      
+      // Immediately create the plan after successful upload
+      const planName = newPlan.name || file.name.split('.')[0];
+      await createPlanMutation.mutateAsync({
+        job_id: jobId,
+        name: planName,
+        file_url: file_url,
+        order: plans.length,
       });
+      
+      toast.success('Plan uploaded successfully');
+      setNewPlan({ name: '', file: null, fileSize: 0 });
+      setUploadProgress(0);
     } catch (error) {
       console.error('Upload error:', error);
       if (progressInterval) clearInterval(progressInterval);
-      setFileError('Error al subir el archivo. Por favor, intenta de nuevo.');
+      setFileError('Error uploading file. Please try again.');
     }
     setUploading(false);
   };
@@ -435,15 +442,17 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowUpload(false)} className="border-orange-500/30 text-slate-300 hover:bg-orange-500/10">
-                Cancel
-              </Button>
               <Button 
-                onClick={handleCreatePlan}
-                disabled={!newPlan.file || !newPlan.name || createPlanMutation.isPending}
-                className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold shadow-lg shadow-orange-500/20"
+                variant="outline" 
+                onClick={() => {
+                  setShowUpload(false);
+                  setNewPlan({ name: '', file: null, fileSize: 0 });
+                  setFileSizeWarning('');
+                  setFileError('');
+                }}
+                className="border-orange-500/30 text-slate-300 hover:bg-orange-500/10"
               >
-                {createPlanMutation.isPending ? 'Saving...' : 'Save Plan'}
+                Cancel
               </Button>
             </div>
           </div>
