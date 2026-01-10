@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Plus, Filter, LayoutGrid, List, Search, User } from 'lucide-react';
+import { Plus, Filter, LayoutGrid, List, Search, User, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import { useRenderOptimization } from './performance/useRenderOptimization';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
+import { toast } from 'sonner';
 
 // Memoized TaskCard to prevent re-renders
 const TaskCard = memo(({ task, onClick, onDragStart, isClientPunch }) => {
@@ -151,6 +152,29 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
     },
   });
 
+  const deleteAllTasksMutation = useMutation({
+    mutationFn: async () => {
+      // Delete all tasks for this job
+      for (const task of tasks) {
+        try {
+          await base44.entities.WorkUnit.delete(task.id).catch(() => 
+            base44.entities.Task.delete(task.id)
+          );
+        } catch (error) {
+          console.error('Error deleting task:', task.id, error);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.WORK_UNITS(jobId) });
+      toast.success('All tasks deleted');
+    },
+    onError: () => {
+      toast.error('Failed to delete tasks');
+    },
+  });
+
   // Memoized wall number extraction
   const getWallNumber = useCallback((title) => {
     const match = title?.match(/(\d+)/);
@@ -216,6 +240,22 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
               className="pl-11 bg-slate-800 border-2 border-slate-600 text-white placeholder:text-slate-400 w-full sm:w-56 min-h-[52px] rounded-xl text-base font-medium"
             />
           </div>
+          
+          {canEdit && tasks.length > 0 && (
+            <Button
+              onClick={() => {
+                if (window.confirm(`¿Borrar TODAS las ${tasks.length} tareas de este proyecto? Esta acción no se puede deshacer.`)) {
+                  deleteAllTasksMutation.mutate();
+                }
+              }}
+              disabled={deleteAllTasksMutation.isPending}
+              variant="outline"
+              className="bg-red-900/20 border-2 border-red-500/50 text-red-400 hover:bg-red-900/40 hover:border-red-400 min-h-[52px] rounded-xl font-bold touch-manipulation active:scale-95"
+            >
+              <Trash2 className="w-5 h-5 mr-2" />
+              {deleteAllTasksMutation.isPending ? 'Borrando...' : 'Borrar Todas'}
+            </Button>
+          )}
           
           {/* Mobile: Single Filter button opens bottom sheet */}
           {isMobile ? (
