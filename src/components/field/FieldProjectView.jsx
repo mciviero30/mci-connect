@@ -142,8 +142,7 @@ export default function FieldProjectView({
           onClick={handleSafeExit}
           className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-xl backdrop-blur-sm min-h-[48px] px-3 rounded-xl touch-manipulation"
         >
-          <ArrowLeft className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">Back to MCI Field</span>
+          <ArrowLeft className="w-5 h-5" />
         </Button>
 
         {/* Debug Toggle - Top Right (Admin/Debug Only) */}
