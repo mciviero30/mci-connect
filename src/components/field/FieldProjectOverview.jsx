@@ -144,16 +144,38 @@ export default function FieldProjectOverview({ job, tasks: legacyTasks, plans, o
         </div>
 
         <div className="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl p-6 border-2 border-slate-600 shadow-xl">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Map className="w-5 h-5 text-orange-400" />
-            Plans ({plans.length})
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <Map className="w-5 h-5 text-orange-400" />
+              Plans ({plans.length})
+            </h3>
+            {plans.length > 0 && (
+              <Button
+                onClick={() => {
+                  const event = new CustomEvent('field:navigate', { detail: { panel: 'plans' } });
+                  window.dispatchEvent(event);
+                }}
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black text-xs px-3 py-1.5 h-auto rounded-lg font-bold"
+              >
+                View All
+              </Button>
+            )}
+          </div>
           {plans.length === 0 ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 bg-slate-600/30 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Map className="w-8 h-8 text-slate-500" />
               </div>
-              <p className="text-slate-400 text-sm">No plans uploaded yet</p>
+              <p className="text-slate-400 text-sm mb-4">No plans uploaded yet</p>
+              <Button
+                onClick={() => {
+                  const event = new CustomEvent('field:navigate', { detail: { panel: 'plans' } });
+                  window.dispatchEvent(event);
+                }}
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold px-4 py-2 rounded-lg"
+              >
+                Upload First Plan
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
