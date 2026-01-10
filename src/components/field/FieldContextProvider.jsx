@@ -94,5 +94,8 @@ export function withFieldContext(data, context, entityType) {
     gps_longitude: data.gps_longitude || context.gps_longitude || undefined,
     status: data.status || defaultStatuses[entityType] || 'active',
     created_at: data.created_at || new Date().toISOString(),
+    // CRITICAL: Ensure tasks are NEVER marked as templates
+    is_template: false,
+    is_global: false,
   };
 }
