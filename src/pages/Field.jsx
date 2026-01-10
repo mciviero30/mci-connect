@@ -12,7 +12,11 @@ import {
   ArrowLeft,
   MapPin,
   RotateCcw,
-  Ruler
+  Ruler,
+  MoreVertical,
+  Copy,
+  Trash2,
+  Archive
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -26,6 +30,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import FieldErrorBoundary from '@/components/field/FieldErrorBoundary';
 import { usePersistentState } from '@/components/field/hooks/usePersistentState';
 import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryConfig';
@@ -281,6 +286,41 @@ export default function Field() {
     }
   });
 
+  const deleteJobMutation = useMutation({
+    mutationFn: (id) => base44.entities.Job.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      toast.success('Project deleted');
+    },
+    onError: () => toast.error('Failed to delete project'),
+  });
+
+  const duplicateJobMutation = useMutation({
+    mutationFn: async (job) => {
+      const { id, created_date, updated_date, created_by, ...jobData } = job;
+      return await base44.entities.Job.create({
+        ...jobData,
+        name: `${job.name} (Copy)`,
+        job_name_field: `${job.job_name_field || job.name} (Copy)`,
+        status: 'active',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      toast.success('Project duplicated');
+    },
+    onError: () => toast.error('Failed to duplicate project'),
+  });
+
+  const archiveJobMutation = useMutation({
+    mutationFn: (id) => base44.entities.Job.update(id, { status: 'archived' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      toast.success('Project archived');
+    },
+    onError: () => toast.error('Failed to archive project'),
+  });
+
   // Filter jobs
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = job.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -440,27 +480,73 @@ export default function Field() {
           </h2>
           <div className="space-y-3">
             {filteredJobs.slice(0, 3).map((job) => (
-              <Link key={job.id} to={createPageUrl(`FieldProject?id=${job.id}`)}>
-                <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all cursor-pointer shadow-md min-h-[72px]">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-white truncate mb-1">
-                        {job.name || job.job_name_field}
-                      </h3>
-                      <p className="text-xs text-slate-400 truncate">
-                        {job.customer_name || job.client_name_field || 'No customer'}
-                      </p>
-                    </div>
+              <div key={job.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all shadow-md min-h-[72px]">
+                <div className="flex items-center justify-between gap-3">
+                  <Link to={createPageUrl(`FieldProject?id=${job.id}`)} className="flex-1 min-w-0">
+                    <h3 className="text-base font-bold text-white truncate mb-1">
+                      {job.name || job.job_name_field}
+                    </h3>
+                    <p className="text-xs text-slate-400 truncate">
+                      {job.customer_name || job.client_name_field || 'No customer'}
+                    </p>
+                  </Link>
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Badge className={`${
                       job.status === 'active' 
                         ? 'bg-green-500/20 text-green-400 border-green-500/30'
                         : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                    } border px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0`}>
+                    } border px-2.5 py-1 rounded-full text-[10px] font-bold`}>
                       {job.status === 'active' ? 'TODAY' : 'SCHEDULED'}
                     </Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-700"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            duplicateJobMutation.mutate(job);
+                          }}
+                          className="text-white hover:bg-slate-700 cursor-pointer"
+                        >
+                          <Copy className="w-4 h-4 mr-2" />
+                          {language === 'es' ? 'Duplicar' : 'Duplicate'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            archiveJobMutation.mutate(job.id);
+                          }}
+                          className="text-white hover:bg-slate-700 cursor-pointer"
+                        >
+                          <Archive className="w-4 h-4 mr-2" />
+                          {language === 'es' ? 'Archivar' : 'Archive'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(language === 'es' ? '¿Borrar este proyecto?' : 'Delete this project?')) {
+                              deleteJobMutation.mutate(job.id);
+                            }
+                          }}
+                          className="text-red-400 hover:bg-red-900/20 cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          {language === 'es' ? 'Borrar' : 'Delete'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
