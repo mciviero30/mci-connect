@@ -85,19 +85,26 @@ export default function GlobalChecklistsManager() {
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['global-checklist-templates'],
     queryFn: async () => {
-      const workUnits = await base44.entities.WorkUnit.filter({ 
-        type: 'checklist',
-        is_template: true,
-        job_id: null 
-      });
-      return workUnits;
+      const workUnits = await base44.entities.WorkUnit.list('-created_date');
+      // Filter ONLY global templates (is_global = true, type = checklist, is_template = true)
+      return workUnits.filter(wu => 
+        wu.type === 'checklist' && 
+        wu.is_template === true && 
+        wu.is_global === true &&
+        !wu.job_id
+      );
     },
   });
 
-  // Auto-create defaults if none exist
+  // Auto-create defaults if none exist - RUN ONLY ONCE
+  const [defaultsCreated, setDefaultsCreated] = React.useState(false);
+  
   React.useEffect(() => {
     const createDefaults = async () => {
-      if (templates.length === 0 && !isLoading) {
+      // Only create defaults once when templates are empty
+      if (templates.length === 0 && !isLoading && !defaultsCreated) {
+        setDefaultsCreated(true); // Set flag BEFORE creating to prevent double-run
+        
         for (const [key, template] of Object.entries(DEFAULT_TEMPLATES)) {
           try {
             await base44.entities.WorkUnit.create({
@@ -123,7 +130,7 @@ export default function GlobalChecklistsManager() {
     };
 
     createDefaults();
-  }, [templates.length, isLoading]);
+  }, [templates.length, isLoading, defaultsCreated]);
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => base44.entities.WorkUnit.create(data),
