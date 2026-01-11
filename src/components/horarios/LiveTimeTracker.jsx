@@ -57,6 +57,21 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
     initialData: [],
   });
+
+  // Fetch today's scheduled shift for validation
+  const { data: todayAssignments = [] } = useQuery({
+    queryKey: ['today-assignments', user?.email],
+    queryFn: async () => {
+      if (!user) return [];
+      const today = new Date().toISOString().split('T')[0];
+      return base44.entities.JobAssignment.filter({
+        employee_email: user.email,
+        date: today,
+      });
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
   
   // NEW: Get current user for notifications
   const { data: user } = useQuery({
@@ -186,11 +201,30 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       const location = await getLocation();
       const job = jobs.find(j => j.id === selectedJobForStart);
       
+      // Find scheduled shift for this job today
+      const todayShift = todayAssignments.find(a => a.job_id === selectedJobForStart && a.enforce_scheduled_hours);
+      
+      // SCHEDULED HOURS CONTROL: Adjust clock-in time if shift enforces hours
+      let adjustedCheckIn = new Date();
+      if (todayShift && todayShift.scheduled_start_time) {
+        const [schedHour, schedMin] = todayShift.scheduled_start_time.split(':').map(Number);
+        const scheduledStart = new Date();
+        scheduledStart.setHours(schedHour, schedMin, 0, 0);
+        
+        // If clocking in BEFORE scheduled start, set to scheduled start
+        if (adjustedCheckIn < scheduledStart) {
+          adjustedCheckIn = scheduledStart;
+          setLocationError(language === 'es'
+            ? `⏰ Entrada ajustada a ${todayShift.scheduled_start_time} (hora programada)`
+            : `⏰ Clock-in adjusted to ${todayShift.scheduled_start_time} (scheduled time)`);
+        }
+      }
+      
       // Skip geofence validation for driving hours OR if job has skip_geofence enabled
       if (workType === 'driving' || job.skip_geofence) {
         const session = {
-          startTime: Date.now(),
-          checkIn: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          startTime: adjustedCheckIn.getTime(),
+          checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           jobId: selectedJobForStart,
           jobName: job.name,
           location,
@@ -202,6 +236,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           geofenceValidated: false, // Not applicable for driving or testing jobs
           distanceMeters: 0,
           requiresReview: false,
+          scheduledShift: todayShift || null, // Store shift rules
         };
         
         localStorage.setItem(storageKey, JSON.stringify(session));
@@ -276,8 +311,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       });
 
       const session = {
-        startTime: Date.now(),
-        checkIn: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        startTime: adjustedCheckIn.getTime(),
+        checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         jobId: selectedJobForStart,
         jobName: job.name,
         location,
@@ -289,6 +324,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         geofenceValidated: true,
         distanceMeters: Math.round(distanceMeters),
         requiresReview: false,
+        scheduledShift: todayShift || null, // Store shift rules
       };
       
       localStorage.setItem(storageKey, JSON.stringify(session));
@@ -315,8 +351,43 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     
     try {
       const location = await getLocation();
-      const endTime = Date.now();
+      let clockOutTime = new Date();
+      
+      // SCHEDULED HOURS CONTROL: Adjust clock-out time if shift enforces hours
+      const shift = activeSession.scheduledShift;
+      if (shift && shift.enforce_scheduled_hours && shift.scheduled_end_time) {
+        const [endHour, endMin] = shift.scheduled_end_time.split(':').map(Number);
+        const scheduledEnd = new Date();
+        scheduledEnd.setHours(endHour, endMin, 0, 0);
+        
+        // Calculate grace period cutoff (default 5 minutes before scheduled end)
+        const gracePeriod = shift.early_clockout_grace_minutes || 5;
+        const graceStart = new Date(scheduledEnd);
+        graceStart.setMinutes(graceStart.getMinutes() - gracePeriod);
+        
+        // If clocking out WITHIN grace period before scheduled end, use actual time
+        // If clocking out AFTER scheduled end (even 1 second), cap at scheduled end
+        if (clockOutTime >= graceStart && clockOutTime < scheduledEnd) {
+          // Grace period: use actual time
+        } else if (clockOutTime >= scheduledEnd) {
+          // After scheduled end: cap at scheduled end
+          clockOutTime = scheduledEnd;
+          setLocationError(language === 'es'
+            ? `⏰ Salida ajustada a ${shift.scheduled_end_time} (hora máxima programada)`
+            : `⏰ Clock-out adjusted to ${shift.scheduled_end_time} (max scheduled time)`);
+        }
+      }
+      
+      const endTime = clockOutTime.getTime();
       const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
+      
+      // Validate against max daily hours if shift enforces it
+      if (shift && shift.enforce_scheduled_hours && totalHours > (shift.max_daily_hours || 8)) {
+        setLocationError(language === 'es'
+          ? `❌ Excediste el máximo de ${shift.max_daily_hours || 8} horas diarias permitidas para este turno.`
+          : `❌ You exceeded the maximum ${shift.max_daily_hours || 8} daily hours allowed for this shift.`);
+        return;
+      }
 
       // Validate maximum 14 hours
       if (totalHours > 14) {
@@ -420,7 +491,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         job_name: activeSession.jobName,
         date: new Date().toISOString().split('T')[0],
         check_in: activeSession.checkIn,
-        check_out: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        check_out: clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         check_in_latitude: activeSession.location.lat,
         check_in_longitude: activeSession.location.lng,
         check_out_latitude: location.lat,

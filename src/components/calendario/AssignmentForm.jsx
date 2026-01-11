@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
-import { Save, X, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Save, X, Users, Calendar as CalendarIcon, Lock } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
@@ -81,6 +82,12 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
     );
     const [startTime, setStartTime] = useState(existingAssignment ? existingAssignment.start_time : '07:00');
     const [endTime, setEndTime] = useState(existingAssignment ? existingAssignment.end_time : '15:00');
+    const [enforceHours, setEnforceHours] = useState(existingAssignment?.enforce_scheduled_hours || false);
+    const [scheduledStart, setScheduledStart] = useState(existingAssignment?.scheduled_start_time || '07:00');
+    const [scheduledEnd, setScheduledEnd] = useState(existingAssignment?.scheduled_end_time || '17:00');
+    const [gracePeriod, setGracePeriod] = useState(existingAssignment?.early_clockout_grace_minutes || 5);
+    const [breakMinutes, setBreakMinutes] = useState(existingAssignment?.scheduled_break_minutes || 60);
+    const [maxHours, setMaxHours] = useState(existingAssignment?.max_daily_hours || 8);
 
     const { data: employees, isLoading: loadingEmployees } = useQuery({ queryKey: ['employees'], queryFn: () => base44.entities.User.list() });
     const { data: jobs, isLoading: loadingJobs } = useQuery({ queryKey: ['activeJobs'], queryFn: () => base44.entities.Job.filter({ status: 'active' }) });
@@ -233,7 +240,13 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                 job_name: selectedJob.name,
                 date: startDate,
                 start_time: startTime,
-                end_time: endTime
+                end_time: endTime,
+                enforce_scheduled_hours: enforceHours,
+                scheduled_start_time: enforceHours ? scheduledStart : null,
+                scheduled_end_time: enforceHours ? scheduledEnd : null,
+                early_clockout_grace_minutes: enforceHours ? gracePeriod : 5,
+                scheduled_break_minutes: enforceHours ? breakMinutes : 60,
+                max_daily_hours: enforceHours ? maxHours : 8,
             };
             updateMutation.mutate({ id: existingAssignment.id, data: updatedAssignmentData });
         } else {
@@ -252,7 +265,13 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                         job_name: selectedJob.name,
                         date: format(currentDate, 'yyyy-MM-dd'),
                         start_time: startTime,
-                        end_time: endTime
+                        end_time: endTime,
+                        enforce_scheduled_hours: enforceHours,
+                        scheduled_start_time: enforceHours ? scheduledStart : null,
+                        scheduled_end_time: enforceHours ? scheduledEnd : null,
+                        early_clockout_grace_minutes: enforceHours ? gracePeriod : 5,
+                        scheduled_break_minutes: enforceHours ? breakMinutes : 60,
+                        max_daily_hours: enforceHours ? maxHours : 8,
                     });
                 });
                 currentDate.setDate(currentDate.getDate() + 1);
@@ -315,6 +334,98 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                         <Label htmlFor="end-time">Hasta</Label>
                         <Input type="time" id="end-time" value={endTime} onChange={e => setEndTime(e.target.value)} required />
                     </div>
+                </div>
+
+                {/* Shift Time Control */}
+                <div className="border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4 bg-blue-50 dark:bg-blue-950">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <Label className="text-sm font-bold text-blue-900 dark:text-blue-100">
+                        {language === 'es' ? 'Control de Horas Programadas' : 'Scheduled Hours Control'}
+                      </Label>
+                    </div>
+                    <Switch checked={enforceHours} onCheckedChange={setEnforceHours} />
+                  </div>
+
+                  {enforceHours && (
+                    <div className="space-y-3 mt-4">
+                      <p className="text-xs text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 p-2 rounded">
+                        {language === 'es' 
+                          ? '🔒 Las horas de entrada y salida se ajustarán automáticamente según este horario programado.'
+                          : '🔒 Clock in/out times will be automatically adjusted to this scheduled shift.'}
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-slate-700 dark:text-slate-300">
+                            {language === 'es' ? 'Inicio Programado' : 'Scheduled Start'}
+                          </Label>
+                          <Input 
+                            type="time" 
+                            value={scheduledStart} 
+                            onChange={e => setScheduledStart(e.target.value)} 
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-slate-700 dark:text-slate-300">
+                            {language === 'es' ? 'Fin Programado' : 'Scheduled End'}
+                          </Label>
+                          <Input 
+                            type="time" 
+                            value={scheduledEnd} 
+                            onChange={e => setScheduledEnd(e.target.value)} 
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-slate-700 dark:text-slate-300">
+                            {language === 'es' ? 'Gracia Salida (min)' : 'Early Out Grace (min)'}
+                          </Label>
+                          <Input 
+                            type="number" 
+                            value={gracePeriod} 
+                            onChange={e => setGracePeriod(parseInt(e.target.value))} 
+                            min="0"
+                            max="30"
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-slate-700 dark:text-slate-300">
+                            {language === 'es' ? 'Pausa (min)' : 'Break (min)'}
+                          </Label>
+                          <Input 
+                            type="number" 
+                            value={breakMinutes} 
+                            onChange={e => setBreakMinutes(parseInt(e.target.value))} 
+                            min="0"
+                            max="120"
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-xs text-slate-700 dark:text-slate-300">
+                          {language === 'es' ? 'Máximo Horas Diarias' : 'Max Daily Hours'}
+                        </Label>
+                        <Input 
+                          type="number" 
+                          value={maxHours} 
+                          onChange={e => setMaxHours(parseInt(e.target.value))} 
+                          min="4"
+                          max="12"
+                          step="0.5"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
