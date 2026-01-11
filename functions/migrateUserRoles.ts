@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // Role mapping logic (matching roleRules.js)
     const LEGACY_POSITION_TO_ROLE = {
-      'CEO': 'admin',
+      'CEO': 'ceo',
       'administrator': 'admin',
       'manager': 'manager',
       'supervisor': 'supervisor',
@@ -34,12 +34,12 @@ Deno.serve(async (req) => {
       'technician': 'technician',
     };
 
-    const ADMIN_DEPARTMENTS = ['HR', 'administration', 'IT'];
+    const ADMIN_DEPARTMENTS = ['HR', 'administration', 'CEO'];
 
     const suggestRole = (user) => {
-      // CEO always admin
+      // CEO always CEO role
       if (user.position === 'CEO' || user.role === 'ceo') {
-        return 'admin';
+        return 'ceo';
       }
 
       // Admin departments

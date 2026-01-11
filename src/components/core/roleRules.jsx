@@ -10,6 +10,7 @@
 // ============================================
 
 export const ROLES = {
+  CEO: 'ceo',
   ADMIN: 'admin',
   MANAGER: 'manager', 
   SUPERVISOR: 'supervisor',
@@ -23,6 +24,24 @@ export const ROLES = {
 // ============================================
 
 const ROLE_HIERARCHY = {
+  ceo: {
+    level: 100,
+    label: 'CEO',
+    fullAccess: true,
+    permissions: {
+      dashboard: { viewAll: true, editAll: true },
+      jobs: { viewAll: true, create: true, edit: true, delete: true, viewFinancials: true },
+      field: { viewAll: true, edit: true, uploadPhotos: true, manageTasks: true },
+      employees: { viewAll: true, create: true, edit: true, delete: true, viewSalary: true },
+      finance: { viewAll: true, create: true, edit: true, delete: true, approveExpenses: true },
+      timeTracking: { viewAll: true, approve: true, editAll: true },
+      payroll: { viewAll: true, manage: true },
+      reports: { viewAll: true, viewFinancial: true, export: true },
+      settings: { view: true, manageRoles: true, manageCompany: true },
+      compliance: { view: true, manage: true },
+    }
+  },
+
   admin: {
     level: 100,
     label: 'Administrator',
@@ -62,18 +81,18 @@ const ROLE_HIERARCHY = {
   supervisor: {
     level: 70,
     label: 'Supervisor',
-    fullAccess: true, // Supervisor has admin-level access
+    fullAccess: false, // Supervisor: Solo Field + gestión de tareas
     permissions: {
-      dashboard: { viewAll: true, editAll: true },
-      jobs: { viewAll: true, create: true, edit: true, delete: false, viewFinancials: true },
+      dashboard: { viewAll: false, editAll: false },
+      jobs: { viewAll: false, create: false, edit: false, delete: false, viewFinancials: false },
       field: { viewAll: true, edit: true, uploadPhotos: true, manageTasks: true },
-      employees: { viewAll: true, create: false, edit: true, delete: false, viewSalary: false },
-      finance: { viewAll: true, create: true, edit: true, delete: false, approveExpenses: true },
-      timeTracking: { viewAll: true, approve: true, editAll: true },
-      payroll: { viewAll: true, manage: false },
-      reports: { viewAll: true, viewFinancial: false, export: true },
-      settings: { view: true, manageRoles: false, manageCompany: false },
-      compliance: { view: true, manage: false },
+      employees: { viewAll: false, create: false, edit: false, delete: false, viewSalary: false },
+      finance: { viewAll: false, create: false, edit: false, delete: false, approveExpenses: false },
+      timeTracking: { viewAll: false, approve: false, editAll: false },
+      payroll: { viewAll: false, manage: false },
+      reports: { viewAll: false, viewFinancial: false, export: false },
+      settings: { view: false, manageRoles: false, manageCompany: false },
+      compliance: { view: false, manage: false },
     }
   },
 
@@ -137,7 +156,7 @@ const ROLE_HIERARCHY = {
 // ============================================
 
 const LEGACY_POSITION_TO_ROLE = {
-  'CEO': ROLES.ADMIN,
+  'CEO': ROLES.CEO,
   'administrator': ROLES.ADMIN,
   'manager': ROLES.MANAGER,
   'supervisor': ROLES.SUPERVISOR,
@@ -149,7 +168,7 @@ const LEGACY_POSITION_TO_ROLE = {
 // LEGACY DEPARTMENT MAPPING
 // ============================================
 
-const ADMIN_DEPARTMENTS = ['HR', 'administration', 'IT'];
+const ADMIN_DEPARTMENTS = ['HR', 'administration', 'CEO'];
 
 // ============================================
 // CORE FUNCTIONS
@@ -288,9 +307,9 @@ export function getNavigationForRole(user) {
 export function suggestRoleFromLegacyData(user) {
   if (!user) return ROLES.EMPLOYEE;
 
-  // CEO always admin
+  // CEO always CEO role
   if (user.position === 'CEO' || user.role === 'ceo') {
-    return ROLES.ADMIN;
+    return ROLES.CEO;
   }
 
   // Admin departments
