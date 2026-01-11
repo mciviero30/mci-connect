@@ -251,6 +251,13 @@ export function isSupervisor(user) {
   return role === ROLES.SUPERVISOR;
 }
 
+/**
+ * Check if user can approve (manager, supervisor, or admin)
+ */
+export function canApprove(user) {
+  return hasFullAccess(user);
+}
+
 // ============================================
 // NAVIGATION ACCESS
 // ============================================

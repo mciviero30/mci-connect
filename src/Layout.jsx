@@ -88,6 +88,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
+import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -638,8 +639,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   }, [isFieldPage]);
 
   // UNIFIED ROLE SYSTEM - Single source of truth
-  const { hasFullAccess: checkFullAccess, getNavigationForRole } = await import('@/components/core/roleRules');
-  const isAdmin = checkFullAccess(displayUser || user);
+  const isAdmin = hasFullAccess(displayUser || user);
 
   // Memoize navigation to prevent recalculation - MUST be before early returns
   const navigation = useMemo(() => {
