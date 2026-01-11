@@ -409,14 +409,14 @@ export default function JobDetails() {
 
           {/* Hours Tab */}
           <TabsContent value="hours">
-            {/* Generate Invoice from Hours Button - For T&M Jobs */}
-            {job?.billing_type === 'time_materials' && timeEntries.length > 0 && (
+            {/* Generate Invoice from Hours Button - For ANY job with approved hours */}
+            {timeEntries.filter(e => e.status === 'approved').length > 0 && (
               <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 mb-6">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-bold text-emerald-900 text-lg mb-1">
-                        {language === 'es' ? '💰 Facturación por Horas (T&M)' : '💰 Time & Materials Billing'}
+                        {language === 'es' ? '💰 Facturar Trabajo Adicional por Horas (T&M)' : '💰 Bill Additional T&M Work'}
                       </h3>
                       <p className="text-sm text-emerald-700">
                         {language === 'es' 
@@ -426,11 +426,18 @@ export default function JobDetails() {
                       <p className="text-xs text-emerald-600 mt-1">
                         {timeEntries.filter(e => e.status === 'approved').length} {language === 'es' ? 'horas aprobadas listas para facturar' : 'approved hours ready to bill'}
                       </p>
+                      {job?.billing_type === 'fixed_price' && (
+                        <p className="text-xs text-amber-700 mt-2 font-semibold">
+                          ⚡ {language === 'es' 
+                            ? 'Trabajo original fue precio fijo. Esta factura es por trabajo ADICIONAL por horas.'
+                            : 'Original job was fixed price. This invoice is for ADDITIONAL hourly work.'}
+                        </p>
+                      )}
                     </div>
                     <Link to={createPageUrl(`CrearFactura?job_id=${jobId}&billing_type=time_materials`)}>
                       <Button className="bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg">
                         <DollarSign className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Generar Factura' : 'Generate Invoice'}
+                        {language === 'es' ? 'Generar Factura T&M' : 'Generate T&M Invoice'}
                       </Button>
                     </Link>
                   </div>

@@ -22,16 +22,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Job not found' }, { status: 404 });
     }
 
+    // Get all invoices for this job to find already billed time entries
+    const existingInvoices = await base44.asServiceRole.entities.Invoice.filter({
+      job_id: job_id
+    });
+
+    // Extract all time entry IDs that have been billed
+    const billedTimeEntryIds = new Set();
+    existingInvoices.forEach(invoice => {
+      if (invoice.billed_time_entry_ids) {
+        invoice.billed_time_entry_ids.forEach(id => billedTimeEntryIds.add(id));
+      }
+    });
+
     // Get all approved time entries for this job
-    const timeEntries = await base44.asServiceRole.entities.TimeEntry.filter({
+    const allTimeEntries = await base44.asServiceRole.entities.TimeEntry.filter({
       job_id: job_id,
       status: 'approved'
     });
 
+    // Filter out already billed entries
+    const timeEntries = allTimeEntries.filter(entry => !billedTimeEntryIds.has(entry.id));
+
     if (timeEntries.length === 0) {
       return Response.json({ 
-        error: 'No approved time entries found for this job',
-        details: 'Make sure time entries are approved before generating invoice' 
+        error: 'No unbilled approved time entries found for this job',
+        details: billedTimeEntryIds.size > 0 
+          ? 'All approved hours have already been invoiced. Create new time entries for additional work.'
+          : 'Make sure time entries are approved before generating invoice'
       }, { status: 400 });
     }
 
@@ -115,6 +133,8 @@ Deno.serve(async (req) => {
     const total = subtotal + tax_amount;
 
     // Prepare invoice data
+    const billedEntryIds = timeEntries.map(e => e.id);
+    
     const invoiceData = {
       customer_id: job.customer_id || '',
       customer_name: job.customer_name || '',
@@ -134,7 +154,8 @@ Deno.serve(async (req) => {
       total: parseFloat(total.toFixed(2)),
       notes: `Time & Materials invoice for ${job.name}. Based on ${timeEntries.length} approved time entries.`,
       terms: '• Payment: Due 30 days from invoice date (unless otherwise specified).\n• Late Fee: 1.5% monthly interest on overdue balance.\n• Collection: Client responsible for all collection costs including attorney fees.\n• Disputes: Report discrepancies within 5 days in writing. Undisputed amounts due by due date.\n• Scope: Final cost includes all approved time and materials.',
-      status: 'draft'
+      status: 'draft',
+      billed_time_entry_ids: billedEntryIds
     };
 
     // Summary for response
