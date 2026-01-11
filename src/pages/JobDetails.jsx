@@ -409,6 +409,35 @@ export default function JobDetails() {
 
           {/* Hours Tab */}
           <TabsContent value="hours">
+            {/* Generate Invoice from Hours Button - For T&M Jobs */}
+            {job?.billing_type === 'time_materials' && timeEntries.length > 0 && (
+              <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 mb-6">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-emerald-900 text-lg mb-1">
+                        {language === 'es' ? '💰 Facturación por Horas (T&M)' : '💰 Time & Materials Billing'}
+                      </h3>
+                      <p className="text-sm text-emerald-700">
+                        {language === 'es' 
+                          ? `Regular: $${job.regular_hourly_rate || 60}/hr • Overtime: $${job.overtime_hourly_rate || 90}/hr`
+                          : `Regular: $${job.regular_hourly_rate || 60}/hr • Overtime: $${job.overtime_hourly_rate || 90}/hr`}
+                      </p>
+                      <p className="text-xs text-emerald-600 mt-1">
+                        {timeEntries.filter(e => e.status === 'approved').length} {language === 'es' ? 'horas aprobadas listas para facturar' : 'approved hours ready to bill'}
+                      </p>
+                    </div>
+                    <Link to={createPageUrl(`CrearFactura?job_id=${jobId}&billing_type=time_materials`)}>
+                      <Button className="bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Generar Factura' : 'Generate Invoice'}
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Hours Summary Cards */}
             {estimatedHours > 0 && (
               <div className="grid md:grid-cols-3 gap-4 mb-6">

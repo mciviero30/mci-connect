@@ -62,6 +62,8 @@ export default function CrearFactura() {
   const urlParams = new URLSearchParams(window.location.search);
   const editId = urlParams.get('id');
   const quoteId = urlParams.get('quote_id');
+  const billingType = urlParams.get('billing_type');
+  const jobIdFromUrl = urlParams.get('job_id');
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -146,6 +148,7 @@ export default function CrearFactura() {
 
   const [outOfAreaEnabled, setOutOfAreaEnabled] = useState(false);
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+  const [generatingFromHours, setGeneratingFromHours] = useState(false);
   
   // ============================================================================
   // CAPA 7 - NO DERIVED CALCULATIONS IN INVOICE
@@ -204,6 +207,46 @@ export default function CrearFactura() {
   // ============================================================================
   // When loading from Quote, copy ALL values as-is (SNAPSHOT)
   // DO NOT recalculate hotel rooms, per diem, or any derived values
+  // Generate invoice from hours for T&M jobs
+  useEffect(() => {
+    if (billingType === 'time_materials' && jobIdFromUrl && !generatingFromHours) {
+      setGeneratingFromHours(true);
+      
+      const generateFromHours = async () => {
+        try {
+          const { data } = await base44.functions.invoke('generateInvoiceFromHours', { job_id: jobIdFromUrl });
+          
+          if (data.success && data.invoice_data) {
+            setFormData(prev => ({
+              ...prev,
+              ...data.invoice_data,
+              items: data.invoice_data.items || []
+            }));
+            
+            toast({
+              title: language === 'es' ? '✅ Factura generada desde horas trabajadas' : '✅ Invoice generated from hours',
+              description: language === 'es' 
+                ? `${data.summary.total_hours.toFixed(1)} horas • ${data.summary.employees_count} empleados • $${data.invoice_data.total.toFixed(2)}`
+                : `${data.summary.total_hours.toFixed(1)} hours • ${data.summary.employees_count} employees • $${data.invoice_data.total.toFixed(2)}`,
+              variant: 'success'
+            });
+          }
+        } catch (error) {
+          console.error('Error generating invoice from hours:', error);
+          toast({
+            title: 'Error',
+            description: safeErrorMessage(error),
+            variant: 'destructive'
+          });
+        } finally {
+          setGeneratingFromHours(false);
+        }
+      };
+      
+      generateFromHours();
+    }
+  }, [billingType, jobIdFromUrl, generatingFromHours, language]);
+
   useEffect(() => {
     if (quoteId && quotes.length > 0) {
       const quote = quotes.find(q => q.id === quoteId);
@@ -784,9 +827,32 @@ export default function CrearFactura() {
     <div className="p-4 md:p-8 min-h-screen">
       <div className="max-w-5xl mx-auto">
         <PageHeader
-          title={editId ? t('editInvoice') : t('newInvoice')}
+          title={editId ? t('editInvoice') : (billingType === 'time_materials' ? (language === 'es' ? 'Factura T&M' : 'T&M Invoice') : t('newInvoice'))}
           showBack={true}
         />
+
+        {/* T&M Invoice Info Banner */}
+        {billingType === 'time_materials' && (
+          <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-emerald-900 mb-1">
+                    {language === 'es' ? 'Factura generada desde horas trabajadas' : 'Invoice generated from hours worked'}
+                  </h3>
+                  <p className="text-sm text-emerald-700">
+                    {language === 'es' 
+                      ? 'Esta factura se generó automáticamente desde las horas aprobadas. Puedes editar las horas, tarifas, y cantidades antes de enviar.'
+                      : 'This invoice was auto-generated from approved hours. You can edit hours, rates, and quantities before sending.'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Approval Banner */}
         {editId && existingInvoice && (
