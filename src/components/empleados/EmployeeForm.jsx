@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2 } from "lucide-react"; // Import the Trash2 icon
+import { Trash2 } from "lucide-react";
+import { ROLES } from "@/components/core/roleRules";
 
 const formatPhone = (value) => {
   const cleaned = value.replace(/\D/g, '');
@@ -224,18 +225,19 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
         </div>
 
         <div>
-          <Label className="text-slate-900 font-medium">Position</Label>
+          <Label className="text-slate-900 font-medium">Position (Role)</Label>
           <Select value={formData.position} onValueChange={(value) => setFormData({ ...formData, position: value })}>
             <SelectTrigger className="bg-white border-slate-200 text-slate-900">
-              <SelectValue placeholder="Select position" />
+              <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
-              <SelectItem value="CEO">CEO</SelectItem>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="technician">Technician</SelectItem>
-              <SelectItem value="supervisor">Supervisor</SelectItem>
-              <SelectItem value="foreman">Foreman</SelectItem>
-              <SelectItem value="administrator">Administrator</SelectItem>
+              <SelectItem value={ROLES.CEO}>CEO</SelectItem>
+              <SelectItem value={ROLES.ADMIN}>Administrator</SelectItem>
+              <SelectItem value={ROLES.MANAGER}>Manager</SelectItem>
+              <SelectItem value={ROLES.SUPERVISOR}>Supervisor</SelectItem>
+              <SelectItem value={ROLES.FOREMAN}>Foreman</SelectItem>
+              <SelectItem value={ROLES.TECHNICIAN}>Technician</SelectItem>
+              <SelectItem value={ROLES.EMPLOYEE}>Employee</SelectItem>
             </SelectContent>
           </Select>
         </div>
