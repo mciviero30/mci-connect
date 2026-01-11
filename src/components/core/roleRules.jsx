@@ -277,6 +277,23 @@ export function canApprove(user) {
   return hasFullAccess(user);
 }
 
+/**
+ * Check if user can create financial documents (quotes, invoices)
+ */
+export function canCreateFinancialDocs(user) {
+  const role = getUserRole(user);
+  return role === ROLES.CEO || role === ROLES.ADMIN || role === ROLES.MANAGER;
+}
+
+/**
+ * Check if document needs approval based on user role
+ */
+export function needsApproval(user) {
+  const role = getUserRole(user);
+  // Only non-admin roles need approval
+  return role !== ROLES.CEO && role !== ROLES.ADMIN;
+}
+
 // ============================================
 // NAVIGATION ACCESS
 // ============================================
