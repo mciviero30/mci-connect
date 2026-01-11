@@ -637,12 +637,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     }
   }, [isFieldPage]);
 
+  // UNIFIED ROLE SYSTEM - Single source of truth
+  const { hasFullAccess: checkFullAccess, getNavigationForRole } = await import('@/components/core/roleRules');
+  const isAdmin = checkFullAccess(displayUser || user);
+
   // Memoize navigation to prevent recalculation - MUST be before early returns
   const navigation = useMemo(() => {
-    // UNIFIED ROLE SYSTEM - Import at runtime
-    const { getNavigationForRole } = require('@/components/core/roleRules');
     const navType = getNavigationForRole(displayUser || user);
-    
     return navType === 'admin' ? adminNavigation : employeeNavigation;
   }, [displayUser, user]);
 
