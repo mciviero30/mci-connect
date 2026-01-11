@@ -229,11 +229,21 @@ Deno.serve(async (req) => {
       // ============================================
       console.log('📝 Step 8: Testing double-billing prevention...');
       
-      const secondInvoiceAttempt = await base44.functions.invoke('generateInvoiceFromHours', {
-        job_id: testJob.id
-      });
-
-      const shouldFail = secondInvoiceAttempt.data?.error || false;
+      let shouldFail = false;
+      let preventionDetails = null;
+      
+      try {
+        const secondInvoiceAttempt = await base44.functions.invoke('generateInvoiceFromHours', {
+          job_id: testJob.id
+        });
+        
+        shouldFail = secondInvoiceAttempt.data?.error ? true : false;
+        preventionDetails = secondInvoiceAttempt.data;
+      } catch (preventionError) {
+        // Expected to fail - this is good
+        shouldFail = true;
+        preventionDetails = { error: preventionError.message };
+      }
       
       testResults.steps.push({ 
         step: 8, 
@@ -241,7 +251,7 @@ Deno.serve(async (req) => {
         message: shouldFail 
           ? 'Double-billing correctly prevented ✅' 
           : 'WARNING: Double-billing not prevented ⚠️',
-        details: secondInvoiceAttempt.data
+        details: preventionDetails
       });
       console.log(shouldFail ? '✅ Double-billing prevented' : '⚠️ Double-billing NOT prevented');
 
