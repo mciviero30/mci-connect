@@ -1,85 +1,323 @@
 /**
- * ROLE-BASED PERMISSIONS SYSTEM
- * Central source of truth for approval workflow rules
+ * UNIFIED ROLE SYSTEM - MCI Connect
+ * 
+ * SINGLE SOURCE OF TRUTH for all access control
+ * Consolidates 4 legacy systems into one
  */
 
+// ============================================
+// ROLE DEFINITIONS
+// ============================================
+
+export const ROLES = {
+  ADMIN: 'admin',
+  MANAGER: 'manager', 
+  SUPERVISOR: 'supervisor',
+  FOREMAN: 'foreman',
+  TECHNICIAN: 'technician',
+  EMPLOYEE: 'employee',
+};
+
+// ============================================
+// ROLE HIERARCHY & PERMISSIONS
+// ============================================
+
+const ROLE_HIERARCHY = {
+  admin: {
+    level: 100,
+    label: 'Administrator',
+    fullAccess: true,
+    permissions: {
+      dashboard: { viewAll: true, editAll: true },
+      jobs: { viewAll: true, create: true, edit: true, delete: true, viewFinancials: true },
+      field: { viewAll: true, edit: true, uploadPhotos: true, manageTasks: true },
+      employees: { viewAll: true, create: true, edit: true, delete: true, viewSalary: true },
+      finance: { viewAll: true, create: true, edit: true, delete: true, approveExpenses: true },
+      timeTracking: { viewAll: true, approve: true, editAll: true },
+      payroll: { viewAll: true, manage: true },
+      reports: { viewAll: true, viewFinancial: true, export: true },
+      settings: { view: true, manageRoles: true, manageCompany: true },
+      compliance: { view: true, manage: true },
+    }
+  },
+  
+  manager: {
+    level: 80,
+    label: 'Manager',
+    fullAccess: true, // Manager has admin-level access
+    permissions: {
+      dashboard: { viewAll: true, editAll: true },
+      jobs: { viewAll: true, create: true, edit: true, delete: true, viewFinancials: true },
+      field: { viewAll: true, edit: true, uploadPhotos: true, manageTasks: true },
+      employees: { viewAll: true, create: true, edit: true, delete: false, viewSalary: true },
+      finance: { viewAll: true, create: true, edit: true, delete: false, approveExpenses: true },
+      timeTracking: { viewAll: true, approve: true, editAll: true },
+      payroll: { viewAll: true, manage: false },
+      reports: { viewAll: true, viewFinancial: true, export: true },
+      settings: { view: true, manageRoles: false, manageCompany: false },
+      compliance: { view: true, manage: false },
+    }
+  },
+
+  supervisor: {
+    level: 70,
+    label: 'Supervisor',
+    fullAccess: true, // Supervisor has admin-level access
+    permissions: {
+      dashboard: { viewAll: true, editAll: true },
+      jobs: { viewAll: true, create: true, edit: true, delete: false, viewFinancials: true },
+      field: { viewAll: true, edit: true, uploadPhotos: true, manageTasks: true },
+      employees: { viewAll: true, create: false, edit: true, delete: false, viewSalary: false },
+      finance: { viewAll: true, create: true, edit: true, delete: false, approveExpenses: true },
+      timeTracking: { viewAll: true, approve: true, editAll: true },
+      payroll: { viewAll: true, manage: false },
+      reports: { viewAll: true, viewFinancial: false, export: true },
+      settings: { view: true, manageRoles: false, manageCompany: false },
+      compliance: { view: true, manage: false },
+    }
+  },
+
+  foreman: {
+    level: 60,
+    label: 'Foreman',
+    fullAccess: false,
+    permissions: {
+      dashboard: { viewAll: false, editAll: false },
+      jobs: { viewAll: false, create: false, edit: false, delete: false, viewFinancials: false },
+      field: { viewAll: false, edit: true, uploadPhotos: true, manageTasks: true },
+      employees: { viewAll: false, create: false, edit: false, delete: false, viewSalary: false },
+      finance: { viewAll: false, create: false, edit: false, delete: false, approveExpenses: false },
+      timeTracking: { viewAll: false, approve: false, editAll: false },
+      payroll: { viewAll: false, manage: false },
+      reports: { viewAll: false, viewFinancial: false, export: false },
+      settings: { view: false, manageRoles: false, manageCompany: false },
+      compliance: { view: false, manage: false },
+    }
+  },
+
+  technician: {
+    level: 50,
+    label: 'Technician',
+    fullAccess: false,
+    permissions: {
+      dashboard: { viewAll: false, editAll: false },
+      jobs: { viewAll: false, create: false, edit: false, delete: false, viewFinancials: false },
+      field: { viewAll: false, edit: false, uploadPhotos: true, manageTasks: false },
+      employees: { viewAll: false, create: false, edit: false, delete: false, viewSalary: false },
+      finance: { viewAll: false, create: false, edit: false, delete: false, approveExpenses: false },
+      timeTracking: { viewAll: false, approve: false, editAll: false },
+      payroll: { viewAll: false, manage: false },
+      reports: { viewAll: false, viewFinancial: false, export: false },
+      settings: { view: false, manageRoles: false, manageCompany: false },
+      compliance: { view: false, manage: false },
+    }
+  },
+
+  employee: {
+    level: 10,
+    label: 'Employee',
+    fullAccess: false,
+    permissions: {
+      dashboard: { viewAll: false, editAll: false },
+      jobs: { viewAll: false, create: false, edit: false, delete: false, viewFinancials: false },
+      field: { viewAll: false, edit: false, uploadPhotos: false, manageTasks: false },
+      employees: { viewAll: false, create: false, edit: false, delete: false, viewSalary: false },
+      finance: { viewAll: false, create: false, edit: false, delete: false, approveExpenses: false },
+      timeTracking: { viewAll: false, approve: false, editAll: false },
+      payroll: { viewAll: false, manage: false },
+      reports: { viewAll: false, viewFinancial: false, export: false },
+      settings: { view: false, manageRoles: false, manageCompany: false },
+      compliance: { view: false, manage: false },
+    }
+  },
+};
+
+// ============================================
+// LEGACY POSITION MAPPING
+// ============================================
+
+const LEGACY_POSITION_TO_ROLE = {
+  'CEO': ROLES.ADMIN,
+  'administrator': ROLES.ADMIN,
+  'manager': ROLES.MANAGER,
+  'supervisor': ROLES.SUPERVISOR,
+  'foreman': ROLES.FOREMAN,
+  'technician': ROLES.TECHNICIAN,
+};
+
+// ============================================
+// LEGACY DEPARTMENT MAPPING
+// ============================================
+
+const ADMIN_DEPARTMENTS = ['HR', 'administration', 'IT'];
+
+// ============================================
+// CORE FUNCTIONS
+// ============================================
+
 /**
- * Check if user can create financial documents (quotes, invoices, jobs)
- * @param {object} user - Current user object
- * @returns {boolean} - True if user can create
+ * Get unified role from user object
+ * Handles all legacy systems (role, position, department)
  */
-export function canCreateFinancialDocs(user) {
-  const pos = (user?.position || '').toLowerCase();
-  const role = (user?.role || '').toLowerCase();
-  
-  // Normalize position variants
-  const isCEO = pos.includes('ceo');
-  const isAdministrator = pos.includes('administrator') || pos === 'admin';
-  const isManager = pos.includes('manager') || pos.includes('supervisor');
-  
-  return role === 'admin' || isCEO || isAdministrator || isManager;
+export function getUserRole(user) {
+  if (!user) return ROLES.EMPLOYEE;
+
+  // 1. Check explicit role field (modern system)
+  if (user.role && ROLE_HIERARCHY[user.role]) {
+    return user.role;
+  }
+
+  // 2. Map from legacy position field
+  if (user.position && LEGACY_POSITION_TO_ROLE[user.position]) {
+    return LEGACY_POSITION_TO_ROLE[user.position];
+  }
+
+  // 3. Check admin departments (legacy)
+  if (user.department && ADMIN_DEPARTMENTS.includes(user.department)) {
+    return ROLES.ADMIN;
+  }
+
+  // 4. Default to employee
+  return ROLES.EMPLOYEE;
 }
 
 /**
- * Check if user's creations need approval
- * @param {object} user - Current user object
- * @returns {boolean} - True if needs approval (manager without admin role)
+ * Check if user has full admin access
  */
-export function needsApproval(user) {
-  const pos = (user?.position || '').toLowerCase();
-  const role = (user?.role || '').toLowerCase();
-  
-  // Normalize: manager or supervisor position (but NOT admin role)
-  const isManager = pos.includes('manager') || pos.includes('supervisor');
-  const isCEO = pos.includes('ceo');
-  const isAdministrator = pos.includes('administrator');
-  
-  return isManager && !isCEO && !isAdministrator && role !== 'admin';
+export function hasFullAccess(user) {
+  const role = getUserRole(user);
+  return ROLE_HIERARCHY[role]?.fullAccess === true;
 }
 
 /**
- * Check if user can approve/reject documents
- * @param {object} user - Current user object
- * @returns {boolean} - True if can approve (CEO, Admin, Administrator)
+ * Check if user has specific permission
  */
-export function canApprove(user) {
-  const pos = (user?.position || '').toLowerCase();
-  const role = (user?.role || '').toLowerCase();
+export function hasPermission(user, category, permission) {
+  const role = getUserRole(user);
+  const roleConfig = ROLE_HIERARCHY[role];
   
-  // Only CEO, Administrator position, or Admin role can approve
-  const isCEO = pos.includes('ceo');
-  const isAdministrator = pos.includes('administrator');
+  if (!roleConfig) return false;
+  if (roleConfig.fullAccess) return true;
+
+  return roleConfig.permissions?.[category]?.[permission] === true;
+}
+
+/**
+ * Get role level (for hierarchy comparison)
+ */
+export function getRoleLevel(user) {
+  const role = getUserRole(user);
+  return ROLE_HIERARCHY[role]?.level || 0;
+}
+
+/**
+ * Check if user can manage another user
+ */
+export function canManageUser(currentUser, targetUser) {
+  const currentLevel = getRoleLevel(currentUser);
+  const targetLevel = getRoleLevel(targetUser);
+  return currentLevel > targetLevel;
+}
+
+/**
+ * Get user's display role label
+ */
+export function getRoleLabel(user) {
+  const role = getUserRole(user);
+  return ROLE_HIERARCHY[role]?.label || 'Employee';
+}
+
+/**
+ * Check if role is CEO/Admin level
+ */
+export function isCEOOrAdmin(user) {
+  const role = getUserRole(user);
+  return role === ROLES.ADMIN || user?.role === 'ceo';
+}
+
+/**
+ * Check if role is Manager level
+ */
+export function isManager(user) {
+  const role = getUserRole(user);
+  return role === ROLES.MANAGER || role === ROLES.ADMIN;
+}
+
+/**
+ * Check if role is Supervisor level
+ */
+export function isSupervisor(user) {
+  const role = getUserRole(user);
+  return role === ROLES.SUPERVISOR;
+}
+
+// ============================================
+// NAVIGATION ACCESS
+// ============================================
+
+/**
+ * Get navigation items based on role
+ */
+export function getNavigationForRole(user) {
+  const role = getUserRole(user);
+  const roleConfig = ROLE_HIERARCHY[role];
+
+  if (roleConfig?.fullAccess) {
+    return 'admin'; // Full admin navigation
+  }
+
+  // Employee navigation for non-admin roles
+  return 'employee';
+}
+
+// ============================================
+// MIGRATION HELPERS
+// ============================================
+
+/**
+ * Suggest role based on legacy data
+ * Used for data migration
+ */
+export function suggestRoleFromLegacyData(user) {
+  if (!user) return ROLES.EMPLOYEE;
+
+  // CEO always admin
+  if (user.position === 'CEO' || user.role === 'ceo') {
+    return ROLES.ADMIN;
+  }
+
+  // Admin departments
+  if (ADMIN_DEPARTMENTS.includes(user.department)) {
+    return ROLES.ADMIN;
+  }
+
+  // Position-based mapping
+  if (user.position && LEGACY_POSITION_TO_ROLE[user.position]) {
+    return LEGACY_POSITION_TO_ROLE[user.position];
+  }
+
+  // Manager role (legacy)
+  if (user.role === 'manager') {
+    return ROLES.MANAGER;
+  }
+
+  // Admin role (legacy)
+  if (user.role === 'admin') {
+    return ROLES.ADMIN;
+  }
+
+  // Default
+  return ROLES.EMPLOYEE;
+}
+
+/**
+ * Check if user needs role migration
+ */
+export function needsRoleMigration(user) {
+  if (!user) return false;
   
-  return role === 'admin' || isCEO || isAdministrator;
-}
-
-/**
- * Get effective approval status (handles legacy records)
- * @param {object} document - Quote, Invoice, or Job
- * @returns {string} - 'approved', 'pending_approval', or 'rejected'
- */
-export function getEffectiveApprovalStatus(document) {
-  // Legacy: missing approval_status treated as approved
-  if (!document?.approval_status) return 'approved';
-  return document.approval_status;
-}
-
-/**
- * Check if document can be sent (approved and not rejected)
- * @param {object} document - Quote or Invoice
- * @returns {boolean} - True if can send
- */
-export function canSendDocument(document) {
-  const status = getEffectiveApprovalStatus(document);
-  return status === 'approved';
-}
-
-/**
- * Check if document can trigger provisioning
- * @param {object} document - Invoice
- * @returns {boolean} - True if can provision
- */
-export function canProvisionDocument(document) {
-  const status = getEffectiveApprovalStatus(document);
-  return status === 'approved';
+  const currentRole = user.role;
+  const suggestedRole = suggestRoleFromLegacyData(user);
+  
+  return currentRole !== suggestedRole;
 }

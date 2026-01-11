@@ -639,36 +639,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // Memoize navigation to prevent recalculation - MUST be before early returns
   const navigation = useMemo(() => {
-    const position = (displayUser?.position || user?.position || '').toLowerCase();
-    const department = (displayUser?.department || user?.department || '').toLowerCase();
-
-    // Role-based access (source of truth: role field)
-    const userRole = (displayUser?.role || user?.role || 'employee').toLowerCase();
-    const isCEORole = userRole === 'ceo';
-    const isAdminRole = userRole === 'admin';
-    const isManagerRole = userRole === 'manager';
-
-    // Legacy position-based checks (fallback only)
-    const isManager = position.includes('manager') || position.includes('supervisor');
-    const isAdministrator = position.includes('administrator') || position.includes('admin');
-    const isHR = department === 'hr' || department === 'human resources';
-
-    // Full access: CEO role, Admin role, Manager role, or legacy position-based checks
-    const hasFullAccess = isCEORole || isAdminRole || isManagerRole || isManager || isAdministrator || isHR;
-
-    if (hasFullAccess) {
-      return adminNavigation;
-    }
-
-    return employeeNavigation;
-  }, [
-    displayUser?.position,
-    user?.position,
-    displayUser?.department,
-    user?.department,
-    displayUser?.role,
-    user?.role
-  ]);
+    // UNIFIED ROLE SYSTEM - Import at runtime
+    const { getNavigationForRole } = require('@/components/core/roleRules');
+    const navType = getNavigationForRole(displayUser || user);
+    
+    return navType === 'admin' ? adminNavigation : employeeNavigation;
+  }, [displayUser, user]);
 
   // Profile image computation
   const profileImage = useMemo(() => {
