@@ -57,7 +57,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     show_on_website: job?.show_on_website || false,
     hero_photo_url: job?.hero_photo_url || '',
     website_description: job?.website_description || '',
-    geofence_radius: job?.geofence_radius || 100
+    geofence_radius: job?.geofence_radius || 100,
+    billing_type: job?.billing_type || 'fixed_price',
+    regular_hourly_rate: job?.regular_hourly_rate || 60,
+    overtime_hourly_rate: job?.overtime_hourly_rate || 90
   });
 
   const handleCustomerChange = (customerId) => {
@@ -318,39 +321,108 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
           </Select>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <Label className="text-slate-700 font-semibold">{t('contractAmount')}</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.contract_amount}
-                onChange={(e) => setFormData({...formData, contract_amount: e.target.value})}
-                className="pl-7 bg-slate-50 border-slate-200"
-                placeholder="50000"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-slate-700 font-semibold">Estimated Cost</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.estimated_cost}
-                onChange={(e) => setFormData({...formData, estimated_cost: e.target.value})}
-                className="pl-7 bg-slate-50 border-slate-200"
-                placeholder="35000"
-              />
-            </div>
-          </div>
+        {/* Billing Type Selection */}
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 p-5 rounded-2xl border-2 border-purple-300 dark:border-purple-700 shadow-md">
+          <Label className="text-slate-900 dark:text-white font-bold text-base mb-3 block">
+            {language === 'es' ? 'Tipo de Facturación' : 'Billing Type'}
+          </Label>
+          <Select 
+            value={formData.billing_type} 
+            onValueChange={(value) => setFormData({...formData, billing_type: value})}
+          >
+            <SelectTrigger className="bg-white border-purple-300">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-slate-200">
+              <SelectItem value="fixed_price">
+                💰 {language === 'es' ? 'Precio Fijo (desde quote)' : 'Fixed Price (from quote)'}
+              </SelectItem>
+              <SelectItem value="time_materials">
+                ⏱️ {language === 'es' ? 'Tiempo y Materiales (T&M)' : 'Time & Materials (T&M)'}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+
+        {/* T&M Hourly Rates - Only shown for time_materials */}
+        {formData.billing_type === 'time_materials' && (
+          <div className="grid md:grid-cols-2 gap-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-2xl border-2 border-green-300 dark:border-green-700">
+            <div>
+              <Label className="text-slate-900 dark:text-white font-bold">
+                {language === 'es' ? 'Tarifa Regular' : 'Regular Rate'}
+              </Label>
+              <div className="relative mt-2">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.regular_hourly_rate}
+                  onChange={(e) => setFormData({...formData, regular_hourly_rate: parseFloat(e.target.value) || 60})}
+                  className="pl-7 bg-white border-green-300"
+                  placeholder="60"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">/hr</span>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-slate-900 dark:text-white font-bold">
+                {language === 'es' ? 'Tarifa Overtime' : 'Overtime Rate'}
+              </Label>
+              <div className="relative mt-2">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.overtime_hourly_rate}
+                  onChange={(e) => setFormData({...formData, overtime_hourly_rate: parseFloat(e.target.value) || 90})}
+                  className="pl-7 bg-white border-green-300"
+                  placeholder="90"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">/hr</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contract Amount & Estimated Cost - Only for fixed_price */}
+        {formData.billing_type === 'fixed_price' && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-slate-700 font-semibold">{t('contractAmount')}</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.contract_amount}
+                  onChange={(e) => setFormData({...formData, contract_amount: e.target.value})}
+                  className="pl-7 bg-slate-50 border-slate-200"
+                  placeholder="50000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-slate-700 font-semibold">Estimated Cost</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.estimated_cost}
+                  onChange={(e) => setFormData({...formData, estimated_cost: e.target.value})}
+                  className="pl-7 bg-slate-50 border-slate-200"
+                  placeholder="35000"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Google Drive Folder - ADMIN ONLY */}
         {user?.role === 'admin' && job && (
