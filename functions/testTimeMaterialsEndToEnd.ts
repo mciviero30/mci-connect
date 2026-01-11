@@ -128,10 +128,7 @@ Deno.serve(async (req) => {
       // ============================================
       console.log('📝 Step 4: Creating expense...');
       
-      const uploadResult = await base44.integrations.Core.UploadFile({
-        file: new Blob(['fake receipt'], { type: 'text/plain' })
-      });
-
+      // Use a placeholder receipt URL instead of uploading
       expense1 = await base44.asServiceRole.entities.Expense.create({
         employee_email: user.email,
         employee_name: user.full_name || 'Test Employee 1',
@@ -142,7 +139,7 @@ Deno.serve(async (req) => {
         account_category: 'expense_materials',
         description: 'Test materials purchase',
         date: new Date().toISOString().split('T')[0],
-        receipt_url: uploadResult.file_url,
+        receipt_url: 'https://example.com/test-receipt.pdf',
         payment_method: 'personal',
         status: 'approved'
       });
