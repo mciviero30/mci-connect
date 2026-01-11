@@ -4,7 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Mic, MicOff, Loader2, CheckCircle2, AlertCircle, MapPin, Clock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Mic, MicOff, Loader2, CheckCircle2, AlertCircle, MapPin, Clock, Pin } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
@@ -12,13 +14,16 @@ import { humanize } from '@/components/feedback/HumanStates';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { useMobileLifecycle } from './hooks/useMobileLifecycle';
 
-export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, onComplete }) {
+export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, onComplete, blueprintId, planImageUrl }) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [area, setArea] = useState('');
   const [location, setLocation] = useState(null);
   const [step, setStep] = useState('ready'); // ready, recording, processing, completed, error
+  const [linkToTask, setLinkToTask] = useState(false);
+  const [createPin, setCreatePin] = useState(false);
+  const [language, setLanguage] = useState('en-US'); // Default to English
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -71,9 +76,15 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
       });
       streamRef.current = stream;
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
+      // Determine best MIME type
+      let mimeType = 'audio/webm;codecs=opus';
+      if (MediaRecorder.isTypeSupported('audio/mp4')) {
+        mimeType = 'audio/mp4';
+      } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+        mimeType = 'audio/webm';
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -139,6 +150,10 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         latitude: location?.latitude,
         longitude: location?.longitude,
         area: area || 'Unspecified area',
+        language,
+        linkToTask,
+        createPin,
+        blueprintId: createPin ? blueprintId : undefined,
       });
 
       if (response.data.success) {
@@ -216,16 +231,68 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
             </Card>
           )}
 
+          {/* Language Selection */}
+          {step === 'ready' && (
+            <div>
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Language / Idioma
+              </Label>
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="mt-1.5 min-h-[52px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en-US" className="min-h-[48px]">🇺🇸 English</SelectItem>
+                  <SelectItem value="es-ES" className="min-h-[48px]">🇪🇸 Español</SelectItem>
+                  <SelectItem value="es-MX" className="min-h-[48px]">🇲🇽 Español (México)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Area Input */}
           {step === 'ready' && (
             <div>
-              <Label>Area/Location (optional)</Label>
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Area/Location (optional)
+              </Label>
               <Input
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
                 placeholder="e.g., Floor 3 - North Wing"
-                className="mt-1.5"
+                className="mt-1.5 min-h-[52px]"
               />
+            </div>
+          )}
+
+          {/* Link to Task Option */}
+          {step === 'ready' && (
+            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex-1">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Link to Task
+                </Label>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Create a task from this voice note
+                </p>
+              </div>
+              <Switch checked={linkToTask} onCheckedChange={setLinkToTask} />
+            </div>
+          )}
+
+          {/* Create Pin Option (only if blueprint available) */}
+          {step === 'ready' && blueprintId && planImageUrl && (
+            <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+              <div className="flex-1">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <Pin className="w-4 h-4 text-orange-500" />
+                  Create Pin on Drawing
+                </Label>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Place a pin on the blueprint for this note
+                </p>
+              </div>
+              <Switch checked={createPin} onCheckedChange={setCreatePin} />
             </div>
           )}
 
@@ -296,13 +363,26 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
 
           {/* Instructions */}
           {step === 'ready' && (
-            <div className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg">
-              <p className="font-semibold mb-1">Tips for best results:</p>
+            <div className="text-sm text-slate-600 dark:text-slate-400 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 rounded-lg">
+              <p className="font-semibold mb-1 text-blue-900 dark:text-blue-100">
+                {language.startsWith('es') ? 'Consejos para mejores resultados:' : 'Tips for best results:'}
+              </p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>Speak clearly and at a moderate pace</li>
-                <li>Mention specific issues, measurements, or tasks</li>
-                <li>Include location details (wall numbers, areas)</li>
-                <li>AI will automatically extract tasks and issues</li>
+                {language.startsWith('es') ? (
+                  <>
+                    <li>Habla claramente y a ritmo moderado</li>
+                    <li>Menciona problemas específicos, medidas o tareas</li>
+                    <li>Incluye detalles de ubicación (números de pared, áreas)</li>
+                    <li>La IA extraerá automáticamente tareas y problemas</li>
+                  </>
+                ) : (
+                  <>
+                    <li>Speak clearly and at a moderate pace</li>
+                    <li>Mention specific issues, measurements, or tasks</li>
+                    <li>Include location details (wall numbers, areas)</li>
+                    <li>AI will automatically extract tasks and issues</li>
+                  </>
+                )}
               </ul>
             </div>
           )}
