@@ -4,13 +4,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Mic, MicOff, Loader2, CheckCircle2, AlertCircle, MapPin, Clock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Mic, MicOff, Loader2, CheckCircle2, AlertCircle, MapPin, Clock, CheckSquare, Languages } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
 import { useMobileLifecycle } from './hooks/useMobileLifecycle';
+import { useQuery } from '@tanstack/react-query';
 
 export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, onComplete }) {
   const [isRecording, setIsRecording] = useState(false);
@@ -19,11 +21,28 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
   const [area, setArea] = useState('');
   const [location, setLocation] = useState(null);
   const [step, setStep] = useState('ready'); // ready, recording, processing, completed, error
+  const [linkedTaskId, setLinkedTaskId] = useState('');
+  const [linkedPlanId, setLinkedPlanId] = useState('');
+  const [language, setLanguage] = useState('es-ES'); // Default Spanish
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
   const streamRef = useRef(null);
+
+  // Fetch tasks for linking
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['tasks', jobId],
+    queryFn: () => base44.entities.Task.filter({ job_id: jobId }),
+    enabled: !!jobId && open,
+  });
+
+  // Fetch plans for linking
+  const { data: plans = [] } = useQuery({
+    queryKey: ['plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }),
+    enabled: !!jobId && open,
+  });
 
   // Get GPS location on mount
   useEffect(() => {
@@ -139,6 +158,9 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         latitude: location?.latitude,
         longitude: location?.longitude,
         area: area || 'Unspecified area',
+        linkedTaskId: linkedTaskId || null,
+        linkedPlanId: linkedPlanId || null,
+        language: language,
       });
 
       if (response.data.success) {
@@ -176,6 +198,8 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
     setStep('ready');
     setRecordingTime(0);
     setArea('');
+    setLinkedTaskId('');
+    setLinkedPlanId('');
     audioChunksRef.current = [];
   };
 
@@ -216,16 +240,82 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
             </Card>
           )}
 
-          {/* Area Input */}
+          {/* Configuration - Before Recording */}
           {step === 'ready' && (
-            <div>
-              <Label>Area/Location (optional)</Label>
-              <Input
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
-                placeholder="e.g., Floor 3 - North Wing"
-                className="mt-1.5"
-              />
+            <div className="space-y-3">
+              {/* Language Selector */}
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Languages className="w-4 h-4" />
+                  Idioma de reconocimiento
+                </Label>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="es-ES">🇪🇸 Español</SelectItem>
+                    <SelectItem value="en-US">🇺🇸 English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Area Input */}
+              <div>
+                <Label>Área/Ubicación (opcional)</Label>
+                <Input
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
+                  placeholder="ej., Piso 3 - Ala Norte"
+                  className="mt-1.5"
+                />
+              </div>
+
+              {/* Link to Task */}
+              {tasks.length > 0 && (
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <CheckSquare className="w-4 h-4" />
+                    Vincular a tarea (opcional)
+                  </Label>
+                  <Select value={linkedTaskId} onValueChange={setLinkedTaskId}>
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="Seleccionar tarea..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={null}>Ninguna</SelectItem>
+                      {tasks.map(task => (
+                        <SelectItem key={task.id} value={task.id}>
+                          {task.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Link to Plan */}
+              {plans.length > 0 && (
+                <div>
+                  <Label className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Vincular a plano (opcional)
+                  </Label>
+                  <Select value={linkedPlanId} onValueChange={setLinkedPlanId}>
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue placeholder="Seleccionar plano..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={null}>Ninguno</SelectItem>
+                      {plans.map(plan => (
+                        <SelectItem key={plan.id} value={plan.id}>
+                          {plan.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
 
@@ -297,12 +387,12 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
           {/* Instructions */}
           {step === 'ready' && (
             <div className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg">
-              <p className="font-semibold mb-1">Tips for best results:</p>
+              <p className="font-semibold mb-1">Consejos para mejores resultados:</p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>Speak clearly and at a moderate pace</li>
-                <li>Mention specific issues, measurements, or tasks</li>
-                <li>Include location details (wall numbers, areas)</li>
-                <li>AI will automatically extract tasks and issues</li>
+                <li>Habla claro y a ritmo moderado</li>
+                <li>Menciona problemas, medidas o tareas específicas</li>
+                <li>Incluye detalles de ubicación (números de pared, áreas)</li>
+                <li>La IA extraerá automáticamente tareas e incidencias</li>
               </ul>
             </div>
           )}
@@ -319,7 +409,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
                   className="flex-1 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white"
                 >
                   <Mic className="w-4 h-4 mr-2" />
-                  Start Recording
+                  Iniciar Grabación
                 </Button>
               </>
             )}
@@ -330,7 +420,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
                 className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white"
               >
                 <MicOff className="w-4 h-4 mr-2" />
-                Stop & Process
+                Detener y Procesar
               </Button>
             )}
 
