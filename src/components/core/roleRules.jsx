@@ -294,6 +294,14 @@ export function needsApproval(user) {
   return role !== ROLES.CEO && role !== ROLES.ADMIN;
 }
 
+/**
+ * Check if user can send/email documents
+ */
+export function canSendDocument(user) {
+  const role = getUserRole(user);
+  return role === ROLES.CEO || role === ROLES.ADMIN || role === ROLES.MANAGER;
+}
+
 // ============================================
 // NAVIGATION ACCESS
 // ============================================
