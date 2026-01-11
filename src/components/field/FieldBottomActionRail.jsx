@@ -177,6 +177,8 @@ export default function FieldBottomActionRail({
         }}
         jobId={jobId}
         jobName={jobName}
+        blueprintId={null}
+        planImageUrl={null}
         onComplete={() => {
           setActiveAction(null);
         }}
