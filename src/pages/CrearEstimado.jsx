@@ -1261,6 +1261,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 allowReorder={true}
                 onToast={toast}
                 derivedValues={derivedValues}
+                onAddItem={addItem}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">

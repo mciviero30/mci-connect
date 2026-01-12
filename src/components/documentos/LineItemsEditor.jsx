@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check, Info } from "lucide-react";
+import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check, Info, Plus } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
@@ -34,6 +34,7 @@ import { getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDeriv
  * @param {boolean} allowReorder - Show up/down arrows (default: true)
  * @param {Function} onToast - Toast notification function (optional)
  * @param {Object} derivedValues - Derived values from computeQuoteDerived (CAPA 3)
+ * @param {Function} onAddItem - Callback to add new item (optional)
  */
 export default function LineItemsEditor({
   items = [],
@@ -42,7 +43,8 @@ export default function LineItemsEditor({
   allowCatalogSelect = true,
   allowReorder = true,
   onToast,
-  derivedValues // CAPA 3 - Receive derived values from parent
+  derivedValues, // CAPA 3 - Receive derived values from parent
+  onAddItem // NEW: Callback to add item
 }) {
   
   // Helper: Get catalog item name (supports both QuoteItem.name and ItemCatalog.item_name)
@@ -426,7 +428,22 @@ export default function LineItemsEditor({
           </div>
         </div>
         );
-      })}
-    </>
-  );
-}
+        })}
+
+        {/* Add Item Button - After Last Item */}
+        {onAddItem && (
+        <div className="border-t border-slate-200 bg-slate-50/30 p-4">
+        <Button
+          type="button"
+          onClick={onAddItem}
+          variant="outline"
+          className="w-full border-2 border-dashed border-slate-300 text-slate-600 hover:border-[#507DB4] hover:text-[#507DB4] hover:bg-blue-50/30 transition-all"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Another Item
+        </Button>
+        </div>
+        )}
+        </>
+        );
+        }
