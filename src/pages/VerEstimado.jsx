@@ -628,15 +628,26 @@ Lawrenceville, Georgia 30043, U.S.A`
                   <span className="font-bold text-white text-lg">${quote.total?.toFixed(2) || '0.00'}</span>
                 </div>
 
-                {/* Total Profit Est. */}
-                {quote.estimated_cost && quote.total && (
-                  <div className="flex justify-between items-center p-2.5 bg-gradient-to-r from-green-600 to-green-700 rounded-lg">
-                    <span className="text-white font-bold">{language === 'es' ? 'Profit Est.' : 'Total Profit Est.'}</span>
-                    <span className="font-bold text-white text-lg">
-                      ${(quote.total - quote.estimated_cost).toFixed(2)}
-                    </span>
-                  </div>
-                )}
+                {/* Total Profit Est. - Calculate from catalog if not stored */}
+                {(() => {
+                  const estimatedCost = quote.estimated_cost || (quote.items || []).reduce((sum, item) => {
+                    const costPerUnit = item.cost_per_unit || 0;
+                    const materialCost = item.material_cost || 0;
+                    const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
+                    return sum + totalCost;
+                  }, 0);
+                  
+                  const profit = quote.total - estimatedCost;
+                  
+                  return estimatedCost > 0 && quote.total ? (
+                    <div className="flex justify-between items-center p-2.5 bg-gradient-to-r from-green-600 to-green-700 rounded-lg">
+                      <span className="text-white font-bold">{language === 'es' ? 'Profit Est.' : 'Total Profit Est.'}</span>
+                      <span className="font-bold text-white text-lg">
+                        ${profit.toFixed(2)}
+                      </span>
+                    </div>
+                  ) : null;
+                })()}
                 
                 {/* Estimated Hours */}
                 {quote.estimated_hours !== undefined && quote.estimated_hours !== null && (
