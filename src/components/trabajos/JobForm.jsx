@@ -111,7 +111,20 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
       }
     }
 
-    onSubmit(formData);
+    // Clean data: convert empty strings to 0 for numeric fields
+    const cleanedData = {
+      ...formData,
+      contract_amount: formData.contract_amount ? parseFloat(formData.contract_amount) : 0,
+      estimated_cost: formData.estimated_cost ? parseFloat(formData.estimated_cost) : 0,
+      estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : 0,
+      geofence_radius: parseFloat(formData.geofence_radius) || 100,
+      regular_hourly_rate: parseFloat(formData.regular_hourly_rate) || 60,
+      overtime_hourly_rate: parseFloat(formData.overtime_hourly_rate) || 90,
+      latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : undefined
+    };
+
+    onSubmit(cleanedData);
   };
 
   const handleImportedJob = (importedData) => {
