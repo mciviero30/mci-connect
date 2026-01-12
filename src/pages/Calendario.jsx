@@ -134,7 +134,9 @@ export default function Calendario() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
+      console.log('Creating shift with data:', data);
       const shift = await base44.entities.ScheduleShift.create(data);
+      console.log('Shift created:', shift);
       
       // Send notification to assigned employee
       if (data.employee_email) {
@@ -152,7 +154,8 @@ export default function Calendario() {
       
       return shift;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation success, invalidating cache');
       queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
       setShowDialog(false);
       setSelectedDate(null);
@@ -161,6 +164,10 @@ export default function Calendario() {
       setSelectedEventType(null);
       toast.success(language === 'es' ? 'Turno creado' : 'Shift created');
     },
+    onError: (error) => {
+      console.error('Error creating shift:', error);
+      toast.error('Error: ' + (error.message || 'Unknown error'));
+    }
   });
 
   const updateMutation = useMutation({
