@@ -141,7 +141,7 @@ export default function Gastos() {
               className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              {t('newExpense')}
+              New Expense
             </Button>
           }
         />
