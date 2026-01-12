@@ -622,21 +622,18 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {language === 'es' ? 'Información del Proyecto' : 'Project Information'}
               </h4>
               <div className="text-sm space-y-2.5">
-                {/* Total Value */}
+                {/* Total Job */}
                 <div className="flex justify-between items-center p-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-lg">
                   <span className="text-white font-bold">{language === 'es' ? 'Total Trabajo' : 'Total Job'}</span>
                   <span className="font-bold text-white text-lg">${quote.total?.toFixed(2) || '0.00'}</span>
                 </div>
 
-                {/* Estimated Profit */}
+                {/* Total Profit Est. */}
                 {quote.estimated_cost && quote.total && (
-                  <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-green-200">
-                    <span className="text-slate-700 font-medium">{language === 'es' ? 'Profit Est.' : 'Est. Profit'}</span>
-                    <span className="font-bold text-green-600">
+                  <div className="flex justify-between items-center p-2.5 bg-gradient-to-r from-green-600 to-green-700 rounded-lg">
+                    <span className="text-white font-bold">{language === 'es' ? 'Profit Est.' : 'Total Profit Est.'}</span>
+                    <span className="font-bold text-white text-lg">
                       ${(quote.total - quote.estimated_cost).toFixed(2)}
-                      {quote.profit_margin && (
-                        <span className="text-xs ml-1">({quote.profit_margin.toFixed(1)}%)</span>
-                      )}
                     </span>
                   </div>
                 )}
@@ -652,12 +649,14 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {/* Driving Time */}
                 {(() => {
                   const drivingItems = (quote.items || []).filter(i => i.travel_item_type === 'driving_time');
-                  const totalDrivingHours = drivingItems.reduce((sum, item) => sum + ((item.duration_value || 0) * (item.tech_count || 1)), 0);
-                  const totalDrivingCost = drivingItems.reduce((sum, item) => sum + (item.total || 0), 0);
+                  const totalDrivingHours = drivingItems.reduce((sum, item) => sum + (item.duration_value || 0), 0);
+                  const totalTechs = drivingItems.reduce((sum, item) => sum + (item.tech_count || 0), 0);
                   return totalDrivingHours > 0 ? (
                     <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-blue-200">
-                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Tiempo Viaje (ida/vuelta)' : 'Driving Time (round trip)'}</span>
-                      <span className="font-bold text-blue-600">{totalDrivingHours.toFixed(1)}h • ${totalDrivingCost.toFixed(2)}</span>
+                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Tiempo Viaje' : 'Driving Time'}</span>
+                      <span className="font-bold text-blue-600">
+                        {totalDrivingHours.toFixed(1)}h • {totalTechs} {language === 'es' ? (totalTechs === 1 ? 'persona' : 'personas') : (totalTechs === 1 ? 'person' : 'people')}
+                      </span>
                     </div>
                   ) : null;
                 })()}
@@ -666,25 +665,28 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {(() => {
                   const mileageItems = (quote.items || []).filter(i => i.travel_item_type === 'miles_per_vehicle');
                   const totalMiles = mileageItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-                  const totalMileageCost = mileageItems.reduce((sum, item) => sum + (item.total || 0), 0);
+                  const totalVehicles = mileageItems.reduce((sum, item) => sum + (item.vehicle_count || 1), 0);
                   return totalMiles > 0 ? (
                     <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-cyan-200">
                       <span className="text-slate-700 font-medium">{language === 'es' ? 'Millas' : 'Miles'}</span>
-                      <span className="font-bold text-cyan-600">{totalMiles.toFixed(1)} mi • ${totalMileageCost.toFixed(2)}</span>
+                      <span className="font-bold text-cyan-600">
+                        {totalMiles.toFixed(1)} mi • {totalVehicles} {language === 'es' ? (totalVehicles === 1 ? 'vehículo' : 'vehículos') : (totalVehicles === 1 ? 'vehicle' : 'vehicles')}
+                      </span>
                     </div>
                   ) : null;
                 })()}
                 
-                {/* Hotel Rooms */}
+                {/* Hotel */}
                 {(() => {
                   const hotelItem = (quote.items || []).find(i => i.calculation_type === 'hotel' || i.item_name?.toLowerCase().includes('hotel'));
                   if (hotelItem) {
+                    const nights = hotelItem.quantity || 0;
                     const rooms = hotelItem.tech_count ? Math.ceil(hotelItem.tech_count / 2) : 1;
                     return (
                       <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-purple-200">
                         <span className="text-slate-700 font-medium">{language === 'es' ? 'Hotel' : 'Hotel'}</span>
                         <span className="font-bold text-purple-600">
-                          ${hotelItem.total?.toFixed(2) || '0.00'} ({rooms} {language === 'es' ? (rooms === 1 ? 'cuarto' : 'cuartos') : (rooms === 1 ? 'room' : 'rooms')})
+                          {nights.toFixed(0)} {language === 'es' ? (nights === 1 ? 'noche' : 'noches') : (nights === 1 ? 'night' : 'nights')} • {rooms} {language === 'es' ? (rooms === 1 ? 'cuarto' : 'cuartos') : (rooms === 1 ? 'room' : 'rooms')}
                         </span>
                       </div>
                     );
@@ -696,12 +698,13 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {(() => {
                   const perDiemItem = (quote.items || []).find(i => i.calculation_type === 'per_diem' || (i.item_name?.toLowerCase().includes('per') && i.item_name?.toLowerCase().includes('diem')));
                   if (perDiemItem) {
+                    const days = perDiemItem.quantity || 0;
                     const people = perDiemItem.tech_count || 1;
                     return (
                       <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-green-200">
                         <span className="text-slate-700 font-medium">{language === 'es' ? 'Per Diem' : 'Per Diem'}</span>
                         <span className="font-bold text-green-600">
-                          ${perDiemItem.total?.toFixed(2) || '0.00'} ({people} {language === 'es' ? (people === 1 ? 'persona' : 'personas') : (people === 1 ? 'person' : 'people')})
+                          {days.toFixed(0)} {language === 'es' ? (days === 1 ? 'día' : 'días') : (days === 1 ? 'day' : 'days')} • {people} {language === 'es' ? (people === 1 ? 'persona' : 'personas') : (people === 1 ? 'person' : 'people')}
                         </span>
                       </div>
                     );
