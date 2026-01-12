@@ -121,6 +121,32 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     }
   };
 
+  // Auto-geocode address when address changes
+  const handleAddressChange = async (address) => {
+    setFormData({...formData, address});
+    
+    // Auto-geocode if address is not empty (after 1 second debounce)
+    if (address && address.length > 5) {
+      setIsGeocodingAddress(true);
+      try {
+        setTimeout(async () => {
+          const result = await geocodeAddress(address);
+          setFormData(prev => ({
+            ...prev,
+            latitude: result.latitude,
+            longitude: result.longitude,
+            address: result.formatted_address
+          }));
+          toast.success('Coordinates auto-filled!');
+        }, 800);
+      } catch (error) {
+        // Silent fail - just don't geocode
+      } finally {
+        setIsGeocodingAddress(false);
+      }
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
