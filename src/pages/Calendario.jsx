@@ -78,13 +78,14 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
-  // CRITICAL: Replace JobAssignment with ScheduleShift
+  // CRITICAL: Replace JobAssignment with ScheduleShift - Only today's shifts
   const { data: shifts, isLoading, refetch: refetchShifts } = useQuery({
     queryKey: ['scheduleShifts'],
     queryFn: async () => {
       try {
-        const data = await base44.entities.ScheduleShift.list('-date');
-        console.log('✅ Loaded shifts:', data?.length || 0);
+        const today = new Date().toISOString().split('T')[0];
+        const data = await base44.entities.ScheduleShift.filter({ date: today });
+        console.log('✅ Loaded today\'s shifts:', data?.length || 0);
         return data || [];
       } catch (error) {
         console.error('❌ Error loading shifts:', error);
