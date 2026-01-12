@@ -722,10 +722,13 @@ export default function Calendario() {
               </Tabs>
 
               {isAdmin && (
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => setShowTemplates(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Plantillas' : 'Templates'}>
-                    <Layout className="w-4 h-4" />
-                  </Button>
+              <div className="flex gap-1">
+                 <Button variant="ghost" size="sm" onClick={handleDeleteAllExceptLast} className="text-red-600 hover:bg-red-50" title={language === 'es' ? 'Borrar todos excepto el último' : 'Delete all except latest'}>
+                  <X className="w-4 h-4" />
+                 </Button>
+                 <Button variant="ghost" size="sm" onClick={() => setShowTemplates(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Plantillas' : 'Templates'}>
+                  <Layout className="w-4 h-4" />
+                 </Button>
                   <Button variant="ghost" size="sm" onClick={() => setShowCopyWeek(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
                     <Copy className="w-4 h-4" />
                   </Button>
