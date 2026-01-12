@@ -137,21 +137,6 @@ export default function Calendario() {
       console.log('Creating shift with data:', data);
       const shift = await base44.entities.ScheduleShift.create(data);
       console.log('Shift created:', shift);
-      
-      // Send notification to assigned employee
-      if (data.employee_email) {
-        await base44.asServiceRole.entities.Notification.create({
-          user_email: data.employee_email,
-          title: language === 'es' ? 'Nuevo turno asignado' : 'New shift assigned',
-          message: language === 'es' 
-            ? `Has sido asignado a: ${data.job_name || data.shift_title || 'Turno'} el ${data.date}`
-            : `You've been assigned to: ${data.job_name || data.shift_title || 'Shift'} on ${data.date}`,
-          type: 'schedule_change',
-          link: createPageUrl('Calendario'),
-          read: false
-        });
-      }
-      
       return shift;
     },
     onSuccess: (data) => {
