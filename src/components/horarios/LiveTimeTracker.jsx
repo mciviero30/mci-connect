@@ -262,9 +262,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       }
       
       if (!job.latitude || !job.longitude) {
-        alert(language === 'es' 
-          ? '❌ Este proyecto no tiene coordenadas GPS configuradas. Contacta a tu supervisor.'
-          : '❌ This project has no GPS coordinates configured. Contact your supervisor.');
+        // Show a detailed error dialog instead of alert
+        setLocationError(language === 'es' 
+          ? '❌ Este proyecto no tiene coordenadas GPS configuradas.\n\n✅ Soluciones:\n1. Pídele a tu supervisor que configure las coordenadas del proyecto\n2. O que habilite "skip_geofence" para permitir check-in sin GPS'
+          : '❌ This project has no GPS coordinates configured.\n\n✅ Solutions:\n1. Ask your supervisor to set up project coordinates\n2. Or enable "skip_geofence" to allow check-in without GPS');
         setShowWorkTypeDialog(false);
         return;
       }
