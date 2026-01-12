@@ -475,7 +475,6 @@ export default function Calendario() {
 
   const workload = calculateWorkload();
 
-  const isAdmin = hasFullAccess;
   const uniqueEmployees = [...new Set(shifts.map(s => s.employee_email).filter(Boolean))];
   const uniqueJobs = [...new Set(shifts.map(s => s.job_id).filter(Boolean))];
 
