@@ -140,6 +140,9 @@ export default function TimeTracking() {
   // Start Break
   const startBreakMutation = useMutation({
     mutationFn: async (breakType) => {
+      if (!todayEntry?.id) {
+        throw new Error('No active time entry');
+      }
       const now = new Date();
       const breaks = [...(todayEntry.breaks || [])];
       breaks.push({
@@ -163,6 +166,9 @@ export default function TimeTracking() {
   // End Break
   const endBreakMutation = useMutation({
     mutationFn: async () => {
+      if (!todayEntry?.id || !todayEntry?.breaks) {
+        throw new Error('No active time entry or breaks');
+      }
       const now = new Date();
       const breaks = [...todayEntry.breaks];
       const activeBreak = breaks.find(b => !b.end_time);
