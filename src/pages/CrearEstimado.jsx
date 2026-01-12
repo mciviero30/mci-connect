@@ -173,14 +173,32 @@ export default function CrearEstimado() {
     // Remove existing travel items first
     const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
     
-    // Add new travel items
-    const updatedItems = [...nonTravelItems, ...travelItems];
-    
     // Extract travel time from driving items for stay calculator
-    const drivingItem = travelItems.find(item => item.description?.includes('Driving'));
+    const drivingItem = travelItems.find(item => item.travel_item_type === 'driving_time');
     if (drivingItem?.duration_value) {
       setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
     }
+    
+    // Update driving items with tech count from per diem if exists
+    const perDiemItem = formData.items.find(i => i.calculation_type === 'per_diem');
+    const techsCount = perDiemItem?.tech_count || projectTechCount;
+    
+    const updatedTravelItems = travelItems.map(item => {
+      if (item.travel_item_type === 'driving_time') {
+        // Multiply driving hours by number of techs traveling
+        return {
+          ...item,
+          tech_count: techsCount,
+          quantity: (item.duration_value || 0) * techsCount,
+          total: (item.duration_value || 0) * techsCount * (item.unit_price || 0),
+          description: `${item.description}\nTechs traveling = ${techsCount}`
+        };
+      }
+      return item;
+    });
+    
+    // Add new travel items
+    const updatedItems = [...nonTravelItems, ...updatedTravelItems];
     
     setFormData(prev => ({
       ...prev,
@@ -194,7 +212,7 @@ export default function CrearEstimado() {
   };
 
   const handleAutoGenerateStayItems = (stayData) => {
-    const { hotel_quantity, per_diem_quantity, hotel_rate, per_diem_rate } = stayData;
+    const { hotel_quantity, per_diem_quantity, hotel_rate, per_diem_rate, tech_count, duration_days } = stayData;
     
     // Find hotel and per diem items from catalog (case-insensitive, flexible matching)
     const hotelItem = quoteItems.find(qi => 
@@ -217,12 +235,16 @@ export default function CrearEstimado() {
     const updatedItems = [...filteredItems];
     let addedCount = 0;
     
+    // Calculate hotel metrics
+    const nights = derivedValues?.nights || Math.ceil((duration_days || 1) - 1);
+    const totalRooms = Math.ceil((tech_count || projectTechCount) / 2);
+    
     // Add Hotel Rooms (auto-calculated)
     const hotelName = hotelItem?.name || 'Hotel Rooms';
     const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
     updatedItems.push({
       item_name: hotelName,
-      description: hotelItem?.description || 'Hotel accommodations (auto-calculated from project duration)',
+      description: `Rooms per night = ${roomsPerNight}\nNights = ${nights}\nTotal rooms = ${totalRooms}`,
       quantity: 0, // Will be derived
       unit: hotelItem?.unit || 'night',
       unit_price: finalHotelRate,
@@ -232,6 +254,7 @@ export default function CrearEstimado() {
       auto_calculated: true,
       manual_override: false,
       installation_time: 0,
+      tech_count: tech_count || projectTechCount,
     });
     addedCount++;
     
@@ -240,7 +263,7 @@ export default function CrearEstimado() {
     const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
     updatedItems.push({
       item_name: perDiemName,
-      description: perDiemItem?.description || 'Daily meal allowance (auto-calculated from project duration)',
+      description: `Days = ${duration_days || derivedValues?.totalCalendarDays || 1} days\nTechs = ${tech_count || projectTechCount}`,
       quantity: 0, // Will be derived
       unit: perDiemItem?.unit || 'day',
       unit_price: finalPerDiemRate,
@@ -250,6 +273,7 @@ export default function CrearEstimado() {
       auto_calculated: true,
       manual_override: false,
       installation_time: 0,
+      tech_count: tech_count || projectTechCount,
     });
     addedCount++;
     

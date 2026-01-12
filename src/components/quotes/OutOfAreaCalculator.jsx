@@ -121,7 +121,8 @@ export default function OutOfAreaCalculator({
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
         round_trips: 1,
-        account_category: 'expense_travel_per_diem'
+        account_category: 'expense_travel_per_diem',
+        duration_value: drivingHours // Store for later use
       });
 
       // Miles per Vehicle item
