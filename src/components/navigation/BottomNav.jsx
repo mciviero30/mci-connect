@@ -95,7 +95,10 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
           {/* More Menu */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-400 min-h-[56px] min-w-[56px] rounded-xl active:scale-95 transition-all" style={{ WebkitTapHighlightColor: 'transparent' }}>
+              <button className="flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-400 min-h-[60px] min-w-[60px] rounded-xl active:scale-90 active:bg-slate-100/50 dark:active:bg-slate-800 transition-all duration-150" style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitTouchCallout: 'none'
+              }}>
                 <Menu className="w-6 h-6" strokeWidth={2} />
                 <span className="text-[11px] font-semibold truncate max-w-full px-1">More</span>
               </button>
