@@ -20,20 +20,22 @@ Deno.serve(async (req) => {
 
     const shiftData = await req.json();
 
-    // Validate required fields per ScheduleShift schema
-    if (!shiftData.date || !shiftData.start_time || !shiftData.end_time) {
-      return new Response(JSON.stringify({ error: 'Missing required fields: date, start_time, end_time' }), { status: 400 });
-    }
-
+    // Validate core required fields
     if (!shiftData.employee_email || !shiftData.employee_name) {
       return new Response(JSON.stringify({ error: 'Missing required fields: employee_email, employee_name' }), { status: 400 });
     }
 
     console.log('📝 Input shift data:', JSON.stringify(shiftData, null, 2));
 
-    // Ensure shift_title has value (fallback if empty)
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+
+    // Ensure all fields have defaults (date falls within visible range)
     const payloadData = {
       ...shiftData,
+      date: shiftData.date || today,
+      start_time: shiftData.start_time || '08:00',
+      end_time: shiftData.end_time || '17:00',
       shift_title: (shiftData.shift_title && shiftData.shift_title.trim()) || shiftData.job_name || 'Scheduled Shift',
       shift_type: shiftData.shift_type || 'job_work',
       status: shiftData.status || 'scheduled'
