@@ -81,8 +81,12 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     geofence_radius: job?.geofence_radius || 100,
     billing_type: job?.billing_type || 'fixed_price',
     regular_hourly_rate: job?.regular_hourly_rate || 60,
-    overtime_hourly_rate: job?.overtime_hourly_rate || 90
+    overtime_hourly_rate: job?.overtime_hourly_rate || 90,
+    latitude: job?.latitude || null,
+    longitude: job?.longitude || null
   });
+
+  const [isGeocodingAddress, setIsGeocodingAddress] = useState(false);
 
   // Update customer_name when customers load and we're editing
   useEffect(() => {
