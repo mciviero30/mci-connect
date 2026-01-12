@@ -37,12 +37,24 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     initialData: []
   });
 
+  // Fix customer display name on edit
+  const getCustomerDisplayName = (customerId, fallbackName) => {
+    if (!customerId) return fallbackName || '';
+    const customer = customers.find(c => c.id === customerId);
+    if (customer) {
+      return (customer.first_name && customer.last_name)
+        ? `${customer.first_name} ${customer.last_name}`.trim()
+        : customer.company || customer.email || fallbackName || 'Sin nombre';
+    }
+    return fallbackName || '';
+  };
+
   const [formData, setFormData] = useState({
     id: job?.id || '',
     name: job?.name || '',
     description: job?.description || '',
     customer_id: job?.customer_id || '',
-    customer_name: job?.customer_name || '',
+    customer_name: getCustomerDisplayName(job?.customer_id, job?.customer_name),
     address: job?.address || '',
     city: job?.city || '',
     state: job?.state || '',
@@ -62,6 +74,16 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     regular_hourly_rate: job?.regular_hourly_rate || 60,
     overtime_hourly_rate: job?.overtime_hourly_rate || 90
   });
+
+  // Update customer_name when customers load and we're editing
+  useEffect(() => {
+    if (job?.customer_id && customers.length > 0) {
+      const updatedName = getCustomerDisplayName(job.customer_id, job.customer_name);
+      if (updatedName !== formData.customer_name) {
+        setFormData(prev => ({ ...prev, customer_name: updatedName }));
+      }
+    }
+  }, [customers, job?.customer_id]);
 
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
