@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -96,7 +96,7 @@ export default function Trabajos() {
   });
 
   // Handle edit from URL parameter
-  React.useEffect(() => {
+  useEffect(() => {
     if (editIdFromUrl && jobs.length > 0) {
       const jobToEdit = jobs.find(j => j.id === editIdFromUrl);
       if (jobToEdit) {
