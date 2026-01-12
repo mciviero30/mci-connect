@@ -622,6 +622,25 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {language === 'es' ? 'Información del Proyecto' : 'Project Information'}
               </h4>
               <div className="text-sm space-y-2.5">
+                {/* Total Value */}
+                <div className="flex justify-between items-center p-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-lg">
+                  <span className="text-white font-bold">{language === 'es' ? 'Total Trabajo' : 'Total Job'}</span>
+                  <span className="font-bold text-white text-lg">${quote.total?.toFixed(2) || '0.00'}</span>
+                </div>
+
+                {/* Estimated Profit */}
+                {quote.estimated_cost && quote.total && (
+                  <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-green-200">
+                    <span className="text-slate-700 font-medium">{language === 'es' ? 'Profit Est.' : 'Est. Profit'}</span>
+                    <span className="font-bold text-green-600">
+                      ${(quote.total - quote.estimated_cost).toFixed(2)}
+                      {quote.profit_margin && (
+                        <span className="text-xs ml-1">({quote.profit_margin.toFixed(1)}%)</span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                
                 {/* Estimated Hours */}
                 {quote.estimated_hours !== undefined && quote.estimated_hours !== null && (
                   <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-[#507DB4]/10">
@@ -630,14 +649,28 @@ Lawrenceville, Georgia 30043, U.S.A`
                   </div>
                 )}
                 
-                {/* Travel Time */}
+                {/* Driving Time */}
                 {(() => {
-                  const travelItems = (quote.items || []).filter(i => i.is_travel_item && i.calculation_type === 'hours');
-                  const totalTravelHours = travelItems.reduce((sum, item) => sum + ((item.duration_value || 0)), 0);
-                  return totalTravelHours > 0 ? (
+                  const drivingItems = (quote.items || []).filter(i => i.travel_item_type === 'driving_time');
+                  const totalDrivingHours = drivingItems.reduce((sum, item) => sum + ((item.duration_value || 0) * (item.tech_count || 1)), 0);
+                  const totalDrivingCost = drivingItems.reduce((sum, item) => sum + (item.total || 0), 0);
+                  return totalDrivingHours > 0 ? (
                     <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-blue-200">
-                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Tiempo Viaje (ida y vuelta)' : 'Travel Time (round trip)'}</span>
-                      <span className="font-bold text-blue-600">{totalTravelHours.toFixed(1)}h</span>
+                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Tiempo Viaje (ida/vuelta)' : 'Driving Time (round trip)'}</span>
+                      <span className="font-bold text-blue-600">{totalDrivingHours.toFixed(1)}h • ${totalDrivingCost.toFixed(2)}</span>
+                    </div>
+                  ) : null;
+                })()}
+
+                {/* Miles */}
+                {(() => {
+                  const mileageItems = (quote.items || []).filter(i => i.travel_item_type === 'miles_per_vehicle');
+                  const totalMiles = mileageItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                  const totalMileageCost = mileageItems.reduce((sum, item) => sum + (item.total || 0), 0);
+                  return totalMiles > 0 ? (
+                    <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-cyan-200">
+                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Millas' : 'Miles'}</span>
+                      <span className="font-bold text-cyan-600">{totalMiles.toFixed(1)} mi • ${totalMileageCost.toFixed(2)}</span>
                     </div>
                   ) : null;
                 })()}
@@ -676,8 +709,8 @@ Lawrenceville, Georgia 30043, U.S.A`
                   return null;
                 })()}
 
-                {/* Divider if has travel items */}
-                {((quote.items || []).some(i => i.is_travel_item) && (quote.view_count > 0 || quote.reminder_count > 0 || quote.profit_margin)) && (
+                {/* Divider if has other stats */}
+                {(quote.view_count > 0 || quote.reminder_count > 0) && (
                   <div className="border-t border-[#507DB4]/10 my-2"></div>
                 )}
                 
@@ -692,12 +725,6 @@ Lawrenceville, Georgia 30043, U.S.A`
                   <div className="flex justify-between text-slate-600">
                     <span>{language === 'es' ? 'Recordatorios' : 'Reminders'}</span>
                     <span className="font-medium">{quote.reminder_count}</span>
-                  </div>
-                )}
-                {quote.profit_margin && (
-                  <div className="flex justify-between text-slate-600">
-                    <span>{language === 'es' ? 'Margen' : 'Margin'}</span>
-                    <span className="font-medium text-green-600">{quote.profit_margin.toFixed(1)}%</span>
                   </div>
                 )}
               </div>

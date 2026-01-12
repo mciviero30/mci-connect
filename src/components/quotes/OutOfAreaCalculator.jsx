@@ -112,7 +112,7 @@ export default function OutOfAreaCalculator({
       // Driving Time item
       items.push({
         item_name: `Driving Time - ${metric.teamName}`,
-        description: `Round trip driving from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi + 10% buffer)`,
+        description: `Round trip driving from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi)`,
         quantity: drivingHours,
         unit: 'hours',
         unit_price: drivingRate,
@@ -122,7 +122,8 @@ export default function OutOfAreaCalculator({
         team_id: metric.teamId,
         round_trips: 1,
         account_category: 'expense_travel_per_diem',
-        duration_value: drivingHours // Store for later use
+        duration_value: drivingHours, // Store for later use
+        tech_count: 1 // Will be updated when per diem is added
       });
 
       // Miles per Vehicle item

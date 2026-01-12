@@ -237,14 +237,14 @@ export default function CrearEstimado() {
     
     // Calculate hotel metrics
     const nights = derivedValues?.nights || Math.ceil((duration_days || 1) - 1);
-    const totalRooms = Math.ceil((tech_count || projectTechCount) / 2);
+    const totalCalendarDays = derivedValues?.totalCalendarDays || duration_days || 1;
     
     // Add Hotel Rooms (auto-calculated)
     const hotelName = hotelItem?.name || 'Hotel Rooms';
     const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
     updatedItems.push({
       item_name: hotelName,
-      description: `Rooms per night = ${roomsPerNight}\nNights = ${nights}\nTotal rooms = ${totalRooms}`,
+      description: `Rooms per night = ${roomsPerNight}\nNights = ${nights}`,
       quantity: 0, // Will be derived
       unit: hotelItem?.unit || 'night',
       unit_price: finalHotelRate,
@@ -263,7 +263,7 @@ export default function CrearEstimado() {
     const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
     updatedItems.push({
       item_name: perDiemName,
-      description: `Days = ${duration_days || derivedValues?.totalCalendarDays || 1} days\nTechs = ${tech_count || projectTechCount}`,
+      description: `Days = ${totalCalendarDays} days\nTechs = ${tech_count || projectTechCount}`,
       quantity: 0, // Will be derived
       unit: perDiemItem?.unit || 'day',
       unit_price: finalPerDiemRate,
