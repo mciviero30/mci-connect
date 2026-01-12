@@ -263,22 +263,31 @@ export default function AssignmentDialog({
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg z-50" align="start">
-                  {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${
-                          job.color === 'blue' ? 'bg-blue-600' :
-                          job.color === 'green' ? 'bg-green-600' :
-                          job.color === 'purple' ? 'bg-purple-600' :
-                          job.color === 'cyan' ? 'bg-cyan-600' :
-                          job.color === 'pink' ? 'bg-pink-600' :
-                          job.color === 'red' ? 'bg-red-600' :
-                          'bg-slate-600'
-                        }`} />
-                        {job.name}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {(jobs || []).length === 0 ? (
+                    <div className="p-2 text-sm text-slate-500">No jobs available</div>
+                  ) : (
+                    jobs.map(job => {
+                      const jobName = job.name || job.data?.name || 'Unnamed';
+                      const jobColor = job.color || job.data?.color || 'blue';
+                      const jobId = job.id;
+                      return (
+                        <SelectItem key={jobId} value={jobId} className="text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${
+                              jobColor === 'blue' ? 'bg-blue-600' :
+                              jobColor === 'green' ? 'bg-green-600' :
+                              jobColor === 'purple' ? 'bg-purple-600' :
+                              jobColor === 'cyan' ? 'bg-cyan-600' :
+                              jobColor === 'pink' ? 'bg-pink-600' :
+                              jobColor === 'red' ? 'bg-red-600' :
+                              'bg-slate-600'
+                            }`} />
+                            {jobName}
+                          </div>
+                        </SelectItem>
+                      );
+                    })
+                  )}
                 </SelectContent>
               </Select>
             </div>
