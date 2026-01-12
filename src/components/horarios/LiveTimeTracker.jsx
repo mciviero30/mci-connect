@@ -38,7 +38,18 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
-  const { t, language } = useLanguage();
+  let language = 'en';
+  let t = (key) => key;
+  try {
+    const langCtx = useLanguage();
+    if (langCtx) {
+      language = langCtx.language || 'en';
+      t = langCtx.t || ((key) => key);
+    }
+  } catch (e) {
+    // Fallback if useLanguage fails
+  }
+  
   const storageKey = `liveTimeTracker_${trackingType}`;
 
   const [activeSession, setActiveSession] = useState(null);
