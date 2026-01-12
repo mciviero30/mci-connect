@@ -66,10 +66,13 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      const displayName = customer.first_name || customer.last_name 
+        ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+        : customer.company || customer.email || 'Unknown Customer';
       setFormData({
         ...formData,
         customer_id: customerId,
-        customer_name: customer.company || `${customer.first_name} ${customer.last_name}`
+        customer_name: displayName
       });
     }
   };
@@ -88,11 +91,22 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Validate required fields
+    if (!formData.name) {
+      toast.error(language === 'es' ? 'El nombre del trabajo es requerido' : 'Job name is required');
+      return;
+    }
+
+    if (!formData.customer_id) {
+      toast.error(language === 'es' ? 'Por favor seleccione un cliente' : 'Please select a customer');
+      return;
+    }
+
     // Validate Job ID if it's provided
     if (formData.id) {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(formData.id)) {
-        alert('❌ Invalid Job ID format. Must be a valid UUID or leave empty for auto-generation.');
+        toast.error(language === 'es' ? '❌ Formato de ID inválido' : '❌ Invalid Job ID format');
         return;
       }
     }
@@ -203,11 +217,19 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
               <SelectValue placeholder={t('selectCustomer')} />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
-              {customers.map(customer => (
-                <SelectItem key={customer.id} value={customer.id}>
-                  {customer.company || `${customer.first_name} ${customer.last_name}`}
-                </SelectItem>
-              ))}
+              {customers.map(customer => {
+                const displayName = customer.first_name || customer.last_name 
+                  ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+                  : customer.company || customer.email || 'Unknown Customer';
+                return (
+                  <SelectItem key={customer.id} value={customer.id}>
+                    {displayName}
+                    {customer.company && (customer.first_name || customer.last_name) && (
+                      <span className="text-xs text-slate-500 ml-2">({customer.company})</span>
+                    )}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -359,10 +381,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
                   step="0.01"
                   value={formData.regular_hourly_rate}
                   onChange={(e) => setFormData({...formData, regular_hourly_rate: parseFloat(e.target.value) || 60})}
-                  className="pl-7 bg-white border-green-300"
+                  className="pl-7 pr-14 bg-white border-green-300"
                   placeholder="60"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">/hr</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium pointer-events-none">/hr</span>
               </div>
             </div>
 
@@ -378,10 +400,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
                   step="0.01"
                   value={formData.overtime_hourly_rate}
                   onChange={(e) => setFormData({...formData, overtime_hourly_rate: parseFloat(e.target.value) || 90})}
-                  className="pl-7 bg-white border-green-300"
+                  className="pl-7 pr-14 bg-white border-green-300"
                   placeholder="90"
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium">/hr</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium pointer-events-none">/hr</span>
               </div>
             </div>
           </div>

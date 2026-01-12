@@ -20,24 +20,39 @@ export default function AddressAutocomplete({
 
   // Initialize Google Places Autocomplete (frontend only)
   useEffect(() => {
+    const initializeGooglePlaces = () => {
+      if (window.google?.maps?.places) {
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+        const div = document.createElement('div');
+        placesService.current = new window.google.maps.places.PlacesService(div);
+      }
+    };
+
     if (window.google?.maps?.places) {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService();
-      const div = document.createElement('div');
-      placesService.current = new window.google.maps.places.PlacesService(div);
+      initializeGooglePlaces();
     } else {
-      // Load Google Maps Places API dynamically
-      const script = document.createElement('script');
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-      script.async = true;
-      script.onload = () => {
-        if (window.google?.maps?.places) {
-          autocompleteService.current = new window.google.maps.places.AutocompleteService();
-          const div = document.createElement('div');
-          placesService.current = new window.google.maps.places.PlacesService(div);
+      // Check if script already exists
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+      if (existingScript) {
+        // Wait for existing script to load
+        existingScript.addEventListener('load', initializeGooglePlaces);
+      } else {
+        // Load Google Maps Places API dynamically
+        const script = document.createElement('script');
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+        if (!apiKey) {
+          console.error('Google Maps API key not found. Address autocomplete will not work.');
+          return;
         }
-      };
-      document.head.appendChild(script);
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeGooglePlaces;
+        script.onerror = () => {
+          console.error('Failed to load Google Maps API');
+        };
+        document.head.appendChild(script);
+      }
     }
   }, []);
 
