@@ -143,27 +143,26 @@ export default function Calendario() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('Creating shift with data:', data);
+      console.log('🔵 Creating shift:', data);
       const response = await base44.functions.invoke('createScheduleShift', data);
-      console.log('Shift created:', response);
+      console.log('🟢 Backend response:', response);
       return response;
     },
-    onSuccess: (data) => {
-      console.log('Mutation success, data:', data);
-      // CRITICAL: Wait 500ms then FORCE refetch
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['scheduleShifts'], refetchType: 'all' });
-        refetchShifts();
-      }, 500);
+    onSuccess: async (data) => {
+      console.log('🟢 Mutation success');
+      // FORCE refetch
+      await refetchShifts();
+      queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
+
       setShowDialog(false);
       setSelectedDate(null);
       setSelectedTime(null);
       setEditingShift(null);
       setSelectedEventType(null);
-      toast.success(language === 'es' ? 'Turno creado' : 'Shift created');
+      toast.success(language === 'es' ? 'Turno creado ✅' : 'Shift created ✅');
     },
     onError: (error) => {
-      console.error('Error creating shift:', error);
+      console.error('🔴 Error creating shift:', error);
       toast.error('Error: ' + (error.message || 'Unknown error'));
     }
   });
