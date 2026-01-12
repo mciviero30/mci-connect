@@ -645,6 +645,22 @@ Lawrenceville, Georgia 30043, U.S.A`
                     <span className="font-bold text-[#507DB4]">{quote.estimated_hours.toFixed(1)}h</span>
                   </div>
                 )}
+
+                {/* Work Days */}
+                {(() => {
+                  const hotelItem = (quote.items || []).find(i => i.calculation_type === 'hotel');
+                  const perDiemItem = (quote.items || []).find(i => i.calculation_type === 'per_diem');
+                  const techCount = hotelItem?.tech_count || perDiemItem?.tech_count || 1;
+                  const totalHours = quote.estimated_hours || 0;
+                  const workDays = totalHours > 0 ? Math.round((totalHours / (8 * techCount)) * 2) / 2 : 0;
+                  
+                  return workDays > 0 ? (
+                    <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-amber-200">
+                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Días Hábiles' : 'Work Days'}</span>
+                      <span className="font-bold text-amber-600">{workDays.toFixed(1)} {language === 'es' ? 'días' : 'days'}</span>
+                    </div>
+                  ) : null;
+                })()}
                 
                 {/* Driving Time */}
                 {(() => {
