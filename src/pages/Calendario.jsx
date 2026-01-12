@@ -36,6 +36,7 @@ import { DragDropContext } from '@hello-pangea/dnd';
 export default function Calendario() {
   const { t, language } = useLanguage();
   const { hasFullAccess } = usePermissions();
+  const isAdmin = hasFullAccess;
   const queryClient = useQueryClient();
   const toast = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
