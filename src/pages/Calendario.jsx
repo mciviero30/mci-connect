@@ -87,24 +87,39 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
-  const { data: jobs, isLoading: jobsLoading } = useQuery({
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
-      const data = await base44.entities.Job.list();
-      return data || [];
+      try {
+        const data = await base44.entities.Job.list();
+        console.log('Jobs loaded:', data);
+        return data || [];
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        return [];
+      }
     },
     initialData: [],
-    staleTime: 600000,
-    refetchOnMount: 'stale',
+    staleTime: 300000,
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 
-  const { data: employees } = useQuery({
+  const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      try {
+        const data = await base44.entities.User.list();
+        console.log('Employees loaded:', data);
+        return data || [];
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        return [];
+      }
+    },
     initialData: [],
-    staleTime: 600000,
-    refetchOnMount: false,
+    staleTime: 300000,
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 
