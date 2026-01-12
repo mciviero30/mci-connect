@@ -80,6 +80,7 @@ import AIAssistant from "@/components/ai/AIAssistant";
 import NotificationService from "@/components/notifications/NotificationService";
 import NotificationEngine from "@/components/notifications/NotificationEngine";
 import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
+import CustomerNotificationEngine from "@/components/notifications/CustomerNotificationEngine";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
@@ -777,9 +778,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <>
           <UniversalNotificationEngine user={user} />
+          <CustomerNotificationEngine user={user} />
           <UniversalPushManager user={user} />
-        </>
-      )}
+            </>
+          )}
 
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
         <style>{`
