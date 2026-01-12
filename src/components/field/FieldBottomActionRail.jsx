@@ -89,7 +89,7 @@ export default function FieldBottomActionRail({
   return (
     <>
       {/* BOTTOM ACTION RAIL - Fixed, Always Visible, High Contrast */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-black to-slate-900 border-t-2 border-orange-600/30 shadow-2xl pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] bg-gradient-to-t from-black to-slate-900 border-t-2 border-orange-600/30 shadow-2xl pb-safe md:pb-6">
         <div className="flex items-center justify-around px-1 py-2">
           {actions.map((action) => {
             const isActive = activeAction === action.id;

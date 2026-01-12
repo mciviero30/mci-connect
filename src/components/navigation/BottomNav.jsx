@@ -59,7 +59,7 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
   return (
     <>
       {/* Bottom Navigation Bar - Fixed at bottom - FIELD OPTIMIZED */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t-2 border-slate-300 dark:border-slate-700 shadow-2xl pb-safe">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[40] bg-white dark:bg-slate-900 border-t-2 border-slate-300 dark:border-slate-700 shadow-2xl pb-safe">
         <div className="grid grid-cols-5 h-20 px-2">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);

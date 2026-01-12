@@ -43,6 +43,8 @@ import { SkeletonFieldProject } from '@/components/shared/SkeletonComponents';
 import { ExitConfirmation, useExitConfirmation } from '@/components/feedback/ExitConfirmation';
 
 export default function Field() {
+  // CRITICAL: Verify UIProvider wrapper exists
+  const uiContext = React.useContext(require('@/components/contexts/FieldModeContext').UIContext || {});
   const { setIsFieldMode } = useUI();
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -169,10 +171,12 @@ export default function Field() {
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
+  // DEPRECATED: JobAssignment → use ScheduleShift (from Calendario)
+  // Placeholder for future ScheduleShift query if needed
   const { data: userAssignments = [] } = useQuery({
     queryKey: ['field-user-assignments', user?.email],
-    queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }),
-    enabled: !!user?.email && (user?.role === 'customer' || user?.role === 'field_worker'),
+    queryFn: () => Promise.resolve([]), // Legacy - no longer used in Field
+    enabled: false, // Disabled - use ScheduleShift instead
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
@@ -622,23 +626,7 @@ export default function Field() {
         </div>
       )}
 
-    {/* Mobile Bottom Bar - Create Project Only */}
-    {user?.role !== 'customer' && activeTab === 'jobs' && (
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[55] bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
-        <div className="px-3 py-3">
-          <Button 
-            onClick={() => {
-              if (navigator.vibrate) navigator.vibrate(10);
-              setShowNewProject(true);
-            }}
-            className="w-full bg-slate-800 border-2 border-slate-600 hover:bg-slate-700 text-white shadow-lg min-h-[60px] rounded-xl touch-manipulation active:scale-95 transition-transform font-bold"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            {language === 'es' ? 'Crear Proyecto' : 'Create Project'}
-          </Button>
-        </div>
-      </div>
-    )}
+
 
     {/* Quick Search Dialog */}
     <QuickSearchDialog open={showQuickSearch} onOpenChange={setShowQuickSearch} />
