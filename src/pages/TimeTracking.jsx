@@ -35,28 +35,30 @@ export default function TimeTracking() {
   const { data: todayEntry } = useQuery({
     queryKey: ['todayTimeEntry', user?.email],
     queryFn: async () => {
+      if (!user?.email) return null;
       const today = format(new Date(), 'yyyy-MM-dd');
       const entries = await base44.entities.TimeEntry.filter({
         employee_email: user.email,
         date: today
       });
-      return entries.find(e => !e.check_out) || null;
+      return entries?.find(e => !e.check_out) || null;
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   // Get this week's entries for summary
   const { data: weekEntries = [] } = useQuery({
     queryKey: ['weekTimeEntries', user?.email, selectedDate],
     queryFn: async () => {
+      if (!user?.email) return [];
       const start = format(startOfWeek(selectedDate), 'yyyy-MM-dd');
       const end = format(endOfWeek(selectedDate), 'yyyy-MM-dd');
       return await base44.entities.TimeEntry.filter({
         employee_email: user.email,
         date: { $gte: start, $lte: end }
-      });
+      }) || [];
     },
-    enabled: !!user,
+    enabled: !!user?.email,
   });
 
   // Clock In mutation - used by LiveTimeTracker
