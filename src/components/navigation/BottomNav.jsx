@@ -65,15 +65,18 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
             const active = isActive(item.url);
             return (
               <Link
-                key={item.title}
-                to={item.url}
-                className={`flex flex-col items-center justify-center gap-1 relative transition-all min-h-[56px] min-w-[56px] rounded-xl active:scale-95 ${
-                  active 
-                    ? 'text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/80 dark:bg-blue-900/30' 
-                    : 'text-slate-700 dark:text-slate-400'
-                }`}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
+                 key={item.title}
+                 to={item.url}
+                 className={`flex flex-col items-center justify-center gap-1 relative transition-all duration-150 min-h-[60px] min-w-[60px] rounded-xl active:scale-90 active:bg-blue-100/50 dark:active:bg-slate-800 ${
+                   active 
+                     ? 'text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/80 dark:bg-blue-900/30' 
+                     : 'text-slate-700 dark:text-slate-400'
+                 }`}
+                 style={{ 
+                   WebkitTapHighlightColor: 'transparent',
+                   WebkitTouchCallout: 'none'
+                 }}
+               >
                 <div className="relative">
                   <item.icon className={`w-6 h-6 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
                   {item.badge && (
