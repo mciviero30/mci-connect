@@ -30,12 +30,23 @@ Deno.serve(async (req) => {
     // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split('T')[0];
 
+    // Set defaults
+    const date = shiftData.date || today;
+    const startTime = shiftData.start_time || '08:00';
+    const endTime = shiftData.end_time || '17:00';
+
+    // Calculate ISO timestamps for calendar compatibility
+    const startAt = new Date(`${date}T${startTime}:00`).toISOString();
+    const endAt = new Date(`${date}T${endTime}:00`).toISOString();
+
     // Ensure all fields have defaults (date falls within visible range)
     const payloadData = {
       ...shiftData,
-      date: shiftData.date || today,
-      start_time: shiftData.start_time || '08:00',
-      end_time: shiftData.end_time || '17:00',
+      date,
+      start_time: startTime,
+      end_time: endTime,
+      start_at: startAt,
+      end_at: endAt,
       shift_title: (shiftData.shift_title && shiftData.shift_title.trim()) || shiftData.job_name || 'Scheduled Shift',
       shift_type: shiftData.shift_type || 'job_work',
       status: shiftData.status || 'scheduled'
