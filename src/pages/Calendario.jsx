@@ -89,7 +89,7 @@ export default function Calendario() {
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    queryFn: () => base44.entities.Job.list(),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
