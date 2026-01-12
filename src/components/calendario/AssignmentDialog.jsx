@@ -263,22 +263,24 @@ export default function AssignmentDialog({
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg">
-                  {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${
-                          job.color === 'blue' ? 'bg-blue-600' :
-                          job.color === 'green' ? 'bg-green-600' :
-                          job.color === 'purple' ? 'bg-purple-600' :
-                          job.color === 'cyan' ? 'bg-cyan-600' :
-                          job.color === 'pink' ? 'bg-pink-600' :
-                          job.color === 'red' ? 'bg-red-600' :
-                          'bg-slate-600'
-                        }`} />
-                        {job.name}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {(jobs || [])
+                    .filter(job => job.status === 'active')
+                    .map(job => (
+                      <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${
+                            job.color === 'blue' ? 'bg-blue-600' :
+                            job.color === 'green' ? 'bg-green-600' :
+                            job.color === 'purple' ? 'bg-purple-600' :
+                            job.color === 'cyan' ? 'bg-cyan-600' :
+                            job.color === 'pink' ? 'bg-pink-600' :
+                            job.color === 'red' ? 'bg-red-600' :
+                            'bg-slate-600'
+                          }`} />
+                          {job.name}
+                        </div>
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -293,22 +295,24 @@ export default function AssignmentDialog({
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg">
                   <SelectItem value={null} className="text-slate-900">None</SelectItem>
-                  {(jobs || []).map(job => (
-                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${
-                          job.color === 'blue' ? 'bg-blue-600' :
-                          job.color === 'green' ? 'bg-green-600' :
-                          job.color === 'purple' ? 'bg-purple-600' :
-                          job.color === 'cyan' ? 'bg-cyan-600' :
-                          job.color === 'pink' ? 'bg-pink-600' :
-                          job.color === 'red' ? 'bg-red-600' :
-                          'bg-slate-600'
-                        }`} />
-                        {job.name}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {(jobs || [])
+                    .filter(job => job.status === 'active')
+                    .map(job => (
+                      <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${
+                            job.color === 'blue' ? 'bg-blue-600' :
+                            job.color === 'green' ? 'bg-green-600' :
+                            job.color === 'purple' ? 'bg-purple-600' :
+                            job.color === 'cyan' ? 'bg-cyan-600' :
+                            job.color === 'pink' ? 'bg-pink-600' :
+                            job.color === 'red' ? 'bg-red-600' :
+                            'bg-slate-600'
+                          }`} />
+                          {job.name}
+                        </div>
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -372,24 +376,26 @@ export default function AssignmentDialog({
                   <CommandInput placeholder="Search employee..." className="text-slate-900 dark:text-white" />
                   <CommandEmpty className="text-slate-500 p-4">Not found.</CommandEmpty>
                   <CommandGroup>
-                    {(employees || []).filter(e => e.employment_status === 'active').map(emp => (
-                      <CommandItem
-                        key={emp.email}
-                        onSelect={() => {
-                          setSelectedEmployees(prev =>
-                            prev.includes(emp.email)
-                              ? prev.filter(e => e !== emp.email)
-                              : [...prev, emp.email]
-                          );
-                        }}
-                        className="text-slate-900 dark:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'soft-blue-bg' : 'border-slate-400 dark:border-slate-600'}`} />
-                          {emp.full_name}
-                        </div>
-                      </CommandItem>
-                    ))}
+                    {(employees || [])
+                      .filter(e => e.employment_status === 'active' || !e.employment_status)
+                      .map(emp => (
+                        <CommandItem
+                          key={emp.email}
+                          onSelect={() => {
+                            setSelectedEmployees(prev =>
+                              prev.includes(emp.email)
+                                ? prev.filter(e => e !== emp.email)
+                                : [...prev, emp.email]
+                            );
+                          }}
+                          className="text-slate-900 dark:text-white"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'soft-blue-bg' : 'border-slate-400 dark:border-slate-600'}`} />
+                            {emp.full_name || emp.email}
+                          </div>
+                        </CommandItem>
+                      ))}
                   </CommandGroup>
                 </Command>
               </PopoverContent>
