@@ -91,21 +91,7 @@ export default function Trabajos() {
     refetchOnWindowFocus: false
   });
 
-  // Handle edit from URL parameter
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const editIdFromUrl = urlParams.get('edit');
-    
-    if (editIdFromUrl && jobs.length > 0) {
-      const jobToEdit = jobs.find(j => j.id === editIdFromUrl);
-      if (jobToEdit) {
-        setEditingJob(jobToEdit);
-        setShowForm(true);
-        // Clear URL parameter after opening
-        window.history.replaceState({}, '', createPageUrl('Trabajos'));
-      }
-    }
-  }, [jobs]);
+
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -419,7 +405,7 @@ export default function Trabajos() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {filteredJobs.map(job => (
-            <ModernJobCard key={job.id} job={job} />
+            <ModernJobCard key={job.id} job={job} onEdit={handleEdit} />
           ))}
         </div>
 

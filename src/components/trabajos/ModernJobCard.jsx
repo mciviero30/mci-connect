@@ -16,7 +16,7 @@ import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 
-export default function ModernJobCard({ job }) {
+export default function ModernJobCard({ job, onEdit }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const queryClient = useQueryClient();
@@ -109,7 +109,7 @@ export default function ModernJobCard({ job }) {
                 <Eye className="w-4 h-4 mr-2" />
                 {lang === 'es' ? 'Ver Detalles' : 'View Details'}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(createPageUrl(`Trabajos?edit=${job.id}`))}>
+              <DropdownMenuItem onClick={() => onEdit && onEdit(job)}>
                 <Edit className="w-4 h-4 mr-2" />
                 {lang === 'es' ? 'Editar' : 'Edit'}
               </DropdownMenuItem>
