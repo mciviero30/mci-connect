@@ -613,7 +613,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           )}
 
           <div className="bg-black/20 rounded-3xl p-6 mb-6 shadow-inner">
-            <h1 className="text-8xl font-black font-mono tracking-tight mb-2 drop-shadow-lg">
+            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black font-mono tracking-tight mb-2 drop-shadow-lg">
               {activeSession.onBreak ? formatTime(activeSession.breakDuration / 1000) : formatTime(elapsed)}
             </h1>
             <div className="flex items-center justify-center gap-3 text-base font-bold opacity-90">
