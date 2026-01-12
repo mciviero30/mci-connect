@@ -261,11 +261,11 @@ export default function Calendario() {
   };
 
   const handleSubmit = async (data) => {
-    console.log('handleSubmit called with:', data);
+    console.log('🟡 handleSubmit:', data);
     if (editingShift) {
       return updateMutation.mutateAsync({ id: editingShift.id, data });
     } else {
-      return createMutation.mutateAsync(data);
+      await createMutation.mutateAsync(data);
     }
   };
 
