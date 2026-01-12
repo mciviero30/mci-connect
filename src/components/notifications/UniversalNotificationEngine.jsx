@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { differenceInDays, startOfDay } from 'date-fns';
 
-// Universal Notification Engine - Polls for changes and creates notifications
+// UNIFIED Notification Engine - Handles all event monitoring and notifications
+// Consolidated from previous scattered systems
 export default function UniversalNotificationEngine({ user }) {
   const queryClient = useQueryClient();
   const lastCheckRef = useRef({});
@@ -42,8 +44,27 @@ export default function UniversalNotificationEngine({ user }) {
     queryKey: ['myApprovedExpenses', user?.email],
     queryFn: () => base44.entities.Expense.filter({ employee_email: user.email, status: 'approved' }, '-updated_date', 10),
     enabled: !!user?.email,
-    refetchInterval: 300000, // Check every 5 minutes (was 30s)
+    refetchInterval: 300000,
     staleTime: 180000,
+    initialData: []
+  });
+
+  // Poll for job deadlines approaching (3 days)
+  const { data: jobsApproachingDeadline = [] } = useQuery({
+    queryKey: ['jobsApproachingDeadline'],
+    queryFn: async () => {
+      const jobs = await base44.entities.Job.filter({ status: 'active' }, '-updated_date', 50);
+      const today = startOfDay(new Date());
+      return jobs.filter(job => {
+        const endDate = job.end_date_field ? new Date(job.end_date_field) : null;
+        if (!endDate) return false;
+        const daysUntil = differenceInDays(endDate, today);
+        return daysUntil > 0 && daysUntil <= 3;
+      });
+    },
+    enabled: !!user?.email && user?.role === 'admin',
+    refetchInterval: 600000, // Check every 10 minutes
+    staleTime: 300000,
     initialData: []
   });
 
