@@ -130,15 +130,6 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
       return;
     }
 
-    // Validate Job ID if it's provided
-    if (formData.id) {
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(formData.id)) {
-        toast.error(language === 'es' ? '❌ Formato de ID inválido' : '❌ Invalid Job ID format');
-        return;
-      }
-    }
-
     // Clean data: convert empty strings to 0 for numeric fields
     const cleanedData = {
       ...formData,
