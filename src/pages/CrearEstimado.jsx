@@ -439,35 +439,38 @@ export default function CrearEstimado() {
     }
   });
 
-  // Helper to get customer display name
+  // Helper to get customer display name - PRIORITIZE PERSON NAME
   const getCustomerDisplayName = (customer) => {
     if (!customer) return '';
     
-    // If has first and last name
+    // PRIORITY 1: First and last name
     if (customer.first_name || customer.last_name) {
-      const first = customer.first_name || '';
-      const last = customer.last_name || '';
-      return `${first} ${last}`.trim();
+      const personName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+      // Show company in parentheses if both exist
+      if (customer.company) {
+        return `${personName} (${customer.company})`;
+      }
+      return personName;
     }
     
-    // If has full_name or name
-    if (customer.full_name) return customer.full_name;
-    if (customer.name) return customer.name;
-    
-    // If has company
+    // PRIORITY 2: Company only if no person name
     if (customer.company) return customer.company;
     
-    // Fallback to email
+    // PRIORITY 3: Email fallback
     return customer.email || 'Unknown';
   };
 
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      // Use person name for customer_name field (not company)
+      const personName = (customer.first_name || customer.last_name)
+        ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+        : customer.company || customer.email || 'Unknown';
       setFormData({
         ...formData,
         customer_id: customerId,
-        customer_name: getCustomerDisplayName(customer),
+        customer_name: personName,
         customer_email: customer.email || '',
         customer_phone: customer.phone || '',
       });
