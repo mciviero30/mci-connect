@@ -263,24 +263,22 @@ export default function AssignmentDialog({
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg">
-                  {(jobs || [])
-                    .filter(job => job.status === 'active')
-                    .map(job => (
-                      <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            job.color === 'blue' ? 'bg-blue-600' :
-                            job.color === 'green' ? 'bg-green-600' :
-                            job.color === 'purple' ? 'bg-purple-600' :
-                            job.color === 'cyan' ? 'bg-cyan-600' :
-                            job.color === 'pink' ? 'bg-pink-600' :
-                            job.color === 'red' ? 'bg-red-600' :
-                            'bg-slate-600'
-                          }`} />
-                          {job.name}
-                        </div>
-                      </SelectItem>
-                    ))}
+                  {(jobs || []).map(job => (
+                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${
+                          job.color === 'blue' ? 'bg-blue-600' :
+                          job.color === 'green' ? 'bg-green-600' :
+                          job.color === 'purple' ? 'bg-purple-600' :
+                          job.color === 'cyan' ? 'bg-cyan-600' :
+                          job.color === 'pink' ? 'bg-pink-600' :
+                          job.color === 'red' ? 'bg-red-600' :
+                          'bg-slate-600'
+                        }`} />
+                        {job.name}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -295,24 +293,22 @@ export default function AssignmentDialog({
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg">
                   <SelectItem value={null} className="text-slate-900">None</SelectItem>
-                  {(jobs || [])
-                    .filter(job => job.status === 'active')
-                    .map(job => (
-                      <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            job.color === 'blue' ? 'bg-blue-600' :
-                            job.color === 'green' ? 'bg-green-600' :
-                            job.color === 'purple' ? 'bg-purple-600' :
-                            job.color === 'cyan' ? 'bg-cyan-600' :
-                            job.color === 'pink' ? 'bg-pink-600' :
-                            job.color === 'red' ? 'bg-red-600' :
-                            'bg-slate-600'
-                          }`} />
-                          {job.name}
-                        </div>
-                      </SelectItem>
-                    ))}
+                  {(jobs || []).map(job => (
+                    <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${
+                          job.color === 'blue' ? 'bg-blue-600' :
+                          job.color === 'green' ? 'bg-green-600' :
+                          job.color === 'purple' ? 'bg-purple-600' :
+                          job.color === 'cyan' ? 'bg-cyan-600' :
+                          job.color === 'pink' ? 'bg-pink-600' :
+                          job.color === 'red' ? 'bg-red-600' :
+                          'bg-slate-600'
+                        }`} />
+                        {job.name}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
