@@ -262,7 +262,7 @@ export default function AssignmentDialog({
                 <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A] focus:ring-[#1E3A8A]">
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200 shadow-lg">
+                <SelectContent className="bg-white border-slate-200 shadow-lg z-50" align="start">
                   {(jobs || []).map(job => (
                     <SelectItem key={job.id} value={job.id} className="text-slate-900">
                       <div className="flex items-center gap-2">
@@ -291,7 +291,7 @@ export default function AssignmentDialog({
                 <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]">
                   <SelectValue placeholder="Link to a job (optional)" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200 shadow-lg">
+                <SelectContent className="bg-white border-slate-200 shadow-lg z-50" align="start">
                   <SelectItem value={null} className="text-slate-900">None</SelectItem>
                   {(jobs || []).map(job => (
                     <SelectItem key={job.id} value={job.id} className="text-slate-900">
