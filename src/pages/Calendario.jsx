@@ -135,9 +135,9 @@ export default function Calendario() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       console.log('Creating shift with data:', data);
-      const shift = await base44.entities.ScheduleShift.create(data);
-      console.log('Shift created:', shift);
-      return shift;
+      const response = await base44.functions.invoke('createScheduleShift', data);
+      console.log('Shift created:', response);
+      return response;
     },
     onSuccess: (data) => {
       console.log('Mutation success, data:', data);
