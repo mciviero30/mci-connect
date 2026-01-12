@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/toast";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const toast = useToast();
   
   // Get current user for admin check
