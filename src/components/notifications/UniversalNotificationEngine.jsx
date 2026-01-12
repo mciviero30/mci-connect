@@ -285,5 +285,39 @@ export default function UniversalNotificationEngine({ user }) {
     });
   }, [myExpenses, user?.email, user?.full_name, queryClient]);
 
+  // Check for job deadlines (Admin notification)
+  useEffect(() => {
+    if (!jobsApproachingDeadline.length || user?.role !== 'admin') return;
+
+    jobsApproachingDeadline.forEach(async (job) => {
+      const key = `deadline_${job.id}`;
+      if (lastCheckRef.current[key]) return;
+
+      lastCheckRef.current[key] = true;
+      const daysUntil = differenceInDays(new Date(job.end_date_field), startOfDay(new Date()));
+
+      try {
+        const priority = daysUntil === 0 ? 'urgent' : daysUntil === 1 ? 'high' : 'medium';
+        
+        await base44.entities.Notification.create({
+          recipient_email: user.email,
+          recipient_name: user.full_name,
+          title: `⏰ Job Deadline: ${job.name}`,
+          message: `"${job.name}" expires in ${daysUntil} day${daysUntil !== 1 ? 's' : ''}. Contract: $${job.contract_amount?.toFixed(2) || 'N/A'}`,
+          type: 'deadline_alert',
+          priority,
+          link: '/page/Trabajos',
+          related_entity_id: job.id,
+          related_entity_type: 'job',
+          read: false
+        });
+
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      } catch (error) {
+        console.error('Failed to create deadline notification:', error);
+      }
+    });
+  }, [jobsApproachingDeadline, user?.email, user?.full_name, user?.role, queryClient]);
+
   return null;
 }
