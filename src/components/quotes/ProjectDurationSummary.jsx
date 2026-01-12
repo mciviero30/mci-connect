@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar, Users, Clock, Briefcase, Moon, Info, Lock } from 'lucide-react';
 
-export default function ProjectDurationSummary({ derivedValues, language }) {
+export default function ProjectDurationSummary({ derivedValues, language, quoteItems, quoteTotal }) {
   // ============================================================================
   // CAPA 6 - PURELY PRESENTATIONAL (NO CALCULATIONS)
   // ============================================================================
@@ -30,6 +30,16 @@ export default function ProjectDurationSummary({ derivedValues, language }) {
 
   const hasTravelDays = derivedValues.travelDays > 0;
   const hasWeekends = derivedValues.calendarDays > derivedValues.workDays;
+  
+  // Calculate estimated cost and profit from quote items
+  const estimatedCost = (quoteItems || []).reduce((sum, item) => {
+    const costPerUnit = item.cost_per_unit || 0;
+    const materialCost = item.material_cost || 0;
+    const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
+    return sum + totalCost;
+  }, 0);
+  
+  const profitEstimate = (quoteTotal || 0) - estimatedCost;
 
   return (
     <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 shadow-lg">
@@ -59,15 +69,47 @@ export default function ProjectDurationSummary({ derivedValues, language }) {
       </CardHeader>
       <CardContent className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {/* Total Job $ */}
+          {quoteTotal > 0 && (
+            <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-3 border-2 border-blue-400">
+              <div className="flex items-center gap-2 mb-1">
+                <Briefcase className="w-4 h-4 text-white" />
+                <span className="text-xs text-blue-100">
+                  {language === 'es' ? 'Total Trabajo' : 'Total Job'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-white">${quoteTotal.toFixed(2)}</p>
+              <p className="text-xs text-blue-100 mt-0.5">
+                {language === 'es' ? 'Precio al cliente' : 'Client price'}
+              </p>
+            </div>
+          )}
+
+          {/* Total Profit Est. $ */}
+          {profitEstimate > 0 && (
+            <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-lg p-3 border-2 border-green-400">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="w-4 h-4 text-white" />
+                <span className="text-xs text-green-100">
+                  {language === 'es' ? 'Profit Est.' : 'Total Profit Est.'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-white">${profitEstimate.toFixed(2)}</p>
+              <p className="text-xs text-green-100 mt-0.5">
+                {language === 'es' ? 'Basado en catálogo' : 'Based on catalog'}
+              </p>
+            </div>
+          )}
+
           {/* Total Labor Hours */}
           <div className="bg-white rounded-lg p-3 border border-slate-200">
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-4 h-4 text-blue-600" />
               <span className="text-xs text-slate-600">
-                {language === 'es' ? 'Horas Laborales' : 'Labor Hours'}
+                {language === 'es' ? 'Horas Est.' : 'Est. Hours'}
               </span>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{derivedValues.totalLaborHours}</p>
+            <p className="text-2xl font-bold text-slate-900">{derivedValues.totalLaborHours}h</p>
             <p className="text-xs text-slate-500 mt-0.5">
               {language === 'es' ? '🔒 auto-calculado' : '🔒 auto-calculated'}
             </p>

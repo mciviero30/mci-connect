@@ -1369,6 +1369,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       <ProjectDurationSummary
                         derivedValues={derivedValues}
                         language={language}
+                        quoteItems={formData.items}
+                        quoteTotal={total}
                       />
                     </div>
                   </div>
