@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2, ChevronUp, ChevronDown, FileText } from "lucide-react";
+import { Plus, Trash2, Save, X, ArrowLeft, MapPin, Loader2, ChevronUp, ChevronDown, FileText, RefreshCw, Lock } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -129,6 +129,7 @@ export default function CrearEstimado() {
   const [travelTimeHours, setTravelTimeHours] = useState(0);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
+  const [pricesLocked, setPricesLocked] = useState(false);
   
   // Draft persistence - auto-save to localStorage
   const { clearDraft } = useDraftPersistence({
@@ -295,6 +296,10 @@ export default function CrearEstimado() {
         setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
       }
 
+      // Lock prices if quote was sent
+      const shouldLockPrices = existingQuote.status === 'sent' || existingQuote.status === 'approved';
+      setPricesLocked(shouldLockPrices);
+
       setFormData({
         customer_id: existingQuote.customer_id || '',
         customer_name: existingQuote.customer_name || '',
@@ -378,6 +383,11 @@ export default function CrearEstimado() {
       
       // Normalize and validate data
       const normalizedData = normalizeQuoteForSave(quoteData);
+
+      // If quote was sent, keep it sent (preserve status)
+      if (existingQuote?.status === 'sent') {
+        normalizedData.status = 'sent';
+      }
 
       console.log('Final quote data (normalized):', normalizedData);
       return await base44.entities.Quote.update(editId, normalizedData);
@@ -705,6 +715,40 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
         },
         ...travelItems
       ],
+    });
+  };
+
+  const handleRefreshPrices = () => {
+    if (!window.confirm(
+      language === 'es'
+        ? '¿Actualizar precios desde el catálogo?\n\nEsto actualizará los precios de todos los items que estén en el catálogo. Las cantidades no cambiarán.'
+        : 'Update prices from catalog?\n\nThis will update prices for all items in the catalog. Quantities will not change.'
+    )) {
+      return;
+    }
+
+    const updatedItems = formData.items.map(item => {
+      if (!item.item_name) return item;
+      
+      const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
+      if (catalogItem) {
+        return {
+          ...item,
+          unit_price: catalogItem.unit_price || item.unit_price,
+          total: (item.quantity || 0) * (catalogItem.unit_price || item.unit_price)
+        };
+      }
+      return item;
+    });
+
+    setFormData({ ...formData, items: updatedItems });
+    
+    toast({
+      title: language === 'es' ? 'Precios actualizados' : 'Prices updated',
+      description: language === 'es' 
+        ? 'Los precios se actualizaron desde el catálogo'
+        : 'Prices have been updated from the catalog',
+      variant: 'success'
     });
   };
 
@@ -1234,8 +1278,28 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
 
           <Card className="glass-card shadow-xl border-slate-200 mb-6">
             <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
-              <CardTitle className="text-slate-900">{t('items')}</CardTitle>
+              <CardTitle className="text-slate-900 flex items-center gap-2">
+                {t('items')}
+                {pricesLocked && (
+                  <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-xs">
+                    <Lock className="w-3 h-3 mr-1" />
+                    {language === 'es' ? 'Precios Bloqueados' : 'Prices Locked'}
+                  </Badge>
+                )}
+              </CardTitle>
               <div className="flex items-center gap-2">
+                {editId && existingQuote && (existingQuote.status === 'sent' || existingQuote.status === 'approved') && (
+                  <Button
+                    type="button"
+                    onClick={handleRefreshPrices}
+                    size="sm"
+                    variant="outline"
+                    className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Actualizar Precios' : 'Update Prices'}
+                  </Button>
+                )}
                 <Button 
                   type="button" 
                   onClick={() => setShowItemsMatcher(true)} 
@@ -1262,6 +1326,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 onToast={toast}
                 derivedValues={derivedValues}
                 onAddItem={addItem}
+                pricesLocked={pricesLocked}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">
@@ -1367,6 +1432,25 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
               <X className="w-4 h-4 mr-2" />
               {t('cancel')}
             </Button>
+            {pricesLocked && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (window.confirm(
+                    language === 'es'
+                      ? '¿Desbloquear precios para editar?\n\nEsto te permitirá modificar los precios del estimado enviado.'
+                      : 'Unlock prices for editing?\n\nThis will allow you to modify prices on the sent quote.'
+                  )) {
+                    setPricesLocked(false);
+                  }
+                }}
+                className="bg-white border-amber-300 text-amber-700 hover:bg-amber-50"
+              >
+                <Lock className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Desbloquear Precios' : 'Unlock Prices'}
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}

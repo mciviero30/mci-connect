@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Save, Send } from "lucide-react";
+import { Plus, Trash2, Save, Send, RefreshCw, Lock, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
@@ -149,6 +149,7 @@ export default function CrearFactura() {
   const [outOfAreaEnabled, setOutOfAreaEnabled] = useState(false);
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
   const [generatingFromHours, setGeneratingFromHours] = useState(false);
+  const [pricesLocked, setPricesLocked] = useState(false);
   
   // ============================================================================
   // CAPA 7 - NO DERIVED CALCULATIONS IN INVOICE
@@ -190,6 +191,10 @@ export default function CrearFactura() {
         description: (item.description ?? ''),
         unit: (item.unit ?? item.uom ?? 'pcs'),
       }));
+
+      // Lock prices if invoice was sent
+      const shouldLockPrices = existingInvoice.status === 'sent' || existingInvoice.status === 'paid' || existingInvoice.status === 'partial';
+      setPricesLocked(shouldLockPrices);
 
       setFormData({
         ...existingInvoice,
@@ -311,6 +316,41 @@ export default function CrearFactura() {
       ...formData,
       items: [...formData.items, { item_name: "", description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }]
     });
+  };
+
+  const handleRefreshPrices = () => {
+    if (!window.confirm(
+      language === 'es'
+        ? '¿Actualizar precios desde el catálogo?\n\nEsto actualizará los precios de todos los items que estén en el catálogo. Las cantidades no cambiarán.'
+        : 'Update prices from catalog?\n\nThis will update prices for all items in the catalog. Quantities will not change.'
+    )) {
+      return;
+    }
+
+    const updatedItems = formData.items.map(item => {
+      if (!item.item_name) return item;
+      
+      const catalogItem = itemCatalog.find(ci => ci.item_name === item.item_name);
+      if (catalogItem) {
+        return {
+          ...item,
+          unit_price: catalogItem.unit_price || item.unit_price,
+          total: (item.quantity || 0) * (catalogItem.unit_price || item.unit_price)
+        };
+      }
+      return item;
+    });
+
+    setFormData({ ...formData, items: updatedItems });
+    
+    toast.success(
+      language === 'es' ? 'Precios actualizados' : 'Prices updated',
+      { 
+        description: language === 'es' 
+          ? 'Los precios se actualizaron desde el catálogo'
+          : 'Prices have been updated from the catalog'
+      }
+    );
   };
 
   const removeItem = (index) => {
@@ -1061,11 +1101,33 @@ export default function CrearFactura() {
 
           <Card className="border-0 shadow-lg">
             <CardHeader className="border-b flex flex-row items-center justify-between py-3">
-              <CardTitle className="text-base">{t('invoiceItems')}</CardTitle>
-              <Button onClick={addItem} size="sm" variant="outline" type="button">
-                <Plus className="w-3 h-3 mr-1" />
-                <span className="text-xs">{t('addItem')}</span>
-              </Button>
+              <CardTitle className="text-base flex items-center gap-2">
+                {t('invoiceItems')}
+                {pricesLocked && (
+                  <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-xs">
+                    <Lock className="w-3 h-3 mr-1" />
+                    {language === 'es' ? 'Precios Bloqueados' : 'Prices Locked'}
+                  </Badge>
+                )}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {editId && existingInvoice && (existingInvoice.status === 'sent' || existingInvoice.status === 'paid' || existingInvoice.status === 'partial') && (
+                  <Button
+                    type="button"
+                    onClick={handleRefreshPrices}
+                    size="sm"
+                    variant="outline"
+                    className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  >
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    <span className="text-xs">{language === 'es' ? 'Actualizar' : 'Update'}</span>
+                  </Button>
+                )}
+                <Button onClick={addItem} size="sm" variant="outline" type="button">
+                  <Plus className="w-3 h-3 mr-1" />
+                  <span className="text-xs">{t('addItem')}</span>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <LineItemsEditor 
@@ -1076,6 +1138,8 @@ export default function CrearFactura() {
                 allowReorder={false}
                 onToast={(toastData) => toast[toastData.variant || 'success'](toastData.title, { description: toastData.description })}
                 derivedValues={null}
+                onAddItem={addItem}
+                pricesLocked={pricesLocked}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto">
@@ -1171,6 +1235,25 @@ export default function CrearFactura() {
               >
                 {t('cancel')}
               </Button>
+              {pricesLocked && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (window.confirm(
+                      language === 'es'
+                        ? '¿Desbloquear precios para editar?\n\nEsto te permitirá modificar los precios de la factura enviada.'
+                        : 'Unlock prices for editing?\n\nThis will allow you to modify prices on the sent invoice.'
+                    )) {
+                      setPricesLocked(false);
+                    }
+                  }}
+                  className="bg-white border-amber-300 text-amber-700 hover:bg-amber-50"
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Desbloquear' : 'Unlock'}
+                </Button>
+              )}
               {editId ? (
                 // If editing an existing invoice, "Save Draft" uses updateMutation
                 <Button

@@ -35,6 +35,7 @@ import { getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDeriv
  * @param {Function} onToast - Toast notification function (optional)
  * @param {Object} derivedValues - Derived values from computeQuoteDerived (CAPA 3)
  * @param {Function} onAddItem - Callback to add new item (optional)
+ * @param {boolean} pricesLocked - Lock prices (read-only for unit_price)
  */
 export default function LineItemsEditor({
   items = [],
@@ -44,7 +45,8 @@ export default function LineItemsEditor({
   allowReorder = true,
   onToast,
   derivedValues, // CAPA 3 - Receive derived values from parent
-  onAddItem // NEW: Callback to add item
+  onAddItem, // NEW: Callback to add item
+  pricesLocked = false // NEW: Lock prices
 }) {
   
   // Helper: Get catalog item name (supports both QuoteItem.name and ItemCatalog.item_name)
@@ -331,7 +333,12 @@ export default function LineItemsEditor({
                 min="0"
                 step="0.01"
                 required
-                className="h-9 text-sm text-center font-semibold bg-white border-slate-200 text-slate-900"
+                disabled={pricesLocked}
+                className={`h-9 text-sm text-center font-semibold ${
+                  pricesLocked
+                    ? 'bg-amber-50 border-amber-200 text-amber-900 cursor-not-allowed'
+                    : 'bg-white border-slate-200 text-slate-900'
+                }`}
               />
             </div>
 
