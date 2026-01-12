@@ -227,6 +227,28 @@ export default function Calendario() {
 
   const handleToday = () => setCurrentDate(new Date());
 
+  const handleDeleteAllExceptLast = async () => {
+    if (shifts.length <= 1) {
+      toast.error(language === 'es' ? 'No hay turnos para eliminar' : 'No shifts to delete');
+      return;
+    }
+
+    const sortedShifts = [...shifts].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    const toDelete = sortedShifts.slice(1);
+    
+    const confirmMsg = language === 'es' 
+      ? `¿Eliminar ${toDelete.length} turnos (mantener el último)?`
+      : `Delete ${toDelete.length} shifts (keep the latest)?`;
+    
+    if (window.confirm(confirmMsg)) {
+      for (const shift of toDelete) {
+        await base44.entities.ScheduleShift.delete(shift.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
+      toast.success(language === 'es' ? `${toDelete.length} turnos eliminados` : `${toDelete.length} shifts deleted`);
+    }
+  };
+
   // DOUBLE CLICK: Quick shift creation
   const handleDateClick = (date, time = null) => {
     setSelectedDate(date);
