@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 
 export default function FocusModeIndicator({ isActive, onExit }) {
-  const isMobile = window.innerWidth < 768;
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   // Desktop: ESC key to exit
   useEffect(() => {
@@ -24,13 +28,12 @@ export default function FocusModeIndicator({ isActive, onExit }) {
   if (!isActive) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className="fixed top-4 right-4 z-[100] flex flex-col items-end gap-2"
-      >
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="fixed top-4 right-4 z-[100] flex flex-col items-end gap-2"
+    >
         {/* Focus Mode Indicator Badge */}
         <Badge className="bg-purple-600 text-white border-purple-400 px-3 py-1.5 shadow-lg">
           <Maximize2 className="w-3.5 h-3.5 mr-1.5" />
@@ -55,7 +58,6 @@ export default function FocusModeIndicator({ isActive, onExit }) {
             Press <kbd className="bg-slate-700 px-2 py-0.5 rounded text-white font-mono">ESC</kbd> to exit
           </p>
         )}
-      </motion.div>
-    </AnimatePresence>
+    </motion.div>
   );
 }
