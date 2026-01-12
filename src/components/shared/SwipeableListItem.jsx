@@ -1,6 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Trash2, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const SWIPE_THRESHOLD = 30; // Reduced threshold for faster response
+const ACTION_WIDTH = 120;
+const TOUCH_PASSIVE_OPTIONS = { passive: true };
 
 export default function SwipeableListItem({
   id,
@@ -12,43 +16,29 @@ export default function SwipeableListItem({
 }) {
   const [isSwiped, setIsSwiped] = useState(false);
   const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
   const containerRef = useRef(null);
+  const isMobileRef = useRef(window.innerWidth < 768);
 
-  const handleTouchStart = (e) => {
-    if (window.innerWidth >= 768) return; // Desktop - ignore
+  const handleTouchStart = useCallback((e) => {
+    if (!isMobileRef.current) return;
     touchStartX.current = e.touches[0].clientX;
-  };
+  }, []);
 
-  const handleTouchMove = (e) => {
-    if (window.innerWidth >= 768) return;
-    touchEndX.current = e.touches[0].clientX;
-  };
+  const handleTouchEnd = useCallback((e) => {
+    if (!isMobileRef.current) return;
 
-  const handleTouchEnd = () => {
-    if (window.innerWidth >= 768) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
 
-    const diff = touchStartX.current - touchEndX.current;
-
-    // Swipe a la izquierda > 50px = mostrar acciones
-    if (diff > 50) {
+    // Swipe left > threshold = show actions
+    if (diff > SWIPE_THRESHOLD) {
       setIsSwiped(true);
-      return;
     }
-
-    // Swipe a la derecha < -50px = cerrar
-    if (diff < -50) {
+    // Swipe right or small movement = close/toggle
+    else if (diff < -SWIPE_THRESHOLD || Math.abs(diff) < 10) {
       setIsSwiped(false);
-      return;
     }
-
-    // Click normal - cerrar swipe si estaba abierto
-    if (Math.abs(diff) < 10) {
-      if (isSwiped) {
-        setIsSwiped(false);
-      }
-    }
-  };
+  }, []);
 
   const handleDelete = async () => {
     setIsSwiped(false);
