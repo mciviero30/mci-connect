@@ -66,10 +66,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      // ONLY show first and last name (no company fallback)
-      const displayName = (customer.first_name || customer.last_name)
-        ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-        : customer.email || 'Sin nombre';
+      // Show first + last name, fallback to company, fallback to email
+      const displayName = (customer.first_name && customer.last_name)
+        ? `${customer.first_name} ${customer.last_name}`.trim()
+        : customer.company || customer.email || 'Sin nombre';
       setFormData({
         ...formData,
         customer_id: customerId,
@@ -188,20 +188,6 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Job ID (Read-only if editing, or synced) */}
-        {(job || formData.id) && (
-          <div>
-            <Label className="text-slate-700 font-semibold">
-              Job ID
-              <span className="text-xs text-blue-600 ml-2">(Shared across all systems)</span>
-            </Label>
-            <Input
-              value={formData.id}
-              disabled
-              className="bg-slate-100 border-slate-300 font-mono text-sm"
-            />
-          </div>
-        )}
 
         <div>
           <Label className="text-slate-700 font-semibold">{t('jobName')} *</Label>
@@ -232,10 +218,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
               {customers.map(customer => {
-                // ONLY show first and last name (no company)
-                const displayName = (customer.first_name || customer.last_name)
-                  ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-                  : customer.email || 'Sin nombre';
+                // Show first + last name, fallback to company, fallback to email
+                const displayName = (customer.first_name && customer.last_name)
+                  ? `${customer.first_name} ${customer.last_name}`.trim()
+                  : customer.company || customer.email || 'Sin nombre';
                 return (
                   <SelectItem key={customer.id} value={customer.id}>
                     {displayName}
