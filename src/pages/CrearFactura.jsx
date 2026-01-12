@@ -408,7 +408,9 @@ export default function CrearFactura() {
   const handleCustomerSelect = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      const customerName = customer.name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+      const customerName = (customer.first_name || customer.last_name)
+        ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+        : customer.company || customer.email || 'Unknown Customer';
       setFormData(prevFormData => ({
         ...prevFormData,
         customer_id: customerId,
@@ -921,16 +923,22 @@ export default function CrearFactura() {
                         {formData.customer_id ? (() => {
                           const selected = customers.find(c => c.id === formData.customer_id);
                           if (!selected) return t('selectExistingCustomer');
-                          const personName = selected.name || `${selected.first_name || ''} ${selected.last_name || ''}`.trim();
-                          return selected.company ? `${selected.company} - ${personName}` : personName;
+                          const personName = (selected.first_name || selected.last_name)
+                            ? `${selected.first_name || ''} ${selected.last_name || ''}`.trim()
+                            : selected.email || 'Unknown';
+                          return selected.company && (selected.first_name || selected.last_name)
+                            ? `${personName} (${selected.company})`
+                            : personName;
                         })() : t('selectExistingCustomer')}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {customers.filter(c => c.status === 'active').map(customer => {
-                        const personName = customer.name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
-                        const displayText = customer.company 
-                          ? `${customer.company} - ${personName}`
+                        const personName = (customer.first_name || customer.last_name)
+                          ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+                          : customer.email || 'Unknown';
+                        const displayText = customer.company && (customer.first_name || customer.last_name)
+                          ? `${personName} (${customer.company})`
                           : personName;
                         
                         return (
