@@ -1036,11 +1036,26 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
       return sum + hours;
     }, 0);
 
+    // Calculate estimated cost (internal cost from catalog)
+    const estimated_cost = enrichedItems.reduce((sum, item) => {
+      // Find matching catalog item to get internal cost
+      const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
+      const costPerUnit = catalogItem?.cost_per_unit || 0;
+      const materialCost = catalogItem?.material_cost || 0;
+      const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
+      return sum + totalCost;
+    }, 0);
+
+    // Calculate profit margin
+    const profit_margin = total > 0 ? ((total - estimated_cost) / total) * 100 : 0;
+
     // Save with enriched items (derived quantities applied)
     const dataToSave = {
       ...formData,
       items: enrichedItems,
-      estimated_hours
+      estimated_hours,
+      estimated_cost,
+      profit_margin
     };
 
     console.log('🔍 ITEMS BEFORE SAVE (with derived):', enrichedItems.map(i => ({

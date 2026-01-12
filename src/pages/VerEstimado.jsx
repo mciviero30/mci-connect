@@ -666,7 +666,7 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {(() => {
                   const drivingItems = (quote.items || []).filter(i => i.travel_item_type === 'driving_time');
                   const totalDrivingHours = drivingItems.reduce((sum, item) => sum + (item.duration_value || 0), 0);
-                  const totalTechs = drivingItems.reduce((sum, item) => sum + (item.tech_count || 0), 0);
+                  const totalTechs = drivingItems.reduce((sum, item) => sum + (item.tech_count || 1), 0);
                   return totalDrivingHours > 0 ? (
                     <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-blue-200">
                       <span className="text-slate-700 font-medium">{language === 'es' ? 'Tiempo Viaje' : 'Driving Time'}</span>
@@ -681,7 +681,7 @@ Lawrenceville, Georgia 30043, U.S.A`
                 {(() => {
                   const mileageItems = (quote.items || []).filter(i => i.travel_item_type === 'miles_per_vehicle');
                   const totalMiles = mileageItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
-                  const totalVehicles = mileageItems.reduce((sum, item) => sum + (item.vehicle_count || 1), 0);
+                  const totalVehicles = mileageItems.reduce((max, item) => Math.max(max, item.vehicle_count || 1), 0);
                   return totalMiles > 0 ? (
                     <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-cyan-200">
                       <span className="text-slate-700 font-medium">{language === 'es' ? 'Millas' : 'Miles'}</span>
