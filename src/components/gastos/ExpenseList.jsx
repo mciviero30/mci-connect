@@ -191,12 +191,17 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                 expenses?.map(expense => {
                   const config = statusConfig[expense.status] || statusConfig.pending;
                   const needsReview = shouldFlagForReview(expense);
-                  
+
                   return (
-                    <TableRow 
-                      key={expense.id} 
-                      className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
+                    <SwipeableListItem
+                      key={expense.id}
+                      id={expense.id}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
                     >
+                      <TableRow 
+                        className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
+                      >
                       {showEmployeeName && ( // MODIFIED: uses showEmployeeName
                         <TableCell className="text-slate-900">
                           {expense.employee_name}
