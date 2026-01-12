@@ -80,7 +80,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
                   className="cursor-pointer text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs"
                 >
                   <Send className="w-3.5 h-3.5 mr-2" />
-                  {language === 'es' ? 'Enviar a Cliente' : 'Send to Customer'}
+                  {language === 'es' ? 'Marcar como Enviado' : 'Mark as Sent'}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem 

@@ -66,55 +66,12 @@ export default function Estimados() {
   const sendMutation = useMutation({
     mutationFn: async (quote) => {
       await base44.entities.Quote.update(quote.id, { status: 'sent' });
-
-      const itemsList = quote.items.map(item => {
-        let itemDisplay = "";
-        if (item.item_name) {
-          itemDisplay = item.item_name;
-          if (item.description) {
-            itemDisplay += `\n  ${item.description}`;
-          }
-        } else if (item.description) {
-          itemDisplay = item.description;
-        }
-        return `${item.quantity} ${item.unit} - ${itemDisplay} @ $${item.unit_price.toFixed(2)} = $${item.total.toFixed(2)}`;
-      }).join('\n\n');
-
-      await base44.integrations.Core.SendEmail({
-        to: quote.customer_email,
-        subject: `${language === 'es' ? 'Cotización' : 'Quote'} ${quote.quote_number} - ${quote.job_name}`,
-        body: `${language === 'es' ? 'Estimado' : 'Dear'} ${quote.customer_name},
-
-${language === 'es' ? 'Adjunto encontrará su cotización para:' : 'Please find your quote for:'} ${quote.job_name}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${language === 'es' ? 'Número de Cotización' : 'Quote Number'}: ${quote.quote_number}
-${language === 'es' ? 'Fecha' : 'Date'}: ${format(new Date(quote.quote_date), 'MMMM d, yyyy')}
-${language === 'es' ? 'Válido Hasta' : 'Valid Until'}: ${format(new Date(quote.valid_until), 'MMMM d, yyyy')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${language === 'es' ? 'ITEMS' : 'ITEMS'}:
-${itemsList}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${language === 'es' ? 'Subtotal' : 'Subtotal'}: $${quote.subtotal.toFixed(2)}
-${language === 'es' ? 'Impuesto' : 'Tax'} (${quote.tax_rate}%): $${quote.tax_amount.toFixed(2)}
-${language === 'es' ? 'TOTAL' : 'TOTAL'}: $${quote.total.toFixed(2)}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${quote.notes ? `${language === 'es' ? 'Notas' : 'Notes'}:\n${quote.notes}\n\n` : ''}${quote.terms ? `${language === 'es' ? 'Términos' : 'Terms'}:\n${quote.terms}\n\n` : ''}${language === 'es' ? 'Gracias por su confianza' : 'Thank you for your business'}
-
-MODERN COMPONENTS INSTALLATION
-2414 Meadow Isle Ln
-Lawrenceville, Georgia 30043, U.S.A`
-      });
-
       return quote;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       toast({
-        title: language === 'es' ? 'Cotización enviada exitosamente' : 'Quote sent successfully',
+        title: language === 'es' ? 'Cotización marcada como enviada (precios bloqueados)' : 'Quote marked as sent (prices locked)',
         variant: 'success'
       });
     },
