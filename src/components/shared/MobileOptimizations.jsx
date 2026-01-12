@@ -141,10 +141,33 @@ export default function MobileOptimizations() {
         overflow-x: hidden;
       }
       
-      /* Improve touch targets for mobile */
-      button, a, [role="button"] {
-        min-height: 44px;
-        min-width: 44px;
+      /* Optimize touch targets: 56px minimum for easy tapping */
+      button, a, [role="button"], input, select, textarea {
+        min-height: 56px;
+        min-width: 56px;
+      }
+
+      /* Reduce motion on slow connections */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      /* Optimize images for mobile - lazy load + async decode */
+      img {
+        loading: lazy;
+        decoding: async;
+        -webkit-user-drag: none;
+      }
+
+      /* Prevent text selection jank on mobile */
+      .no-select {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
       }
     `;
     document.head.appendChild(style);
