@@ -46,23 +46,19 @@ Deno.serve(async (req) => {
     // Create shift using service role (has database write permissions)
     const shift = await base44.asServiceRole.entities.ScheduleShift.create(payloadData);
 
-    console.log('✅ Shift created with ID:', shift.id);
-    console.log('📊 Persisted record:', JSON.stringify({
-      id: shift.id,
-      date: shift.date,
-      start_time: shift.start_time,
-      end_time: shift.end_time,
-      employee_email: shift.employee_email,
-      employee_name: shift.employee_name,
-      job_id: shift.job_id,
-      job_name: shift.job_name,
-      shift_title: shift.shift_title,
-      shift_type: shift.shift_type,
-      status: shift.status,
-      notes: shift.notes
-    }, null, 2));
+    console.log('✅ ═══════════════════════════════════════');
+    console.log('✅ SHIFT PERSISTED SUCCESSFULLY');
+    console.log('✅ ═══════════════════════════════════════');
+    console.log(`✅ ID: ${shift.id}`);
+    console.log(`✅ DATE: ${shift.date}`);
+    console.log(`✅ START_TIME: ${shift.start_time}`);
+    console.log(`✅ END_TIME: ${shift.end_time}`);
+    console.log(`✅ TITLE: ${shift.shift_title}`);
+    console.log(`✅ EMPLOYEE: ${shift.employee_name} (${shift.employee_email})`);
+    console.log(`✅ JOB: ${shift.job_name || 'N/A'} (${shift.job_id || 'N/A'})`);
+    console.log('✅ ═══════════════════════════════════════');
 
-    // CRITICAL: Verify shift exists in database query
+    // CRITICAL: Verify shift exists in database
     const allShifts = await base44.asServiceRole.entities.ScheduleShift.list('-date');
     const persistedShift = allShifts.find(s => s.id === shift.id);
 
@@ -71,7 +67,7 @@ Deno.serve(async (req) => {
       throw new Error('Shift persisted but verification query failed');
     }
 
-    console.log('✅ Verification: Shift found in database query');
+    console.log('✅ Verification: Shift found in database query - READY TO RENDER');
 
     return new Response(JSON.stringify(shift), { status: 201 });
   } catch (error) {
