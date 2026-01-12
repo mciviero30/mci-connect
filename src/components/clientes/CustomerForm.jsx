@@ -111,7 +111,14 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Ensure name field is populated for backwards compatibility
+    const dataToSubmit = {
+      ...formData,
+      name: formData.first_name && formData.last_name 
+        ? `${formData.first_name} ${formData.last_name}`
+        : formData.name || ''
+    };
+    onSubmit(dataToSubmit);
   };
 
   return (

@@ -66,10 +66,13 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      const displayName = customer.first_name && customer.last_name 
+        ? `${customer.first_name} ${customer.last_name}`
+        : customer.company || customer.name || customer.email;
       setFormData({
         ...formData,
         customer_id: customerId,
-        customer_name: customer.company || `${customer.first_name} ${customer.last_name}`
+        customer_name: displayName
       });
     }
   };
@@ -205,7 +208,9 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             <SelectContent className="bg-white border-slate-200">
               {customers.map(customer => (
                 <SelectItem key={customer.id} value={customer.id}>
-                  {customer.company || `${customer.first_name} ${customer.last_name}`}
+                  {customer.first_name && customer.last_name 
+                    ? `${customer.first_name} ${customer.last_name}${customer.company ? ` - ${customer.company}` : ''}`
+                    : customer.company || customer.name || customer.email}
                 </SelectItem>
               ))}
             </SelectContent>
