@@ -71,6 +71,7 @@ import MyProfile from './pages/MyProfile';
 import NewsFeed from './pages/NewsFeed';
 import Nomina from './pages/Nomina';
 import NotificationCenter from './pages/NotificationCenter';
+import NotificationPreferences from './pages/NotificationPreferences';
 import NotificationSettings from './pages/NotificationSettings';
 import OnboardingWizard from './pages/OnboardingWizard';
 import OperationalModesDoc from './pages/OperationalModesDoc';
@@ -101,7 +102,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import NotificationPreferences from './pages/NotificationPreferences';
+import SystemHealthCheck from './pages/SystemHealthCheck';
 import __Layout from './Layout.jsx';
 
 
@@ -179,6 +180,7 @@ export const PAGES = {
     "NewsFeed": NewsFeed,
     "Nomina": Nomina,
     "NotificationCenter": NotificationCenter,
+    "NotificationPreferences": NotificationPreferences,
     "NotificationSettings": NotificationSettings,
     "OnboardingWizard": OnboardingWizard,
     "OperationalModesDoc": OperationalModesDoc,
@@ -209,7 +211,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "NotificationPreferences": NotificationPreferences,
+    "SystemHealthCheck": SystemHealthCheck,
 }
 
 export const pagesConfig = {
