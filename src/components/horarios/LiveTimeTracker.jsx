@@ -52,6 +52,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const [taskDetails, setTaskDetails] = useState('');
   const [selectedJobForStart, setSelectedJobForStart] = useState(null);
 
+  // NEW: Get current user for notifications
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity
+  });
+
   const { data: jobs } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
@@ -64,20 +71,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     queryFn: async () => {
       if (!user) return [];
       const today = new Date().toISOString().split('T')[0];
-      return base44.entities.JobAssignment.filter({
+      return base44.entities.ScheduleShift.filter({
         employee_email: user.email,
         date: today,
       });
     },
     enabled: !!user,
     staleTime: 60000,
-  });
-  
-  // NEW: Get current user for notifications
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    staleTime: Infinity
   });
 
   // NEW: Notification service
