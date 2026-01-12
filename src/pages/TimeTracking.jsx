@@ -16,8 +16,6 @@ import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView"
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 
 export default function TimeTracking() {
-  const langContext = useLanguage() || { language: 'en', t: (key) => key };
-  const { t, language } = langContext;
   const toast = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('daily');
@@ -27,6 +25,18 @@ export default function TimeTracking() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  let language = 'en';
+  let t = (key) => key;
+  try {
+    const langCtx = useLanguage();
+    if (langCtx) {
+      language = langCtx.language || 'en';
+      t = langCtx.t || ((key) => key);
+    }
+  } catch (e) {
+    // Fallback if useLanguage fails
+  }
 
   const isManager = user?.role === 'admin' || 
     ['manager', 'CEO', 'supervisor', 'administrator'].includes(user?.position) ||
