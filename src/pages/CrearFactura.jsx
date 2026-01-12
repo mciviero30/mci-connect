@@ -408,9 +408,10 @@ export default function CrearFactura() {
   const handleCustomerSelect = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      // ONLY use person name (first + last), no fallback to company
       const customerName = (customer.first_name || customer.last_name)
         ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-        : customer.company || customer.email || 'Unknown Customer';
+        : customer.email || 'Sin nombre';
       setFormData(prevFormData => ({
         ...prevFormData,
         customer_id: customerId,
@@ -923,23 +924,19 @@ export default function CrearFactura() {
                         {formData.customer_id ? (() => {
                           const selected = customers.find(c => c.id === formData.customer_id);
                           if (!selected) return t('selectExistingCustomer');
-                          const personName = (selected.first_name || selected.last_name)
+                          // ONLY show first and last name (no company)
+                          return (selected.first_name || selected.last_name)
                             ? `${selected.first_name || ''} ${selected.last_name || ''}`.trim()
-                            : selected.email || 'Unknown';
-                          return selected.company && (selected.first_name || selected.last_name)
-                            ? `${personName} (${selected.company})`
-                            : personName;
+                            : selected.email || 'Sin nombre';
                         })() : t('selectExistingCustomer')}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {customers.filter(c => c.status === 'active').map(customer => {
-                        const personName = (customer.first_name || customer.last_name)
+                        // ONLY show first and last name (no company)
+                        const displayText = (customer.first_name || customer.last_name)
                           ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-                          : customer.email || 'Unknown';
-                        const displayText = customer.company && (customer.first_name || customer.last_name)
-                          ? `${personName} (${customer.company})`
-                          : personName;
+                          : customer.email || 'Sin nombre';
                         
                         return (
                           <SelectItem key={customer.id} value={customer.id}>
