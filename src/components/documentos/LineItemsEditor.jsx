@@ -157,21 +157,23 @@ export default function LineItemsEditor({
     <>
       {/* Table Header - Dynamic based on travel items */}
       {items.some(i => i.is_travel_item) ? (
-        <div className="hidden md:grid md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.8fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+        <div className="hidden md:grid md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
           <div>ITEM DETAILS</div>
           <div className="text-center">TRIPS</div>
           <div className="text-center">QTY</div>
           <div className="text-center">UNIT</div>
           <div className="text-center">RATE</div>
+          <div className="text-center">HOURS</div>
           <div className="text-right">AMOUNT</div>
           <div></div>
         </div>
       ) : (
-        <div className="hidden md:grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+        <div className="hidden md:grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
           <div>ITEM DETAILS</div>
           <div className="text-center">QUANTITY</div>
           <div className="text-center">UNIT</div>
           <div className="text-center">RATE</div>
+          <div className="text-center">HOURS</div>
           <div className="text-right">AMOUNT</div>
           <div></div>
         </div>
@@ -229,7 +231,7 @@ export default function LineItemsEditor({
             </div>
           )}
           {/* Row 1: Select Item and aligned fields */}
-          <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.9fr,0.4fr]'} gap-2 px-3 pt-8 pb-1 hover:bg-slate-50/50 transition-colors`}>
+          <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr]'} gap-2 px-3 pt-8 pb-1 hover:bg-slate-50/50 transition-colors`}>
             {/* Select Item / Item Name */}
             <div>
               {allowCatalogSelect && catalogItems.length > 0 ? (
@@ -339,6 +341,19 @@ export default function LineItemsEditor({
                     ? 'bg-amber-50 border-amber-200 text-amber-900 cursor-not-allowed'
                     : 'bg-white border-slate-200 text-slate-900'
                 }`}
+              />
+            </div>
+
+            {/* Hours (MCI Internal Only) */}
+            <div className="flex items-center justify-center">
+              <Input
+                type="number"
+                value={item.installation_time || 0}
+                onChange={(e) => updateItem(index, 'installation_time', parseFloat(e.target.value) || 0)}
+                min="0"
+                step="0.1"
+                className="h-9 text-sm text-center bg-slate-50 border-slate-200 text-slate-700"
+                placeholder="0"
               />
             </div>
 
