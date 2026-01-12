@@ -47,10 +47,6 @@ export default function Trabajos() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [teamFilter, setTeamFilter] = useState('all');
 
-  // Check URL for edit parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const editIdFromUrl = urlParams.get('edit');
-
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -97,14 +93,19 @@ export default function Trabajos() {
 
   // Handle edit from URL parameter
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editIdFromUrl = urlParams.get('edit');
+    
     if (editIdFromUrl && jobs.length > 0) {
       const jobToEdit = jobs.find(j => j.id === editIdFromUrl);
       if (jobToEdit) {
         setEditingJob(jobToEdit);
         setShowForm(true);
+        // Clear URL parameter after opening
+        window.history.replaceState({}, '', createPageUrl('Trabajos'));
       }
     }
-  }, [editIdFromUrl, jobs]);
+  }, [jobs]);
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
