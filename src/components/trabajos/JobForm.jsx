@@ -235,25 +235,27 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
               <SelectValue placeholder={t('selectCustomer')} />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
-              {customers.map(customer => {
-                // Priority: first_name + last_name > name > company > email
-                let displayName = '';
-                if (customer.first_name && customer.last_name) {
-                  displayName = `${customer.first_name} ${customer.last_name}`.trim();
-                } else if (customer.name) {
-                  displayName = customer.name;
-                } else if (customer.company) {
-                  displayName = customer.company;
-                } else {
-                  displayName = customer.email || 'Sin nombre';
-                }
-                
-                return (
+              {customers
+                .map(customer => {
+                  // Priority: first_name + last_name > name > company > email
+                  let displayName = '';
+                  if (customer.first_name && customer.last_name) {
+                    displayName = `${customer.first_name} ${customer.last_name}`.trim();
+                  } else if (customer.name) {
+                    displayName = customer.name;
+                  } else if (customer.company) {
+                    displayName = customer.company;
+                  } else {
+                    displayName = customer.email || 'Sin nombre';
+                  }
+                  return { ...customer, displayName };
+                })
+                .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                .map(customer => (
                   <SelectItem key={customer.id} value={customer.id}>
-                    {displayName}
+                    {customer.displayName}
                   </SelectItem>
-                );
-              })}
+                ))}
             </SelectContent>
           </Select>
         </div>
