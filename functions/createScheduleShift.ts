@@ -13,77 +13,58 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    // Check permissions: only admin/managers can create shifts
+    // Only admin can create shifts
     if (user.role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Forbidden: Admin access required' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
     }
 
     const shiftData = await req.json();
+    console.log('📝 Input:', JSON.stringify(shiftData, null, 2));
 
-    // Validate core required fields
+    // Validate required fields
     if (!shiftData.employee_email || !shiftData.employee_name) {
-      return new Response(JSON.stringify({ error: 'Missing required fields: employee_email, employee_name' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Missing employee info' }), { status: 400 });
     }
 
-    console.log('📝 Input shift data:', JSON.stringify(shiftData, null, 2));
-
-    // Get today's date in YYYY-MM-DD format
+    // Get today for defaults
     const today = new Date().toISOString().split('T')[0];
 
-    // Set defaults
-    const date = shiftData.date || today;
-    const startTime = shiftData.start_time || '08:00';
-    const endTime = shiftData.end_time || '17:00';
-
-    // Calculate ISO timestamps for calendar compatibility
-    const startAt = new Date(`${date}T${startTime}:00`).toISOString();
-    const endAt = new Date(`${date}T${endTime}:00`).toISOString();
-
-    // Ensure all fields have defaults (date falls within visible range)
-    const payloadData = {
-      ...shiftData,
-      date,
-      start_time: startTime,
-      end_time: endTime,
-      start_at: startAt,
-      end_at: endAt,
-      shift_title: (shiftData.shift_title && shiftData.shift_title.trim()) || shiftData.job_name || 'Scheduled Shift',
+    // Build payload with strict defaults
+    const payload = {
+      employee_email: shiftData.employee_email,
+      employee_name: shiftData.employee_name,
+      job_id: shiftData.job_id || '',
+      job_name: shiftData.job_name || '',
+      shift_title: (shiftData.shift_title && shiftData.shift_title.trim()) || 'Scheduled Shift',
       shift_type: shiftData.shift_type || 'job_work',
-      status: shiftData.status || 'scheduled'
+      date: shiftData.date || today,
+      start_time: shiftData.start_time || '08:00',
+      end_time: shiftData.end_time || '17:00',
+      status: shiftData.status || 'scheduled',
+      notes: shiftData.notes || ''
     };
 
-    console.log('✅ Validated payload:', JSON.stringify(payloadData, null, 2));
+    console.log('✅ Payload to save:', JSON.stringify(payload, null, 2));
 
-    // Create shift using service role (has database write permissions)
-    const shift = await base44.asServiceRole.entities.ScheduleShift.create(payloadData);
+    // Create shift
+    const shift = await base44.asServiceRole.entities.ScheduleShift.create(payload);
 
-    console.log('✅ ═══════════════════════════════════════');
-    console.log('✅ SHIFT PERSISTED SUCCESSFULLY');
-    console.log('✅ ═══════════════════════════════════════');
-    console.log(`✅ ID: ${shift.id}`);
-    console.log(`✅ DATE: ${shift.date}`);
-    console.log(`✅ START_TIME: ${shift.start_time}`);
-    console.log(`✅ END_TIME: ${shift.end_time}`);
-    console.log(`✅ TITLE: ${shift.shift_title}`);
-    console.log(`✅ EMPLOYEE: ${shift.employee_name} (${shift.employee_email})`);
-    console.log(`✅ JOB: ${shift.job_name || 'N/A'} (${shift.job_id || 'N/A'})`);
-    console.log('✅ ═══════════════════════════════════════');
+    console.log('✅ Created shift ID:', shift.id);
+    console.log('✅ Date:', shift.date);
+    console.log('✅ Times:', shift.start_time, '-', shift.end_time);
 
-    // CRITICAL: Verify shift exists in database
-    const allShifts = await base44.asServiceRole.entities.ScheduleShift.list('-date');
-    const persistedShift = allShifts.find(s => s.id === shift.id);
-
-    if (!persistedShift) {
-      console.error('❌ CRITICAL: Shift created but not found in query!');
-      throw new Error('Shift persisted but verification query failed');
-    }
-
-    console.log('✅ Verification: Shift found in database query - READY TO RENDER');
-
-    return new Response(JSON.stringify(shift), { status: 201 });
+    return new Response(JSON.stringify({
+      success: true,
+      id: shift.id,
+      date: shift.date,
+      start_time: shift.start_time,
+      end_time: shift.end_time,
+      employee_email: shift.employee_email,
+      shift_title: shift.shift_title,
+      job_id: shift.job_id
+    }), { status: 201 });
   } catch (error) {
-    console.error('❌ Error creating shift:', error.message);
-    console.error('📍 Error stack:', error.stack);
+    console.error('❌ Error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 });
