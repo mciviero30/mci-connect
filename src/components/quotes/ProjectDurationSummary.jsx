@@ -18,8 +18,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar, Users, Clock, Briefcase, Moon, Info, Lock } from 'lucide-react';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
-export default function ProjectDurationSummary({ derivedValues, language, quoteItems, quoteTotal, catalogItems }) {
+export default function ProjectDurationSummary({ derivedValues, quoteItems, quoteTotal, catalogItems }) {
+  const { language } = useLanguage();
   // ============================================================================
   // CAPA 6 - PURELY PRESENTATIONAL (NO CALCULATIONS)
   // ============================================================================
