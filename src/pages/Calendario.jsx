@@ -236,6 +236,9 @@ export default function Calendario() {
     if (eventType === 'time_off') {
       window.location.href = createPageUrl('TimeOffRequests');
     } else {
+      // Force refetch jobs and employees when opening dialog
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
       setShowDialog(true);
     }
   };
