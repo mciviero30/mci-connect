@@ -78,12 +78,12 @@ export default function Calendario() {
   });
 
   // CRITICAL: Replace JobAssignment with ScheduleShift
-  const { data: shifts, isLoading } = useQuery({
+  const { data: shifts, isLoading, refetch: refetchShifts } = useQuery({
     queryKey: ['scheduleShifts'],
     queryFn: () => base44.entities.ScheduleShift.list('-date'),
     initialData: [],
     staleTime: 0,
-    refetchOnMount: 'stale',
+    refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
