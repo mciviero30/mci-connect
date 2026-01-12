@@ -141,7 +141,11 @@ export default function Calendario() {
     },
     onSuccess: (data) => {
       console.log('Mutation success, data:', data);
-      refetchShifts();
+      // CRITICAL: Wait 500ms then FORCE refetch
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['scheduleShifts'], refetchType: 'all' });
+        refetchShifts();
+      }, 500);
       setShowDialog(false);
       setSelectedDate(null);
       setSelectedTime(null);
