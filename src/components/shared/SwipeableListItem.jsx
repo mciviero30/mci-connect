@@ -40,22 +40,21 @@ export default function SwipeableListItem({
     }
   }, []);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     setIsSwiped(false);
     if (onDelete) await onDelete();
-  };
+  }, [onDelete]);
 
-  const handleEdit = async () => {
+  const handleEdit = useCallback(async () => {
     setIsSwiped(false);
     if (onEdit) await onEdit();
-  };
+  }, [onEdit]);
 
   return (
     <motion.div
       ref={containerRef}
-      className="relative overflow-hidden"
+      className="relative overflow-hidden bg-white"
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Acciones - Fondo */}
@@ -63,14 +62,14 @@ export default function SwipeableListItem({
         <div className="absolute inset-y-0 right-0 flex w-[120px] bg-gradient-to-l from-red-600 to-red-500 md:hidden">
           <button
             onClick={handleEdit}
-            className="flex-1 flex items-center justify-center text-white hover:bg-blue-600 transition-colors"
+            className="flex-1 flex items-center justify-center text-white active:bg-blue-700 transition-colors duration-75"
             title="Edit"
           >
             <Edit2 className="w-5 h-5" />
           </button>
           <button
             onClick={handleDelete}
-            className="flex-1 flex items-center justify-center text-white hover:bg-red-700 transition-colors"
+            className="flex-1 flex items-center justify-center text-white active:bg-red-700 transition-colors duration-75"
             title="Delete"
           >
             <Trash2 className="w-5 h-5" />
@@ -81,9 +80,9 @@ export default function SwipeableListItem({
       {/* Contenido - Se desliza con el swipe */}
       <motion.div
         animate={{
-          x: isSwiped ? -120 : 0,
+          x: isSwiped ? -ACTION_WIDTH : 0,
         }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        transition={{ type: 'spring', damping: 20, stiffness: 300, mass: 0.5 }}
         className="relative z-10 bg-white"
       >
         {children}
