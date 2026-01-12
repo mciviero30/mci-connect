@@ -82,7 +82,7 @@ export default function TimeTracking() {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
       toast({
-        title: language === 'es' ? '✅ Entrada registrada' : '✅ Clocked in',
+        title: (language === 'es' ? '✅ Entrada registrada' : '✅ Clocked in'),
         variant: 'success'
       });
     },
@@ -123,10 +123,12 @@ export default function TimeTracking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
       queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
-      toast({
-        title: language === 'es' ? '¡Salida registrada!' : 'Clocked out!',
-        variant: 'success'
-      });
+      if (language) {
+        toast({
+          title: language === 'es' ? '¡Salida registrada!' : 'Clocked out!',
+          variant: 'success'
+        });
+      }
     },
     onError: (error) => {
       toast({
@@ -156,10 +158,12 @@ export default function TimeTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
-      toast({
-        title: language === 'es' ? 'Pausa iniciada' : 'Break started',
-        variant: 'success'
-      });
+      if (language) {
+        toast({
+          title: language === 'es' ? 'Pausa iniciada' : 'Break started',
+          variant: 'success'
+        });
+      }
     },
   });
 
@@ -189,10 +193,12 @@ export default function TimeTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
-      toast({
-        title: language === 'es' ? 'Pausa terminada' : 'Break ended',
-        variant: 'success'
-      });
+      if (language) {
+        toast({
+          title: language === 'es' ? 'Pausa terminada' : 'Break ended',
+          variant: 'success'
+        });
+      }
     },
   });
 
