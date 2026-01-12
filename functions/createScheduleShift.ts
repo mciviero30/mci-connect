@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     // Ensure shift_title has value (fallback if empty)
     const payloadData = {
       ...shiftData,
-      shift_title: shiftData.shift_title || shiftData.job_name || 'Scheduled Shift',
+      shift_title: (shiftData.shift_title && shiftData.shift_title.trim()) || shiftData.job_name || 'Scheduled Shift',
       shift_type: shiftData.shift_type || 'job_work',
       status: shiftData.status || 'scheduled'
     };
