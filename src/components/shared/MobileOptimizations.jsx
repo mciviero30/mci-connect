@@ -150,7 +150,8 @@ export default function MobileOptimizations() {
     document.head.appendChild(style);
     
     // PWA: Register service worker for offline support (if manifest exists)
-    if ('serviceWorker' in navigator) {
+    // SAFE: No-op if sw.js doesn't exist
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
       navigator.serviceWorker.register('/sw.js').catch(() => {
         // Service worker registration failed or file doesn't exist - that's ok
       });

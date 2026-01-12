@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { WifiOff, Wifi, CloudOff, Cloud, RefreshCw, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { base44 } from '@/api/base44Client';
 
 // IndexedDB wrapper for offline storage
 const DB_NAME = 'mci_field_offline';
@@ -260,7 +261,7 @@ export function OfflineStatusBadge() {
   }
 
   return (
-    <div className="fixed bottom-20 md:bottom-4 left-4 z-50">
+    <div className="fixed bottom-20 md:bottom-4 left-4 z-[45]">
       <div className={`flex items-center gap-2 px-3 py-2 rounded-full shadow-lg ${
         isOnline 
           ? 'bg-amber-500 text-white' 

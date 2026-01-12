@@ -15,6 +15,7 @@ import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
 
 export default function FieldProject() {
+  // HOOKS BEFORE ANY LOGIC
   const { setIsFieldMode } = useUI();
   
   // Extract jobId from URL params
