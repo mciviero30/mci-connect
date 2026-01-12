@@ -421,15 +421,16 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
         { title: 'Commission Totals (Gusto)', url: createPageUrl("CommissionTotalsGusto"), icon: Banknote },
         { title: 'Audit Trail', url: createPageUrl("AuditTrail"), icon: Shield },
-      ]
-    },
-    {
-      section: 'CLIENT ACCESS',
-      icon: User,
-      items: [
+        { title: 'System Health', url: createPageUrl("SystemHealthCheck"), icon: Zap },
+        ]
+        },
+        {
+        section: 'CLIENT ACCESS',
+        icon: User,
+        items: [
         { title: 'Client Portal Manager', url: createPageUrl("ClientManagement"), icon: Users },
-      ]
-    }
+        ]
+        }
   ];
 
   const managerNavigation = [
