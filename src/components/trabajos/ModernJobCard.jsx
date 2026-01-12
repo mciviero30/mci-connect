@@ -194,6 +194,7 @@ export default function ModernJobCard({ job, onEdit }) {
 
       {/* Gradient Line at Bottom - More prominent */}
       <div className={`h-1 bg-gradient-to-r from-${colorIndicator}-500 to-${colorIndicator}-600`} />
-    </Card>
+      </Card>
+    </SwipeableListItem>
   );
 }
