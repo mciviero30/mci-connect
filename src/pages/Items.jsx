@@ -27,7 +27,9 @@ import {
   Download,
   FileSpreadsheet,
   Settings,
-  RefreshCw
+  RefreshCw,
+  MoreVertical,
+  Copy
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import {
@@ -38,6 +40,13 @@ import {
   DialogFooter,
   DialogDescription
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import {
   Table,
@@ -699,6 +708,26 @@ export default function Items() {
     setShowForm(true);
   };
 
+  const handleDuplicate = (item) => {
+    setEditingItem(null);
+    setFormData({
+      ...item,
+      id: undefined,
+      name: `${item.name} (Copy)`,
+      unit_price: item.unit_price != null ? item.unit_price.toString() : '',
+      cost_per_unit: item.cost_per_unit != null ? item.cost_per_unit.toString() : '',
+      material_cost: item.material_cost != null ? item.material_cost.toString() : '',
+      installation_time: item.installation_time != null ? item.installation_time.toString() : '',
+      in_stock_quantity: item.in_stock_quantity != null ? item.in_stock_quantity : 0,
+      min_stock_quantity: item.min_stock_quantity != null ? item.min_stock_quantity : 5,
+      supplier: item.supplier || 'Branch',
+      description: item.description || '',
+      account_category: item.account_category || 'revenue_materials',
+      is_overtime: item.is_overtime || false
+    });
+    setShowForm(true);
+  };
+
   const saveAndNavigate = (direction) => {
     // Validate required fields
     if (!formData.name || !formData.unit_price || !formData.supplier) {
@@ -1141,40 +1170,55 @@ export default function Items() {
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleViewAudit(item)}
-                                  className="text-[#507DB4] hover:bg-blue-50/30"
-                                  title="View price history"
-                                >
-                                  <History className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEdit(item)}
-                                  className="text-[#507DB4] hover:bg-blue-50/30"
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    if (window.confirm(language === 'es'
-                                      ? `¿Eliminar "${item.name}"?\n\nNOTA: Se verificará que no esté en uso en cotizaciones/facturas activas.`
-                                      : `Delete "${item.name}"?\n\nNOTE: Will verify it's not used in active quotes/invoices.`
-                                    )) {
-                                      deleteItemMutation.mutate(item);
-                                    }
-                                  }}
-                                  className="text-red-600 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                                  <DropdownMenuItem
+                                    onClick={() => handleEdit(item)}
+                                    className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    {language === 'es' ? 'Editar' : 'Edit'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDuplicate(item)}
+                                    className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                                  >
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    {language === 'es' ? 'Duplicar' : 'Duplicate'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleViewAudit(item)}
+                                    className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                                  >
+                                    <History className="w-4 h-4 mr-2" />
+                                    {language === 'es' ? 'Ver Historial' : 'View History'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (window.confirm(language === 'es'
+                                        ? `¿Eliminar "${item.name}"?\n\nNOTA: Se verificará que no esté en uso en cotizaciones/facturas activas.`
+                                        : `Delete "${item.name}"?\n\nNOTE: Will verify it's not used in active quotes/invoices.`
+                                      )) {
+                                        deleteItemMutation.mutate(item);
+                                      }
+                                    }}
+                                    className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    {language === 'es' ? 'Eliminar' : 'Delete'}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
                         );
