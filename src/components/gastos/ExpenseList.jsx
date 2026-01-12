@@ -293,10 +293,11 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                           )}
                         </TableCell>
                       )}
-                    </TableRow>
-                  );
-                })
-              )}
+                      </TableRow>
+                      </SwipeableListItem>
+                      );
+                      })
+                      )}
             </TableBody>
           </Table>
         </div>
