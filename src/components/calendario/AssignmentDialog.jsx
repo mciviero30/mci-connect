@@ -263,15 +263,17 @@ export default function AssignmentDialog({
                   <SelectValue placeholder="Select job" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg z-50" align="start">
-                  {(jobs || []).length === 0 ? (
-                    <div className="p-2 text-sm text-slate-500">No jobs available</div>
+                  {!jobs || jobs.length === 0 ? (
+                    <div className="p-2 text-sm text-slate-500">
+                      {!jobs ? 'Loading jobs...' : 'No jobs available'}
+                    </div>
                   ) : (
                     jobs.map(job => {
-                      const jobName = job.name || job.data?.name || 'Unnamed';
-                      const jobColor = job.color || job.data?.color || 'blue';
-                      const jobId = job.id;
+                      if (!job || !job.id) return null;
+                      const jobName = job.name || 'Unnamed';
+                      const jobColor = job.color || 'blue';
                       return (
-                        <SelectItem key={jobId} value={jobId} className="text-slate-900">
+                        <SelectItem key={job.id} value={job.id} className="text-slate-900">
                           <div className="flex items-center gap-2">
                             <div className={`w-3 h-3 rounded-full ${
                               jobColor === 'blue' ? 'bg-blue-600' :
