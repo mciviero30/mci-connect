@@ -140,8 +140,8 @@ export default function Calendario() {
       return shift;
     },
     onSuccess: (data) => {
-      console.log('Mutation success, invalidating cache');
-      queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
+      console.log('Mutation success, invalidating cache', data);
+      queryClient.invalidateQueries({ queryKey: ['scheduleShifts'], refetchType: 'active' });
       setShowDialog(false);
       setSelectedDate(null);
       setSelectedTime(null);
