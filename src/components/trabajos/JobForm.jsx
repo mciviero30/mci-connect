@@ -66,9 +66,10 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      const displayName = customer.first_name || customer.last_name 
+      // ONLY show first and last name (no company fallback)
+      const displayName = (customer.first_name || customer.last_name)
         ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-        : customer.company || customer.email || 'Unknown Customer';
+        : customer.email || 'Sin nombre';
       setFormData({
         ...formData,
         customer_id: customerId,
@@ -231,15 +232,13 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
               {customers.map(customer => {
-                const displayName = customer.first_name || customer.last_name 
+                // ONLY show first and last name (no company)
+                const displayName = (customer.first_name || customer.last_name)
                   ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-                  : customer.company || customer.email || 'Unknown Customer';
+                  : customer.email || 'Sin nombre';
                 return (
                   <SelectItem key={customer.id} value={customer.id}>
                     {displayName}
-                    {customer.company && (customer.first_name || customer.last_name) && (
-                      <span className="text-xs text-slate-500 ml-2">({customer.company})</span>
-                    )}
                   </SelectItem>
                 );
               })}
