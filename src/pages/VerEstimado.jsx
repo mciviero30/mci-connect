@@ -616,33 +616,88 @@ Lawrenceville, Georgia 30043, U.S.A`
             </div>
 
             {/* Quick Stats */}
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 space-y-3">
-              <h4 className="font-semibold text-slate-900 dark:text-white text-sm">
-                {language === 'es' ? 'Información' : 'Info'}
+            <div className="bg-gradient-to-br from-[#EBF2FF] to-white border-2 border-[#507DB4]/20 rounded-xl shadow-lg p-5 space-y-3">
+              <h4 className="font-bold text-[#507DB4] text-sm uppercase tracking-wide flex items-center gap-2">
+                <div className="w-1 h-4 bg-gradient-to-b from-[#507DB4] to-[#6B9DD8] rounded-full"></div>
+                {language === 'es' ? 'Información del Proyecto' : 'Project Information'}
               </h4>
-              <div className="text-sm space-y-2">
+              <div className="text-sm space-y-2.5">
+                {/* Estimated Hours */}
+                {quote.estimated_hours !== undefined && quote.estimated_hours !== null && (
+                  <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-[#507DB4]/10">
+                    <span className="text-slate-700 font-medium">{language === 'es' ? 'Horas Est.' : 'Est. Hours'}</span>
+                    <span className="font-bold text-[#507DB4]">{quote.estimated_hours.toFixed(1)}h</span>
+                  </div>
+                )}
+                
+                {/* Travel Time */}
+                {(() => {
+                  const travelItems = (quote.items || []).filter(i => i.is_travel_item && i.calculation_type === 'hours');
+                  const totalTravelHours = travelItems.reduce((sum, item) => sum + ((item.duration_value || 0)), 0);
+                  return totalTravelHours > 0 ? (
+                    <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-blue-200">
+                      <span className="text-slate-700 font-medium">{language === 'es' ? 'Tiempo Viaje (ida y vuelta)' : 'Travel Time (round trip)'}</span>
+                      <span className="font-bold text-blue-600">{totalTravelHours.toFixed(1)}h</span>
+                    </div>
+                  ) : null;
+                })()}
+                
+                {/* Hotel Rooms */}
+                {(() => {
+                  const hotelItem = (quote.items || []).find(i => i.calculation_type === 'hotel' || i.item_name?.toLowerCase().includes('hotel'));
+                  if (hotelItem) {
+                    const rooms = hotelItem.tech_count ? Math.ceil(hotelItem.tech_count / 2) : 1;
+                    return (
+                      <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-purple-200">
+                        <span className="text-slate-700 font-medium">{language === 'es' ? 'Hotel' : 'Hotel'}</span>
+                        <span className="font-bold text-purple-600">
+                          ${hotelItem.total?.toFixed(2) || '0.00'} ({rooms} {language === 'es' ? (rooms === 1 ? 'cuarto' : 'cuartos') : (rooms === 1 ? 'room' : 'rooms')})
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+                
+                {/* Per Diem */}
+                {(() => {
+                  const perDiemItem = (quote.items || []).find(i => i.calculation_type === 'per_diem' || (i.item_name?.toLowerCase().includes('per') && i.item_name?.toLowerCase().includes('diem')));
+                  if (perDiemItem) {
+                    const people = perDiemItem.tech_count || 1;
+                    return (
+                      <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-green-200">
+                        <span className="text-slate-700 font-medium">{language === 'es' ? 'Per Diem' : 'Per Diem'}</span>
+                        <span className="font-bold text-green-600">
+                          ${perDiemItem.total?.toFixed(2) || '0.00'} ({people} {language === 'es' ? (people === 1 ? 'persona' : 'personas') : (people === 1 ? 'person' : 'people')})
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* Divider if has travel items */}
+                {((quote.items || []).some(i => i.is_travel_item) && (quote.view_count > 0 || quote.reminder_count > 0 || quote.profit_margin)) && (
+                  <div className="border-t border-[#507DB4]/10 my-2"></div>
+                )}
+                
+                {/* Other stats */}
                 {quote.view_count > 0 && (
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <div className="flex justify-between text-slate-600">
                     <span>{language === 'es' ? 'Vistas' : 'Views'}</span>
                     <span className="font-medium">{quote.view_count}</span>
                   </div>
                 )}
                 {quote.reminder_count > 0 && (
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <div className="flex justify-between text-slate-600">
                     <span>{language === 'es' ? 'Recordatorios' : 'Reminders'}</span>
                     <span className="font-medium">{quote.reminder_count}</span>
                   </div>
                 )}
                 {quote.profit_margin && (
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <div className="flex justify-between text-slate-600">
                     <span>{language === 'es' ? 'Margen' : 'Margin'}</span>
                     <span className="font-medium text-green-600">{quote.profit_margin.toFixed(1)}%</span>
-                  </div>
-                )}
-                {quote.estimated_hours !== undefined && quote.estimated_hours !== null && (
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                    <span>{language === 'es' ? 'Horas Est.' : 'Est. Hours'}</span>
-                    <span className="font-medium">{quote.estimated_hours}h</span>
                   </div>
                 )}
               </div>
