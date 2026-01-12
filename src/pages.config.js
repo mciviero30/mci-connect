@@ -101,6 +101,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
+import NotificationPreferences from './pages/NotificationPreferences';
 import __Layout from './Layout.jsx';
 
 
@@ -208,6 +209,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
+    "NotificationPreferences": NotificationPreferences,
 }
 
 export const pagesConfig = {
