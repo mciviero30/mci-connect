@@ -125,12 +125,15 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
                               key={item.title}
                               to={item.url}
                               onClick={() => setSheetOpen(false)}
-                              className={`flex items-center justify-between px-4 py-4 rounded-xl mx-2 transition-all min-h-[56px] active:scale-95 ${
+                              className={`flex items-center justify-between px-4 py-3 rounded-xl mx-2 transition-all duration-150 min-h-[56px] active:scale-90 active:shadow-inner ${
                                 active
                                   ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
-                                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-200'
+                                  : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-200 active:bg-slate-100 dark:active:bg-slate-800'
                               }`}
-                              style={{ WebkitTapHighlightColor: 'transparent' }}
+                              style={{ 
+                                WebkitTapHighlightColor: 'transparent',
+                                WebkitTouchCallout: 'none'
+                              }}
                             >
                               <div className="flex items-center gap-3">
                                 <item.icon className="w-6 h-6" strokeWidth={2.5} />
