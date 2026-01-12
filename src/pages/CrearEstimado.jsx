@@ -718,36 +718,130 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     });
   };
 
-  const handleRefreshPrices = () => {
+  const handleRefreshPrices = async () => {
     if (!window.confirm(
       language === 'es'
-        ? '¿Actualizar precios desde el catálogo?\n\nEsto actualizará los precios de todos los items que estén en el catálogo. Las cantidades no cambiarán.'
-        : 'Update prices from catalog?\n\nThis will update prices for all items in the catalog. Quantities will not change.'
+        ? '¿Actualizar desde el catálogo?\n\nEsto actualizará precios y tiempos de instalación. Las cantidades no cambiarán.'
+        : 'Update from catalog?\n\nThis will update prices and installation times. Quantities will not change.'
     )) {
       return;
     }
 
-    const updatedItems = formData.items.map(item => {
-      if (!item.item_name) return item;
+    // Update regular items from catalog
+    let updatedItems = formData.items.map(item => {
+      if (!item.item_name || item.is_travel_item) return item;
       
       const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
       if (catalogItem) {
         return {
           ...item,
           unit_price: catalogItem.unit_price || item.unit_price,
+          installation_time: catalogItem.installation_time || item.installation_time,
           total: (item.quantity || 0) * (catalogItem.unit_price || item.unit_price)
         };
       }
       return item;
     });
 
+    // If out of area, recalculate travel items
+    if (formData.out_of_area && formData.team_ids.length > 0 && formData.job_address) {
+      setIsCalculatingTravel(true);
+      
+      // Remove old travel items
+      const regularItems = updatedItems.filter(item => !item.is_travel_item);
+      let newTravelItems = [];
+      
+      // Recalculate mileage and driving time for each team
+      for (const teamId of formData.team_ids) {
+        const team = teams.find(t => t.id === teamId);
+        if (team?.base_address) {
+          try {
+            const response = await base44.integrations.Core.InvokeLLM({
+              prompt: `Calculate the driving distance and time between these two addresses:
+Origin: ${team.base_address}
+Destination: ${formData.job_address}
+
+Return ONLY a JSON object with this exact structure (no additional text):
+{
+  "distance_miles": <number>,
+  "driving_hours": <number>
+}
+
+Use realistic driving estimates. Round distance to 1 decimal place, hours to nearest 0.5.`,
+              add_context_from_internet: true,
+              response_json_schema: {
+                type: "object",
+                properties: {
+                  distance_miles: { type: "number" },
+                  driving_hours: { type: "number" }
+                }
+              }
+            });
+
+            if (response?.distance_miles && response?.driving_hours) {
+              const roundTripMiles = response.distance_miles * 2;
+              const totalMiles = Math.round(roundTripMiles * 1.1);
+              const roundTripHours = response.driving_hours * 2;
+              const hoursWithBuffer = roundTripHours * 1.1;
+              
+              const roundToHalfHour = (hours) => {
+                const integer = Math.floor(hours);
+                const decimal = hours - integer;
+                return decimal < 0.5 ? integer + 0.5 : integer + 1;
+              };
+              
+              const roundedHours = roundToHalfHour(hoursWithBuffer);
+              const teamName = team.team_name || 'Team';
+              
+              // Get latest prices from catalog
+              const drivingHoursItem = quoteItems.find(qi => qi.name === 'Driving Time');
+              const mileageItem = quoteItems.find(qi => qi.name === 'Miles Per Vehicle');
+              
+              // Add driving time
+              newTravelItems.push({
+                item_name: 'Driving Time',
+                description: `${teamName}`,
+                quantity: 2 * roundedHours,
+                unit: 'hours',
+                unit_price: drivingHoursItem?.unit_price || 60,
+                total: 2 * roundedHours * (drivingHoursItem?.unit_price || 60),
+                is_travel_item: true,
+                calculation_type: 'hours',
+                tech_count: 2,
+                duration_value: roundedHours,
+                installation_time: 0,
+              });
+              
+              // Add mileage
+              newTravelItems.push({
+                item_name: 'Miles Per Vehicle',
+                description: `${teamName} (${response.distance_miles} mi each way)`,
+                quantity: totalMiles,
+                unit: 'miles',
+                unit_price: mileageItem?.unit_price || 0.60,
+                total: totalMiles * (mileageItem?.unit_price || 0.60),
+                is_travel_item: true,
+                calculation_type: 'none',
+                installation_time: 0,
+              });
+            }
+          } catch (error) {
+            console.error(`Error recalculating for team ${team.team_name}:`, error);
+          }
+        }
+      }
+      
+      updatedItems = [...regularItems, ...newTravelItems];
+      setIsCalculatingTravel(false);
+    }
+
     setFormData({ ...formData, items: updatedItems });
     
     toast({
-      title: language === 'es' ? 'Precios actualizados' : 'Prices updated',
+      title: language === 'es' ? 'Actualizado desde catálogo' : 'Updated from catalog',
       description: language === 'es' 
-        ? 'Los precios se actualizaron desde el catálogo'
-        : 'Prices have been updated from the catalog',
+        ? 'Precios, tiempos y cálculos de viaje actualizados'
+        : 'Prices, times and travel calculations updated',
       variant: 'success'
     });
   };
@@ -1288,15 +1382,20 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 )}
               </CardTitle>
               <div className="flex items-center gap-2">
-                {editId && existingQuote && (existingQuote.status === 'sent' || existingQuote.status === 'approved') && (
+                {editId && (
                   <Button
                     type="button"
                     onClick={handleRefreshPrices}
                     size="sm"
                     variant="outline"
                     className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                    disabled={isCalculatingTravel}
                   >
-                    <RefreshCw className="w-4 h-4 mr-2" />
+                    {isCalculatingTravel ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                    )}
                     {language === 'es' ? 'Actualizar Precios' : 'Update Prices'}
                   </Button>
                 )}
