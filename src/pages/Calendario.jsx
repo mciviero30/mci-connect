@@ -87,12 +87,15 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
-  const { data: jobs } = useQuery({
+  const { data: jobs, isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: async () => {
+      const data = await base44.entities.Job.list();
+      return data || [];
+    },
     initialData: [],
     staleTime: 600000,
-    refetchOnMount: false,
+    refetchOnMount: 'stale',
     refetchOnWindowFocus: false
   });
 
