@@ -42,9 +42,17 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     if (!customerId) return fallbackName || '';
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      return (customer.first_name && customer.last_name)
-        ? `${customer.first_name} ${customer.last_name}`.trim()
-        : customer.company || customer.email || fallbackName || 'Sin nombre';
+      // Priority: first_name + last_name > name > company > email
+      if (customer.first_name && customer.last_name) {
+        return `${customer.first_name} ${customer.last_name}`.trim();
+      }
+      if (customer.name) {
+        return customer.name;
+      }
+      if (customer.company) {
+        return customer.company;
+      }
+      return customer.email || fallbackName || 'Sin nombre';
     }
     return fallbackName || '';
   };
@@ -88,10 +96,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      // Show first + last name, fallback to company, fallback to email
-      const displayName = (customer.first_name && customer.last_name)
-        ? `${customer.first_name} ${customer.last_name}`.trim()
-        : customer.company || customer.email || 'Sin nombre';
+      const displayName = getCustomerDisplayName(customerId, null);
       setFormData({
         ...formData,
         customer_id: customerId,
@@ -240,10 +245,18 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
               {customers.map(customer => {
-                // Show first + last name, fallback to company, fallback to email
-                const displayName = (customer.first_name && customer.last_name)
-                  ? `${customer.first_name} ${customer.last_name}`.trim()
-                  : customer.company || customer.email || 'Sin nombre';
+                // Priority: first_name + last_name > name > company > email
+                let displayName = '';
+                if (customer.first_name && customer.last_name) {
+                  displayName = `${customer.first_name} ${customer.last_name}`.trim();
+                } else if (customer.name) {
+                  displayName = customer.name;
+                } else if (customer.company) {
+                  displayName = customer.company;
+                } else {
+                  displayName = customer.email || 'Sin nombre';
+                }
+                
                 return (
                   <SelectItem key={customer.id} value={customer.id}>
                     {displayName}
