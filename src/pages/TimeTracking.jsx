@@ -16,7 +16,8 @@ import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView"
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 
 export default function TimeTracking() {
-  const { t, language } = useLanguage();
+  const langContext = useLanguage() || { language: 'en', t: (key) => key };
+  const { t, language } = langContext;
   const toast = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('daily');
