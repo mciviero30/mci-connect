@@ -231,8 +231,8 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
         </div>
       </div>
 
-      {/* Gradient Line at Bottom */}
-      <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
+        {/* Gradient Line at Bottom */}
+        <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
       </Card>
     </SwipeableListItem>
   );
