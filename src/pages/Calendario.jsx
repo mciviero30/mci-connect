@@ -82,8 +82,8 @@ export default function Calendario() {
     queryKey: ['scheduleShifts'],
     queryFn: () => base44.entities.ScheduleShift.list('-date'),
     initialData: [],
-    staleTime: 300000,
-    refetchOnMount: false,
+    staleTime: 0,
+    refetchOnMount: 'stale',
     refetchOnWindowFocus: false
   });
 
