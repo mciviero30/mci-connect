@@ -294,11 +294,11 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
         <div>
           <Label className="text-slate-700 font-semibold flex items-center gap-2">
             <MapPin className="w-4 h-4 text-blue-500" />
-            {t('address')} - Google Places
+            {t('address')} - Auto-Geocodes
           </Label>
           <AddressAutocomplete
             value={formData.address}
-            onChange={(value) => setFormData({...formData, address: value})}
+            onChange={handleAddressChange}
             onPlaceSelected={(place) => {
               setFormData({
                 ...formData,
@@ -309,11 +309,19 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
                 latitude: place.lat,
                 longitude: place.lng
               });
+              toast.success('Coordinates auto-filled!');
             }}
             placeholder="Start typing address..."
             className="bg-slate-50 border-slate-200"
           />
-          <p className="text-xs text-slate-500 mt-1">Start typing to search addresses (auto-fills city, state, zip)</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Coordinates auto-calculated from address • City, State, ZIP auto-filled
+          </p>
+          {formData.latitude && formData.longitude && (
+            <Badge className="mt-2 bg-green-100 text-green-800 border-green-300">
+              ✓ Lat: {formData.latitude.toFixed(4)}, Lng: {formData.longitude.toFixed(4)}
+            </Badge>
+          )}
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
