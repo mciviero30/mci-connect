@@ -109,6 +109,10 @@ export default function ModernJobCard({ job }) {
                 <Eye className="w-4 h-4 mr-2" />
                 {lang === 'es' ? 'Ver Detalles' : 'View Details'}
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate(createPageUrl(`Trabajos?edit=${job.id}`))}>
+                <Edit className="w-4 h-4 mr-2" />
+                {lang === 'es' ? 'Editar' : 'Edit'}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
                 <Trash2 className="w-4 h-4 mr-2" />
                 {lang === 'es' ? 'Eliminar' : 'Delete'}
