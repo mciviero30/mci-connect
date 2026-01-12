@@ -9,9 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import JobImporter from "../sync/JobImporter";
-import { MapPin, FolderPlus, ExternalLink } from "lucide-react";
+import { MapPin, FolderPlus, ExternalLink, Loader } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
+import { geocodeAddress } from "@/components/utils/geocoding";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const { t, language } = useLanguage();
