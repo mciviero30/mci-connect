@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar, Users, Clock, Briefcase, Moon, Info, Lock } from 'lucide-react';
 
-export default function ProjectDurationSummary({ derivedValues, language, quoteItems, quoteTotal }) {
+export default function ProjectDurationSummary({ derivedValues, language, quoteItems, quoteTotal, catalogItems }) {
   // ============================================================================
   // CAPA 6 - PURELY PRESENTATIONAL (NO CALCULATIONS)
   // ============================================================================
@@ -31,10 +31,14 @@ export default function ProjectDurationSummary({ derivedValues, language, quoteI
   const hasTravelDays = derivedValues.travelDays > 0;
   const hasWeekends = derivedValues.calendarDays > derivedValues.workDays;
   
-  // Calculate estimated cost and profit from quote items
+  // Calculate estimated cost from catalog costs (NOT quote items)
   const estimatedCost = (quoteItems || []).reduce((sum, item) => {
-    const costPerUnit = item.cost_per_unit || 0;
-    const materialCost = item.material_cost || 0;
+    // Find matching catalog item by name
+    const catalogItem = (catalogItems || []).find(ci => ci.name === item.item_name);
+    if (!catalogItem) return sum;
+    
+    const costPerUnit = catalogItem.cost_per_unit || 0;
+    const materialCost = catalogItem.material_cost || 0;
     const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
     return sum + totalCost;
   }, 0);

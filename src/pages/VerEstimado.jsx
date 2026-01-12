@@ -63,6 +63,12 @@ export default function VerEstimado() {
     enabled: !!quoteId,
   });
 
+  const { data: catalogItems = [] } = useQuery({
+    queryKey: ['quoteItems'],
+    queryFn: () => base44.entities.QuoteItem.list(),
+    initialData: [],
+  });
+
   const updateStatusMutation = useMutation({
     mutationFn: async (newStatus) => {
       await base44.entities.Quote.update(quoteId, { status: newStatus });
@@ -628,18 +634,22 @@ Lawrenceville, Georgia 30043, U.S.A`
                   <span className="font-bold text-white text-lg">${quote.total?.toFixed(2) || '0.00'}</span>
                 </div>
 
-                {/* Total Profit Est. - Calculate from catalog if not stored */}
+                {/* Total Profit Est. - Calculate from catalog costs */}
                 {(() => {
-                  const estimatedCost = quote.estimated_cost || (quote.items || []).reduce((sum, item) => {
-                    const costPerUnit = item.cost_per_unit || 0;
-                    const materialCost = item.material_cost || 0;
+                  // Calculate cost from catalog items
+                  const estimatedCost = (quote.items || []).reduce((sum, item) => {
+                    const catalogItem = catalogItems.find(ci => ci.name === item.item_name);
+                    if (!catalogItem) return sum;
+                    
+                    const costPerUnit = catalogItem.cost_per_unit || 0;
+                    const materialCost = catalogItem.material_cost || 0;
                     const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
                     return sum + totalCost;
                   }, 0);
                   
-                  const profit = quote.total - estimatedCost;
+                  const profit = (quote.subtotal || quote.total || 0) - estimatedCost;
                   
-                  return estimatedCost > 0 && quote.total ? (
+                  return estimatedCost > 0 ? (
                     <div className="flex justify-between items-center p-2.5 bg-gradient-to-r from-green-600 to-green-700 rounded-lg">
                       <span className="text-white font-bold">{language === 'es' ? 'Profit Est.' : 'Total Profit Est.'}</span>
                       <span className="font-bold text-white text-lg">

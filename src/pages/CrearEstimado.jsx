@@ -1040,14 +1040,17 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     const estimated_cost = enrichedItems.reduce((sum, item) => {
       // Find matching catalog item to get internal cost
       const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
-      const costPerUnit = catalogItem?.cost_per_unit || 0;
-      const materialCost = catalogItem?.material_cost || 0;
+      if (!catalogItem) return sum;
+      
+      const costPerUnit = catalogItem.cost_per_unit || 0;
+      const materialCost = catalogItem.material_cost || 0;
       const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
       return sum + totalCost;
     }, 0);
 
     // Calculate profit margin
-    const profit_margin = total > 0 ? ((total - estimated_cost) / total) * 100 : 0;
+    const revenue = subtotal; // Use subtotal (without tax) for profit margin
+    const profit_margin = revenue > 0 ? ((revenue - estimated_cost) / revenue) * 100 : 0;
 
     // Save with enriched items (derived quantities applied)
     const dataToSave = {
@@ -1371,6 +1374,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                         language={language}
                         quoteItems={formData.items}
                         quoteTotal={total}
+                        catalogItems={quoteItems}
                       />
                     </div>
                   </div>
