@@ -218,13 +218,13 @@ export default function UnifiedOutOfAreaCalculator({
 
   return (
     <Card className="bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/20 border-2 border-blue-300">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-900 text-base">
-          <Calculator className="w-5 h-5 text-blue-600" />
+      <CardHeader className="py-3 px-4">
+        <CardTitle className="flex items-center gap-2 text-slate-900 text-sm">
+          <Calculator className="w-4 h-4 text-blue-600" />
           {language === 'es' ? 'Configuración Fuera de Área' : 'Out of Area Configuration'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 p-4">
         {error && (
           <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
             <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
