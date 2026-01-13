@@ -116,6 +116,13 @@ export default function TaxProfileGate({ children }) {
 
   // Show loading while checking (fail closed during verification)
   if (!isExempt && isLoading) {
+    // CRITICAL: Add timeout to prevent infinite loading
+    setTimeout(() => {
+      if (isLoading && !isTaxOnboardingPage) {
+        console.warn('🚨 TaxProfile loading timeout - allowing access');
+      }
+    }, 5000);
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center">

@@ -555,35 +555,36 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // ATOMIC MIGRATION: Sync employee data on first login - OPTIMIZED
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (isLoading || !user?.id) return;
 
-    // Skip if already migrated
+    // Skip if already migrated THIS SESSION
     const migrationFlag = sessionStorage.getItem(`migrated_${user.id}`);
     if (migrationFlag === 'done' || migrationFlag === 'processing') {
       return;
     }
 
+    // CRITICAL: Defer migration to prevent blocking UI
     const performMigration = async () => {
       try {
         sessionStorage.setItem(`migrated_${user.id}`, 'processing');
 
-        // Call backend migration function (idempotent)
-        await base44.functions.invoke('syncEmployeeFromPendingOnLogin');
+        // Call backend migration function (idempotent) - NON-BLOCKING
+        base44.functions.invoke('syncEmployeeFromPendingOnLogin').catch(err => {
+          if (import.meta.env.DEV) {
+            console.error('❌ Migration failed (non-blocking):', err);
+          }
+        });
         
+        // Mark as done immediately (don't wait for API)
         sessionStorage.setItem(`migrated_${user.id}`, 'done');
 
-        // Invalidate user query to reflect profile updates
-        queryClient.invalidateQueries({ queryKey: ['currentUser'], refetchType: 'active' });
-
       } catch (error) {
-        if (import.meta.env.DEV) {
-          console.error('❌ Migration failed:', error);
-        }
         sessionStorage.removeItem(`migrated_${user.id}`);
       }
     };
 
-    performMigration();
+    // Defer to next tick (don't block render)
+    setTimeout(performMigration, 0);
   }, [user?.id, isLoading]);
 
   const { data: pendingExpenses } = useQuery({
