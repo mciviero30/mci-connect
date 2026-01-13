@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
+import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import ProjectDurationSummary from "../components/quotes/ProjectDurationSummary";
@@ -439,18 +440,7 @@ export default function CrearEstimado() {
     }
   });
 
-  // Helper to get customer display name - ONLY NAME & LAST NAME
-  const getCustomerDisplayName = (customer) => {
-    if (!customer) return '';
-    
-    // ONLY show first and last name
-    if (customer.first_name || customer.last_name) {
-      return `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
-    }
-    
-    // Fallback if no name
-    return customer.email || 'Sin nombre';
-  };
+
 
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
@@ -1180,13 +1170,11 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       <SelectValue placeholder={t('selectCustomer')} />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-slate-200">
-                      {[...customers]
-                        .sort((a, b) => getCustomerDisplayName(a).localeCompare(getCustomerDisplayName(b)))
-                        .map(customer => (
-                          <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
-                            {getCustomerDisplayName(customer)}
-                          </SelectItem>
-                        ))}
+                      {sortCustomersByName(customers).map(customer => (
+                        <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
+                          {getCustomerDisplayName(customer)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

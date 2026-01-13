@@ -182,3 +182,80 @@ export const formatPosition = (position) => {
     word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   ).join(' ');
 };
+
+/**
+ * Gets proper display name from customer object
+ * PRIORITY ORDER:
+ * 1. first_name + last_name (Title Case)
+ * 2. name field (legacy)
+ * 3. company name
+ * 4. Email
+ */
+export const getCustomerDisplayName = (customer) => {
+  if (!customer) return 'Unknown Customer';
+  
+  // FIRST: Try first_name + last_name
+  if (customer.first_name || customer.last_name) {
+    const firstName = capitalizeName(customer.first_name || '');
+    const lastName = capitalizeName(customer.last_name || '');
+    const fullName = `${firstName} ${lastName}`.trim();
+    if (fullName) return fullName;
+  }
+  
+  // SECOND: Legacy name field
+  if (customer.name && !customer.name.includes('@')) {
+    return capitalizeName(customer.name);
+  }
+  
+  // THIRD: Company name
+  if (customer.company) {
+    return customer.company;
+  }
+  
+  // LAST: Email fallback
+  if (customer.email) {
+    return customer.email;
+  }
+  
+  return 'Unknown Customer';
+};
+
+/**
+ * Sort customers alphabetically by first_name, then last_name
+ */
+export const sortCustomersByName = (customers) => {
+  return [...customers].sort((a, b) => {
+    const aFirst = (a.first_name || '').toLowerCase();
+    const bFirst = (b.first_name || '').toLowerCase();
+    const aLast = (a.last_name || '').toLowerCase();
+    const bLast = (b.last_name || '').toLowerCase();
+    
+    // First compare by first_name
+    if (aFirst !== bFirst) {
+      return aFirst.localeCompare(bFirst);
+    }
+    
+    // If first_name is same, compare by last_name
+    return aLast.localeCompare(bLast);
+  });
+};
+
+/**
+ * Sort employees alphabetically by first_name, then last_name
+ */
+export const sortEmployeesByName = (employees) => {
+  return [...employees].sort((a, b) => {
+    const aFirst = (a.first_name || '').toLowerCase();
+    const bFirst = (b.first_name || '').toLowerCase();
+    const aLast = (a.last_name || '').toLowerCase();
+    const bLast = (b.last_name || '').toLowerCase();
+    
+    // First compare by first_name
+    if (aFirst !== bFirst) {
+      return aFirst.localeCompare(bFirst);
+    }
+    
+    // If first_name is same, compare by last_name
+    return aLast.localeCompare(bLast);
+  });
+};
