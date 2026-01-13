@@ -40,15 +40,15 @@ export default function TaxProfileGate({ children }) {
         });
         return profiles?.[0] || null;
       } catch (err) {
-        // Fail closed: treat query error as incomplete profile
+        // Fail OPEN on error: allow access if query fails
         if (import.meta.env.DEV) {
-          console.error('TaxProfile query error:', err);
+          console.error('TaxProfile query error (failing open):', err);
         }
-        return null;
+        return { completed: true }; // Pretend complete to allow access
       }
     },
     enabled: shouldFetchProfile,
-    retry: 1,
+    retry: 0, // Don't retry, fail fast
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -114,33 +114,11 @@ export default function TaxProfileGate({ children }) {
     return children;
   }
 
-  // Show loading while checking (fail closed during verification)
-  if (!isExempt && isLoading) {
-    // CRITICAL: Add timeout to prevent infinite loading
-    setTimeout(() => {
-      if (isLoading && !isTaxOnboardingPage) {
-        console.warn('🚨 TaxProfile loading timeout - allowing access');
-      }
-    }, 5000);
-    
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="text-center">
-          <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Verifying tax information...</p>
-          <p className="text-xs text-slate-500 mt-2">This should only take a moment</p>
-        </div>
-      </div>
-    );
-  }
+  // REMOVED: Don't block on loading - fail open to prevent white screen
+  // if (!isExempt && isLoading) { ... }
 
-  // If query errored, treat as tax profile missing (redirect to TaxOnboarding)
-  if (!isExempt && error && !isTaxOnboardingPage) {
-    if (import.meta.env.DEV) {
-      console.log('🚨 TaxProfile query error, redirecting to TaxOnboarding');
-    }
-    return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
-  }
+  // REMOVED: Don't redirect on error - query already fails open with completed=true
+  // if (!isExempt && error && !isTaxOnboardingPage) { ... }
 
   // DECLARATIVE REDIRECT: Block access if tax profile not completed
   if (
