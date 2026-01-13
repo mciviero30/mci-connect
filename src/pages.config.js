@@ -33,6 +33,8 @@ import Dashboard from './pages/Dashboard';
 import Directory from './pages/Directory';
 import EditarEstimado from './pages/EditarEstimado';
 import Empleados from './pages/Empleados';
+import EmployeeDataAudit from './pages/EmployeeDataAudit';
+import EmployeeImport from './pages/EmployeeImport';
 import EmployeeProfile from './pages/EmployeeProfile';
 import Estimados from './pages/Estimados';
 import ExecutiveControlTower from './pages/ExecutiveControlTower';
@@ -104,8 +106,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import EmployeeDataAudit from './pages/EmployeeDataAudit';
-import EmployeeImport from './pages/EmployeeImport';
 import __Layout from './Layout.jsx';
 
 
@@ -145,6 +145,8 @@ export const PAGES = {
     "Directory": Directory,
     "EditarEstimado": EditarEstimado,
     "Empleados": Empleados,
+    "EmployeeDataAudit": EmployeeDataAudit,
+    "EmployeeImport": EmployeeImport,
     "EmployeeProfile": EmployeeProfile,
     "Estimados": Estimados,
     "ExecutiveControlTower": ExecutiveControlTower,
@@ -216,8 +218,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "EmployeeDataAudit": EmployeeDataAudit,
-    "EmployeeImport": EmployeeImport,
 }
 
 export const pagesConfig = {
