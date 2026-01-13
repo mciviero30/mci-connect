@@ -369,7 +369,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       icon: Users,
       items: [
         { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
-        { title: 'Employee Import', url: createPageUrl("EmployeeImport"), icon: Users },
         { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
         { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
         { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award },
