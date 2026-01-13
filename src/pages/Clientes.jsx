@@ -15,6 +15,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
 import ModernCustomerCard from "@/components/clientes/ModernCustomerCard";
 import InvitationModal from "@/components/field/InvitationModal";
+import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -149,24 +150,6 @@ export default function Clientes() {
     }
   };
 
-  // CRITICAL FIX: Helper function to get customer display name
-  const getCustomerDisplayName = (customer) => {
-    // NEW FORMAT: first_name + last_name
-    if (customer.first_name || customer.last_name) {
-      const firstName = customer.first_name || '';
-      const lastName = customer.last_name || '';
-      return `${firstName} ${lastName}`.trim();
-    }
-    
-    // OLD FORMAT: name field (backwards compatibility)
-    if (customer.name) {
-      return customer.name;
-    }
-    
-    // FALLBACK: email
-    return customer.email?.split('@')[0] || 'Unknown';
-  };
-
   // Memoize expensive filtering and sorting
   const sortedCustomers = useMemo(() => {
     const filtered = customers.filter(c =>
@@ -177,18 +160,7 @@ export default function Clientes() {
       c.company?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    return [...filtered].sort((a, b) => {
-      const lastNameA = (a.last_name || a.name || '').toLowerCase();
-      const lastNameB = (b.last_name || b.name || '').toLowerCase();
-      
-      if (lastNameA !== lastNameB) {
-        return lastNameA.localeCompare(lastNameB);
-      }
-      
-      const firstNameA = (a.first_name || '').toLowerCase();
-      const firstNameB = (b.first_name || '').toLowerCase();
-      return firstNameA.localeCompare(firstNameB);
-    });
+    return sortCustomersByName(filtered);
   }, [customers, searchTerm]);
 
   const isAdmin = user?.role === 'admin';

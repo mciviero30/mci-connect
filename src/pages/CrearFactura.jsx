@@ -26,6 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { canCreateFinancialDocs, needsApproval, canSendDocument } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
+import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 /**
  * ============================================================================
  * CAPA 7 - INVOICE SNAPSHOT (NO RECALCULATION)
@@ -408,14 +409,10 @@ export default function CrearFactura() {
   const handleCustomerSelect = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      // ONLY use person name (first + last), no fallback to company
-      const customerName = (customer.first_name || customer.last_name)
-        ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-        : customer.email || 'Sin nombre';
       setFormData(prevFormData => ({
         ...prevFormData,
         customer_id: customerId,
-        customer_name: customerName,
+        customer_name: getCustomerDisplayName(customer),
         customer_email: customer.email || "",
         customer_phone: customer.phone || "",
         job_address: customer.address || prevFormData.job_address
@@ -932,18 +929,11 @@ export default function CrearFactura() {
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {customers.filter(c => c.status === 'active').map(customer => {
-                        // ONLY show first and last name (no company)
-                        const displayText = (customer.first_name || customer.last_name)
-                          ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-                          : customer.email || 'Sin nombre';
-                        
-                        return (
-                          <SelectItem key={customer.id} value={customer.id}>
-                            {displayText}
-                          </SelectItem>
-                        );
-                      })}
+                      {sortCustomersByName(customers.filter(c => c.status === 'active')).map(customer => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {getCustomerDisplayName(customer)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
