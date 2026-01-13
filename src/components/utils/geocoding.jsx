@@ -6,11 +6,19 @@
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export const geocodeAddress = async (address) => {
+  // Debug check
+  console.log('🗺️ Geocoding API Key Check:', {
+    isConfigured: !!GOOGLE_MAPS_API_KEY,
+    keyPrefix: GOOGLE_MAPS_API_KEY ? `${GOOGLE_MAPS_API_KEY.substring(0, 15)}...` : 'NOT SET',
+    address: address
+  });
+
   if (!address || address.trim().length === 0) {
     throw new Error('Address is required');
   }
 
   if (!GOOGLE_MAPS_API_KEY) {
+    console.error('❌ VITE_GOOGLE_MAPS_API_KEY not found in environment');
     throw new Error('Google Maps API key not configured');
   }
 
