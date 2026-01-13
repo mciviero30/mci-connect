@@ -412,15 +412,11 @@ export default function UnifiedOutOfAreaCalculator({
                     </div>
                     <p className="text-2xl font-bold text-purple-900">{derivedValues.hotelRooms}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Input
-                        type="number"
-                        min="1"
-                        max="10"
-                        value={roomsPerNight}
-                        onChange={(e) => onRoomsPerNightChange(parseInt(e.target.value) || 1)}
-                        className="w-14 h-6 text-xs"
-                      />
+                      <div className="w-14 h-6 text-xs bg-slate-100 rounded border border-slate-300 flex items-center justify-center font-semibold text-slate-700">
+                        {roomsPerNight}
+                      </div>
                       <span className="text-xs text-slate-500">x {derivedValues.nights}n</span>
+                      <span className="text-xs text-slate-400 ml-1">{language === 'es' ? '(auto)' : '(auto)'}</span>
                     </div>
                   </div>
 

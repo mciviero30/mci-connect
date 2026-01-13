@@ -127,9 +127,15 @@ export default function CrearEstimado() {
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
   const [projectTechCount, setProjectTechCount] = useState(2);
   const [travelTimeHours, setTravelTimeHours] = useState(0);
-  const [roomsPerNight, setRoomsPerNight] = useState(1);
+  const [roomsPerNight, setRoomsPerNight] = useState(Math.ceil(2 / 2)); // Auto-calculated
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
+
+  // Auto-calculate rooms per night based on tech count (max 2 techs per room)
+  useEffect(() => {
+    const calculatedRooms = Math.ceil(projectTechCount / 2);
+    setRoomsPerNight(calculatedRooms);
+  }, [projectTechCount]);
   
   // Draft persistence - auto-save to localStorage
   const { clearDraft } = useDraftPersistence({
