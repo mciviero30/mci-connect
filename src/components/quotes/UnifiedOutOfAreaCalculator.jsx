@@ -390,8 +390,8 @@ export default function UnifiedOutOfAreaCalculator({
                   </div>
 
                   <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600">{language === 'es' ? 'Noches' : 'Nights'}</p>
-                    <p className="text-lg font-bold text-purple-900">{derivedValues.totalNights}</p>
+                    <p className="text-[10px] font-semibold text-slate-600">{language === 'es' ? 'Cuartos' : 'Rooms'}</p>
+                    <p className="text-lg font-bold text-purple-900">{derivedValues.hotelRooms}</p>
                   </div>
 
                   <div className="p-2 bg-white rounded border border-purple-200">
