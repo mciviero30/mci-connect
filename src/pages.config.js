@@ -105,6 +105,7 @@ import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
 import EmployeeDataAudit from './pages/EmployeeDataAudit';
+import EmployeeImport from './pages/EmployeeImport';
 import __Layout from './Layout.jsx';
 
 
@@ -216,6 +217,7 @@ export const PAGES = {
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
     "EmployeeDataAudit": EmployeeDataAudit,
+    "EmployeeImport": EmployeeImport,
 }
 
 export const pagesConfig = {
