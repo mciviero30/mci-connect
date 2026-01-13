@@ -126,6 +126,8 @@ export function calculateStayDuration({ items, techCount, travelTimeHours, rooms
 
   return {
     totalLaborHours,
+    travelHours: travelHoursInDays,
+    totalHoursWithTravel,
     dailyCapacity: hoursPerDay * techCount,
     weeklyCapacity: hoursPerDay * techCount * 5,
     workDays: totalWorkDays,
