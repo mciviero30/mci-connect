@@ -553,7 +553,10 @@ export default function Empleados() {
   const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status)));
   
   // Debug pending employees filtering
-  const rawPending = pendingEmployees.filter(e => e.email !== OWNER_EMAIL);
+  const rawPending = pendingEmployees.filter(e => 
+    e.email !== OWNER_EMAIL && 
+    (e.status === 'pending' || !e.status)
+  );
   console.log('🔎 Raw pending after owner filter:', rawPending.length);
   
   const pendingList = filterEmployees(rawPending.map(pe => ({ 
@@ -563,7 +566,16 @@ export default function Empleados() {
   
   console.log('✅ Final pendingList:', pendingList.length, 'employees');
   
-  const invitedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited')));
+  // Invited tab: Users with employment_status='invited' + PendingEmployees with status='invited'
+  const invitedUsers = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited')));
+  const invitedPending = filterEmployees(pendingEmployees.filter(e => 
+    e.email !== OWNER_EMAIL && 
+    e.status === 'invited'
+  ).map(pe => ({ 
+    ...pe, 
+    entity_name: 'PendingEmployee'
+  })));
+  const invitedEmployees = [...invitedUsers, ...invitedPending];
   const archivedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'archived')));
   const deletedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')));
 

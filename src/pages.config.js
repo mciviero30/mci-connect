@@ -89,6 +89,7 @@ import SetupPassword from './pages/SetupPassword';
 import SkillMatrix from './pages/SkillMatrix';
 import SystemHealthCheck from './pages/SystemHealthCheck';
 import SystemReadiness from './pages/SystemReadiness';
+import SystemTest from './pages/SystemTest';
 import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
 import TeamGoals from './pages/TeamGoals';
@@ -103,7 +104,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import SystemTest from './pages/SystemTest';
 import __Layout from './Layout.jsx';
 
 
@@ -199,6 +199,7 @@ export const PAGES = {
     "SkillMatrix": SkillMatrix,
     "SystemHealthCheck": SystemHealthCheck,
     "SystemReadiness": SystemReadiness,
+    "SystemTest": SystemTest,
     "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
     "TeamGoals": TeamGoals,
@@ -213,7 +214,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "SystemTest": SystemTest,
 }
 
 export const pagesConfig = {
