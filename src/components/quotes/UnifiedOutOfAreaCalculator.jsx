@@ -382,47 +382,21 @@ export default function UnifiedOutOfAreaCalculator({
               </Alert>
             ) : (
               <>
-                {/* Stay Summary - READ-ONLY */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-white rounded-lg border border-purple-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-semibold text-slate-600">
-                        {language === 'es' ? 'Duración Total' : 'Total Duration'}
-                      </span>
-                    </div>
-                    <p className="text-2xl font-bold text-purple-900">{derivedValues.totalCalendarDays} {language === 'es' ? 'días' : 'days'}</p>
-                    <p className="text-xs text-slate-500">
-                      {derivedValues.nights} {language === 'es' ? 'noches' : 'nights'}
-                    </p>
+                {/* Stay Summary - READ-ONLY - COMPACT */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2 bg-white rounded border border-purple-200">
+                    <p className="text-[10px] font-semibold text-slate-600">{language === 'es' ? 'Duración' : 'Days'}</p>
+                    <p className="text-lg font-bold text-purple-900">{derivedValues.totalCalendarDays}</p>
                   </div>
 
-                  <div className="p-3 bg-white rounded-lg border border-purple-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Hotel className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-semibold text-slate-600">
-                        {language === 'es' ? 'Habitaciones' : 'Hotel Rooms'}
-                      </span>
-                    </div>
-                    <p className="text-2xl font-bold text-purple-900">{derivedValues.hotelRooms}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="w-14 h-6 text-xs bg-slate-100 rounded border border-slate-300 flex items-center justify-center font-semibold text-slate-700">
-                        {roomsPerNight}
-                      </div>
-                      <span className="text-xs text-slate-500">x {derivedValues.nights}n</span>
-                      <span className="text-xs text-slate-400 ml-1">{language === 'es' ? '(auto)' : '(auto)'}</span>
-                    </div>
+                  <div className="p-2 bg-white rounded border border-purple-200">
+                    <p className="text-[10px] font-semibold text-slate-600">{language === 'es' ? 'Cuartos' : 'Rooms'}</p>
+                    <p className="text-lg font-bold text-purple-900">{derivedValues.hotelRooms}</p>
                   </div>
 
-                  <div className="p-3 bg-white rounded-lg border border-purple-200 col-span-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Coffee className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-semibold text-slate-600">Per Diem</span>
-                    </div>
-                    <p className="text-2xl font-bold text-purple-900">{derivedValues.perDiemDays}</p>
-                    <p className="text-xs text-slate-500">
-                      {techCount} techs × {derivedValues.totalCalendarDays}d
-                    </p>
+                  <div className="p-2 bg-white rounded border border-purple-200">
+                    <p className="text-[10px] font-semibold text-slate-600">Per Diem</p>
+                    <p className="text-lg font-bold text-purple-900">{derivedValues.perDiemDays}</p>
                   </div>
                 </div>
               </>
