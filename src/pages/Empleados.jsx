@@ -652,57 +652,57 @@ jane.smith@example.com,Jane,Smith,(555)987-6543,supervisor,operations,Team Beta,
               </Button>
 
               <Button
-                onClick={async () => {
+                onClick={() => {
+                  console.log('🚀 Import button clicked');
+                  alert('Opening file picker...');
+                  
                   const input = document.createElement('input');
                   input.type = 'file';
                   input.accept = '.csv';
+                  
                   input.onchange = async (e) => {
-                    const file = e.target.files[0];
+                    console.log('📁 File input changed');
+                    const file = e.target.files?.[0];
+                    
                     if (!file) {
-                      console.log('No file selected');
+                      console.log('❌ No file selected');
+                      alert('No file selected');
                       return;
                     }
                     
-                    console.log('File selected:', file.name, file.type, file.size);
-                    
-                    if (!file.name.endsWith('.csv')) {
-                      alert('❌ Please upload a CSV file (not XLSX). Use "Download CSV Template" button to get the correct format.');
-                      return;
-                    }
+                    console.log('✅ File selected:', {
+                      name: file.name,
+                      type: file.type,
+                      size: file.size
+                    });
                     
                     try {
-                      console.log('Step 1: Starting upload...');
-                      alert('⏳ Step 1/3: Uploading file...');
+                      alert(`⏳ Uploading ${file.name}...`);
                       
-                      // Upload file
                       const uploadRes = await base44.integrations.Core.UploadFile({ file });
-                      console.log('Upload response:', uploadRes);
-                      const fileUrl = uploadRes.file_url;
-                      console.log('File URL:', fileUrl);
+                      console.log('✅ Upload complete:', uploadRes);
                       
-                      console.log('Step 2: Importing employees...');
-                      alert('⏳ Step 2/3: Processing employees...');
+                      alert('⏳ Processing employees...');
+                      const result = await base44.functions.invoke('importEmployeesFromXLSX', { 
+                        file_url: uploadRes.file_url 
+                      });
                       
-                      // Import employees
-                      const result = await base44.functions.invoke('importEmployeesFromXLSX', { file_url: fileUrl });
-                      console.log('✅ Import result:', result);
+                      console.log('✅ Import complete:', result);
                       
-                      alert('⏳ Step 3/3: Refreshing list...');
                       await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
                       await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
                       
-                      if (result.errors && result.errors.length > 0) {
-                        alert(`⚠️ Imported ${result.created} employees with ${result.errors.length} errors. Check console for details.`);
-                        console.error('Import errors:', result.errors);
-                      } else {
-                        alert(`✅ Successfully imported ${result.created} employees! Go to "Pending" tab to see them.`);
-                      }
+                      alert(`✅ Imported ${result.created || 0} employees! Check "Pending" tab.`);
+                      
                     } catch (err) {
-                      console.error('❌ Import error:', err);
-                      alert('❌ Import failed: ' + (err.message || JSON.stringify(err)));
+                      console.error('❌ Error:', err);
+                      alert(`❌ Error: ${err.message}`);
                     }
                   };
+                  
+                  document.body.appendChild(input);
                   input.click();
+                  setTimeout(() => input.remove(), 1000);
                 }}
                 variant="outline"
                 className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
