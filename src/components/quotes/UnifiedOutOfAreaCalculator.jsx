@@ -364,9 +364,9 @@ export default function UnifiedOutOfAreaCalculator({
         {/* SECTION 4: Stay Calculation Display */}
         {travelMetrics.length > 0 && (
           <>
-            <div className="flex items-center gap-2 pt-4 pb-2 border-t-2 border-purple-200">
-              <Hotel className="w-4 h-4 text-purple-600" />
-              <h4 className="text-sm font-semibold text-slate-700">
+            <div className="flex items-center gap-2 pt-1 pb-1 border-t border-purple-200">
+              <Hotel className="w-3 h-3 text-purple-600" />
+              <h4 className="text-xs font-semibold text-slate-700">
                 {language === 'es' ? 'Hotel y Per Diem' : 'Hotel & Per Diem'}
               </h4>
             </div>
