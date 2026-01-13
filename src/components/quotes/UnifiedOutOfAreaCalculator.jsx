@@ -406,7 +406,7 @@ export default function UnifiedOutOfAreaCalculator({
 
         {/* SECTION 5: Add All Button (only when calculations ready) */}
         {travelMetrics.length > 0 && (
-          <div className="flex gap-3 pt-4 border-t-2 border-slate-200">
+          <div className="flex gap-2 pt-2 border-t border-slate-200">
             <Button
               type="button"
               variant="outline"
@@ -414,7 +414,8 @@ export default function UnifiedOutOfAreaCalculator({
                 setTravelMetrics([]);
                 setVehicleCounts({});
               }}
-              className="flex-1"
+              size="sm"
+              className="flex-1 text-xs"
             >
               {language === 'es' ? 'Recalcular' : 'Recalculate'}
             </Button>
@@ -422,10 +423,11 @@ export default function UnifiedOutOfAreaCalculator({
               type="button"
               onClick={addAllToQuote}
               disabled={!canAddToQuote}
-              className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold"
+              size="sm"
+              className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold text-xs"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Agregar Todo al Estimado' : 'Add All to Quote'}
+              <Plus className="w-3 h-3 mr-1" />
+              {language === 'es' ? 'Agregar Todo' : 'Add All'}
             </Button>
           </div>
         )}
