@@ -445,14 +445,10 @@ export default function CrearEstimado() {
   const handleCustomerChange = (customerId) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
-      // ONLY use person name (first + last)
-      const personName = (customer.first_name || customer.last_name)
-        ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-        : customer.email || 'Sin nombre';
       setFormData({
         ...formData,
         customer_id: customerId,
-        customer_name: personName,
+        customer_name: getCustomerDisplayName(customer),
         customer_email: customer.email || '',
         customer_phone: customer.phone || '',
       });
