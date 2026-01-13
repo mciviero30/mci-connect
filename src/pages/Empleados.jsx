@@ -551,7 +551,11 @@ export default function Empleados() {
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
   const excludeOwner = (list) => list.filter(e => e.email !== OWNER_EMAIL);
 
-  const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status)));
+  const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => 
+    e.employment_status === 'active' || 
+    e.employment_status === 'pending_registration' ||
+    (!e.employment_status && e.email) // Users with no status but valid email
+  )));
   
   // Debug pending employees filtering - NO FILTER for owner, allow CEO to be invited
   const rawPending = pendingEmployees.filter(e => 
