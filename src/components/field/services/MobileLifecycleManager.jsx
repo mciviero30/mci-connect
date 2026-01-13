@@ -68,13 +68,15 @@ class MobileLifecycleManager {
   }
 
   handleFocus() {
-    if (!this.state.isBackground) return;
+    // DESKTOP FIX: Only trigger if document is visible (prevents false triggers)
+    if (!this.state.isBackground || document.visibilityState !== 'visible') return;
     console.log('[MobileLifecycle] Window focused');
     this.onForeground();
   }
 
   handleBlur() {
-    if (this.state.isBackground) return;
+    // DESKTOP FIX: Only trigger if document is hidden (prevents false triggers on desktop)
+    if (this.state.isBackground || document.visibilityState === 'visible') return;
     console.log('[MobileLifecycle] Window blurred');
     this.onBackground();
   }
