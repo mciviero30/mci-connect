@@ -639,16 +639,28 @@ export default function Empleados() {
                     if (!file) return;
                     
                     try {
+                      alert('⏳ Uploading and importing employees...');
+                      
                       // Upload file
                       const uploadRes = await base44.integrations.Core.UploadFile({ file });
                       const fileUrl = uploadRes.file_url;
                       
                       // Import employees
-                      await base44.functions.invoke('importEmployeesFromXLSX', { file_url: fileUrl });
+                      const result = await base44.functions.invoke('importEmployeesFromXLSX', { file_url: fileUrl });
+                      console.log('Import result:', result);
+                      
                       await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                      alert('✅ Employees imported successfully!');
+                      await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
+                      
+                      if (result.errors && result.errors.length > 0) {
+                        alert(`⚠️ Imported ${result.created} employees with ${result.errors.length} errors. Check console for details.`);
+                        console.error('Import errors:', result.errors);
+                      } else {
+                        alert(`✅ Successfully imported ${result.created} employees!`);
+                      }
                     } catch (err) {
-                      alert('❌ Import failed: ' + err.message);
+                      console.error('Import error:', err);
+                      alert('❌ Import failed: ' + (err.message || JSON.stringify(err)));
                     }
                   };
                   input.click();
