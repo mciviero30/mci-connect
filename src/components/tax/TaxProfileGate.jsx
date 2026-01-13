@@ -24,8 +24,12 @@ export default function TaxProfileGate({ children }) {
   const userRole = user?.role || null;
   const isTaxOnboardingPage = location?.pathname?.includes('TaxOnboarding') || false;
   const isFieldRoute = location?.pathname?.includes('/Field') || false;
+  const isOnboardingPage = location?.pathname?.includes('OnboardingWizard') || false;
   const isExempt = userRole === 'ceo' || userRole === 'admin';
-  const shouldFetchProfile = !!userEmail && !isExempt && !isFieldRoute;
+  
+  // CRITICAL: Don't check tax until onboarding is complete
+  const onboardingIncomplete = user && user.onboarding_completed !== true;
+  const shouldFetchProfile = !!userEmail && !isExempt && !isFieldRoute && !onboardingIncomplete;
 
 
 
@@ -104,8 +108,8 @@ export default function TaxProfileGate({ children }) {
     });
   }
   
-  // CRITICAL: Field routes are sandboxed - skip all gate logic
-  if (isFieldRoute) {
+  // CRITICAL: Skip gate for special routes
+  if (isFieldRoute || isOnboardingPage) {
     return children;
   }
   
@@ -113,17 +117,24 @@ export default function TaxProfileGate({ children }) {
   if (!userEmail) {
     return children;
   }
+  
+  // CRITICAL: Don't check tax until onboarding is complete
+  if (onboardingIncomplete) {
+    if (import.meta.env.DEV) {
+      console.log('⏭️ TaxProfileGate: Skipping tax check - onboarding incomplete');
+    }
+    return children;
+  }
 
-  // REMOVED: Don't block on loading - fail open to prevent white screen
-  // if (!isExempt && isLoading) { ... }
-
-  // REMOVED: Don't redirect on error - query already fails open with completed=true
-  // if (!isExempt && error && !isTaxOnboardingPage) { ... }
+  // Exempt users skip tax check
+  if (isExempt) {
+    return children;
+  }
 
   // DECLARATIVE REDIRECT: Block access if tax profile not completed
+  // (only after onboarding is complete)
   if (
     userEmail &&
-    !isExempt &&
     !isLoading &&
     !isTaxOnboardingPage &&
     (!taxProfile || !taxProfile.completed)
