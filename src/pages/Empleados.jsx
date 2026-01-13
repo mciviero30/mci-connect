@@ -677,26 +677,37 @@ jane.smith@example.com,Jane,Smith,(555)987-6543,supervisor,operations,Team Beta,
                     });
                     
                     try {
-                      alert(`⏳ Uploading ${file.name}...`);
-                      
-                      const uploadRes = await base44.integrations.Core.UploadFile({ file });
-                      console.log('✅ Upload complete:', uploadRes);
-                      
-                      alert('⏳ Processing employees...');
-                      const result = await base44.functions.invoke('importEmployeesFromXLSX', { 
-                        file_url: uploadRes.file_url 
-                      });
-                      
-                      console.log('✅ Import complete:', result);
-                      
-                      await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                      await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
-                      
-                      alert(`✅ Imported ${result.created || 0} employees! Check "Pending" tab.`);
-                      
+                     alert(`⏳ Uploading ${file.name}...`);
+
+                     const uploadRes = await base44.integrations.Core.UploadFile({ file });
+                     console.log('✅ Upload complete:', uploadRes);
+
+                     alert('⏳ Processing employees (this may take 30-60 seconds)...');
+                     const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
+                       file_url: uploadRes.file_url 
+                     });
+
+                     // Extract result from response
+                     const result = response?.data || response;
+                     console.log('✅ Import complete:', result);
+
+                     await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                     await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
+
+                     const created = result?.created || 0;
+                     const errors = result?.errors?.length || 0;
+
+                     if (errors > 0) {
+                       alert(`⚠️ Imported ${created} employees with ${errors} errors. Check console for details.`);
+                       console.error('Import errors:', result.errors);
+                     } else {
+                       alert(`✅ Successfully imported ${created} employees! Switching to "Pending" tab...`);
+                       setActiveTab('pending');
+                     }
+
                     } catch (err) {
-                      console.error('❌ Error:', err);
-                      alert(`❌ Error: ${err.message}`);
+                     console.error('❌ Error:', err);
+                     alert(`❌ Error: ${err?.message || 'Unknown error'}`);
                     }
                   };
                   
