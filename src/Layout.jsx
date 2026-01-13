@@ -553,39 +553,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   // Prevent Layout from triggering Field remounts
   const wasFieldPage = useRef(false);
 
-  // ATOMIC MIGRATION: Sync employee data on first login - OPTIMIZED
-  useEffect(() => {
-    if (isLoading || !user?.id) return;
-
-    // Skip if already migrated THIS SESSION
-    const migrationFlag = sessionStorage.getItem(`migrated_${user.id}`);
-    if (migrationFlag === 'done' || migrationFlag === 'processing') {
-      return;
-    }
-
-    // CRITICAL: Defer migration to prevent blocking UI
-    const performMigration = async () => {
-      try {
-        sessionStorage.setItem(`migrated_${user.id}`, 'processing');
-
-        // Call backend migration function (idempotent) - NON-BLOCKING
-        base44.functions.invoke('syncEmployeeFromPendingOnLogin').catch(err => {
-          if (import.meta.env.DEV) {
-            console.error('❌ Migration failed (non-blocking):', err);
-          }
-        });
-        
-        // Mark as done immediately (don't wait for API)
-        sessionStorage.setItem(`migrated_${user.id}`, 'done');
-
-      } catch (error) {
-        sessionStorage.removeItem(`migrated_${user.id}`);
-      }
-    };
-
-    // Defer to next tick (don't block render)
-    setTimeout(performMigration, 0);
-  }, [user?.id, isLoading]);
+  // REMOVED: Migration moved to background - doesn't block UI
+  // Migration happens asynchronously via ProfileSyncManager after login
 
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],

@@ -36,7 +36,30 @@ export default function ProfileSyncManager({ user }) {
     };
   }, [user?.id, queryClient]);
 
-  // Sync with MCI Web when profile updates
+  // FIRST LOGIN MIGRATION: Background sync (non-blocking)
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Check if first login (no onboarding_completed flag)
+    const isFirstLogin = !sessionStorage.getItem(`first_login_migrated_${user.id}`);
+    
+    if (isFirstLogin) {
+      // Mark immediately to prevent duplicate calls
+      sessionStorage.setItem(`first_login_migrated_${user.id}`, 'processing');
+      
+      // Background migration (fire and forget)
+      base44.functions.invoke('syncEmployeeFromPendingOnLogin').then(() => {
+        sessionStorage.setItem(`first_login_migrated_${user.id}`, 'done');
+        // Refresh user data after migration
+        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      }).catch(err => {
+        console.warn('⚠️ Background migration failed:', err);
+        sessionStorage.setItem(`first_login_migrated_${user.id}`, 'failed');
+      });
+    }
+  }, [user?.id, queryClient]);
+
+  // Sync with MCI Web when profile updates (background)
   useEffect(() => {
     if (!user) return;
 
@@ -52,9 +75,8 @@ export default function ProfileSyncManager({ user }) {
             preferred_profile_image: user.preferred_profile_image,
           }
         });
-        console.log('✅ Profile synced with MCI Web');
       } catch (error) {
-        console.warn('⚠️ Could not sync with MCI Web:', error);
+        // Silent fail - don't block UI
       }
     };
 

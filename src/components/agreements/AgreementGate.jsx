@@ -121,15 +121,8 @@ export default function AgreementGate({ children }) {
     return children;
   }
 
-  // Defensive checks
-  if (!userEmail) return children;
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  // Defensive checks - NEVER block on loading
+  if (!userEmail || isLoading) return children;
 
   // Calculate unsigned agreements
   const requiredAgreements = getRequiredAgreements(user) || [];
