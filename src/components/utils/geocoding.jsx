@@ -1,6 +1,7 @@
 /**
  * Geocoding utility using Google Maps API
  * Converts address to latitude/longitude coordinates
+ * Auto-geocodes addresses for job locations
  */
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
