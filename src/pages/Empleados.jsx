@@ -630,13 +630,40 @@ export default function Empleados() {
               </Button>
 
               <Button
+                onClick={() => {
+                  const csv = `email,first_name,last_name,phone,position,department,team_name,address,dob,ssn_tax_id,tshirt_size,hourly_rate
+john.doe@example.com,John,Doe,(555)123-4567,technician,field,Team Alpha,123 Main St,1990-01-15,123-45-6789,L,25.50
+jane.smith@example.com,Jane,Smith,(555)987-6543,supervisor,operations,Team Beta,456 Oak Ave,1985-03-22,987-65-4321,M,35.00`;
+                  
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'employee_template.csv';
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                }}
+                variant="outline"
+                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none border-blue-300 text-blue-600 hover:bg-blue-50"
+              >
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Download CSV Template</span>
+                <span className="sm:hidden">Template</span>
+              </Button>
+
+              <Button
                 onClick={async () => {
                   const input = document.createElement('input');
                   input.type = 'file';
-                  input.accept = '.xlsx';
+                  input.accept = '.csv';
                   input.onchange = async (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
+                    
+                    if (!file.name.endsWith('.csv')) {
+                      alert('❌ Please upload a CSV file (not XLSX). Use "Download CSV Template" button to get the correct format.');
+                      return;
+                    }
                     
                     try {
                       alert('⏳ Uploading and importing employees...');
@@ -669,7 +696,7 @@ export default function Empleados() {
                 className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
               >
                 <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Import XLSX</span>
+                <span className="hidden sm:inline">Import CSV</span>
                 <span className="sm:hidden">Import</span>
               </Button>
 
