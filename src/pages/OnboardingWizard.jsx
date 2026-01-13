@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Circle, UserX } from "lucide-react";
+import { createPageUrl } from "@/utils";
 import SafetyAcknowledgmentForm from "@/components/onboarding/SafetyAcknowledgmentForm";
 import CompanyRulesForm from "@/components/onboarding/CompanyRulesForm";
 import PersonalPaperworkForm from "@/components/onboarding/PersonalPaperworkForm";
@@ -10,6 +12,7 @@ import ProfileReviewForm from "@/components/onboarding/ProfileReviewForm";
 
 export default function OnboardingWizard() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
@@ -139,20 +142,26 @@ export default function OnboardingWizard() {
           onboarding_status: 'completed'
         });
         
+        if (import.meta.env.DEV) {
+          console.log('✅ Onboarding complete, invalidating queries...');
+        }
+        
         // CRITICAL: Invalidate ALL user-related queries
         await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
         await queryClient.invalidateQueries({ queryKey: ['onboardingForms'] });
         await queryClient.invalidateQueries({ queryKey: ['employeeProfile'] });
         
         // Force refetch to ensure Layout sees updated user
-        await queryClient.refetchQueries({ queryKey: ['currentUser'] });
+        await queryClient.refetchQueries({ queryKey: ['currentUser'], type: 'active' });
         
         if (import.meta.env.DEV) {
-          console.log('🔄 Queries invalidated, navigating to Dashboard...');
+          console.log('🔄 Navigating to Dashboard...');
         }
         
-        // Navigate without full reload (React Router)
-        window.location.href = '/';
+        // Small delay to ensure queries finish
+        setTimeout(() => {
+          navigate(createPageUrl('Dashboard'), { replace: true });
+        }, 100);
       }
     }
   });
@@ -163,10 +172,10 @@ export default function OnboardingWizard() {
       if (import.meta.env.DEV) {
         console.log('🚫 Onboarding already completed, redirecting...');
       }
-      window.location.href = '/';
+      navigate(createPageUrl('Dashboard'), { replace: true });
       return;
     }
-  }, [user?.onboarding_completed]);
+  }, [user?.onboarding_completed, navigate]);
 
   // Determine which step to show based on completed forms
   useEffect(() => {
