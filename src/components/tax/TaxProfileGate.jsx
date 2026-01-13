@@ -33,123 +33,52 @@ export default function TaxProfileGate({ children }) {
 
 
 
-  // Fetch tax profile - ALWAYS called, enabled flag is stable
+  // Fetch tax profile - ONLY when truly needed
   const { data: taxProfile, isLoading, error } = useQuery({
     queryKey: ['taxProfile', userEmail],
     queryFn: async () => {
       if (!userEmail) return null;
-      try {
-        const profiles = await base44.entities.TaxProfile.filter({ 
-          employee_email: userEmail 
-        });
-        return profiles?.[0] || null;
-      } catch (err) {
-        // Fail OPEN on error: allow access if query fails
-        if (import.meta.env.DEV) {
-          console.error('TaxProfile query error (failing open):', err);
-        }
-        return { completed: true }; // Pretend complete to allow access
-      }
+      const profiles = await base44.entities.TaxProfile.filter({ 
+        employee_email: userEmail 
+      });
+      return profiles?.[0] || null;
     },
     enabled: shouldFetchProfile,
-    retry: 0, // Don't retry, fail fast
+    retry: 0,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
-  // Create alert if tax profile incomplete - stable dependencies
-  useEffect(() => {
-    if (!userEmail || isLoading || isExempt) return;
+  // REMOVED: Alert creation - not needed, causes extra queries
 
-    const needsTaxOnboarding = !taxProfile || !taxProfile?.completed;
-
-    if (needsTaxOnboarding) {
-      // Defensive: catch errors to prevent crash
-      base44.entities.SystemAlert.filter({
-        recipient_email: userEmail,
-        alert_type: 'tax_info_incomplete',
-        read: false,
-      }).then(existingAlerts => {
-        if (!existingAlerts || existingAlerts.length === 0) {
-          base44.entities.SystemAlert.create({
-            recipient_email: userEmail,
-            alert_type: 'tax_info_incomplete',
-            title: 'Tax Information Required',
-            message: 'You must complete your tax information before using the system. This is required by federal law.',
-            severity: 'critical',
-            action_url: '/TaxOnboarding',
-          }).catch(err => {
-            // Silent fail: alert creation is not critical for gate function
-            if (import.meta.env.DEV) {
-              console.error('Failed to create tax alert:', err);
-            }
-          });
-        }
-      }).catch(err => {
-        // Silent fail: alert check is not critical for gate function
-        if (import.meta.env.DEV) {
-          console.error('Failed to check tax alerts:', err);
-        }
-      });
-    }
-  }, [userEmail, taxProfile, isLoading, isExempt]);
-
-  // CONDITIONAL RENDERING - happens AFTER all hooks
+  // EARLY EXITS - ZERO UI BLOCKING
   
-  // DEV: Log render order
-  if (import.meta.env.DEV) {
-    console.log('🟢 TaxProfileGate rendering:', {
-      userEmail,
-      isLoading,
-      isExempt,
-      isFieldRoute,
-      taxProfileCompleted: taxProfile?.completed
-    });
-  }
-  
-  // CRITICAL: Skip gate for special routes
-  if (isFieldRoute || isOnboardingPage) {
+  // Skip gate for special routes (Field, Onboarding, TaxOnboarding itself)
+  if (isFieldRoute || isOnboardingPage || isTaxOnboardingPage) {
     return children;
   }
   
-  // Defensive: if no user, fail open (allow access)
+  // No user = allow access (defensive)
   if (!userEmail) {
     return children;
   }
   
-  // CRITICAL: Don't check tax until onboarding is complete
+  // Onboarding incomplete = skip tax check entirely
   if (onboardingIncomplete) {
-    if (import.meta.env.DEV) {
-      console.log('⏭️ TaxProfileGate: Skipping tax check - onboarding incomplete');
-    }
     return children;
   }
 
-  // Exempt users skip tax check
+  // Exempt users (admin/CEO) skip tax check
   if (isExempt) {
     return children;
   }
 
-  // DECLARATIVE REDIRECT: Block access if tax profile not completed
-  // (only after onboarding is complete)
-  if (
-    userEmail &&
-    !isLoading &&
-    !isTaxOnboardingPage &&
-    (!taxProfile || !taxProfile.completed)
-  ) {
-    if (import.meta.env.DEV) {
-      console.log('🚨 TaxProfileGate BLOCKING access - redirecting to TaxOnboarding');
-    }
+  // ONLY NOW check tax - redirect immediately if incomplete (no loading screen)
+  if (!isLoading && (!taxProfile || !taxProfile.completed)) {
     return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
   }
-  
-  // DEV: Log passthrough
-  if (import.meta.env.DEV) {
-    console.log('✅ TaxProfileGate allowing access');
-  }
 
-  // Allow access if: exempt, tax profile loaded and complete
+  // All checks passed OR still loading (fail open)
   return children;
 }
