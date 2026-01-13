@@ -233,21 +233,19 @@ export default function UnifiedOutOfAreaCalculator({
         )}
 
         {/* SECTION 1: Tech Count - Always visible */}
-        <div className="flex items-center gap-4 p-3 bg-white rounded-lg border border-blue-200">
-          <Users className="w-5 h-5 text-blue-600" />
-          <div className="flex-1">
-            <Label className="text-sm font-semibold">
-              {language === 'es' ? 'Técnicos en el Proyecto' : 'Technicians on Project'}
-            </Label>
-            <Input
-              type="number"
-              min="1"
-              max="20"
-              value={techCount}
-              onChange={(e) => onTechCountChange(parseInt(e.target.value) || 1)}
-              className="w-20 h-8 mt-1"
-            />
-          </div>
+        <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-blue-200">
+          <Users className="w-4 h-4 text-blue-600" />
+          <Label className="text-xs font-semibold whitespace-nowrap">
+            {language === 'es' ? 'Técnicos:' : 'Technicians:'}
+          </Label>
+          <Input
+            type="number"
+            min="1"
+            max="20"
+            value={techCount}
+            onChange={(e) => onTechCountChange(parseInt(e.target.value) || 1)}
+            className="w-16 h-7 text-sm"
+          />
         </div>
 
         {/* SECTION 2: Single Calculate Button (for distances) */}
