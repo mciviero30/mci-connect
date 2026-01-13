@@ -39,7 +39,7 @@
  * 2. WORK DAYS
  *    - Based on techs and hours per day
  *    - Formula: workDays = totalLaborHours / (hoursPerDay × techs)
- *    - Always round to nearest 0.5 day
+ *    - ALWAYS round UP to full day (even 3 hours = 1 full day)
  * 
  * 3. CALENDAR DAYS
  *    - Convert work days (Mon-Fri) to calendar days (including weekends)
@@ -51,7 +51,8 @@
  *    - Formula: travelDays = 2 (round trip)
  * 
  * 5. NIGHTS
- *    - nights = max(calendarDays - 1, 0)
+ *    - nights = ceil(max(calendarDays - 1, 0))
+ *    - ALWAYS round UP to full night (even 3 hours = 1 full night)
  *    - Cannot be negative
  * 
  * 6. HOTEL ROOMS
@@ -153,16 +154,7 @@ function convertWorkDaysToCalendarDays(workDays) {
   return calendarDays;
 }
 
-/**
- * Round work days to nearest 0.5 day
- * Examples: 2.3 → 2.5, 2.7 → 3.0, 2.2 → 2.0
- * 
- * @param {number} days - Raw work days
- * @returns {number} - Rounded to 0.5 increment
- */
-function roundToHalfDay(days) {
-  return Math.round(days * 2) / 2;
-}
+
 
 /**
  * ============================================================================
@@ -275,8 +267,8 @@ export function computeQuoteDerived(params) {
     throw new Error('[computeQuoteDerived] Invalid work days calculation - check inputs');
   }
   
-  // Round to nearest 0.5 day
-  const workDays = roundToHalfDay(rawWorkDays);
+  // Round UP to nearest full day (ALWAYS charge full days)
+  const workDays = Math.ceil(rawWorkDays);
   
   // HARD GUARD: Prevent negative work days
   if (workDays < 0) {
@@ -299,12 +291,12 @@ export function computeQuoteDerived(params) {
   const totalCalendarDays = calendarDays + travelDays;
   
   // ============================================================================
-  // STEP 5: CALCULATE NIGHTS
+  // STEP 5: CALCULATE NIGHTS (ALWAYS ROUND UP TO FULL NIGHTS)
   // ============================================================================
   
   // Nights = total days - 1 (check out on last day)
-  // Cannot be negative
-  const nights = Math.max(totalCalendarDays - 1, 0);
+  // ALWAYS round up - even 3 hours = 1 full night
+  const nights = Math.max(Math.ceil(totalCalendarDays - 1), 0);
   
   // ============================================================================
   // STEP 6: CALCULATE HOTEL ROOMS
