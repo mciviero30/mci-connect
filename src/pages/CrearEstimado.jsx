@@ -170,128 +170,51 @@ export default function CrearEstimado() {
     return computeQuoteDerived(input);
   }, [formData.items, projectTechCount, travelTimeHours, roomsPerNight]);
 
-  const handleAddTravelItems = (travelItems) => {
-    // Remove existing travel items first
-    const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
-    
-    // Extract travel time from driving items for stay calculator
-    const drivingItem = travelItems.find(item => item.travel_item_type === 'driving_time');
-    if (drivingItem?.duration_value) {
-      setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
-    }
-    
-    // Update driving items with tech count from per diem if exists
-    const perDiemItem = formData.items.find(i => i.calculation_type === 'per_diem');
-    const techsCount = perDiemItem?.tech_count || projectTechCount;
-    
-    const updatedTravelItems = travelItems.map(item => {
-      if (item.travel_item_type === 'driving_time') {
-        // Multiply driving hours by number of techs traveling
-        return {
-          ...item,
-          tech_count: techsCount,
-          quantity: (item.duration_value || 0) * techsCount,
-          total: (item.duration_value || 0) * techsCount * (item.unit_price || 0),
-          description: `${item.description}\nTechs traveling = ${techsCount}`
-        };
-      }
-      return item;
-    });
-    
-    // Add new travel items
-    const updatedItems = [...nonTravelItems, ...updatedTravelItems];
-    
-    setFormData(prev => ({
-      ...prev,
-      items: updatedItems
-    }));
-
-    toast({
-      title: language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`,
-      variant: 'success'
-    });
-  };
-
-  const handleAutoGenerateStayItems = (stayData) => {
-    const { hotel_quantity, per_diem_quantity, hotel_rate, per_diem_rate, tech_count, duration_days } = stayData;
-    
-    // Find hotel and per diem items from catalog (case-insensitive, flexible matching)
-    const hotelItem = quoteItems.find(qi => 
-      qi.name?.toLowerCase().includes('hotel') || 
-      qi.name === 'Hotel Rooms'
-    );
-    const perDiemItem = quoteItems.find(qi => 
-      qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem')
-    );
-    
-    // Remove existing hotel and per diem items (flexible matching) + empty items
+  const handleAddAllOutOfAreaItems = (allItems, stayData) => {
+    // Remove existing travel items AND hotel/per diem items
     const filteredItems = formData.items.filter(item => {
       const itemNameLower = item.item_name?.toLowerCase() || '';
       const isHotel = itemNameLower.includes('hotel');
       const isPerDiem = itemNameLower.includes('per') && itemNameLower.includes('diem');
       const isEmpty = !item.item_name || !item.description;
-      return !isHotel && !isPerDiem && !isEmpty;
+      return !item.is_travel_item && !isHotel && !isPerDiem && !isEmpty;
     });
     
-    const updatedItems = [...filteredItems];
-    let addedCount = 0;
+    // Extract travel time for calculation
+    const drivingItem = allItems.find(item => item.travel_item_type === 'driving_time');
+    if (drivingItem?.duration_value) {
+      setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
+    }
     
-    // Calculate hotel metrics
-    const nights = derivedValues?.nights || Math.ceil((duration_days || 1) - 1);
-    const totalCalendarDays = derivedValues?.totalCalendarDays || duration_days || 1;
-    
-    // Add Hotel Rooms (auto-calculated)
-    const hotelName = hotelItem?.name || 'Hotel Rooms';
-    const finalHotelRate = hotelItem?.unit_price || hotel_rate || 200;
-    updatedItems.push({
-      item_name: hotelName,
-      description: `Rooms per night = ${roomsPerNight}\nNights = ${nights}`,
-      quantity: 0, // Will be derived
-      unit: hotelItem?.unit || 'night',
-      unit_price: finalHotelRate,
-      total: 0, // Will be derived
-      is_travel_item: false,
-      calculation_type: 'hotel',
-      auto_calculated: true,
-      manual_override: false,
-      installation_time: 0,
-      tech_count: tech_count || projectTechCount,
+    // Update all items with tech count
+    const updatedItems = allItems.map(item => {
+      if (item.travel_item_type === 'driving_time') {
+        return {
+          ...item,
+          tech_count: stayData.tech_count,
+          quantity: (item.duration_value || 0) * stayData.tech_count,
+          total: (item.duration_value || 0) * stayData.tech_count * (item.unit_price || 0),
+          description: `${item.description}\nTechs traveling = ${stayData.tech_count}`
+        };
+      }
+      return item;
     });
-    addedCount++;
     
-    // Add Per-Diem (auto-calculated)
-    const perDiemName = perDiemItem?.name || 'Per-Diem';
-    const finalPerDiemRate = perDiemItem?.unit_price || per_diem_rate || 55;
-    updatedItems.push({
-      item_name: perDiemName,
-      description: `Days = ${totalCalendarDays} days\nTechs = ${tech_count || projectTechCount}`,
-      quantity: 0, // Will be derived
-      unit: perDiemItem?.unit || 'day',
-      unit_price: finalPerDiemRate,
-      total: 0, // Will be derived
-      is_travel_item: false,
-      calculation_type: 'per_diem',
-      auto_calculated: true,
-      manual_override: false,
-      installation_time: 0,
-      tech_count: tech_count || projectTechCount,
-    });
-    addedCount++;
+    // Add all items
+    const finalItems = [...filteredItems, ...updatedItems];
     
     setFormData(prev => ({
       ...prev,
-      items: updatedItems
+      items: finalItems
     }));
-    
-    if (addedCount > 0) {
-      toast({
-        title: language === 'es' ? `${addedCount} items agregados (auto-calculados)` : `${addedCount} items added (auto-calculated)`,
-        description: language === 'es' 
-          ? 'Las cantidades se actualizarán automáticamente según los items del proyecto'
-          : 'Quantities will update automatically based on project items',
-        variant: 'success'
-      });
-    }
+
+    toast({
+      title: language === 'es' ? `${allItems.length} items agregados` : `${allItems.length} items added`,
+      description: language === 'es'
+        ? 'Items de viaje, hotel y per diem agregados al estimado'
+        : 'Travel, hotel and per diem items added to quote',
+      variant: 'success'
+    });
   };
 
   // Load existing quote data when editing
@@ -1330,20 +1253,13 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                 {formData.out_of_area && (
                   <div className="md:col-span-2">
                     <div className="space-y-4">
-                      <OutOfAreaCalculator
+                      <UnifiedOutOfAreaCalculator
                         jobAddress={formData.job_address}
                         selectedTeamIds={formData.team_ids}
-                        onAddTravelItems={handleAddTravelItems}
-                        isCalculating={isCalculatingTravel}
-                        setIsCalculating={setIsCalculatingTravel}
-                      />
-                      
-                      <StayDurationCalculator
+                        onAddAllItems={handleAddAllOutOfAreaItems}
                         derivedValues={derivedValues}
                         techCount={projectTechCount}
                         onTechCountChange={setProjectTechCount}
-                        onAutoGenerateItems={handleAutoGenerateStayItems}
-                        language={language}
                         roomsPerNight={roomsPerNight}
                         onRoomsPerNightChange={setRoomsPerNight}
                       />
