@@ -250,7 +250,7 @@ export default function UnifiedOutOfAreaCalculator({
           </div>
         </div>
 
-        {/* SECTION 2: Calculate Distances Button */}
+        {/* SECTION 2: Single Calculate Button (for distances) */}
         {!travelMetrics.length && (
           <Button 
             type="button"
@@ -261,7 +261,7 @@ export default function UnifiedOutOfAreaCalculator({
             <Calculator className="w-4 h-4 mr-2" />
             {isCalculating 
               ? (language === 'es' ? 'Calculando...' : 'Calculating...') 
-              : (language === 'es' ? 'Calcular Distancias y Tiempo' : 'Calculate Distances & Time')}
+              : (language === 'es' ? 'Calcular' : 'Calculate')}
           </Button>
         )}
 
