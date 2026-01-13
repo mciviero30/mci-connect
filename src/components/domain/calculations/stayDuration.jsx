@@ -88,15 +88,22 @@ export function calculateStayDuration({ items, techCount, travelTimeHours, rooms
 
   // Step 4: Add travel days (always 2: inbound Sunday + outbound day after last work day)
   // Travel CAN occur on weekends
-  // Travel time >4h does NOT auto-add extra days
-  const travelDays = 2;
+  // Travel time >4h AUTO-adds 1 extra night + 1 per diem day (one-way, not round trip)
+  let travelDays = 2;
+  let extraTravelNights = 0;
+  
+  // If single trip is >4 hours, add 1 night + 1 per diem day
+  if (travelTimeHours > 4) {
+    extraTravelNights = 1;
+    travelDays += 1; // Add 1 more day for the extra night
+  }
 
   // Step 5: Total calendar days and nights
   // Calendar days = work days + weekends in between + travel days
   const totalCalendarDays = workCalendarDays + travelDays;
   
-  // Nights = calendar days - 1
-  const totalNights = totalCalendarDays - 1;
+  // Nights = calendar days - 1 PLUS any extra travel nights
+  const totalNights = (totalCalendarDays - 1) + extraTravelNights;
 
   // Weekends for display breakdown
   const weekends = Math.ceil(totalWorkDays / 5) * 2;
