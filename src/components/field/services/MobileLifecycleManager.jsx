@@ -29,6 +29,16 @@ class MobileLifecycleManager {
   }
 
   init() {
+    // CRITICAL: Only enable on mobile devices to prevent desktop interference
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (!isMobile) {
+      if (import.meta.env.DEV) {
+        console.log('[MobileLifecycle] Disabled on desktop');
+      }
+      return;
+    }
+    
     // Visibility change (all platforms)
     document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
     
@@ -36,7 +46,7 @@ class MobileLifecycleManager {
     window.addEventListener('freeze', () => this.handleFreeze());
     window.addEventListener('resume', () => this.handleResume());
     
-    // Focus/blur (fallback)
+    // Focus/blur (mobile only)
     window.addEventListener('focus', () => this.handleFocus());
     window.addEventListener('blur', () => this.handleBlur());
     
