@@ -613,6 +613,56 @@ export default function Empleados() {
             <div className="flex gap-2 w-full sm:w-auto">
               <Button
                 onClick={async () => {
+                  if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
+                  try {
+                    await base44.functions.invoke('cleanupPendingEmployees');
+                    await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                    alert('✅ All pending/invited employees deleted');
+                  } catch (err) {
+                    alert('❌ Error: ' + err.message);
+                  }
+                }}
+                variant="outline"
+                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none border-red-300 text-red-600 hover:bg-red-50"
+              >
+                <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Cleanup</span>
+              </Button>
+
+              <Button
+                onClick={async () => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.xlsx';
+                  input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    try {
+                      // Upload file
+                      const uploadRes = await base44.integrations.Core.UploadFile({ file });
+                      const fileUrl = uploadRes.file_url;
+                      
+                      // Import employees
+                      await base44.functions.invoke('importEmployeesFromXLSX', { file_url: fileUrl });
+                      await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                      alert('✅ Employees imported successfully!');
+                    } catch (err) {
+                      alert('❌ Import failed: ' + err.message);
+                    }
+                  };
+                  input.click();
+                }}
+                variant="outline"
+                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
+              >
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import XLSX</span>
+                <span className="sm:hidden">Import</span>
+              </Button>
+
+              <Button
+                onClick={async () => {
                   const response = await base44.functions.invoke('exportEmployeesToPDF');
                   const blob = new Blob([response.data], { type: 'application/pdf' });
                   const url = window.URL.createObjectURL(blob);
