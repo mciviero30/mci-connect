@@ -48,6 +48,7 @@ export default function TaxProfileGate({ children }) {
       }
     },
     enabled: shouldFetchProfile,
+    retry: 1,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -120,21 +121,18 @@ export default function TaxProfileGate({ children }) {
         <div className="text-center">
           <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">Verifying tax information...</p>
+          <p className="text-xs text-slate-500 mt-2">This should only take a moment</p>
         </div>
       </div>
     );
   }
 
-  // If query errored, fail closed (block with loading state)
-  if (!isExempt && error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="text-center">
-          <div className="w-12 h-12 border-3 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-red-600 dark:text-red-400">Unable to verify tax information. Please refresh.</p>
-        </div>
-      </div>
-    );
+  // If query errored, treat as tax profile missing (redirect to TaxOnboarding)
+  if (!isExempt && error && !isTaxOnboardingPage) {
+    if (import.meta.env.DEV) {
+      console.log('🚨 TaxProfile query error, redirecting to TaxOnboarding');
+    }
+    return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
   }
 
   // DECLARATIVE REDIRECT: Block access if tax profile not completed
