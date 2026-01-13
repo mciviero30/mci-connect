@@ -5,23 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Mail, Phone, Building2, Plus } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
+import { getCustomerDisplayName } from "@/components/utils/nameHelpers";
 
 export default function ModernCustomerCard({ customer, onViewDetails, isSelected, onToggleSelect, showSelectButton }) {
   const navigate = useNavigate();
 
-  const getCustomerDisplayName = () => {
-    if (customer.first_name || customer.last_name) {
-      const firstName = customer.first_name || '';
-      const lastName = customer.last_name || '';
-      return `${firstName} ${lastName}`.trim();
-    }
-    if (customer.name) {
-      return customer.name;
-    }
-    return customer.email?.split('@')[0] || 'Unknown';
-  };
-
-  const displayName = getCustomerDisplayName();
+  const displayName = getCustomerDisplayName(customer);
   const companyName = customer.company || 'No Company';
 
   return (
