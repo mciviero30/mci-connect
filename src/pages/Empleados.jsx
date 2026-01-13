@@ -760,21 +760,28 @@ export default function Empleados() {
           </TabsContent>
 
           <TabsContent value="invited">
-            <Alert className="mb-4 bg-blue-50 border-blue-200">
-              <AlertDescription className="text-blue-800">
-                ℹ️ Invited employees need to accept invitation from Dashboard to activate their account.
-              </AlertDescription>
-            </Alert>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginateEmployees(invitedEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onboardingProgress={employeeProgress[employee.id]}
-                  onViewDetails={handleViewOnboarding}
-                />
-              ))}
-            </div>
+           <Alert className="mb-4 bg-blue-50 border-blue-200">
+             <AlertDescription className="text-blue-800">
+               ℹ️ Invited employees need to accept invitation from Dashboard to activate their account.
+             </AlertDescription>
+           </Alert>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             {paginateEmployees(invitedEmployees).map(employee => (
+               employee.entity_name === 'PendingEmployee' ? (
+                 <PendingInvitationCard
+                   key={employee.id}
+                   employee={employee}
+                 />
+               ) : (
+                 <ModernEmployeeCard
+                   key={employee.id}
+                   employee={employee}
+                   onboardingProgress={employeeProgress[employee.id]}
+                   onViewDetails={handleViewOnboarding}
+                 />
+               )
+             ))}
+           </div>
 
             {invitedEmployees.length > ITEMS_PER_PAGE && (
               <div className="flex justify-center gap-2 mt-8">
