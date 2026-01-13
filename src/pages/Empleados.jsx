@@ -546,15 +546,14 @@ export default function Empleados() {
     );
   };
 
-  // Exclude account owner from all employee lists
+  // Exclude account owner from active/archived/deleted lists only (allow in pending/invited)
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
   const excludeOwner = (list) => list.filter(e => e.email !== OWNER_EMAIL);
 
   const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status)));
   
-  // Debug pending employees filtering
+  // Debug pending employees filtering - NO FILTER for owner, allow CEO to be invited
   const rawPending = pendingEmployees.filter(e => 
-    e.email !== OWNER_EMAIL && 
     (e.status === 'pending' || !e.status)
   );
   console.log('🔎 Raw pending after owner filter:', rawPending.length);
@@ -566,10 +565,9 @@ export default function Empleados() {
   
   console.log('✅ Final pendingList:', pendingList.length, 'employees');
   
-  // Invited tab: Users with employment_status='invited' + PendingEmployees with status='invited'
+  // Invited tab: Users with employment_status='invited' + PendingEmployees with status='invited' - NO FILTER for owner
   const invitedUsers = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited')));
   const invitedPending = filterEmployees(pendingEmployees.filter(e => 
-    e.email !== OWNER_EMAIL && 
     e.status === 'invited'
   ).map(pe => ({ 
     ...pe, 
