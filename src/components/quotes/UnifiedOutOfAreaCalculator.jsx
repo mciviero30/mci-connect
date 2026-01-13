@@ -436,9 +436,9 @@ export default function UnifiedOutOfAreaCalculator({
           </>
         )}
 
-        {/* SECTION 5: Unified Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t-2 border-slate-200">
-          {travelMetrics.length > 0 && (
+        {/* SECTION 5: Add All Button (only when calculations ready) */}
+        {travelMetrics.length > 0 && (
+          <div className="flex gap-3 pt-4 border-t-2 border-slate-200">
             <Button
               type="button"
               variant="outline"
@@ -450,19 +450,17 @@ export default function UnifiedOutOfAreaCalculator({
             >
               {language === 'es' ? 'Recalcular' : 'Recalculate'}
             </Button>
-          )}
-          <Button
-            type="button"
-            onClick={canAddToQuote ? addAllToQuote : calculateMetrics}
-            disabled={(!canAddToQuote && (isCalculating || !jobAddress || selectedTeamIds.length === 0))}
-            className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {canAddToQuote 
-              ? (language === 'es' ? 'Agregar Todo al Estimado' : 'Add All to Quote')
-              : (language === 'es' ? 'Calcular' : 'Calculate')}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              onClick={addAllToQuote}
+              disabled={!canAddToQuote}
+              className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Agregar Todo al Estimado' : 'Add All to Quote'}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
