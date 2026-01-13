@@ -131,37 +131,27 @@ export default function OnboardingWizard() {
       if (totalCompleted < 4) {
         setCurrentStep(currentStep + 1);
       } else {
-        // ✅ ONBOARDING COMPLETE - Set definitive flags AND invalidate
-        if (import.meta.env.DEV) {
-          console.log('✅ All 4 unique forms completed. Marking onboarding as COMPLETE.');
-        }
+        // ✅ ONBOARDING COMPLETE - Update cache FIRST, then API
         
-        await base44.auth.updateMe({ 
+        // CRITICAL: Update cache IMMEDIATELY before API call
+        queryClient.setQueryData(['currentUser'], (old) => ({
+          ...old,
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString(),
           onboarding_status: 'completed'
+        }));
+        
+        // Update API in background (don't await)
+        base44.auth.updateMe({ 
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString(),
+          onboarding_status: 'completed'
+        }).catch(err => {
+          console.error('Failed to update onboarding status:', err);
         });
         
-        if (import.meta.env.DEV) {
-          console.log('✅ Onboarding complete, invalidating queries...');
-        }
-        
-        // CRITICAL: Invalidate ALL user-related queries
-        await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-        await queryClient.invalidateQueries({ queryKey: ['onboardingForms'] });
-        await queryClient.invalidateQueries({ queryKey: ['employeeProfile'] });
-        
-        // Force refetch to ensure Layout sees updated user
-        await queryClient.refetchQueries({ queryKey: ['currentUser'], type: 'active' });
-        
-        if (import.meta.env.DEV) {
-          console.log('🔄 Navigating to Dashboard...');
-        }
-        
-        // Small delay to ensure queries finish
-        setTimeout(() => {
-          navigate(createPageUrl('Dashboard'), { replace: true });
-        }, 100);
+        // Navigate immediately - cache is already updated
+        navigate(createPageUrl('Dashboard'), { replace: true });
       }
     }
   });
