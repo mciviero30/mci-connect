@@ -24,7 +24,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
-import OutOfAreaCalculator from "../components/quotes/OutOfAreaCalculator";
+import UnifiedOutOfAreaCalculator from "../components/quotes/UnifiedOutOfAreaCalculator";
 import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,6 @@ import ProjectDurationSummary from "../components/quotes/ProjectDurationSummary"
 import { canCreateFinancialDocs, needsApproval } from "@/components/core/roleRules";
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
-import StayDurationCalculator from "@/components/quotes/StayDurationCalculator";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
 import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
 import { computeQuoteDerived, createComputeInput, getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDerived";
