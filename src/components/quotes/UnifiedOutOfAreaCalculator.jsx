@@ -288,32 +288,28 @@ export default function UnifiedOutOfAreaCalculator({
 
                   {metric.success ? (
                     <>
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div className="flex items-center gap-2 p-2 bg-slate-50 rounded">
-                          <Clock className="w-4 h-4 text-blue-600" />
-                          <div>
-                            <p className="text-xs text-slate-600">
-                              {language === 'es' ? 'Tiempo' : 'Driving Time'}
-                            </p>
-                            <p className="font-bold text-slate-900">{metric.drivingHours}h</p>
-                          </div>
-                        </div>
+                       <div className="grid grid-cols-2 gap-2 text-xs">
+                         <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
+                           <Clock className="w-3 h-3 text-blue-600" />
+                           <div>
+                             <p className="text-[10px] text-slate-600">{language === 'es' ? 'Tiempo' : 'Time'}</p>
+                             <p className="font-bold text-slate-900">{metric.drivingHours}h</p>
+                           </div>
+                         </div>
 
-                        <div className="flex items-center gap-2 p-2 bg-slate-50 rounded">
-                          <Car className="w-4 h-4 text-blue-600" />
-                          <div>
-                            <p className="text-xs text-slate-600">
-                              {language === 'es' ? 'Millas' : 'Miles'}
-                            </p>
-                            <p className="font-bold text-slate-900">{metric.totalMiles} mi</p>
-                          </div>
-                        </div>
-                      </div>
+                         <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
+                           <Car className="w-3 h-3 text-blue-600" />
+                           <div>
+                             <p className="text-[10px] text-slate-600">{language === 'es' ? 'Millas' : 'Miles'}</p>
+                             <p className="font-bold text-slate-900">{metric.totalMiles}mi</p>
+                           </div>
+                         </div>
+                       </div>
 
-                      <div className="pt-3 border-t border-slate-200">
-                        <Label className="text-xs text-slate-600 mb-2 block">
-                          {language === 'es' ? 'Número de Vehículos' : 'Number of Vehicles'}
-                        </Label>
+                       <div className="pt-1 border-t border-slate-200">
+                         <Label className="text-[10px] text-slate-600 mb-1 block">
+                           {language === 'es' ? 'Vehículos' : 'Vehicles'}
+                         </Label>
                         <div className="flex items-center gap-2">
                           <Button
                             type="button"
