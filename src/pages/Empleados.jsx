@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, FileText, Mail, UserX, Shield } from "lucide-react";
+import { Users, Plus, Search, FileText, Mail, UserX, Shield, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -609,136 +610,119 @@ export default function Empleados() {
             </div>
             
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button
-                onClick={async () => {
-                  if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
-                  try {
-                    await base44.functions.invoke('cleanupPendingEmployees');
-                    await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                    alert('✅ All pending/invited employees deleted');
-                  } catch (err) {
-                    alert('❌ Error: ' + err.message);
-                  }
-                }}
-                variant="outline"
-                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none border-red-300 text-red-600 hover:bg-red-50"
-              >
-                <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Cleanup</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="min-h-[44px] px-3">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      const csv = `email,first_name,last_name,phone,position,department,team_name,address,dob,ssn_tax_id,tshirt_size,hourly_rate
+            john.doe@example.com,John,Doe,(555)123-4567,technician,field,Team Alpha,123 Main St,1990-01-15,123-45-6789,L,25.50
+            jane.smith@example.com,Jane,Smith,(555)987-6543,supervisor,operations,Team Beta,456 Oak Ave,1985-03-22,987-65-4321,M,35.00`;
 
-              <Button
-                onClick={() => {
-                  const csv = `email,first_name,last_name,phone,position,department,team_name,address,dob,ssn_tax_id,tshirt_size,hourly_rate
-john.doe@example.com,John,Doe,(555)123-4567,technician,field,Team Alpha,123 Main St,1990-01-15,123-45-6789,L,25.50
-jane.smith@example.com,Jane,Smith,(555)987-6543,supervisor,operations,Team Beta,456 Oak Ave,1985-03-22,987-65-4321,M,35.00`;
-                  
-                  const blob = new Blob([csv], { type: 'text/csv' });
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'employee_template.csv';
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                }}
-                variant="outline"
-                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none border-blue-300 text-blue-600 hover:bg-blue-50"
-              >
-                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Download CSV Template</span>
-                <span className="sm:hidden">Template</span>
-              </Button>
+                      const blob = new Blob([csv], { type: 'text/csv' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'employee_template.csv';
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Download CSV Template
+                  </DropdownMenuItem>
 
-              <Button
-                onClick={() => {
-                  console.log('🚀 Import button clicked');
-                  alert('Opening file picker...');
-                  
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.csv';
-                  
-                  input.onchange = async (e) => {
-                    console.log('📁 File input changed');
-                    const file = e.target.files?.[0];
-                    
-                    if (!file) {
-                      console.log('❌ No file selected');
-                      alert('No file selected');
-                      return;
-                    }
-                    
-                    console.log('✅ File selected:', {
-                      name: file.name,
-                      type: file.type,
-                      size: file.size
-                    });
-                    
-                    try {
-                     alert(`⏳ Uploading ${file.name}...`);
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.csv';
 
-                     const uploadRes = await base44.integrations.Core.UploadFile({ file });
-                     console.log('✅ Upload complete:', uploadRes);
+                      input.onchange = async (e) => {
+                        const file = e.target.files?.[0];
 
-                     alert('⏳ Processing employees (this may take 30-60 seconds)...');
-                     const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
-                       file_url: uploadRes.file_url 
-                     });
+                        if (!file) {
+                          alert('No file selected');
+                          return;
+                        }
 
-                     // Extract result from response
-                     const result = response?.data || response;
-                     console.log('✅ Import complete:', result);
+                        try {
+                          alert(`⏳ Uploading ${file.name}...`);
 
-                     await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                     await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
+                          const uploadRes = await base44.integrations.Core.UploadFile({ file });
 
-                     const created = result?.created || 0;
-                     const errors = result?.errors?.length || 0;
+                          alert('⏳ Processing employees (30-60 seconds)...');
+                          const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
+                            file_url: uploadRes.file_url 
+                          });
 
-                     if (errors > 0) {
-                       alert(`⚠️ Imported ${created} employees with ${errors} errors. Check console for details.`);
-                       console.error('Import errors:', result.errors);
-                     } else {
-                       alert(`✅ Successfully imported ${created} employees! Switching to "Pending" tab...`);
-                       setActiveTab('pending');
-                     }
+                          const result = response?.data || response;
 
-                    } catch (err) {
-                     console.error('❌ Error:', err);
-                     alert(`❌ Error: ${err?.message || 'Unknown error'}`);
-                    }
-                  };
-                  
-                  document.body.appendChild(input);
-                  input.click();
-                  setTimeout(() => input.remove(), 1000);
-                }}
-                variant="outline"
-                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
-              >
-                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Import CSV</span>
-                <span className="sm:hidden">Import</span>
-              </Button>
+                          await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                          await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
 
-              <Button
-                onClick={async () => {
-                  const response = await base44.functions.invoke('exportEmployeesToPDF');
-                  const blob = new Blob([response.data], { type: 'application/pdf' });
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `employees_${new Date().toISOString().split('T')[0]}.pdf`;
-                  a.click();
-                }}
-                variant="outline"
-                className="min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
-              >
-                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Export PDF</span>
-                <span className="sm:hidden">Export</span>
-              </Button>
-              
+                          const created = result?.created || 0;
+                          const errors = result?.errors?.length || 0;
+
+                          if (errors > 0) {
+                            alert(`⚠️ Imported ${created} employees with ${errors} errors.`);
+                          } else {
+                            alert(`✅ Imported ${created} employees!`);
+                            setActiveTab('pending');
+                          }
+
+                        } catch (err) {
+                          alert(`❌ Error: ${err?.message || 'Unknown error'}`);
+                        }
+                      };
+
+                      document.body.appendChild(input);
+                      input.click();
+                      setTimeout(() => input.remove(), 1000);
+                    }}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Import CSV
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      const response = await base44.functions.invoke('exportEmployeesToPDF');
+                      const blob = new Blob([response.data], { type: 'application/pdf' });
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `employees_${new Date().toISOString().split('T')[0]}.pdf`;
+                      a.click();
+                    }}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
+                      try {
+                        await base44.functions.invoke('cleanupPendingEmployees');
+                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                        alert('✅ All pending/invited employees deleted');
+                      } catch (err) {
+                        alert('❌ Error: ' + err.message);
+                      }
+                    }}
+                    className="text-red-600"
+                  >
+                    <UserX className="w-4 h-4 mr-2" />
+                    Cleanup All Pending
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button 
                 onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
                 className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
