@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { CheckCircle, Circle } from "lucide-react";
+import { CheckCircle, Circle, UserX } from "lucide-react";
 import SafetyAcknowledgmentForm from "@/components/onboarding/SafetyAcknowledgmentForm";
 import CompanyRulesForm from "@/components/onboarding/CompanyRulesForm";
 import PersonalPaperworkForm from "@/components/onboarding/PersonalPaperworkForm";
@@ -12,10 +12,45 @@ export default function OnboardingWizard() {
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading, error: userError } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => base44.auth.me(),
+    retry: 1
   });
+
+  // Handle loading and errors to prevent white screen
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (userError || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <UserX className="w-10 h-10 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Unable to Load Profile</h1>
+          <p className="text-slate-600 mb-6">
+            {userError?.message || 'Please refresh the page or contact support.'}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms', user?.email],
