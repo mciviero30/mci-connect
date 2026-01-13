@@ -265,17 +265,17 @@ export default function UnifiedOutOfAreaCalculator({
 
         {/* SECTION 3: Travel Metrics Results */}
         {travelMetrics.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-blue-200">
-              <Car className="w-4 h-4 text-blue-600" />
-              <h4 className="text-sm font-semibold text-slate-700">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 pb-1 border-b border-blue-200">
+              <Car className="w-3 h-3 text-blue-600" />
+              <h4 className="text-xs font-semibold text-slate-700">
                 {language === 'es' ? 'Viaje y Distancias' : 'Travel & Distances'}
               </h4>
             </div>
 
             {travelMetrics.map(metric => (
               <Card key={metric.teamId} className="bg-white border-slate-200">
-                <CardContent className="p-4 space-y-3">
+                <CardContent className="p-2 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-bold text-slate-900">{metric.teamName}</h4>
