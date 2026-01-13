@@ -74,13 +74,18 @@ export function calculateStayDuration({ items, techCount, travelTimeHours, rooms
    console.log('🔍 STAY CALC - Total labor hours:', totalLaborHours);
    console.log('🔍 STAY CALC - Travel time (one-way):', travelTimeHours, 'hours');
 
-  if (totalLaborHours === 0) {
-    return null;
-  }
+   if (totalLaborHours === 0) {
+     return null;
+   }
 
-  // Step 2: Calculate work days (Monday-Friday only)
-  const hoursPerDay = 8;
-  const totalWorkDays = calculateWorkDays(totalLaborHours, techCount);
+   // Step 1.5: Add travel time to labor hours (travel counts as work hours for day calculation)
+   // Travel time = round-trip (counts as full hours against 8hr/day limit)
+   const travelHoursInDays = travelTimeHours || 0;
+   const totalHoursWithTravel = totalLaborHours + travelHoursInDays;
+
+   // Step 2: Calculate work days (Monday-Friday only) - now includes travel hours
+   const hoursPerDay = 8;
+   const totalWorkDays = calculateWorkDays(totalHoursWithTravel, techCount);
 
   // Step 3: Convert work days into calendar days (including weekends)
   // Work schedule: Monday–Friday only
