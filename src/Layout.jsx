@@ -985,17 +985,17 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             </motion.header>
           )}
 
-          {/* Focus Mode Toggle - Desktop (not shown in Field Mode) */}
+          {/* Focus Mode Toggle - Desktop (not shown in Field Mode) - COMPACT */}
           {!shouldHideSidebar && !isFocusMode && (
-            <div className="hidden md:flex absolute top-4 right-4 z-50">
+            <div className="hidden md:flex absolute top-2 right-2 z-40">
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={toggleFocusMode}
-                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-lg"
+                className="w-8 h-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg transition-all"
+                title="Focus Mode (⌘+K)"
               >
-                <Maximize2 className="w-4 h-4 mr-2" />
-                Focus Mode
+                <Maximize2 className="w-3.5 h-3.5" />
               </Button>
             </div>
           )}
