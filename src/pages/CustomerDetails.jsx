@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
+import { getCustomerDisplayName } from "@/components/utils/nameHelpers";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,10 +85,7 @@ export default function CustomerDetails() {
     );
   }
 
-  // Handle both new format (first_name + last_name) and old format (name field)
-  const displayName = customer.first_name && customer.last_name 
-    ? `${customer.first_name} ${customer.last_name}`.trim()
-    : customer.name || customer.email?.split('@')[0] || 'Unknown Customer';
+  const displayName = getCustomerDisplayName(customer);
   
   const totalQuotes = quotes.length;
   const totalInvoices = invoices.length;
