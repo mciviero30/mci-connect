@@ -449,6 +449,7 @@ Lawrenceville, Georgia 30043, U.S.A`
   const statusMeta = getQuoteStatusMeta(quote.status, language);
   const canDelete = ['draft', 'sent', 'rejected'].includes(quote.status);
   const canEdit = quote.status === 'draft';
+  const canReopen = quote.status === 'sent';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -481,6 +482,19 @@ Lawrenceville, Georgia 30043, U.S.A`
               >
                 <Edit className="w-4 h-4 mr-2" />
                 {t('edit')}
+              </Button>
+            )}
+
+            {canReopen && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => updateStatusMutation.mutate('draft')}
+                disabled={updateStatusMutation.isPending}
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Re-abrir' : 'Reopen'}
               </Button>
             )}
 
