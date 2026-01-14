@@ -51,6 +51,37 @@ export default function CustomerDetails() {
     enabled: !!customer?.email,
   });
 
+  // Get all jobs for this customer to calculate profit
+  const { data: customerJobs = [] } = useQuery({
+    queryKey: ['customer-jobs', customer?.id],
+    queryFn: () => base44.entities.Job.filter({ customer_id: customer.id }),
+    enabled: !!customer?.id,
+  });
+
+  // Get time entries for customer jobs
+  const { data: allTimeEntries = [] } = useQuery({
+    queryKey: ['customer-time-entries', customerJobs.map(j => j.id).join(',')],
+    queryFn: async () => {
+      if (customerJobs.length === 0) return [];
+      const jobIds = customerJobs.map(j => j.id);
+      const entries = await base44.entities.TimeEntry.list();
+      return entries.filter(e => e.job_id && jobIds.includes(e.job_id));
+    },
+    enabled: customerJobs.length > 0,
+  });
+
+  // Get expenses for customer jobs
+  const { data: allExpenses = [] } = useQuery({
+    queryKey: ['customer-expenses', customerJobs.map(j => j.id).join(',')],
+    queryFn: async () => {
+      if (customerJobs.length === 0) return [];
+      const jobIds = customerJobs.map(j => j.id);
+      const expenses = await base44.entities.Expense.list();
+      return expenses.filter(e => e.job_id && jobIds.includes(e.job_id));
+    },
+    enabled: customerJobs.length > 0,
+  });
+
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Customer.update(id, data),
     onSuccess: () => {
@@ -95,6 +126,13 @@ export default function CustomerDetails() {
   const pendingAmount = invoices
     .filter(inv => inv.status !== 'paid' && inv.status !== 'cancelled')
     .reduce((sum, inv) => sum + (inv.balance || inv.total || 0), 0);
+
+  // Calculate total costs
+  const totalLaborCost = allTimeEntries.reduce((sum, entry) => sum + ((entry.hours_worked || 0) * 25), 0);
+  const totalExpenses = allExpenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+  const totalCosts = totalLaborCost + totalExpenses;
+  const totalProfit = totalRevenue - totalCosts;
+  const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue * 100) : 0;
 
   const statusColors = {
     draft: "bg-slate-100 text-slate-700",
@@ -207,7 +245,7 @@ export default function CustomerDetails() {
         </Card>
 
         {/* Financial Summary */}
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
+        <div className="grid md:grid-cols-4 gap-6 mb-6">
           <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -224,10 +262,11 @@ export default function CustomerDetails() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Pending Amount</p>
-                  <p className="text-2xl font-bold text-yellow-600">${pendingAmount.toLocaleString()}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Costs</p>
+                  <p className="text-2xl font-bold text-red-600">${totalCosts.toLocaleString()}</p>
+                  <p className="text-xs text-slate-500 mt-1">Labor + Expenses</p>
                 </div>
-                <TrendingUp className="w-10 h-10 text-yellow-600 opacity-20" />
+                <Receipt className="w-10 h-10 text-red-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
@@ -236,12 +275,27 @@ export default function CustomerDetails() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Avg Quote Value</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    ${totalQuotes > 0 ? Math.round(quotes.reduce((sum, q) => sum + (q.total || 0), 0) / totalQuotes).toLocaleString() : 0}
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Net Profit</p>
+                  <p className={`text-2xl font-bold ${totalProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    ${totalProfit.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {profitMargin.toFixed(1)}% margin
                   </p>
                 </div>
-                <FileText className="w-10 h-10 text-blue-600 opacity-20" />
+                <TrendingUp className={`w-10 h-10 opacity-20 ${totalProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`} />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Pending Amount</p>
+                  <p className="text-2xl font-bold text-yellow-600">${pendingAmount.toLocaleString()}</p>
+                </div>
+                <FileCheck className="w-10 h-10 text-yellow-600 opacity-20" />
               </div>
             </CardContent>
           </Card>
