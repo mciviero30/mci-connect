@@ -306,8 +306,8 @@ Lawrenceville, Georgia 30043, U.S.A`
   const cloneMutation = useMutation({
     mutationFn: async () => {
       // Generate new quote number using backend function
-      const { data: quoteNumberData } = await base44.functions.invoke('generateQuoteNumber', {});
-      const new_quote_number = quoteNumberData.quote_number;
+      const response = await base44.functions.invoke('generateQuoteNumber', {});
+      const new_quote_number = response.quote_number || response.data?.quote_number;
 
       const clonedQuote = {
         ...quote,
