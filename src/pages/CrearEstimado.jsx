@@ -161,9 +161,13 @@ export default function CrearEstimado() {
   // Dependencies: items, techs, travel, calendar
   
   const derivedValues = useMemo(() => {
+    // CRITICAL: Exclude travel items to get BASE project duration
+    // This prevents cumulative errors when recalculating travel
+    const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
+    
     // Create canonical input (CAPA 2)
     const input = createComputeInput({
-      items: formData.items,
+      items: nonTravelItems, // Only use installation items for base calculation
       techs: projectTechCount,
       travelEnabled: travelTimeHours > 4, // Auto-detect travel requirement
       travelHours: travelTimeHours,
