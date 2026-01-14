@@ -110,7 +110,7 @@ export default function Estimados() {
     mutationFn: async (quote) => {
       // Generate new quote number using backend function
       const response = await base44.functions.invoke('generateQuoteNumber', {});
-      const newQuoteNumber = response?.data?.quote_number;
+      const newQuoteNumber = response?.quote_number || response?.data?.quote_number;
       
       if (!newQuoteNumber) {
         throw new Error('Failed to generate quote number');
