@@ -25,6 +25,8 @@ export default function UnifiedOutOfAreaCalculator({
   const [error, setError] = useState(null);
   const [vehicleCounts, setVehicleCounts] = useState({});
   const [roundTrips, setRoundTrips] = useState(1);
+  const [daysPerTrip, setDaysPerTrip] = useState(2);
+  const [nightsPerTrip, setNightsPerTrip] = useState(2);
   const [isCalculating, setIsCalculating] = useState(false);
   
   // Load company settings for rates
@@ -174,51 +176,53 @@ export default function UnifiedOutOfAreaCalculator({
       const hotelRate = hotelItem?.unit_price || 200;
       const perDiemRate = perDiemItem?.unit_price || 55;
 
-      const totalNights = derivedValues.nights * roundTrips;
-      const totalDays = derivedValues.totalCalendarDays * roundTrips;
+      const totalHotelRooms = roomsPerNight * nightsPerTrip * roundTrips;
+      const totalPerDiemDays = daysPerTrip * techCount * roundTrips;
 
-      // Hotel Rooms (auto-calculated with round trips)
+      // Hotel Rooms (manual configuration per trip)
       stayItems.push({
         item_name: hotelName,
-        description: `Rooms per night = ${roomsPerNight}\nNights per trip = ${derivedValues.nights}\nRound trips = ${roundTrips}\nTotal nights = ${totalNights}`,
-        quantity: 0, // Will be derived
+        description: `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × ${nightsPerTrip} night${nightsPerTrip > 1 ? 's' : ''} per trip × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`,
+        quantity: totalHotelRooms,
         unit: hotelItem?.unit || 'night',
         unit_price: hotelRate,
-        total: 0, // Will be derived
-        is_travel_item: false,
-        calculation_type: 'hotel',
-        auto_calculated: true,
-        manual_override: false,
-        installation_time: 0,
-        tech_count: techCount,
+        total: totalHotelRooms * hotelRate,
+        is_travel_item: true,
+        travel_item_type: 'hotel',
+        account_category: 'expense_travel_per_diem',
         round_trips: roundTrips,
+        nights_per_trip: nightsPerTrip,
+        rooms_per_night: roomsPerNight
       });
 
-      // Per-Diem (auto-calculated with round trips)
+      // Per-Diem (manual configuration per trip)
       stayItems.push({
         item_name: perDiemName,
-        description: `Days per trip = ${derivedValues.totalCalendarDays} days\nRound trips = ${roundTrips}\nTotal days = ${totalDays}\nTechs = ${techCount}`,
-        quantity: 0, // Will be derived
+        description: `${daysPerTrip} day${daysPerTrip > 1 ? 's' : ''} × ${techCount} tech${techCount > 1 ? 's' : ''} × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`,
+        quantity: totalPerDiemDays,
         unit: perDiemItem?.unit || 'day',
         unit_price: perDiemRate,
-        total: 0, // Will be derived
-        is_travel_item: false,
-        calculation_type: 'per_diem',
-        auto_calculated: true,
-        manual_override: false,
-        installation_time: 0,
-        tech_count: techCount,
+        total: totalPerDiemDays * perDiemRate,
+        is_travel_item: true,
+        travel_item_type: 'per_diem',
+        account_category: 'expense_travel_per_diem',
         round_trips: roundTrips,
+        days_per_trip: daysPerTrip,
+        tech_count: techCount
       });
     }
 
     // Combine and send
+    const totalHotelRooms = roomsPerNight * nightsPerTrip * roundTrips;
+    const totalPerDiemDays = daysPerTrip * techCount * roundTrips;
+    
     onAddAllItems([...travelItems, ...stayItems], {
-      hotel_quantity: (derivedValues?.hotelRooms || 0) * roundTrips,
-      per_diem_quantity: (derivedValues?.perDiemDays || 0) * roundTrips,
+      hotel_quantity: totalHotelRooms,
+      per_diem_quantity: totalPerDiemDays,
       tech_count: techCount,
-      duration_days: (derivedValues?.totalCalendarDays || 0) * roundTrips,
-      round_trips: roundTrips
+      round_trips: roundTrips,
+      days_per_trip: daysPerTrip,
+      nights_per_trip: nightsPerTrip
     });
   };
 
@@ -397,59 +401,81 @@ export default function UnifiedOutOfAreaCalculator({
               </h4>
             </div>
 
-            {!hasCalculations ? (
-              <Alert className="bg-blue-50 border-blue-300">
-                <Info className="w-4 h-4 text-blue-600" />
-                <AlertDescription className="text-sm text-blue-900">
-                  {language === 'es' 
-                    ? '🔒 Agrega items con horas de instalación para calcular hotel y per diem automáticamente.' 
-                    : '🔒 Add items with installation hours to calculate hotel and per diem automatically.'}
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <>
-                {/* Stay Summary - DETAILED */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Días por Viaje' : 'Days per Trip'}</p>
-                    <p className="text-lg font-bold text-purple-900">{derivedValues.totalCalendarDays}</p>
-                  </div>
-
-                  <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}</p>
-                    <p className="text-lg font-bold text-purple-900">{derivedValues.nights}</p>
-                  </div>
-
-                  <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems {language === 'es' ? 'Totales' : 'Total'}</p>
-                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1 flex-wrap">
-                      <CalendarDays className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.totalCalendarDays} x
-                      <Users className="w-3.5 h-3.5 text-purple-600" />
-                      {techCount} x
-                      <MapPin className="w-3.5 h-3.5 text-purple-600" />
-                      {roundTrips} =
-                      <Coffee className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.perDiemDays * roundTrips}
-                    </p>
-                  </div>
-
-                  <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos Totales' : 'Total Rooms'}</p>
-                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1 flex-wrap">
-                      <Bed className="w-3.5 h-3.5 text-purple-600" />
-                      {roomsPerNight} x
-                      <Moon className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.nights} x
-                      <MapPin className="w-3.5 h-3.5 text-purple-600" />
-                      {roundTrips} =
-                      <Hotel className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.hotelRooms * roundTrips}
-                    </p>
-                  </div>
+            {/* Stay Configuration - Per Trip Basis */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 bg-white rounded border border-purple-200">
+                  <Label className="text-[10px] font-semibold text-slate-600 mb-1 block">
+                    {language === 'es' ? 'Días por Viaje' : 'Days per Trip'}
+                  </Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={daysPerTrip}
+                    onChange={(e) => setDaysPerTrip(parseInt(e.target.value) || 2)}
+                    className="w-full h-8 text-sm font-bold"
+                  />
                 </div>
-              </>
-            )}
+
+                <div className="p-2 bg-white rounded border border-purple-200">
+                  <Label className="text-[10px] font-semibold text-slate-600 mb-1 block">
+                    {language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}
+                  </Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={nightsPerTrip}
+                    onChange={(e) => setNightsPerTrip(parseInt(e.target.value) || 2)}
+                    className="w-full h-8 text-sm font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* Total Calculations Display */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 bg-purple-50 rounded border border-purple-300">
+                  <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems {language === 'es' ? 'Total' : 'Total'}</p>
+                  <p className="text-sm font-bold text-purple-900 flex items-center gap-1 flex-wrap">
+                    <CalendarDays className="w-3.5 h-3.5 text-purple-600" />
+                    {daysPerTrip} x
+                    <Users className="w-3.5 h-3.5 text-purple-600" />
+                    {techCount} x
+                    <MapPin className="w-3.5 h-3.5 text-purple-600" />
+                    {roundTrips} =
+                    <Coffee className="w-3.5 h-3.5 text-purple-600" />
+                    {daysPerTrip * techCount * roundTrips}
+                  </p>
+                </div>
+
+                <div className="p-2 bg-purple-50 rounded border border-purple-300">
+                  <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos Total' : 'Total Rooms'}</p>
+                  <p className="text-sm font-bold text-purple-900 flex items-center gap-1 flex-wrap">
+                    <Bed className="w-3.5 h-3.5 text-purple-600" />
+                    {roomsPerNight} x
+                    <Moon className="w-3.5 h-3.5 text-purple-600" />
+                    {nightsPerTrip} x
+                    <MapPin className="w-3.5 h-3.5 text-purple-600" />
+                    {roundTrips} =
+                    <Hotel className="w-3.5 h-3.5 text-purple-600" />
+                    {roomsPerNight * nightsPerTrip * roundTrips}
+                  </p>
+                </div>
+              </div>
+
+              {/* Project Info Reference */}
+              {derivedValues && (
+                <Alert className="bg-blue-50 border-blue-300">
+                  <Info className="w-4 h-4 text-blue-600" />
+                  <AlertDescription className="text-xs text-blue-900">
+                    {language === 'es' 
+                      ? `ℹ️ Proyecto total: ${derivedValues.workDays} días laborales (${derivedValues.totalCalendarDays} días calendario). Los campos arriba son por TRIP solamente.`
+                      : `ℹ️ Total project: ${derivedValues.workDays} work days (${derivedValues.totalCalendarDays} calendar days). Fields above are per TRIP only.`}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
           </>
         )}
 
