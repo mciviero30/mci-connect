@@ -174,12 +174,14 @@ export default function CrearEstimado() {
       travelEnabled: travelTimeHours > 4, // Auto-detect travel requirement
       travelHours: travelTimeHours,
       hoursPerDay: 8,
-      roomsPerNight
+      roomsPerNight,
+      roundTrips: stayConfig.roundTrips,
+      nightsPerTrip: stayConfig.nightsPerTrip
     });
     
     // Compute derived values (SINGLE SOURCE OF TRUTH)
     return computeQuoteDerived(input);
-  }, [formData.items, projectTechCount, travelTimeHours, roomsPerNight]);
+  }, [formData.items, projectTechCount, travelTimeHours, roomsPerNight, stayConfig.roundTrips, stayConfig.nightsPerTrip]);
 
   const handleAddAllOutOfAreaItems = (allItems, stayData) => {
     // Remove existing travel items AND hotel/per diem items
