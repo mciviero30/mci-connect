@@ -99,6 +99,8 @@
  * @property {TravelConfig} travel - Travel configuration
  * @property {CalendarConfig} calendar - Calendar configuration
  * @property {number|null} [roomsPerNight] - Optional manual override for rooms per night
+ * @property {number} [roundTrips] - Number of round trips (default: 1)
+ * @property {number} [nightsPerTrip] - Nights per additional trip (default: 2)
  */
 
 /**
@@ -182,7 +184,9 @@ export function computeQuoteDerived(params) {
     techs,
     travel,
     calendar,
-    roomsPerNight = null
+    roomsPerNight = null,
+    roundTrips = 1,
+    nightsPerTrip = 2
   } = params;
   
   // HARD GUARD: Reject invalid inputs
@@ -294,9 +298,16 @@ export function computeQuoteDerived(params) {
   // STEP 5: CALCULATE NIGHTS (ALWAYS ROUND UP TO FULL NIGHTS)
   // ============================================================================
   
-  // Nights = total days - 1 (check out on last day)
+  // Base nights = total days - 1 (check out on last day)
   // ALWAYS round up - even 3 hours = 1 full night
-  const nights = Math.max(Math.ceil(totalCalendarDays - 1), 0);
+  const baseNights = Math.max(Math.ceil(totalCalendarDays - 1), 0);
+  
+  // Additional nights from multiple trips
+  // Formula: (roundTrips - 1) × nightsPerTrip
+  const additionalNights = roundTrips > 1 ? (roundTrips - 1) * nightsPerTrip : 0;
+  
+  // Total nights = base + additional
+  const nights = baseNights + additionalNights;
   
   // ============================================================================
   // STEP 6: CALCULATE HOTEL ROOMS
@@ -417,7 +428,9 @@ export function createComputeInput(params) {
     travelEnabled = false,
     travelHours = 0,
     hoursPerDay = 8,
-    roomsPerNight = null
+    roomsPerNight = null,
+    roundTrips = 1,
+    nightsPerTrip = 2
   } = params;
   
   // Validate required fields
@@ -435,6 +448,8 @@ export function createComputeInput(params) {
       hoursPerDay: Number(hoursPerDay) || 8,
       workDays: [1, 2, 3, 4, 5] // Mon-Fri fixed
     },
-    roomsPerNight
+    roomsPerNight,
+    roundTrips: Number(roundTrips) || 1,
+    nightsPerTrip: Number(nightsPerTrip) || 2
   };
 }
