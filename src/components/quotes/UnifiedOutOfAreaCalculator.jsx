@@ -201,10 +201,10 @@ export default function UnifiedOutOfAreaCalculator({
         unit: hotelItem?.unit || 'night',
         unit_price: hotelRate,
         total: totalHotelRooms * hotelRate,
-        is_travel_item: true,
+        is_travel_item: false,  // NOT a travel item - already includes all trips
         travel_item_type: 'hotel',
         account_category: 'expense_travel_per_diem',
-        round_trips: roundTrips,
+        round_trips: 1,  // Don't multiply - quantity already includes all trips
         nights_per_trip: nightsPerTrip,
         rooms_per_night: roomsPerNight
       });
@@ -219,10 +219,10 @@ export default function UnifiedOutOfAreaCalculator({
         unit: perDiemItem?.unit || 'day',
         unit_price: perDiemRate,
         total: totalPerDiemDays * perDiemRate,
-        is_travel_item: true,
+        is_travel_item: false,  // NOT a travel item - already includes all trips
         travel_item_type: 'per_diem',
         account_category: 'expense_travel_per_diem',
-        round_trips: roundTrips,
+        round_trips: 1,  // Don't multiply - quantity already includes all trips
         days_per_trip: daysPerTrip,
         tech_count: techCount
       });
