@@ -435,11 +435,19 @@ export default function UnifiedOutOfAreaCalculator({
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Días Calendario' : 'Calendar Days'}</p>
-                    <p className="text-lg font-bold text-purple-700">{derivedValues.totalCalendarDays}</p>
+                    <p className="text-lg font-bold text-purple-700">
+                      {roundTrips > 1 
+                        ? derivedValues.totalCalendarDays + ((roundTrips - 1) * daysPerTrip)
+                        : derivedValues.totalCalendarDays}
+                    </p>
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Noches' : 'Nights'}</p>
-                    <p className="text-lg font-bold text-indigo-700">{derivedValues.nights}</p>
+                    <p className="text-lg font-bold text-indigo-700">
+                      {roundTrips > 1 
+                        ? derivedValues.nights + ((roundTrips - 1) * nightsPerTrip)
+                        : derivedValues.nights}
+                    </p>
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Horas Total' : 'Total Hours'}</p>
