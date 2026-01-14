@@ -13,21 +13,19 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log full error details ONLY in DEV mode
-    if (import.meta.env?.DEV) {
-      console.error('🚨 ERROR BOUNDARY CAUGHT:', {
-        error,
-        message: error?.message,
-        stack: error?.stack,
-        errorInfo,
-        componentStack: errorInfo?.componentStack
-      });
-    }
+    // ALWAYS log error for debugging
+    console.error('🚨 ERROR BOUNDARY CAUGHT:', {
+      error,
+      message: error?.message,
+      stack: error?.stack,
+      errorInfo,
+      componentStack: errorInfo?.componentStack
+    });
     
-    // Store error details in state for DEV display
+    // ALWAYS store error details for display (temporary debug mode)
     this.setState({ 
-      error: import.meta.env?.DEV ? error : null, 
-      errorInfo: import.meta.env?.DEV ? errorInfo : null 
+      error: error, 
+      errorInfo: errorInfo 
     });
   }
 
@@ -43,8 +41,8 @@ class ErrorBoundary extends React.Component {
                 The application encountered an unexpected error. Please reload the page to continue.
               </p>
               
-              {/* DEV MODE: Display error details */}
-              {import.meta.env?.DEV && this.state.error && (
+              {/* ALWAYS DISPLAY ERROR (temporary debug mode) */}
+              {this.state.error && (
                 <div className="text-left mb-6 space-y-4">
                   <div className="bg-red-950/50 border border-red-500/50 rounded p-4">
                     <h3 className="text-red-400 font-bold mb-2">Error Message:</h3>
