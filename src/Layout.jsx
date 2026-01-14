@@ -317,7 +317,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
 
-  const isOnboardingPage = currentPageName === 'OnboardingWizard';
+  // ROUTE-BASED CHECK (reliable on refresh, unlike currentPageName)
+  const isOnboardingRoute = location.pathname.includes('/Onboarding');
   
   // DEFINITIVE ONBOARDING GATE: Use ONLY the completion flag
   // NEVER count forms or use stale queries (prevents loop)
@@ -674,7 +675,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   }
 
   // DECLARATIVE GATE 1: Block for onboarding (no navigation)
-  if (shouldBlockForOnboarding && !isOnboardingPage) {
+  if (shouldBlockForOnboarding && !isOnboardingRoute) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">
         <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-blue-200 dark:border-slate-700 shadow-2xl">
