@@ -401,10 +401,10 @@ export default function LineItemsEditor({
                     </Tooltip>
                   </TooltipProvider>
                 )}
-              </div>
-            </div>
+                </div>
+                </div>
 
-            {/* Actions */}
+                {/* Actions */}
             <div className="flex justify-end gap-0.5 items-center">
               {allowReorder && index > 0 && (
                 <Button
