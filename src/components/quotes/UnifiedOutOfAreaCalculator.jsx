@@ -24,6 +24,7 @@ export default function UnifiedOutOfAreaCalculator({
   const [travelMetrics, setTravelMetrics] = useState([]);
   const [error, setError] = useState(null);
   const [vehicleCounts, setVehicleCounts] = useState({});
+  const [roundTrips, setRoundTrips] = useState(1);
   const [isCalculating, setIsCalculating] = useState(false);
   
   // Load company settings for rates
@@ -119,37 +120,39 @@ export default function UnifiedOutOfAreaCalculator({
       const vehicleCount = vehicleCounts[metric.teamId] || 1;
       const milesPerVehicle = parseFloat(metric.totalMiles);
       const drivingHours = parseFloat(metric.drivingHours);
+      const totalDrivingHours = drivingHours * roundTrips;
+      const totalMiles = milesPerVehicle * vehicleCount * roundTrips;
 
       // Driving Time item
       travelItems.push({
         item_name: `Driving Time - ${metric.teamName}`,
-        description: `Round trip driving from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi)`,
-        quantity: drivingHours,
+        description: `${roundTrips} round trip${roundTrips > 1 ? 's' : ''} from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi each)`,
+        quantity: totalDrivingHours,
         unit: 'hours',
         unit_price: drivingRate,
-        total: drivingHours * drivingRate,
+        total: totalDrivingHours * drivingRate,
         is_travel_item: true,
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
-        round_trips: 1,
+        round_trips: roundTrips,
         account_category: 'expense_travel_per_diem',
-        duration_value: drivingHours,
+        duration_value: totalDrivingHours,
         tech_count: 1
       });
 
       // Miles per Vehicle item
       travelItems.push({
         item_name: `Miles per Vehicle - ${metric.teamName}`,
-        description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${milesPerVehicle} miles round trip`,
-        quantity: milesPerVehicle * vehicleCount,
+        description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${milesPerVehicle} miles × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`,
+        quantity: totalMiles,
         unit: 'miles',
         unit_price: mileageRate,
-        total: milesPerVehicle * vehicleCount * mileageRate,
+        total: totalMiles * mileageRate,
         is_travel_item: true,
         travel_item_type: 'miles_per_vehicle',
         team_id: metric.teamId,
         vehicle_count: vehicleCount,
-        round_trips: 1,
+        round_trips: roundTrips,
         account_category: 'expense_travel_per_diem'
       });
     });
@@ -171,10 +174,13 @@ export default function UnifiedOutOfAreaCalculator({
       const hotelRate = hotelItem?.unit_price || 200;
       const perDiemRate = perDiemItem?.unit_price || 55;
 
-      // Hotel Rooms (auto-calculated)
+      const totalNights = derivedValues.nights * roundTrips;
+      const totalDays = derivedValues.totalCalendarDays * roundTrips;
+
+      // Hotel Rooms (auto-calculated with round trips)
       stayItems.push({
         item_name: hotelName,
-        description: `Rooms per night = ${roomsPerNight}\nNights = ${derivedValues.nights}`,
+        description: `Rooms per night = ${roomsPerNight}\nNights per trip = ${derivedValues.nights}\nRound trips = ${roundTrips}\nTotal nights = ${totalNights}`,
         quantity: 0, // Will be derived
         unit: hotelItem?.unit || 'night',
         unit_price: hotelRate,
@@ -185,12 +191,13 @@ export default function UnifiedOutOfAreaCalculator({
         manual_override: false,
         installation_time: 0,
         tech_count: techCount,
+        round_trips: roundTrips,
       });
 
-      // Per-Diem (auto-calculated)
+      // Per-Diem (auto-calculated with round trips)
       stayItems.push({
         item_name: perDiemName,
-        description: `Days = ${derivedValues.totalCalendarDays} days\nTechs = ${techCount}`,
+        description: `Days per trip = ${derivedValues.totalCalendarDays} days\nRound trips = ${roundTrips}\nTotal days = ${totalDays}\nTechs = ${techCount}`,
         quantity: 0, // Will be derived
         unit: perDiemItem?.unit || 'day',
         unit_price: perDiemRate,
@@ -201,15 +208,17 @@ export default function UnifiedOutOfAreaCalculator({
         manual_override: false,
         installation_time: 0,
         tech_count: techCount,
+        round_trips: roundTrips,
       });
     }
 
     // Combine and send
     onAddAllItems([...travelItems, ...stayItems], {
-      hotel_quantity: derivedValues?.hotelRooms || 0,
-      per_diem_quantity: derivedValues?.perDiemDays || 0,
+      hotel_quantity: (derivedValues?.hotelRooms || 0) * roundTrips,
+      per_diem_quantity: (derivedValues?.perDiemDays || 0) * roundTrips,
       tech_count: techCount,
-      duration_days: derivedValues?.totalCalendarDays || 0
+      duration_days: (derivedValues?.totalCalendarDays || 0) * roundTrips,
+      round_trips: roundTrips
     });
   };
 
@@ -232,20 +241,37 @@ export default function UnifiedOutOfAreaCalculator({
           </div>
         )}
 
-        {/* SECTION 1: Tech Count - Always visible */}
-        <div className="flex items-center gap-3 p-2 bg-white rounded-lg border border-blue-200">
-          <Users className="w-4 h-4 text-blue-600" />
-          <Label className="text-xs font-semibold whitespace-nowrap">
-            {language === 'es' ? 'Técnicos:' : 'Technicians:'}
-          </Label>
-          <Input
-            type="number"
-            min="1"
-            max="20"
-            value={techCount}
-            onChange={(e) => onTechCountChange(parseInt(e.target.value) || 1)}
-            className="w-16 h-7 text-sm"
-          />
+        {/* SECTION 1: Tech Count & Round Trips - Always visible */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200">
+            <Users className="w-4 h-4 text-blue-600" />
+            <Label className="text-xs font-semibold whitespace-nowrap">
+              {language === 'es' ? 'Técnicos:' : 'Technicians:'}
+            </Label>
+            <Input
+              type="number"
+              min="1"
+              max="20"
+              value={techCount}
+              onChange={(e) => onTechCountChange(parseInt(e.target.value) || 1)}
+              className="w-16 h-7 text-sm"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200">
+            <MapPin className="w-4 h-4 text-blue-600" />
+            <Label className="text-xs font-semibold whitespace-nowrap">
+              {language === 'es' ? 'Viajes:' : 'Round Trips:'}
+            </Label>
+            <Input
+              type="number"
+              min="1"
+              max="10"
+              value={roundTrips}
+              onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
+              className="w-16 h-7 text-sm"
+            />
+          </div>
         </div>
 
         {/* SECTION 2: Single Calculate Button (for distances) */}
@@ -287,24 +313,24 @@ export default function UnifiedOutOfAreaCalculator({
                   </div>
 
                   {metric.success ? (
-                    <>
-                       <div className="grid grid-cols-2 gap-2 text-xs">
-                         <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
-                           <Clock className="w-3 h-3 text-blue-600" />
-                           <div className="w-full">
-                             <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Tiempo' : 'Time'}</p>
-                             <p className="font-bold text-slate-900">{metric.drivingHours}H x {techCount} = {(parseFloat(metric.drivingHours) * techCount).toFixed(1)}H</p>
-                           </div>
-                         </div>
+                   <>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
+                          <Clock className="w-3 h-3 text-blue-600" />
+                          <div className="w-full">
+                            <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Tiempo Total' : 'Total Time'}</p>
+                            <p className="font-bold text-slate-900">{metric.drivingHours}H x {roundTrips} = {(parseFloat(metric.drivingHours) * roundTrips).toFixed(1)}H</p>
+                          </div>
+                        </div>
 
-                         <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
-                           <Car className="w-3 h-3 text-blue-600" />
-                           <div className="w-full">
-                             <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Millas' : 'Miles'}</p>
-                             <p className="font-bold text-slate-900">{metric.totalMiles}mi x {vehicleCounts[metric.teamId] || 1}V = {(parseFloat(metric.totalMiles) * (vehicleCounts[metric.teamId] || 1)).toFixed(1)}mi</p>
-                           </div>
-                         </div>
-                       </div>
+                        <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
+                          <Car className="w-3 h-3 text-blue-600" />
+                          <div className="w-full">
+                            <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Millas Totales' : 'Total Miles'}</p>
+                            <p className="font-bold text-slate-900">{metric.totalMiles}mi x {vehicleCounts[metric.teamId] || 1}V x {roundTrips} = {(parseFloat(metric.totalMiles) * (vehicleCounts[metric.teamId] || 1) * roundTrips).toFixed(1)}mi</p>
+                          </div>
+                        </div>
+                      </div>
 
                        <div className="pt-1 border-t border-slate-200">
                          <Label className="text-[10px] text-slate-600 mb-1 block">
@@ -347,7 +373,7 @@ export default function UnifiedOutOfAreaCalculator({
                             <Plus className="w-3 h-3" />
                           </Button>
                           <span className="text-sm text-slate-600 ml-2">
-                            = {(parseFloat(metric.totalMiles) * (vehicleCounts[metric.teamId] || 1)).toFixed(1)} {language === 'es' ? 'millas totales' : 'total miles'}
+                            × {roundTrips} {language === 'es' ? 'viajes' : 'trips'} = {(parseFloat(metric.totalMiles) * (vehicleCounts[metric.teamId] || 1) * roundTrips).toFixed(1)} {language === 'es' ? 'millas' : 'miles'}
                           </span>
                         </div>
                       </div>
@@ -385,36 +411,40 @@ export default function UnifiedOutOfAreaCalculator({
                 {/* Stay Summary - DETAILED */}
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Días' : 'Days'}</p>
+                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Días por Viaje' : 'Days per Trip'}</p>
                     <p className="text-lg font-bold text-purple-900">{derivedValues.totalCalendarDays}</p>
                   </div>
 
                   <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Noches' : 'Nights'}</p>
+                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}</p>
                     <p className="text-lg font-bold text-purple-900">{derivedValues.nights}</p>
                   </div>
 
                   <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems</p>
-                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems {language === 'es' ? 'Totales' : 'Total'}</p>
+                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1 flex-wrap">
                       <CalendarDays className="w-3.5 h-3.5 text-purple-600" />
                       {derivedValues.totalCalendarDays} x
                       <Users className="w-3.5 h-3.5 text-purple-600" />
-                      {techCount} =
+                      {techCount} x
+                      <MapPin className="w-3.5 h-3.5 text-purple-600" />
+                      {roundTrips} =
                       <Coffee className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.perDiemDays}
+                      {derivedValues.perDiemDays * roundTrips}
                     </p>
                   </div>
 
                   <div className="p-2 bg-white rounded border border-purple-200">
-                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos' : 'Rooms'}</p>
-                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                    <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos Totales' : 'Total Rooms'}</p>
+                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1 flex-wrap">
                       <Bed className="w-3.5 h-3.5 text-purple-600" />
                       {roomsPerNight} x
                       <Moon className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.nights} =
+                      {derivedValues.nights} x
+                      <MapPin className="w-3.5 h-3.5 text-purple-600" />
+                      {roundTrips} =
                       <Hotel className="w-3.5 h-3.5 text-purple-600" />
-                      {derivedValues.hotelRooms}
+                      {derivedValues.hotelRooms * roundTrips}
                     </p>
                   </div>
                 </div>
