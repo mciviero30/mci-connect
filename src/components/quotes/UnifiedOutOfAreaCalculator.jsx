@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, MapPin, Clock, Car, Calculator, Plus, Minus, Hotel, Coffee, Users, Calendar, Info } from 'lucide-react';
+import { AlertCircle, MapPin, Clock, Car, Calculator, Plus, Minus, Hotel, Coffee, Users, Calendar, Info, CalendarDays, Moon, Bed } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -396,12 +396,26 @@ export default function UnifiedOutOfAreaCalculator({
 
                   <div className="p-2 bg-white rounded border border-purple-200">
                     <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems</p>
-                    <p className="text-sm font-bold text-purple-900">📅 {derivedValues.totalCalendarDays} x 👥 {techCount} = 📅 {derivedValues.perDiemDays}</p>
+                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                      <CalendarDays className="w-3.5 h-3.5 text-purple-600" />
+                      {derivedValues.totalCalendarDays} x
+                      <Users className="w-3.5 h-3.5 text-purple-600" />
+                      {techCount} =
+                      <Coffee className="w-3.5 h-3.5 text-purple-600" />
+                      {derivedValues.perDiemDays}
+                    </p>
                   </div>
 
                   <div className="p-2 bg-white rounded border border-purple-200">
                     <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos' : 'Rooms'}</p>
-                    <p className="text-sm font-bold text-purple-900">🛏️ {roomsPerNight} x 🌙 {derivedValues.nights} = 🛏️ {derivedValues.hotelRooms}</p>
+                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                      <Bed className="w-3.5 h-3.5 text-purple-600" />
+                      {roomsPerNight} x
+                      <Moon className="w-3.5 h-3.5 text-purple-600" />
+                      {derivedValues.nights} =
+                      <Hotel className="w-3.5 h-3.5 text-purple-600" />
+                      {derivedValues.hotelRooms}
+                    </p>
                   </div>
                 </div>
               </>
