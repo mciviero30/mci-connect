@@ -505,7 +505,9 @@ export default function Dashboard() {
             renderItem={(emp) => (
               <Link to={createPageUrl(`EmployeeProfile?id=${emp.id}`)}>
                 <div className="flex items-center gap-3 p-4 bg-pink-50/50 dark:bg-pink-900/20 rounded-xl border border-pink-200 dark:border-pink-700/50 hover:border-pink-400 dark:hover:border-pink-500 hover:shadow-md transition-all cursor-pointer">
-                  <div className="text-4xl">🎂</div>
+                  <div className="w-10 h-10 rounded-lg bg-pink-500 flex items-center justify-center">
+                   <Cake className="w-5 h-5 text-white" />
+                  </div>
                   <div className="flex-1">
                     <p className="font-bold text-slate-900 dark:text-white">{getDisplayName(emp)}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{emp.position}</p>
@@ -524,7 +526,9 @@ export default function Dashboard() {
             items={recentAchievements}
             renderItem={(rec) => (
               <div className="flex items-center gap-3 p-4 bg-amber-50/50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-700/50 hover:shadow-md transition-all">
-                <div className="text-3xl">🏆</div>
+                <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center">
+                 <Trophy className="w-4 h-4 text-white" />
+                </div>
                 <div className="flex-1">
                   <p className="font-bold text-slate-900 dark:text-white text-sm">{rec.title}</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400">{rec.employee_name}</p>
@@ -686,8 +690,8 @@ export default function Dashboard() {
               </button>
 
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white leading-tight">
-                  {user ? `${t('hello')}, ${getDisplayName(user)}! 👋` : t('hello')}
+                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white leading-tight flex items-center gap-2">
+                 {user ? `${t('hello')}, ${getDisplayName(user)}!` : t('hello')}
                 </h1>
                 <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1">
                   {isAdmin ? 'Welcome to the admin panel!' : 'Have a great day!'}

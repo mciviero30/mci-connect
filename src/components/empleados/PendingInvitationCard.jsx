@@ -71,15 +71,15 @@ export default function PendingInvitationCard({ employee }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       alert(language === 'es' 
-        ? '✅ Invitación enviada! El empleado recibirá 2 emails: bienvenida + invitación de Base44'
-        : '✅ Invitation sent! Employee will receive 2 emails: welcome + Base44 system invite'
+        ? 'Invitación enviada! El empleado recibirá 2 emails: bienvenida + invitación de Base44'
+        : 'Invitation sent! Employee will receive 2 emails: welcome + Base44 system invite'
       );
     },
     onError: (error) => {
       console.error('Error sending invitation:', error);
       alert(language === 'es' 
-        ? '❌ Error al enviar invitación: ' + error.message
-        : '❌ Error sending invitation: ' + error.message
+        ? 'Error al enviar invitación: ' + error.message
+        : 'Error sending invitation: ' + error.message
       );
     }
   });

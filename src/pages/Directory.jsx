@@ -89,8 +89,9 @@ export default function Directory() {
         {employees.length === 0 && !isLoading && (
           <Alert className="mb-6 bg-blue-100 border-blue-300">
             <AlertCircle className="w-4 h-4 text-blue-600" />
-            <AlertDescription className="text-blue-700">
-              📱 Directory is empty. Admin needs to sync employees to directory.
+            <AlertDescription className="text-blue-700 flex items-center gap-2">
+             <Users className="w-4 h-4" />
+             Directory is empty. Admin needs to sync employees to directory.
             </AlertDescription>
           </Alert>
         )}

@@ -901,8 +901,18 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl">
-                  <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">🇺🇸 English</SelectItem>
-                  <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">🇪🇸 Español</SelectItem>
+                  <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-blue-600" />
+                      English
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-blue-600" />
+                      Español
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <ThemeToggle />

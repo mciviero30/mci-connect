@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { 
   User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, 
   Clock, UserCircle, FileText, Calendar as CalendarIcon, Receipt, Banknote,
-  Edit3, Save, X, Award, Shield, ChevronRight, Sparkles
+  Edit3, Save, X, Award, Shield, ChevronRight, Sparkles, Lock, Shirt, DollarSign
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -273,9 +273,12 @@ export default function MyProfile() {
             {expired.length > 0 && (
               <Alert className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
                 <AlertCircle className="w-4 h-4 text-red-600" />
-                <AlertDescription className="text-red-800 dark:text-red-300">
-                  <strong>⚠️ {expired.length} certificación(es) vencida(s)</strong>
-                  <span className="text-sm ml-2">- Acción inmediata requerida</span>
+                <AlertDescription className="text-red-800 dark:text-red-300 flex items-center gap-2">
+                 <strong className="flex items-center gap-1">
+                   <AlertCircle className="w-3.5 h-3.5" />
+                   {expired.length} certificación(es) vencida(s)
+                 </strong>
+                 <span className="text-sm">- Acción inmediata requerida</span>
                 </AlertDescription>
               </Alert>
             )}
@@ -340,20 +343,22 @@ export default function MyProfile() {
                   </div>
 
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      💵 {t('hourlyRate')}
-                      <Lock className="w-3 h-3 text-slate-400" />
-                    </Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">
-                      ${user.hourly_rate?.toFixed(2) || '0.00'}/hr
-                    </p>
+                   <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                     <DollarSign className="w-3 h-3 text-green-600" />
+                     {t('hourlyRate')}
+                     <Lock className="w-3 h-3 text-slate-400" />
+                   </Label>
+                   <p className="text-slate-900 dark:text-white font-medium mt-1">
+                     ${user.hourly_rate?.toFixed(2) || '0.00'}/hr
+                   </p>
                   </div>
 
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      👕 T-Shirt Size
-                      {editing && <Edit3 className="w-3 h-3 text-green-600" />}
-                    </Label>
+                   <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                     <Shirt className="w-3 h-3 text-purple-600" />
+                     T-Shirt Size
+                     {editing && <Edit3 className="w-3 h-3 text-green-600" />}
+                   </Label>
                     {editing ? (
                       <Select 
                         value={formData.tshirt_size} 
