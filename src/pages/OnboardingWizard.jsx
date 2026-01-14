@@ -131,29 +131,23 @@ export default function OnboardingWizard() {
       if (totalCompleted < 4) {
         setCurrentStep(currentStep + 1);
       } else {
-        // ✅ ONBOARDING COMPLETE - Update cache FIRST, then API
+        // ✅ ONBOARDING COMPLETE
         
-        // CRITICAL: Update cache IMMEDIATELY before API call
+        // 1. Update API first
+        await base44.auth.updateMe({ 
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString()
+        });
+        
+        // 2. Update React Query cache to reflect the change
         queryClient.setQueryData(['currentUser'], (old) => ({
           ...old,
           onboarding_completed: true,
-          onboarding_completed_at: new Date().toISOString(),
-          onboarding_status: 'completed'
+          onboarding_completed_at: new Date().toISOString()
         }));
         
-        // Update API and wait for it
-        await base44.auth.updateMe({ 
-          onboarding_completed: true,
-          onboarding_completed_at: new Date().toISOString(),
-          onboarding_status: 'completed'
-        });
-        
-        // Force refetch user data to sync with server
-        await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-        await queryClient.refetchQueries({ queryKey: ['currentUser'] });
-        
-        // Navigate with full page reload to ensure clean state
-        window.location.href = createPageUrl('Dashboard');
+        // 3. Navigate to Dashboard
+        navigate(createPageUrl('Dashboard'), { replace: true });
       }
     }
   });
