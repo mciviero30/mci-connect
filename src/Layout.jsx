@@ -259,6 +259,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
 
 const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
   const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
@@ -684,7 +685,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             Please complete your onboarding before accessing the app.
           </p>
           <Button 
-            onClick={() => window.location.href = createPageUrl('OnboardingWizard')}
+            onClick={() => navigate(createPageUrl('OnboardingWizard'))}
             className="soft-blue-gradient text-white shadow-lg"
           >
             Complete Onboarding
