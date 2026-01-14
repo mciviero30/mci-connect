@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Lock } from "lucide-react";
 import {
   DollarSign,
   Clock,
@@ -25,7 +26,10 @@ import {
   MessageSquare,
   CalendarDays as Calendar,
   Edit,
-  UserPlus
+  UserPlus,
+  Zap,
+  CheckCircle2,
+  Trash2
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
@@ -84,6 +88,31 @@ export default function JobDetails() {
     },
     onError: (error) => {
       toast.error(`Sync failed: ${error.message}`);
+    }
+  });
+
+  const provisionToFieldMutation = useMutation({
+    mutationFn: async () => {
+      const result = await base44.functions.invoke('syncJobToMCIField', { jobData: job });
+      
+      if (result?.data?.success && result?.data?.mci_field_job_id) {
+        // Update job with field project id
+        await base44.entities.Job.update(jobId, {
+          field_project_id: result.data.mci_field_job_id
+        });
+        return result.data;
+      } else {
+        throw new Error(result?.data?.error || 'Failed to sync to MCI Field');
+      }
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      toast.success(language === 'es' 
+        ? '✅ Trabajo provisionado a MCI Field exitosamente' 
+        : '✅ Job provisioned to MCI Field successfully');
+    },
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`);
     }
   });
 
@@ -185,9 +214,44 @@ export default function JobDetails() {
             description={job.description || `${t('customer')}: ${job.customer_name || 'N/A'}`}
             icon={ClipboardList}
             actions={
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 {user?.role === 'admin' && (
                   <>
+                    {!job?.field_project_id ? (
+                      <Button 
+                        onClick={() => {
+                          if (window.confirm(
+                            language === 'es'
+                              ? '¿Provisionar este trabajo a MCI Field?\n\nEsto creará un proyecto de campo para gestión móvil.'
+                              : 'Provision this job to MCI Field?\n\nThis will create a field project for mobile management.'
+                          )) {
+                            provisionToFieldMutation.mutate();
+                          }
+                        }}
+                        disabled={provisionToFieldMutation.isPending}
+                        className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                      >
+                        {provisionToFieldMutation.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            {language === 'es' ? 'Provisionando...' : 'Provisioning...'}
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-4 h-4 mr-2" />
+                            {language === 'es' ? 'Provisionar a MCI Field' : 'Provision to MCI Field'}
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button 
+                        disabled
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg opacity-75"
+                      >
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Ya en MCI Field' : 'Already in MCI Field'}
+                      </Button>
+                    )}
                     <Button 
                       onClick={() => setShowClientInvitation(true)}
                       className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
@@ -199,7 +263,8 @@ export default function JobDetails() {
                       onClick={() => setShowWebSync(true)}
                       className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white shadow-lg"
                     >
-                      🌐 Web Sync
+                      <MapPin className="w-4 h-4 mr-2" />
+                      Web Sync
                     </Button>
                   </>
                 )}
@@ -415,8 +480,9 @@ export default function JobDetails() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-bold text-emerald-900 text-lg mb-1">
-                        {language === 'es' ? '💰 Facturar Trabajo Adicional por Horas (T&M)' : '💰 Bill Additional T&M Work'}
+                      <h3 className="font-bold text-emerald-900 text-lg mb-1 flex items-center gap-2">
+                       <DollarSign className="w-5 h-5" />
+                       {language === 'es' ? 'Facturar Trabajo Adicional por Horas (T&M)' : 'Bill Additional T&M Work'}
                       </h3>
                       <p className="text-sm text-emerald-700">
                         {language === 'es' 
@@ -427,10 +493,11 @@ export default function JobDetails() {
                         {timeEntries.filter(e => e.status === 'approved').length} {language === 'es' ? 'horas aprobadas listas para facturar' : 'approved hours ready to bill'}
                       </p>
                       {job?.billing_type === 'fixed_price' && (
-                        <p className="text-xs text-amber-700 mt-2 font-semibold">
-                          ⚡ {language === 'es' 
-                            ? 'Trabajo original fue precio fijo. Esta factura es por trabajo ADICIONAL por horas.'
-                            : 'Original job was fixed price. This invoice is for ADDITIONAL hourly work.'}
+                        <p className="text-xs text-amber-700 mt-2 font-semibold flex items-center gap-1">
+                         <AlertTriangle className="w-3.5 h-3.5" />
+                         {language === 'es' 
+                           ? 'Trabajo original fue precio fijo. Esta factura es por trabajo ADICIONAL por horas.'
+                           : 'Original job was fixed price. This invoice is for ADDITIONAL hourly work.'}
                         </p>
                       )}
                     </div>
@@ -739,14 +806,15 @@ export default function JobDetails() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg">
-                  <span className="text-3xl">🌐</span>
+                  <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">Public Portfolio Settings</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 font-normal">Sync to MCI-us.com website</p>
                 </div>
-                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg ml-auto">
-                  🔒 Admin Only
+                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-lg ml-auto flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Admin Only
                 </Badge>
               </DialogTitle>
             </DialogHeader>
@@ -816,7 +884,8 @@ export default function JobDetails() {
                     </>
                   ) : (
                     <>
-                      🚀 Sync Now to MCI-us.com
+                      <Zap className="w-4 h-4 mr-2" />
+                      Sync Now to MCI-us.com
                     </>
                   )}
                 </Button>
@@ -826,7 +895,8 @@ export default function JobDetails() {
                     variant="destructive"
                     className="shadow-lg"
                   >
-                    🗑️ Remove from Website
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove from Website
                   </Button>
                 )}
               </div>

@@ -179,55 +179,21 @@ Deno.serve(async (req) => {
     }
 
     // ========================================
-    // STEP 3: Ensure MCI Field Sync (IDEMPOTENT)
+    // STEP 3: MCI Field Sync - SKIPPED (Manual Only)
     // ========================================
-    try {
-      if (job.field_project_id) {
-        // Field project already exists - NEVER create duplicate
-        steps.field = 'existing';
-        if (import.meta.env?.DEV) {
-          console.log(`✅ Field project exists: ${job.field_project_id} - skipping sync`);
-        }
-      } else {
-        // Sync to Field
-        if (import.meta.env?.DEV) {
-          console.log('🔗 Syncing to MCI Field...');
-        }
-        
-        const fieldResult = await base44.asServiceRole.functions.invoke('syncJobToMCIField', {
-          jobData: job
-        });
-        
-        if (fieldResult?.success && fieldResult?.mci_field_job_id) {
-          // Update job with field project id
-          await base44.asServiceRole.entities.Job.update(jobId, {
-            field_project_id: fieldResult.mci_field_job_id
-          });
-          
-          steps.field = 'created';
-          // Reload job
-          const updatedJobs = await base44.asServiceRole.entities.Job.filter({ id: jobId });
-          job = updatedJobs[0];
-          if (import.meta.env?.DEV) {
-            console.log(`✅ Field sync completed: ${fieldResult.mci_field_job_id}`);
-          }
-        } else {
-          throw new Error(fieldResult?.error || 'No project ID returned');
-        }
-      }
-    } catch (error) {
-      steps.field = 'error';
-      errors.push(`Field: ${error.message}`);
-      if (import.meta.env?.DEV) {
-        console.error('❌ Field step error:', error);
-      }
+    // Field provisioning is now MANUAL ONLY via JobDetails button
+    // This prevents creating unnecessary Field projects for all jobs
+    steps.field = 'skipped';
+    if (import.meta.env?.DEV) {
+      console.log('⏭️ Field sync skipped - use manual provisioning from JobDetails');
     }
 
     // ========================================
     // STEP 4: Update Job Provisioning Status & Tracking
     // ========================================
-    const hasErrors = steps.job === 'error' || steps.drive === 'error' || steps.field === 'error';
-    const allCompleted = steps.job !== 'unknown' && steps.drive !== 'unknown' && steps.field !== 'unknown';
+    // Field is now optional, so only check Job + Drive
+    const hasErrors = steps.job === 'error' || steps.drive === 'error';
+    const allCompleted = steps.job !== 'unknown' && steps.drive !== 'unknown';
     const isPartial = allCompleted && hasErrors;
     const isFullyComplete = allCompleted && !hasErrors;
     
