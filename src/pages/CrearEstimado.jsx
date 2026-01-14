@@ -1258,14 +1258,12 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       onRoomsPerNightChange={setRoomsPerNight}
                     />
                     
-                    {formData.items.some(item => item.is_travel_item || item.calculation_type === 'hotel' || item.calculation_type === 'per_diem') && (
-                      <ProjectDurationSummary
-                        derivedValues={derivedValues}
-                        quoteItems={formData.items}
-                        quoteTotal={total}
-                        catalogItems={quoteItems}
-                      />
-                    )}
+                    <ProjectDurationSummary
+                      derivedValues={derivedValues}
+                      quoteItems={formData.items}
+                      quoteTotal={total}
+                      catalogItems={quoteItems}
+                    />
                   </div>
                 </div>
 
