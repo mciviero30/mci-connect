@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Calendar, Users, Clock, Briefcase, Moon, Info, Lock } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
-export default function ProjectDurationSummary({ derivedValues, quoteItems, quoteTotal, catalogItems }) {
+export default function ProjectDurationSummary({ derivedValues, quoteItems, quoteTotal, catalogItems, roundTrips = 1, daysPerTrip = 2, nightsPerTrip = 2 }) {
   const { language } = useLanguage();
   // ============================================================================
   // CAPA 6 - PURELY PRESENTATIONAL (NO CALCULATIONS)

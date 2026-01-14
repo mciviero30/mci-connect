@@ -18,7 +18,8 @@ export default function UnifiedOutOfAreaCalculator({
   techCount,
   onTechCountChange,
   roomsPerNight,
-  onRoomsPerNightChange
+  onRoomsPerNightChange,
+  onStayConfigChange // NEW: Notify parent of stay config changes
 }) {
   const { language } = useLanguage();
   const [travelMetrics, setTravelMetrics] = useState([]);
@@ -28,6 +29,13 @@ export default function UnifiedOutOfAreaCalculator({
   const [daysPerTrip, setDaysPerTrip] = useState(2);
   const [nightsPerTrip, setNightsPerTrip] = useState(2);
   const [isCalculating, setIsCalculating] = useState(false);
+
+  // Notify parent when stay config changes
+  React.useEffect(() => {
+    if (onStayConfigChange) {
+      onStayConfigChange({ roundTrips, daysPerTrip, nightsPerTrip });
+    }
+  }, [roundTrips, daysPerTrip, nightsPerTrip, onStayConfigChange]);
   
   // Load company settings for rates
   const { data: companySettings } = useQuery({

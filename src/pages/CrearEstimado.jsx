@@ -131,6 +131,8 @@ export default function CrearEstimado() {
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
 
+  const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2 });
+
   // Auto-calculate rooms per night based on tech count (max 2 techs per room)
   useEffect(() => {
     const calculatedRooms = Math.ceil(projectTechCount / 2);
@@ -1260,6 +1262,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       onTechCountChange={setProjectTechCount}
                       roomsPerNight={roomsPerNight}
                       onRoomsPerNightChange={setRoomsPerNight}
+                      onStayConfigChange={setStayConfig}
                     />
                     
                     <ProjectDurationSummary
@@ -1267,6 +1270,9 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       quoteItems={formData.items}
                       quoteTotal={total}
                       catalogItems={quoteItems}
+                      roundTrips={stayConfig.roundTrips}
+                      daysPerTrip={stayConfig.daysPerTrip}
+                      nightsPerTrip={stayConfig.nightsPerTrip}
                     />
                   </div>
                 </div>
