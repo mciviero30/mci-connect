@@ -1300,6 +1300,29 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                     className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <Switch
+                      checked={formData.out_of_area}
+                      onCheckedChange={handleOutOfAreaToggle}
+                      disabled={isCalculatingTravel}
+                    />
+                    <div className="flex-1">
+                      <Label className="text-blue-900 font-semibold">
+                        {language === 'es' ? 'Trabajo Fuera del Área' : 'Out-of-Area Job'}
+                      </Label>
+                      <p className="text-xs text-blue-700 mt-0.5">
+                        {language === 'es' 
+                          ? 'Agrega hotel, per-diem, millas y horas de manejo' 
+                          : 'Add hotel, per-diem, mileage and driving hours'}
+                      </p>
+                    </div>
+                    {isCalculatingTravel && (
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    )}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
