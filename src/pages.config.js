@@ -77,6 +77,7 @@ import NotificationPreferences from './pages/NotificationPreferences';
 import NotificationSettings from './pages/NotificationSettings';
 import OnboardingWizard from './pages/OnboardingWizard';
 import OperationalModesDoc from './pages/OperationalModesDoc';
+import Papelera from './pages/Papelera';
 import PaymentReconciliation from './pages/PaymentReconciliation';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
@@ -106,7 +107,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import Papelera from './pages/Papelera';
 import __Layout from './Layout.jsx';
 
 
@@ -190,6 +190,7 @@ export const PAGES = {
     "NotificationSettings": NotificationSettings,
     "OnboardingWizard": OnboardingWizard,
     "OperationalModesDoc": OperationalModesDoc,
+    "Papelera": Papelera,
     "PaymentReconciliation": PaymentReconciliation,
     "PayrollAutoFlow": PayrollAutoFlow,
     "PerDiem": PerDiem,
@@ -219,7 +220,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "Papelera": Papelera,
 }
 
 export const pagesConfig = {

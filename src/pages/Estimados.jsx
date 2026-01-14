@@ -108,21 +108,31 @@ export default function Estimados() {
 
   const duplicateMutation = useMutation({
     mutationFn: async (quote) => {
-      // Use atomic number generator to prevent duplicates
-      const { quote_number: newQuoteNumber } = await base44.functions.invoke('generateQuoteNumber');
-      
-      const newQuote = {
-        ...quote,
-        quote_number: newQuoteNumber,
-        status: 'draft',
-        quote_date: new Date().toISOString().split('T')[0],
-      };
-      delete newQuote.id;
-      delete newQuote.created_date;
-      delete newQuote.updated_date;
-      delete newQuote.created_by;
-      
-      return base44.entities.Quote.create(newQuote);
+      try {
+        // Use atomic number generator to prevent duplicates
+        const response = await base44.functions.invoke('generateQuoteNumber');
+        const newQuoteNumber = response?.quote_number || response?.data?.quote_number;
+        
+        if (!newQuoteNumber) {
+          throw new Error('Failed to generate quote number');
+        }
+        
+        const newQuote = {
+          ...quote,
+          quote_number: newQuoteNumber,
+          status: 'draft',
+          quote_date: new Date().toISOString().split('T')[0],
+        };
+        delete newQuote.id;
+        delete newQuote.created_date;
+        delete newQuote.updated_date;
+        delete newQuote.created_by;
+        
+        return base44.entities.Quote.create(newQuote);
+      } catch (error) {
+        console.error('Duplicate error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -131,6 +141,13 @@ export default function Estimados() {
         variant: 'success'
       });
     },
+    onError: (error) => {
+      toast({
+        title: language === 'es' ? 'Error al duplicar' : 'Failed to duplicate',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
   });
 
   const convertToInvoiceMutation = useMutation({
