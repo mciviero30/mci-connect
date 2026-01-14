@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * THREAD-SAFE QUOTE NUMBER GENERATOR
- * Uses atomic counter system to prevent duplicates
+ * INTELLIGENT QUOTE NUMBER GENERATOR
+ * Finds the smallest available number (reuses deleted numbers)
  */
 Deno.serve(async (req) => {
   try {
@@ -13,24 +13,33 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Create unique claim record (atomic operation)
-    const claim = await base44.asServiceRole.entities.Counter.create({
-      counter_key: `quote-claim-${Date.now()}-${Math.random()}`,
-      current_value: 1,
-      last_increment_date: new Date().toISOString()
-    });
+    // Get all existing quotes (including deleted ones)
+    const allQuotes = await base44.asServiceRole.entities.Quote.list();
     
-    // Count all quote claims to get sequence number
-    const allClaims = await base44.asServiceRole.entities.Counter.filter({
-      counter_key: { $regex: '^quote-claim-' }
+    // Extract numbers from quote_number field (EST-00001, EST-00002, etc.)
+    const usedNumbers = new Set();
+    allQuotes.forEach(quote => {
+      if (quote.quote_number) {
+        const match = quote.quote_number.match(/EST-(\d+)/);
+        if (match) {
+          usedNumbers.add(parseInt(match[1], 10));
+        }
+      }
     });
-    
-    const sequenceNumber = allClaims.length;
-    const formattedNumber = `EST-${String(sequenceNumber).padStart(5, '0')}`;
 
+    // Find the smallest available number
+    let nextNumber = 1;
+    while (usedNumbers.has(nextNumber)) {
+      nextNumber++;
+    }
+
+    const formattedNumber = `EST-${String(nextNumber).padStart(5, '0')}`;
+
+    console.log(`✅ Generated quote number: ${formattedNumber}`);
+    
     return Response.json({ 
       quote_number: formattedNumber,
-      next_sequence: sequenceNumber
+      next_sequence: nextNumber
     });
   } catch (error) {
     if (error instanceof Response) throw error;

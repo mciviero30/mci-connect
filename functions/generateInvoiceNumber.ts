@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * THREAD-SAFE INVOICE NUMBER GENERATOR
- * Uses atomic counter system to prevent duplicates
+ * INTELLIGENT INVOICE NUMBER GENERATOR
+ * Finds the smallest available number (reuses deleted numbers)
  */
 Deno.serve(async (req) => {
   try {
@@ -13,22 +13,34 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Create unique claim record (atomic operation)
-    const claim = await base44.asServiceRole.entities.Counter.create({
-      counter_key: `invoice-claim-${Date.now()}-${Math.random()}`,
-      current_value: 1,
-      last_increment_date: new Date().toISOString()
-    });
+    // Get all existing invoices (including deleted ones)
+    const allInvoices = await base44.asServiceRole.entities.Invoice.list();
     
-    // Count all invoice claims to get sequence number
-    const allClaims = await base44.asServiceRole.entities.Counter.filter({
-      counter_key: { $regex: '^invoice-claim-' }
+    // Extract numbers from invoice_number field (INV-00001, INV-00002, etc.)
+    const usedNumbers = new Set();
+    allInvoices.forEach(invoice => {
+      if (invoice.invoice_number) {
+        const match = invoice.invoice_number.match(/INV-(\d+)/);
+        if (match) {
+          usedNumbers.add(parseInt(match[1], 10));
+        }
+      }
     });
-    
-    const sequenceNumber = allClaims.length;
-    const formattedNumber = `INV-${String(sequenceNumber).padStart(5, '0')}`;
 
-    return Response.json({ invoice_number: formattedNumber });
+    // Find the smallest available number
+    let nextNumber = 1;
+    while (usedNumbers.has(nextNumber)) {
+      nextNumber++;
+    }
+
+    const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
+
+    console.log(`✅ Generated invoice number: ${formattedNumber}`);
+    
+    return Response.json({ 
+      invoice_number: formattedNumber,
+      next_sequence: nextNumber
+    });
   } catch (error) {
     if (error instanceof Response) throw error;
     console.error('❌ Error generating invoice number:', error);
