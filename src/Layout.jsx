@@ -683,11 +683,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           <p className="text-slate-600 dark:text-slate-400 mb-6">
             Please complete your onboarding before accessing the app.
           </p>
-          <Link to={createPageUrl('OnboardingWizard')}>
-            <Button className="soft-blue-gradient text-white shadow-lg">
-              Complete Onboarding
-            </Button>
-          </Link>
+          <Button 
+            onClick={() => window.location.href = createPageUrl('OnboardingWizard')}
+            className="soft-blue-gradient text-white shadow-lg"
+          >
+            Complete Onboarding
+          </Button>
         </div>
       </div>
     );
