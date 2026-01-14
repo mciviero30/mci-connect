@@ -1273,6 +1273,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       roundTrips={stayConfig.roundTrips}
                       daysPerTrip={stayConfig.daysPerTrip}
                       nightsPerTrip={stayConfig.nightsPerTrip}
+                      stayConfig={stayConfig}
                     />
                   </div>
                 </div>
