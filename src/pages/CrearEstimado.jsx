@@ -131,7 +131,7 @@ export default function CrearEstimado() {
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
 
-  const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2 });
+  const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2, total_nights: null, total_calendar_days: null });
 
   // Auto-calculate rooms per night based on tech count (max 2 techs per room)
   useEffect(() => {
@@ -213,6 +213,15 @@ export default function CrearEstimado() {
     
     // Add all items
     const finalItems = [...filteredItems, ...updatedItems];
+    
+    // CRITICAL: Update stayConfig with the values from the calculator
+    setStayConfig({
+      roundTrips: stayData.round_trips,
+      daysPerTrip: stayData.days_per_trip,
+      nightsPerTrip: stayData.nights_per_trip,
+      total_nights: stayData.total_nights,
+      total_calendar_days: stayData.total_calendar_days
+    });
     
     setFormData(prev => ({
       ...prev,
