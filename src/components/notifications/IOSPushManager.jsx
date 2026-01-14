@@ -45,13 +45,11 @@ export default function UniversalPushManager({ user }) {
           return;
         }
 
-        // Request permission if not already granted
+        // DO NOT request permission on mount - wait for user interaction
+        // Permission will be requested when user clicks notification bell or settings
         if (currentPermission !== 'granted') {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            console.log('Notification permission not granted');
-            return;
-          }
+          console.log('Notification permission not granted - waiting for user action');
+          return;
         }
 
         // Register service worker
