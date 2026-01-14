@@ -1245,29 +1245,29 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   </p>
                 </div>
 
-                {formData.out_of_area && (
-                  <div className="md:col-span-2">
-                    <div className="space-y-4">
-                      <UnifiedOutOfAreaCalculator
-                        jobAddress={formData.job_address}
-                        selectedTeamIds={formData.team_ids}
-                        onAddAllItems={handleAddAllOutOfAreaItems}
-                        derivedValues={derivedValues}
-                        techCount={projectTechCount}
-                        onTechCountChange={setProjectTechCount}
-                        roomsPerNight={roomsPerNight}
-                        onRoomsPerNightChange={setRoomsPerNight}
-                      />
-                      
+                <div className="md:col-span-2">
+                  <div className="space-y-4">
+                    <UnifiedOutOfAreaCalculator
+                      jobAddress={formData.job_address}
+                      selectedTeamIds={formData.team_ids}
+                      onAddAllItems={handleAddAllOutOfAreaItems}
+                      derivedValues={derivedValues}
+                      techCount={projectTechCount}
+                      onTechCountChange={setProjectTechCount}
+                      roomsPerNight={roomsPerNight}
+                      onRoomsPerNightChange={setRoomsPerNight}
+                    />
+                    
+                    {formData.items.some(item => item.is_travel_item || item.calculation_type === 'hotel' || item.calculation_type === 'per_diem') && (
                       <ProjectDurationSummary
                         derivedValues={derivedValues}
                         quoteItems={formData.items}
                         quoteTotal={total}
                         catalogItems={quoteItems}
                       />
-                    </div>
+                    )}
                   </div>
-                )}
+                </div>
 
                 <div>
                   <Label className="text-slate-700">{t('quoteDate')}</Label>
@@ -1301,28 +1301,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                    <Switch
-                      checked={formData.out_of_area}
-                      onCheckedChange={handleOutOfAreaToggle}
-                      disabled={isCalculatingTravel}
-                    />
-                    <div className="flex-1">
-                      <Label className="text-blue-900 font-semibold">
-                        {language === 'es' ? 'Trabajo Fuera del Área' : 'Out-of-Area Job'}
-                      </Label>
-                      <p className="text-xs text-blue-700 mt-0.5">
-                        {language === 'es' 
-                          ? 'Agrega hotel, per-diem, millas y horas de manejo' 
-                          : 'Add hotel, per-diem, mileage and driving hours'}
-                      </p>
-                    </div>
-                    {isCalculatingTravel && (
-                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                    )}
-                  </div>
-                </div>
+
               </div>
             </CardContent>
           </Card>
