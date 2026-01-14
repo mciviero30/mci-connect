@@ -1061,9 +1061,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       }
     },
     retry: false,
-    staleTime: Infinity,
+    staleTime: 60000, // 1 minute - allows refetch after onboarding
     gcTime: Infinity,
-    refetchOnMount: false,
+    refetchOnMount: true, // Refetch on mount to catch onboarding completion
     refetchOnWindowFocus: false,
     refetchInterval: false,
   });
