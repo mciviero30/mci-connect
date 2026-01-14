@@ -401,6 +401,39 @@ export default function UnifiedOutOfAreaCalculator({
               </h4>
             </div>
 
+            {/* Project Duration (from items) - READ-ONLY */}
+            {hasCalculations && (
+              <div className="p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-300 mb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Briefcase className="w-4 h-4 text-slate-700" />
+                  <h5 className="text-xs font-bold text-slate-700">
+                    {language === 'es' ? 'Duración del Proyecto Completo' : 'Full Project Duration'}
+                  </h5>
+                  <Badge className="bg-slate-200 text-slate-700 text-[10px]">
+                    {language === 'es' ? 'Auto-calculado' : 'Auto-calculated'}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="p-2 bg-white rounded border border-slate-200">
+                    <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Días Laborales' : 'Work Days'}</p>
+                    <p className="text-lg font-bold text-green-700">{derivedValues.workDays}</p>
+                  </div>
+                  <div className="p-2 bg-white rounded border border-slate-200">
+                    <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Días Calendario' : 'Calendar Days'}</p>
+                    <p className="text-lg font-bold text-purple-700">{derivedValues.totalCalendarDays}</p>
+                  </div>
+                  <div className="p-2 bg-white rounded border border-slate-200">
+                    <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Noches' : 'Nights'}</p>
+                    <p className="text-lg font-bold text-indigo-700">{derivedValues.nights}</p>
+                  </div>
+                  <div className="p-2 bg-white rounded border border-slate-200">
+                    <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Horas Total' : 'Total Hours'}</p>
+                    <p className="text-lg font-bold text-blue-700">{derivedValues.totalLaborHours}h</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Stay Configuration - Per Trip Basis */}
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
@@ -463,18 +496,6 @@ export default function UnifiedOutOfAreaCalculator({
                   </p>
                 </div>
               </div>
-
-              {/* Project Info Reference */}
-              {derivedValues && (
-                <Alert className="bg-blue-50 border-blue-300">
-                  <Info className="w-4 h-4 text-blue-600" />
-                  <AlertDescription className="text-xs text-blue-900">
-                    {language === 'es' 
-                      ? `ℹ️ Proyecto total: ${derivedValues.workDays} días laborales (${derivedValues.totalCalendarDays} días calendario). Los campos arriba son por TRIP solamente.`
-                      : `ℹ️ Total project: ${derivedValues.workDays} work days (${derivedValues.totalCalendarDays} calendar days). Fields above are per TRIP only.`}
-                  </AlertDescription>
-                </Alert>
-              )}
             </div>
           </>
         )}
