@@ -15,7 +15,7 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
 
   return (
     <Card 
-      onClick={() => !showSelectButton && navigate(createPageUrl(`CustomerDetails?id=${customer.id}`))}
+      onClick={() => navigate(createPageUrl(`CustomerDetails?id=${customer.id}`))}
       className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation cursor-pointer">
       <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Header Section */}
