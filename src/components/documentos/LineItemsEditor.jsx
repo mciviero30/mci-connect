@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check, Info, Plus } from "lucide-react";
+import { Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Check, Info, Plus, Package, Clock, DollarSign, Grid3x3, Layers, Zap } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
@@ -300,22 +300,23 @@ export default function LineItemsEditor({
             )}
 
             {/* Quantity */}
-            <div className="flex items-center justify-center">
-              <Input
-                type="number"
-                value={baseQuantity}
-                onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                min="0"
-                step="0.01"
-                required
-                disabled={isAutoCalc && !item.manual_override}
-                className={`h-9 text-sm text-center font-semibold ${
-                  isAutoCalc && !item.manual_override
-                    ? 'bg-blue-50 border-blue-200 text-blue-900 cursor-not-allowed'
-                    : 'bg-white border-slate-200 text-slate-900'
-                }`}
-              />
-            </div>
+             <div className="flex items-center justify-center gap-1">
+               <Grid3x3 className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+               <Input
+                 type="number"
+                 value={baseQuantity}
+                 onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                 min="0"
+                 step="0.01"
+                 required
+                 disabled={isAutoCalc && !item.manual_override}
+                 className={`h-9 text-sm text-center font-semibold flex-1 ${
+                   isAutoCalc && !item.manual_override
+                     ? 'bg-blue-50 border-blue-200 text-blue-900 cursor-not-allowed'
+                     : 'bg-white border-slate-200 text-slate-900'
+                 }`}
+               />
+             </div>
 
             {/* Unit */}
             <div className="flex items-center justify-center">
@@ -327,42 +328,45 @@ export default function LineItemsEditor({
             </div>
 
             {/* Rate */}
-            <div className="flex items-center justify-center">
-              <Input
-                type="number"
-                value={item.unit_price}
-                onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                min="0"
-                step="0.01"
-                required
-                disabled={pricesLocked}
-                className={`h-9 text-sm text-center font-semibold ${
-                  pricesLocked
-                    ? 'bg-amber-50 border-amber-200 text-amber-900 cursor-not-allowed'
-                    : 'bg-white border-slate-200 text-slate-900'
-                }`}
-              />
-            </div>
+             <div className="flex items-center justify-center gap-1">
+               <DollarSign className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+               <Input
+                 type="number"
+                 value={item.unit_price}
+                 onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                 min="0"
+                 step="0.01"
+                 required
+                 disabled={pricesLocked}
+                 className={`h-9 text-sm text-center font-semibold flex-1 ${
+                   pricesLocked
+                     ? 'bg-amber-50 border-amber-200 text-amber-900 cursor-not-allowed'
+                     : 'bg-white border-slate-200 text-slate-900'
+                 }`}
+               />
+             </div>
 
             {/* Hours (MCI Internal Only) */}
-            <div className="flex items-center justify-center">
-              <Input
-                type="number"
-                value={item.installation_time || 0}
-                onChange={(e) => updateItem(index, 'installation_time', parseFloat(e.target.value) || 0)}
-                min="0"
-                step="0.1"
-                className="h-9 text-sm text-center bg-slate-50 border-slate-200 text-slate-700"
-                placeholder="0"
-              />
-            </div>
+             <div className="flex items-center justify-center gap-1">
+               <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+               <Input
+                 type="number"
+                 value={item.installation_time || 0}
+                 onChange={(e) => updateItem(index, 'installation_time', parseFloat(e.target.value) || 0)}
+                 min="0"
+                 step="0.1"
+                 className="h-9 text-sm text-center bg-slate-50 border-slate-200 text-slate-700 flex-1"
+                 placeholder="0"
+               />
+             </div>
 
             {/* Amount */}
-            <div className="flex items-center justify-end">
-              <div className="text-right space-y-0.5">
-                <div className="text-slate-900 font-bold text-base">
-                  ${displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </div>
+             <div className="flex items-center justify-end gap-1">
+               <DollarSign className="w-4 h-4 text-slate-600 flex-shrink-0" />
+               <div className="text-right space-y-0.5">
+                 <div className="text-slate-900 font-bold text-base">
+                   {displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                 </div>
                 {(isAutoCalc || (item.is_travel_item && roundTrips > 1)) && (
                   <TooltipProvider>
                     <Tooltip>
