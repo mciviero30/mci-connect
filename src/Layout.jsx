@@ -1061,10 +1061,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       }
     },
     retry: false,
-    staleTime: 60000, // 1 minute - allows refetch after onboarding
+    staleTime: 0, // Always fresh - no cache
     gcTime: Infinity,
-    refetchOnMount: true, // Refetch on mount to catch onboarding completion
-    refetchOnWindowFocus: false,
+    refetchOnMount: true, // Always refetch on mount
+    refetchOnWindowFocus: true, // Refetch when window focused
     refetchInterval: false,
   });
 
