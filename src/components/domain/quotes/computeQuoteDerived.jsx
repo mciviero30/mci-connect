@@ -307,17 +307,12 @@ export function computeQuoteDerived(params) {
   // ============================================================================
   // STEP 5: CALCULATE NIGHTS (ALWAYS ROUND UP TO FULL NIGHTS)
   // ============================================================================
-  
-  // Base nights = total days - 1 (check out on last day)
+
+  // Nights = total calendar days - 1 (check out on last day)
   // ALWAYS round up - even 3 hours = 1 full night
-  const baseNights = Math.max(Math.ceil(totalCalendarDays - 1), 0);
-  
-  // Additional nights from multiple trips
-  // Formula: (roundTrips - 1) × nightsPerTrip
-  const additionalNights = roundTrips > 1 ? (roundTrips - 1) * nightsPerTrip : 0;
-  
-  // Total nights = base + additional
-  const nights = baseNights + additionalNights;
+  // Note: totalCalendarDays ALREADY includes additional days from multiple trips
+  // so we don't need to add separate "additional nights"
+  const nights = Math.max(Math.ceil(totalCalendarDays - 1), 0);
   
   // ============================================================================
   // STEP 6: CALCULATE HOTEL ROOMS
