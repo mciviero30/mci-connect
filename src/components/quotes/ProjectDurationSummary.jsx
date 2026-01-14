@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Calendar, Users, Clock, Briefcase, Moon, Info, Lock } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
-export default function ProjectDurationSummary({ derivedValues, quoteItems, quoteTotal, catalogItems, roundTrips = 1, daysPerTrip = 2, nightsPerTrip = 2 }) {
+export default function ProjectDurationSummary({ derivedValues, quoteItems, quoteTotal, catalogItems, roundTrips = 1, daysPerTrip = 2, nightsPerTrip = 2, stayConfig }) {
   const { language } = useLanguage();
   // ============================================================================
   // CAPA 6 - PURELY PRESENTATIONAL (NO CALCULATIONS)
@@ -161,7 +161,7 @@ export default function ProjectDurationSummary({ derivedValues, quoteItems, quot
                     </span>
                     <Info className="w-3 h-3 text-slate-400" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{derivedValues.totalCalendarDays}</p>
+                  <p className="text-2xl font-bold text-slate-900">{stayConfig?.total_calendar_days || derivedValues.totalCalendarDays}</p>
                   <p className="text-xs text-purple-600 mt-0.5 font-medium">
                     {language === 'es' ? '🔒 Incluye fines de semana' : '🔒 Includes weekends'}
                   </p>
@@ -189,7 +189,7 @@ export default function ProjectDurationSummary({ derivedValues, quoteItems, quot
                     </span>
                     <Info className="w-3 h-3 text-slate-400" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{derivedValues.nights}</p>
+                  <p className="text-2xl font-bold text-slate-900">{stayConfig?.total_nights || derivedValues.nights}</p>
                   <p className="text-xs text-indigo-600 mt-0.5 font-medium">
                     {language === 'es' ? '🔒 auto-calculado' : '🔒 auto-calculated'}
                   </p>
