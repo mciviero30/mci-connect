@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { CURRENT_USER_QUERY_KEY, ONBOARDING_FORMS_QUERY_KEY } from "@/constants/queryKeys";
+import { CURRENT_USER_QUERY_KEY, ONBOARDING_FORMS_QUERY_KEY } from "@/components/constants/queryKeys";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Circle, UserX } from "lucide-react";
 import { createPageUrl } from "@/utils";

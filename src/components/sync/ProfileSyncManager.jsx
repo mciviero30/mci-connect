@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CURRENT_USER_QUERY_KEY } from '@/constants/queryKeys';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 export default function ProfileSyncManager({ user }) {
   const queryClient = useQueryClient();

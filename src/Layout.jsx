@@ -63,7 +63,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CURRENT_USER_QUERY_KEY } from "@/constants/queryKeys";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";

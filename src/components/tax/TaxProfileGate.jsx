@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
-import { CURRENT_USER_QUERY_KEY, TAX_PROFILE_QUERY_KEY } from '@/constants/queryKeys';
+import { CURRENT_USER_QUERY_KEY, TAX_PROFILE_QUERY_KEY } from '@/components/constants/queryKeys';
 
 /**
  * Tax Profile Gate
