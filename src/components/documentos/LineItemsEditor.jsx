@@ -405,7 +405,7 @@ export default function LineItemsEditor({
                 </div>
 
                 {/* Actions */}
-            <div className="flex justify-end gap-0.5 items-center">
+                <div className="flex justify-end gap-0.5 items-center">
               {allowReorder && index > 0 && (
                 <Button
                   type="button"
@@ -437,11 +437,11 @@ export default function LineItemsEditor({
                 className="text-red-400 hover:text-red-700 hover:bg-red-50 h-7 w-7"
               >
                 <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
+                </Button>
+                </div>
+                </div>
 
-          {/* Row 2: Description spanning full width */}
+                {/* Row 2: Description spanning full width */}
           <div className="px-3 pb-3">
             <Textarea
               value={item.description}
