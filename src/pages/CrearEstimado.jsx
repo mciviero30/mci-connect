@@ -425,7 +425,7 @@ export default function CrearEstimado() {
   const calculateTravelDistance = async (origin, destination) => {
     if (!origin || !destination) return;
 
-    setCalculatingTravel(true);
+    setIsCalculatingTravel(true);
     try {
       const response = await base44.integrations.Core.InvokeLLM({
         prompt: `Calculate the driving distance and time between these two addresses:
@@ -482,7 +482,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
         variant: 'destructive'
       });
     }
-    setCalculatingTravel(false);
+    setIsCalculatingTravel(false);
   };
 
   const handleOutOfAreaToggle = async (enabled) => {
@@ -527,7 +527,7 @@ Use realistic driving estimates. Round distance to 1 decimal, time to nearest 0.
       
       // Calculate and add mileage + driving time for each selected team
       if (formData.team_ids.length > 0 && formData.job_address) {
-        setCalculatingTravel(true);
+        setIsCalculatingTravel(true);
         
         for (const teamId of formData.team_ids) {
           const team = teams.find(t => t.id === teamId);
@@ -610,7 +610,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           }
         }
         
-        setCalculatingTravel(false);
+        setIsCalculatingTravel(false);
       }
       
       setFormData(prev => ({ ...prev, out_of_area: true, items: newItems }));
