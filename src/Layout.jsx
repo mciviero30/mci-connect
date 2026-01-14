@@ -324,7 +324,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     !isClientOnly && 
     user.role !== 'admin' && 
     user.employment_status !== 'deleted' &&
-    user.onboarding_completed !== true;  // Definitive flag ONLY
+    user.onboarding_completed === false;  // Strict false check - undefined/null users pass through
 
   // Navigation arrays - MUST be defined before useMemo
   const adminNavigation = [
