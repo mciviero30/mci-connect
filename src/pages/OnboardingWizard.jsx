@@ -141,17 +141,19 @@ export default function OnboardingWizard() {
           onboarding_status: 'completed'
         }));
         
-        // Update API in background (don't await)
-        base44.auth.updateMe({ 
+        // Update API and wait for it
+        await base44.auth.updateMe({ 
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString(),
           onboarding_status: 'completed'
-        }).catch(err => {
-          console.error('Failed to update onboarding status:', err);
         });
         
-        // Navigate immediately - cache is already updated
-        navigate(createPageUrl('Dashboard'), { replace: true });
+        // Force refetch user data to sync with server
+        await queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        await queryClient.refetchQueries({ queryKey: ['currentUser'] });
+        
+        // Navigate with full page reload to ensure clean state
+        window.location.href = createPageUrl('Dashboard');
       }
     }
   });
