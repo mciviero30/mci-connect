@@ -176,7 +176,8 @@ export default function CrearEstimado() {
       hoursPerDay: 8,
       roomsPerNight,
       roundTrips: stayConfig.roundTrips,
-      nightsPerTrip: stayConfig.nightsPerTrip
+      nightsPerTrip: stayConfig.nightsPerTrip,
+      daysPerTrip: stayConfig.daysPerTrip
     });
     
     // Compute derived values (SINGLE SOURCE OF TRUTH)

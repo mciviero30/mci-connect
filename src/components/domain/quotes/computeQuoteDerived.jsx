@@ -186,7 +186,8 @@ export function computeQuoteDerived(params) {
     calendar,
     roomsPerNight = null,
     roundTrips = 1,
-    nightsPerTrip = 2
+    nightsPerTrip = 2,
+    daysPerTrip = 2  // Days per additional trip
   } = params;
   
   // HARD GUARD: Reject invalid inputs
@@ -291,8 +292,17 @@ export function computeQuoteDerived(params) {
   
   // If one-way travel > 4 hours, add 2 full travel days (round trip)
   const travelDays = (travelEnabled && travelHours > 4) ? 2 : 0;
-  
-  const totalCalendarDays = calendarDays + travelDays;
+
+  // Base total = calendar + travel days
+  let totalCalendarDays = calendarDays + travelDays;
+
+  // Additional days from multiple trips
+  // Formula: (roundTrips - 1) × daysPerTrip
+  // Note: The roundTrips and daysPerTrip params will be passed, but we need to get them from input
+  // Actually, these are passed to createComputeInput but we need to add them to the calculation
+  // Let's add daysPerTrip to the formula similar to nights
+  const additionalCalendarDays = roundTrips > 1 ? (roundTrips - 1) * (params.daysPerTrip || 2) : 0;
+  totalCalendarDays = totalCalendarDays + additionalCalendarDays;
   
   // ============================================================================
   // STEP 5: CALCULATE NIGHTS (ALWAYS ROUND UP TO FULL NIGHTS)
@@ -430,7 +440,8 @@ export function createComputeInput(params) {
     hoursPerDay = 8,
     roomsPerNight = null,
     roundTrips = 1,
-    nightsPerTrip = 2
+    nightsPerTrip = 2,
+    daysPerTrip = 2
   } = params;
   
   // Validate required fields
@@ -450,6 +461,7 @@ export function createComputeInput(params) {
     },
     roomsPerNight,
     roundTrips: Number(roundTrips) || 1,
-    nightsPerTrip: Number(nightsPerTrip) || 2
+    nightsPerTrip: Number(nightsPerTrip) || 2,
+    daysPerTrip: Number(daysPerTrip) || 2
   };
 }
