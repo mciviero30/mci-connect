@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, MapPin, Clock, Car, Calculator, Plus, Minus, Hotel, Coffee, Users, Calendar, Info, CalendarDays, Moon, Bed } from 'lucide-react';
+import { AlertCircle, MapPin, Clock, Car, Calculator, Plus, Minus, Hotel, Coffee, Users, Calendar, Info, CalendarDays, Moon, Bed, Briefcase } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/components/i18n/LanguageContext';
