@@ -259,7 +259,7 @@ export default function UnifiedOutOfAreaCalculator({
             <Calculator className="w-4 h-4 mr-2" />
             {isCalculating 
               ? (language === 'es' ? 'Calculando...' : 'Calculating...') 
-              : (language === 'es' ? 'Calcular' : 'Calculate')}
+              : (language === 'es' ? 'Calcular Fuera de Área' : 'Calculate Out of Area')}
           </Button>
         )}
 

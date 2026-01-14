@@ -1136,18 +1136,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           </Card>
 
           <Card className="glass-card shadow-xl border-slate-200 mb-6">
-            <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
+            <CardHeader className="border-b border-slate-200">
               <CardTitle className="text-slate-900">{t('jobDetails')}</CardTitle>
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="out-of-area-toggle"
-                  checked={formData.out_of_area}
-                  onCheckedChange={(checked) => setFormData({ ...formData, out_of_area: checked })}
-                />
-                <Label htmlFor="out-of-area-toggle" className="cursor-pointer text-sm font-medium text-slate-700 whitespace-nowrap">
-                  {language === 'es' ? 'Fuera de Área' : 'Out of Area'}
-                </Label>
-              </div>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
