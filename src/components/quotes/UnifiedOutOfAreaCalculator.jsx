@@ -184,16 +184,15 @@ export default function UnifiedOutOfAreaCalculator({
       const hotelRate = hotelItem?.unit_price || 200;
       const perDiemRate = perDiemItem?.unit_price || 55;
 
-      // Base project nights/days + additional nights/days for extra trips
-      const totalNights = derivedValues.nights + ((roundTrips - 1) * nightsPerTrip);
-      const totalCalendarDays = derivedValues.totalCalendarDays + ((roundTrips - 1) * daysPerTrip);
+      // CRITICAL: derivedValues.nights already includes trip calculations from computeQuoteDerived
+      // DO NOT add trips again here - it causes double-counting
+      const totalNights = derivedValues.nights; // Already includes all trips
+      const totalCalendarDays = derivedValues.totalCalendarDays; // Already includes all trips
       const totalHotelRooms = roomsPerNight * totalNights;
       const totalPerDiemDays = techCount * totalCalendarDays;
 
-      // Hotel Rooms (base project + extra trips)
-      const hotelDescription = roundTrips > 1 
-        ? `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × (${derivedValues.nights} project nights + ${(roundTrips - 1) * nightsPerTrip} extra trip nights) = ${totalNights} nights`
-        : `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × ${derivedValues.nights} night${derivedValues.nights > 1 ? 's' : ''}`;
+      // Hotel Rooms - derivedValues.nights already includes all trips
+      const hotelDescription = `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × ${totalNights} night${totalNights > 1 ? 's' : ''}`;
       
       stayItems.push({
         item_name: hotelName,
@@ -210,10 +209,8 @@ export default function UnifiedOutOfAreaCalculator({
         rooms_per_night: roomsPerNight
       });
 
-      // Per-Diem (base project + extra trips)
-      const perDiemDescription = roundTrips > 1
-        ? `${techCount} tech${techCount > 1 ? 's' : ''} × (${derivedValues.totalCalendarDays} project days + ${(roundTrips - 1) * daysPerTrip} extra trip days) = ${totalCalendarDays} days`
-        : `${techCount} tech${techCount > 1 ? 's' : ''} × ${derivedValues.totalCalendarDays} day${derivedValues.totalCalendarDays > 1 ? 's' : ''}`;
+      // Per-Diem - derivedValues.totalCalendarDays already includes all trips
+      const perDiemDescription = `${techCount} tech${techCount > 1 ? 's' : ''} × ${totalCalendarDays} day${totalCalendarDays > 1 ? 's' : ''}`;
       
       stayItems.push({
         item_name: perDiemName,
@@ -231,9 +228,9 @@ export default function UnifiedOutOfAreaCalculator({
       });
     }
 
-    // Combine and send (with corrected totals)
-    const totalNights = derivedValues ? derivedValues.nights + ((roundTrips - 1) * nightsPerTrip) : nightsPerTrip * roundTrips;
-    const totalCalendarDays = derivedValues ? derivedValues.totalCalendarDays + ((roundTrips - 1) * daysPerTrip) : daysPerTrip * roundTrips;
+    // Combine and send - derivedValues already includes all trips
+    const totalNights = derivedValues ? derivedValues.nights : nightsPerTrip * roundTrips;
+    const totalCalendarDays = derivedValues ? derivedValues.totalCalendarDays : daysPerTrip * roundTrips;
     const totalHotelRooms = roomsPerNight * totalNights;
     const totalPerDiemDays = techCount * totalCalendarDays;
     
@@ -443,19 +440,11 @@ export default function UnifiedOutOfAreaCalculator({
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Días Calendario' : 'Calendar Days'}</p>
-                    <p className="text-lg font-bold text-purple-700">
-                      {roundTrips > 1 
-                        ? derivedValues.totalCalendarDays + ((roundTrips - 1) * daysPerTrip)
-                        : derivedValues.totalCalendarDays}
-                    </p>
+                    <p className="text-lg font-bold text-purple-700">{derivedValues.totalCalendarDays}</p>
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Noches' : 'Nights'}</p>
-                    <p className="text-lg font-bold text-indigo-700">
-                      {roundTrips > 1 
-                        ? derivedValues.nights + ((roundTrips - 1) * nightsPerTrip)
-                        : derivedValues.nights}
-                    </p>
+                    <p className="text-lg font-bold text-indigo-700">{derivedValues.nights}</p>
                   </div>
                   <div className="p-2 bg-white rounded border border-slate-200">
                     <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Horas Total' : 'Total Hours'}</p>
@@ -501,44 +490,18 @@ export default function UnifiedOutOfAreaCalculator({
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 bg-purple-50 rounded border border-purple-300">
                   <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems {language === 'es' ? 'Total' : 'Total'}</p>
-                  {roundTrips > 1 ? (
-                    <p className="text-xs font-bold text-purple-900 flex flex-col gap-0.5">
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-purple-600" />
-                        {techCount} × ({derivedValues?.totalCalendarDays || 0} + {(roundTrips - 1) * daysPerTrip})
-                      </span>
-                      <span className="flex items-center gap-1">
-                        = <Coffee className="w-3 h-3 text-purple-600" />
-                        {techCount * (derivedValues ? derivedValues.totalCalendarDays + ((roundTrips - 1) * daysPerTrip) : daysPerTrip * roundTrips)}
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-purple-600" />
-                      {techCount} × {derivedValues?.totalCalendarDays || 0} = {techCount * (derivedValues?.totalCalendarDays || 0)}
-                    </p>
-                  )}
+                  <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-purple-600" />
+                    {techCount} × {derivedValues?.totalCalendarDays || 0} = {techCount * (derivedValues?.totalCalendarDays || 0)}
+                  </p>
                 </div>
 
                 <div className="p-2 bg-purple-50 rounded border border-purple-300">
                   <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos Total' : 'Total Rooms'}</p>
-                  {roundTrips > 1 ? (
-                    <p className="text-xs font-bold text-purple-900 flex flex-col gap-0.5">
-                      <span className="flex items-center gap-1">
-                        <Bed className="w-3 h-3 text-purple-600" />
-                        {roomsPerNight} × ({derivedValues?.nights || 0} + {(roundTrips - 1) * nightsPerTrip})
-                      </span>
-                      <span className="flex items-center gap-1">
-                        = <Hotel className="w-3 h-3 text-purple-600" />
-                        {roomsPerNight * (derivedValues ? derivedValues.nights + ((roundTrips - 1) * nightsPerTrip) : nightsPerTrip * roundTrips)}
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
-                      <Bed className="w-3.5 h-3.5 text-purple-600" />
-                      {roomsPerNight} × {derivedValues?.nights || 0} = {roomsPerNight * (derivedValues?.nights || 0)}
-                    </p>
-                  )}
+                  <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                    <Bed className="w-3.5 h-3.5 text-purple-600" />
+                    {roomsPerNight} × {derivedValues?.nights || 0} = {roomsPerNight * (derivedValues?.nights || 0)}
+                  </p>
                 </div>
               </div>
             </div>
