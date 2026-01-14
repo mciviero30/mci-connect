@@ -86,6 +86,15 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
                   {language === 'es' ? 'Marcar como Enviado' : 'Mark as Sent'}
                 </DropdownMenuItem>
               )}
+              {isAdmin && quote.status === 'sent' && (
+                <DropdownMenuItem 
+                  onClick={() => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+                  className="cursor-pointer text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs"
+                >
+                  <Edit3 className="w-3.5 h-3.5 mr-2" />
+                  {language === 'es' ? 'Re-abrir para Editar' : 'Reopen for Editing'}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem 
                 onClick={async () => {
                   const { data } = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
