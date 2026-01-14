@@ -300,8 +300,8 @@ export default function LineItemsEditor({
             )}
 
             {/* Quantity */}
-             <div className="flex items-center justify-center gap-1">
-               <Grid3x3 className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+             <div className="relative flex items-center justify-center">
+               <Grid3x3 className="absolute left-2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                <Input
                  type="number"
                  value={baseQuantity}
@@ -310,7 +310,7 @@ export default function LineItemsEditor({
                  step="0.01"
                  required
                  disabled={isAutoCalc && !item.manual_override}
-                 className={`h-9 text-sm text-center font-semibold flex-1 ${
+                 className={`h-9 text-sm text-center font-semibold pl-7 ${
                    isAutoCalc && !item.manual_override
                      ? 'bg-blue-50 border-blue-200 text-blue-900 cursor-not-allowed'
                      : 'bg-white border-slate-200 text-slate-900'
@@ -328,8 +328,8 @@ export default function LineItemsEditor({
             </div>
 
             {/* Rate */}
-             <div className="flex items-center justify-center gap-1">
-               <DollarSign className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+             <div className="relative flex items-center justify-center">
+               <DollarSign className="absolute left-2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                <Input
                  type="number"
                  value={item.unit_price}
@@ -338,7 +338,7 @@ export default function LineItemsEditor({
                  step="0.01"
                  required
                  disabled={pricesLocked}
-                 className={`h-9 text-sm text-center font-semibold flex-1 ${
+                 className={`h-9 text-sm text-center font-semibold pl-7 ${
                    pricesLocked
                      ? 'bg-amber-50 border-amber-200 text-amber-900 cursor-not-allowed'
                      : 'bg-white border-slate-200 text-slate-900'
@@ -347,24 +347,23 @@ export default function LineItemsEditor({
              </div>
 
             {/* Hours (MCI Internal Only) */}
-             <div className="flex items-center justify-center gap-1">
-               <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+             <div className="relative flex items-center justify-center">
+               <Clock className="absolute left-2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                <Input
                  type="number"
                  value={item.installation_time || 0}
                  onChange={(e) => updateItem(index, 'installation_time', parseFloat(e.target.value) || 0)}
                  min="0"
                  step="0.1"
-                 className="h-9 text-sm text-center bg-slate-50 border-slate-200 text-slate-700 flex-1"
+                 className="h-9 text-sm text-center bg-slate-50 border-slate-200 text-slate-700 pl-7"
                  placeholder="0"
                />
              </div>
 
             {/* Amount */}
-             <div className="flex items-center justify-end gap-1">
-               <DollarSign className="w-4 h-4 text-slate-600 flex-shrink-0" />
-               <div className="text-right space-y-0.5">
-                 <div className="text-slate-900 font-bold text-base">
+             <div className="text-right space-y-0.5">
+                 <div className="text-slate-900 font-bold text-base flex items-center justify-end gap-1">
+                   <DollarSign className="w-4 h-4 text-slate-600" />
                    {displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                  </div>
                 {(isAutoCalc || (item.is_travel_item && roundTrips > 1)) && (
