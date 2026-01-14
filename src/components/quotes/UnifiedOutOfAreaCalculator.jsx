@@ -291,17 +291,17 @@ export default function UnifiedOutOfAreaCalculator({
                        <div className="grid grid-cols-2 gap-2 text-xs">
                          <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
                            <Clock className="w-3 h-3 text-blue-600" />
-                           <div>
-                             <p className="text-[10px] text-slate-600">{language === 'es' ? 'Tiempo' : 'Time'}</p>
-                             <p className="font-bold text-slate-900">{metric.drivingHours}h</p>
+                           <div className="w-full">
+                             <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Tiempo' : 'Time'}</p>
+                             <p className="font-bold text-slate-900">{metric.drivingHours}H x {techCount} = {(parseFloat(metric.drivingHours) * techCount).toFixed(1)}H</p>
                            </div>
                          </div>
 
                          <div className="flex items-center gap-1 p-1 bg-slate-50 rounded">
                            <Car className="w-3 h-3 text-blue-600" />
-                           <div>
-                             <p className="text-[10px] text-slate-600">{language === 'es' ? 'Millas' : 'Miles'}</p>
-                             <p className="font-bold text-slate-900">{metric.totalMiles}mi</p>
+                           <div className="w-full">
+                             <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Millas' : 'Miles'}</p>
+                             <p className="font-bold text-slate-900">{metric.totalMiles}mi x {vehicleCounts[metric.teamId] || 1}V = {(parseFloat(metric.totalMiles) * (vehicleCounts[metric.teamId] || 1)).toFixed(1)}mi</p>
                            </div>
                          </div>
                        </div>
