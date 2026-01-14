@@ -43,8 +43,6 @@ import { SkeletonFieldProject } from '@/components/shared/SkeletonComponents';
 import { ExitConfirmation, useExitConfirmation } from '@/components/feedback/ExitConfirmation';
 
 export default function Field() {
-  // CRITICAL: Verify UIProvider wrapper exists
-  const uiContext = React.useContext(require('@/components/contexts/FieldModeContext').UIContext || {});
   const { setIsFieldMode } = useUI();
   const { language } = useLanguage();
   const navigate = useNavigate();
