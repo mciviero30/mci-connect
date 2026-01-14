@@ -194,11 +194,8 @@ export default function CrearEstimado() {
       return !item.is_travel_item && !isHotel && !isPerDiem && !isCompletelyEmpty;
     });
     
-    // Extract travel time for calculation
-    const drivingItem = allItems.find(item => item.travel_item_type === 'driving_time');
-    if (drivingItem?.duration_value) {
-      setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
-    }
+    // DO NOT update travelTimeHours here - it causes derivedValues to recalculate with wrong values
+    // travelTimeHours should only be set from calculateMetrics (initial calculation)
     
     // Update all items with tech count
     const updatedItems = allItems.map(item => {
