@@ -302,7 +302,7 @@ export default function CrearEstimado() {
       
       // Step 2: Generate quote number via backend function (thread-safe)
       const response = await generateQuoteNumber({});
-      const quote_number = response.data.quote_number;
+      const quote_number = response.quote_number || response.data?.quote_number;
 
       // Step 3: Build final data with generated number + approval workflow
       const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
