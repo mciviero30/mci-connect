@@ -187,8 +187,9 @@ export default function CrearEstimado() {
       const itemNameLower = item.item_name?.toLowerCase() || '';
       const isHotel = itemNameLower.includes('hotel');
       const isPerDiem = itemNameLower.includes('per') && itemNameLower.includes('diem');
-      const isEmpty = !item.item_name || !item.description;
-      return !item.is_travel_item && !isHotel && !isPerDiem && !isEmpty;
+      // FIXED: Only remove completely empty items (no item_name AND no quantity)
+      const isCompletelyEmpty = !item.item_name && (!item.quantity || item.quantity === 0);
+      return !item.is_travel_item && !isHotel && !isPerDiem && !isCompletelyEmpty;
     });
     
     // Extract travel time for calculation
