@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { CURRENT_USER_QUERY_KEY } from '@/constants/queryKeys';
 
 export default function ProfileSyncManager({ user }) {
   const queryClient = useQueryClient();
@@ -12,14 +13,14 @@ export default function ProfileSyncManager({ user }) {
     const handleStorageChange = (e) => {
       if (e.key === 'profile_updated' || e.key === 'user_profile_updated') {
         console.log('🔄 Profile update detected from another tab, refreshing...');
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
       }
     };
 
     // Listen for custom profile update events (same tab)
     const handleProfileUpdate = (e) => {
       console.log('🔄 Profile update event received, refreshing...');
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -51,7 +52,7 @@ export default function ProfileSyncManager({ user }) {
       base44.functions.invoke('syncEmployeeFromPendingOnLogin').then(() => {
         sessionStorage.setItem(`first_login_migrated_${user.id}`, 'done');
         // Refresh user data after migration
-        queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+        queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
       }).catch(err => {
         console.warn('⚠️ Background migration failed:', err);
         sessionStorage.setItem(`first_login_migrated_${user.id}`, 'failed');

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CURRENT_USER_QUERY_KEY, AGREEMENT_SIGNATURES_QUERY_KEY } from '@/constants/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +29,7 @@ export default function AgreementGate({ children }) {
   const [signatureName, setSignatureName] = useState('');
 
   // Read user from cache (stable)
-  const user = queryClient.getQueryData(['currentUser']);
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
   const userEmail = user?.email;
   const userId = user?.id;
   const userFullName = user?.full_name;
@@ -39,7 +40,7 @@ export default function AgreementGate({ children }) {
   
   // Fetch signatures - simple, no complex enabled logic
   const { data: signatures = [], isLoading } = useQuery({
-    queryKey: ['agreementSignatures', userEmail],
+    queryKey: AGREEMENT_SIGNATURES_QUERY_KEY(userEmail),
     queryFn: async () => {
       if (!userEmail) return [];
       return await base44.entities.AgreementSignature.filter({ employee_email: userEmail });
@@ -84,7 +85,7 @@ export default function AgreementGate({ children }) {
     },
     onSuccess: (data, agreementData) => {
       // ATOMIC: Update cache optimistically
-      queryClient.setQueryData(['agreementSignatures', userEmail], (old = []) => {
+      queryClient.setQueryData(AGREEMENT_SIGNATURES_QUERY_KEY(userEmail), (old = []) => {
         const newSig = {
           id: data.id,
           employee_email: userEmail,

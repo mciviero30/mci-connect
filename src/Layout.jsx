@@ -63,6 +63,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { CURRENT_USER_QUERY_KEY } from "@/constants/queryKeys";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/toast";
 import { Badge } from "@/components/ui/badge";
@@ -1042,9 +1043,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 };
 
           export default function Layout({ children, currentPageName }) {
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
+          const { data: user, isLoading, error } = useQuery({
+          queryKey: CURRENT_USER_QUERY_KEY,
+          queryFn: async () => {
       try {
         return await base44.auth.me();
       } catch (err) {

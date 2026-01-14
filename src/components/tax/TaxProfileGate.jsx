@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
+import { CURRENT_USER_QUERY_KEY, TAX_PROFILE_QUERY_KEY } from '@/constants/queryKeys';
 
 /**
  * Tax Profile Gate
@@ -17,7 +18,7 @@ export default function TaxProfileGate({ children }) {
   const queryClient = useQueryClient();
   
   // Read user from cache (stable, doesn't cause prop changes)
-  const user = queryClient.getQueryData(['currentUser']);
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
   
   // Compute stable derived values BEFORE hooks
   const userEmail = user?.email || null;
@@ -35,7 +36,7 @@ export default function TaxProfileGate({ children }) {
 
   // Fetch tax profile - ONLY when truly needed
   const { data: taxProfile, isLoading, error } = useQuery({
-    queryKey: ['taxProfile', userEmail],
+    queryKey: TAX_PROFILE_QUERY_KEY(userEmail),
     queryFn: async () => {
       if (!userEmail) return null;
       const profiles = await base44.entities.TaxProfile.filter({ 

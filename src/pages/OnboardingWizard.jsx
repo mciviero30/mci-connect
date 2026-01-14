@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { CURRENT_USER_QUERY_KEY, ONBOARDING_FORMS_QUERY_KEY } from "@/constants/queryKeys";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Circle, UserX } from "lucide-react";
 import { createPageUrl } from "@/utils";
@@ -16,7 +17,7 @@ export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
 
   const { data: user, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     retry: 1
   });
@@ -56,7 +57,7 @@ export default function OnboardingWizard() {
   }
 
   const { data: onboardingForms = [] } = useQuery({
-    queryKey: ['onboardingForms', user?.email],
+    queryKey: ONBOARDING_FORMS_QUERY_KEY(user?.email),
     queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user.email }),
     enabled: !!user?.email,
     initialData: []
@@ -110,9 +111,9 @@ export default function OnboardingWizard() {
       }
       
       // CRITICAL: Force immediate refetch to get accurate count
-      await queryClient.invalidateQueries({ queryKey: ['onboardingForms', user.email] });
+      await queryClient.invalidateQueries({ queryKey: ONBOARDING_FORMS_QUERY_KEY(user.email) });
       const freshForms = await queryClient.fetchQuery({
-        queryKey: ['onboardingForms', user.email],
+        queryKey: ONBOARDING_FORMS_QUERY_KEY(user.email),
         queryFn: () => base44.entities.OnboardingForm.filter({ employee_email: user.email })
       });
       
@@ -140,7 +141,7 @@ export default function OnboardingWizard() {
         });
         
         // 2. Update React Query cache to reflect the change
-        queryClient.setQueryData(['currentUser'], (old) => ({
+        queryClient.setQueryData(CURRENT_USER_QUERY_KEY, (old) => ({
           ...old,
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString()
