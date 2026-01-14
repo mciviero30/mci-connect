@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileCheck, Plus, Eye, Trash2, DollarSign, Copy, Search, X, MapPin, Users } from "lucide-react";
+import { FileCheck, Plus, Eye, Trash2, DollarSign, Copy, Search, X, MapPin, Users, Trash as TrashIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -21,10 +21,12 @@ import ModernInvoiceCard from "../components/invoices/ModernInvoiceCard";
 import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
+import { useNavigate } from "react-router-dom";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -41,14 +43,11 @@ export default function Facturas() {
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['invoices', statusFilter, teamFilter],
     queryFn: async () => {
-      const filters = {};
+      const filters = { deleted_at: null };
       if (statusFilter !== 'all') filters.status = statusFilter;
       if (teamFilter !== 'all') filters.team_id = teamFilter;
       
-      if (Object.keys(filters).length > 0) {
-        return base44.entities.Invoice.filter(filters, '-created_date');
-      }
-      return base44.entities.Invoice.list('-created_date');
+      return base44.entities.Invoice.filter(filters, '-created_date');
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -60,11 +59,17 @@ export default function Facturas() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Invoice.delete(id),
+    mutationFn: async (id) => {
+      const user = await base44.auth.me();
+      await base44.entities.Invoice.update(id, {
+        deleted_at: new Date().toISOString(),
+        deleted_by: user?.email
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast({
-        title: t('deletedSuccessfully'),
+        title: language === 'es' ? 'Movido a papelera' : 'Moved to trash',
         variant: 'success'
       });
     },
@@ -251,6 +256,15 @@ export default function Facturas() {
           actions={
             isAdmin && (
               <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(createPageUrl("Papelera"))}
+                  className="border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  <TrashIcon className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Papelera' : 'Trash'}
+                </Button>
                 <InvoicePDFImporter onSuccess={() => queryClient.invalidateQueries({ queryKey: ['invoices'] })} />
                 <Link to={createPageUrl("CrearFactura")} className="flex-1 sm:flex-none">
                   <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
