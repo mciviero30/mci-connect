@@ -14,7 +14,9 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
   const companyName = customer.company || 'No Company';
 
   return (
-    <Card className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
+    <Card 
+      onClick={() => !showSelectButton && navigate(createPageUrl(`CustomerDetails?id=${customer.id}`))}
+      className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation cursor-pointer">
       <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
@@ -34,16 +36,6 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
           </div>
 
           <div className="flex flex-col items-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(createPageUrl(`CustomerDetails?id=${customer.id}`))}
-              className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 px-3 py-2 rounded-lg min-h-[36px] flex-shrink-0 touch-manipulation active:scale-95 transition-transform"
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span className="text-xs font-medium">View</span>
-            </Button>
-            
             {showSelectButton && (
               <button
                 onClick={(e) => {

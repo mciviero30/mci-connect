@@ -29,7 +29,9 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
   const statusMeta = getQuoteStatusMeta(quote.status, language);
 
   return (
-    <Card className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
+    <Card 
+      onClick={() => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+      className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation cursor-pointer">
       <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
@@ -52,6 +54,7 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={(e) => e.stopPropagation()}
                 className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 py-1.5 rounded-lg min-h-[36px] flex-shrink-0 touch-manipulation active:scale-95 transition-transform"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -182,7 +185,10 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onConvert(quote)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onConvert(quote);
+              }}
               className="flex-1 min-h-[40px] text-xs font-semibold text-[#507DB4] dark:text-[#6B9DD8] border-2 border-[#507DB4]/30 dark:border-[#6B9DD8]/30 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 rounded-lg touch-manipulation active:scale-95 transition-transform"
             >
               <FileCheck className="w-4 h-4 mr-2" />

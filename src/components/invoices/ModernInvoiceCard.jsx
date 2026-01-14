@@ -55,7 +55,9 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
   const statusMeta = getInvoiceStatusMeta(status, language);
 
   return (
-    <Card className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
+    <Card 
+      onClick={() => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
+      className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation cursor-pointer">
       <div className="p-4 sm:p-5 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
@@ -78,6 +80,7 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={(e) => e.stopPropagation()}
                 className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 py-1.5 rounded-lg min-h-[36px] flex-shrink-0 touch-manipulation active:scale-95 transition-transform"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -244,7 +247,10 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onRegisterPayment(invoice)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRegisterPayment(invoice);
+              }}
               className="flex-1 min-h-[40px] text-xs font-semibold text-green-600 dark:text-green-400 border-2 border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg touch-manipulation active:scale-95 transition-transform"
             >
               <DollarSign className="w-4 h-4 mr-2" />

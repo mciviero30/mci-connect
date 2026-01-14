@@ -121,7 +121,9 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
       onEdit={() => onViewDetails && onViewDetails(employee)}
       onDelete={() => {}}
     >
-      <Card className="bg-white dark:bg-[#282828] rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation">
+      <Card 
+        onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
+        className="bg-white dark:bg-[#282828] rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation cursor-pointer">
       <div className="p-3 sm:p-4 flex-1 flex flex-col">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
@@ -164,24 +166,17 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => inviteMutation.mutate()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  inviteMutation.mutate();
+                }}
                 disabled={inviteMutation.isPending}
                 className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-medium">Invite</span>
               </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
-                className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
-              >
-                <IdCard className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-medium hidden sm:inline">Manage</span>
-              </Button>
-            )}
+              ) : null}
           </div>
         </div>
 
