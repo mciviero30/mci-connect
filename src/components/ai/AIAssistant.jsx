@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,10 +32,8 @@ export default function AIAssistant({ currentPage, pageContext = {} }) {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

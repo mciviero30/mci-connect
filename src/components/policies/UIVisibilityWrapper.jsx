@@ -1,6 +1,6 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { canSeeUILevel, UI_VISIBILITY_LEVELS } from './UIVisibilityPolicy';
 
 /**
@@ -16,11 +16,8 @@ export function ProductionUI({ children, fallback = null }) {
  * Only visible in debug mode (admin or ?debug=true)
  */
 export function DebugUI({ children, fallback = null }) {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-  });
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
 
   const canSee = canSeeUILevel(user, UI_VISIBILITY_LEVELS.DEBUG);
 
@@ -34,11 +31,8 @@ export function DebugUI({ children, fallback = null }) {
  * Only visible to role === 'admin'
  */
 export function AdminOnlyUI({ children, fallback = null }) {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-  });
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
 
   const canSee = canSeeUILevel(user, UI_VISIBILITY_LEVELS.ADMIN_ONLY);
 
@@ -52,11 +46,8 @@ export function AdminOnlyUI({ children, fallback = null }) {
  * Returns visibility flags for use in components
  */
 export function useUIVisibility() {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-  });
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
 
   return {
     canSeeProduction: canSeeUILevel(user, UI_VISIBILITY_LEVELS.PRODUCTION),
