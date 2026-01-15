@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { CURRENT_USER_QUERY_KEY, TAX_PROFILE_QUERY_KEY } from '@/components/constants/queryKeys';
@@ -15,6 +15,7 @@ import { CURRENT_USER_QUERY_KEY, TAX_PROFILE_QUERY_KEY } from '@/components/cons
 export default function TaxProfileGate({ children }) {
   // CRITICAL: ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   
   // Read user from cache (stable, doesn't cause prop changes)
@@ -52,6 +53,29 @@ export default function TaxProfileGate({ children }) {
 
   // REMOVED: Alert creation - not needed, causes extra queries
 
+  // Handle redirect in useEffect to prevent render loop
+  useEffect(() => {
+    // Only redirect if all conditions are met
+    const shouldRedirect = 
+      !isFieldRoute && 
+      !isOnboardingPage && 
+      !isTaxOnboardingPage && 
+      userEmail && 
+      !onboardingIncomplete && 
+      !isExempt && 
+      !isLoading && 
+      (!taxProfile || !taxProfile.completed);
+
+    if (shouldRedirect) {
+      console.log('[TaxProfileGate] 🚫 REDIRECTING to tax onboarding', { 
+        userEmail, 
+        hasTaxProfile: !!taxProfile, 
+        isCompleted: taxProfile?.completed 
+      });
+      navigate(createPageUrl('TaxOnboarding'), { replace: true });
+    }
+  }, [isFieldRoute, isOnboardingPage, isTaxOnboardingPage, userEmail, onboardingIncomplete, isExempt, isLoading, taxProfile, navigate]);
+
   // EARLY EXITS - ZERO UI BLOCKING
   // CRITICAL: Always return children wrapped in fragment for consistent tree shape
   
@@ -81,17 +105,8 @@ export default function TaxProfileGate({ children }) {
     return <>{children}</>;
   }
 
-  // ONLY NOW check tax - redirect immediately if incomplete (no loading screen)
-  if (!isLoading && (!taxProfile || !taxProfile.completed)) {
-    console.log('[TaxProfileGate] 🚫 BLOCKING - redirecting to tax onboarding', { 
-      userEmail, 
-      hasTaxProfile: !!taxProfile, 
-      isCompleted: taxProfile?.completed 
-    });
-    return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
-  }
-
-  // All checks passed OR still loading (fail open)
-  console.log('[TaxProfileGate] Tax profile verified - passing through', { userEmail, isLoading });
+  // All checks passed - always render children
+  // Redirect is handled in useEffect above
+  console.log('[TaxProfileGate] Rendering children', { userEmail, isLoading, hasTaxProfile: !!taxProfile });
   return <>{children}</>;
 }
