@@ -77,7 +77,7 @@ export function buildFullName(record) {
  * Migrate PendingEmployee data to User safely
  * Returns object ready for base44.auth.updateMe()
  */
-export function migratePendingToUser(authUser, pendingEmployee) {
+export function migratePendingToUser(currentUser, pendingEmployee) {
   if (!pendingEmployee) return {};
   
   const migration = {};
@@ -113,5 +113,5 @@ export function migratePendingToUser(authUser, pendingEmployee) {
   if (pendingEmployee.hire_date) migration.hire_date = pendingEmployee.hire_date;
   
   // Safe merge with existing auth user data
-  return mergeNonEmpty(authUser, migration);
+  return mergeNonEmpty(currentUser, migration);
 }
