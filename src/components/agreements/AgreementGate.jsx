@@ -35,6 +35,10 @@ export default function AgreementGate({ children }) {
   const userId = user?.id;
   const userFullName = user?.full_name;
   const userPosition = user?.position;
+  const userRole = user?.role;
+
+  // CRITICAL: Exempt admins/CEOs from agreement gate
+  const isExempt = userRole === 'admin' || userRole === 'ceo' || userPosition === 'CEO';
 
   // CRITICAL: Check for Field route - skip gate for Field (sandboxed)
   const isFieldRoute = typeof window !== 'undefined' && window.location.pathname.includes('/Field');
