@@ -108,6 +108,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
     ssn_tax_id: employee?.ssn_tax_id || '',
     tshirt_size: employee?.tshirt_size || '',
     hourly_rate: employee?.hourly_rate || '',
+    role: employee?.role || 'user',
   });
 
   const mutation = useMutation({
