@@ -132,6 +132,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
         last_name: lastName,
         full_name: fullName,
         hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
+        role: data.role || 'user',
       };
 
       if (employee) {
