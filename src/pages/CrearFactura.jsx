@@ -1037,12 +1037,13 @@ export default function CrearFactura() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {teams.map(team => (
+                {teams.map(team => {
+                  const isSelected = (formData.team_ids || []).includes(team.id);
+                  return (
                   <div
                     key={team.id}
-                    onClick={() => handleTeamToggle(team.id)}
                     className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      (formData.team_ids || []).includes(team.id)
+                      isSelected
                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
@@ -1050,7 +1051,7 @@ export default function CrearFactura() {
                     <div className="flex items-center gap-2">
                       <Checkbox
                         id={`team-${team.id}`}
-                        checked={(formData.team_ids || []).includes(team.id)}
+                        checked={isSelected}
                         onCheckedChange={() => handleTeamToggle(team.id)}
                       />
                       <div className="flex-1 min-w-0">
