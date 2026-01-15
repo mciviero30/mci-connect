@@ -5,6 +5,7 @@ import AuditTrail from './pages/AuditTrail';
 import BankSync from './pages/BankSync';
 import BonusConfiguration from './pages/BonusConfiguration';
 import BudgetForecasting from './pages/BudgetForecasting';
+import CEOSetup from './pages/CEOSetup';
 import Calendario from './pages/Calendario';
 import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
@@ -107,7 +108,6 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
-import CEOSetup from './pages/CEOSetup';
 import __Layout from './Layout.jsx';
 
 
@@ -119,6 +119,7 @@ export const PAGES = {
     "BankSync": BankSync,
     "BonusConfiguration": BonusConfiguration,
     "BudgetForecasting": BudgetForecasting,
+    "CEOSetup": CEOSetup,
     "Calendario": Calendario,
     "Capacitacion": Capacitacion,
     "CashFlowReport": CashFlowReport,
@@ -221,7 +222,6 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
-    "CEOSetup": CEOSetup,
 }
 
 export const pagesConfig = {

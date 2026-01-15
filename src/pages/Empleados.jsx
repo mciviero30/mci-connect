@@ -644,7 +644,7 @@ export default function Empleados() {
                     onClick={() => {
                       const input = document.createElement('input');
                       input.type = 'file';
-                      input.accept = '.csv';
+                      input.accept = '.csv,.xlsx,.xls';
 
                       input.onchange = async (e) => {
                         const file = e.target.files?.[0];
@@ -658,6 +658,7 @@ export default function Empleados() {
                           alert(`⏳ Uploading ${file.name}...`);
 
                           const uploadRes = await base44.integrations.Core.UploadFile({ file });
+                          console.log('✅ File uploaded:', uploadRes.file_url);
 
                           alert('⏳ Processing employees (30-60 seconds)...');
                           const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
@@ -665,6 +666,11 @@ export default function Empleados() {
                           });
 
                           const result = response?.data || response;
+                          console.log('📊 Import result:', result);
+
+                          if (result?.error) {
+                            throw new Error(result.error + (result.details ? ': ' + result.details : ''));
+                          }
 
                           await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
                           await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
@@ -672,14 +678,17 @@ export default function Empleados() {
                           const created = result?.created || 0;
                           const errors = result?.errors?.length || 0;
 
-                          if (errors > 0) {
-                            alert(`⚠️ Imported ${created} employees with ${errors} errors.`);
+                          if (created === 0) {
+                            alert(`⚠️ No employees were imported. Check your CSV format.`);
+                          } else if (errors > 0) {
+                            alert(`⚠️ Imported ${created} employees with ${errors} errors.\n\nErrors: ${JSON.stringify(result.errors)}`);
                           } else {
-                            alert(`✅ Imported ${created} employees!`);
+                            alert(`✅ Imported ${created} employees! Check "Pending" tab.`);
                             setActiveTab('pending');
                           }
 
                         } catch (err) {
+                          console.error('Import error:', err);
                           alert(`❌ Error: ${err?.message || 'Unknown error'}`);
                         }
                       };
