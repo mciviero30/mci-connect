@@ -215,9 +215,12 @@ export default function Dashboard() {
       const weekStart = startOfWeek(now, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
 
-      const allAssignments = await base44.entities.JobAssignment.filter({
-        employee_email: user.email
-      }, '-date');
+      // Employees see only their assignments; admins see all
+      const allAssignments = isAdmin 
+        ? await base44.entities.JobAssignment.list('-date')
+        : await base44.entities.JobAssignment.filter({
+            employee_email: user.email
+          }, '-date');
 
       return allAssignments.filter(a => {
         const assignDate = new Date(a.date);
