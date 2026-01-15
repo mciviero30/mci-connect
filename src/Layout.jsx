@@ -746,17 +746,17 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       <MobileOptimizations />
       <SyncQueueProvider>
         <OfflineIndicator />
-        <NotificationService user={user}>
+        {/* <NotificationService user={user}>
           <NotificationEngine user={user} />
-        </NotificationService>
+        </NotificationService> */}
 
-      {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
+      {/* {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <ErrorBoundary fallback={<div />}>
           <UniversalNotificationEngine user={user} />
           <CustomerNotificationEngine user={user} />
           <UniversalPushManager user={user} />
         </ErrorBoundary>
-      )}
+      )} */}
 
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
         <style>{`
