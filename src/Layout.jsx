@@ -742,10 +742,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   return (
     <SidebarProvider>
+      {/* PWA DISABLED FOR TESTING */}
       {/* <ServiceWorkerRegistration /> */}
       <MobileOptimizations />
-      <SyncQueueProvider>
-        <OfflineIndicator />
+      {/* <SyncQueueProvider> */}
+        {/* <OfflineIndicator /> */}
         {/* <NotificationService user={user}>
           <NotificationEngine user={user} />
         </NotificationService> */}
@@ -1030,17 +1031,17 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           </div>
 
           <AIAssistant currentPage={currentPageName} />
-          <EnhancedOfflineSync />
+          {/* <EnhancedOfflineSync /> */}
 
           {/* Bottom Navigation: Hidden in Field/Focus Mode */}
           {!shouldHideSidebar && (
             <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           )}
-        </main>
-      </div>
-      </SyncQueueProvider>
-    </SidebarProvider>
-  );
+          </main>
+          </div>
+          {/* </SyncQueueProvider> */}
+          </SidebarProvider>
+          );
 };
 
           export default function Layout({ children, currentPageName }) {
@@ -1094,6 +1095,18 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   if (!user && !isLoading) {
     return null;
   }
+
+  // CRITICAL: Unregister all service workers for testing
+  React.useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => {
+          console.log('🔴 Unregistering service worker:', r.scope);
+          r.unregister();
+        });
+      });
+    }
+  }, []);
 
   return (
     <ToastProvider>
