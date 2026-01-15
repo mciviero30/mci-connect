@@ -96,7 +96,7 @@ export default function QuickActions({ user, certifications = [] }) {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2">Certifications & QR Pass</h3>
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-2 sm:mb-3 truncate">
-                    {user?.full_name} • Digital Credentials
+                    Digital Credentials
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 sm:mb-3 hidden sm:block">
                     Scan QR code to verify credentials
