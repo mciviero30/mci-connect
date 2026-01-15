@@ -676,6 +676,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // DECLARATIVE GATE 1: Block for onboarding (no navigation)
   if (shouldBlockForOnboarding && !isOnboardingRoute) {
+    console.log('[Layout] 🚫 BLOCKING - onboarding incomplete', { 
+      userEmail: user?.email, 
+      onboarding_completed: user?.onboarding_completed 
+    });
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">
         <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-blue-200 dark:border-slate-700 shadow-2xl">
@@ -699,6 +703,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // DECLARATIVE GATE 2: Deleted users
   if (user && user.employment_status === 'deleted') {
+    console.log('[Layout] 🚫 BLOCKING - deleted user', { userEmail: user?.email });
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
         <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 shadow-2xl">
@@ -720,6 +725,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // DECLARATIVE GATE 3: Client-only users -> render ClientPortal directly
   if (isClientOnly && currentPageName !== 'ClientPortal') {
+    console.log('[Layout] 🚫 BLOCKING - client-only user on wrong page', { 
+      userEmail: user?.email, 
+      currentPageName 
+    });
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 dark:from-slate-900 dark:to-slate-800 p-4">
         <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-orange-200 dark:border-slate-700 shadow-2xl">
@@ -1106,6 +1115,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             );
           }
 
+  console.log('[Layout] ✅ All gates passed - rendering app', { 
+    userEmail: user?.email, 
+    currentPageName,
+    onboarding_completed: user?.onboarding_completed,
+    employment_status: user?.employment_status 
+  });
+
   return (
     <ToastProvider>
       <ErrorBoundary>
@@ -1125,4 +1141,4 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       </ErrorBoundary>
     </ToastProvider>
   );
-}
+  }

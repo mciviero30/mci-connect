@@ -57,29 +57,41 @@ export default function TaxProfileGate({ children }) {
   
   // Skip gate for special routes (Field, Onboarding, TaxOnboarding itself)
   if (isFieldRoute || isOnboardingPage || isTaxOnboardingPage) {
+    console.log('[TaxProfileGate] Special route detected - passing through', { 
+      isFieldRoute, isOnboardingPage, isTaxOnboardingPage 
+    });
     return <>{children}</>;
   }
   
   // No user = allow access (defensive)
   if (!userEmail) {
+    console.log('[TaxProfileGate] No user email - passing through');
     return <>{children}</>;
   }
   
   // Onboarding incomplete = skip tax check entirely
   if (onboardingIncomplete) {
+    console.log('[TaxProfileGate] Onboarding incomplete - passing through', { userEmail });
     return <>{children}</>;
   }
 
   // Exempt users (admin/CEO) skip tax check
   if (isExempt) {
+    console.log('[TaxProfileGate] User exempt (admin/CEO) - passing through', { userEmail, userRole });
     return <>{children}</>;
   }
 
   // ONLY NOW check tax - redirect immediately if incomplete (no loading screen)
   if (!isLoading && (!taxProfile || !taxProfile.completed)) {
+    console.log('[TaxProfileGate] 🚫 BLOCKING - redirecting to tax onboarding', { 
+      userEmail, 
+      hasTaxProfile: !!taxProfile, 
+      isCompleted: taxProfile?.completed 
+    });
     return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
   }
 
   // All checks passed OR still loading (fail open)
+  console.log('[TaxProfileGate] Tax profile verified - passing through', { userEmail, isLoading });
   return <>{children}</>;
 }

@@ -137,23 +137,34 @@ export default function AgreementGate({ children }) {
   // CRITICAL: Always return children wrapped in fragment - never return bare children
   // CRITICAL: Field routes are sandboxed - skip all gate logic
   if (isFieldRoute) {
+    console.log('[AgreementGate] Field route detected - passing through');
     return <>{children}</>;
   }
 
   // Defensive checks - NEVER block on loading
   if (!userEmail || isLoading) {
+    console.log('[AgreementGate] No user or loading - passing through', { userEmail, isLoading });
     return <>{children}</>;
   }
 
   // If all signed, pass through immediately
   if (unsignedAgreements.length === 0) {
+    console.log('[AgreementGate] All agreements signed - passing through', { userEmail });
     return <>{children}</>;
   }
 
   // Get current agreement to sign
   if (!currentAgreement) {
+    console.log('[AgreementGate] No current agreement - passing through', { userEmail });
     return <>{children}</>;
   }
+
+  // BLOCKING - show agreement modal
+  console.log('[AgreementGate] 🚫 BLOCKING user for agreement', { 
+    userEmail, 
+    unsignedCount: unsignedAgreements.length,
+    currentAgreementType: currentAgreement.type 
+  });
 
   // Block access - render agreement modal
   return (
