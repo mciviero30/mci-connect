@@ -385,49 +385,24 @@ export default function MyProfile() {
                   </div>
 
                   {/* Sensitive Data - DOB and SSN */}
-                  {canViewSensitive ? (
-                    <>
-                      <div>
-                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                          {t('dateOfBirth')}
-                          <Shield className="w-3 h-3 text-green-600" />
-                        </Label>
-                        <p className="text-slate-900 dark:text-white font-medium mt-1">
-                          {user.dob ? format(new Date(user.dob), 'MMM dd, yyyy') : '—'}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                          {t('ssnTaxId')}
-                          <Shield className="w-3 h-3 text-green-600" />
-                        </Label>
-                        <p className="text-slate-900 dark:text-white font-medium mt-1">
-                          {user.ssn_tax_id || '—'}
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                          {t('dateOfBirth')}
-                          <Shield className="w-3 h-3 text-amber-500" />
-                        </Label>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 text-sm">
-                          {user.dob ? format(new Date(user.dob), 'MMM dd, yyyy') : '—'}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                          {t('ssnTaxId')}
-                          <Shield className="w-3 h-3 text-amber-500" />
-                        </Label>
-                        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 text-sm">
-                          {user.ssn_tax_id || '—'}
-                        </p>
-                      </div>
-                    </>
-                  )}
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('dateOfBirth')}
+                      <Shield className="w-3 h-3 text-green-600" />
+                    </Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">
+                      {user.dob ? format(new Date(user.dob), 'MMM dd, yyyy') : '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      {t('ssnTaxId')}
+                      <Shield className="w-3 h-3 text-green-600" />
+                    </Label>
+                    <p className="text-slate-900 dark:text-white font-medium mt-1">
+                      {user.ssn_tax_id || '—'}
+                    </p>
+                  </div>
 
                   <div className="md:col-span-2">
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
