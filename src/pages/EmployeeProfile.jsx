@@ -70,7 +70,8 @@ export default function EmployeeProfile() {
     ssn_tax_id: '',
     hire_date: '',
     team_id: '',
-    team_name: ''
+    team_name: '',
+    role: 'user'
   });
 
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
