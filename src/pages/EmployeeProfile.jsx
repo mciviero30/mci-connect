@@ -693,7 +693,8 @@ export default function EmployeeProfile() {
         ssn_tax_id: displaySSN,
         hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : '',
         team_id: employee.team_id || '',
-        team_name: teamName
+        team_name: teamName,
+        role: employee.role || 'user'
       });
       
       console.log('🔍 Edit form initialized:', {
