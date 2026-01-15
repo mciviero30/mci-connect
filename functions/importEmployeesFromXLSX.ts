@@ -45,11 +45,12 @@ Deno.serve(async (req) => {
     console.log('🔄 Extracting data from file...');
     let extractResult;
     try {
-      extractResult = await base44.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
+      console.log('🔄 Calling ExtractDataFromUploadedFile integration...');
+      extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
         json_schema: schema
       });
-      console.log('✅ Extract result:', extractResult.status);
+      console.log('✅ Extract result:', extractResult);
     } catch (extractErr) {
       console.error('❌ Extract error:', extractErr);
       return Response.json({ 
