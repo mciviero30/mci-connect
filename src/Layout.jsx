@@ -1047,29 +1047,29 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           const { data: user, isLoading, error } = useQuery({
           queryKey: CURRENT_USER_QUERY_KEY,
           queryFn: async () => {
-      try {
-        return await base44.auth.me();
-      } catch (err) {
-        // Handle 401 - redirect to login without breaking app
-        if (err?.status === 401 || err?.message?.includes('401')) {
-          // Prevent infinite redirect loops - redirect only once per session
-          const hasRedirected = sessionStorage.getItem('auth_redirect_pending');
-          if (!hasRedirected) {
-            sessionStorage.setItem('auth_redirect_pending', 'true');
-            base44.auth.redirectToLogin();
-          }
-          return null;
-        }
-        throw err;
-      }
-    },
-    retry: false,
-    staleTime: 0, // Always fresh - no cache
-    gcTime: Infinity,
-    refetchOnMount: true, // Always refetch on mount
-    refetchOnWindowFocus: true, // Refetch when window focused
-    refetchInterval: false,
-  });
+              try {
+                return await base44.auth.me();
+              } catch (err) {
+                // Handle 401 - redirect to login without breaking app
+                if (err?.status === 401 || err?.message?.includes('401')) {
+                  // Prevent infinite redirect loops - redirect only once per session
+                  const hasRedirected = sessionStorage.getItem('auth_redirect_pending');
+                  if (!hasRedirected) {
+                    sessionStorage.setItem('auth_redirect_pending', 'true');
+                    base44.auth.redirectToLogin();
+                  }
+                  return null;
+                }
+                throw err;
+              }
+            },
+            retry: false,
+            staleTime: Infinity, // STABLE - never auto-refetch
+            gcTime: Infinity,
+            refetchOnMount: false, // NEVER auto-refetch
+            refetchOnWindowFocus: false, // NEVER auto-refetch
+            refetchInterval: false,
+          });
 
   // DISABLED: beforeunload handler causes issues on login flow
   // useEffect(() => {
