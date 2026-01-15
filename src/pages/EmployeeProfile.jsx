@@ -628,51 +628,7 @@ export default function EmployeeProfile() {
   const canEditPositionDepartment = isAdmin || isCEO || isHR || isManager;
   const canOnlyEditBasicInfo = isEditingSelf && !canEditSensitiveFields;
 
-  React.useEffect(() => {
-    if (employee && teams.length > 0) {
-      // Build proper full name from first_name + last_name
-      const properFullName = employee.first_name && employee.last_name
-        ? `${employee.first_name} ${employee.last_name}`.trim()
-        : (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')
-          ? employee.full_name
-          : '');
 
-      // Find team_name from team_id if missing
-      let teamName = employee.team_name || '';
-      if (employee.team_id && !teamName) {
-        const matchedTeam = teams.find(t => t.id === employee.team_id);
-        teamName = matchedTeam?.team_name || '';
-        console.log('🔧 Fixed team_name from team_id:', { team_id: employee.team_id, team_name: teamName });
-      }
-
-      // Mask SSN if user doesn't have permission
-      const displaySSN = canViewSensitive 
-        ? (employee.ssn_tax_id || '')
-        : maskSSN(employee.ssn_tax_id);
-      
-      setEditForm({
-        full_name: properFullName,
-        position: formatPosition(employee.position) || '',
-        phone: employee.phone || '',
-        address: employee.address || '',
-        hourly_rate: employee.hourly_rate !== null && employee.hourly_rate !== undefined ? String(employee.hourly_rate) : '',
-        tshirt_size: employee.tshirt_size || '',
-        department: employee.department || '',
-        dob: employee.dob ? format(new Date(employee.dob), 'yyyy-MM-dd') : '',
-        ssn_tax_id: displaySSN,
-        hire_date: employee.hire_date ? format(new Date(employee.hire_date), 'yyyy-MM-dd') : '',
-        team_id: employee.team_id || '',
-        team_name: teamName,
-        role: employee.role || 'user'
-      });
-      
-      console.log('🔍 Edit form initialized:', {
-        department: employee.department,
-        team_id: employee.team_id,
-        team_name: teamName
-      });
-    }
-  }, [employee, teams]);
 
   // NEW: Prompt #54 - Calculate KPIs
   const performanceKPIs = React.useMemo(() => {
