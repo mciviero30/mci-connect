@@ -1,22 +1,21 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 // Permission system based on position
 export const usePermissions = () => {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const queryClient = useQueryClient();
+  const currentUser = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
 
   const hasFullAccess = () => {
-    if (!user) return false;
-    if (user.role === 'admin') return true;
+    if (!currentUser) return false;
+    if (currentUser.role === 'admin') return true;
     
     const fullAccessPositions = ['CEO', 'administrator', 'manager'];
     const fullAccessDepartments = ['HR'];
     
-    const hasPosition = user.position && fullAccessPositions.includes(user.position);
-    const hasDepartment = user.department && fullAccessDepartments.includes(user.department);
+    const hasPosition = currentUser.position && fullAccessPositions.includes(currentUser.position);
+    const hasDepartment = currentUser.department && fullAccessDepartments.includes(currentUser.department);
     
     return hasPosition || hasDepartment;
   };
@@ -30,10 +29,10 @@ export const usePermissions = () => {
   };
 
   const hasHRAccess = () => {
-    if (!user) return false;
+    if (!currentUser) return false;
     if (hasFullAccess()) return true;
     
-    return user.department === 'HR' || user.position === 'manager';
+    return currentUser.department === 'HR' || currentUser.position === 'manager';
   };
 
   const canViewReports = () => {
@@ -45,7 +44,7 @@ export const usePermissions = () => {
   };
 
   return {
-    user,
+    user: currentUser,
     hasFullAccess: hasFullAccess(),
     hasManagerAccess: hasManagerAccess(),
     hasFinanceAccess: hasFinanceAccess(),
