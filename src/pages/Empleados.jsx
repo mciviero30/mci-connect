@@ -554,7 +554,7 @@ export default function Empleados() {
   const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => 
     e.employment_status === 'active' || 
     e.employment_status === 'pending_registration' ||
-    (!e.employment_status && e.email) // Users with no status but valid email
+    !e.employment_status // Users with no status
   )));
   
   // Debug pending employees filtering - NO FILTER for owner, allow CEO to be invited
