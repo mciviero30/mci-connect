@@ -671,23 +671,31 @@ export default function Empleados() {
                           }
 
                           alert('⏳ Processing employees (30-60 seconds)...');
-                           console.log('🔄 Invoking import function...');
+                          console.log('🔄 Invoking import function...');
 
-                            const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
+                          // Promise with timeout
+                          const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Import timeout - function took too long (90s)')), 90000)
+                          );
+
+                          const response = await Promise.race([
+                            base44.functions.invoke('importEmployeesFromXLSX', { 
                               file_url: uploadRes.file_url 
-                            });
+                            }),
+                            timeoutPromise
+                          ]);
 
-                            console.log('✅ Response received:', response);
-                            const result = response?.data || response;
-                            console.log('📊 Import result:', result);
+                          console.log('✅ Response received:', response);
+                          const result = response?.data || response;
+                          console.log('📊 Import result:', result);
 
-                           if (!result) {
-                             throw new Error('No response from import function');
-                           }
+                          if (!result) {
+                            throw new Error('No response from import function');
+                          }
 
-                           if (result?.error) {
-                             throw new Error(result.error + (result.details ? ': ' + result.details : ''));
-                           }
+                          if (result?.error) {
+                            throw new Error(result.error + (result.details ? ': ' + result.details : ''));
+                          }
 
                            console.log('🔄 Invalidating queries...');
                            await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
