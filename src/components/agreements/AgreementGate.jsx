@@ -30,6 +30,7 @@ export default function AgreementGate({ children }) {
 
   // Read user from cache (stable)
   const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
+  console.log('[AgreementGate] USER:', user);
   const userEmail = user?.email;
   const userId = user?.id;
   const userFullName = user?.full_name;

@@ -19,6 +19,7 @@ export default function TaxProfileGate({ children }) {
   
   // Read user from cache (stable, doesn't cause prop changes)
   const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
+  console.log('[TaxProfileGate] USER:', user);
   
   // Compute stable derived values BEFORE hooks
   const userEmail = user?.email || null;
