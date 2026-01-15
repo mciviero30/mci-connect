@@ -712,8 +712,13 @@ export default function Empleados() {
                       };
 
                       document.body.appendChild(input);
+                      console.log('🖱️ Clicking file input...');
                       input.click();
-                      setTimeout(() => input.remove(), 1000);
+                      console.log('✅ File input click triggered');
+                      setTimeout(() => {
+                        console.log('🧹 Removing file input from DOM');
+                        input.remove();
+                      }, 1000);
                     }}
                   >
                     <FileText className="w-4 h-4 mr-2" />
