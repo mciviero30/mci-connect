@@ -1081,20 +1081,36 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   //   return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   // }, []);
 
+  // HARD LOADING GUARD - Prevent gates from running during boot
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+        <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // No user and not loading - don't render gates
+  if (!user && !isLoading) {
+    return null;
+  }
+
   return (
     <ToastProvider>
       <ErrorBoundary>
         <UIProvider>
           <LanguageProvider>
-            <PermissionsProvider>
-              <AgreementGate>
-                <TaxProfileGate>
-                  <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                    {children}
-                  </LayoutContent>
-                </TaxProfileGate>
-              </AgreementGate>
-            </PermissionsProvider>
+            {user && (
+              <PermissionsProvider>
+                <AgreementGate>
+                  <TaxProfileGate>
+                    <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                      {children}
+                    </LayoutContent>
+                  </TaxProfileGate>
+                </AgreementGate>
+              </PermissionsProvider>
+            )}
           </LanguageProvider>
         </UIProvider>
       </ErrorBoundary>
