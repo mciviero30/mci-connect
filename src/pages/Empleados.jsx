@@ -236,6 +236,18 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
+          <Label>System Role *</Label>
+          <select 
+            value={employee?.role || 'user'}
+            onChange={(e) => setFormData({...formData, role: e.target.value})}
+            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+          >
+            <option value="user">User (Regular Employee)</option>
+            <option value="admin">Admin (Full Access)</option>
+            <option value="ceo">CEO (Full Access + Setup)</option>
+          </select>
+        </div>
+        <div>
           <Label>Position</Label>
           <select 
             value={formData.position} 
@@ -251,26 +263,27 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
             <option value="administrator">Administrator</option>
           </select>
         </div>
-        <div>
-          <Label>Department</Label>
-          <select 
-            value={formData.department} 
-            onChange={(e) => setFormData({...formData, department: e.target.value})}
-            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
-          >
-            <option value="">Select Department</option>
-            <option value="executive">Executive</option>
-            <option value="management">Management</option>
-            <option value="operations">Operations</option>
-            <option value="administration">Administration</option>
-            <option value="field">Field Technician</option>
-            <option value="foreman">Foreman</option>
-            <option value="HR">HR</option>
-            <option value="IT">IT</option>
-            <option value="sales">Sales</option>
-            <option value="marketing">Marketing</option>
-          </select>
-        </div>
+      </div>
+
+      <div>
+        <Label>Department</Label>
+        <select 
+          value={formData.department} 
+          onChange={(e) => setFormData({...formData, department: e.target.value})}
+          className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
+        >
+          <option value="">Select Department</option>
+          <option value="executive">Executive</option>
+          <option value="management">Management</option>
+          <option value="operations">Operations</option>
+          <option value="administration">Administration</option>
+          <option value="field">Field Technician</option>
+          <option value="foreman">Foreman</option>
+          <option value="HR">HR</option>
+          <option value="IT">IT</option>
+          <option value="sales">Sales</option>
+          <option value="marketing">Marketing</option>
+        </select>
       </div>
 
       <div>
