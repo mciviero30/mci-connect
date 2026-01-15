@@ -567,6 +567,16 @@ export default function Empleados() {
                   </DropdownMenuItem>
 
                   <DropdownMenuItem 
+                    onClick={() => {
+                      const dialog = document.querySelector('[data-sync-recovery-trigger]');
+                      if (dialog) dialog.click();
+                    }}
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    Recover Missing Data
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
                     onClick={async () => {
                       if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
                       try {
