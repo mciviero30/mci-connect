@@ -31,6 +31,7 @@ export default function TaxProfileGate({ children }) {
   const isExempt = userRole === 'ceo' || userRole === 'admin' || userPosition === 'CEO';
   
   // CRITICAL: Don't check tax until onboarding is complete
+  // Do NOT mark tax_completed automatically - only when user manually completes TaxOnboarding
   const onboardingIncomplete = user && user.onboarding_completed !== true;
   const shouldFetchProfile = !!userEmail && !isExempt && !isFieldRoute && !onboardingIncomplete;
 

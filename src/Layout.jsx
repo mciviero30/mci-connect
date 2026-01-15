@@ -332,6 +332,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     user.employment_status !== 'deleted' &&
     user.onboarding_completed === false;  // Strict false check - undefined/null users pass through
 
+  // CEO Setup Gate: If CEO hasn't completed setup, show CEOSetup page
+  const ceoSetupIncomplete = user?.role === 'ceo' && user?.ceo_setup_completed !== true;
+  const isCEOSetupRoute = location.pathname.includes('/CEOSetup');
+  const shouldBlockForCEOSetup = ceoSetupIncomplete && !isCEOSetupRoute;
+
   // Navigation arrays - MUST be defined before useMemo
   const adminNavigation = [
     {
@@ -676,6 +681,33 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           <p className="text-slate-600 dark:text-slate-400 mb-4">{t('error')}</p>
           <Button onClick={() => window.location.reload()} className="soft-blue-gradient text-white shadow-lg">
             {t('reload')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // DECLARATIVE GATE 0: CEO Setup (runs before onboarding)
+  if (shouldBlockForCEOSetup) {
+    console.log('[Layout] 🚫 BLOCKING - CEO setup incomplete', { 
+      userEmail: user?.email,
+      ceo_setup_completed: user?.ceo_setup_completed
+    });
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">
+        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-orange-200 dark:border-slate-700 shadow-2xl">
+          <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-orange-500/30">
+            <Building2 className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Setup Required</h1>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">
+            Please complete the CEO setup to access the app.
+          </p>
+          <Button 
+            onClick={() => navigate(createPageUrl('CEOSetup'))}
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg"
+          >
+            Complete Setup
           </Button>
         </div>
       </div>

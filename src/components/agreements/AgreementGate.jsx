@@ -57,6 +57,7 @@ export default function AgreementGate({ children }) {
   });
 
   // Sign mutation - optimistic updates, no complex state
+  // CRITICAL: Do NOT set agreements_signed flag - let frontend track via AgreementSignature table
   const signMutation = useMutation({
     mutationFn: async (agreementData) => {
       console.log('[AgreementGate signMutation] userEmail:', userEmail, 'user:', user);
