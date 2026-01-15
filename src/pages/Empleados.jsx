@@ -673,13 +673,13 @@ export default function Empleados() {
                           alert('⏳ Processing employees (30-60 seconds)...');
                            console.log('🔄 Invoking import function...');
 
-                           const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
-                             file_url: uploadRes.file_url 
-                           });
+                            const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
+                              file_url: uploadRes.file_url 
+                            });
 
-                           const result = response?.data || response;
-                           console.log('✅ Full response:', response);
-                           console.log('📊 Import result:', result);
+                            console.log('✅ Response received:', response);
+                            const result = response?.data || response;
+                            console.log('📊 Import result:', result);
 
                            if (!result) {
                              throw new Error('No response from import function');
