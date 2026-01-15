@@ -17,7 +17,10 @@ export default function MisGastos() {
   const [editingExpense, setEditingExpense] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ['myExpenses', user?.email],
