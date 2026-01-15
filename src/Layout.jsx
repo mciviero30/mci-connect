@@ -1114,15 +1114,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         <LanguageProvider>
           <PermissionsProvider>
             <UIProvider>
-              {user && (
-                <AgreementGate>
-                  <TaxProfileGate>
-                    <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                      {children}
-                    </LayoutContent>
-                  </TaxProfileGate>
-                </AgreementGate>
-              )}
+              <AgreementGate>
+                <TaxProfileGate>
+                  <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                    {children}
+                  </LayoutContent>
+                </TaxProfileGate>
+              </AgreementGate>
             </UIProvider>
           </PermissionsProvider>
         </LanguageProvider>
