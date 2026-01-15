@@ -642,19 +642,24 @@ export default function Empleados() {
 
                   <DropdownMenuItem 
                     onClick={() => {
+                      console.log('📁 Import button clicked');
                       const input = document.createElement('input');
                       input.type = 'file';
                       input.accept = '.csv,.xlsx,.xls';
 
                       input.onchange = async (e) => {
+                        console.log('🔥 File selected:', e);
                         const file = e.target.files?.[0];
+                        console.log('📄 File object:', file);
 
                         if (!file) {
+                          console.log('❌ No file detected');
                           alert('No file selected');
                           return;
                         }
 
                         try {
+                          console.log(`✅ Starting upload: ${file.name}`);
                           alert(`⏳ Uploading ${file.name}...`);
 
                           const uploadRes = await base44.integrations.Core.UploadFile({ file });
