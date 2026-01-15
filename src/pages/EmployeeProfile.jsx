@@ -1466,6 +1466,20 @@ export default function EmployeeProfile() {
                 <h3 className="text-lg font-semibold text-gray-900 pb-2 border-b border-gray-200">Employment Details</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
+                    <Label htmlFor="role" className="text-gray-900 font-medium">System Role *</Label>
+                    <select
+                      id="role"
+                      value={editForm.role || 'user'}
+                      onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                      className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="user">User (Regular Employee)</option>
+                      <option value="admin">Admin (Full Access)</option>
+                      <option value="ceo">CEO (Full Access + Setup)</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <Label htmlFor="department" className="text-gray-900 font-medium">Department</Label>
                     <select
                       id="department"
