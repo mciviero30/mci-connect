@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import PageHeader from "../components/shared/PageHeader";
-import { format, startOfYear, startOfMonth, endOfMonth, differenceInDays } from "date-fns"; // Added startOfMonth, endOfMonth, differenceInDays
+import { format, startOfYear, startOfMonth, endOfMonth, differenceInDays } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AIPerformanceAnalyzer from "../components/empleados/AIPerformanceAnalyzer";
+import EditEmployeeForm from "../components/empleados/EditEmployeeForm";
 import { getDisplayName, capitalizeName, formatPosition } from "@/components/utils/nameHelpers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EmployeeQRCode from "@/components/compliance/EmployeeQRCode";
