@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -20,7 +19,7 @@ export default function LiveClock() {
   const [breaks, setBreaks] = useState([]);
   const [locationError, setLocationError] = useState(null);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const user = queryClient.getQueryData(['currentUser']);
   
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['activeJobs'],
