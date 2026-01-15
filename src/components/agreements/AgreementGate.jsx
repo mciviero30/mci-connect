@@ -134,21 +134,26 @@ export default function AgreementGate({ children }) {
   const currentAgreement = unsignedAgreements[currentStep];
 
   // EARLY RETURNS - ONLY AFTER ALL HOOKS
+  // CRITICAL: Always return children wrapped in fragment - never return bare children
   // CRITICAL: Field routes are sandboxed - skip all gate logic
   if (isFieldRoute) {
-    return children;
+    return <>{children}</>;
   }
 
   // Defensive checks - NEVER block on loading
-  if (!userEmail || isLoading) return children;
+  if (!userEmail || isLoading) {
+    return <>{children}</>;
+  }
 
   // If all signed, pass through immediately
   if (unsignedAgreements.length === 0) {
-    return children;
+    return <>{children}</>;
   }
 
   // Get current agreement to sign
-  if (!currentAgreement) return children;
+  if (!currentAgreement) {
+    return <>{children}</>;
+  }
 
   // Block access - render agreement modal
   return (

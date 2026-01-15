@@ -53,25 +53,26 @@ export default function TaxProfileGate({ children }) {
   // REMOVED: Alert creation - not needed, causes extra queries
 
   // EARLY EXITS - ZERO UI BLOCKING
+  // CRITICAL: Always return children wrapped in fragment for consistent tree shape
   
   // Skip gate for special routes (Field, Onboarding, TaxOnboarding itself)
   if (isFieldRoute || isOnboardingPage || isTaxOnboardingPage) {
-    return children;
+    return <>{children}</>;
   }
   
   // No user = allow access (defensive)
   if (!userEmail) {
-    return children;
+    return <>{children}</>;
   }
   
   // Onboarding incomplete = skip tax check entirely
   if (onboardingIncomplete) {
-    return children;
+    return <>{children}</>;
   }
 
   // Exempt users (admin/CEO) skip tax check
   if (isExempt) {
-    return children;
+    return <>{children}</>;
   }
 
   // ONLY NOW check tax - redirect immediately if incomplete (no loading screen)
@@ -80,5 +81,5 @@ export default function TaxProfileGate({ children }) {
   }
 
   // All checks passed OR still loading (fail open)
-  return children;
+  return <>{children}</>;
 }
