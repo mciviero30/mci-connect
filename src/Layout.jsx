@@ -324,9 +324,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   
   // DEFINITIVE ONBOARDING GATE: Use ONLY the completion flag
   // NEVER count forms or use stale queries (prevents loop)
+  // CRITICAL: Exempt both admin AND CEO from onboarding requirement
+  const isAdminOrCEO = user?.role === 'admin' || user?.role === 'ceo' || user?.position === 'CEO';
   const shouldBlockForOnboarding = user && 
     !isClientOnly && 
-    user.role !== 'admin' && 
+    !isAdminOrCEO &&
     user.employment_status !== 'deleted' &&
     user.onboarding_completed === false;  // Strict false check - undefined/null users pass through
 
