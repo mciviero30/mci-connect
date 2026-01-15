@@ -10,6 +10,7 @@ import {
   Clock, UserCircle, FileText, Calendar as CalendarIcon, Receipt, Banknote,
   Edit3, Save, X, Award, Shield, ChevronRight, Sparkles, Lock, Shirt, DollarSign
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, differenceInDays } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { getDisplayName } from "@/components/utils/nameHelpers";
