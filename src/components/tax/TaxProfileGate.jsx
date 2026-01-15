@@ -58,10 +58,16 @@ export default function TaxProfileGate({ children }) {
   // EARLY EXITS - ZERO UI BLOCKING
   // CRITICAL: Always return children wrapped in fragment for consistent tree shape
   
-  // Skip gate for special routes (Field, Onboarding, TaxOnboarding itself)
-  if (isFieldRoute || isOnboardingPage || isTaxOnboardingPage) {
+  // CRITICAL: Never block the tax onboarding route itself (prevents infinite loop)
+  if (location.pathname.includes('TaxOnboarding')) {
+    console.log('[TaxProfileGate] On TaxOnboarding page - passing through');
+    return <>{children}</>;
+  }
+  
+  // Skip gate for special routes (Field, Onboarding)
+  if (isFieldRoute || isOnboardingPage) {
     console.log('[TaxProfileGate] Special route detected - passing through', { 
-      isFieldRoute, isOnboardingPage, isTaxOnboardingPage 
+      isFieldRoute, isOnboardingPage 
     });
     return <>{children}</>;
   }
@@ -80,7 +86,7 @@ export default function TaxProfileGate({ children }) {
 
   // Exempt users (admin/CEO) skip tax check
   if (isExempt) {
-    console.log('[TaxProfileGate] User exempt (admin/CEO) - passing through', { userEmail, userRole });
+    console.log('[TaxProfileGate] User exempt (admin/CEO) - passing through', { userEmail, userRole, userPosition });
     return <>{children}</>;
   }
 
