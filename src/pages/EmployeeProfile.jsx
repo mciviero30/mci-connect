@@ -530,7 +530,7 @@ export default function EmployeeProfile() {
 
       queryClient.invalidateQueries({ queryKey: ['employee', employeeId] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      // currentUser NOT invalidated - only if editing self
       
       alert(`✅ Nombre corregido exitosamente!\n\nCambios aplicados:\n${Object.entries(result.updates).map(([k,v]) => `• ${k}: ${v}`).join('\n')}\n\nRecargando página...`);
       
@@ -616,10 +616,10 @@ export default function EmployeeProfile() {
         console.error('Directory sync error:', error);
       }
 
-      // Invalidate all relevant queries
+      // Invalidate all relevant queries EXCEPT currentUser
       queryClient.invalidateQueries({ queryKey: ['employee'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      // currentUser updated separately if needed
       queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
       queryClient.invalidateQueries({ queryKey: ['teams'] });
 

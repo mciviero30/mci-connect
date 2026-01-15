@@ -145,9 +145,9 @@ export default function Configuracion() {
 
   const updateProfileMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.refetchQueries({ queryKey: ['currentUser'] });
+    onSuccess: async (updatedUser) => {
+      // Direct cache update - NO INVALIDATION
+      queryClient.setQueryData(['currentUser'], updatedUser);
 
       // Notify other tabs/windows and apps
       localStorage.setItem('profile_updated', Date.now().toString());
@@ -197,8 +197,9 @@ export default function Configuracion() {
     mutationFn: async (prefs) => {
       return await base44.auth.updateMe({ notification_preferences: prefs });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    onSuccess: async (updatedUser) => {
+      // Direct cache update - NO INVALIDATION
+      queryClient.setQueryData(['currentUser'], updatedUser);
       toast({
         title: "✅ Success!",
         description: language === 'es' ? 'Preferencias de notificaciones guardadas.' : 'Notification preferences saved!',
@@ -243,12 +244,12 @@ export default function Configuracion() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setProfileForm({ ...profileForm, profile_photo_url: file_url });
       // Update profile photo and set it as preferred if no preference exists
-      await base44.auth.updateMe({ 
+      const updatedUser = await base44.auth.updateMe({ 
         profile_photo_url: file_url,
         preferred_profile_image: user?.preferred_profile_image || 'photo'
       });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.refetchQueries({ queryKey: ['currentUser'] });
+      // Direct cache update - NO INVALIDATION
+      queryClient.setQueryData(['currentUser'], updatedUser);
 
       // Notify other tabs/windows and apps
       localStorage.setItem('profile_updated', Date.now().toString());
@@ -274,12 +275,12 @@ export default function Configuracion() {
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setProfileForm({ ...profileForm, profile_photo_url: file_url });
-      await base44.auth.updateMe({ 
+      const updatedUser = await base44.auth.updateMe({ 
         profile_photo_url: file_url,
         preferred_profile_image: user?.preferred_profile_image || 'photo'
       });
-      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
-      queryClient.refetchQueries({ queryKey: ['currentUser'] });
+      // Direct cache update - NO INVALIDATION
+      queryClient.setQueryData(['currentUser'], updatedUser);
 
       // Notify other tabs/windows and apps
       localStorage.setItem('profile_updated', Date.now().toString());
