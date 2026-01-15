@@ -1040,30 +1040,30 @@ export default function CrearFactura() {
                 {teams.map(team => {
                   const isSelected = (formData.team_ids || []).includes(team.id);
                   return (
-                  <div
-                    key={team.id}
-                    className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        id={`team-${team.id}`}
-                        checked={isSelected}
-                        onCheckedChange={() => handleTeamToggle(team.id)}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
-                          {team.team_name}
-                        </p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
-                          {team.location}
-                        </p>
+                    <div
+                      key={team.id}
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={`team-${team.id}`}
+                          checked={isSelected}
+                          onCheckedChange={() => handleTeamToggle(team.id)}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                            {team.team_name}
+                          </p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                            {team.location}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   );
                 })}
               </div>
