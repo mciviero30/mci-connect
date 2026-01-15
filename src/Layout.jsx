@@ -1095,9 +1095,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             );
           }
 
-          // No user and not loading - don't render gates
+          // No user and not loading - show login prompt
           if (!user && !isLoading) {
-            return null;
+            return (
+              <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+                <div className="text-center">
+                  <p className="text-slate-600 dark:text-slate-400 mb-4">Redirecting to login...</p>
+                </div>
+              </div>
+            );
           }
 
   return (
