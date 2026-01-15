@@ -66,6 +66,16 @@ export default function MyProfile() {
     tshirt_size: user?.tshirt_size || ''
   });
 
+  // Sync formData when user loads
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        address: user.address || '',
+        tshirt_size: user.tshirt_size || ''
+      });
+    }
+  }, [user]);
+
   const updateProfileMutation = useMutation({
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: async (updatedUser) => {
