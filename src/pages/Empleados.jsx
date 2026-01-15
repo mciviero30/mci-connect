@@ -648,7 +648,7 @@ export default function Empleados() {
                       input.accept = '.csv,.xlsx,.xls';
 
                       input.onchange = async (e) => {
-                        console.log('🔥 File selected:', e);
+                        console.log('🔥 File selected event fired:', e);
                         const file = e.target.files?.[0];
                         console.log('📄 File object:', file);
 
@@ -662,8 +662,13 @@ export default function Empleados() {
                           console.log(`✅ Starting upload: ${file.name}`);
                           alert(`⏳ Uploading ${file.name}...`);
 
+                          console.log('📤 Calling base44.integrations.Core.UploadFile...');
                           const uploadRes = await base44.integrations.Core.UploadFile({ file });
-                          console.log('✅ File uploaded:', uploadRes.file_url);
+                          console.log('✅ File uploaded successfully:', uploadRes.file_url);
+
+                          if (!uploadRes?.file_url) {
+                            throw new Error('Upload returned no file_url');
+                          }
 
                           alert('⏳ Processing employees (30-60 seconds)...');
                            console.log('🔄 Invoking import function...');
