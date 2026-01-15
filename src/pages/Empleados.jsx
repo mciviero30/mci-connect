@@ -417,30 +417,10 @@ export default function Empleados() {
   const { data: pendingEmployees = [], refetch: refetchPending } = useQuery({
     queryKey: ['pendingEmployees'],
     queryFn: async () => {
+      // FIX #2: RACE CONDITION - Remove auto-cleanup to prevent data loss during concurrent operations
+      // Instead, manual cleanup is available via "Cleanup All Pending" button (one-shot, explicit)
       const result = await base44.entities.PendingEmployee.list('-created_date');
       console.log('🔍 PendingEmployees fetched:', result.length, 'employees');
-      
-      // Auto-cleanup: Delete pending employees that are already active
-      const activeEmails = employees.map(e => e.email?.toLowerCase()).filter(Boolean);
-      const toDelete = result.filter(p => 
-        p.email && activeEmails.includes(p.email.toLowerCase())
-      );
-      
-      if (toDelete.length > 0) {
-        console.log('🧹 Auto-cleaning', toDelete.length, 'pending employees that are already active');
-        for (const pending of toDelete) {
-          try {
-            await base44.entities.PendingEmployee.delete(pending.id);
-            console.log('✅ Cleaned up:', pending.email);
-          } catch (err) {
-            console.error('Error cleaning pending:', pending.email, err);
-          }
-        }
-        // Refetch after cleanup
-        const cleanedResult = await base44.entities.PendingEmployee.list('-created_date');
-        return cleanedResult;
-      }
-      
       return result;
     },
     staleTime: 5000,
