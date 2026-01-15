@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 const PermissionsContext = createContext();
 
@@ -9,7 +10,7 @@ export const PermissionsProvider = ({ children }) => {
   const queryClient = useQueryClient();
   
   // Safely get user from cache (no additional query)
-  const user = queryClient.getQueryData(['currentUser']);
+  const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
 
   // Fetch role only if custom_role_id exists - hook always called
   const { data: userRole } = useQuery({
