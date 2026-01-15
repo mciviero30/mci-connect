@@ -24,10 +24,11 @@ export default function TaxProfileGate({ children }) {
   // Compute stable derived values BEFORE hooks
   const userEmail = user?.email || null;
   const userRole = user?.role || null;
+  const userPosition = user?.position || null;
   const isTaxOnboardingPage = location?.pathname?.includes('TaxOnboarding') || false;
   const isFieldRoute = location?.pathname?.includes('/Field') || false;
   const isOnboardingPage = location?.pathname?.includes('OnboardingWizard') || false;
-  const isExempt = userRole === 'ceo' || userRole === 'admin';
+  const isExempt = userRole === 'ceo' || userRole === 'admin' || userPosition === 'CEO';
   
   // CRITICAL: Don't check tax until onboarding is complete
   const onboardingIncomplete = user && user.onboarding_completed !== true;
