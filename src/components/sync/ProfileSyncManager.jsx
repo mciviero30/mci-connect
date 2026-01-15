@@ -4,9 +4,11 @@ import { base44 } from '@/api/base44Client';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 export default function ProfileSyncManager({ user }) {
+  console.log('[ProfileSyncManager] USER PROP:', user);
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    console.log('[ProfileSyncManager useEffect 1] user:', user);
     if (!user) return;
 
     // Listen for storage events from other tabs/windows
@@ -51,6 +53,7 @@ export default function ProfileSyncManager({ user }) {
 
   // FIRST LOGIN MIGRATION: Background sync (non-blocking)
   useEffect(() => {
+    console.log('[ProfileSyncManager useEffect 2] user:', user);
     if (!user?.id) return;
 
     // Check if first login (no onboarding_completed flag)
@@ -79,9 +82,11 @@ export default function ProfileSyncManager({ user }) {
 
   // Sync with MCI Web when profile updates (background)
   useEffect(() => {
+    console.log('[ProfileSyncManager useEffect 3] user:', user);
     if (!user) return;
 
     const syncWithMCIWeb = async () => {
+      console.log('[ProfileSyncManager syncWithMCIWeb] user inside closure:', user);
       try {
         await base44.functions.invoke('syncUserProfile', {
           userId: user.id,

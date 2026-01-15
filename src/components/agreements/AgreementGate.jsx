@@ -55,6 +55,7 @@ export default function AgreementGate({ children }) {
   // Sign mutation - optimistic updates, no complex state
   const signMutation = useMutation({
     mutationFn: async (agreementData) => {
+      console.log('[AgreementGate signMutation] userEmail:', userEmail, 'user:', user);
       // Check for duplicates
       const existing = await base44.entities.AgreementSignature.filter({
         employee_email: userEmail,

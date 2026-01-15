@@ -38,6 +38,7 @@ export default function TaxProfileGate({ children }) {
   const { data: taxProfile, isLoading, error } = useQuery({
     queryKey: TAX_PROFILE_QUERY_KEY(userEmail),
     queryFn: async () => {
+      console.log('[TaxProfileGate queryFn] userEmail:', userEmail, 'user:', user);
       if (!userEmail) return null;
       const profiles = await base44.entities.TaxProfile.filter({ 
         employee_email: userEmail 
