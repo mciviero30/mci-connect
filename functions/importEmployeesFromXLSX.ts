@@ -77,7 +77,9 @@ Deno.serve(async (req) => {
     }
 
     // Get existing teams to match by name
+    console.log('🔄 Loading teams...');
     const teams = await base44.asServiceRole.entities.Team.list();
+    console.log('📊 Teams loaded:', teams.length);
     const teamMap = {};
     teams.forEach(t => {
       if (t.team_name) {
@@ -89,6 +91,7 @@ Deno.serve(async (req) => {
     const created = [];
     const errors = [];
 
+    console.log(`🔄 Processing ${employees.length} employees...`);
     for (const emp of employees) {
       try {
         // Clean and capitalize names
@@ -109,7 +112,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        console.log(`📝 Creating pending employee: ${emp.email}`);
+        console.log(`📝 [${created.length + 1}/${employees.length}] Creating: ${emp.email}`);
         const pendingEmployee = await base44.asServiceRole.entities.PendingEmployee.create({
           email: emp.email.toLowerCase().trim(),
           first_name: firstName,
