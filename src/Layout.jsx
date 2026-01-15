@@ -259,6 +259,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
 };
 
 const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
+  console.log('[LayoutContent] user prop:', user);
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -271,6 +272,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // Use auth user directly
   const displayUser = user;
+  console.log('[LayoutContent] displayUser:', displayUser);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -615,15 +617,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   // UNIFIED ROLE SYSTEM - Single source of truth
   const isAdmin = hasFullAccess(displayUser || user);
+  console.log('[LayoutContent] isAdmin:', isAdmin, 'hasFullAccess input:', displayUser || user);
 
   // Memoize navigation to prevent recalculation - MUST be before early returns
   const navigation = useMemo(() => {
+    console.log('[LayoutContent useMemo navigation] displayUser:', displayUser, 'user:', user);
     const navType = getNavigationForRole(displayUser || user);
+    console.log('[LayoutContent useMemo navigation] navType:', navType);
     return navType === 'admin' ? adminNavigation : employeeNavigation;
   }, [displayUser, user]);
 
   // Profile image computation
   const profileImage = useMemo(() => {
+    console.log('[LayoutContent useMemo profileImage] displayUser:', displayUser, 'user:', user);
     const effectiveUser = displayUser || user;
     if (!effectiveUser) return null;
     
