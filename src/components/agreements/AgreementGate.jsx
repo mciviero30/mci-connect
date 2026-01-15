@@ -147,6 +147,12 @@ export default function AgreementGate({ children }) {
     return <>{children}</>;
   }
 
+  // CRITICAL: Exempt admins/CEOs from agreement signing
+  if (isExempt) {
+    console.log('[AgreementGate] User exempt (admin/CEO) - passing through', { userEmail, userRole, userPosition });
+    return <>{children}</>;
+  }
+
   // Defensive checks - NEVER block on loading
   if (!userEmail || isLoading) {
     console.log('[AgreementGate] No user or loading - passing through', { userEmail, isLoading });
