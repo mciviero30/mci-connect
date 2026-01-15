@@ -655,10 +655,17 @@ export default function Empleados() {
                         }
 
                         try {
+                          console.log('📁 Selected file:', file.name, file.type, file.size);
                           alert(`⏳ Uploading ${file.name}...`);
 
-                          const uploadRes = await base44.integrations.Core.UploadFile({ file });
-                          console.log('✅ File uploaded:', uploadRes.file_url);
+                          // Convert File to Blob for upload
+                          const fileBlob = new Blob([await file.arrayBuffer()], { type: file.type });
+                          const uploadRes = await base44.integrations.Core.UploadFile({ file: fileBlob });
+                          console.log('✅ File uploaded:', uploadRes);
+
+                          if (!uploadRes?.file_url) {
+                            throw new Error('No file URL returned from upload');
+                          }
 
                           alert('⏳ Processing employees (30-60 seconds)...');
                           const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
