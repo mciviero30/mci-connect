@@ -87,7 +87,12 @@ Deno.serve(async (req) => {
       }
     });
 
-    // Create pending employees
+    // FIX #1: AUDIT TRAIL - Use user auth instead of asServiceRole
+    // FIX #3: SCHEMA VALIDATION - Validate ENUMs before creating
+    const VALID_POSITIONS = ['CEO', 'manager', 'technician', 'supervisor', 'foreman', 'administrator'];
+    const VALID_DEPARTMENTS = ['all', 'HR', 'field', 'operations', 'IT', 'administration', 'designer', 'PM', 'marketing', 'sales'];
+    const VALID_TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+    
     const created = [];
     const errors = [];
 
@@ -101,7 +106,40 @@ Deno.serve(async (req) => {
           emp.last_name.trim().charAt(0).toUpperCase() + emp.last_name.trim().slice(1).toLowerCase() : '';
         const fullName = `${firstName} ${lastName}`.trim();
 
-        // Match team by name
+        // Validate position enum
+        const position = emp.position && VALID_POSITIONS.includes(emp.position) ? emp.position : '';
+        if (emp.position && !VALID_POSITIONS.includes(emp.position)) {
+          console.warn(`⚠️ Invalid position "${emp.position}" for ${emp.email}, skipping`);
+          errors.push({ 
+            email: emp.email, 
+            error: `Invalid position: ${emp.position}` 
+          });
+          continue;
+        }
+
+        // Validate department enum
+        const department = emp.department && VALID_DEPARTMENTS.includes(emp.department) ? emp.department : '';
+        if (emp.department && !VALID_DEPARTMENTS.includes(emp.department)) {
+          console.warn(`⚠️ Invalid department "${emp.department}" for ${emp.email}, skipping`);
+          errors.push({ 
+            email: emp.email, 
+            error: `Invalid department: ${emp.department}` 
+          });
+          continue;
+        }
+
+        // Validate tshirt size enum
+        const tshirtSize = emp.tshirt_size && VALID_TSHIRT_SIZES.includes(emp.tshirt_size) ? emp.tshirt_size : '';
+        if (emp.tshirt_size && !VALID_TSHIRT_SIZES.includes(emp.tshirt_size)) {
+          console.warn(`⚠️ Invalid tshirt_size "${emp.tshirt_size}" for ${emp.email}, skipping`);
+          errors.push({ 
+            email: emp.email, 
+            error: `Invalid tshirt_size: ${emp.tshirt_size}` 
+          });
+          continue;
+        }
+
+        // FIX #4: TEAM ORPHAN - Validate team exists before assigning
         let teamId = '';
         let teamName = '';
         if (emp.team_name) {
@@ -109,30 +147,33 @@ Deno.serve(async (req) => {
           if (teamMap[teamKey]) {
             teamId = teamMap[teamKey].id;
             teamName = teamMap[teamKey].name;
+          } else {
+            console.warn(`⚠️ Team "${emp.team_name}" not found for ${emp.email}, leaving empty`);
           }
         }
 
         console.log(`📝 [${created.length + 1}/${employees.length}] Creating: ${emp.email}`);
-        const pendingEmployee = await base44.asServiceRole.entities.PendingEmployee.create({
+        // FIX #1: Use user auth (base44) instead of asServiceRole for audit trail
+        const pendingEmployee = await base44.entities.PendingEmployee.create({
           email: emp.email.toLowerCase().trim(),
           first_name: firstName,
           last_name: lastName,
           full_name: fullName,
           phone: emp.phone || '',
-          position: emp.position || '',
-          department: emp.department || '',
+          position: position,
+          department: department,
           team_id: teamId,
           team_name: teamName,
           address: emp.address || '',
           dob: emp.dob || '',
           ssn_tax_id: emp.ssn_tax_id || '',
-          tshirt_size: emp.tshirt_size || '',
+          tshirt_size: tshirtSize,
           hourly_rate: emp.hourly_rate || null,
           status: 'pending'
         });
 
         created.push(pendingEmployee);
-        console.log(`✅ Created: ${emp.email}`);
+        console.log(`✅ Created: ${emp.email} (created_by: ${user.email})`);
       } catch (error) {
         console.error(`❌ Error creating ${emp.email}:`, error.message);
         errors.push({ 
