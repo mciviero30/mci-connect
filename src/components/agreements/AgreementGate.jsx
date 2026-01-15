@@ -38,6 +38,7 @@ export default function AgreementGate({ children }) {
   // CRITICAL: Check for Field route - skip gate for Field (sandboxed)
   const isFieldRoute = typeof window !== 'undefined' && window.location.pathname.includes('/Field');
   
+  // ALL HOOKS - called unconditionally
   // Fetch signatures - simple, no complex enabled logic
   const { data: signatures = [], isLoading } = useQuery({
     queryKey: AGREEMENT_SIGNATURES_QUERY_KEY(userEmail),
@@ -96,8 +97,11 @@ export default function AgreementGate({ children }) {
         return [...old, newSig];
       });
 
+      // Get current unsigned count at mutation time
+      const currentUnsignedCount = unsignedAgreements?.length || 0;
+
       // Move to next or reset form
-      if (currentStep < unsignedAgreements.length - 1) {
+      if (currentStep < currentUnsignedCount - 1) {
         setCurrentStep(prev => prev + 1);
         setHasRead(false);
         setSignatureName('');
@@ -117,15 +121,7 @@ export default function AgreementGate({ children }) {
 
   const handlePrint = () => window.print();
 
-  // CRITICAL: Field routes are sandboxed - skip all gate logic
-  if (isFieldRoute) {
-    return children;
-  }
-
-  // Defensive checks - NEVER block on loading
-  if (!userEmail || isLoading) return children;
-
-  // Calculate unsigned agreements
+  // ALL CALCULATIONS - after hooks
   const requiredAgreements = getRequiredAgreements(user) || [];
   const unsignedAgreements = requiredAgreements.filter(agreement => {
     return !signatures?.some(sig => 
@@ -135,13 +131,23 @@ export default function AgreementGate({ children }) {
     );
   });
 
+  const currentAgreement = unsignedAgreements[currentStep];
+
+  // EARLY RETURNS - ONLY AFTER ALL HOOKS
+  // CRITICAL: Field routes are sandboxed - skip all gate logic
+  if (isFieldRoute) {
+    return children;
+  }
+
+  // Defensive checks - NEVER block on loading
+  if (!userEmail || isLoading) return children;
+
   // If all signed, pass through immediately
   if (unsignedAgreements.length === 0) {
     return children;
   }
 
   // Get current agreement to sign
-  const currentAgreement = unsignedAgreements[currentStep];
   if (!currentAgreement) return children;
 
   // Block access - render agreement modal

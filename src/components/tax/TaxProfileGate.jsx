@@ -13,7 +13,7 @@ import { CURRENT_USER_QUERY_KEY, TAX_PROFILE_QUERY_KEY } from '@/components/cons
  * CRITICAL: Reads user from cache, not props, for stability
  */
 export default function TaxProfileGate({ children }) {
-  // CRITICAL: All hooks MUST be called unconditionally at the top
+  // CRITICAL: ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
   const location = useLocation();
   const queryClient = useQueryClient();
   
@@ -32,8 +32,7 @@ export default function TaxProfileGate({ children }) {
   const onboardingIncomplete = user && user.onboarding_completed !== true;
   const shouldFetchProfile = !!userEmail && !isExempt && !isFieldRoute && !onboardingIncomplete;
 
-
-
+  // ALL HOOKS - called unconditionally
   // Fetch tax profile - ONLY when truly needed
   const { data: taxProfile, isLoading, error } = useQuery({
     queryKey: TAX_PROFILE_QUERY_KEY(userEmail),
