@@ -92,25 +92,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const canViewSensitive = canViewSensitiveData(currentUser);
-  
-  const [formData, setFormData] = useState({
-    email: employee?.email || '',
-    first_name: employee?.first_name || '',
-    last_name: employee?.last_name || '',
-    full_name: employee?.full_name || '',
-    phone: employee?.phone || '',
-    position: employee?.position || '',
-    department: employee?.department || '',
-    team_id: employee?.team_id || '',
-    team_name: employee?.team_name || '',
-    address: employee?.address || '',
-    dob: employee?.dob || '',
-    ssn_tax_id: employee?.ssn_tax_id || '',
-    tshirt_size: employee?.tshirt_size || '',
-    hourly_rate: employee?.hourly_rate || '',
-    role: employee?.role || 'user',
-  });
+  const [formData, setFormData] = useState({});
 
   const mutation = useMutation({
     mutationFn: async (data) => {
