@@ -59,39 +59,7 @@ export default function EmployeeProfile() {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [profileImageKey, setProfileImageKey] = useState(Date.now());
 
-  const [editForm, setEditForm] = useState({
-    full_name: '',
-    position: '',
-    phone: '',
-    address: '',
-    hourly_rate: '',
-    tshirt_size: '',
-    department: '',
-    dob: '',
-    ssn_tax_id: '',
-    hire_date: '',
-    team_id: '',
-    team_name: '',
-    role: 'user'
-  });
-
-  const { data: teams = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: async () => {
-      const allTeams = await base44.entities.Team.list();
-      console.log('🔍 Teams loaded - RAW:', allTeams);
-      console.log('🔍 Teams count:', allTeams.length);
-      console.log('🔍 First team:', allTeams[0]);
-      const activeTeams = allTeams.filter(t => t.status === 'active' || !t.status);
-      console.log('🔍 Active teams:', activeTeams);
-      return activeTeams;
-    },
-    initialData: [],
-    staleTime: 0,
-    cacheTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true
-  });
+  const [editForm, setEditForm] = useState({});
 
   const { data: currentUser } = useQuery({ 
     queryKey: ['currentUser'],
