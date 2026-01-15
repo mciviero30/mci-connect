@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
+    console.log('📥 Import function started');
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
@@ -9,7 +10,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { file_url } = await req.json();
+    const body = await req.json();
+    const { file_url } = body;
+    console.log('📄 File URL received:', file_url);
 
     if (!file_url) {
       return Response.json({ error: 'file_url is required' }, { status: 400 });
@@ -39,12 +42,24 @@ Deno.serve(async (req) => {
     };
 
     // Extract data from file using Core integration
-    const extractResult = await base44.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
-      file_url,
-      json_schema: schema
-    });
+    console.log('🔄 Extracting data from file...');
+    let extractResult;
+    try {
+      extractResult = await base44.asServiceRole.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: schema
+      });
+      console.log('✅ Extract result:', extractResult.status);
+    } catch (extractErr) {
+      console.error('❌ Extract error:', extractErr);
+      return Response.json({ 
+        error: 'Failed to extract data from file',
+        details: extractErr.message 
+      }, { status: 400 });
+    }
 
     if (extractResult.status !== 'success') {
+      console.error('❌ Extract failed:', extractResult.details);
       return Response.json({ 
         error: 'Failed to extract data from file',
         details: extractResult.details 
@@ -52,6 +67,7 @@ Deno.serve(async (req) => {
     }
 
     const employees = extractResult.output;
+    console.log('📊 Employees extracted:', employees?.length || 0);
 
     if (!Array.isArray(employees) || employees.length === 0) {
       return Response.json({ 
@@ -92,6 +108,7 @@ Deno.serve(async (req) => {
           }
         }
 
+        console.log(`📝 Creating pending employee: ${emp.email}`);
         const pendingEmployee = await base44.asServiceRole.entities.PendingEmployee.create({
           email: emp.email.toLowerCase().trim(),
           first_name: firstName,
@@ -111,13 +128,17 @@ Deno.serve(async (req) => {
         });
 
         created.push(pendingEmployee);
+        console.log(`✅ Created: ${emp.email}`);
       } catch (error) {
+        console.error(`❌ Error creating ${emp.email}:`, error.message);
         errors.push({ 
           email: emp.email, 
           error: error.message 
         });
       }
     }
+    
+    console.log(`📊 Import complete: ${created.length} created, ${errors.length} errors`);
 
     return Response.json({
       success: true,
