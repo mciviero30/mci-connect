@@ -841,6 +841,16 @@ export default function Empleados() {
           </DialogContent>
         </Dialog>
 
+        {/* Sync Recovery Dialog */}
+        <SyncRecoveryDialog
+          onSync={async () => {
+            const response = await base44.functions.invoke('syncMissingEmployeeData');
+            await queryClient.invalidateQueries({ queryKey: ['employees'] });
+            await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+            return response?.data;
+          }}
+        />
+
         {/* Onboarding Details Modal */}
         <OnboardingDetailsModal
           employee={selectedEmployee}
