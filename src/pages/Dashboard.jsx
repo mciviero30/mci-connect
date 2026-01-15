@@ -160,11 +160,15 @@ export default function Dashboard() {
     queryKey: ['myExpenses', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
+      // Admins see all expenses, employees see only their own
+      if (isAdmin) {
+        return base44.entities.Expense.list('-date', 200);
+      }
       return base44.entities.Expense.filter({
         employee_email: user.email
       }, '-date', 50);
     },
-    enabled: !!user?.email && needsExpenseData && !isAdmin,
+    enabled: !!user?.email && needsExpenseData,
     staleTime: 600000,
     gcTime: 900000,
     initialData: [],
