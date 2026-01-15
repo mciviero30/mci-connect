@@ -708,17 +708,16 @@ export default function Empleados() {
                         } catch (err) {
                           console.error('Import error:', err);
                           alert(`❌ Error: ${err?.message || 'Unknown error'}`);
+                        } finally {
+                          console.log('🧹 Removing file input from DOM');
+                          input.remove();
                         }
-                      };
+                        };
 
-                      document.body.appendChild(input);
-                      console.log('🖱️ Clicking file input...');
-                      input.click();
-                      console.log('✅ File input click triggered');
-                      setTimeout(() => {
-                        console.log('🧹 Removing file input from DOM');
-                        input.remove();
-                      }, 1000);
+                        document.body.appendChild(input);
+                        console.log('🖱️ Clicking file input...');
+                        input.click();
+                        console.log('✅ File input click triggered');
                     }}
                   >
                     <FileText className="w-4 h-4 mr-2" />
