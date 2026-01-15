@@ -315,10 +315,10 @@ export default function Dashboard() {
       drivingPayThisWeek = weekDriving.reduce((sum, log) => sum + ((log.hours || 0) * hourlyRate), 0);
     }
 
-    // Exclude account owner from active employees count (same as Empleados page)
+    // Exclude account owner from active employees count (but allow current CEO/Admin to see themselves)
     const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
     const activeEmployees = allEmployees.filter(e =>
-      e.email !== OWNER_EMAIL && (
+      (e.email !== OWNER_EMAIL || user?.email === e.email) && (
         e.employment_status === 'active' ||
         e.employment_status === 'pending_registration' ||
         !e.employment_status

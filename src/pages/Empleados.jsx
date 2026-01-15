@@ -548,8 +548,11 @@ export default function Empleados() {
   };
 
   // Exclude account owner from active/archived/deleted lists only (allow in pending/invited)
+  // But allow current CEO/Admin to see themselves
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
-  const excludeOwner = (list) => list.filter(e => e.email !== OWNER_EMAIL);
+  const excludeOwner = (list) => list.filter(e => 
+    e.email !== OWNER_EMAIL || currentUser?.email === e.email
+  );
 
   const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => 
     e.employment_status === 'active' || 
