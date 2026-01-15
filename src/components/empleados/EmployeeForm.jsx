@@ -98,6 +98,9 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     team_id: employee?.team_id || '',
     team_name: employee?.team_name || '',
     hourly_rate: employee?.hourly_rate || 0,
+    emergency_contact_name: employee?.emergency_contact_name || '',
+    emergency_contact_phone: employee?.emergency_contact_phone || '',
+    emergency_contact_relationship: employee?.emergency_contact_relationship || '',
     status: isPending ? (employee?.status || 'pending') : undefined
   });
 
@@ -352,6 +355,43 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
             onChange={(e) => setFormData({ ...formData, hourly_rate: parseFloat(e.target.value) || 0 })}
             className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
             placeholder="20.00"
+          />
+        </div>
+
+        <div className="md:col-span-2 border-t border-slate-200 pt-6 mt-6">
+          <h4 className="text-sm font-semibold text-slate-900 mb-4">Emergency Contact</h4>
+        </div>
+
+        <div>
+          <Label className="text-slate-900 font-medium">Contact Name</Label>
+          <Input
+            value={formData.emergency_contact_name}
+            onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
+            placeholder="e.g., John Doe"
+            autoCapitalizeInput={true}
+          />
+        </div>
+
+        <div>
+          <Label className="text-slate-900 font-medium">Contact Phone</Label>
+          <Input
+            value={formData.emergency_contact_phone}
+            onChange={(e) => setFormData({ ...formData, emergency_contact_phone: formatPhone(e.target.value) })}
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
+            placeholder="(000)000-0000"
+            maxLength={13}
+          />
+        </div>
+
+        <div>
+          <Label className="text-slate-900 font-medium">Relationship</Label>
+          <Input
+            value={formData.emergency_contact_relationship}
+            onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-500"
+            placeholder="e.g., Spouse, Parent, Sibling"
+            autoCapitalizeInput={true}
           />
         </div>
       </div>
