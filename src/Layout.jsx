@@ -1112,19 +1112,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
     <ToastProvider>
       <ErrorBoundary>
         <LanguageProvider>
-          {user && (
-            <PermissionsProvider>
-              <AgreementGate>
-                <TaxProfileGate>
-                  <UIProvider>
+          <PermissionsProvider>
+            <UIProvider>
+              {user && (
+                <AgreementGate>
+                  <TaxProfileGate>
                     <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
                       {children}
                     </LayoutContent>
-                  </UIProvider>
-                </TaxProfileGate>
-              </AgreementGate>
-            </PermissionsProvider>
-          )}
+                  </TaxProfileGate>
+                </AgreementGate>
+              )}
+            </UIProvider>
+          </PermissionsProvider>
         </LanguageProvider>
       </ErrorBoundary>
     </ToastProvider>
