@@ -661,22 +661,30 @@ export default function Empleados() {
                           console.log('✅ File uploaded:', uploadRes.file_url);
 
                           alert('⏳ Processing employees (30-60 seconds)...');
-                          const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
-                            file_url: uploadRes.file_url 
-                          });
+                           console.log('🔄 Invoking import function...');
 
-                          const result = response?.data || response;
-                          console.log('📊 Import result:', result);
+                           const response = await base44.functions.invoke('importEmployeesFromXLSX', { 
+                             file_url: uploadRes.file_url 
+                           });
 
-                          if (result?.error) {
-                            throw new Error(result.error + (result.details ? ': ' + result.details : ''));
-                          }
+                           const result = response?.data || response;
+                           console.log('✅ Full response:', response);
+                           console.log('📊 Import result:', result);
 
-                          await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                          await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
+                           if (!result) {
+                             throw new Error('No response from import function');
+                           }
 
-                          const created = result?.created || 0;
-                          const errors = result?.errors?.length || 0;
+                           if (result?.error) {
+                             throw new Error(result.error + (result.details ? ': ' + result.details : ''));
+                           }
+
+                           console.log('🔄 Invalidating queries...');
+                           await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                           await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
+
+                           const created = result?.created || result?.employees?.length || 0;
+                           const errors = result?.errors?.length || 0;
 
                           if (created === 0) {
                             alert(`⚠️ No employees were imported. Check your CSV format.`);
