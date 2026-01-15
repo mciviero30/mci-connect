@@ -10,17 +10,29 @@ export default function ProfileSyncManager({ user }) {
     if (!user) return;
 
     // Listen for storage events from other tabs/windows
-    const handleStorageChange = (e) => {
+    const handleStorageChange = async (e) => {
       if (e.key === 'profile_updated' || e.key === 'user_profile_updated') {
-        console.log('🔄 Profile update detected from another tab, refreshing...');
-        queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+        console.log('🔄 Profile update detected from another tab, fetching fresh data...');
+        // Fetch fresh user data and update cache directly (NO INVALIDATION)
+        try {
+          const freshUser = await base44.auth.me();
+          queryClient.setQueryData(CURRENT_USER_QUERY_KEY, freshUser);
+        } catch (err) {
+          console.warn('Failed to refresh user:', err);
+        }
       }
     };
 
     // Listen for custom profile update events (same tab)
-    const handleProfileUpdate = (e) => {
-      console.log('🔄 Profile update event received, refreshing...');
-      queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+    const handleProfileUpdate = async (e) => {
+      console.log('🔄 Profile update event received, fetching fresh data...');
+      // Fetch fresh user data and update cache directly (NO INVALIDATION)
+      try {
+        const freshUser = await base44.auth.me();
+        queryClient.setQueryData(CURRENT_USER_QUERY_KEY, freshUser);
+      } catch (err) {
+        console.warn('Failed to refresh user:', err);
+      }
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -49,10 +61,15 @@ export default function ProfileSyncManager({ user }) {
       sessionStorage.setItem(`first_login_migrated_${user.id}`, 'processing');
       
       // Background migration (fire and forget)
-      base44.functions.invoke('syncEmployeeFromPendingOnLogin').then(() => {
+      base44.functions.invoke('syncEmployeeFromPendingOnLogin').then(async () => {
         sessionStorage.setItem(`first_login_migrated_${user.id}`, 'done');
-        // Refresh user data after migration
-        queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+        // Fetch fresh user data and update cache directly (NO INVALIDATION)
+        try {
+          const freshUser = await base44.auth.me();
+          queryClient.setQueryData(CURRENT_USER_QUERY_KEY, freshUser);
+        } catch (err) {
+          console.warn('Failed to refresh user after migration:', err);
+        }
       }).catch(err => {
         console.warn('⚠️ Background migration failed:', err);
         sessionStorage.setItem(`first_login_migrated_${user.id}`, 'failed');

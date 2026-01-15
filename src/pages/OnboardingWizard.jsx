@@ -134,18 +134,14 @@ export default function OnboardingWizard() {
       } else {
         // ✅ ONBOARDING COMPLETE
         
-        // 1. Update API first
-        await base44.auth.updateMe({ 
+        // 1. Update API and get updated user data
+        const updatedUser = await base44.auth.updateMe({ 
           onboarding_completed: true,
           onboarding_completed_at: new Date().toISOString()
         });
         
-        // 2. Update React Query cache to reflect the change
-        queryClient.setQueryData(CURRENT_USER_QUERY_KEY, (old) => ({
-          ...old,
-          onboarding_completed: true,
-          onboarding_completed_at: new Date().toISOString()
-        }));
+        // 2. Update React Query cache directly (NO INVALIDATION)
+        queryClient.setQueryData(CURRENT_USER_QUERY_KEY, updatedUser);
         
         // 3. Navigate to Dashboard
         navigate(createPageUrl('Dashboard'), { replace: true });
