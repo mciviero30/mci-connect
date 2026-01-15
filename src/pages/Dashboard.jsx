@@ -187,7 +187,15 @@ export default function Dashboard() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }, 'name'),
+    queryFn: async () => {
+      const allJobs = await base44.entities.Job.filter({ status: 'active' }, 'name');
+      // Employees see only assigned jobs; admins see all
+      if (isAdmin) return allJobs;
+      return allJobs.filter(j => {
+        const assigned = (j.assigned_team_field || []).includes(user?.email) || j.team_id === user?.team_id;
+        return assigned;
+      });
+    },
     enabled: !!user,
     staleTime: 300000,
     gcTime: 600000,
