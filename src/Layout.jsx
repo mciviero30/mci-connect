@@ -1046,67 +1046,59 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
           export default function Layout({ children, currentPageName }) {
           const { data: user, isLoading, error } = useQuery({
-          queryKey: CURRENT_USER_QUERY_KEY,
-          queryFn: async () => {
-              try {
-                return await base44.auth.me();
-              } catch (err) {
-                // Handle 401 - redirect to login without breaking app
-                if (err?.status === 401 || err?.message?.includes('401')) {
-                  // Prevent infinite redirect loops - redirect only once per session
-                  const hasRedirected = sessionStorage.getItem('auth_redirect_pending');
-                  if (!hasRedirected) {
-                    sessionStorage.setItem('auth_redirect_pending', 'true');
-                    base44.auth.redirectToLogin();
+            queryKey: CURRENT_USER_QUERY_KEY,
+            queryFn: async () => {
+                try {
+                  return await base44.auth.me();
+                } catch (err) {
+                  // Handle 401 - redirect to login without breaking app
+                  if (err?.status === 401 || err?.message?.includes('401')) {
+                    // Prevent infinite redirect loops - redirect only once per session
+                    const hasRedirected = sessionStorage.getItem('auth_redirect_pending');
+                    if (!hasRedirected) {
+                      sessionStorage.setItem('auth_redirect_pending', 'true');
+                      base44.auth.redirectToLogin();
+                    }
+                    return null;
                   }
-                  return null;
+                  throw err;
                 }
-                throw err;
-              }
-            },
-            retry: false,
-            staleTime: Infinity, // STABLE - never auto-refetch
-            gcTime: Infinity,
-            refetchOnMount: false, // NEVER auto-refetch
-            refetchOnWindowFocus: false, // NEVER auto-refetch
-            refetchInterval: false,
-          });
+              },
+              retry: false,
+              staleTime: Infinity, // STABLE - never auto-refetch
+              gcTime: Infinity,
+              refetchOnMount: false, // NEVER auto-refetch
+              refetchOnWindowFocus: false, // NEVER auto-refetch
+              refetchInterval: false,
+            });
 
-  // DISABLED: beforeunload handler causes issues on login flow
-  // useEffect(() => {
-  //   const handleBeforeUnload = (e) => {
-  //     e.preventDefault();
-  //     e.returnValue = '';
-  //   };
-  //   window.addEventListener('beforeunload', handleBeforeUnload);
-  //   return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  // }, []);
+          // CRITICAL: ALL HOOKS BEFORE EARLY RETURNS
+          // Unregister all service workers for testing
+          React.useEffect(() => {
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(regs => {
+                regs.forEach(r => {
+                  console.log('🔴 Unregistering service worker:', r.scope);
+                  r.unregister();
+                });
+              });
+            }
+          }, []);
 
-  // HARD LOADING GUARD - Prevent gates from running during boot
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
-        <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+          // EARLY RETURNS - ONLY AFTER ALL HOOKS
+          // HARD LOADING GUARD - Prevent gates from running during boot
+          if (isLoading) {
+            return (
+              <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+                <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            );
+          }
 
-  // No user and not loading - don't render gates
-  if (!user && !isLoading) {
-    return null;
-  }
-
-  // CRITICAL: Unregister all service workers for testing
-  React.useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(r => {
-          console.log('🔴 Unregistering service worker:', r.scope);
-          r.unregister();
-        });
-      });
-    }
-  }, []);
+          // No user and not loading - don't render gates
+          if (!user && !isLoading) {
+            return null;
+          }
 
   return (
     <ToastProvider>
