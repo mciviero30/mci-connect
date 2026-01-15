@@ -414,7 +414,7 @@ export default function MyProfile() {
                           <Shield className="w-3 h-3 text-amber-500" />
                         </Label>
                         <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 text-sm">
-                          {getSensitiveFieldDisplay('dob', user, authUser)}
+                          {user.dob ? format(new Date(user.dob), 'MMM dd, yyyy') : '—'}
                         </p>
                       </div>
                       <div>
@@ -423,7 +423,7 @@ export default function MyProfile() {
                           <Shield className="w-3 h-3 text-amber-500" />
                         </Label>
                         <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 text-sm">
-                          {getSensitiveFieldDisplay('ssn', user, authUser)}
+                          {user.ssn_tax_id || '—'}
                         </p>
                       </div>
                     </>
