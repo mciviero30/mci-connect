@@ -1608,7 +1608,8 @@ export default function EmployeeProfile() {
                     hourly_rate: editForm.hourly_rate ? parseFloat(editForm.hourly_rate) : null,
                     department: editForm.department || null,
                     team_id: editForm.team_id || null,
-                    team_name: editForm.team_name || null
+                    team_name: editForm.team_name || null,
+                    role: editForm.role || 'user'
                   };
                   
                   // Strip sensitive fields if user can't edit them
