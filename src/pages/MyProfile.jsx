@@ -63,7 +63,10 @@ export default function MyProfile() {
 
   const [formData, setFormData] = useState({
     address: user?.address || '',
-    tshirt_size: user?.tshirt_size || ''
+    tshirt_size: user?.tshirt_size || '',
+    emergency_contact_name: user?.emergency_contact_name || '',
+    emergency_contact_phone: user?.emergency_contact_phone || '',
+    emergency_contact_relationship: user?.emergency_contact_relationship || ''
   });
 
   // Sync formData when user loads
@@ -71,7 +74,10 @@ export default function MyProfile() {
     if (user) {
       setFormData({
         address: user.address || '',
-        tshirt_size: user.tshirt_size || ''
+        tshirt_size: user.tshirt_size || '',
+        emergency_contact_name: user.emergency_contact_name || '',
+        emergency_contact_phone: user.emergency_contact_phone || '',
+        emergency_contact_relationship: user.emergency_contact_relationship || ''
       });
     }
   }, [user]);
@@ -150,7 +156,10 @@ export default function MyProfile() {
                     setEditing(false);
                     setFormData({
                       address: user?.address || '',
-                      tshirt_size: user?.tshirt_size || ''
+                      tshirt_size: user?.tshirt_size || '',
+                      emergency_contact_name: user?.emergency_contact_name || '',
+                      emergency_contact_phone: user?.emergency_contact_phone || '',
+                      emergency_contact_relationship: user?.emergency_contact_relationship || ''
                     });
                   }}
                   variant="outline"
@@ -434,36 +443,56 @@ export default function MyProfile() {
               </CardContent>
             </Card>
 
-            {/* Emergency Contact - Read Only */}
+            {/* Emergency Contact */}
             <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <UserCircle className="w-4 h-4 text-red-500" />
                   {t('emergencyContact')}
-                  <Lock className="w-3 h-3 text-slate-400 ml-auto" />
+                  {editing && <Edit3 className="w-3 h-3 text-green-600 ml-auto" />}
                 </h3>
                 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('fullName')}</Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_name || '—'}</p>
+                    <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('contactName')}</Label>
+                    {editing ? (
+                      <Input
+                        value={formData.emergency_contact_name}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
+                        placeholder="e.g., John Doe"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_name || '—'}</p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_phone || '—'}</p>
+                    {editing ? (
+                      <Input
+                        value={formData.emergency_contact_phone}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
+                        placeholder="(000)000-0000"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_phone || '—'}</p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('relationship')}</Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_relationship || '—'}</p>
+                    {editing ? (
+                      <Input
+                        value={formData.emergency_contact_relationship}
+                        onChange={(e) => setFormData({ ...formData, emergency_contact_relationship: e.target.value })}
+                        placeholder="e.g., Spouse, Parent"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.emergency_contact_relationship || '—'}</p>
+                    )}
                   </div>
                 </div>
-                
-                <Alert className="mt-4 bg-blue-50 border-blue-200">
-                  <AlertCircle className="w-4 h-4 text-blue-600" />
-                  <AlertDescription className="text-blue-900 text-sm">
-                    To update emergency contact info, please contact your administrator.
-                  </AlertDescription>
-                </Alert>
               </CardContent>
             </Card>
 
