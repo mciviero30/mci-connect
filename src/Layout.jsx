@@ -874,8 +874,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           }
         `}</style>
 
-        <ProfileSyncManager user={user} />
-        
+        {/* <ProfileSyncManager user={user} /> */}
+
         {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
         {!shouldHideSidebar && !isFieldPage && (
           <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50">
