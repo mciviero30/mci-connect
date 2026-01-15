@@ -14,13 +14,14 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 import PendingInvitationCard from "@/components/empleados/PendingInvitationCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
+import EditEmployeeForm from "@/components/empleados/EditEmployeeForm";
 import { useToast } from "@/components/ui/toast";
 import { canViewSensitiveData } from "@/components/utils/employeeSecurity";
 import { createPageUrl } from "@/utils";
 
 
 
-// Helper: Sync to EmployeeDirectory
+      // Helper: Sync to EmployeeDirectory
 const syncToEmployeeDirectory = async (email, userData) => {
   try {
     const allDirectory = await base44.entities.EmployeeDirectory.list();
