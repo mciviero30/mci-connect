@@ -1098,7 +1098,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
   return (
     <ToastProvider>
       <ErrorBoundary>
-        <UIProvider>
+        {/* <UIProvider> */}
           <LanguageProvider>
             {user && (
               <PermissionsProvider>
@@ -1112,7 +1112,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
               </PermissionsProvider>
             )}
           </LanguageProvider>
-        </UIProvider>
+        {/* </UIProvider> */}
       </ErrorBoundary>
     </ToastProvider>
   );
