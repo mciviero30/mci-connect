@@ -240,7 +240,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
         <div>
           <Label>System Role *</Label>
           <select 
-            value={employee?.role || 'user'}
+            value={formData.role}
             onChange={(e) => setFormData({...formData, role: e.target.value})}
             className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
           >
