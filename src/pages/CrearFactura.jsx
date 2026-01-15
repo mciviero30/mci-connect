@@ -1049,9 +1049,9 @@ export default function CrearFactura() {
                   >
                     <div className="flex items-center gap-2">
                       <Checkbox
+                        id={`team-${team.id}`}
                         checked={(formData.team_ids || []).includes(team.id)}
                         onCheckedChange={() => handleTeamToggle(team.id)}
-                        className="pointer-events-none"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
