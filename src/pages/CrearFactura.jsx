@@ -1064,7 +1064,8 @@ export default function CrearFactura() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
