@@ -15,6 +15,7 @@ import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 import PendingInvitationCard from "@/components/empleados/PendingInvitationCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import EditEmployeeForm from "@/components/empleados/EditEmployeeForm";
+import SyncRecoveryDialog from "@/components/empleados/SyncRecoveryDialog";
 import { useToast } from "@/components/ui/toast";
 import { canViewSensitiveData } from "@/components/utils/employeeSecurity";
 import { createPageUrl } from "@/utils";
