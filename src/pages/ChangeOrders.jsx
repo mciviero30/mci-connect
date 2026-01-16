@@ -51,11 +51,56 @@ export default function ChangeOrdersPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const approveMutation = useMutation({
+    mutationFn: async ({ id, type }) => {
+      const order = changeOrders.find(o => o.id === id);
+      const updates = {
+        status: type === 'internal' ? 'pending_approval' : 'approved',
+        approval_status: type === 'internal' ? 'pending_client' : 'approved',
+      };
+
+      if (type === 'internal') {
+        updates.approved_by_internal = user.email;
+        updates.approved_by_internal_name = user.full_name;
+        updates.internal_approval_date = new Date().toISOString();
+      } else {
+        updates.approved_by_client = user.email;
+        updates.client_approval_date = new Date().toISOString();
+      }
+
+      return await base44.entities.ChangeOrder.update(id, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['changeOrders']);
+      toast({ title: 'Change Order approved', variant: 'success' });
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async ({ id, reason }) => {
+      return await base44.entities.ChangeOrder.update(id, {
+        status: 'rejected',
+        approval_status: 'rejected',
+        rejected_by: user.email,
+        rejection_date: new Date().toISOString(),
+        rejection_reason: reason,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['changeOrders']);
+      toast({ title: 'Change Order rejected', variant: 'success' });
+    },
+  });
+
   const stats = {
     total: changeOrders.length,
     pending: changeOrders.filter(o => o.status === 'pending_approval').length,
     approved: changeOrders.filter(o => o.status === 'approved').length,
     totalAmount: changeOrders.reduce((sum, o) => sum + (o.change_amount || 0), 0),
+    financialImpact: {
+      positive: changeOrders.filter(o => o.change_amount > 0 && o.status === 'approved').reduce((sum, o) => sum + o.change_amount, 0),
+      negative: changeOrders.filter(o => o.change_amount < 0 && o.status === 'approved').reduce((sum, o) => sum + Math.abs(o.change_amount), 0),
+    },
   };
 
   return (
@@ -114,13 +159,13 @@ export default function ChangeOrdersPage() {
 
         <Card className="p-4 bg-white dark:bg-slate-800 shadow-md">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-              <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+              <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Total Changes</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                ${stats.totalAmount.toLocaleString()}
+              <p className="text-sm text-slate-600 dark:text-slate-400">Revenue Impact</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                +${stats.financialImpact.positive.toLocaleString()}
               </p>
             </div>
           </div>
@@ -215,12 +260,56 @@ export default function ChangeOrdersPage() {
                             </div>
                             <div className="flex items-center gap-2">
                               <DollarSign className="w-4 h-4 text-slate-400" />
-                              <span className="text-slate-600 dark:text-slate-400">Monto:</span>
-                              <span className="font-bold text-green-600 dark:text-green-400">
-                                ${order.change_amount?.toLocaleString() || 0}
+                              <span className="text-slate-600 dark:text-slate-400">Change:</span>
+                              <span className={`font-bold ${order.change_amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {order.change_amount >= 0 ? '+' : ''}${order.change_amount?.toLocaleString() || 0}
                               </span>
                             </div>
                           </div>
+
+                          {/* Financial Impact */}
+                          {order.original_contract_amount && (
+                            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div>
+                                  <p className="text-slate-600 dark:text-slate-400 mb-1">Original</p>
+                                  <p className="font-semibold text-slate-900 dark:text-white">
+                                    ${order.original_contract_amount.toLocaleString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-slate-600 dark:text-slate-400 mb-1">Change</p>
+                                  <p className={`font-bold ${order.change_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {order.change_amount >= 0 ? '+' : ''}${order.change_amount?.toLocaleString() || 0}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-slate-600 dark:text-slate-400 mb-1">New Total</p>
+                                  <p className="font-bold text-blue-600 dark:text-blue-400">
+                                    ${(order.original_contract_amount + order.change_amount).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Approval Trail */}
+                          {(order.approved_by_internal || order.approved_by_client) && (
+                            <div className="mt-3 space-y-2">
+                              {order.approved_by_internal && (
+                                <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                                  <CheckCircle className="w-3 h-3" />
+                                  <span>Internal: {order.approved_by_internal_name} on {new Date(order.internal_approval_date).toLocaleDateString()}</span>
+                                </div>
+                              )}
+                              {order.approved_by_client && (
+                                <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
+                                  <CheckCircle className="w-3 h-3" />
+                                  <span>Client: {order.approved_by_client} on {new Date(order.client_approval_date).toLocaleDateString()}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -232,6 +321,30 @@ export default function ChangeOrdersPage() {
                           Ver Detalles
                         </Button>
                       </Link>
+                      
+                      {order.status === 'draft' && user?.role === 'admin' && (
+                        <Button
+                          size="sm"
+                          onClick={() => approveMutation.mutate({ id: order.id, type: 'internal' })}
+                          disabled={approveMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700 text-white w-full"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Approve Internal
+                        </Button>
+                      )}
+                      
+                      {order.status === 'pending_approval' && (
+                        <Button
+                          size="sm"
+                          onClick={() => approveMutation.mutate({ id: order.id, type: 'client' })}
+                          disabled={approveMutation.isPending}
+                          className="bg-blue-600 hover:bg-blue-700 text-white w-full"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Approve (Client)
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
