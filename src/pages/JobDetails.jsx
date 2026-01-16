@@ -167,11 +167,51 @@ export default function JobDetails() {
     staleTime: 900000
   });
 
+  const { data: changeOrders = [] } = useQuery({
+    queryKey: ['jobChangeOrders', jobId],
+    queryFn: () => base44.entities.ChangeOrder.filter({ job_id: jobId, status: 'approved' }),
+    enabled: !!jobId,
+    staleTime: 600000,
+    initialData: []
+  });
+
+  const { data: drivingLogs = [] } = useQuery({
+    queryKey: ['jobDrivingLogs', jobId],
+    queryFn: () => base44.entities.DrivingLog.filter({ job_id: jobId }),
+    enabled: !!jobId,
+    staleTime: 600000,
+    initialData: []
+  });
+
   const estimatedHours = relatedQuote?.estimated_hours || job?.estimated_hours || 0;
+  const estimatedCost = relatedQuote?.estimated_cost || job?.estimated_cost || 0;
+  const baseContractAmount = job?.contract_amount || 0;
+  
+  // Calculate change orders impact
+  const totalChangeOrderAmount = changeOrders.reduce((sum, co) => sum + (co.change_amount || 0), 0);
+  const adjustedContractAmount = baseContractAmount + totalChangeOrderAmount;
+  
+  // Calculate actual costs
   const totalHours = timeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+  const totalPayrollCost = timeEntries.reduce((sum, entry) => {
+    const rate = 25; // Could be dynamic per employee
+    return sum + ((entry.hours_worked || 0) * rate);
+  }, 0);
+  
   const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-  const totalPayrollCost = totalHours * 25;
-  const profit = (job?.contract_amount || 0) - totalPayrollCost - totalExpenses;
+  const totalDrivingCost = drivingLogs.reduce((sum, log) => sum + (log.total_amount || 0), 0);
+  const totalInventoryCost = inventoryTransactions
+    .filter(t => t.type === 'remove')
+    .reduce((sum, t) => sum + ((t.cost_per_unit || 0) * (t.quantity || 0)), 0);
+  
+  const totalCosts = totalPayrollCost + totalExpenses + totalDrivingCost + totalInventoryCost;
+  const profit = adjustedContractAmount - totalCosts;
+  const profitMargin = adjustedContractAmount > 0 ? (profit / adjustedContractAmount) * 100 : 0;
+  
+  // Budget health indicators
+  const budgetUsed = estimatedCost > 0 ? (totalCosts / estimatedCost) * 100 : 0;
+  const isOverBudget = budgetUsed > 100;
+  const budgetVariance = totalCosts - estimatedCost;
 
   if (jobLoading) {
     return (
@@ -279,34 +319,176 @@ export default function JobDetails() {
           />
         </div>
 
-        {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            title={t('contractAmount')}
-            value={`$${(job.contract_amount || 0).toLocaleString()}`}
-            icon={DollarSign}
-            color="from-[#3B9FF3] to-[#2A8FE3]"
-          />
-          <StatsCard
-            title={language === 'es' ? 'Horas' : 'Hours'}
-            value={`${totalHours.toFixed(1)}h`}
-            subtitle={estimatedHours > 0 ? `${language === 'es' ? 'Est:' : 'Est:'} ${estimatedHours.toFixed(1)}h` : null}
-            icon={Clock}
-            color={totalHours > estimatedHours && estimatedHours > 0 ? "from-amber-500 to-orange-500" : "from-green-500 to-emerald-500"}
-          />
-          <StatsCard
-            title={t('totalExpenses')}
-            value={`$${totalExpenses.toFixed(2)}`}
-            icon={TrendingUp}
-            color="from-purple-500 to-pink-500"
-          />
-          <StatsCard
-            title={t('profitLoss')}
-            value={`$${profit.toFixed(2)}`}
-            icon={profit >= 0 ? TrendingUp : AlertTriangle}
-            color={profit >= 0 ? "from-green-500 to-emerald-500" : "from-red-500 to-orange-500"}
-          />
+        {/* Budget Alert Banner */}
+        {isOverBudget && (
+          <Card className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-300 dark:border-red-700">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-500 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-red-900 dark:text-red-300">⚠️ Over Budget Alert</h3>
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    Current costs: ${totalCosts.toLocaleString()} ({budgetUsed.toFixed(0)}% of budget) • 
+                    Over by ${Math.abs(budgetVariance).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Enhanced Stats */}
+        <div className="grid md:grid-cols-5 gap-4 mb-8">
+          <Card className="bg-white dark:bg-slate-800 shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Contract + COs</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                ${adjustedContractAmount.toLocaleString()}
+              </p>
+              {totalChangeOrderAmount !== 0 && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  +${totalChangeOrderAmount.toLocaleString()} COs
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-slate-800 shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Total Costs</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                ${totalCosts.toLocaleString()}
+              </p>
+              {estimatedCost > 0 && (
+                <p className={`text-xs mt-1 ${isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                  {budgetUsed.toFixed(0)}% of ${estimatedCost.toLocaleString()}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-slate-800 shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                  <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Hours</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                {totalHours.toFixed(1)}h
+              </p>
+              {estimatedHours > 0 && (
+                <p className={`text-xs mt-1 ${totalHours > estimatedHours ? 'text-amber-600' : 'text-green-600'}`}>
+                  Est: {estimatedHours.toFixed(1)}h
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className={`${profit >= 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-200' : 'bg-red-50 dark:bg-red-900/20 border-red-200'}`}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-lg ${profit >= 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+                  {profit >= 0 ? <TrendingUp className="w-5 h-5 text-white" /> : <AlertTriangle className="w-5 h-5 text-white" />}
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Profit/Loss</p>
+              <p className={`text-2xl font-bold ${profit >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                ${profit.toLocaleString()}
+              </p>
+              <p className={`text-xs mt-1 ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {profitMargin.toFixed(1)}% margin
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white dark:bg-slate-800 shadow-md">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`p-2 rounded-lg ${isOverBudget ? 'bg-red-500' : 'bg-green-500'}`}>
+                  <CheckCircle2 className="w-5 h-5 text-white" />
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Budget Health</p>
+              <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'}`}>
+                {budgetUsed.toFixed(0)}%
+              </p>
+              <p className={`text-xs mt-1 ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
+                {isOverBudget ? 'Over Budget' : 'On Track'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Cost Breakdown Card */}
+        <Card className="mb-6 bg-white dark:bg-slate-800 shadow-lg">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+              Cost Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-4 gap-6">
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Labor Cost</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">${totalPayrollCost.toLocaleString()}</p>
+                <p className="text-xs text-slate-500 mt-1">{totalHours.toFixed(1)}h × $25/hr avg</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Expenses</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">${totalExpenses.toLocaleString()}</p>
+                <p className="text-xs text-slate-500 mt-1">{expenses.length} items</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Driving/Mileage</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">${totalDrivingCost.toLocaleString()}</p>
+                <p className="text-xs text-slate-500 mt-1">{drivingLogs.length} logs</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Materials</p>
+                <p className="text-xl font-bold text-slate-900 dark:text-white">${totalInventoryCost.toLocaleString()}</p>
+                <p className="text-xs text-slate-500 mt-1">{inventoryTransactions.filter(t => t.type === 'remove').length} items</p>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Total Costs:</span>
+                <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                  ${totalCosts.toLocaleString()}
+                </span>
+              </div>
+              {estimatedCost > 0 && (
+                <div className="mt-2">
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all ${isOverBudget ? 'bg-red-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(budgetUsed, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 text-right">
+                    Budget: ${estimatedCost.toLocaleString()} • 
+                    {isOverBudget ? ' Over by' : ' Remaining'}: ${Math.abs(budgetVariance).toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -334,6 +516,10 @@ export default function JobDetails() {
             <TabsTrigger value="timeline" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <Calendar className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Cronología' : 'Timeline'}
+            </TabsTrigger>
+            <TabsTrigger value="costs" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
+              <DollarSign className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Costos' : 'Costs'}
             </TabsTrigger>
             <TabsTrigger value="budget" className="data-[state=active]:bg-[#3B9FF3] data-[state=active]:text-white">
               <TrendingUp className="w-4 h-4 mr-2" />
@@ -773,6 +959,144 @@ export default function JobDetails() {
               assignments={jobAssignments}
               language={language}
             />
+          </TabsContent>
+
+          {/* Costs Tab - Real-time tracking */}
+          <TabsContent value="costs">
+            <div className="space-y-6">
+              {/* Cost Summary Cards */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mb-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Labor
+                    </p>
+                    <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">${totalPayrollCost.toLocaleString()}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">{totalHours.toFixed(1)} hours logged</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-purple-700 dark:text-purple-300 mb-1 flex items-center gap-1">
+                      <DollarSign className="w-3 h-3" /> Expenses
+                    </p>
+                    <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">${totalExpenses.toLocaleString()}</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">{expenses.length} receipts</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
+                      <Package className="w-3 h-3" /> Materials
+                    </p>
+                    <p className="text-2xl font-bold text-green-900 dark:text-green-100">${totalInventoryCost.toLocaleString()}</p>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">From inventory</p>
+                  </CardContent>
+                </Card>
+
+                <Card className={`bg-gradient-to-br ${profit >= 0 ? 'from-emerald-50 to-green-50 border-emerald-200' : 'from-red-50 to-orange-50 border-red-200'}`}>
+                  <CardContent className="p-4">
+                    <p className={`text-xs mb-1 flex items-center gap-1 ${profit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                      <TrendingUp className="w-3 h-3" /> Net Profit
+                    </p>
+                    <p className={`text-2xl font-bold ${profit >= 0 ? 'text-emerald-900' : 'text-red-900'}`}>
+                      ${profit.toLocaleString()}
+                    </p>
+                    <p className={`text-xs mt-1 ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {profitMargin.toFixed(1)}% margin
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Budget vs Actual */}
+              {estimatedCost > 0 && (
+                <Card className="bg-white dark:bg-slate-800 shadow-lg">
+                  <CardHeader className="border-b">
+                    <CardTitle className="text-slate-900 dark:text-white">Budget vs Actual</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm text-slate-600 dark:text-slate-400">Budget Progress</span>
+                          <span className={`text-sm font-bold ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
+                            {budgetUsed.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 overflow-hidden relative">
+                          <div 
+                            className={`h-full transition-all ${isOverBudget ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-green-500 to-emerald-600'}`}
+                            style={{ width: `${Math.min(budgetUsed, 100)}%` }}
+                          />
+                          {isOverBudget && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xs font-bold text-white">OVER BUDGET</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Budgeted</p>
+                          <p className="text-lg font-bold text-slate-900 dark:text-white">${estimatedCost.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">Actual</p>
+                          <p className={`text-lg font-bold ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
+                            ${totalCosts.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      {isOverBudget && (
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                          <p className="text-sm text-red-700 dark:text-red-300 font-semibold">
+                            ⚠️ Over budget by ${Math.abs(budgetVariance).toLocaleString()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Change Orders Impact */}
+              {changeOrders.length > 0 && (
+                <Card className="bg-white dark:bg-slate-800 shadow-lg">
+                  <CardHeader className="border-b">
+                    <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-green-600" />
+                      Approved Change Orders ({changeOrders.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-3">
+                      {changeOrders.map(co => (
+                        <div key={co.id} className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                          <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">{co.change_order_number}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">{co.title}</p>
+                          </div>
+                          <p className="font-bold text-green-600 dark:text-green-400">
+                            +${co.change_amount?.toLocaleString() || 0}
+                          </p>
+                        </div>
+                      ))}
+                      <div className="pt-3 border-t flex justify-between">
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">Total COs Impact:</span>
+                        <span className="font-bold text-lg text-green-600 dark:text-green-400">
+                          +${totalChangeOrderAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
 
           {/* Budget Tab */}
