@@ -155,27 +155,17 @@ export default function Gastos() {
         )}
 
         {/* Expense Form Dialog */}
-        <Dialog open={showExpenseForm} onOpenChange={(open) => {
-          if (!open) {
-            setShowExpenseForm(false);
-            setShowCreateDialog(false);
-            setSelectedEmployee(null);
-          }
-        }}>
+        <Dialog open={showExpenseForm} onOpenChange={setShowExpenseForm}>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white">
-                {t('newExpense')} - {selectedEmployee?.full_name || `${selectedEmployee?.first_name} ${selectedEmployee?.last_name}`}
+                {t('newExpense')} - Company Expense
               </DialogTitle>
             </DialogHeader>
             <ExpenseForm
               isPerDiem={false}
               onSubmit={(data) => createExpenseMutation.mutate(data)}
-              onCancel={() => {
-                setShowExpenseForm(false);
-                setShowCreateDialog(false);
-                setSelectedEmployee(null);
-              }}
+              onCancel={() => setShowExpenseForm(false)}
               isProcessing={createExpenseMutation.isPending}
             />
           </DialogContent>
