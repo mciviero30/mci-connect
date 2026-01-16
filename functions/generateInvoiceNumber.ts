@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * INTELLIGENT INVOICE NUMBER GENERATOR
- * Finds the smallest available number (reuses deleted numbers)
+ * COUNTER-BASED INVOICE NUMBER GENERATOR
+ * Uses atomic counter for guaranteed sequential numbers
  */
 Deno.serve(async (req) => {
   try {
@@ -13,29 +13,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all existing invoices (including deleted ones)
-    const allInvoices = await base44.asServiceRole.entities.Invoice.list();
-    
-    // Extract numbers from invoice_number field (INV-00001, INV-00002, etc.)
-    const usedNumbers = new Set();
-    allInvoices.forEach(invoice => {
-      if (invoice.invoice_number) {
-        const match = invoice.invoice_number.match(/INV-(\d+)/);
-        if (match) {
-          usedNumbers.add(parseInt(match[1], 10));
-        }
-      }
+    // Use getNextCounter for atomic, thread-safe number generation
+    const { data } = await base44.asServiceRole.functions.invoke('getNextCounter', {
+      counter_name: 'invoice'
     });
-
-    // Find the smallest available number
-    let nextNumber = 1;
-    while (usedNumbers.has(nextNumber)) {
-      nextNumber++;
-    }
-
+    
+    const nextNumber = data.next_value;
     const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
 
-    console.log(`✅ Generated invoice number: ${formattedNumber}`);
+    console.log(`✅ Generated invoice number: ${formattedNumber} (counter: ${nextNumber})`);
     
     return Response.json({ 
       invoice_number: formattedNumber,
