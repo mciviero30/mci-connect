@@ -9,7 +9,6 @@ import CEOSetup from './pages/CEOSetup';
 import Calendario from './pages/Calendario';
 import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
-import ChangeOrders from './pages/ChangeOrders';
 import Chat from './pages/Chat';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
@@ -108,6 +107,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
+import ChangeOrders from './pages/ChangeOrders';
 import __Layout from './Layout.jsx';
 
 
@@ -123,7 +123,6 @@ export const PAGES = {
     "Calendario": Calendario,
     "Capacitacion": Capacitacion,
     "CashFlowReport": CashFlowReport,
-    "ChangeOrders": ChangeOrders,
     "Chat": Chat,
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
@@ -222,6 +221,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
+    "ChangeOrders": ChangeOrders,
 }
 
 export const pagesConfig = {

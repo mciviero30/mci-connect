@@ -164,7 +164,9 @@ export default function VerChangeOrderPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600 dark:text-slate-400">Monto del Cambio:</span>
-              <span className="font-bold text-green-600">+${changeOrder.change_amount?.toLocaleString() || 0}</span>
+              <span className={`font-bold ${changeOrder.change_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {changeOrder.change_amount >= 0 ? '+' : ''}${changeOrder.change_amount?.toLocaleString() || 0}
+              </span>
             </div>
             <div className="flex justify-between border-t pt-3">
               <span className="font-bold text-slate-900 dark:text-white">Nuevo Total:</span>
@@ -173,6 +175,75 @@ export default function VerChangeOrderPage() {
               </span>
             </div>
           </div>
+
+          {/* Financial Impact Analysis */}
+          {changeOrder.financial_impact && (
+            <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold text-sm text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-blue-600" />
+                Impacto Financiero
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">Revenue Impact</p>
+                  <p className={`font-bold ${changeOrder.financial_impact.revenue_impact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {changeOrder.financial_impact.revenue_impact >= 0 ? '+' : ''}${changeOrder.financial_impact.revenue_impact?.toLocaleString() || 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">Cost Impact</p>
+                  <p className={`font-bold ${changeOrder.financial_impact.cost_impact >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {changeOrder.financial_impact.cost_impact >= 0 ? '+' : ''}${changeOrder.financial_impact.cost_impact?.toLocaleString() || 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">Profit Impact</p>
+                  <p className={`font-bold ${changeOrder.financial_impact.profit_impact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {changeOrder.financial_impact.profit_impact >= 0 ? '+' : ''}${changeOrder.financial_impact.profit_impact?.toLocaleString() || 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">Margin Change</p>
+                  <p className={`font-bold ${changeOrder.financial_impact.margin_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {changeOrder.financial_impact.margin_change >= 0 ? '+' : ''}{changeOrder.financial_impact.margin_change?.toFixed(2) || 0}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Schedule & Resource Impact */}
+          {changeOrder.impact_on_job && (
+            <div className="mt-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h4 className="font-semibold text-sm text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-amber-600" />
+                Impacto en el Proyecto
+              </h4>
+              <div className="space-y-2 text-sm">
+                {changeOrder.days_impact !== 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Impacto en Cronograma:</span>
+                    <span className={`font-semibold ${changeOrder.days_impact > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+                      {changeOrder.days_impact > 0 ? '+' : ''}{changeOrder.days_impact} días
+                    </span>
+                  </div>
+                )}
+                {changeOrder.impact_on_job.risk_level && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Nivel de Riesgo:</span>
+                    <Badge className={
+                      changeOrder.impact_on_job.risk_level === 'high' ? 'bg-red-100 text-red-800' :
+                      changeOrder.impact_on_job.risk_level === 'medium' ? 'bg-amber-100 text-amber-800' :
+                      'bg-green-100 text-green-800'
+                    }>
+                      {changeOrder.impact_on_job.risk_level === 'high' ? 'Alto' :
+                       changeOrder.impact_on_job.risk_level === 'medium' ? 'Medio' : 'Bajo'}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

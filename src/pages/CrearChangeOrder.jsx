@@ -35,6 +35,15 @@ export default function CrearChangeOrderPage() {
     days_impact: 0,
     new_completion_date: '',
     notes: '',
+    impact_on_job: {
+      risk_level: 'low'
+    },
+    financial_impact: {
+      revenue_impact: 0,
+      cost_impact: 0,
+      profit_impact: 0,
+      margin_change: 0
+    }
   });
 
   const [attachments, setAttachments] = useState([]);
@@ -143,14 +152,32 @@ export default function CrearChangeOrderPage() {
     setAttachments(attachments.filter((_, i) => i !== index));
   };
 
-  // Calculate change amount
+  // Calculate change amount and financial impact
   useEffect(() => {
     const total = formData.items.reduce((sum, item) => sum + (item.total || 0), 0);
     const newTotal = formData.original_contract_amount + total;
+    
+    // Estimate cost impact (assuming 60% cost ratio)
+    const estimatedCostImpact = total * 0.6;
+    const profitImpact = total - estimatedCostImpact;
+    
+    // Calculate margin change
+    const originalProfit = formData.original_contract_amount * 0.4; // Assuming 40% margin
+    const newProfit = originalProfit + profitImpact;
+    const originalMargin = (originalProfit / formData.original_contract_amount) * 100;
+    const newMargin = (newProfit / newTotal) * 100;
+    const marginChange = newMargin - originalMargin;
+    
     setFormData((prev) => ({
       ...prev,
       change_amount: total,
       new_contract_amount: newTotal,
+      financial_impact: {
+        revenue_impact: total,
+        cost_impact: estimatedCostImpact,
+        profit_impact: profitImpact,
+        margin_change: marginChange
+      }
     }));
   }, [formData.items, formData.original_contract_amount]);
 
@@ -261,7 +288,7 @@ export default function CrearChangeOrderPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Impacto en Días</Label>
                 <Input
@@ -278,6 +305,25 @@ export default function CrearChangeOrderPage() {
                   value={formData.new_completion_date}
                   onChange={(e) => setFormData({ ...formData, new_completion_date: e.target.value })}
                 />
+              </div>
+              <div>
+                <Label>Nivel de Riesgo</Label>
+                <Select 
+                  value={formData.impact_on_job?.risk_level || 'low'} 
+                  onValueChange={(value) => setFormData({ 
+                    ...formData, 
+                    impact_on_job: { ...formData.impact_on_job, risk_level: value } 
+                  })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Bajo</SelectItem>
+                    <SelectItem value="medium">Medio</SelectItem>
+                    <SelectItem value="high">Alto</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>
@@ -375,7 +421,9 @@ export default function CrearChangeOrderPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Monto del Cambio:</span>
-                <span className="font-bold text-green-600">+${formData.change_amount.toLocaleString()}</span>
+                <span className={`font-bold ${formData.change_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formData.change_amount >= 0 ? '+' : ''}${formData.change_amount.toLocaleString()}
+                </span>
               </div>
               <div className="flex justify-between border-t pt-3">
                 <span className="font-bold text-slate-900 dark:text-white">Nuevo Total del Contrato:</span>
@@ -384,6 +432,39 @@ export default function CrearChangeOrderPage() {
                 </span>
               </div>
             </div>
+
+            {/* Real-time Financial Impact */}
+            {formData.financial_impact && formData.change_amount !== 0 && (
+              <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h4 className="font-semibold text-sm text-slate-900 dark:text-white mb-3">Impacto Financiero Proyectado</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-slate-600 dark:text-slate-400 text-xs">Revenue Impact</p>
+                    <p className={`font-bold ${formData.financial_impact.revenue_impact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formData.financial_impact.revenue_impact >= 0 ? '+' : ''}${formData.financial_impact.revenue_impact?.toLocaleString() || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600 dark:text-slate-400 text-xs">Est. Cost Impact</p>
+                    <p className={`font-bold ${formData.financial_impact.cost_impact >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                      +${formData.financial_impact.cost_impact?.toLocaleString() || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600 dark:text-slate-400 text-xs">Est. Profit Impact</p>
+                    <p className={`font-bold ${formData.financial_impact.profit_impact >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formData.financial_impact.profit_impact >= 0 ? '+' : ''}${formData.financial_impact.profit_impact?.toLocaleString() || 0}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-600 dark:text-slate-400 text-xs">Margin Change</p>
+                    <p className={`font-bold ${formData.financial_impact.margin_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formData.financial_impact.margin_change >= 0 ? '+' : ''}{formData.financial_impact.margin_change?.toFixed(2) || 0}%
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
