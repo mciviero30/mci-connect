@@ -62,7 +62,10 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <DropdownMenuItem 
-                onClick={() => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(createPageUrl(`VerEstimado?id=${quote.id}`));
+                }}
                 className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
               >
                 <Eye className="w-3.5 h-3.5 mr-2" />
@@ -70,7 +73,10 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               </DropdownMenuItem>
               {isAdmin && (
                 <DropdownMenuItem 
-                  onClick={() => navigate(createPageUrl(`CrearEstimado?id=${quote.id}`))}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(createPageUrl(`CrearEstimado?id=${quote.id}`));
+                  }}
                   className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                 >
                   <Edit3 className="w-3.5 h-3.5 mr-2" />
@@ -79,7 +85,10 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               )}
               {isAdmin && quote.status === 'draft' && onSend && (
                 <DropdownMenuItem 
-                  onClick={() => onSend(quote)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSend(quote);
+                  }}
                   className="cursor-pointer text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs"
                 >
                   <Send className="w-3.5 h-3.5 mr-2" />
@@ -88,7 +97,10 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               )}
               {isAdmin && quote.status === 'sent' && (
                 <DropdownMenuItem 
-                  onClick={() => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(createPageUrl(`VerEstimado?id=${quote.id}`));
+                  }}
                   className="cursor-pointer text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs"
                 >
                   <Edit3 className="w-3.5 h-3.5 mr-2" />
@@ -96,7 +108,8 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem 
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.stopPropagation();
                   const { data } = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
                   const blob = new Blob([data], { type: 'application/pdf' });
                   const url = window.URL.createObjectURL(blob);
@@ -115,14 +128,20 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
                 <>
                   <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-800" />
                   <DropdownMenuItem 
-                    onClick={() => onDuplicate?.(quote)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDuplicate?.(quote);
+                    }}
                     className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                   >
                     <Copy className="w-3.5 h-3.5 mr-2" />
                     {language === 'es' ? 'Duplicar' : 'Duplicate'}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={() => onDelete?.(quote)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.(quote);
+                    }}
                     className="cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 text-xs"
                   >
                     <Trash2 className="w-3.5 h-3.5 mr-2" />
