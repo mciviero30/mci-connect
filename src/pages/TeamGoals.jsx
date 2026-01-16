@@ -63,8 +63,8 @@ export default function TeamGoals() {
     : 0;
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#FAFAFA] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title={language === 'es' ? 'Objetivos de Equipo' : 'Team Goals'}
           description={language === 'es' ? 'Seguimiento de OKRs y KPIs de equipos' : 'Track team OKRs and KPIs'}

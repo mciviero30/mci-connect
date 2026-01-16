@@ -70,8 +70,8 @@ export default function MiScorecard() {
   ];
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-5xl mx-auto p-4 md:p-8">
         <PageHeader
           title={language === 'es' ? "Mi Scorecard" : "My Scorecard"}
           description={language === 'es' ? "Tu desempeño personal" : "Your personal performance"}

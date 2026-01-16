@@ -121,8 +121,8 @@ export default function KnowledgeLibrary() {
   const pendingCount = mySubmissions.filter(s => s.status === 'pending_approval').length;
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
