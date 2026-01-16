@@ -66,14 +66,12 @@ export default function Gastos() {
   const createExpenseMutation = useMutation({
     mutationFn: (data) => base44.entities.Expense.create({
       ...data,
-      employee_email: selectedEmployee.email,
-      employee_name: selectedEmployee.full_name || `${selectedEmployee.first_name} ${selectedEmployee.last_name}`,
+      employee_email: user.email,
+      employee_name: user.full_name,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       setShowExpenseForm(false);
-      setShowCreateDialog(false);
-      setSelectedEmployee(null);
       toast({
         title: t('success'),
         variant: 'success'
