@@ -512,7 +512,7 @@ export default function Chat() {
   ];
 
   return (
-    <div className="p-0 md:p-6 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50 dark:from-[#0a0a0a] dark:via-[#0f1419] dark:to-[#0a0a0a]">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0 p-0 md:p-6">
       <OnlineStatusManager userEmail={user?.email} />
       <div className="max-w-[1800px] mx-auto h-screen md:h-[calc(100vh-3rem)] flex flex-col">
         {/* Header - mobile/tablet */}

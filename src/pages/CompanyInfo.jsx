@@ -65,7 +65,7 @@ export default function CompanyInfo() {
   // Si no hay URL configurada, mostrar pantalla de configuración
   if (!COMPANY_WEBSITE_URL && !customUrl) {
     return (
-      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 to-white">
+      <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0 p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-2xl shadow-lg">
@@ -154,7 +154,7 @@ export default function CompanyInfo() {
   const urlToLoad = customUrl || COMPANY_WEBSITE_URL;
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-[#181818] dark:to-[#1a1a1a]">
+    <div className="h-full flex flex-col bg-[#F1F5F9] dark:bg-[#181818]">
       {/* Header */}
       <div className="flex-shrink-0 p-4 md:p-6 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-[#282828] backdrop-blur-sm">
         <div className="max-w-7xl mx-auto">
