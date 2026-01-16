@@ -22,8 +22,6 @@ export default function Gastos() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const { data: user } = useQuery({ 

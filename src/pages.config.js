@@ -47,7 +47,6 @@ import FieldExport from './pages/FieldExport';
 import FieldMeasurements from './pages/FieldMeasurements';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
-import Gastos from './pages/Gastos';
 import GoLivePlaybook from './pages/GoLivePlaybook';
 import Goals from './pages/Goals';
 import Home from './pages/Home';
@@ -108,6 +107,7 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
+import Gastos from './pages/Gastos';
 import __Layout from './Layout.jsx';
 
 
@@ -161,7 +161,6 @@ export const PAGES = {
     "FieldMeasurements": FieldMeasurements,
     "FieldProject": FieldProject,
     "Formularios": Formularios,
-    "Gastos": Gastos,
     "GoLivePlaybook": GoLivePlaybook,
     "Goals": Goals,
     "Home": Home,
@@ -222,6 +221,7 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
+    "Gastos": Gastos,
 }
 
 export const pagesConfig = {
