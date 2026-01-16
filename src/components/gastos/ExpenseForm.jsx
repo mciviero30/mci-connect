@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
   const { t, language } = useLanguage();
   const { data: jobs, isLoading: jobsLoading } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    queryFn: () => base44.entities.Job.list('name'),
   });
 
   // Remove past expenses query as AIExpenseCategorizer is removed
