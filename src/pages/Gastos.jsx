@@ -22,6 +22,8 @@ export default function Gastos() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const { data: user } = useQuery({ 
@@ -30,7 +32,22 @@ export default function Gastos() {
     staleTime: 30000
   });
 
-
+  const { data: employees, isLoading: loadingEmployees, error: employeesError } = useQuery({
+    queryKey: ['employees'],
+    queryFn: async () => {
+      try {
+        const users = await base44.entities.User.list();
+        return users || [];
+      } catch (error) {
+        console.error('Error loading employees:', error);
+        throw error;
+      }
+    },
+    initialData: [],
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
   const { 
     items: expenses = [], 
@@ -66,12 +83,14 @@ export default function Gastos() {
   const createExpenseMutation = useMutation({
     mutationFn: (data) => base44.entities.Expense.create({
       ...data,
-      employee_email: user.email,
-      employee_name: user.full_name,
+      employee_email: selectedEmployee.email,
+      employee_name: selectedEmployee.full_name || `${selectedEmployee.first_name} ${selectedEmployee.last_name}`,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       setShowExpenseForm(false);
+      setShowCreateDialog(false);
+      setSelectedEmployee(null);
       toast({
         title: t('success'),
         variant: 'success'
