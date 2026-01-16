@@ -154,68 +154,6 @@ export default function Gastos() {
           />
         )}
 
-        {/* Select Employee Dialog */}
-        <Dialog open={showCreateDialog && !showExpenseForm} onOpenChange={(open) => {
-          if (!open) {
-            setShowCreateDialog(false);
-            setSelectedEmployee(null);
-          }
-        }}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white">{t('selectEmployee')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {loadingEmployees ? (
-                <div className="text-center py-4 text-slate-600 dark:text-slate-400">
-                  {t('loading')}...
-                </div>
-              ) : employeesError ? (
-                <Alert className="bg-red-50 border-red-200">
-                  <AlertTriangle className="w-4 h-4 text-red-600" />
-                  <AlertDescription className="text-red-700">
-                    {t('error')}: {employeesError.message}
-                  </AlertDescription>
-                </Alert>
-              ) : activeEmployees.length === 0 ? (
-                <Alert className="bg-blue-50 border-blue-200">
-                  <AlertDescription className="text-blue-700">
-                    {t('noActiveEmployeesFound')}
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <>
-                  <div>
-                    <Label className="text-slate-700 dark:text-slate-300 mb-2 block">{t('employee')}</Label>
-                    <Select value={selectedEmployee?.id} onValueChange={(id) => {
-                      const emp = activeEmployees.find(e => e.id === id);
-                      setSelectedEmployee(emp);
-                    }}>
-                      <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
-                        <SelectValue placeholder={t('selectEmployee')} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                        {activeEmployees.map(emp => (
-                          <SelectItem key={emp.id} value={emp.id} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                            {emp.full_name || `${emp.first_name} ${emp.last_name}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button 
-                    onClick={handleSelectEmployee} 
-                    disabled={!selectedEmployee}
-                    className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
-                  >
-                    {t('next')}
-                  </Button>
-                </>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
         {/* Expense Form Dialog */}
         <Dialog open={showExpenseForm} onOpenChange={(open) => {
           if (!open) {
