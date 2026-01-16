@@ -210,7 +210,7 @@ const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarConte
                       className={`transition-all duration-200 rounded-lg mb-1 border-none ${
                         isActive
                           ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
-                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                          : 'hover:bg-[#507DB4]/15 dark:hover:bg-[#507DB4]/25 text-slate-600 dark:text-slate-400 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] hover:translate-x-1 hover:shadow-sm'
                       }`}
                     >
                       <Link 
