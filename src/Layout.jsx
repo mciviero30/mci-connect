@@ -817,19 +817,16 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           /* Mobile Touch Optimizations - All Devices */
           html {
             -webkit-text-size-adjust: 100%;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            overscroll-behavior-y: contain;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
             height: 100%;
           }
 
           body {
-            -webkit-user-select: none;
-            user-select: none;
             height: 100%;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain;
+            overscroll-behavior: none;
+            touch-action: auto;
           }
           
           #root {
