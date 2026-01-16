@@ -26,8 +26,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
 
-import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
-
 const recognitionTypes = [
   { value: 'employee_of_month', label: 'Employee of the Month', points: 100, icon: '🏆' },
   { value: 'safety_award', label: 'Safety Award', points: 50, icon: '⚠️' },
@@ -268,8 +266,8 @@ export default function PerformanceManagement() {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
           title="Performance & Recognition"
           description="Track employee achievements and recognition"
