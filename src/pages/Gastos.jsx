@@ -98,20 +98,7 @@ export default function Gastos() {
     updateStatusMutation.mutate({ id: expense.id, status: 'rejected', notes });
   };
 
-  const handleSelectEmployee = () => {
-    if (selectedEmployee) {
-      setShowExpenseForm(true);
-    }
-  };
 
-  const activeEmployees = useMemo(() => 
-    employees.filter(e => 
-      !e.employment_status || 
-      e.employment_status === 'active' || 
-      e.employment_status === 'invited'
-    ),
-    [employees]
-  );
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
