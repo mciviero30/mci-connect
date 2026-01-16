@@ -1086,8 +1086,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
           <div data-main-content className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" style={{ 
             WebkitOverflowScrolling: 'touch', 
-            touchAction: 'pan-y',
-            overscrollBehaviorY: 'contain'
+            touchAction: 'auto',
+            overscrollBehavior: 'auto'
           }}>
             <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0 pb-20 md:pb-0">
               {children}
