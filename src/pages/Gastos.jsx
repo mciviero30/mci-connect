@@ -118,15 +118,7 @@ export default function Gastos() {
           }
         />
 
-        {/* Show error alert if employees failed to load */}
-        {employeesError && (
-          <Alert className="mb-6 bg-red-50 border-red-200">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            <AlertDescription className="text-red-700">
-              {t('error')}: {employeesError.message || 'Failed to load employees'}
-            </AlertDescription>
-          </Alert>
-        )}
+
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
           <StatsCard title={t('pending')} value={pendingExpenses.length} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
