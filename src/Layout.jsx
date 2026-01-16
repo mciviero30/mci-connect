@@ -819,30 +819,48 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             -webkit-text-size-adjust: 100%;
             -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
             height: 100%;
+            width: 100%;
           }
 
           body {
             height: 100%;
+            width: 100%;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior: none;
+            overscroll-behavior: auto;
             touch-action: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
           }
-          
+
           #root {
             height: 100%;
+            width: 100%;
             overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
           }
 
           /* Allow text selection in inputs and content areas */
           input, textarea, [contenteditable] {
             -webkit-user-select: text;
             user-select: text;
+            -webkit-user-callout: default;
+            -webkit-touch-callout: default;
           }
 
           /* Prevent zoom on input focus for iOS */
           input, select, textarea {
             font-size: 16px !important;
+            touch-action: auto;
           }
 
           /* Fix iOS Safari bottom bar issue */
