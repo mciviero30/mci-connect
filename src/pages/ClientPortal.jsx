@@ -16,7 +16,9 @@ import {
   ChevronRight,
   LogOut,
   MessageSquare,
-  Activity
+  Activity,
+  DollarSign,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -99,6 +101,12 @@ export default function ClientPortal() {
       job_id: selectedJob.id,
       client_visible: true 
     }, '-report_date', 30),
+    enabled: !!selectedJob?.id,
+  });
+
+  const { data: invoices = [] } = useQuery({
+    queryKey: ['client-invoices', selectedJob?.id],
+    queryFn: () => base44.entities.Invoice.filter({ job_id: selectedJob.id }, '-invoice_date'),
     enabled: !!selectedJob?.id,
   });
 
@@ -330,6 +338,15 @@ export default function ClientPortal() {
               {dailyReports.length > 0 && (
                 <Badge className="ml-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-xs px-1.5 py-0.5">
                   {dailyReports.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <DollarSign className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Invoices</span>
+              {invoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled').length > 0 && (
+                <Badge className="ml-2 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 text-xs px-1.5 py-0.5">
+                  {invoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled').length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -568,6 +585,145 @@ export default function ClientPortal() {
           <TabsContent value="daily-reports">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
               <DailyFieldReportView jobId={selectedJob?.id} isClientView={true} />
+            </div>
+          </TabsContent>
+
+          {/* Invoices & Payments Tab */}
+          <TabsContent value="invoices">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl">
+                  <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                Invoices & Payments
+              </h3>
+              
+              {invoices.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <DollarSign className="w-10 h-10 text-slate-300 dark:text-slate-500" />
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400">No invoices yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {invoices.map((invoice) => {
+                    const balance = invoice.balance || (invoice.total - (invoice.amount_paid || 0));
+                    const isPaid = invoice.status === 'paid';
+                    const isCancelled = invoice.status === 'cancelled';
+                    const canPay = !isPaid && !isCancelled && balance > 0;
+
+                    const handlePayNow = async () => {
+                      try {
+                        if (window.self !== window.top) {
+                          alert('Payments only work in published app. Please open the app in a new browser tab.');
+                          return;
+                        }
+
+                        const response = await base44.functions.invoke('stripe-checkout', { invoiceId: invoice.id });
+                        
+                        if (response?.data?.url) {
+                          window.location.href = response.data.url;
+                        } else {
+                          throw new Error('No checkout URL returned');
+                        }
+                      } catch (error) {
+                        console.error('Payment error:', error);
+                        alert('Payment error: ' + (error.message || 'Unknown error'));
+                      }
+                    };
+
+                    return (
+                      <div 
+                        key={invoice.id}
+                        className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+                                {invoice.invoice_number}
+                              </h4>
+                              <Badge className={`${
+                                isPaid ? 'soft-green-gradient' :
+                                isCancelled ? 'soft-red-gradient' :
+                                invoice.status === 'partial' ? 'soft-amber-gradient' :
+                                'soft-blue-gradient'
+                              }`}>
+                                {isPaid ? 'Paid' : 
+                                 isCancelled ? 'Cancelled' :
+                                 invoice.status === 'partial' ? 'Partial Payment' :
+                                 invoice.status === 'overdue' ? 'Overdue' : 'Pending'}
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-3">
+                              <div>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">Invoice Date</p>
+                                <p className="font-semibold text-slate-900 dark:text-white">
+                                  {invoice.invoice_date ? format(new Date(invoice.invoice_date), 'MMM dd, yyyy') : '-'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">Due Date</p>
+                                <p className="font-semibold text-slate-900 dark:text-white">
+                                  {invoice.due_date ? format(new Date(invoice.due_date), 'MMM dd, yyyy') : '-'}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">Total Amount</p>
+                                <p className="font-bold text-green-600 dark:text-green-400 text-lg">
+                                  ${(invoice.total || 0).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+
+                            {invoice.amount_paid > 0 && (
+                              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 mb-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-green-700 dark:text-green-400">Amount Paid:</span>
+                                  <span className="font-bold text-green-700 dark:text-green-400">
+                                    ${invoice.amount_paid.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {balance > 0 && !isCancelled && (
+                              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-amber-700 dark:text-amber-400">Balance Due:</span>
+                                  <span className="font-bold text-amber-700 dark:text-amber-400 text-lg">
+                                    ${balance.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-col gap-2">
+                            {canPay && (
+                              <Button
+                                onClick={handlePayNow}
+                                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg min-h-[48px]"
+                              >
+                                <CreditCard className="w-4 h-4 mr-2" />
+                                Pay ${balance.toLocaleString()}
+                              </Button>
+                            )}
+                            {isPaid && (
+                              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 font-semibold">
+                                <CheckCircle2 className="w-5 h-5" />
+                                Paid in Full
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
