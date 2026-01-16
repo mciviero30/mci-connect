@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
 
+import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
+
 const recognitionTypes = [
   { value: 'employee_of_month', label: 'Employee of the Month', points: 100, icon: '🏆' },
   { value: 'safety_award', label: 'Safety Award', points: 50, icon: '⚠️' },
@@ -36,8 +38,6 @@ const recognitionTypes = [
   { value: 'customer_service', label: 'Customer Service', points: 35, icon: '😊' },
   { value: 'leadership', label: 'Leadership', points: 45, icon: '👑' }
 ];
-
-import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
 
 export default function PerformanceManagement() {
   const queryClient = useQueryClient();
