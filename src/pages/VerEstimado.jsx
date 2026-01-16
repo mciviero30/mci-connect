@@ -139,6 +139,11 @@ Lawrenceville, Georgia 30043, U.S.A`
     mutationFn: async () => {
       console.log('🔄 Converting quote to invoice from VerEstimado...', quote);
       
+      // CRITICAL: Immediately mark as converting to prevent double-clicks
+      await base44.entities.Quote.update(quote.id, { 
+        status: 'converted_to_invoice'
+      });
+      
       let jobId = quote.job_id;
       let wasJobCreated = false;
       let mciFieldSyncSuccess = false;
@@ -237,9 +242,8 @@ Lawrenceville, Georgia 30043, U.S.A`
       const newInvoice = await base44.entities.Invoice.create(invoiceData);
       console.log('✅ Invoice created successfully:', newInvoice);
 
-      // Update quote status
+      // Update quote with invoice link (status already set to prevent double-click)
       await base44.entities.Quote.update(quote.id, {
-        status: 'converted_to_invoice',
         invoice_id: newInvoice.id
       });
 

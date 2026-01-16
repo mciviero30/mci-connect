@@ -19,6 +19,11 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
 
   const convertMutation = useMutation({
     mutationFn: async () => {
+      // CRITICAL: Immediately mark as converting to prevent double-clicks
+      await base44.entities.Quote.update(quote.id, { 
+        status: 'converted_to_invoice'
+      });
+      
       // Generate invoice number
       const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
       const invoiceNumber = invoiceNumberData.invoice_number;
@@ -91,9 +96,8 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
 
       const newInvoice = await base44.entities.Invoice.create(invoice);
 
-      // Update quote status and link to job
+      // Update quote with invoice and job link (status already set)
       await base44.entities.Quote.update(quote.id, {
-        status: 'converted_to_invoice',
         invoice_id: newInvoice.id,
         job_id: jobId
       });
