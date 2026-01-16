@@ -124,7 +124,11 @@ export default function Gastos() {
   };
 
   const activeEmployees = useMemo(() => 
-    employees.filter(e => !e.employment_status || e.employment_status === 'active'),
+    employees.filter(e => 
+      !e.employment_status || 
+      e.employment_status === 'active' || 
+      e.employment_status === 'invited'
+    ),
     [employees]
   );
 
