@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
 
 const recognitionTypes = [
   { value: 'employee_of_month', label: 'Employee of the Month', points: 100, icon: '🏆' },
@@ -36,55 +37,7 @@ const recognitionTypes = [
   { value: 'leadership', label: 'Leadership', points: 45, icon: '👑' }
 ];
 
-// Helper function to get proper display name
-const getDisplayName = (employee) => {
-  // FIRST: Try first_name + last_name (the correct way)
-  if (employee.first_name || employee.last_name) {
-    const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
-    if (fullName) return fullName;
-  }
-  
-  // SECOND: If full_name exists and doesn't look like an email
-  if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
-    return employee.full_name;
-  }
-  
-  // LAST RESORT: Extract from email and capitalize
-  if (employee.email) {
-    const emailName = employee.email.split('@')[0];
-    return emailName
-      .split('.')
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
-  }
-  
-  return 'Unknown Employee';
-};
-
-// Helper function to get profile image with cache busting
-const getProfileImage = (employee) => {
-  if (!employee) return null;
-  
-  // Check preferred image first
-  if (employee.preferred_profile_image === 'avatar' && employee.avatar_image_url) {
-    return employee.avatar_image_url;
-  }
-  
-  // Then check profile_photo_url
-  if (employee.profile_photo_url) {
-    return employee.profile_photo_url;
-  }
-  
-  // Fallback to avatar if exists
-  if (employee.avatar_image_url) {
-    return employee.avatar_image_url;
-  }
-  
-  return null;
-};
-
-// Helper for cache busting key
-const getImageKey = (employee) => employee?.profile_last_updated || employee?.id;
+import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
 
 export default function PerformanceManagement() {
   const queryClient = useQueryClient();
