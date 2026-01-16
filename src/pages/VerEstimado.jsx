@@ -179,13 +179,10 @@ Lawrenceville, Georgia 30043, U.S.A`
         // Update quote with job_id
         await base44.entities.Quote.update(quote.id, { job_id: jobId });
         
-        // Sync to MCI Field (use internal function)
-        try {
-          await base44.functions.invoke('syncJobToMCIField', { jobId });
-          mciFieldSyncSuccess = true;
-        } catch (err) {
-          console.warn('MCI Field sync failed:', err);
-        }
+        // Sync to MCI Field in background - don't wait
+        base44.functions.invoke('syncJobToMCIField', { jobId })
+          .then(() => { mciFieldSyncSuccess = true; })
+          .catch(err => console.warn('Background MCI Field sync failed:', err));
       } else {
         console.log('✅ Using existing job:', jobId);
         // Load existing job to accumulate contract amounts
@@ -247,20 +244,17 @@ Lawrenceville, Georgia 30043, U.S.A`
         invoice_id: newInvoice.id
       });
 
-      // TRIGGER 1: Quote → Invoice Conversion Provisioning (ONLY IF APPROVED)
+      // TRIGGER 1: Quote → Invoice Conversion Provisioning (ONLY IF APPROVED) - Run in background
       const newInvoiceApprovalStatus = newInvoice.approval_status || 'approved';
       if (newInvoiceApprovalStatus === 'approved') {
-        try {
-          await base44.functions.invoke('provisionJobFromInvoice', {
-            invoice_id: newInvoice.id,
-            mode: 'convert'
-          });
-        } catch (provisionError) {
-          console.warn('Provisioning failed (non-critical):', provisionError);
-        }
+        // Don't await - let it run in background for faster UX
+        base44.functions.invoke('provisionJobFromInvoice', {
+          invoice_id: newInvoice.id,
+          mode: 'convert'
+        }).catch(err => console.warn('Background provisioning failed:', err));
       }
 
-      return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess, provisionSuccess };
+      return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess };
     },
     onSuccess: ({ newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess }) => {
       console.log('✅ Conversion successful, invalidating queries...');
