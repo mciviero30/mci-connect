@@ -30,22 +30,7 @@ export default function Gastos() {
     staleTime: 30000
   });
 
-  const { data: employees, isLoading: loadingEmployees, error: employeesError } = useQuery({
-    queryKey: ['employees'],
-    queryFn: async () => {
-      try {
-        const users = await base44.entities.User.list();
-        return users || [];
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        throw error;
-      }
-    },
-    initialData: [],
-    retry: 3,
-    retryDelay: 1000,
-    staleTime: 30000, // Cache for 30 seconds
-  });
+
 
   const { 
     items: expenses = [], 
