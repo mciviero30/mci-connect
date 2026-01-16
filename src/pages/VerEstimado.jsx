@@ -452,7 +452,7 @@ Lawrenceville, Georgia 30043, U.S.A`
 
   const statusMeta = getQuoteStatusMeta(quote.status, language);
   const canDelete = ['draft', 'sent', 'rejected'].includes(quote.status);
-  const canEdit = quote.status === 'draft';
+  const canEdit = quote.status === 'draft' || quote.status === 'converted_to_invoice';
   const canReopen = quote.status === 'sent';
 
   return (
