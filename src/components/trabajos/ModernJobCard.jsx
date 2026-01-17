@@ -27,7 +27,7 @@ export default function ModernJobCard({ job, onEdit }) {
     mutationFn: (id) => base44.entities.Job.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      toast.success(lang === 'es' ? 'Trabajo eliminado' : 'Job deleted');
+      toast.success(language === 'es' ? 'Trabajo eliminado' : 'Job deleted');
     },
     onError: (error) => {
       toast.error(`Error: ${error.message}`);
@@ -35,7 +35,7 @@ export default function ModernJobCard({ job, onEdit }) {
   });
 
   const handleDelete = () => {
-    if (confirm(lang === 'es' ? '¿Eliminar este trabajo?' : 'Delete this job?')) {
+    if (confirm(language === 'es' ? '¿Eliminar este trabajo?' : 'Delete this job?')) {
       deleteMutation.mutate(job.id);
     }
   };
@@ -58,8 +58,6 @@ export default function ModernJobCard({ job, onEdit }) {
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
-  const lang = language || 'en';
-
   const statusColors = {
     active: "soft-green-gradient",
     completed: "soft-blue-gradient",
@@ -68,10 +66,10 @@ export default function ModernJobCard({ job, onEdit }) {
   };
 
   const statusLabels = {
-    active: lang === 'es' ? 'Activo' : 'Active',
-    completed: lang === 'es' ? 'Completado' : 'Completed',
-    archived: lang === 'es' ? 'Archivado' : 'Archived',
-    on_hold: lang === 'es' ? 'En Espera' : 'On Hold'
+    active: language === 'es' ? 'Activo' : 'Active',
+    completed: language === 'es' ? 'Completado' : 'Completed',
+    archived: language === 'es' ? 'Archivado' : 'Archived',
+    on_hold: language === 'es' ? 'En Espera' : 'On Hold'
   };
 
   const colorIndicator = job.color || 'blue';
@@ -116,15 +114,15 @@ export default function ModernJobCard({ job, onEdit }) {
             <DropdownMenuContent align="end" className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
               <DropdownMenuItem onClick={() => navigate(createPageUrl(`JobDetails?id=${job.id}`))}>
                 <Eye className="w-4 h-4 mr-2" />
-                {lang === 'es' ? 'Ver Detalles' : 'View Details'}
+                {language === 'es' ? 'Ver Detalles' : 'View Details'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onEdit && onEdit(job)}>
                 <Edit className="w-4 h-4 mr-2" />
-                {lang === 'es' ? 'Editar' : 'Edit'}
+                {language === 'es' ? 'Editar' : 'Edit'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
                 <Trash2 className="w-4 h-4 mr-2" />
-                {lang === 'es' ? 'Eliminar' : 'Delete'}
+                {language === 'es' ? 'Eliminar' : 'Delete'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -171,7 +169,7 @@ export default function ModernJobCard({ job, onEdit }) {
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
-                {lang === 'es' ? 'Contrato' : 'Contract'}
+                {language === 'es' ? 'Contrato' : 'Contract'}
               </span>
               <span className="text-lg font-bold text-[#507DB4] dark:text-[#6B9DD8]">
                 {formatCurrency(contractAmount)}
@@ -183,7 +181,7 @@ export default function ModernJobCard({ job, onEdit }) {
                 <div className="flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
-                    {lang === 'es' ? 'Margen' : 'Margin'}
+                    {language === 'es' ? 'Margen' : 'Margin'}
                   </span>
                 </div>
                 <span className={`text-base font-bold ${getProfitMarginColor(profitMargin)}`}>

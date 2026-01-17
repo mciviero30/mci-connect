@@ -440,8 +440,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       }
 
       // Skip geofence validation only for driving hours
-      const job = jobs.find(j => j.id === activeSession.jobId);
       if (activeSession.workType !== 'driving') {
+        const job = jobs.find(j => j.id === activeSession.jobId);
         // STRICT GEOFENCING for clock-out: Use job's configured radius
         const MAX_DISTANCE = job?.geofence_radius || 100;
 
