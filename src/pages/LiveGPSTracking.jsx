@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Users, Clock, RefreshCw, Navigation } from 'lucide-react';
+import { MapPin, Users, Clock, RefreshCw, Compass } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { format } from 'date-fns';
 import L from 'leaflet';
@@ -97,7 +97,7 @@ export default function LiveGPSTracking() {
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Navigation className="w-5 h-5 text-blue-600" />
+                    <Compass className="w-5 h-5 text-blue-600" />
                     Live Map
                   </div>
                   <Badge className="bg-green-500 text-white animate-pulse">
