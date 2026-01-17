@@ -304,7 +304,7 @@ export async function generateQuotePDF(quote) {
     doc.setTextColor(180, 180, 180);
     doc.text(itemNum, numCol, y + 4);
 
-    let textY = y + 4;
+    let textY = y + 5;
     
     // Item Name (bold, black) - solo si existe
     if (nameLines.length > 0) {
@@ -315,11 +315,11 @@ export async function generateQuotePDF(quote) {
       textY += nameLines.length * 4;
     }
     
-    // Description below (normal, dark gray) - solo si existe
+    // Description below (normal, dark gray) - solo si existe y tiene contenido real
     if (descLines.length > 0) {
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
+      doc.setFontSize(7.5);
+      doc.setTextColor(80, 80, 80);
       doc.text(descLines, itemCol, textY);
     }
 
