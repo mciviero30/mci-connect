@@ -108,6 +108,10 @@ import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import WelcomeMessage from './pages/WelcomeMessage';
+import RFIs from './pages/RFIs';
+import Submittals from './pages/Submittals';
+import VerRFI from './pages/VerRFI';
+import VerSubmittal from './pages/VerSubmittal';
 import __Layout from './Layout.jsx';
 
 
@@ -222,6 +226,10 @@ export const PAGES = {
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
     "WelcomeMessage": WelcomeMessage,
+    "RFIs": RFIs,
+    "Submittals": Submittals,
+    "VerRFI": VerRFI,
+    "VerSubmittal": VerSubmittal,
 }
 
 export const pagesConfig = {
