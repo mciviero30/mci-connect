@@ -11,6 +11,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MessageBubble from "../components/chat/MessageBubble";
+import UniversalMessageBubble from "../components/chat/UniversalMessageBubble";
 import TypingIndicator from "../components/chat/TypingIndicator";
 import MentionInput from "../components/chat/MentionInput";
 import DirectMessagesList from "../components/chat/DirectMessagesList";
@@ -148,6 +149,8 @@ export default function Chat() {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
   const [showJobMembers, setShowJobMembers] = useState(false);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
@@ -202,6 +205,27 @@ export default function Chat() {
     refetchInterval: 5000,
   });
 
+  const updateMessageMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.ChatMessage.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      setEditingMessage(null);
+      setMessage('');
+      toast.success(language === 'es' ? 'Mensaje actualizado' : 'Message updated');
+    },
+  });
+
+  const deleteMessageMutation = useMutation({
+    mutationFn: (id) => base44.entities.ChatMessage.update(id, { 
+      message: language === 'es' ? '[Mensaje eliminado]' : '[Message deleted]',
+      is_deleted: true 
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      toast.success(language === 'es' ? 'Mensaje eliminado' : 'Message deleted');
+    },
+  });
+
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.ChatMessage.create(data),
     onSuccess: async (newMessage) => {
@@ -209,6 +233,7 @@ export default function Chat() {
       queryClient.invalidateQueries({ queryKey: ['chat-unread'] });
       setMessage('');
       setReplyingTo(null);
+      setEditingMessage(null);
       
       // Get all members of current conversation
       let recipientEmails = [];
@@ -344,6 +369,14 @@ export default function Chat() {
       groupId = `group_${selectedCustomGroup.id}`;
     }
 
+    if (editingMessage) {
+      updateMessageMutation.mutate({ 
+        id: editingMessage.id, 
+        data: { message: messageContent } 
+      });
+      return;
+    }
+
     const messageData = {
       sender_email: user.email,
       sender_name: user.full_name,
@@ -361,6 +394,42 @@ export default function Chat() {
     }
 
     sendMutation.mutate(messageData);
+  };
+
+  const handleEditMessage = (msg) => {
+    setEditingMessage(msg);
+    setMessage(msg.message);
+  };
+
+  const handleDeleteMessage = (msgId) => {
+    if (window.confirm(language === 'es' ? '¿Eliminar mensaje?' : 'Delete message?')) {
+      deleteMessageMutation.mutate(msgId);
+    }
+  };
+
+  const handleExportChat = () => {
+    const chatData = filteredMessages.map(msg => ({
+      date: format(new Date(msg.created_date), 'yyyy-MM-dd HH:mm:ss'),
+      sender: msg.sender_name,
+      message: msg.message,
+      type: msg.message_type
+    }));
+
+    const csv = [
+      ['Date', 'Sender', 'Message', 'Type'].join(','),
+      ...chatData.map(row => 
+        [row.date, row.sender, `"${row.message}"`, row.type].join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat_export_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setShowExportDialog(false);
   };
 
   const handleImageUpload = async (e) => {
@@ -735,6 +804,15 @@ export default function Chat() {
                     Invite
                   </Button>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowExportDialog(true)}
+                  className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                  title={language === 'es' ? 'Exportar chat' : 'Export chat'}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                   <Input
@@ -753,13 +831,37 @@ export default function Chat() {
               {replyingTo && (
                 <div className="px-6 py-3 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Replying to {replyingTo.sender_name}</p>
+                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                      {language === 'es' ? 'Respondiendo a' : 'Replying to'} {replyingTo.sender_name}
+                    </p>
                     <p className="text-sm text-slate-600 dark:text-slate-400 truncate mt-0.5">{replyingTo.message}</p>
                   </div>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => setReplyingTo(null)}
+                    className="text-slate-500 dark:text-slate-400 h-8 w-8 rounded-lg"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Editing indicator */}
+              {editingMessage && (
+                <div className="px-6 py-3 bg-yellow-50 dark:bg-yellow-950/30 border-b border-yellow-100 dark:border-yellow-900/30 flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
+                      {language === 'es' ? 'Editando mensaje' : 'Editing message'}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setEditingMessage(null);
+                      setMessage('');
+                    }}
                     className="text-slate-500 dark:text-slate-400 h-8 w-8 rounded-lg"
                   >
                     <X className="w-4 h-4" />
@@ -801,14 +903,17 @@ export default function Chat() {
                 )}
                 
                 {filteredMessages.map((msg) => (
-                  <MessageBubble
+                  <UniversalMessageBubble
                     key={msg.id}
                     message={msg}
                     isMe={msg.sender_email === user?.email}
                     onReply={setReplyingTo}
                     onReaction={handleReaction}
+                    onEdit={handleEditMessage}
+                    onDelete={handleDeleteMessage}
                     userEmail={user?.email}
-                    onUserClick={openUserProfile}
+                    language={language}
+                    isDark={false}
                   />
                 ))}
                 
@@ -904,7 +1009,13 @@ export default function Chat() {
                       onChange={handleTyping}
                       onSubmit={handleSend}
                       employees={employees}
-                      placeholder={replyingTo ? `Reply to ${replyingTo.sender_name}...` : 'Write a message...'}
+                      placeholder={
+                        editingMessage 
+                          ? (language === 'es' ? 'Editar mensaje...' : 'Edit message...') 
+                          : replyingTo 
+                          ? `${language === 'es' ? 'Responder a' : 'Reply to'} ${replyingTo.sender_name}...` 
+                          : (language === 'es' ? 'Escribe un mensaje...' : 'Write a message...')
+                      }
                       className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium shadow-sm"
                       />
                     <Button 
@@ -1002,6 +1113,33 @@ export default function Chat() {
           onClose={() => setShowJobMembers(false)}
           language={t('language') === 'es' ? 'es' : 'en'}
         />
+
+        {/* Export Dialog */}
+        <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+          <DialogContent className="max-w-md bg-white dark:bg-[#282828]">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900 dark:text-white">
+                {language === 'es' ? 'Exportar Conversación' : 'Export Conversation'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {language === 'es' 
+                  ? `Se exportarán ${filteredMessages.length} mensajes en formato CSV`
+                  : `${filteredMessages.length} messages will be exported as CSV`}
+              </p>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+                  {language === 'es' ? 'Cancelar' : 'Cancel'}
+                </Button>
+                <Button onClick={handleExportChat} className="bg-green-600 hover:bg-green-700">
+                  <Download className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Exportar' : 'Export'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

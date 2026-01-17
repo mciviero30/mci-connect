@@ -1,11 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Send, Hash, Plus, Users, Paperclip, Image } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { format } from 'date-fns';
+import { Hash } from 'lucide-react';
+import UniversalChat from '../chat/UniversalChat';
 
 const defaultChannels = [
   { id: 'general', name: 'General', icon: Hash },
