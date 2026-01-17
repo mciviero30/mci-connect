@@ -72,12 +72,13 @@ export async function generateQuotePDF(quote) {
     doc.rect(rectX, 0, rectWidth, Number(headerHeight), 'F');
   }
   
-  // Load and add MCI logo (compressed)
+  // Load and add MCI logo with high quality
   const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
   const logoBase64 = await loadImageAsBase64(logoUrl);
   
   if (logoBase64) {
-    doc.addImage(logoBase64, 'PNG', margin, 5, 35, 15, undefined, 'FAST');
+    // Usar 'SLOW' para mejor calidad, y ajustar proporción
+    doc.addImage(logoBase64, 'PNG', margin, 4, 40, 17, undefined, 'SLOW');
   } else {
     // Fallback to text if logo fails
     doc.setFont('helvetica', 'bold');
