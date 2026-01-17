@@ -418,6 +418,38 @@ export default function VerFactura() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Pay Now Button - STRIPE PAYMENTS */}
+            {balance > 0 && invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+              <Button
+                size="sm"
+                onClick={async () => {
+                  try {
+                    if (window.self !== window.top) {
+                      alert('Payments only work in published app. Please open the app in a new browser tab.');
+                      return;
+                    }
+                    const response = await base44.functions.invoke('stripe-checkout', { invoiceId: invoice.id });
+                    if (response?.data?.url) {
+                      window.location.href = response.data.url;
+                    } else {
+                      throw new Error('No checkout URL returned');
+                    }
+                  } catch (error) {
+                    console.error('Payment error:', error);
+                    toast({
+                      title: 'Error',
+                      description: error.message || 'Failed to start payment',
+                      variant: 'destructive'
+                    });
+                  }
+                }}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Pay ${balance?.toLocaleString() || '0'}
+              </Button>
+            )}
+
             {canEdit && (
               <Button
                 variant="outline"
