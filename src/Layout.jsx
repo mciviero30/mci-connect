@@ -44,6 +44,7 @@ import {
   AlertTriangle,
   Maximize2,
   ArrowLeft,
+  Compass,
 } from "lucide-react";
 import {
   Sidebar,
@@ -373,7 +374,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
       items: [
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
         { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
-        { title: 'Live GPS Tracking', url: createPageUrl("LiveGPSTracking"), icon: Navigation },
+        { title: 'Live GPS Tracking', url: createPageUrl("LiveGPSTracking"), icon: Compass },
         { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
