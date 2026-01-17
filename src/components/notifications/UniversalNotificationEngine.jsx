@@ -9,13 +9,13 @@ export default function UniversalNotificationEngine({ user }) {
   const queryClient = useQueryClient();
   const lastCheckRef = useRef({});
 
-  // Poll for new assignments - REDUCED frequency
+  // Poll for new assignments - Optimized for mobile
   const { data: assignments = [] } = useQuery({
     queryKey: ['recentAssignments', user?.email],
     queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }, '-updated_date', 10),
     enabled: !!user?.email,
-    refetchInterval: 120000, // Check every 2 minutes (was 15s)
-    staleTime: 60000,
+    refetchInterval: 60000, // Check every 1 minute for faster notifications
+    staleTime: 30000,
     initialData: []
   });
 
@@ -78,7 +78,7 @@ export default function UniversalNotificationEngine({ user }) {
           read: false
         });
 
-        // Send browser notification if supported
+        // Send browser notification if supported (mobile-optimized)
         if (Notification.permission === 'granted') {
           new Notification('📋 New Job Assigned', {
             body: `${assignment.job_name || 'New Job'} - ${assignment.date || 'Date TBD'}`,
@@ -86,8 +86,17 @@ export default function UniversalNotificationEngine({ user }) {
             badge: '/badge-icon.png',
             tag: key,
             requireInteraction: true,
-            vibrate: [200, 100, 200]
+            vibrate: [200, 100, 200],
+            silent: false,
+            renotify: true,
+            actions: [
+              { action: 'view', title: 'View Details' },
+              { action: 'dismiss', title: 'Dismiss' }
+            ]
           });
+        } else if (Notification.permission !== 'denied') {
+          // Request permission if not yet granted
+          Notification.requestPermission();
         }
 
         queryClient.invalidateQueries({ queryKey: ['notifications'] });

@@ -811,14 +811,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
 
   return (
     <SidebarProvider>
-      {/* PWA DISABLED FOR TESTING */}
-      {/* <ServiceWorkerRegistration /> */}
+      <ServiceWorkerRegistration />
       <MobileOptimizations />
-      {/* <SyncQueueProvider> */}
-        {/* <OfflineIndicator /> */}
-        {/* <NotificationService user={user}>
-          <NotificationEngine user={user} />
-        </NotificationService> */}
+      <SyncQueueProvider>
 
       {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <ErrorBoundary fallback={<div />}>
@@ -1116,7 +1111,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           </div>
 
           <AIAssistant currentPage={currentPageName} />
-          {/* <EnhancedOfflineSync /> */}
+          <EnhancedOfflineSync />
 
           {/* Bottom Navigation: Hidden in Field/Focus Mode */}
           {!shouldHideSidebar && (
@@ -1124,7 +1119,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
           )}
           </main>
           </div>
-          {/* </SyncQueueProvider> */}
+          </SyncQueueProvider>
           </SidebarProvider>
           );
 };
