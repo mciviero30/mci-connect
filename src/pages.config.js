@@ -1,3 +1,4 @@
+import AIScheduleCenter from './pages/AIScheduleCenter';
 import AdminCleanup from './pages/AdminCleanup';
 import AgreementSignatures from './pages/AgreementSignatures';
 import ApprovalsHub from './pages/ApprovalsHub';
@@ -48,6 +49,7 @@ import FieldMeasurements from './pages/FieldMeasurements';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
+import GeocodeJobs from './pages/GeocodeJobs';
 import GoLivePlaybook from './pages/GoLivePlaybook';
 import Goals from './pages/Goals';
 import Home from './pages/Home';
@@ -61,6 +63,7 @@ import JobPhotos from './pages/JobPhotos';
 import KnowledgeAdmin from './pages/KnowledgeAdmin';
 import KnowledgeLibrary from './pages/KnowledgeLibrary';
 import KnowledgeSubmit from './pages/KnowledgeSubmit';
+import LiveGPSTracking from './pages/LiveGPSTracking';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
 import MeasurementPackage from './pages/MeasurementPackage';
@@ -84,6 +87,7 @@ import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
 import PerformanceManagement from './pages/PerformanceManagement';
 import QuoteImporter from './pages/QuoteImporter';
+import RFIs from './pages/RFIs';
 import Recognitions from './pages/Recognitions';
 import Reportes from './pages/Reportes';
 import ReportingHub from './pages/ReportingHub';
@@ -91,6 +95,7 @@ import RoleManagement from './pages/RoleManagement';
 import SafetyIncidents from './pages/SafetyIncidents';
 import SetupPassword from './pages/SetupPassword';
 import SkillMatrix from './pages/SkillMatrix';
+import Submittals from './pages/Submittals';
 import SystemHealthCheck from './pages/SystemHealthCheck';
 import SystemReadiness from './pages/SystemReadiness';
 import SystemTest from './pages/SystemTest';
@@ -107,18 +112,14 @@ import VerChangeOrder from './pages/VerChangeOrder';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
-import WelcomeMessage from './pages/WelcomeMessage';
-import RFIs from './pages/RFIs';
-import Submittals from './pages/Submittals';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
-import AIScheduleCenter from './pages/AIScheduleCenter';
-import LiveGPSTracking from './pages/LiveGPSTracking';
-import GeocodeJobs from './pages/GeocodeJobs';
+import WelcomeMessage from './pages/WelcomeMessage';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AIScheduleCenter": AIScheduleCenter,
     "AdminCleanup": AdminCleanup,
     "AgreementSignatures": AgreementSignatures,
     "ApprovalsHub": ApprovalsHub,
@@ -169,6 +170,7 @@ export const PAGES = {
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
+    "GeocodeJobs": GeocodeJobs,
     "GoLivePlaybook": GoLivePlaybook,
     "Goals": Goals,
     "Home": Home,
@@ -182,6 +184,7 @@ export const PAGES = {
     "KnowledgeAdmin": KnowledgeAdmin,
     "KnowledgeLibrary": KnowledgeLibrary,
     "KnowledgeSubmit": KnowledgeSubmit,
+    "LiveGPSTracking": LiveGPSTracking,
     "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
     "MeasurementPackage": MeasurementPackage,
@@ -205,6 +208,7 @@ export const PAGES = {
     "PerDiem": PerDiem,
     "PerformanceManagement": PerformanceManagement,
     "QuoteImporter": QuoteImporter,
+    "RFIs": RFIs,
     "Recognitions": Recognitions,
     "Reportes": Reportes,
     "ReportingHub": ReportingHub,
@@ -212,6 +216,7 @@ export const PAGES = {
     "SafetyIncidents": SafetyIncidents,
     "SetupPassword": SetupPassword,
     "SkillMatrix": SkillMatrix,
+    "Submittals": Submittals,
     "SystemHealthCheck": SystemHealthCheck,
     "SystemReadiness": SystemReadiness,
     "SystemTest": SystemTest,
@@ -228,14 +233,9 @@ export const PAGES = {
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
-    "WelcomeMessage": WelcomeMessage,
-    "RFIs": RFIs,
-    "Submittals": Submittals,
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
-    "AIScheduleCenter": AIScheduleCenter,
-    "LiveGPSTracking": LiveGPSTracking,
-    "GeocodeJobs": GeocodeJobs,
+    "WelcomeMessage": WelcomeMessage,
 }
 
 export const pagesConfig = {

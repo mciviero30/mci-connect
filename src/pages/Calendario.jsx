@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Briefcase, CalendarClock, X, Filter, Clock, CheckCircle, XCircle, Repeat, Copy, Layout, Users, BarChart3, List, Grid3X3 } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Briefcase, CalendarClock, X, Filter, Clock, CheckCircle, XCircle, Repeat, Copy, Layout, Users, BarChart3, List, Grid3X3, Search, Download, TrendingUp, AlertTriangle, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,11 @@ import GoogleCalendarSync from "../components/calendario/GoogleCalendarSync";
 import AvailabilityOverview from "../components/calendario/AvailabilityOverview";
 import ColorLegend from "../components/calendario/ColorLegend";
 import ShiftDetailCard from "../components/calendario/ShiftDetailCard";
+import TimelineView from "../components/calendario/TimelineView";
+import QuickSearch from "../components/calendario/QuickSearch";
+import TeamUtilization from "../components/calendario/TeamUtilization";
+import ExportCalendar from "../components/calendario/ExportCalendar";
+import ConflictResolver from "../components/calendario/ConflictResolver";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
@@ -69,6 +74,10 @@ export default function Calendario() {
   const [conflicts, setConflicts] = useState([]);
   const [copiedShift, setCopiedShift] = useState(null);
   const [selectedShiftDetail, setSelectedShiftDetail] = useState(null);
+  const [showQuickSearch, setShowQuickSearch] = useState(false);
+  const [showUtilization, setShowUtilization] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [showConflicts, setShowConflicts] = useState(false);
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
@@ -718,37 +727,80 @@ export default function Calendario() {
                   <TabsTrigger value="resource" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 h-7 px-2 hidden md:flex rounded-lg">
                     <Grid3X3 className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
+                  <TabsTrigger value="timeline" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 h-7 px-2 hidden md:flex rounded-lg">
+                    <Timer className="w-3 h-3 md:w-4 md:h-4" />
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
 
-              {isAdmin && (
+              {/* Quick Actions */}
               <div className="flex gap-1">
-                 <Button variant="ghost" size="sm" onClick={handleDeleteAllExceptLast} className="text-red-600 hover:bg-red-50" title={language === 'es' ? 'Borrar todos excepto el último' : 'Delete all except latest'}>
-                  <X className="w-4 h-4" />
-                 </Button>
-                 <Button variant="ghost" size="sm" onClick={() => setShowTemplates(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Plantillas' : 'Templates'}>
-                  <Layout className="w-4 h-4" />
-                 </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowCopyWeek(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setShowAvailability(!showAvailability)} 
-                    className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showAvailability ? 'bg-[#1E3A8A]/10' : ''}`}
-                    title={language === 'es' ? 'Disponibilidad' : 'Availability'}
-                  >
-                    <Users className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowStats(!showStats)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Estadísticas' : 'Stats'}>
-                    <BarChart3 className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setShowGoogleSync(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Sincronizar' : 'Sync'}>
-                    <CalendarIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowQuickSearch(true)} 
+                  className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10"
+                  title={language === 'es' ? 'Búsqueda Rápida' : 'Quick Search'}
+                >
+                  <Search className="w-4 h-4" />
+                </Button>
+                
+                {isAdmin && (
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowExport(true)} 
+                      className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10"
+                      title={language === 'es' ? 'Exportar' : 'Export'}
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowUtilization(!showUtilization)} 
+                      className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showUtilization ? 'bg-[#1E3A8A]/10' : ''}`}
+                      title={language === 'es' ? 'Utilización' : 'Utilization'}
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowConflicts(!showConflicts)} 
+                      className={`text-red-600 hover:bg-red-50 ${showConflicts ? 'bg-red-50' : ''}`}
+                      title={language === 'es' ? 'Conflictos' : 'Conflicts'}
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleDeleteAllExceptLast} className="text-red-600 hover:bg-red-50" title={language === 'es' ? 'Borrar todos excepto el último' : 'Delete all except latest'}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowTemplates(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Plantillas' : 'Templates'}>
+                      <Layout className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowCopyWeek(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowAvailability(!showAvailability)} 
+                      className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showAvailability ? 'bg-[#1E3A8A]/10' : ''}`}
+                      title={language === 'es' ? 'Disponibilidad' : 'Availability'}
+                    >
+                      <Users className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowStats(!showStats)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Estadísticas' : 'Stats'}>
+                      <BarChart3 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setShowGoogleSync(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Sincronizar' : 'Sync'}>
+                      <CalendarIcon className="w-4 h-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -759,6 +811,37 @@ export default function Calendario() {
                 shifts={filteredShifts}
                 employees={employees}
                 currentDate={currentDate}
+                language={language}
+              />
+            </div>
+          )}
+
+          {/* Utilization Panel */}
+          {showUtilization && (
+            <div className="mb-6">
+              <TeamUtilization
+                employees={employees}
+                shifts={filteredShifts}
+                currentDate={currentDate}
+                language={language}
+              />
+            </div>
+          )}
+
+          {/* Conflicts Panel */}
+          {showConflicts && (
+            <div className="mb-6">
+              <ConflictResolver
+                shifts={filteredShifts}
+                employees={employees}
+                onResolveConflict={(shift, action) => {
+                  if (action === 'delete') {
+                    handleDelete(shift.id);
+                  } else {
+                    handleShiftClick(shift);
+                  }
+                  setShowConflicts(false);
+                }}
                 language={language}
               />
             </div>
@@ -836,6 +919,21 @@ export default function Calendario() {
             </TabsContent>
             <TabsContent value="resource">
               <ResourceView
+                currentDate={currentDate}
+                employees={employees}
+                shifts={filteredShifts}
+                onShiftClick={handleShiftClick}
+                onCellClick={(date, time, email) => {
+                  setSelectedDate(new Date(date));
+                  setSelectedTime(time);
+                  setShowEventTypeSelector(true);
+                }}
+                isAdmin={isAdmin}
+                language={language}
+              />
+            </TabsContent>
+            <TabsContent value="timeline">
+              <TimelineView
                 currentDate={currentDate}
                 employees={employees}
                 shifts={filteredShifts}
@@ -1010,6 +1108,28 @@ export default function Calendario() {
             onConfirm={handleConfirmShift}
             onReject={handleRejectShift}
             currentUser={user}
+            language={language}
+          />
+
+          {/* Quick Search */}
+          <QuickSearch
+            open={showQuickSearch}
+            onOpenChange={setShowQuickSearch}
+            shifts={shifts}
+            employees={employees}
+            jobs={jobs}
+            onShiftSelect={handleShiftClick}
+            language={language}
+          />
+
+          {/* Export Dialog */}
+          <ExportCalendar
+            open={showExport}
+            onOpenChange={setShowExport}
+            shifts={filteredShifts}
+            employees={employees}
+            jobs={jobs}
+            currentDate={currentDate}
             language={language}
           />
         </div>
