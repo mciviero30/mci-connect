@@ -114,6 +114,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import AIScheduleCenter from './pages/AIScheduleCenter';
 import LiveGPSTracking from './pages/LiveGPSTracking';
+import GeocodeJobs from './pages/GeocodeJobs';
 import __Layout from './Layout.jsx';
 
 
@@ -234,6 +235,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "AIScheduleCenter": AIScheduleCenter,
     "LiveGPSTracking": LiveGPSTracking,
+    "GeocodeJobs": GeocodeJobs,
 }
 
 export const pagesConfig = {
