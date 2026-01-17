@@ -638,7 +638,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           {locationError && (
             <div className="mb-4 p-4 bg-red-900/60 border-2 border-red-300 rounded-2xl shadow-lg">
               <AlertCircle className="w-6 h-6 mx-auto mb-2" />
-              <p className="text-sm font-bold">{locationError}</p>
+              <p className="text-sm font-bold whitespace-pre-line">
+                {typeof locationError === 'string' ? locationError : 'Location error'}
+              </p>
               <p className="text-xs mt-2 opacity-90">
                 {language === 'es' 
                   ? 'Acércate al sitio del proyecto o contacta a tu supervisor.' 
