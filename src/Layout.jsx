@@ -376,6 +376,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
+        { title: 'AI Schedule Center', url: createPageUrl("AIScheduleCenter"), icon: Target },
       ]
     },
     {

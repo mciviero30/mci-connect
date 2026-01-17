@@ -112,6 +112,7 @@ import RFIs from './pages/RFIs';
 import Submittals from './pages/Submittals';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
+import AIScheduleCenter from './pages/AIScheduleCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -230,6 +231,7 @@ export const PAGES = {
     "Submittals": Submittals,
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
+    "AIScheduleCenter": AIScheduleCenter,
 }
 
 export const pagesConfig = {
