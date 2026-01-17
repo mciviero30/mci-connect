@@ -80,6 +80,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     hero_photo_url: job?.hero_photo_url || '',
     website_description: job?.website_description || '',
     geofence_radius: job?.geofence_radius || 100,
+    skip_geofence: job?.skip_geofence || false,
     billing_type: job?.billing_type || 'fixed_price',
     regular_hourly_rate: job?.regular_hourly_rate || 60,
     overtime_hourly_rate: job?.overtime_hourly_rate || 90,
@@ -359,38 +360,64 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
 
         {/* Geofence Configuration */}
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-2xl border-2 border-green-300 dark:border-green-700 shadow-md">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-              <MapPin className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <MapPin className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <Label className="text-slate-900 dark:text-white font-bold text-base">
+                  Radio de Geofencing
+                </Label>
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                  Distancia máxima permitida para fichar entrada/salida
+                </p>
+              </div>
             </div>
-            <div>
-              <Label className="text-slate-900 dark:text-white font-bold text-base">
-                Radio de Geofencing
-              </Label>
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                Distancia máxima permitida para fichar entrada/salida
+            
+            {/* Skip Geofence Toggle */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.skip_geofence || false}
+                onChange={(e) => setFormData({...formData, skip_geofence: e.target.checked})}
+                className="w-5 h-5 text-green-600 bg-white border-green-300 rounded focus:ring-green-500"
+              />
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Skip GPS
+              </span>
+            </label>
+          </div>
+          
+          {!formData.skip_geofence ? (
+            <>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="50"
+                  max="500"
+                  step="10"
+                  value={formData.geofence_radius}
+                  onChange={(e) => setFormData({...formData, geofence_radius: parseInt(e.target.value)})}
+                  className="flex-1 h-3 bg-green-200 dark:bg-green-800 rounded-lg appearance-none cursor-pointer accent-green-600"
+                />
+                <div className="text-center min-w-[100px]">
+                  <p className="text-3xl font-black text-green-700 dark:text-green-400">{formData.geofence_radius}</p>
+                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400">metros</p>
+                </div>
+              </div>
+              <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mt-2">
+                <span>50m (Estricto)</span>
+                <span>500m (Flexible)</span>
+              </div>
+            </>
+          ) : (
+            <div className="p-3 bg-amber-100 dark:bg-amber-900/30 border border-amber-400 dark:border-amber-600 rounded-lg">
+              <p className="text-xs text-amber-800 dark:text-amber-200 font-semibold">
+                ⚠️ GPS validation disabled - Employees can clock in/out from any location
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <input
-              type="range"
-              min="50"
-              max="500"
-              step="10"
-              value={formData.geofence_radius}
-              onChange={(e) => setFormData({...formData, geofence_radius: parseInt(e.target.value)})}
-              className="flex-1 h-3 bg-green-200 dark:bg-green-800 rounded-lg appearance-none cursor-pointer accent-green-600"
-            />
-            <div className="text-center min-w-[100px]">
-              <p className="text-3xl font-black text-green-700 dark:text-green-400">{formData.geofence_radius}</p>
-              <p className="text-xs font-bold text-slate-600 dark:text-slate-400">metros</p>
-            </div>
-          </div>
-          <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 font-semibold mt-2">
-            <span>50m (Estricto)</span>
-            <span>500m (Flexible)</span>
-          </div>
+          )}
         </div>
 
         <div>
