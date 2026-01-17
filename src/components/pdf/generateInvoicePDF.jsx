@@ -48,8 +48,16 @@ export async function generateInvoicePDF(invoice) {
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: true
+    compress: true,
+    putOnlyUsedFonts: true,
+    floatPrecision: 'smart'
   });
+  
+  // CRITICAL: Set zoom to 100% on open
+  doc.viewerPreferences({
+    'FitWindow': true,
+    'PrintScaling': 'None'
+  }, true);
 
   const margin = 20;
   const pageWidth = 210;
@@ -75,13 +83,15 @@ export async function generateInvoicePDF(invoice) {
     doc.rect(rectX, 0, rectWidth, Number(headerHeight), 'F');
   }
   
-  // Load and add MCI logo (compressed)
+  // Load and add MCI logo with high quality
   const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
   const logoBase64 = await loadImageAsBase64(logoUrl);
   
   if (logoBase64) {
-    doc.addImage(logoBase64, 'PNG', margin, 5, 35, 15, undefined, 'FAST');
+    // Usar 'SLOW' para mejor calidad, y ajustar proporción
+    doc.addImage(logoBase64, 'PNG', margin, 4, 40, 17, undefined, 'SLOW');
   } else {
+    // Fallback to text if logo fails
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
@@ -233,9 +243,10 @@ export async function generateInvoicePDF(invoice) {
     const rate = `$${Number(item.unit_price || 0).toFixed(2)}`;
     const total = `$${Number(item.total || 0).toFixed(2)}`;
 
-    const nameLines = itemName ? doc.splitTextToSize(String(itemName), contentWidth - 80) : [];
-    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), contentWidth - 80) : [];
-    const rowHeight = Math.max(8, (nameLines.length + descLines.length) * 4 + 6);
+    // Usar más ancho para las descripciones
+    const nameLines = itemName ? doc.splitTextToSize(String(itemName), contentWidth - 75) : [];
+    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), contentWidth - 75) : [];
+    const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
     // Check page break
     if (y + rowHeight > 270) {
@@ -272,9 +283,9 @@ export async function generateInvoicePDF(invoice) {
     doc.setTextColor(180, 180, 180);
     doc.text(itemNum, numCol, y + 4);
 
-    let textY = y + 4;
+    let textY = y + 5;
     
-    // Item Name (bold, black)
+    // Item Name (bold)
     if (nameLines.length > 0) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
@@ -283,11 +294,11 @@ export async function generateInvoicePDF(invoice) {
       textY += nameLines.length * 4;
     }
     
-    // Description below (normal, dark gray)
+    // Description (normal, smaller) - mostrar todas las descripciones
     if (descLines.length > 0) {
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(100, 100, 100);
+      doc.setFontSize(7.5);
+      doc.setTextColor(80, 80, 80);
       doc.text(descLines, itemCol, textY);
     }
 

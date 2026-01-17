@@ -30,25 +30,45 @@ Deno.serve(async (req) => {
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
-            compress: true
+            compress: true,
+            putOnlyUsedFonts: true,
+            floatPrecision: 'smart'
         });
+        
+        // CRITICAL: Set zoom to 100% on open
+        doc.viewerPreferences({
+            'FitWindow': true,
+            'PrintScaling': 'None'
+        }, true);
         const hasBalance = invoice.balance > 0;
         const isPaid = invoice.status === 'paid';
 
-        // ==========================================
-        // HEADER BANNER (BLACK)
-        // ==========================================
+        // ========== HEADER: Black solid until logo ends, then gradient to gray ==========
+        const headerHeight = 25;
+        const logoEndX = 60;
+        
+        // Pure black section for logo
         doc.setFillColor(0, 0, 0);
-        doc.rect(0, 0, 210, 40, 'F');
+        doc.rect(0, 0, logoEndX, headerHeight, 'F');
+        
+        // Gradient from logo end to page end
+        const gradientWidth = 210 - logoEndX;
+        const gradientSteps = 100;
+        for (let i = 0; i < gradientSteps; i++) {
+            const gray = Math.floor((i / gradientSteps) * 130);
+            doc.setFillColor(gray, gray, gray);
+            const rectX = logoEndX + (i * gradientWidth) / gradientSteps;
+            const rectWidth = (gradientWidth / gradientSteps) + 0.5;
+            doc.rect(rectX, 0, rectWidth, headerHeight, 'F');
+        }
 
-        // Logo - Fixed with chunked conversion
+        // Logo - High quality with same URL as quotes
         try {
-            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/40cfa838e_Screenshot2025-11-12at102825PM.png';
+            const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
             const logoResponse = await fetch(logoUrl);
             const arrayBuffer = await logoResponse.arrayBuffer();
             const bytes = new Uint8Array(arrayBuffer);
             
-            // Convert to base64 in chunks to avoid stack overflow
             let binary = '';
             const chunkSize = 8192;
             const len = bytes.byteLength;
@@ -59,191 +79,262 @@ Deno.serve(async (req) => {
             }
             
             const logoBase64 = btoa(binary);
-            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 15, 10, 50, 15);
+            // High quality rendering
+            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 20, 4, 40, 17, undefined, 'SLOW');
         } catch (err) {
             console.log('Logo load error:', err);
         }
 
-        // Title and Balance
+        // INVOICE title (right aligned, white)
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(32);
+        doc.setFontSize(28);
         doc.setFont(undefined, 'bold');
-        doc.text('INVOICE', 195, 20, { align: 'right' });
+        doc.text('INVOICE', 190, 17, { align: 'right' });
 
-        if (hasBalance && !isPaid) {
-            doc.setFontSize(10);
-            doc.text('BALANCE DUE', 160, 28, { align: 'right' });
-            doc.setFontSize(16);
-            doc.text('$' + invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2 }), 195, 28, { align: 'right' });
-        }
-
-        if (isPaid) {
-            doc.setFontSize(14);
-            doc.setTextColor(52, 211, 153);
-            doc.text('✓ PAID', 195, 28, { align: 'right' });
-        }
-
-        // ==========================================
-        // INFO SECTIONS
-        // ==========================================
+        // COMPANY INFO
+        const margin = 20;
+        let y = 35;
+        
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        doc.text('Modern Components Installation', 15, 50);
+        doc.text('Modern Components Installation', margin, y);
+        
         doc.setFont(undefined, 'normal');
-        doc.setFontSize(8);
-        doc.text(['2414 Meadow Isle Ln', 'Lawrenceville Georgia 30043', 'U.S.A', 'Phone: 470-209-3783'], 15, 55);
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        y += 5;
+        doc.text('2414 Meadow Isle Ln, Lawrenceville GA 30043', margin, y);
+        y += 4;
+        doc.text('Phone: 470-209-3783', margin, y);
 
-        // Bill To & Invoice Info
+        // RIGHT COLUMN: Invoice details
+        const col2X = 130;
+        const valueX = 190;
+        let rightY = 35;
+        
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(120, 120, 120);
+        doc.text('Invoice#', col2X, rightY);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(invoice.invoice_number || '', valueX, rightY, { align: 'right' });
+        doc.setDrawColor(230, 230, 230);
+        doc.line(col2X, rightY + 1, valueX, rightY + 1);
+        
+        rightY += 6;
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(120, 120, 120);
+        doc.text('Date', col2X, rightY);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(invoice.invoice_date?.split('-').slice(1).concat(invoice.invoice_date.split('-')[0].slice(-2)).join('.') || '', valueX, rightY, { align: 'right' });
+        doc.line(col2X, rightY + 1, valueX, rightY + 1);
+        
+        rightY += 6;
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(120, 120, 120);
+        doc.text('Due Date', col2X, rightY);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(invoice.due_date?.split('-').slice(1).concat(invoice.due_date.split('-')[0].slice(-2)).join('.') || '', valueX, rightY, { align: 'right' });
+        doc.line(col2X, rightY + 1, valueX, rightY + 1);
+
+        // Bill To
+        y += 8;
+        doc.setFontSize(8);
+        doc.setTextColor(59, 130, 246);
+        doc.setFont(undefined, 'bold');
+        doc.text('BILL TO:', margin, y);
+        y += 5;
         doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text(invoice.customer_name || 'Customer', 15, 80);
-
-        doc.setFontSize(8);
-        doc.setFont(undefined, 'normal');
-        doc.setTextColor(100, 116, 139);
-        const infoX = 150;
-        doc.text('Invoice#:', infoX, 75);
-        doc.text('Invoice Date:', infoX, 80);
-        doc.text('Due Date:', infoX, 85);
-
-        doc.setTextColor(15, 23, 42);
-        doc.setFont(undefined, 'bold');
-        doc.text(invoice.invoice_number || '', 195, 75, { align: 'right' });
-        doc.text(invoice.invoice_date || '', 195, 80, { align: 'right' });
-        doc.text(invoice.due_date || '', 195, 85, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        doc.text(invoice.customer_name || 'Customer', margin, y);
 
         // Job Details
-        let currentY = 95;
+        y += 20;
+        let currentY = y;
         if (invoice.job_name) {
-            doc.setFontSize(8);
-            doc.setTextColor(100, 116, 139);
-            doc.text('Job Details:', 15, currentY);
             doc.setFontSize(9);
-            doc.setFont(undefined, 'bold');
-            doc.setTextColor(15, 23, 42);
-            doc.text(invoice.job_name, 15, currentY + 5);
+            doc.setTextColor(100, 100, 100);
             doc.setFont(undefined, 'normal');
-            doc.setFontSize(8);
-            doc.text(invoice.job_address || '', 15, currentY + 9);
-            currentY += 18;
+            doc.text('Job Details :', margin, currentY);
+            currentY += 5;
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text(invoice.job_name, margin, currentY);
+            if (invoice.job_address) {
+                currentY += 5;
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(70, 70, 70);
+                doc.text(invoice.job_address, margin, currentY);
+            }
+            currentY += 8;
         }
 
-        // ==========================================
-        // TABLE HEADER - 5 COLUMNS - smooth gradient
-        // ==========================================
+        // TABLE HEADER - gradient (matching quotes)
         const tableHeaderY = currentY;
+        const contentWidth = 170;
+        const tableHeaderHeight = 7;
         const headerSteps = 100;
         for (let i = 0; i < headerSteps; i++) {
-            const x = 15 + (180 / headerSteps) * i;
-            const width = (180 / headerSteps) + 0.5;
+            const x = margin + (contentWidth / headerSteps) * i;
+            const width = (contentWidth / headerSteps) + 0.5;
             const gray = Math.floor(i * (120 / headerSteps));
             doc.setFillColor(gray, gray, gray);
-            doc.rect(x, tableHeaderY, width, 10, 'F');
+            doc.rect(x, tableHeaderY, width, tableHeaderHeight, 'F');
         }
+        
+        const numCol = margin + 3;
+        const itemCol = margin + 12;
+        const qtyCol = 190 - 55;
+        const rateCol = 190 - 35;
+        const amountCol = 190 - 3;
+        
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(9);
+        doc.setFontSize(7);
         doc.setFont(undefined, 'bold');
-        doc.text('#', 18, tableHeaderY + 6.5);
-        doc.text('ITEM & DESCRIPTION', 30, tableHeaderY + 6.5);
-        doc.text('QTY', 140, tableHeaderY + 6.5, { align: 'right' });
-        doc.text('RATE', 165, tableHeaderY + 6.5, { align: 'right' });
-        doc.text('AMOUNT', 190, tableHeaderY + 6.5, { align: 'right' });
+        doc.text('#', numCol, tableHeaderY + 4.5);
+        doc.text('ITEM & DESCRIPTION', itemCol, tableHeaderY + 4.5);
+        doc.text('QTY', qtyCol, tableHeaderY + 4.5, { align: 'right' });
+        doc.text('RATE', rateCol, tableHeaderY + 4.5, { align: 'right' });
+        doc.text('AMOUNT', amountCol, tableHeaderY + 4.5, { align: 'right' });
 
-        // ==========================================
         // ITEMS
-        // ==========================================
-        currentY = tableHeaderY + 10;
-        doc.setTextColor(15, 23, 42);
-        let itemIndex = 1;
+        currentY = tableHeaderY + 9;
+        doc.setTextColor(0, 0, 0);
+        
+        for (let i = 0; i < invoice.items.length; i++) {
+            const item = invoice.items[i];
+            
+            const itemName = item.item_name || '';
+            const itemDesc = item.description || '';
+            const qty = `${item.quantity || 0} ${item.unit || ''}`;
+            const rate = `$${(item.unit_price || 0).toFixed(2)}`;
+            const total = `$${(item.total || 0).toFixed(2)}`;
 
-        for (const item of invoice.items || []) {
-            if (currentY > 260) { doc.addPage(); currentY = 20; }
+            // Usar más ancho para las descripciones
+            const nameLines = itemName ? doc.splitTextToSize(itemName, contentWidth - 75) : [];
+            const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 75) : [];
+            const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
-            // Multi-line text wrapping
-            const desc = item.item_name || item.description || '';
-            const wrappedText = doc.splitTextToSize(desc, 95);
-            const lineHeight = 4;
-            const rowHeight = Math.max(8, wrappedText.length * lineHeight + 2);
-
-            // Row background (zebra striping)
-            if (itemIndex % 2 === 0) {
-                doc.setFillColor(249, 250, 251);
-                doc.rect(15, currentY, 180, rowHeight, 'F');
+            // Page break check
+            if (currentY + rowHeight > 270) {
+                doc.addPage();
+                currentY = margin;
+                // Re-render header
+                for (let j = 0; j < headerSteps; j++) {
+                    const x = margin + (contentWidth / headerSteps) * j;
+                    const width = (contentWidth / headerSteps) + 0.5;
+                    const gray = Math.floor(j * (120 / headerSteps));
+                    doc.setFillColor(gray, gray, gray);
+                    doc.rect(x, currentY, width, 7, 'F');
+                }
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(7);
+                doc.setFont(undefined, 'bold');
+                doc.text('#', numCol, currentY + 4.5);
+                doc.text('ITEM & DESCRIPTION', itemCol, currentY + 4.5);
+                doc.text('QTY', qtyCol, currentY + 4.5, { align: 'right' });
+                doc.text('RATE', rateCol, currentY + 4.5, { align: 'right' });
+                doc.text('AMOUNT', amountCol, currentY + 4.5, { align: 'right' });
+                currentY += 9;
             }
 
-            // Column 1: # (fixed at x=18)
+            // Zebra striping
+            if (i % 2 === 0) {
+                doc.setFillColor(250, 250, 250);
+                doc.rect(margin, currentY, contentWidth, rowHeight, 'F');
+            }
+
+            // Item number
             doc.setFont(undefined, 'normal');
             doc.setFontSize(8);
-            doc.text(itemIndex.toString(), 18, currentY + 5.5);
-            
-            // Column 2: ITEM & DESCRIPTION (fixed at x=30, width=95)
-            doc.setFont(undefined, 'bold');
-            doc.setFontSize(8);
-            doc.text(wrappedText, 30, currentY + 5.5);
+            doc.setTextColor(180, 180, 180);
+            doc.text((i + 1).toString(), numCol, currentY + 4);
 
-            // Column 3: QTY (fixed at x=135, right-aligned)
+            let textY = currentY + 5;
+            
+            // Item Name (bold)
+            if (nameLines.length > 0) {
+                doc.setFont(undefined, 'bold');
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                doc.text(nameLines, itemCol, textY);
+                textY += nameLines.length * 4;
+            }
+            
+            // Description (normal, smaller) - mostrar todas las descripciones
+            if (descLines.length > 0) {
+                doc.setFont(undefined, 'normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(80, 80, 80);
+                doc.text(descLines, itemCol, textY);
+            }
+
+            // Qty, Rate, Amount
             doc.setFont(undefined, 'normal');
-            const qtyText = `${item.quantity || 0} ${item.unit || ''}`;
-            doc.text(qtyText, 135, currentY + 5.5, { align: 'right' });
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+            doc.text(qty, qtyCol, currentY + 4, { align: 'right' });
+            doc.text(rate, rateCol, currentY + 4, { align: 'right' });
             
-            // Column 4: RATE (fixed at x=165, right-aligned)
-            doc.text('$' + (item.unit_price || 0).toFixed(2), 165, currentY + 5.5, { align: 'right' });
-            
-            // Column 5: AMOUNT (fixed at x=190, right-aligned)
             doc.setFont(undefined, 'bold');
-            doc.text('$' + (item.total || 0).toFixed(2), 190, currentY + 5.5, { align: 'right' });
+            doc.text(total, amountCol, currentY + 4, { align: 'right' });
 
-            // Border line
-            doc.setDrawColor(241, 245, 249);
-            doc.line(15, currentY + rowHeight, 195, currentY + rowHeight);
+            // Row border
+            doc.setDrawColor(230, 230, 230);
+            doc.line(margin, currentY + rowHeight, 190, currentY + rowHeight);
             currentY += rowHeight;
-            itemIndex++;
         }
 
-        // ==========================================
-        // TOTALS BOX
-        // ==========================================
-        currentY += 10;
-        const totalX = 140;
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        doc.text('Sub Total', totalX, currentY);
-        doc.text(invoice.subtotal.toFixed(2), 195, currentY, { align: 'right' });
+        // TOTALS
+        currentY += 8;
+        const totalsLabelX = 190 - 50;
+        const totalsValueX = 190;
         
-        currentY += 6;
-        if (invoice.tax_amount > 0) {
-            doc.text(`Tax (${invoice.tax_rate}%)`, totalX, currentY);
-            doc.text(invoice.tax_amount.toFixed(2), 195, currentY, { align: 'right' });
-            currentY += 6;
-        }
-
-        // Gray gradient box for Total - smooth
-        const totalBoxSteps = 100;
-        for (let i = 0; i < totalBoxSteps; i++) {
-            const x = (totalX - 2) + (57 / totalBoxSteps) * i;
-            const width = (57 / totalBoxSteps) + 0.5;
-            const gray = 241 - Math.floor(i * (36 / totalBoxSteps));
-            doc.setFillColor(gray, gray - 4, gray - 8);
-            doc.rect(x, currentY, width, 10, 'F');
-        }
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(120, 120, 120);
+        doc.text('Sub Total', totalsLabelX, currentY);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`$${(invoice.subtotal || 0).toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
+        
+        currentY += 8;
+        doc.setFillColor(220, 225, 230);
+        doc.rect(totalsLabelX - 8, currentY - 6, 58, 12, 'F');
         doc.setDrawColor(30, 30, 30);
         doc.setLineWidth(0.8);
-        doc.line(totalX - 2, currentY, totalX + 55, currentY);
-        doc.setFontSize(11);
+        doc.line(totalsLabelX - 8, currentY - 6, totalsLabelX + 50, currentY - 6);
+        
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL', totalX + 2, currentY + 6.5);
-        doc.text('$' + invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2 }), 195, currentY + 6.5, { align: 'right' });
-
-        // ==========================================
-        // FOOTER
-        // ==========================================
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(7);
-            doc.setTextColor(150);
-            doc.text(`Page ${i} of ${pageCount} | Modern Components Installation`, 105, 285, { align: 'center' });
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.text('TOTAL', totalsLabelX, currentY + 2);
+        doc.setFontSize(14);
+        doc.text(`$${(invoice.total || 0).toFixed(2)}`, totalsValueX, currentY + 2, { align: 'right' });
+        
+        // Amount Paid (if applicable)
+        if ((invoice.amount_paid || 0) > 0) {
+            currentY += 10;
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            doc.text('Amount Paid', totalsLabelX, currentY);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(34, 197, 94);
+            doc.text(`-$${(invoice.amount_paid || 0).toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
+            
+            // Balance Due
+            currentY += 6;
+            doc.setTextColor(120, 120, 120);
+            doc.text('Balance Due', totalsLabelX, currentY);
+            doc.setTextColor(invoice.balance > 0 ? 220 : 34, invoice.balance > 0 ? 38 : 197, invoice.balance > 0 ? 38 : 94);
+            doc.text(`$${(invoice.balance || 0).toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
         }
 
         const pdfBytes = doc.output('arraybuffer');
