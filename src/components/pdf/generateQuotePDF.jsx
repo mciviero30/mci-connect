@@ -264,10 +264,10 @@ export async function generateQuotePDF(quote) {
     const rate = `$${Number(item.unit_price || 0).toFixed(2)}`;
     const total = `$${Number(item.total || 0).toFixed(2)}`;
 
-    // Calculate row height
-    const nameLines = itemName ? doc.splitTextToSize(String(itemName), contentWidth - 80) : [];
-    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), contentWidth - 80) : [];
-    const rowHeight = Math.max(8, (nameLines.length + descLines.length) * 4 + 6);
+    // Calculate row height - usar más ancho para las descripciones
+    const nameLines = itemName ? doc.splitTextToSize(String(itemName), contentWidth - 75) : [];
+    const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), contentWidth - 75) : [];
+    const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
     // Check page break
     if (y + rowHeight > 270) {
