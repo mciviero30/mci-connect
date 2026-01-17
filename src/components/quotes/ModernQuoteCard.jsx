@@ -110,14 +110,35 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
               <DropdownMenuItem 
                 onClick={async (e) => {
                   e.stopPropagation();
-                  const { data } = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
-                  const blob = new Blob([data], { type: 'application/pdf' });
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `Quote-${quote.quote_number}.pdf`;
-                  a.click();
-                  window.URL.revokeObjectURL(url);
+                  try {
+                    const response = await base44.functions.invoke('generateQuotePDF', { quoteId: quote.id });
+                    
+                    // Handle different response types
+                    let pdfData;
+                    if (response instanceof Blob) {
+                      pdfData = response;
+                    } else if (response instanceof ArrayBuffer) {
+                      pdfData = new Blob([response], { type: 'application/pdf' });
+                    } else if (response?.data) {
+                      pdfData = new Blob([response.data], { type: 'application/pdf' });
+                    } else {
+                      throw new Error('Invalid response format');
+                    }
+                    
+                    const url = window.URL.createObjectURL(pdfData);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Quote-${quote.quote_number}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                      window.URL.revokeObjectURL(url);
+                      a.remove();
+                    }, 100);
+                  } catch (error) {
+                    console.error('PDF download error:', error);
+                  }
                 }}
                 className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
               >

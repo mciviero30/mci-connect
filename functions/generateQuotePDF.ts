@@ -28,7 +28,20 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const doc = new jsPDF();
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+            compress: true,
+            putOnlyUsedFonts: true,
+            floatPrecision: 'smart'
+        });
+        
+        // CRITICAL: Set zoom to 100% on open
+        doc.viewerPreferences({
+            'FitWindow': true,
+            'PrintScaling': 'None'
+        }, true);
 
         // ========== HEADER: Black solid until logo ends, then gradient to gray ==========
         const headerHeight = 25;
@@ -49,7 +62,7 @@ Deno.serve(async (req) => {
             doc.rect(rectX, 0, rectWidth, headerHeight, 'F');
         }
 
-        // Load and add logo image
+        // Load and add logo image with high quality
         try {
             const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/32dbac073_Screenshot2025-12-19at23750PM.png';
             const logoResponse = await fetch(logoUrl);
@@ -66,7 +79,8 @@ Deno.serve(async (req) => {
             }
             
             const logoBase64 = btoa(binary);
-            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 20, 5, 35, 15);
+            // Usar 'SLOW' para mejor calidad, ajustar tamaño y posición
+            doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', 20, 4, 40, 17, undefined, 'SLOW');
         } catch (err) {
             console.log('Logo load error:', err);
         }
@@ -202,9 +216,10 @@ Deno.serve(async (req) => {
             const rate = `$${(item.unit_price || 0).toFixed(2)}`;
             const total = `$${(item.total || 0).toFixed(2)}`;
 
-            const nameLines = itemName ? doc.splitTextToSize(itemName, contentWidth - 80) : [];
-            const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 80) : [];
-            const rowHeight = Math.max(8, (nameLines.length + descLines.length) * 4 + 6);
+            // Usar más ancho para las descripciones
+            const nameLines = itemName ? doc.splitTextToSize(itemName, contentWidth - 75) : [];
+            const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 75) : [];
+            const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
             // Page break check
             if (currentY + rowHeight > 270) {
@@ -241,7 +256,7 @@ Deno.serve(async (req) => {
             doc.setTextColor(180, 180, 180);
             doc.text((i + 1).toString(), numCol, currentY + 4);
 
-            let textY = currentY + 4;
+            let textY = currentY + 5;
             
             // Item Name (bold)
             if (nameLines.length > 0) {
@@ -252,11 +267,11 @@ Deno.serve(async (req) => {
                 textY += nameLines.length * 4;
             }
             
-            // Description (normal)
+            // Description (normal, smaller) - mostrar todas las descripciones
             if (descLines.length > 0) {
                 doc.setFont(undefined, 'normal');
-                doc.setFontSize(8);
-                doc.setTextColor(100, 100, 100);
+                doc.setFontSize(7.5);
+                doc.setTextColor(80, 80, 80);
                 doc.text(descLines, itemCol, textY);
             }
 

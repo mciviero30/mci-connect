@@ -45,8 +45,16 @@ export async function generateQuotePDF(quote) {
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
-    compress: true
+    compress: true,
+    putOnlyUsedFonts: true,
+    floatPrecision: 'smart'
   });
+  
+  // CRITICAL: Set zoom to 100% on open
+  doc.viewerPreferences({
+    'FitWindow': true,
+    'PrintScaling': 'None'
+  }, true);
 
   const margin = 20;
   const pageWidth = 210;
