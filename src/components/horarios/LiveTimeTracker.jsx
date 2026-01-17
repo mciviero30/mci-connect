@@ -231,8 +231,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         }
       }
       
-      // Skip geofence validation for driving hours OR if job has skip_geofence enabled
-      if (workType === 'driving' || job.skip_geofence) {
+      // Skip geofence validation only for driving hours
+      if (workType === 'driving') {
         const session = {
           startTime: adjustedCheckIn.getTime(),
           checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -439,9 +439,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         return;
       }
 
-      // Skip geofence validation for driving hours OR if job has skip_geofence enabled
+      // Skip geofence validation only for driving hours
       const job = jobs.find(j => j.id === activeSession.jobId);
-      if (activeSession.workType !== 'driving' && !job?.skip_geofence) {
+      if (activeSession.workType !== 'driving') {
         // STRICT GEOFENCING for clock-out: Use job's configured radius
         const MAX_DISTANCE = job?.geofence_radius || 100;
 
