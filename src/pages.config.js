@@ -113,6 +113,7 @@ import Submittals from './pages/Submittals';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import AIScheduleCenter from './pages/AIScheduleCenter';
+import LiveGPSTracking from './pages/LiveGPSTracking';
 import __Layout from './Layout.jsx';
 
 
@@ -232,6 +233,7 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "AIScheduleCenter": AIScheduleCenter,
+    "LiveGPSTracking": LiveGPSTracking,
 }
 
 export const pagesConfig = {
