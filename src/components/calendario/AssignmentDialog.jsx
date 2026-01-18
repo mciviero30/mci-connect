@@ -368,9 +368,22 @@ export default function AssignmentDialog({
                     <div className="flex flex-wrap gap-1">
                       {selectedEmployees.map(email => {
                         const emp = (employees || []).find(e => e.email === email);
+                        const displayName = (() => {
+                          if (!emp) return email;
+                          if (emp.first_name && emp.last_name) {
+                            return `${emp.first_name} ${emp.last_name}`.trim();
+                          }
+                          if (emp.full_name && !emp.full_name.includes('@')) {
+                            return emp.full_name;
+                          }
+                          return email.split('@')[0].split('.').map(p => 
+                            p.charAt(0).toUpperCase() + p.slice(1)
+                          ).join(' ');
+                        })();
+                        
                         return (
                           <Badge key={email} variant="secondary" className="badge-soft-blue">
-                            {emp?.full_name || email}
+                            {displayName}
                           </Badge>
                         );
                       })}
@@ -384,25 +397,47 @@ export default function AssignmentDialog({
                   <CommandEmpty className="text-slate-500 p-4">Not found.</CommandEmpty>
                   <CommandGroup>
                     {(employees || [])
-                      .filter(e => e.employment_status === 'active' || !e.employment_status)
-                      .map(emp => (
-                        <CommandItem
-                          key={emp.email}
-                          onSelect={() => {
-                            setSelectedEmployees(prev =>
-                              prev.includes(emp.email)
-                                ? prev.filter(e => e !== emp.email)
-                                : [...prev, emp.email]
-                            );
-                          }}
-                          className="text-slate-900 dark:text-white"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'soft-blue-bg' : 'border-slate-400 dark:border-slate-600'}`} />
-                            {emp.full_name || emp.email}
-                          </div>
-                        </CommandItem>
-                      ))}
+                      .filter(e => {
+                        // Exclude deleted/archived
+                        if (e.employment_status === 'deleted' || e.employment_status === 'archived') return false;
+                        // Exclude admin user (marzio.civiero@mci-us.com) and Yeraldin Ramirez
+                        if (e.email === 'marzio.civiero@mci-us.com') return false;
+                        if (e.position === 'administrator' || e.department === 'administration') return false;
+                        return true;
+                      })
+                      .map(emp => {
+                        // Display name logic: consistent with ModernEmployeeCard
+                        const displayName = (() => {
+                          if (emp.first_name && emp.last_name) {
+                            return `${emp.first_name} ${emp.last_name}`.trim();
+                          }
+                          if (emp.full_name && !emp.full_name.includes('@')) {
+                            return emp.full_name;
+                          }
+                          return emp.email.split('@')[0].split('.').map(p => 
+                            p.charAt(0).toUpperCase() + p.slice(1)
+                          ).join(' ');
+                        })();
+
+                        return (
+                          <CommandItem
+                            key={emp.email}
+                            onSelect={() => {
+                              setSelectedEmployees(prev =>
+                                prev.includes(emp.email)
+                                  ? prev.filter(e => e !== emp.email)
+                                  : [...prev, emp.email]
+                              );
+                            }}
+                            className="text-slate-900 dark:text-white"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className={`w-4 h-4 rounded border-2 ${selectedEmployees.includes(emp.email) ? 'soft-blue-bg' : 'border-slate-400 dark:border-slate-600'}`} />
+                              {displayName}
+                            </div>
+                          </CommandItem>
+                        );
+                      })}
                   </CommandGroup>
                 </Command>
               </PopoverContent>
@@ -441,60 +476,82 @@ export default function AssignmentDialog({
             />
           </div>
 
-          {/* Custom Color Picker - Professional Palette */}
-          <div className="flex items-center gap-3">
-            <Label className="text-slate-700 font-semibold text-sm flex-shrink-0">Shift Color</Label>
-            <Popover>
-              <PopoverTrigger asChild>
+          {/* Enhanced Color Picker - Modern Design */}
+          <div className="space-y-3 p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
+            <Label className="text-slate-900 dark:text-white font-bold text-base flex items-center gap-2">
+              <div className={`w-5 h-5 rounded-lg ${
+                customColor === 'blue' ? 'bg-blue-600' :
+                customColor === 'green' ? 'bg-green-600' :
+                customColor === 'purple' ? 'bg-purple-600' :
+                customColor === 'cyan' ? 'bg-cyan-600' :
+                customColor === 'pink' ? 'bg-pink-600' :
+                customColor === 'red' ? 'bg-red-600' :
+                customColor === 'orange' ? 'bg-orange-600' :
+                customColor === 'amber' ? 'bg-amber-600' :
+                customColor === 'yellow' ? 'bg-yellow-500' :
+                customColor === 'lime' ? 'bg-lime-600' :
+                customColor === 'emerald' ? 'bg-emerald-600' :
+                customColor === 'teal' ? 'bg-teal-600' :
+                customColor === 'sky' ? 'bg-sky-600' :
+                customColor === 'indigo' ? 'bg-indigo-600' :
+                customColor === 'violet' ? 'bg-violet-600' :
+                customColor === 'fuchsia' ? 'bg-fuchsia-600' :
+                customColor === 'rose' ? 'bg-rose-600' :
+                'bg-slate-300 dark:bg-slate-600'
+              } shadow-md transition-all`} />
+              Shift Color
+              {customColor && <span className="text-sm font-normal text-slate-600 dark:text-slate-400">({customColor})</span>}
+            </Label>
+            <div className="grid grid-cols-6 gap-2.5">
+              {[
+                { name: 'blue', bg: 'bg-blue-600', hover: 'hover:bg-blue-700' },
+                { name: 'green', bg: 'bg-green-600', hover: 'hover:bg-green-700' },
+                { name: 'purple', bg: 'bg-purple-600', hover: 'hover:bg-purple-700' },
+                { name: 'cyan', bg: 'bg-cyan-600', hover: 'hover:bg-cyan-700' },
+                { name: 'pink', bg: 'bg-pink-600', hover: 'hover:bg-pink-700' },
+                { name: 'red', bg: 'bg-red-600', hover: 'hover:bg-red-700' },
+                { name: 'orange', bg: 'bg-orange-600', hover: 'hover:bg-orange-700' },
+                { name: 'amber', bg: 'bg-amber-600', hover: 'hover:bg-amber-700' },
+                { name: 'yellow', bg: 'bg-yellow-500', hover: 'hover:bg-yellow-600' },
+                { name: 'lime', bg: 'bg-lime-600', hover: 'hover:bg-lime-700' },
+                { name: 'emerald', bg: 'bg-emerald-600', hover: 'hover:bg-emerald-700' },
+                { name: 'teal', bg: 'bg-teal-600', hover: 'hover:bg-teal-700' },
+                { name: 'sky', bg: 'bg-sky-600', hover: 'hover:bg-sky-700' },
+                { name: 'indigo', bg: 'bg-indigo-600', hover: 'hover:bg-indigo-700' },
+                { name: 'violet', bg: 'bg-violet-600', hover: 'hover:bg-violet-700' },
+                { name: 'fuchsia', bg: 'bg-fuchsia-600', hover: 'hover:bg-fuchsia-700' },
+                { name: 'rose', bg: 'bg-rose-600', hover: 'hover:bg-rose-700' }
+              ].map((color) => (
                 <button
+                  key={color.name}
                   type="button"
-                  className={`w-10 h-10 rounded-lg border-2 ${
-                    customColor === 'blue' ? 'bg-blue-600 border-blue-700' :
-                    customColor === 'green' ? 'bg-green-600 border-green-700' :
-                    customColor === 'purple' ? 'bg-purple-600 border-purple-700' :
-                    customColor === 'cyan' ? 'bg-cyan-600 border-cyan-700' :
-                    customColor === 'pink' ? 'bg-pink-600 border-pink-700' :
-                    customColor === 'red' ? 'bg-red-600 border-red-700' :
-                    'bg-slate-200 border-slate-300'
-                  } hover:scale-105 transition-transform shadow-md`}
-                  title="Select color"
-                />
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-4 bg-white border-slate-200 shadow-xl rounded-xl" align="start">
-                <p className="text-xs text-slate-600 mb-3 font-semibold">Professional Color Palette:</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { name: 'blue', bg: 'bg-blue-600', label: 'Blue' },
-                    { name: 'green', bg: 'bg-green-600', label: 'Green' },
-                    { name: 'purple', bg: 'bg-purple-600', label: 'Purple' },
-                    { name: 'cyan', bg: 'bg-cyan-600', label: 'Cyan' },
-                    { name: 'pink', bg: 'bg-pink-600', label: 'Pink' },
-                    { name: 'red', bg: 'bg-red-600', label: 'Red' }
-                  ].map((color) => (
-                    <button
-                      key={color.name}
-                      type="button"
-                      onClick={() => setCustomColor(color.name)}
-                      className={`h-12 rounded-lg ${color.bg} hover:scale-105 transition-all shadow-md ${
-                        customColor === color.name ? 'ring-2 ring-offset-2 ring-[#1E3A8A] scale-105' : ''
-                      }`}
-                      title={color.label}
-                    />
-                  ))}
-                </div>
-                {customColor && (
-                  <button
-                    type="button"
-                    onClick={() => setCustomColor('')}
-                    className="w-full mt-3 text-xs text-slate-600 hover:text-slate-900 py-2 hover:bg-slate-50 rounded-lg transition-colors font-medium"
-                  >
-                    Clear Selection
-                  </button>
-                )}
-              </PopoverContent>
-            </Popover>
+                  onClick={() => setCustomColor(color.name)}
+                  className={cn(
+                    "h-14 rounded-xl transition-all shadow-lg active:scale-95",
+                    color.bg,
+                    color.hover,
+                    customColor === color.name 
+                      ? 'ring-4 ring-[#1E3A8A] ring-offset-2 scale-110' 
+                      : 'hover:scale-105'
+                  )}
+                  title={color.name}
+                >
+                  {customColor === color.name && (
+                    <Check className="w-5 h-5 text-white mx-auto drop-shadow-lg" />
+                  )}
+                </button>
+              ))}
+            </div>
             {customColor && (
-              <span className="text-xs text-slate-600 capitalize font-medium">{customColor}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setCustomColor('')}
+                className="w-full text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear Color
+              </Button>
             )}
           </div>
 
