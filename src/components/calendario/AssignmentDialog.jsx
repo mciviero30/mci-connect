@@ -12,6 +12,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { base44 } from '@/api/base44Client';
 
 export default function AssignmentDialog({ 
   open, 
@@ -116,6 +117,26 @@ export default function AssignmentDialog({
       };
       
       onSubmit(shiftData);
+      
+      // Send email notification for schedule update
+      if (selectedEmployees[0] && jobId) {
+        try {
+          await base44.functions.invoke('sendCalendarNotification', {
+            employeeEmail: selectedEmployees[0],
+            employeeName: employee?.full_name || selectedEmployees[0],
+            eventType: 'schedule_update',
+            jobName: selectedJob?.name || '',
+            date: startDate,
+            startTime: startTime,
+            endTime: endTime,
+            notes: notes,
+            assignmentId: shift.id
+          });
+        } catch (error) {
+          console.error('Failed to send email notification:', error);
+        }
+      }
+      
       return;
     }
 
@@ -168,6 +189,24 @@ export default function AssignmentDialog({
 
     for (const shiftData of shiftsToCreate) {
       await onSubmit(shiftData);
+      
+      // Send email notification for new assignment
+      if (shiftData.employee_email && shiftData.job_id) {
+        try {
+          await base44.functions.invoke('sendCalendarNotification', {
+            employeeEmail: shiftData.employee_email,
+            employeeName: shiftData.employee_name,
+            eventType: 'new_assignment',
+            jobName: shiftData.job_name,
+            date: shiftData.date,
+            startTime: shiftData.start_time,
+            endTime: shiftData.end_time,
+            notes: shiftData.notes
+          });
+        } catch (error) {
+          console.error('Failed to send email notification:', error);
+        }
+      }
     }
     
     onOpenChange(false);
