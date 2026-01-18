@@ -401,19 +401,8 @@ export default function AssignmentDialog({
                         // Exclude deleted/archived
                         if (e.employment_status === 'deleted' || e.employment_status === 'archived') return false;
                         
-                        // Exclude specific emails (admin accounts)
-                        const excludedEmails = [
-                          'marzio.civiero@mci-us.com',
-                          'mciviero30@gmail.com',
-                          'yeraldin.ramirez@mci-us.com'
-                        ];
-                        if (excludedEmails.includes(e.email)) return false;
-                        
-                        // Exclude by position or department
-                        if (e.position === 'administrator' || e.department === 'administration') return false;
-                        
-                        // Exclude "modern components" (likely a test account)
-                        if (e.full_name?.toLowerCase().includes('modern components')) return false;
+                        // Exclude only Modern Components (mciviero30@yahoo.com)
+                        if (e.email === 'mciviero30@yahoo.com') return false;
                         
                         return true;
                       })
