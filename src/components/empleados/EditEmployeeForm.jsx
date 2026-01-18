@@ -29,7 +29,11 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
 
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: async () => {
+      const allTeams = await base44.entities.Team.list();
+      console.log('🔍 Teams loaded:', allTeams.length, allTeams);
+      return allTeams;
+    },
     initialData: [],
     staleTime: 60000
   });
@@ -159,6 +163,7 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
             value={formData.team_id} 
             onChange={(e) => {
               const selectedTeam = teams.find(t => t.id === e.target.value);
+              console.log('Team selected:', e.target.value, selectedTeam);
               handleFieldChange('team_id', e.target.value);
               handleFieldChange('team_name', selectedTeam?.team_name || '');
             }}
@@ -166,11 +171,17 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
           >
             <option value="">Select Team</option>
             {teamsLoading && <option disabled>Loading teams...</option>}
-            {!teamsLoading && teams.length === 0 && <option disabled>No teams available</option>}
-            {teams.filter(team => team?.team_name).map(team => (
-              <option key={team.id} value={team.id}>{team.team_name}</option>
-            ))}
+            {!teamsLoading && teams.length === 0 && <option disabled>No teams available - Check console</option>}
+            {!teamsLoading && teams.map(team => {
+              console.log('Rendering team option:', team.id, team.team_name);
+              return (
+                <option key={team.id} value={team.id}>
+                  {team.team_name} - {team.location}
+                </option>
+              );
+            })}
           </select>
+          <p className="text-xs text-slate-500 mt-1">Available: {teams.length} teams</p>
         </div>
 
         <div>
