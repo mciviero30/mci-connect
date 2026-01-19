@@ -583,11 +583,20 @@ export default function Empleados() {
                       try {
                         const response = await base44.functions.invoke('syncMissingEmployeeData', { force: true });
                         const result = response?.data || response;
+                        console.log('📊 Sync result:', result);
+                        
                         await queryClient.invalidateQueries({ queryKey: ['employees'] });
                         await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
                         await queryClient.refetchQueries({ queryKey: ['employees'] });
-                        alert(`✅ Synced: ${result?.summary?.synced || 0} employees\n💡 Already complete: ${result?.summary?.already_complete || 0}\n❌ Errors: ${result?.summary?.errors || 0}`);
+                        
+                        const details = result?.details || [];
+                        const detailsText = details.map(d => 
+                          `${d.email}: ${d.status} ${d.fields_synced ? `(${d.fields_synced.join(', ')})` : ''}`
+                        ).join('\n');
+                        
+                        alert(`✅ Synced: ${result?.summary?.synced || 0} employees\n💡 Already complete: ${result?.summary?.already_complete || 0}\n❌ Errors: ${result?.summary?.errors || 0}\n\n📋 Details:\n${detailsText}`);
                       } catch (err) {
+                        console.error('Sync error:', err);
                         alert('❌ Error: ' + err.message);
                       }
                     }}
