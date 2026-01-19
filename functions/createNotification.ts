@@ -40,6 +40,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Normalize action URL (remove #!/ prefix if present)
+    const normalizedUrl = actionUrl ? actionUrl.replace('#!/', '') : null;
+
     // Create notification
     const notification = await base44.asServiceRole.entities.Notification.create({
       recipient_email: recipientEmail,
@@ -49,7 +52,7 @@ Deno.serve(async (req) => {
       priority,
       title,
       message,
-      action_url: actionUrl,
+      action_url: normalizedUrl,
       related_entity_type: relatedEntityType,
       related_entity_id: relatedEntityId,
       metadata,

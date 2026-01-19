@@ -98,17 +98,17 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       
       try {
         // Create notification for the employee
-        await base44.entities.Notification.create({
-          recipient_email: entry.employee_email,
-          recipient_name: entry.employee_name,
-          title: '✅ Timecard Approved - Ready for Payment',
-          message: `Your hours for ${entry.date} (${entry.hours_worked?.toFixed(1)}h) have been approved and are ready for payment.`,
-          type: 'payroll_approval',
-          priority: 'high',
-          link: '/page/MyPayroll',
-          related_entity_id: entry.id,
-          related_entity_type: 'timeentry',
-          read: false
+        await base44.functions.invoke('createNotification', {
+          recipientEmail: entry.employee_email,
+          recipientName: entry.employee_name,
+          type: 'timesheet_approved',
+          category: 'approvals',
+          priority: 'medium',
+          title: 'Horas aprobadas',
+          message: `Tus ${entry.hours_worked?.toFixed(1)}h del ${entry.date} fueron aprobadas`,
+          actionUrl: 'MisHoras',
+          relatedEntityType: 'time_entry',
+          relatedEntityId: entry.id
         });
 
         // Send browser notification
@@ -168,17 +168,17 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       
       try {
         // Create notification for rejection
-        await base44.entities.Notification.create({
-          recipient_email: entry.employee_email,
-          recipient_name: entry.employee_name,
-          title: '❌ Timecard Rejected - Needs Review',
-          message: `Your hours for ${entry.date} have been rejected. Please check with your manager.`,
+        await base44.functions.invoke('createNotification', {
+          recipientEmail: entry.employee_email,
+          recipientName: entry.employee_name,
           type: 'timesheet_rejected',
+          category: 'approvals',
           priority: 'high',
-          link: '/page/MisHoras',
-          related_entity_id: entry.id,
-          related_entity_type: 'timeentry',
-          read: false
+          title: 'Horas rechazadas',
+          message: `Tus horas del ${entry.date} fueron rechazadas`,
+          actionUrl: 'MisHoras',
+          relatedEntityType: 'time_entry',
+          relatedEntityId: entry.id
         });
 
         await notifyTimesheetStatus(entry, 'rejected', null);

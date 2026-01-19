@@ -103,7 +103,7 @@ export default function Gastos() {
         priority: 'medium',
         title: 'Gasto aprobado',
         message: `Tu gasto de $${expense.amount} fue aprobado`,
-        actionUrl: '#!/MisGastos',
+        actionUrl: 'MisGastos',
         relatedEntityType: 'expense',
         relatedEntityId: expense.id
       });
@@ -125,7 +125,7 @@ export default function Gastos() {
         priority: 'high',
         title: 'Gasto rechazado',
         message: `Tu gasto de $${expense.amount} fue rechazado${notes ? `. Razón: ${notes}` : ''}`,
-        actionUrl: '#!/MisGastos',
+        actionUrl: 'MisGastos',
         relatedEntityType: 'expense',
         relatedEntityId: expense.id
       });

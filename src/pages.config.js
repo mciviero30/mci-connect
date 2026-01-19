@@ -108,6 +108,7 @@ import TimeOffRequests from './pages/TimeOffRequests';
 import TimeReports from './pages/TimeReports';
 import TimeTracking from './pages/TimeTracking';
 import Trabajos from './pages/Trabajos';
+import TravelBookings from './pages/TravelBookings';
 import VerChangeOrder from './pages/VerChangeOrder';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
@@ -115,7 +116,6 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import TravelBookings from './pages/TravelBookings';
 import __Layout from './Layout.jsx';
 
 
@@ -230,6 +230,7 @@ export const PAGES = {
     "TimeReports": TimeReports,
     "TimeTracking": TimeTracking,
     "Trabajos": Trabajos,
+    "TravelBookings": TravelBookings,
     "VerChangeOrder": VerChangeOrder,
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
@@ -237,7 +238,6 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "TravelBookings": TravelBookings,
 }
 
 export const pagesConfig = {

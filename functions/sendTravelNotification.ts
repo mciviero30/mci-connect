@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
         ? `Nueva solicitud de viaje: ${booking.job_name}`
         : `Viaje confirmado: ${booking.job_name}`,
       message: `${formatDate(booking.travel_start_date)} - ${formatDate(booking.travel_end_date)}`,
-      actionUrl: '#!/TravelBookings',
+      actionUrl: 'TravelBookings',
       relatedEntityType: 'travel_booking',
       relatedEntityId: booking.id
     }).catch(err => console.error('Failed to create in-app notification:', err));

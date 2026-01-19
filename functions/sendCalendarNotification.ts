@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
       priority: 'medium',
       title: action === 'assigned' ? `Nueva asignación: ${jobName}` : `Horario actualizado: ${jobName}`,
       message: `${formattedDate} • ${startTime} - ${endTime}`,
-      actionUrl: '#!/Calendario',
+      actionUrl: 'Calendario',
       relatedEntityType: 'job_assignment',
       relatedEntityId: assignmentId
     }).catch(err => console.error('Failed to create in-app notification:', err));

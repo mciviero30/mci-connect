@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import PageHeader from '@/components/shared/PageHeader';
 
 const categoryIcons = {
@@ -144,11 +145,16 @@ export default function NotificationCenter() {
   }, [notifications]);
 
   const handleNotificationClick = (notif) => {
+    // Mark as read
     if (!notif.is_read) {
       markAsReadMutation.mutate(notif.id);
     }
+    
+    // Navigate to the action URL
     if (notif.action_url) {
-      navigate(notif.action_url);
+      // Extract page name from URL (handles both formats: /PageName and #!/PageName)
+      const pageName = notif.action_url.replace('#!/', '').replace('/', '');
+      navigate(createPageUrl(pageName));
     }
   };
 
