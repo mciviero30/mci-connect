@@ -578,13 +578,22 @@ export default function Empleados() {
                   </DropdownMenuItem>
 
                   <DropdownMenuItem 
-                    onClick={() => {
-                      const dialog = document.querySelector('[data-sync-recovery-trigger]');
-                      if (dialog) dialog.click();
+                    onClick={async () => {
+                      if (!confirm('🔄 Sync missing data from pending employees to active users?')) return;
+                      try {
+                        const response = await base44.functions.invoke('syncMissingEmployeeData', { force: true });
+                        const result = response?.data || response;
+                        await queryClient.invalidateQueries({ queryKey: ['employees'] });
+                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                        await queryClient.refetchQueries({ queryKey: ['employees'] });
+                        alert(`✅ Synced: ${result?.summary?.synced || 0} employees\n💡 Already complete: ${result?.summary?.already_complete || 0}\n❌ Errors: ${result?.summary?.errors || 0}`);
+                      } catch (err) {
+                        alert('❌ Error: ' + err.message);
+                      }
                     }}
                   >
                     <Zap className="w-4 h-4 mr-2" />
-                    Recover Missing Data
+                    Recover Missing Data (Force Sync)
                   </DropdownMenuItem>
 
                   <DropdownMenuItem 
