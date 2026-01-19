@@ -127,7 +127,7 @@ const GifSearch = ({ onSelect }) => {
 };
 
 export default function Chat() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const messagesEndRef = useRef(null);
   const toast = useToast();
