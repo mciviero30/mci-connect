@@ -21,15 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import AIJobWizard from "../components/trabajos/AIJobWizard";
 import ModernJobCard from "../components/trabajos/ModernJobCard";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import FilterBar from "../components/shared/FilterBar";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
 
 
@@ -302,106 +294,26 @@ export default function Trabajos() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-4 sm:mb-6">
-          <CardContent className="p-3 sm:p-4 md:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-              {/* Text Search */}
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
-                  {language === 'es' ? 'Buscar' : 'Search'}
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" />
-                  <Input
-                    placeholder={language === 'es' ? 'Buscar...' : 'Search...'}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 sm:pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[44px] text-sm sm:text-base"
-                  />
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
-                  {language === 'es' ? 'Estado' : 'Status'}
-                </Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[44px] text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                    <SelectItem value="all">
-                      {language === 'es' ? 'Todos los Estados' : 'All Status'}
-                    </SelectItem>
-                    <SelectItem value="active">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        {t('active')}
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="completed">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        {t('completed')}
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="archived">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-slate-500" />
-                        {t('archived')}
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Team Filter */}
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium">
-                  {language === 'es' ? 'Equipo' : 'Team'}
-                </Label>
-                <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white min-h-[44px] text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                    <SelectItem value="all">
-                      {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
-                    </SelectItem>
-                    {teams.map(team => (
-                      <SelectItem key={team.id} value={team.id}>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-3 h-3 text-slate-500" />
-                          {team.team_name} - {team.location}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Clear filters button */}
-            {(searchTerm || statusFilter !== 'all' || teamFilter !== 'all') && (
-              <div className="mt-4 flex justify-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setStatusFilter('all');
-                    setTeamFilter('all');
-                  }}
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <FilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          statusOptions={[
+            { value: 'active', label: t('active'), dotClass: 'bg-blue-500' },
+            { value: 'completed', label: t('completed'), dotClass: 'bg-green-500' },
+            { value: 'archived', label: t('archived'), dotClass: 'bg-slate-500' }
+          ]}
+          teamFilter={teamFilter}
+          onTeamChange={setTeamFilter}
+          teams={teams}
+          onClearFilters={() => {
+            setSearchTerm('');
+            setStatusFilter('all');
+            setTeamFilter('all');
+          }}
+          language={language}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {filteredJobs.map(job => (

@@ -16,6 +16,7 @@ import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
+import FilterBar from "../components/shared/FilterBar";
 import { Dialog } from "@/components/ui/dialog";
 import ModernInvoiceCard from "../components/invoices/ModernInvoiceCard";
 import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
@@ -279,118 +280,28 @@ export default function Facturas() {
         />
 
         {/* Filter Bar */}
-        <Card className="bg-white dark:bg-[#282828] shadow-sm border-slate-200 dark:border-slate-700 mb-6">
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              {/* Text Search */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
-                  {language === 'es' ? 'Buscar' : 'Search'}
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <Input
-                    placeholder={language === 'es' ? 'Buscar por cliente, número o trabajo...' : 'Search by customer, number or job...'}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
-                  {language === 'es' ? 'Estado' : 'Status'}
-                </Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                    <SelectItem value="all">
-                      {language === 'es' ? 'Todos los Estados' : 'All Status'}
-                    </SelectItem>
-                    <SelectItem value="draft">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('draft', language).dotClass}`} />
-                        {getInvoiceStatusMeta('draft', language).label}
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="sent">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('sent', language).dotClass}`} />
-                        {getInvoiceStatusMeta('sent', language).label}
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="paid">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('paid', language).dotClass}`} />
-                        {getInvoiceStatusMeta('paid', language).label}
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="partial">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('partial', language).dotClass}`} />
-                        {getInvoiceStatusMeta('partial', language).label}
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="overdue">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getInvoiceStatusMeta('overdue', language).dotClass}`} />
-                        {getInvoiceStatusMeta('overdue', language).label}
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Team Filter */}
-              <div className="space-y-2">
-                <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
-                  {language === 'es' ? 'Equipo' : 'Team'}
-                </Label>
-                <Select value={teamFilter} onValueChange={setTeamFilter}>
-                  <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                    <SelectItem value="all">
-                      {language === 'es' ? 'Todos los Equipos' : 'All Teams'}
-                    </SelectItem>
-                    {teams.map(team => (
-                      <SelectItem key={team.id} value={team.id}>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-3 h-3 text-slate-500" />
-                          {team.team_name} - {team.location}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Clear filters button */}
-            {(searchTerm || statusFilter !== 'all' || teamFilter !== 'all') && (
-              <div className="mt-4 flex justify-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setStatusFilter('all');
-                    setTeamFilter('all');
-                  }}
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Limpiar Filtros' : 'Clear Filters'}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <FilterBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          statusOptions={[
+            { value: 'draft', label: getInvoiceStatusMeta('draft', language).label, dotClass: getInvoiceStatusMeta('draft', language).dotClass },
+            { value: 'sent', label: getInvoiceStatusMeta('sent', language).label, dotClass: getInvoiceStatusMeta('sent', language).dotClass },
+            { value: 'paid', label: getInvoiceStatusMeta('paid', language).label, dotClass: getInvoiceStatusMeta('paid', language).dotClass },
+            { value: 'partial', label: getInvoiceStatusMeta('partial', language).label, dotClass: getInvoiceStatusMeta('partial', language).dotClass },
+            { value: 'overdue', label: getInvoiceStatusMeta('overdue', language).label, dotClass: getInvoiceStatusMeta('overdue', language).dotClass }
+          ]}
+          teamFilter={teamFilter}
+          onTeamChange={setTeamFilter}
+          teams={teams}
+          onClearFilters={() => {
+            setSearchTerm('');
+            setStatusFilter('all');
+            setTeamFilter('all');
+          }}
+          language={language}
+        />
 
         {/* Invoices Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
