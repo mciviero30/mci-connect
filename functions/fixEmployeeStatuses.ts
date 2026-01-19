@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * FIX: Restore correct employment_status for Users
- * Logic: If user has full_name (registered), they should be 'active'
+ * FIX: Restore active status for registered employees
+ * If user has full_name (registered), set employment_status to 'active'
  */
 
 Deno.serve(async (req) => {
@@ -24,10 +24,16 @@ Deno.serve(async (req) => {
 
     for (const user of allUsers) {
       try {
+        // Skip owner
+        if (user.email === 'marzio.civiero@mci-us.com') {
+          results.unchanged++;
+          continue;
+        }
+
         const hasRegistered = user.full_name && !user.full_name.includes('@');
         const currentStatus = user.employment_status;
         
-        // If user has registered (has full_name), they should be active
+        // If user has registered (has real full_name), they should be active
         if (hasRegistered && currentStatus !== 'active' && currentStatus !== 'archived' && currentStatus !== 'deleted') {
           await base44.asServiceRole.entities.User.update(user.id, {
             employment_status: 'active'
@@ -37,7 +43,7 @@ Deno.serve(async (req) => {
           results.details.push({
             email: user.email,
             name: user.full_name,
-            old_status: currentStatus,
+            old_status: currentStatus || 'none',
             new_status: 'active'
           });
         } else {
