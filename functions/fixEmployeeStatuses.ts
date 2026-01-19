@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * FIX: Restore active status for registered employees
- * If user has full_name (registered), set employment_status to 'active'
+ * FIX: Change registered users from 'invited' to 'active'
+ * Only updates employment_status field
  */
 
 Deno.serve(async (req) => {
@@ -18,40 +18,35 @@ Deno.serve(async (req) => {
     
     const results = {
       fixed: 0,
-      unchanged: 0,
-      details: []
+      errors: [],
+      fixed_users: []
     };
 
     for (const user of allUsers) {
       try {
         // Skip owner
-        if (user.email === 'marzio.civiero@mci-us.com') {
-          results.unchanged++;
+        if (user.email === 'marzio.civiero@mci-us.com' || user.email === 'projects@mci-us.com') {
           continue;
         }
 
-        const hasRegistered = user.full_name && !user.full_name.includes('@');
-        const currentStatus = user.employment_status;
+        const hasFullName = user.full_name && !user.full_name.includes('@');
+        const isInvitedButRegistered = user.employment_status === 'invited' && hasFullName;
         
-        // If user has registered (has real full_name), they should be active
-        if (hasRegistered && currentStatus !== 'active' && currentStatus !== 'archived' && currentStatus !== 'deleted') {
+        if (isInvitedButRegistered) {
+          // ONLY update employment_status, nothing else
           await base44.asServiceRole.entities.User.update(user.id, {
             employment_status: 'active'
           });
           
           results.fixed++;
-          results.details.push({
+          results.fixed_users.push({
             email: user.email,
-            name: user.full_name,
-            old_status: currentStatus || 'none',
-            new_status: 'active'
+            name: user.full_name
           });
-        } else {
-          results.unchanged++;
         }
 
       } catch (error) {
-        results.details.push({
+        results.errors.push({
           email: user.email,
           error: error.message
         });
@@ -60,8 +55,10 @@ Deno.serve(async (req) => {
 
     return Response.json({
       success: true,
-      ...results,
-      message: `Fixed ${results.fixed} employees back to active, ${results.unchanged} unchanged`
+      fixed: results.fixed,
+      fixed_users: results.fixed_users,
+      errors: results.errors,
+      message: `Fixed ${results.fixed} employees: invited → active`
     });
 
   } catch (error) {
