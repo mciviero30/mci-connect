@@ -90,12 +90,48 @@ export default function Gastos() {
     }
   });
 
-  const handleApprove = (expense) => {
+  const handleApprove = async (expense) => {
     updateStatusMutation.mutate({ id: expense.id, status: 'approved', notes: '' });
+    
+    // Send notification to employee
+    try {
+      await base44.functions.invoke('createNotification', {
+        recipientEmail: expense.employee_email,
+        recipientName: expense.employee_name,
+        type: 'expense_approved',
+        category: 'finance',
+        priority: 'medium',
+        title: 'Gasto aprobado',
+        message: `Tu gasto de $${expense.amount} fue aprobado`,
+        actionUrl: '#!/MisGastos',
+        relatedEntityType: 'expense',
+        relatedEntityId: expense.id
+      });
+    } catch (err) {
+      console.error('Failed to send notification:', err);
+    }
   };
 
-  const handleReject = (expense, notes) => {
+  const handleReject = async (expense, notes) => {
     updateStatusMutation.mutate({ id: expense.id, status: 'rejected', notes });
+    
+    // Send notification to employee
+    try {
+      await base44.functions.invoke('createNotification', {
+        recipientEmail: expense.employee_email,
+        recipientName: expense.employee_name,
+        type: 'expense_rejected',
+        category: 'finance',
+        priority: 'high',
+        title: 'Gasto rechazado',
+        message: `Tu gasto de $${expense.amount} fue rechazado${notes ? `. Razón: ${notes}` : ''}`,
+        actionUrl: '#!/MisGastos',
+        relatedEntityType: 'expense',
+        relatedEntityId: expense.id
+      });
+    } catch (err) {
+      console.error('Failed to send notification:', err);
+    }
   };
 
 
