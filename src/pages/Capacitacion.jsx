@@ -7,6 +7,7 @@ import { GraduationCap, Play, CheckCircle, Clock, FileText } from "lucide-react"
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import PageHeader from "../components/shared/PageHeader";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -71,6 +72,7 @@ export default function Capacitacion() {
   );
 
   const completedCount = myProgress.filter(p => p.status === 'completed').length;
+  const inProgressCount = myProgress.filter(p => p.status === 'in_progress').length;
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
@@ -79,6 +81,14 @@ export default function Capacitacion() {
           title="Training Modules / Módulos de Capacitación"
           description={`${completedCount} ${t('coursesCompleted')}`}
           icon={GraduationCap}
+        />
+
+        <StatsSummaryGrid 
+          stats={[
+            { label: t('available'), value: availableCourses.length, icon: GraduationCap },
+            { label: t('inProgress'), value: inProgressCount, icon: Play },
+            { label: t('completed'), value: completedCount, icon: CheckCircle }
+          ]}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">

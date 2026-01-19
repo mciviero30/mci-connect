@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import PageHeader from "../components/shared/PageHeader";
-import StatsCard from "../components/shared/StatsCard";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import TransactionForm from "../components/contabilidad/TransactionForm";
 import TransactionList from "../components/contabilidad/TransactionList";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -136,11 +136,14 @@ export default function Contabilidad() {
           }
         />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8 text-slate-900 dark:text-slate-100">
-          <StatsCard title={t('monthlyIncome')} value={`$${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingUp} gradient="from-[#F0F4FF] to-[#EBF2FF]" loading={isLoading} />
-          <StatsCard title={t('monthlyExpenses')} value={`$${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={TrendingDown} gradient="from-[#F0F4FF] to-[#EBF2FF]" loading={isLoading} />
-          <StatsCard title={t('balance')} value={`$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`} icon={DollarSign} gradient="from-[#F0F4FF] to-[#EBF2FF]" loading={isLoading} />
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { label: t('monthlyIncome'), value: `$${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: TrendingUp },
+            { label: t('monthlyExpenses'), value: `$${totalExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: TrendingDown },
+            { label: t('balance'), value: `$${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: DollarSign, valueColor: balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }
+          ]}
+          loading={isLoading}
+        />
 
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           <Card className="lg:col-span-2 bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">

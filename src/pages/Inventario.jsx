@@ -18,6 +18,7 @@ import {
   History
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -424,47 +425,32 @@ export default function Inventario() {
         />
 
         {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Total Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">{items.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-amber-200 dark:border-amber-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
-                Low Stock
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{lowStockItems.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-green-200 dark:border-green-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Total Value</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totalValue.toFixed(2)}</div>
-            </CardContent>
-          </Card>
-
-          {/* UPDATED: Items Used This Month */}
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-blue-200 dark:border-blue-800">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Items Used This Month</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-slate-100">{itemsUsedThisMonth}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { label: 'Total Items', value: items.length, icon: Package },
+            { 
+              label: 'Low Stock', 
+              value: lowStockItems.length, 
+              icon: AlertTriangle,
+              gradient: 'bg-white/90 dark:bg-[#282828]',
+              borderColor: 'border-amber-200 dark:border-amber-800'
+            },
+            { 
+              label: 'Total Value', 
+              value: `$${totalValue.toFixed(2)}`, 
+              icon: DollarSign,
+              gradient: 'bg-white/90 dark:bg-[#282828]',
+              borderColor: 'border-green-200 dark:border-green-800'
+            },
+            { 
+              label: 'Items Used This Month', 
+              value: itemsUsedThisMonth, 
+              icon: TrendingDown,
+              gradient: 'bg-white/90 dark:bg-[#282828]',
+              borderColor: 'border-blue-200 dark:border-blue-800'
+            }
+          ]}
+        />
 
         {/* Filters */}
         <div className="mb-6 flex flex-wrap gap-4">
