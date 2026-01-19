@@ -607,6 +607,38 @@ export default function Empleados() {
 
                   <DropdownMenuItem 
                     onClick={async () => {
+                      const pendingEmail = prompt('📧 Email del PendingEmployee (el que usaste para invitar):');
+                      if (!pendingEmail) return;
+                      
+                      const userEmail = prompt('👤 Email del User (con el que se registró):');
+                      if (!userEmail) return;
+                      
+                      if (!confirm(`🔄 Transfer data from:\n${pendingEmail}\n\nTo user:\n${userEmail}\n\nContinue?`)) return;
+                      
+                      try {
+                        const response = await base44.functions.invoke('transferPendingData', { 
+                          pending_email: pendingEmail,
+                          user_email: userEmail
+                        });
+                        const result = response?.data || response;
+                        
+                        await queryClient.invalidateQueries({ queryKey: ['employees'] });
+                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                        await queryClient.refetchQueries({ queryKey: ['employees'] });
+                        
+                        alert(`✅ Data transferred successfully!\nFields: ${result?.transferred_fields?.join(', ')}`);
+                      } catch (err) {
+                        console.error('Transfer error:', err);
+                        alert('❌ Error: ' + err.message);
+                      }
+                    }}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Transfer Pending Data (Different Emails)
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onClick={async () => {
                       if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
                       try {
                         await base44.functions.invoke('cleanupPendingEmployees');
