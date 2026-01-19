@@ -183,39 +183,31 @@ export default function Empleados() {
     }
   });
 
-  const filterEmployees = (empList) => {
-    if (!searchTerm) return empList;
-    const term = searchTerm.toLowerCase();
-    return empList.filter(emp => 
-      emp.full_name?.toLowerCase().includes(term) ||
-      emp.email?.toLowerCase().includes(term) ||
-      emp.position?.toLowerCase().includes(term) ||
-      emp.team_name?.toLowerCase().includes(term)
-    );
-  };
-
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
-  const excludeOwner = (list) => hasFullAccess ? list : list.filter(e => e.email !== OWNER_EMAIL);
+  
+  // Memoized filtered lists for performance
+  const { pendingEmployees, invitedEmployees, activeEmployees, archivedEmployees, deletedEmployees } = useMemo(() => {
+    const filterEmployees = (empList) => {
+      if (!searchTerm) return empList;
+      const term = searchTerm.toLowerCase();
+      return empList.filter(emp => 
+        emp.full_name?.toLowerCase().includes(term) ||
+        emp.email?.toLowerCase().includes(term) ||
+        emp.position?.toLowerCase().includes(term) ||
+        emp.team_name?.toLowerCase().includes(term)
+      );
+    };
 
-  const pendingEmployees = filterEmployees(excludeOwner(employees.filter(e => 
-    e.employment_status === 'pending_invitation'
-  )));
-  
-  const invitedEmployees = filterEmployees(excludeOwner(employees.filter(e => 
-    e.employment_status === 'invited'
-  )));
-  
-  const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => 
-    e.employment_status === 'active' || !e.employment_status
-  )));
-  
-  const archivedEmployees = filterEmployees(excludeOwner(employees.filter(e => 
-    e.employment_status === 'archived'
-  )));
-  
-  const deletedEmployees = filterEmployees(excludeOwner(employees.filter(e => 
-    e.employment_status === 'deleted'
-  )));
+    const excludeOwner = (list) => hasFullAccess ? list : list.filter(e => e.email !== OWNER_EMAIL);
+
+    return {
+      pendingEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'pending_invitation'))),
+      invitedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited'))),
+      activeEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status))),
+      archivedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'archived'))),
+      deletedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')))
+    };
+  }, [employees, searchTerm, hasFullAccess]);
 
   const paginateEmployees = (empList) => {
     const start = (page - 1) * ITEMS_PER_PAGE;
@@ -227,6 +219,65 @@ export default function Empleados() {
       setSelectedEmployee(employee);
       setShowOnboardingModal(true);
     }
+  };
+
+  // Reusable pagination component
+  const PaginationControls = ({ itemsLength }) => {
+    if (itemsLength <= ITEMS_PER_PAGE) return null;
+    
+    const totalPages = Math.ceil(itemsLength / ITEMS_PER_PAGE);
+    
+    return (
+      <div className="flex justify-center items-center gap-2 mt-6">
+        <Button
+          variant="outline"
+          onClick={() => setPage(p => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </Button>
+        <span className="text-sm text-slate-600 dark:text-slate-400">
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+          disabled={page >= totalPages}
+        >
+          Next
+        </Button>
+      </div>
+    );
+  };
+
+  // Reusable employee grid
+  const EmployeeGrid = ({ employees, showInviteButton = false }) => {
+    if (employees.length === 0) {
+      return (
+        <Card className="p-8 text-center">
+          <p className="text-slate-500">No employees found</p>
+        </Card>
+      );
+    }
+
+    return (
+      <>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {paginateEmployees(employees).map(employee => (
+            <ModernEmployeeCard
+              key={employee.id}
+              employee={employee}
+              onInvite={showInviteButton ? () => inviteMutation.mutate(employee) : undefined}
+              isInviting={inviteMutation.isPending}
+              showInviteButton={showInviteButton}
+              onboardingProgress={employeeProgress[employee.id]}
+              onViewDetails={handleViewOnboarding}
+            />
+          ))}
+        </div>
+        <PaginationControls itemsLength={employees.length} />
+      </>
+    );
   };
 
   return (
@@ -302,47 +353,8 @@ export default function Empleados() {
                 </p>
               </CardContent>
             </Card>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {paginateEmployees(pendingEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onInvite={() => inviteMutation.mutate(employee)}
-                  isInviting={inviteMutation.isPending}
-                  showInviteButton={true}
-                />
-              ))}
-            </div>
-
-            {pendingEmployees.length === 0 && (
-              <Card className="p-8 text-center">
-                <p className="text-slate-500">No pending employees</p>
-              </Card>
-            )}
-
-            {pendingEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center items-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  Page {page} of {Math.ceil(pendingEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(pendingEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(pendingEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-            </TabsContent>
+            <EmployeeGrid employees={pendingEmployees} showInviteButton={true} />
+          </TabsContent>
 
           {/* INVITED TAB */}
           <TabsContent value="invited">
@@ -353,173 +365,23 @@ export default function Empleados() {
                 </p>
               </CardContent>
             </Card>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {paginateEmployees(invitedEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onInvite={() => inviteMutation.mutate(employee)}
-                  isInviting={inviteMutation.isPending}
-                  showInviteButton={true}
-                />
-              ))}
-            </div>
-
-            {invitedEmployees.length === 0 && (
-              <Card className="p-8 text-center">
-                <p className="text-slate-500">No invited employees</p>
-              </Card>
-            )}
-
-            {invitedEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center items-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  Page {page} of {Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-            </TabsContent>
+            <EmployeeGrid employees={invitedEmployees} showInviteButton={true} />
+          </TabsContent>
 
           {/* ACTIVE TAB */}
           <TabsContent value="active">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {paginateEmployees(activeEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onboardingProgress={employeeProgress[employee.id]}
-                  onViewDetails={handleViewOnboarding}
-                />
-              ))}
-            </div>
-
-            {activeEmployees.length === 0 && (
-              <Card className="p-8 text-center">
-                <p className="text-slate-500">No active employees</p>
-              </Card>
-            )}
-
-            {activeEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center items-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  Page {page} of {Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(activeEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-            </TabsContent>
+            <EmployeeGrid employees={activeEmployees} />
+          </TabsContent>
 
           {/* ARCHIVED TAB */}
           <TabsContent value="archived">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {paginateEmployees(archivedEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onboardingProgress={employeeProgress[employee.id]}
-                  onViewDetails={handleViewOnboarding}
-                />
-              ))}
-            </div>
-
-            {archivedEmployees.length === 0 && (
-              <Card className="p-8 text-center">
-                <p className="text-slate-500">No archived employees</p>
-              </Card>
-            )}
-
-            {archivedEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center items-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  Page {page} of {Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-            </TabsContent>
+            <EmployeeGrid employees={archivedEmployees} />
+          </TabsContent>
 
           {/* DELETED TAB */}
           <TabsContent value="deleted">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {paginateEmployees(deletedEmployees).map(employee => (
-                <ModernEmployeeCard
-                  key={employee.id}
-                  employee={employee}
-                  onboardingProgress={employeeProgress[employee.id]}
-                  onViewDetails={handleViewOnboarding}
-                />
-              ))}
-            </div>
-
-            {deletedEmployees.length === 0 && (
-              <Card className="p-8 text-center">
-                <p className="text-slate-500">No deleted employees</p>
-              </Card>
-            )}
-
-            {deletedEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center items-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  Page {page} of {Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-            </TabsContent>
+            <EmployeeGrid employees={deletedEmployees} />
+          </TabsContent>
         </Tabs>
 
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
