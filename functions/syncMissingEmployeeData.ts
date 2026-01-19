@@ -18,13 +18,18 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
+    // Parse body to check for force flag
+    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
+    const forceSync = body.force === true;
+
     const results = {
       total_users_checked: 0,
       total_pending: 0,
       synced: 0,
       already_complete: 0,
       errors: [],
-      details: []
+      details: [],
+      force_mode: forceSync
     };
 
     // Get all active users
@@ -33,6 +38,8 @@ Deno.serve(async (req) => {
     
     results.total_users_checked = allUsers.length;
     results.total_pending = allPending.length;
+
+    console.log(`🔄 Syncing ${allPending.length} pending employees to users (force: ${forceSync})`);
 
     // For each pending employee, find matching user and sync
     for (const pending of allPending) {
@@ -53,50 +60,54 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Build sync data (only migrate if user field is missing/empty)
+      console.log(`🔍 Processing ${pendingEmail} - force: ${forceSync}`);
+
+      // Build sync data
+      // FORCE MODE: Overwrite all fields from pending to user
+      // NORMAL MODE: Only fill missing fields
       const syncData = {};
       
-      if (pending.first_name && !matchingUser.first_name) {
+      if (pending.first_name && (forceSync || !matchingUser.first_name)) {
         syncData.first_name = pending.first_name;
       }
-      if (pending.last_name && !matchingUser.last_name) {
+      if (pending.last_name && (forceSync || !matchingUser.last_name)) {
         syncData.last_name = pending.last_name;
       }
-      if (pending.phone && !matchingUser.phone) {
+      if (pending.phone && (forceSync || !matchingUser.phone)) {
         syncData.phone = pending.phone;
       }
-      if (pending.address && !matchingUser.address) {
+      if (pending.address && (forceSync || !matchingUser.address)) {
         syncData.address = pending.address;
       }
-      if (pending.position && !matchingUser.position) {
+      if (pending.position && (forceSync || !matchingUser.position)) {
         syncData.position = pending.position;
       }
-      if (pending.department && !matchingUser.department) {
+      if (pending.department && (forceSync || !matchingUser.department)) {
         syncData.department = pending.department;
       }
-      if (pending.team_id && !matchingUser.team_id) {
+      if (pending.team_id && (forceSync || !matchingUser.team_id)) {
         syncData.team_id = pending.team_id;
       }
-      if (pending.team_name && !matchingUser.team_name) {
+      if (pending.team_name && (forceSync || !matchingUser.team_name)) {
         syncData.team_name = pending.team_name;
       }
-      if (pending.dob && !matchingUser.dob) {
+      if (pending.dob && (forceSync || !matchingUser.dob)) {
         syncData.dob = pending.dob;
       }
-      if (pending.ssn_tax_id && !matchingUser.ssn_tax_id) {
+      if (pending.ssn_tax_id && (forceSync || !matchingUser.ssn_tax_id)) {
         syncData.ssn_tax_id = pending.ssn_tax_id;
       }
-      if (pending.tshirt_size && !matchingUser.tshirt_size) {
+      if (pending.tshirt_size && (forceSync || !matchingUser.tshirt_size)) {
         syncData.tshirt_size = pending.tshirt_size;
       }
-      if (pending.hourly_rate && !matchingUser.hourly_rate) {
+      if (pending.hourly_rate && (forceSync || !matchingUser.hourly_rate)) {
         syncData.hourly_rate = pending.hourly_rate;
       }
       
       // Fix full_name if only have first/last names
       if (pending.first_name && pending.last_name) {
         const fullName = `${pending.first_name} ${pending.last_name}`.trim();
-        if (!matchingUser.full_name || matchingUser.full_name.includes('@') || matchingUser.full_name !== fullName) {
+        if (forceSync || !matchingUser.full_name || matchingUser.full_name.includes('@') || matchingUser.full_name !== fullName) {
           syncData.full_name = fullName;
         }
       }
