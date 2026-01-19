@@ -320,7 +320,29 @@ export default function Empleados() {
                 <p className="text-slate-500">No pending employees</p>
               </Card>
             )}
-          </TabsContent>
+
+            {pendingEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  Page {page} of {Math.ceil(pendingEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(pendingEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(pendingEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            </TabsContent>
 
           {/* INVITED TAB */}
           <TabsContent value="invited">
@@ -349,7 +371,29 @@ export default function Empleados() {
                 <p className="text-slate-500">No invited employees</p>
               </Card>
             )}
-          </TabsContent>
+
+            {invitedEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  Page {page} of {Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            </TabsContent>
 
           {/* ACTIVE TAB */}
           <TabsContent value="active">
@@ -369,7 +413,29 @@ export default function Empleados() {
                 <p className="text-slate-500">No active employees</p>
               </Card>
             )}
-          </TabsContent>
+
+            {activeEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  Page {page} of {Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(activeEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            </TabsContent>
 
           {/* ARCHIVED TAB */}
           <TabsContent value="archived">
@@ -389,7 +455,29 @@ export default function Empleados() {
                 <p className="text-slate-500">No archived employees</p>
               </Card>
             )}
-          </TabsContent>
+
+            {archivedEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  Page {page} of {Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            </TabsContent>
 
           {/* DELETED TAB */}
           <TabsContent value="deleted">
@@ -409,7 +497,29 @@ export default function Empleados() {
                 <p className="text-slate-500">No deleted employees</p>
               </Card>
             )}
-          </TabsContent>
+
+            {deletedEmployees.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  Page {page} of {Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE), p + 1))}
+                  disabled={page >= Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            </TabsContent>
         </Tabs>
 
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
