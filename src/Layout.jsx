@@ -91,6 +91,7 @@ import { migratePendingToUser, normalizeEmail } from "@/components/utils/profile
 import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
+import InvitationGate from "@/components/security/InvitationGate";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
 
@@ -1199,13 +1200,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
         <LanguageProvider>
           <PermissionsProvider>
             <UIProvider>
-              <AgreementGate>
-                <TaxProfileGate>
-                  <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                    {children}
-                  </LayoutContent>
-                </TaxProfileGate>
-              </AgreementGate>
+              <InvitationGate user={user}>
+                <AgreementGate>
+                  <TaxProfileGate>
+                    <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                      {children}
+                    </LayoutContent>
+                  </TaxProfileGate>
+                </AgreementGate>
+              </InvitationGate>
             </UIProvider>
           </PermissionsProvider>
         </LanguageProvider>
