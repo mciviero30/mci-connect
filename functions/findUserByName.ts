@@ -3,34 +3,61 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const currentUser = await base44.auth.me();
     
-    // Verify admin
-    const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!currentUser || currentUser.role !== 'admin') {
+      return Response.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { searchTerm } = await req.json();
-    
-    // Get all users
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    
-    // Filter by search term
-    const matchingUsers = searchTerm 
-      ? allUsers.filter(u => 
-          u.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      : allUsers;
+    const searchTerms = [
+      'civiero18ge',
+      'rigoberto.pena',
+      'angelo.civiero',
+      'juancaricote08',
+      'rojasdoranteraul',
+      'alexandergarciagro',
+      'cathihuizacheleonel',
+      'ladinojhonatan120'
+    ];
 
-    return Response.json({ 
-      users: matchingUsers,
-      total: allUsers.length 
+    const allUsers = await base44.asServiceRole.entities.User.list();
+
+    const results = {
+      found: [],
+      not_found: []
+    };
+
+    for (const term of searchTerms) {
+      const lowerTerm = term.toLowerCase();
+      
+      const match = allUsers.find(u => 
+        u.email?.toLowerCase().includes(lowerTerm) ||
+        u.full_name?.toLowerCase().includes(lowerTerm)
+      );
+
+      if (match) {
+        results.found.push({
+          search_term: term,
+          email: match.email,
+          full_name: match.full_name,
+          employment_status: match.employment_status,
+          role: match.role
+        });
+      } else {
+        results.not_found.push(term);
+      }
+    }
+
+    return Response.json({
+      success: true,
+      found_count: results.found.length,
+      missing_count: results.not_found.length,
+      results
     });
+
   } catch (error) {
-    console.error('Error finding user:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ 
+      error: error.message
+    }, { status: 500 });
   }
 });
