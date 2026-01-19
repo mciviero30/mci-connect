@@ -11,7 +11,7 @@ import { base44 } from "@/api/base44Client";
 import { formatPosition } from "@/components/utils/nameHelpers";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 
-export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails }) {
+export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails, showInviteButton, onInvite, isInviting }) {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();

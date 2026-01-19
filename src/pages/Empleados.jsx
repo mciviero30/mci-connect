@@ -4,185 +4,52 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, FileText, Mail, UserX, Shield, MoreVertical, Zap } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Users, Plus, Search, Shield, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
-import PendingInvitationCard from "@/components/empleados/PendingInvitationCard";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import EditEmployeeForm from "@/components/empleados/EditEmployeeForm";
-import SyncRecoveryDialog from "@/components/empleados/SyncRecoveryDialog";
 import { useToast } from "@/components/ui/toast";
-import { canViewSensitiveData } from "@/components/utils/employeeSecurity";
 import { createPageUrl } from "@/utils";
 
-
-
-      // Helper: Sync to EmployeeDirectory
-const syncToEmployeeDirectory = async (email, userData) => {
-  try {
-    const allDirectory = await base44.entities.EmployeeDirectory.list();
-    const existing = allDirectory.find(d => 
-      d.employee_email?.toLowerCase() === email.toLowerCase()
-    );
-
-    const directoryData = {
-      employee_email: email,
-      full_name: userData.full_name || '',
-      first_name: userData.first_name || '',
-      last_name: userData.last_name || '',
-      position: userData.position || '',
-      department: userData.department || '',
-      phone: userData.phone || '',
-      team_id: userData.team_id || '',
-      team_name: userData.team_name || '',
-      profile_photo_url: userData.profile_photo_url || '',
-      status: userData.employment_status === 'active' ? 'active' : 'inactive',
-      sync_source: 'user_direct',
-      last_synced_at: new Date().toISOString()
-    };
-
-    if (existing) {
-      await base44.entities.EmployeeDirectory.update(existing.id, directoryData);
-    } else {
-      await base44.entities.EmployeeDirectory.create(directoryData);
-    }
-  } catch (error) {
-    console.error('Failed to sync to EmployeeDirectory:', error);
-  }
-};
-
-// Helper: Create directory entry for new pending employee
-const createEmployeeDirectoryEntry = async (employeeData, status = 'pending') => {
-  try {
-    const allDirectory = await base44.entities.EmployeeDirectory.list();
-    const existing = allDirectory.find(d => 
-      d.employee_email?.toLowerCase() === employeeData.email.toLowerCase()
-    );
-
-    const directoryData = {
-      employee_email: employeeData.email,
-      full_name: employeeData.full_name || '',
-      first_name: employeeData.first_name || '',
-      last_name: employeeData.last_name || '',
-      position: employeeData.position || '',
-      department: employeeData.department || '',
-      phone: employeeData.phone || '',
-      team_id: employeeData.team_id || '',
-      team_name: employeeData.team_name || '',
-      status: status,
-      sync_source: 'pending_employee',
-      last_synced_at: new Date().toISOString()
-    };
-
-    if (existing) {
-      await base44.entities.EmployeeDirectory.update(existing.id, directoryData);
-    } else {
-      await base44.entities.EmployeeDirectory.create(directoryData);
-    }
-  } catch (error) {
-    console.error('Failed to create EmployeeDirectory entry:', error);
-  }
-};
-
 const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [formData, setFormData] = useState({});
 
   const mutation = useMutation({
     mutationFn: async (data) => {
-      console.log('💾 Saving employee with data:', data);
-      
-      // Capitalize first and last names
-      const firstName = data.first_name ? 
-        data.first_name.charAt(0).toUpperCase() + data.first_name.slice(1).toLowerCase() : '';
-      const lastName = data.last_name ? 
-        data.last_name.charAt(0).toUpperCase() + data.last_name.slice(1).toLowerCase() : '';
-      
-      // Build full_name ONLY from real name data (never from email-local-part)
-      const fullName = firstName && lastName 
-        ? `${firstName} ${lastName}`.trim()
-        : (employee?.full_name && !employee.full_name.includes('@')) 
-          ? employee.full_name  // Preserve existing good name
-          : '';
+      const firstName = data.first_name?.charAt(0).toUpperCase() + data.first_name?.slice(1).toLowerCase() || '';
+      const lastName = data.last_name?.charAt(0).toUpperCase() + data.last_name?.slice(1).toLowerCase() || '';
+      const fullName = firstName && lastName ? `${firstName} ${lastName}`.trim() : '';
 
       const payload = {
         ...data,
         first_name: firstName,
         last_name: lastName,
         full_name: fullName,
-        hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
+        hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
         role: data.role || 'user',
+        employment_status: employee?.id ? employee.employment_status : 'pending_invitation'
       };
 
-      console.log('📦 Payload to save:', payload);
-
-      if (employee) {
-        // Update existing User
-        console.log('🔄 Updating User entity:', employee.id);
-        const result = await base44.entities.User.update(employee.id, payload);
-        console.log('✅ User updated:', result);
-        
-        // Sync to EmployeeDirectory
-        console.log('🔄 Syncing to EmployeeDirectory...');
-        await syncToEmployeeDirectory(employee.email, {
-          ...payload,
-          employment_status: employee.employment_status,
-          profile_photo_url: employee.profile_photo_url || employee.avatar_image_url
-        });
-        console.log('✅ EmployeeDirectory synced');
-        
-        return result;
+      if (employee?.id) {
+        return await base44.entities.User.update(employee.id, payload);
       } else {
-        // Create as PendingEmployee
-        const newPending = await base44.entities.PendingEmployee.create({
-          ...payload,
-          status: 'pending'
-        });
-        
-        // Create EmployeeDirectory entry for pending
-        await createEmployeeDirectoryEntry({
-          email: data.email,
-          first_name: firstName,
-          last_name: lastName,
-          full_name: fullName,
-          position: data.position,
-          department: data.department,
-          phone: data.phone,
-          team_id: data.team_id,
-          team_name: data.team_name
-        }, 'pending');
-        
-        return newPending;
+        return await base44.entities.User.create(payload);
       }
     },
     onSuccess: async () => {
-      console.log('✅ Mutation success - invalidating queries');
       await queryClient.invalidateQueries({ queryKey: ['employees'] });
-      await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      await queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
-      // Force immediate refetch
       await queryClient.refetchQueries({ queryKey: ['employees'] });
-      await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
-      toast({
-        title: employee ? 'Employee updated!' : 'Employee created! Check "Pending" tab to invite them.',
-        variant: 'success'
-      });
+      toast.success(employee ? 'Employee updated!' : 'Employee created!');
       onClose();
     },
     onError: (error) => {
-      console.error('❌ Error saving employee:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Could not save employee',
-        variant: 'destructive'
-      });
+      toast.error(error.message || 'Could not save employee');
     }
   });
 
@@ -216,10 +83,13 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
 export default function Empleados() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
   
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -227,7 +97,6 @@ export default function Empleados() {
     staleTime: Infinity
   });
   
-  // GUARD: Only Admin and CEO can access Employee Management
   const userRole = (currentUser?.role || 'employee').toLowerCase();
   const hasFullAccess = userRole === 'admin' || userRole === 'ceo';
 
@@ -253,54 +122,12 @@ export default function Empleados() {
     );
   }
 
-  // Lazy load employees with pagination
-  const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
-
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('-created_date'),
-    staleTime: 30000,
-    select: (data) => data // Full data, we'll paginate in UI
+    staleTime: 30000
   });
 
-  const { data: pendingEmployees = [], refetch: refetchPending } = useQuery({
-    queryKey: ['pendingEmployees'],
-    queryFn: async () => {
-      // FIX #2: RACE CONDITION - Remove auto-cleanup to prevent data loss during concurrent operations
-      // Instead, manual cleanup is available via "Cleanup All Pending" button (one-shot, explicit)
-      const result = await base44.entities.PendingEmployee.list('-created_date');
-      console.log('🔍 PendingEmployees fetched:', result.length, 'employees');
-      return result;
-    },
-    staleTime: 5000,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    initialData: [],
-    enabled: employees.length > 0
-  });
-
-  // Debug log whenever pendingEmployees changes
-  React.useEffect(() => {
-    console.log('📊 PendingEmployees state updated:', pendingEmployees.length, 'employees');
-  }, [pendingEmployees]);
-
-  // Listen for profile updates
-  React.useEffect(() => {
-    const handleProfileUpdate = () => {
-      refetchEmployees();
-    };
-
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    window.addEventListener('storage', handleProfileUpdate);
-
-    return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
-      window.removeEventListener('storage', handleProfileUpdate);
-    };
-  }, [refetchEmployees]);
-
-  // Lazy load onboarding forms for progress calculation
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms'],
     queryFn: () => base44.entities.OnboardingForm.list(),
@@ -309,24 +136,17 @@ export default function Empleados() {
     initialData: []
   });
 
-  // Calculate onboarding progress for each employee (memoized)
   const employeeProgress = useMemo(() => {
     if (!employees.length || !onboardingForms.length) return {};
     
     const progressMap = {};
-    
     employees.forEach(emp => {
       const empForms = onboardingForms.filter(f => f.employee_email === emp.email && f.status === 'completed');
       const completed = empForms.length;
-      const total = 4; // 4 mandatory steps (safety, rules, paperwork, profile review)
+      const total = 4;
       const percentage = Math.round((completed / total) * 100);
       
-      progressMap[emp.id] = {
-        percentage,
-        completed,
-        total,
-        forms: empForms
-      };
+      progressMap[emp.id] = { percentage, completed, total, forms: empForms };
     });
     
     return progressMap;
@@ -345,25 +165,22 @@ export default function Empleados() {
         language
       });
 
-      await navigator.clipboard.writeText(employee.email);
-      window.open('https://app.base44.com/dashboard', '_blank');
+      await base44.users.inviteUser(employee.email, employee.role || 'user');
+      
+      await base44.entities.User.update(employee.id, { 
+        employment_status: 'invited',
+        last_invitation_sent: new Date().toISOString(),
+        invitation_count: (employee.invitation_count || 0) + 1
+      });
     },
-    onSuccess: () => {
-      alert(language === 'es' 
-        ? '✅ Email enviado. Ahora invita desde Dashboard → "Invite User"'
-        : '✅ Email sent. Now invite from Dashboard → "Invite User"'
-      );
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+      await queryClient.refetchQueries({ queryKey: ['employees'] });
+      toast.success('Invitation sent!');
+    },
+    onError: (error) => {
+      toast.error('Error: ' + error.message);
     }
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (employeeId) => base44.entities.User.update(employeeId, { employment_status: 'deleted' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['employees'] })
-  });
-
-  const restoreMutation = useMutation({
-    mutationFn: (employeeId) => base44.entities.User.update(employeeId, { employment_status: 'active' }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['employees'] })
   });
 
   const filterEmployees = (empList) => {
@@ -377,50 +194,35 @@ export default function Empleados() {
     );
   };
 
-  // Admin/CEO see ALL employees. Regular users don't see owner.
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
   const excludeOwner = (list) => hasFullAccess ? list : list.filter(e => e.email !== OWNER_EMAIL);
 
-  const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => 
-    e.employment_status === 'active' || 
-    e.employment_status === 'pending_registration' ||
-    !e.employment_status // Users with no status
+  const pendingEmployees = filterEmployees(excludeOwner(employees.filter(e => 
+    e.employment_status === 'pending_invitation'
   )));
   
-  // Debug pending employees filtering - NO FILTER for owner, allow CEO to be invited
-  const rawPending = pendingEmployees.filter(e => 
-    (e.status === 'pending' || !e.status)
-  );
-  console.log('🔎 Raw pending after owner filter:', rawPending.length);
+  const invitedEmployees = filterEmployees(excludeOwner(employees.filter(e => 
+    e.employment_status === 'invited'
+  )));
   
-  const pendingList = filterEmployees(rawPending.map(pe => ({ 
-    ...pe, 
-    entity_name: 'PendingEmployee'
-  })));
+  const activeEmployees = filterEmployees(excludeOwner(employees.filter(e => 
+    e.employment_status === 'active' || !e.employment_status
+  )));
   
-  console.log('✅ Final pendingList:', pendingList.length, 'employees');
+  const archivedEmployees = filterEmployees(excludeOwner(employees.filter(e => 
+    e.employment_status === 'archived'
+  )));
   
-  // Invited tab: Users with employment_status='invited' + PendingEmployees with status='invited' - NO FILTER for owner
-  const invitedUsers = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited')));
-  const invitedPending = filterEmployees(pendingEmployees.filter(e => 
-    e.status === 'invited'
-  ).map(pe => ({ 
-    ...pe, 
-    entity_name: 'PendingEmployee'
-  })));
-  const invitedEmployees = [...invitedUsers, ...invitedPending];
-  const archivedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'archived')));
-  const deletedEmployees = filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')));
+  const deletedEmployees = filterEmployees(excludeOwner(employees.filter(e => 
+    e.employment_status === 'deleted'
+  )));
 
-  // Paginate current tab employees
   const paginateEmployees = (empList) => {
     const start = (page - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    return empList.slice(start, end);
+    return empList.slice(start, start + ITEMS_PER_PAGE);
   };
 
   const handleViewOnboarding = (employee) => {
-    // Only show modal if employee has progress data (active employees)
     if (employeeProgress[employee.id]) {
       setSelectedEmployee(employee);
       setShowOnboardingModal(true);
@@ -440,263 +242,19 @@ export default function Empleados() {
                 <span className="hidden sm:inline">Employee Management</span>
                 <span className="sm:hidden">Employees</span>
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1 sm:mt-2 text-xs sm:text-sm ml-0 sm:ml-[48px] md:ml-[60px]">Manage your team members</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1 sm:mt-2 text-xs sm:text-sm ml-0 sm:ml-[48px] md:ml-[60px]">
+                Manage your team members
+              </p>
             </div>
             
-            <div className="flex gap-2 w-full sm:w-auto">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="min-h-[44px] px-3">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem 
-                    onClick={() => {
-                      const csv = `email,first_name,last_name,phone,position,department,team_name,address,dob,ssn_tax_id,tshirt_size,hourly_rate
-            john.doe@example.com,John,Doe,(555)123-4567,technician,field,Team Alpha,123 Main St,1990-01-15,123-45-6789,L,25.50
-            jane.smith@example.com,Jane,Smith,(555)987-6543,supervisor,operations,Team Beta,456 Oak Ave,1985-03-22,987-65-4321,M,35.00`;
-
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'employee_template.csv';
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                    }}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Download CSV Template
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem 
-                    onClick={() => {
-                      console.log('📁 Import button clicked');
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = '.csv,.xlsx,.xls';
-
-                      input.onchange = async (e) => {
-                        console.log('🔥 File selected event fired:', e);
-                        const file = e.target.files?.[0];
-                        console.log('📄 File object:', file);
-
-                        if (!file) {
-                          console.log('❌ No file detected');
-                          alert('No file selected');
-                          return;
-                        }
-
-                        try {
-                          console.log(`✅ Starting upload: ${file.name}`);
-                          alert(`⏳ Uploading ${file.name}...`);
-
-                          console.log('📤 Calling base44.integrations.Core.UploadFile...');
-                          const uploadRes = await base44.integrations.Core.UploadFile({ file });
-                          console.log('✅ File uploaded successfully:', uploadRes.file_url);
-
-                          if (!uploadRes?.file_url) {
-                            throw new Error('Upload returned no file_url');
-                          }
-
-                          alert('⏳ Processing employees (30-60 seconds)...');
-                          console.log('🔄 Invoking import function...');
-
-                          // Promise with timeout
-                          const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('Import timeout - function took too long (90s)')), 90000)
-                          );
-
-                          const response = await Promise.race([
-                            base44.functions.invoke('importEmployeesFromXLSX', { 
-                              file_url: uploadRes.file_url 
-                            }),
-                            timeoutPromise
-                          ]);
-
-                          console.log('✅ Response received:', response);
-                          const result = response?.data || response;
-                          console.log('📊 Import result:', result);
-
-                          if (!result) {
-                            throw new Error('No response from import function');
-                          }
-
-                          if (result?.error) {
-                            throw new Error(result.error + (result.details ? ': ' + result.details : ''));
-                          }
-
-                           console.log('🔄 Invalidating queries...');
-                           await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                           await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
-
-                           const created = result?.created || result?.employees?.length || 0;
-                           const errors = result?.errors?.length || 0;
-
-                          if (created === 0) {
-                            alert(`⚠️ No employees were imported. Check your CSV format.`);
-                          } else if (errors > 0) {
-                            alert(`⚠️ Imported ${created} employees with ${errors} errors.\n\nErrors: ${JSON.stringify(result.errors)}`);
-                          } else {
-                            alert(`✅ Imported ${created} employees! Check "Pending" tab.`);
-                            setActiveTab('pending');
-                          }
-
-                        } catch (err) {
-                          console.error('Import error:', err);
-                          alert(`❌ Error: ${err?.message || 'Unknown error'}`);
-                        } finally {
-                          console.log('🧹 Removing file input from DOM');
-                          input.remove();
-                        }
-                        };
-
-                        document.body.appendChild(input);
-                        console.log('🖱️ Clicking file input...');
-                        input.click();
-                        console.log('✅ File input click triggered');
-                    }}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Import CSV
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      const response = await base44.functions.invoke('exportEmployeesToPDF');
-                      const blob = new Blob([response.data], { type: 'application/pdf' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `employees_${new Date().toISOString().split('T')[0]}.pdf`;
-                      a.click();
-                    }}
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Export PDF
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      if (!confirm('🔄 Sync missing data from pending employees to active users?')) return;
-                      try {
-                        const response = await base44.functions.invoke('syncMissingEmployeeData', { force: true });
-                        const result = response?.data || response;
-                        console.log('📊 Sync result:', result);
-                        
-                        await queryClient.invalidateQueries({ queryKey: ['employees'] });
-                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                        await queryClient.refetchQueries({ queryKey: ['employees'] });
-                        
-                        const details = result?.details || [];
-                        const detailsText = details.map(d => 
-                          `${d.email}: ${d.status} ${d.fields_synced ? `(${d.fields_synced.join(', ')})` : ''}`
-                        ).join('\n');
-                        
-                        alert(`✅ Synced: ${result?.summary?.synced || 0} employees\n💡 Already complete: ${result?.summary?.already_complete || 0}\n❌ Errors: ${result?.summary?.errors || 0}\n\n📋 Details:\n${detailsText}`);
-                      } catch (err) {
-                        console.error('Sync error:', err);
-                        alert('❌ Error: ' + err.message);
-                      }
-                    }}
-                  >
-                    <Zap className="w-4 h-4 mr-2" />
-                    Recover Missing Data (Force Sync)
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      const pendingEmail = prompt('📧 Email del PendingEmployee (el que usaste para invitar):');
-                      if (!pendingEmail) return;
-                      
-                      const userEmail = prompt('👤 Email del User (con el que se registró):');
-                      if (!userEmail) return;
-                      
-                      if (!confirm(`🔄 Transfer data from:\n${pendingEmail}\n\nTo user:\n${userEmail}\n\nContinue?`)) return;
-                      
-                      try {
-                        const response = await base44.functions.invoke('transferPendingData', { 
-                          pending_email: pendingEmail,
-                          user_email: userEmail
-                        });
-                        const result = response?.data || response;
-                        
-                        await queryClient.invalidateQueries({ queryKey: ['employees'] });
-                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                        await queryClient.refetchQueries({ queryKey: ['employees'] });
-                        
-                        alert(`✅ Data transferred successfully!\nFields: ${result?.transferred_fields?.join(', ')}`);
-                      } catch (err) {
-                        console.error('Transfer error:', err);
-                        alert('❌ Error: ' + err.message);
-                      }
-                    }}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Transfer Pending Data (Different Emails)
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      const currentEmail = prompt('👤 Email ACTUAL del User (con el que se registró mal):');
-                      if (!currentEmail) return;
-                      
-                      const correctEmail = prompt('✅ Email CORRECTO (para reenviar invitación):');
-                      if (!correctEmail) return;
-                      
-                      if (!confirm(`⚠️ RESET EMPLOYEE\n\nThis will:\n1. Delete user account: ${currentEmail}\n2. Create pending with: ${correctEmail}\n3. User will be logged out\n4. You can resend invitation\n\nContinue?`)) return;
-                      
-                      try {
-                        const response = await base44.functions.invoke('resetEmployeeToPending', { 
-                          current_email: currentEmail,
-                          correct_email: correctEmail
-                        });
-                        const result = response?.data || response;
-                        
-                        await queryClient.invalidateQueries({ queryKey: ['employees'] });
-                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                        await queryClient.refetchQueries({ queryKey: ['employees'] });
-                        
-                        alert(`✅ Reset complete!\n\n${result?.actions?.join('\n')}\n\nYou can now resend the invitation to ${correctEmail}`);
-                      } catch (err) {
-                        console.error('Reset error:', err);
-                        alert('❌ Error: ' + err.message);
-                      }
-                    }}
-                  >
-                    <UserX className="w-4 h-4 mr-2" />
-                    Reset to Pending (Wrong Email)
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
-                      try {
-                        await base44.functions.invoke('cleanupPendingEmployees');
-                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-                        alert('✅ All pending/invited employees deleted');
-                      } catch (err) {
-                        alert('❌ Error: ' + err.message);
-                      }
-                    }}
-                    className="text-red-600"
-                  >
-                    <UserX className="w-4 h-4 mr-2" />
-                    Cleanup All Pending
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button 
-                onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
-                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4 flex-1 sm:flex-none"
-              >
-                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Add Employee</span>
-                <span className="sm:hidden">Add</span>
-              </Button>
-            </div>
+            <Button 
+              onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4"
+            >
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Add Employee</span>
+              <span className="sm:hidden">Add</span>
+            </Button>
           </div>
         </div>
 
@@ -714,32 +272,86 @@ export default function Empleados() {
           </CardContent>
         </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); setPage(1); }} className="space-y-4 sm:space-y-6">
           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-              <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
-                <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Active</span> ({activeEmployees.length})
-                </TabsTrigger>
-                <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Pending</span> ({pendingList.length})
-                </TabsTrigger>
-                <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Invited</span> ({invitedEmployees.length})
-                </TabsTrigger>
-                <TabsTrigger value="archived" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                  <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Archived</span> ({archivedEmployees.length})
-                </TabsTrigger>
-                <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                  <UserX className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Deleted</span> ({deletedEmployees.length})
-                </TabsTrigger>
-              </TabsList>
+            <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
+              <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                Active ({activeEmployees.length})
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                Pending ({pendingEmployees.length})
+              </TabsTrigger>
+              <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                Invited ({invitedEmployees.length})
+              </TabsTrigger>
+              <TabsTrigger value="archived" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                Archived ({archivedEmployees.length})
+              </TabsTrigger>
+              <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                Deleted ({deletedEmployees.length})
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* PENDING TAB */}
+          <TabsContent value="pending">
+            <Card className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+              <CardContent className="p-4">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  ℹ️ These employees need to be invited. Click "Invite" to send invitation email.
+                </p>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {paginateEmployees(pendingEmployees).map(employee => (
+                <ModernEmployeeCard
+                  key={employee.id}
+                  employee={employee}
+                  onInvite={() => inviteMutation.mutate(employee)}
+                  isInviting={inviteMutation.isPending}
+                  showInviteButton={true}
+                />
+              ))}
             </div>
 
+            {pendingEmployees.length === 0 && (
+              <Card className="p-8 text-center">
+                <p className="text-slate-500">No pending employees</p>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* INVITED TAB */}
+          <TabsContent value="invited">
+            <Card className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="p-4">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  ℹ️ Invited employees are waiting to accept invitation and register.
+                </p>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {paginateEmployees(invitedEmployees).map(employee => (
+                <ModernEmployeeCard
+                  key={employee.id}
+                  employee={employee}
+                  onInvite={() => inviteMutation.mutate(employee)}
+                  isInviting={inviteMutation.isPending}
+                  showInviteButton={true}
+                />
+              ))}
+            </div>
+
+            {invitedEmployees.length === 0 && (
+              <Card className="p-8 text-center">
+                <p className="text-slate-500">No invited employees</p>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* ACTIVE TAB */}
           <TabsContent value="active">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {paginateEmployees(activeEmployees).map(employee => (
@@ -752,121 +364,16 @@ export default function Empleados() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {activeEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 sm:mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="w-full sm:w-auto min-h-[44px] text-sm"
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                  Page {page} of {Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(activeEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(activeEmployees.length / ITEMS_PER_PAGE)}
-                  className="w-full sm:w-auto min-h-[44px] text-sm"
-                >
-                  Next
-                </Button>
-              </div>
+            {activeEmployees.length === 0 && (
+              <Card className="p-8 text-center">
+                <p className="text-slate-500">No active employees</p>
+              </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="pending">
-            <Alert className="mb-4 bg-yellow-50 border-yellow-200">
-              <AlertDescription className="text-yellow-800">
-                ℹ️ Pending employees need to be invited to join the system.
-              </AlertDescription>
-            </Alert>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginateEmployees(pendingList).map(employee => (
-                <PendingInvitationCard
-                  key={employee.id}
-                  employee={employee}
-                />
-              ))}
-            </div>
-
-            {pendingList.length > ITEMS_PER_PAGE && (
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 sm:mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="w-full sm:w-auto min-h-[44px] text-sm"
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                  Page {page} of {Math.ceil(pendingList.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(pendingList.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(pendingList.length / ITEMS_PER_PAGE)}
-                  className="w-full sm:w-auto min-h-[44px] text-sm"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="invited">
-           <Alert className="mb-4 bg-blue-50 border-blue-200">
-             <AlertDescription className="text-blue-800">
-               ℹ️ Invited employees need to accept invitation from Dashboard to activate their account.
-             </AlertDescription>
-           </Alert>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-             {paginateEmployees(invitedEmployees).map(employee => (
-               employee.entity_name === 'PendingEmployee' ? (
-                 <PendingInvitationCard
-                   key={employee.id}
-                   employee={employee}
-                 />
-               ) : (
-                 <ModernEmployeeCard
-                   key={employee.id}
-                   employee={employee}
-                   onboardingProgress={employeeProgress[employee.id]}
-                   onViewDetails={handleViewOnboarding}
-                 />
-               )
-             ))}
-           </div>
-
-            {invitedEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-4 text-sm text-slate-600">
-                  Page {page} of {Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(invitedEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
+          {/* ARCHIVED TAB */}
           <TabsContent value="archived">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {paginateEmployees(archivedEmployees).map(employee => (
                 <ModernEmployeeCard
                   key={employee.id}
@@ -877,31 +384,16 @@ export default function Empleados() {
               ))}
             </div>
 
-            {archivedEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-4 text-sm text-slate-600">
-                  Page {page} of {Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(archivedEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
+            {archivedEmployees.length === 0 && (
+              <Card className="p-8 text-center">
+                <p className="text-slate-500">No archived employees</p>
+              </Card>
             )}
           </TabsContent>
 
+          {/* DELETED TAB */}
           <TabsContent value="deleted">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {paginateEmployees(deletedEmployees).map(employee => (
                 <ModernEmployeeCard
                   key={employee.id}
@@ -912,26 +404,10 @@ export default function Empleados() {
               ))}
             </div>
 
-            {deletedEmployees.length > ITEMS_PER_PAGE && (
-              <div className="flex justify-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Previous
-                </Button>
-                <span className="flex items-center px-4 text-sm text-slate-600">
-                  Page {page} of {Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
-                </span>
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(p => Math.min(Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={page >= Math.ceil(deletedEmployees.length / ITEMS_PER_PAGE)}
-                >
-                  Next
-                </Button>
-              </div>
+            {deletedEmployees.length === 0 && (
+              <Card className="p-8 text-center">
+                <p className="text-slate-500">No deleted employees</p>
+              </Card>
             )}
           </TabsContent>
         </Tabs>
@@ -941,21 +417,14 @@ export default function Empleados() {
             <DialogHeader>
               <DialogTitle>{editingEmployee ? 'Edit Employee' : 'Add New Employee'}</DialogTitle>
             </DialogHeader>
-            <EmployeeFormDialog employee={editingEmployee} currentUser={currentUser} onClose={() => { setShowDialog(false); setEditingEmployee(null); }} />
+            <EmployeeFormDialog 
+              employee={editingEmployee} 
+              currentUser={currentUser} 
+              onClose={() => { setShowDialog(false); setEditingEmployee(null); }} 
+            />
           </DialogContent>
         </Dialog>
 
-        {/* Sync Recovery Dialog */}
-        <SyncRecoveryDialog
-          onSync={async () => {
-            const response = await base44.functions.invoke('syncMissingEmployeeData');
-            await queryClient.invalidateQueries({ queryKey: ['employees'] });
-            await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-            return response?.data;
-          }}
-        />
-
-        {/* Onboarding Details Modal */}
         <OnboardingDetailsModal
           employee={selectedEmployee}
           tasks={selectedEmployee ? (employeeProgress[selectedEmployee.id]?.tasks || []) : []}
