@@ -97,6 +97,8 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
 
   const mutation = useMutation({
     mutationFn: async (data) => {
+      console.log('💾 Saving employee with data:', data);
+      
       // Capitalize first and last names
       const firstName = data.first_name ? 
         data.first_name.charAt(0).toUpperCase() + data.first_name.slice(1).toLowerCase() : '';
@@ -119,16 +121,22 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
         role: data.role || 'user',
       };
 
+      console.log('📦 Payload to save:', payload);
+
       if (employee) {
         // Update existing User
+        console.log('🔄 Updating User entity:', employee.id);
         const result = await base44.entities.User.update(employee.id, payload);
+        console.log('✅ User updated:', result);
         
         // Sync to EmployeeDirectory
+        console.log('🔄 Syncing to EmployeeDirectory...');
         await syncToEmployeeDirectory(employee.email, {
           ...payload,
           employment_status: employee.employment_status,
           profile_photo_url: employee.profile_photo_url || employee.avatar_image_url
         });
+        console.log('✅ EmployeeDirectory synced');
         
         return result;
       } else {
@@ -155,9 +163,12 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       }
     },
     onSuccess: async () => {
+      console.log('✅ Mutation success - invalidating queries');
       await queryClient.invalidateQueries({ queryKey: ['employees'] });
       await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+      await queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
       // Force immediate refetch
+      await queryClient.refetchQueries({ queryKey: ['employees'] });
       await queryClient.refetchQueries({ queryKey: ['pendingEmployees'] });
       toast({
         title: employee ? 'Employee updated!' : 'Employee created! Check "Pending" tab to invite them.',
@@ -166,7 +177,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       onClose();
     },
     onError: (error) => {
-      console.error('Error saving employee:', error);
+      console.error('❌ Error saving employee:', error);
       toast({
         title: 'Error',
         description: error.message || 'Could not save employee',
