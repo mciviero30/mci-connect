@@ -723,7 +723,7 @@ export default function Empleados() {
                 </TabsTrigger>
                 <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
                   <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Pending</span> ({pendingEmployees.length})
+                  <span className="hidden sm:inline">Pending</span> ({pendingList.length})
                 </TabsTrigger>
                 <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
                   <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
