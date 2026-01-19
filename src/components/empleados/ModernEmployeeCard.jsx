@@ -85,35 +85,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
   const progressPercentage = onboardingProgress?.percentage || 0;
 
-  const isPending = employee.employment_status === 'pending' || employee.status === 'pending';
 
-  const inviteMutation = useMutation({
-    mutationFn: async () => {
-      const fullName = employee.full_name || `${employee.first_name} ${employee.last_name}`.trim() || employee.email.split('@')[0];
-      
-      await base44.functions.invoke('sendInvitationEmail', {
-        to: employee.email,
-        fullName,
-        language
-      });
-
-      await navigator.clipboard.writeText(employee.email);
-      window.open('https://app.base44.com/dashboard', '_blank');
-      
-      // Update status to invited
-      if (employee.entity_name === 'PendingEmployee') {
-        await base44.entities.PendingEmployee.update(employee.id, { status: 'invited' });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
-      queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
-      alert(language === 'es' 
-        ? '✅ Email enviado. Ahora invita desde Dashboard → "Invite User"'
-        : '✅ Email sent. Now invite from Dashboard → "Invite User"'
-      );
-    }
-  });
 
   return (
     <SwipeableListItem
@@ -162,21 +134,23 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
                 <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               </div>
             )}
-            {isPending ? (
+            {showInviteButton && onInvite && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  inviteMutation.mutate();
+                  onInvite();
                 }}
-                disabled={inviteMutation.isPending}
+                disabled={isInviting}
                 className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-medium">Invite</span>
+                <span className="text-[10px] font-medium">
+                  {isInviting ? 'Sending...' : 'Invite'}
+                </span>
               </Button>
-              ) : null}
+            )}
           </div>
         </div>
 
@@ -195,12 +169,26 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
 
         {/* Status Badges */}
         <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          <Badge className="bg-blue-50/60 text-slate-900 dark:text-slate-900 border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
-            Active
-          </Badge>
-          <Badge className="bg-blue-50/60 text-slate-900 dark:text-slate-900 border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
-            Full-Time
-          </Badge>
+          {employee.employment_status === 'pending_invitation' && (
+            <Badge className="bg-yellow-50/60 text-yellow-900 border border-yellow-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+              Pending Invitation
+            </Badge>
+          )}
+          {employee.employment_status === 'invited' && (
+            <Badge className="bg-blue-50/60 text-blue-900 border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+              Invited
+            </Badge>
+          )}
+          {employee.employment_status === 'active' && (
+            <Badge className="bg-green-50/60 text-green-900 border border-green-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+              Active
+            </Badge>
+          )}
+          {employee.employment_status === 'archived' && (
+            <Badge className="bg-gray-50/60 text-gray-900 border border-gray-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
+              Archived
+            </Badge>
+          )}
           <Badge 
             variant="outline" 
             className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
