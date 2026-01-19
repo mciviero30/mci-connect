@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign, Trash2 } from "lucide-react";
+import { MessageSquare, Send, Users, Image, Smile, Search, Paperclip, X, UserPlus, Hash, AtSign, Trash2, Download } from "lucide-react";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
