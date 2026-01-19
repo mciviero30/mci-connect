@@ -639,6 +639,38 @@ export default function Empleados() {
 
                   <DropdownMenuItem 
                     onClick={async () => {
+                      const currentEmail = prompt('👤 Email ACTUAL del User (con el que se registró mal):');
+                      if (!currentEmail) return;
+                      
+                      const correctEmail = prompt('✅ Email CORRECTO (para reenviar invitación):');
+                      if (!correctEmail) return;
+                      
+                      if (!confirm(`⚠️ RESET EMPLOYEE\n\nThis will:\n1. Delete user account: ${currentEmail}\n2. Create pending with: ${correctEmail}\n3. User will be logged out\n4. You can resend invitation\n\nContinue?`)) return;
+                      
+                      try {
+                        const response = await base44.functions.invoke('resetEmployeeToPending', { 
+                          current_email: currentEmail,
+                          correct_email: correctEmail
+                        });
+                        const result = response?.data || response;
+                        
+                        await queryClient.invalidateQueries({ queryKey: ['employees'] });
+                        await queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
+                        await queryClient.refetchQueries({ queryKey: ['employees'] });
+                        
+                        alert(`✅ Reset complete!\n\n${result?.actions?.join('\n')}\n\nYou can now resend the invitation to ${correctEmail}`);
+                      } catch (err) {
+                        console.error('Reset error:', err);
+                        alert('❌ Error: ' + err.message);
+                      }
+                    }}
+                  >
+                    <UserX className="w-4 h-4 mr-2" />
+                    Reset to Pending (Wrong Email)
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem 
+                    onClick={async () => {
                       if (!confirm('⚠️ This will delete ALL pending and invited employees. Continue?')) return;
                       try {
                         await base44.functions.invoke('cleanupPendingEmployees');
