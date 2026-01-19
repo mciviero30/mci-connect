@@ -165,6 +165,20 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
+    // Create in-app notification
+    await base44.asServiceRole.functions.invoke('createNotification', {
+      recipientEmail: employeeEmail,
+      recipientName: employeeName,
+      type: action === 'assigned' ? 'calendar_assignment' : 'calendar_update',
+      category: 'calendar',
+      priority: 'medium',
+      title: action === 'assigned' ? `Nueva asignación: ${jobName}` : `Horario actualizado: ${jobName}`,
+      message: `${formattedDate} • ${startTime} - ${endTime}`,
+      actionUrl: '#!/Calendario',
+      relatedEntityType: 'job_assignment',
+      relatedEntityId: assignmentId
+    }).catch(err => console.error('Failed to create in-app notification:', err));
+
     return Response.json({ 
       success: true, 
       message: 'Email sent successfully' 

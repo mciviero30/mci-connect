@@ -1,243 +1,351 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import PageHeader from '../components/shared/PageHeader';
-import { Bell, Check, CheckCheck, Trash2, Filter } from 'lucide-react';
-import { useLanguage } from '@/components/i18n/LanguageContext';
-import { useToast } from '@/components/ui/toast';
-import { NotificationIcon, PriorityBadge } from '../components/notifications/NotificationBadges';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
-import PushNotificationManager from '../components/notifications/PushNotificationManager';
-import { Link } from 'react-router-dom';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { 
+  Bell, BellOff, Calendar, Plane, MessageSquare, 
+  CheckCircle, DollarSign, Users, AlertTriangle,
+  Trash2, Check, Filter
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import PageHeader from '@/components/shared/PageHeader';
+
+const categoryIcons = {
+  calendar: Calendar,
+  travel: Plane,
+  chat: MessageSquare,
+  approvals: CheckCircle,
+  finance: DollarSign,
+  hr: Users,
+  system: AlertTriangle
+};
+
+const categoryColors = {
+  calendar: 'bg-blue-100 text-blue-800',
+  travel: 'bg-purple-100 text-purple-800',
+  chat: 'bg-green-100 text-green-800',
+  approvals: 'bg-amber-100 text-amber-800',
+  finance: 'bg-emerald-100 text-emerald-800',
+  hr: 'bg-pink-100 text-pink-800',
+  system: 'bg-red-100 text-red-800'
+};
+
+const priorityColors = {
+  low: 'border-l-gray-400',
+  medium: 'border-l-blue-500',
+  high: 'border-l-orange-500',
+  urgent: 'border-l-red-600'
+};
 
 export default function NotificationCenter() {
-  const { language } = useLanguage();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const toast = useToast();
-  
-  const [filter, setFilter] = useState('all'); // all, unread, read
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [user, setUser] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  React.useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', user?.email],
     queryFn: async () => {
       if (!user?.email) return [];
-      return await base44.entities.Notification.filter(
+      const notifs = await base44.entities.Notification.filter(
         { recipient_email: user.email },
         '-created_date',
         100
       );
+      return notifs;
     },
     enabled: !!user?.email,
-    refetchInterval: 30000, // Poll every 30 seconds for real-time updates
+    refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   const markAsReadMutation = useMutation({
-    mutationFn: (id) => base44.entities.Notification.update(id, {
-      is_read: true,
-      read_date: new Date().toISOString()
-    }),
+    mutationFn: async (notifId) => {
+      await base44.entities.Notification.update(notifId, {
+        is_read: true,
+        read_date: new Date().toISOString()
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const unread = notifications.filter(n => !n.is_read);
-      await Promise.all(unread.map(n => 
-        base44.entities.Notification.update(n.id, {
-          is_read: true,
-          read_date: new Date().toISOString()
-        })
-      ));
+      const unreadNotifs = notifications.filter(n => !n.is_read);
+      await Promise.all(
+        unreadNotifs.map(n => 
+          base44.entities.Notification.update(n.id, {
+            is_read: true,
+            read_date: new Date().toISOString()
+          })
+        )
+      );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      toast.success('All notifications marked as read');
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
-  const deleteNotificationMutation = useMutation({
-    mutationFn: (id) => base44.entities.Notification.delete(id),
+  const deleteNotifMutation = useMutation({
+    mutationFn: async (notifId) => {
+      await base44.entities.Notification.delete(notifId);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      toast.success('Notification deleted');
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     }
   });
 
-  const filteredNotifications = notifications.filter(n => {
-    if (filter === 'unread' && n.is_read) return false;
-    if (filter === 'read' && !n.is_read) return false;
-    if (typeFilter !== 'all' && n.type !== typeFilter) return false;
-    return true;
+  const deleteAllReadMutation = useMutation({
+    mutationFn: async () => {
+      const readNotifs = notifications.filter(n => n.is_read);
+      await Promise.all(readNotifs.map(n => base44.entities.Notification.delete(n.id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const filteredNotifications = useMemo(() => {
+    let filtered = notifications;
+    
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(n => n.category === selectedCategory);
+    }
+    
+    if (showUnreadOnly) {
+      filtered = filtered.filter(n => !n.is_read);
+    }
+    
+    return filtered;
+  }, [notifications, selectedCategory, showUnreadOnly]);
+
+  const categoryCounts = useMemo(() => {
+    const counts = {
+      all: notifications.filter(n => !n.is_read).length,
+      calendar: notifications.filter(n => n.category === 'calendar' && !n.is_read).length,
+      travel: notifications.filter(n => n.category === 'travel' && !n.is_read).length,
+      chat: notifications.filter(n => n.category === 'chat' && !n.is_read).length,
+      approvals: notifications.filter(n => n.category === 'approvals' && !n.is_read).length,
+      finance: notifications.filter(n => n.category === 'finance' && !n.is_read).length,
+      hr: notifications.filter(n => n.category === 'hr' && !n.is_read).length,
+      system: notifications.filter(n => n.category === 'system' && !n.is_read).length
+    };
+    return counts;
+  }, [notifications]);
+
+  const handleNotificationClick = (notif) => {
+    if (!notif.is_read) {
+      markAsReadMutation.mutate(notif.id);
+    }
+    if (notif.action_url) {
+      navigate(notif.action_url);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-6xl mx-auto">
+          <PageHeader title="Notificaciones" icon={Bell} />
+          <div className="mt-6 text-center text-gray-500">Cargando notificaciones...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 md:p-8 min-h-screen bg-[#F1F5F9] dark:bg-[#181818]">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
         <PageHeader
-          title="Notification Center"
-          description="Manage all your alerts and notifications"
+          title="Centro de Notificaciones"
+          description="Todas tus notificaciones organizadas en un solo lugar"
           icon={Bell}
-          stats={[
-            { label: 'Unread', value: unreadCount }
-          ]}
+          badge={categoryCounts.all > 0 ? `${categoryCounts.all} sin leer` : 'Al día'}
           actions={
-            unreadCount > 0 && (
-              <Button 
-                onClick={() => markAllAsReadMutation.mutate()}
+            <div className="flex gap-2">
+              <Button
                 variant="outline"
-                className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
+                size="sm"
+                onClick={() => setShowUnreadOnly(!showUnreadOnly)}
               >
-                <CheckCheck className="w-4 h-4 mr-2" />
-                Mark All Read
+                <Filter className="w-4 h-4 mr-2" />
+                {showUnreadOnly ? 'Todas' : 'Sin leer'}
               </Button>
-            )
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => markAllAsReadMutation.mutate()}
+                disabled={categoryCounts.all === 0}
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Marcar todas leídas
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => deleteAllReadMutation.mutate()}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Limpiar leídas
+              </Button>
+            </div>
           }
         />
 
-        {/* Push Notifications Manager */}
-        {user && (
-          <div className="mb-6">
-            <PushNotificationManager user={user} />
-          </div>
-        )}
+        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mt-6">
+          <TabsList className="grid grid-cols-8 w-full">
+            <TabsTrigger value="all" className="relative">
+              Todas
+              {categoryCounts.all > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.all}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="relative">
+              <Calendar className="w-4 h-4 mr-1" />
+              Calendario
+              {categoryCounts.calendar > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.calendar}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="travel" className="relative">
+              <Plane className="w-4 h-4 mr-1" />
+              Viajes
+              {categoryCounts.travel > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.travel}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="relative">
+              <MessageSquare className="w-4 h-4 mr-1" />
+              Chat
+              {categoryCounts.chat > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.chat}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="approvals" className="relative">
+              <CheckCircle className="w-4 h-4 mr-1" />
+              Aprobaciones
+              {categoryCounts.approvals > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.approvals}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="finance" className="relative">
+              <DollarSign className="w-4 h-4 mr-1" />
+              Finanzas
+              {categoryCounts.finance > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.finance}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="hr" className="relative">
+              <Users className="w-4 h-4 mr-1" />
+              HR
+              {categoryCounts.hr > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.hr}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="system" className="relative">
+              <AlertTriangle className="w-4 h-4 mr-1" />
+              Sistema
+              {categoryCounts.system > 0 && (
+                <Badge className="ml-2 bg-red-500 text-white">{categoryCounts.system}</Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Filters */}
-        <Card className="mb-6 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <Filter className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-40 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                  <SelectItem value="all" className="text-slate-900 dark:text-white">All</SelectItem>
-                  <SelectItem value="unread" className="text-slate-900 dark:text-white">Unread</SelectItem>
-                  <SelectItem value="read" className="text-slate-900 dark:text-white">Read</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-52 bg-white dark:bg-[#282828] border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                  <SelectItem value="all" className="text-slate-900 dark:text-white">All Types</SelectItem>
-                  <SelectItem value="mention" className="text-slate-900 dark:text-white">Mentions</SelectItem>
-                  <SelectItem value="comment" className="text-slate-900 dark:text-white">Comments</SelectItem>
-                  <SelectItem value="goal_status_change" className="text-slate-900 dark:text-white">Goal Updates</SelectItem>
-                  <SelectItem value="goal_deadline" className="text-slate-900 dark:text-white">Goal Deadlines</SelectItem>
-                  <SelectItem value="recognition" className="text-slate-900 dark:text-white">Recognitions</SelectItem>
-                  <SelectItem value="system_alert" className="text-slate-900 dark:text-white">System Alerts</SelectItem>
-                  <SelectItem value="overtime_alert" className="text-slate-900 dark:text-white">Overtime Alerts</SelectItem>
-                  <SelectItem value="invoice_overdue" className="text-slate-900 dark:text-white">Overdue Invoices</SelectItem>
-                  <SelectItem value="certification_expiring" className="text-slate-900 dark:text-white">Certifications</SelectItem>
-                  <SelectItem value="performance_review_due" className="text-slate-900 dark:text-white">Performance Reviews</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notifications List */}
-        <div className="space-y-3">
-          {filteredNotifications.length === 0 ? (
-            <Card className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-              <CardContent className="p-8 text-center">
-                <Bell className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-600 dark:text-slate-400">No notifications</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredNotifications.map(notification => (
-              <Card 
-                key={notification.id} 
-                className={`bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 transition-all hover:shadow-md ${
-                  !notification.is_read ? 'border-l-4 border-l-[#507DB4] dark:border-l-[#6B9DD8]' : ''
-                }`}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 mt-1">
-                      <NotificationIcon type={notification.type} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                            {notification.title}
-                          </h4>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                            {notification.message}
-                          </p>
-                        </div>
-                        <PriorityBadge priority={notification.priority} />
-                      </div>
-
-                      <div className="flex items-center justify-between mt-3">
-                        <span className="text-xs text-slate-500 dark:text-slate-500">
-                          {formatDistanceToNow(new Date(notification.created_date), {
-                            addSuffix: true,
-                            locale: language === 'es' ? es : undefined
-                          })}
-                        </span>
-
-                        <div className="flex gap-2">
-                          {notification.action_url && (
-                            <Link to={notification.action_url}>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                className="text-xs border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10"
-                              >
-                                View
-                              </Button>
-                            </Link>
-                          )}
-                          
-                          {!notification.is_read && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => markAsReadMutation.mutate(notification.id)}
-                              className="text-xs border-green-300 dark:border-green-600 text-green-600 dark:text-green-400"
-                            >
-                              <Check className="w-3 h-3" />
-                            </Button>
-                          )}
-
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => deleteNotificationMutation.mutate(notification.id)}
-                            className="text-xs border-red-300 dark:border-red-600 text-red-600 dark:text-red-400"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+          <div className="mt-6">
+            {filteredNotifications.length === 0 ? (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <BellOff className="w-16 h-16 text-gray-300 mb-4" />
+                  <p className="text-gray-500 text-lg">
+                    {showUnreadOnly ? 'No tienes notificaciones sin leer' : 'No hay notificaciones'}
+                  </p>
                 </CardContent>
               </Card>
-            ))
-          )}
-        </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredNotifications.map((notif) => {
+                  const Icon = categoryIcons[notif.category] || Bell;
+                  
+                  return (
+                    <Card
+                      key={notif.id}
+                      className={`cursor-pointer transition-all hover:shadow-md border-l-4 ${priorityColors[notif.priority]} ${
+                        notif.is_read ? 'bg-white opacity-60' : 'bg-blue-50'
+                      }`}
+                      onClick={() => handleNotificationClick(notif)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3 flex-1">
+                            <div className={`p-2 rounded-lg ${categoryColors[notif.category]}`}>
+                              <Icon className="w-5 h-5" />
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-gray-900">{notif.title}</h3>
+                                {!notif.is_read && (
+                                  <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                                )}
+                              </div>
+                              
+                              <p className="text-sm text-gray-600 mb-2">{notif.message}</p>
+                              
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <span>{format(new Date(notif.created_date), 'MMM dd, yyyy • h:mm a')}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {notif.category}
+                                </Badge>
+                                {notif.priority === 'urgent' && (
+                                  <Badge className="bg-red-500 text-white">Urgente</Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            {!notif.is_read && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsReadMutation.mutate(notif.id);
+                                }}
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotifMutation.mutate(notif.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </Tabs>
       </div>
     </div>
   );

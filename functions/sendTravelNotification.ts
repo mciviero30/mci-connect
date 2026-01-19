@@ -177,6 +177,22 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
+    // Create in-app notification
+    await base44.asServiceRole.functions.invoke('createNotification', {
+      recipientEmail: recipientEmail,
+      recipientName: recipientName,
+      type: notificationType,
+      category: 'travel',
+      priority: isTravelRequest ? 'high' : 'medium',
+      title: isTravelRequest 
+        ? `Nueva solicitud de viaje: ${booking.job_name}`
+        : `Viaje confirmado: ${booking.job_name}`,
+      message: `${formatDate(booking.travel_start_date)} - ${formatDate(booking.travel_end_date)}`,
+      actionUrl: '#!/TravelBookings',
+      relatedEntityType: 'travel_booking',
+      relatedEntityId: booking.id
+    }).catch(err => console.error('Failed to create in-app notification:', err));
+
     return Response.json({ 
       success: true, 
       message: 'Email sent successfully' 
