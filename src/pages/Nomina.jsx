@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
-import StatsCard from "../components/shared/StatsCard";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -304,70 +304,16 @@ export default function Nomina() {
 
 
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalWorkPay')}</p>
-                <Briefcase className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">{totals.normalHours.toFixed(1)}h + {totals.overtimeHours.toFixed(1)}h OT</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalDrivingPay')}</p>
-                <Car className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">{totals.drivingHours.toFixed(1)}h driving</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('perDiem')}</p>
-                <DollarSign className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalReimbursements')}</p>
-                <Download className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{language === 'es' ? 'Bonos' : 'Bonuses'}</p>
-                <Gift className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-              <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">{language === 'es' ? 'Trabajos completados' : 'Completed jobs'}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="soft-cyan-gradient shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('totalPayroll')}</p>
-                <Banknote className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { label: t('totalWorkPay'), value: `$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Briefcase, subtitle: `${totals.normalHours.toFixed(1)}h + ${totals.overtimeHours.toFixed(1)}h OT` },
+            { label: t('totalDrivingPay'), value: `$${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Car, subtitle: `${totals.drivingHours.toFixed(1)}h driving` },
+            { label: t('perDiem'), value: `$${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: DollarSign },
+            { label: t('totalReimbursements'), value: `$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Download },
+            { label: language === 'es' ? 'Bonos' : 'Bonuses', value: `$${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Gift, subtitle: language === 'es' ? 'Trabajos completados' : 'Completed jobs' },
+            { label: t('totalPayroll'), value: `$${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Banknote, gradient: 'soft-cyan-gradient' }
+          ]}
+        />
 
         <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl mb-6 border-slate-200 dark:border-slate-700">
           <CardHeader className="border-b border-slate-200 dark:border-slate-700">

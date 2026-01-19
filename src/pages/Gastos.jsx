@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
 import { Receipt, CheckCircle, XCircle, Plus, AlertTriangle } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
-import StatsCard from "../components/shared/StatsCard";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import ExpenseList from "../components/gastos/ExpenseList";
 import ExpenseForm from "../components/gastos/ExpenseForm";
 import { useToast } from "@/components/ui/toast";
@@ -156,12 +156,15 @@ export default function Gastos() {
 
 
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-          <StatsCard title={t('pending')} value={pendingExpenses.length} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
-          <StatsCard title={t('totalPending')} value={`$${totalPending.toFixed(2)}`} icon={Receipt} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
-          <StatsCard title={t('approved')} value={approvedExpenses.length} icon={CheckCircle} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
-          <StatsCard title={t('totalApproved')} value={`$${totalApproved.toFixed(2)}`} icon={CheckCircle} gradient="linear-gradient(135deg, #EBF5FF 0%, #D6E9FF 100%)" loading={isLoading} />
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { label: t('pending'), value: pendingExpenses.length, icon: Receipt },
+            { label: t('totalPending'), value: `$${totalPending.toFixed(2)}`, icon: Receipt },
+            { label: t('approved'), value: approvedExpenses.length, icon: CheckCircle },
+            { label: t('totalApproved'), value: `$${totalApproved.toFixed(2)}`, icon: CheckCircle }
+          ]}
+          loading={isLoading}
+        />
 
         {/* AI Expense Analyzer */}
         <div className="mb-8">

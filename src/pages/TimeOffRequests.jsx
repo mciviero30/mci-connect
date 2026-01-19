@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CalendarClock, Check, X, Clock, AlertTriangle, Calendar, Users } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format, differenceInDays, eachDayOfInterval, isSameDay } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
@@ -369,43 +370,34 @@ export default function TimeOffRequests() {
           icon={CalendarClock}
         />
 
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-1">Pending</p>
-                  <p className="text-3xl font-bold text-amber-900 dark:text-amber-100">{pending.length}</p>
-                </div>
-                <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-600 dark:text-green-400 font-medium mb-1">Approved</p>
-                  <p className="text-3xl font-bold text-green-900 dark:text-green-100">{approved.length}</p>
-                </div>
-                <Check className="w-10 h-10 text-green-600 dark:text-green-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-1">Rejected</p>
-                  <p className="text-3xl font-bold text-red-900 dark:text-red-100">{rejected.length}</p>
-                </div>
-                <X className="w-10 h-10 text-red-600 dark:text-red-400 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { 
+              label: 'Pending', 
+              value: pending.length, 
+              icon: Clock,
+              gradient: 'bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20',
+              borderColor: 'border-amber-200 dark:border-amber-700',
+              valueColor: 'text-amber-900 dark:text-amber-100'
+            },
+            { 
+              label: 'Approved', 
+              value: approved.length, 
+              icon: Check,
+              gradient: 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20',
+              borderColor: 'border-green-200 dark:border-green-700',
+              valueColor: 'text-green-900 dark:text-green-100'
+            },
+            { 
+              label: 'Rejected', 
+              value: rejected.length, 
+              icon: X,
+              gradient: 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20',
+              borderColor: 'border-red-200 dark:border-red-700',
+              valueColor: 'text-red-900 dark:text-red-100'
+            }
+          ]}
+        />
 
         <Tabs defaultValue={isAdmin ? "pending" : "my_requests"} className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm rounded-xl shadow-lg p-2">
         <TabsList className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700">

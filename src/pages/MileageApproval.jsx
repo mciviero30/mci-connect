@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import StatsSummaryGrid from "@/components/shared/StatsSummaryGrid";
 
 export default function MileageApproval() {
   const { t, language } = useLanguage();
@@ -227,55 +228,14 @@ export default function MileageApproval() {
           }
         />
 
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Pendientes' : 'Pending'}</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{pendingLogs.length}</p>
-                </div>
-                <Car className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Millas Pendientes' : 'Pending Miles'}</p>
-                  <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{totalPendingMiles.toFixed(0)} mi</p>
-                </div>
-                <MapPin className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Monto Pendiente' : 'Pending Amount'}</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${totalPendingAmount.toFixed(2)}</p>
-                </div>
-                <Car className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">{language === 'es' ? 'Total Aprobado' : 'Total Approved'}</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">${totalApprovedAmount.toFixed(2)}</p>
-                </div>
-                <CheckCircle className="w-10 h-10 text-slate-700 dark:text-slate-300 opacity-30" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { label: language === 'es' ? 'Pendientes' : 'Pending', value: pendingLogs.length, icon: Car },
+            { label: language === 'es' ? 'Millas Pendientes' : 'Pending Miles', value: `${totalPendingMiles.toFixed(0)} mi`, icon: MapPin },
+            { label: language === 'es' ? 'Monto Pendiente' : 'Pending Amount', value: `$${totalPendingAmount.toFixed(2)}`, icon: Car },
+            { label: language === 'es' ? 'Total Aprobado' : 'Total Approved', value: `$${totalApprovedAmount.toFixed(2)}`, icon: CheckCircle }
+          ]}
+        />
 
         <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
           <CardHeader className="border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-800">

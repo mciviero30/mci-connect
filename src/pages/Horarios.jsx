@@ -5,6 +5,7 @@ import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityLis
 import { Clock } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import TimeEntryList from "../components/horarios/TimeEntryList";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
@@ -60,55 +61,15 @@ export default function Horarios() {
           icon={Clock}
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-          <Card className="soft-amber-gradient shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1">{t('pending')}</p>
-                  <p className="text-3xl font-bold">{pendingEntries.length}</p>
-                </div>
-                <Clock className="w-10 h-10 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="soft-pink-gradient shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Horas Pendientes' : 'Pending Hours'}</p>
-                  <p className="text-3xl font-bold">{totalPendingHours.toFixed(1)}h</p>
-                </div>
-                <Clock className="w-10 h-10 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="soft-green-gradient shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1">{t('approved')}</p>
-                  <p className="text-3xl font-bold">{approvedEntries.length}</p>
-                </div>
-                <Clock className="w-10 h-10 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="soft-cyan-gradient shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium mb-1">{language === 'es' ? 'Horas Aprobadas' : 'Approved Hours'}</p>
-                  <p className="text-3xl font-bold">{totalApprovedHours.toFixed(1)}h</p>
-                </div>
-                <Clock className="w-10 h-10 opacity-50" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <StatsSummaryGrid 
+          stats={[
+            { label: t('pending'), value: pendingEntries.length, icon: Clock, gradient: 'soft-amber-gradient' },
+            { label: language === 'es' ? 'Horas Pendientes' : 'Pending Hours', value: `${totalPendingHours.toFixed(1)}h`, icon: Clock, gradient: 'soft-pink-gradient' },
+            { label: t('approved'), value: approvedEntries.length, icon: Clock, gradient: 'soft-green-gradient' },
+            { label: language === 'es' ? 'Horas Aprobadas' : 'Approved Hours', value: `${totalApprovedHours.toFixed(1)}h`, icon: Clock, gradient: 'soft-cyan-gradient' }
+          ]}
+          loading={isLoading}
+        />
 
         <TimeEntryList 
           timeEntries={timeEntries} 
