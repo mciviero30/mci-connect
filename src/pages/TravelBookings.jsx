@@ -61,14 +61,57 @@ export default function TravelBookingsPage() {
         total_cost: totalCost
       };
 
+      const isNewBooking = !selectedBooking;
+      const wasRequested = selectedBooking?.status === 'requested';
+
       if (selectedBooking) {
         return await base44.entities.TravelBooking.update(selectedBooking.id, dataToSave);
       } else {
         return await base44.entities.TravelBooking.create(dataToSave);
       }
     },
-    onSuccess: async (savedBooking) => {
+    onSuccess: async (savedBooking, variables) => {
       queryClient.invalidateQueries({ queryKey: ['travelBookings'] });
+      
+      const isNewRequest = !selectedBooking && savedBooking.status === 'requested';
+      const isNowBooked = selectedBooking?.status === 'requested' && savedBooking.status === 'booked';
+
+      // Send notification to HR/Admin when CEO creates request
+      if (isNewRequest) {
+        try {
+          const hrAdmins = await base44.entities.User.filter({ role: 'admin' });
+          for (const admin of hrAdmins) {
+            await base44.functions.invoke('sendTravelNotification', {
+              notificationType: 'travel_requested',
+              booking: savedBooking,
+              recipientEmail: admin.email,
+              recipientName: admin.full_name || admin.email
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send HR notification:', error);
+        }
+      }
+
+      // Send notification to employees when HR completes booking
+      if (isNowBooked && savedBooking.assigned_employees?.length > 0) {
+        try {
+          for (let i = 0; i < savedBooking.assigned_employees.length; i++) {
+            const employeeEmail = savedBooking.assigned_employees[i];
+            const employeeName = savedBooking.assigned_employee_names?.[i] || employeeEmail;
+            
+            await base44.functions.invoke('sendTravelNotification', {
+              notificationType: 'travel_booked',
+              booking: savedBooking,
+              recipientEmail: employeeEmail,
+              recipientName: employeeName
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send employee notification:', error);
+        }
+      }
+
       setShowDialog(false);
       setSelectedBooking(null);
 
@@ -115,13 +158,16 @@ export default function TravelBookingsPage() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'requested': return 'bg-amber-100 text-amber-800';
+      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
       case 'booked': return 'bg-green-100 text-green-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const pendingRequests = bookings.filter(b => b.status === 'requested').length;
 
   const getTransportIcon = (type) => {
     if (type === 'flight') return <Plane className="w-4 h-4" />;
@@ -139,7 +185,7 @@ export default function TravelBookingsPage() {
         title="Travel Bookings"
         description="Manage travel arrangements for employees"
         icon={Plane}
-        badge={`${bookings.length} Bookings`}
+        badge={pendingRequests > 0 ? `${pendingRequests} Pending Requests` : `${bookings.length} Bookings`}
         actions={
           <Button onClick={() => {
             setSelectedBooking(null);

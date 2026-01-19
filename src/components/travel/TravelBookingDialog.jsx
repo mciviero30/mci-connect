@@ -183,8 +183,9 @@ export default function TravelBookingDialog({ open, onOpenChange, booking, onSub
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="booked">Booked</SelectItem>
+                  <SelectItem value="requested">Requested (CEO)</SelectItem>
+                  <SelectItem value="in_progress">In Progress (HR working)</SelectItem>
+                  <SelectItem value="booked">Booked (Ready)</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
