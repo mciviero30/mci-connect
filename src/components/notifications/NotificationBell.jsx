@@ -87,8 +87,9 @@ export default function NotificationBell({ user }) {
 
   const handleNotificationClick = (notification) => {
     markNotificationAsReadMutation.mutate(notification.id);
-    if (notification.link) {
-      navigate(notification.link);
+    if (notification.action_url) {
+      const pageName = notification.action_url.replace('#!/', '').replace('/', '');
+      navigate(createPageUrl(pageName));
       setIsOpen(false);
     }
   };
@@ -316,7 +317,7 @@ export default function NotificationBell({ user }) {
                 <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
                   <button
                     onClick={() => {
-                      navigate('/page/NotificationCenter');
+                      navigate(createPageUrl('NotificationCenter'));
                       setIsOpen(false);
                     }}
                     className="w-full text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
