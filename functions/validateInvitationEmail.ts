@@ -21,10 +21,20 @@ Deno.serve(async (req) => {
     console.log(`🔒 Validating invitation for: ${userEmail}`);
 
     // Check if admin/CEO - they bypass validation
-    if (user.role === 'admin' || user.role === 'ceo') {
+    if (user.role === 'admin' || user.role === 'ceo' || user.position === 'CEO') {
       return Response.json({ 
         valid: true,
         reason: 'Admin/CEO bypass',
+        email: userEmail
+      });
+    }
+
+    // Check if user's employment_status is 'active' - they are already validated
+    if (user.employment_status === 'active') {
+      console.log(`✅ User has employment_status: active, bypassing invitation check for ${userEmail}`);
+      return Response.json({ 
+        valid: true,
+        reason: 'Already active employee',
         email: userEmail
       });
     }
