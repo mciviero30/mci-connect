@@ -9,6 +9,7 @@ import { Clock, Play, Square, Coffee, CheckCircle, XCircle, Calendar, Download, 
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import DailyTimeView from "@/components/time-tracking/DailyTimeView";
 import WeeklyTimeView from "@/components/time-tracking/WeeklyTimeView";
 import TimeReportsView from "@/components/time-tracking/TimeReportsView";
@@ -22,7 +23,7 @@ export default function TimeTracking() {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
   });
 

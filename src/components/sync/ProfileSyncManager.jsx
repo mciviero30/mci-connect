@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
@@ -6,6 +6,12 @@ import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 export default function ProfileSyncManager({ user }) {
   console.log('[ProfileSyncManager] USER PROP:', user);
   const queryClient = useQueryClient();
+  const userRef = useRef(user);
+
+  // Keep ref updated
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     console.log('[ProfileSyncManager useEffect 1] user:', user);
@@ -28,6 +34,10 @@ export default function ProfileSyncManager({ user }) {
     // Listen for custom profile update events (same tab)
     const handleProfileUpdate = async (e) => {
       console.log('🔄 Profile update event received, fetching fresh data...');
+      // Use ref to avoid stale closure
+      const currentUser = userRef.current;
+      if (!currentUser) return;
+      
       // Fetch fresh user data and update cache directly (NO INVALIDATION)
       try {
         const freshUser = await base44.auth.me();
@@ -85,26 +95,24 @@ export default function ProfileSyncManager({ user }) {
     console.log('[ProfileSyncManager useEffect 3] user:', user);
     if (!user) return;
 
-    const syncWithMCIWeb = async () => {
-      console.log('[ProfileSyncManager syncWithMCIWeb] user inside closure:', user);
-      try {
-        await base44.functions.invoke('syncUserProfile', {
-          userId: user.id,
-          userData: {
-            email: user.email,
-            full_name: user.full_name,
-            profile_photo_url: user.profile_photo_url,
-            avatar_image_url: user.avatar_image_url,
-            preferred_profile_image: user.preferred_profile_image,
-          }
-        });
-      } catch (error) {
-        // Silent fail - don't block UI
-      }
-    };
-
     const handleProfileUpdateForSync = () => {
-      syncWithMCIWeb();
+      // Use ref to avoid stale closure
+      const currentUser = userRef.current;
+      if (!currentUser) return;
+      
+      // Fire and forget - async sync
+      base44.functions.invoke('syncUserProfile', {
+        userId: currentUser.id,
+        userData: {
+          email: currentUser.email,
+          full_name: currentUser.full_name,
+          profile_photo_url: currentUser.profile_photo_url,
+          avatar_image_url: currentUser.avatar_image_url,
+          preferred_profile_image: currentUser.preferred_profile_image,
+        }
+      }).catch(() => {
+        // Silent fail - don't block UI
+      });
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdateForSync);
@@ -112,7 +120,7 @@ export default function ProfileSyncManager({ user }) {
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdateForSync);
     };
-  }, [user?.id, user?.profile_last_updated]);
+  }, [user?.id]);
 
   return null;
 }

@@ -10,31 +10,18 @@ import { Combobox } from '@/components/ui/combobox';
 import { Clock, Play, Square, Coffee, MapPin, Briefcase, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { Badge } from "@/components/ui/badge";
+import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNotificationService } from '../notifications/NotificationService';
 import GeofenceMonitor from '../time-tracking/GeofenceMonitor';
+import { calculateDistance, getCurrentLocation } from '@/components/utils/geolocation';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
   const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
   const s = Math.floor(seconds % 60).toString().padStart(2, '0');
   return `${h}:${m}:${s}`;
-};
-
-// Calculate distance between two coordinates (Haversine formula)
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371e3; // Earth's radius in meters
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-          Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-  return R * c; // Distance in meters
 };
 
 export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
@@ -65,7 +52,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
   // NEW: Get current user for notifications
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: Infinity
   });
@@ -141,49 +128,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   }, [activeSession, user, sendNotification, language]);
 
   const getLocation = useCallback(() => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        return reject(language === 'es' ? 'GPS no soportado por tu dispositivo' : 'Geolocation not supported');
-      }
-      
-      // Request high accuracy position with mock location detection
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          // Check for mock locations (Android)
-          if (pos.coords.accuracy > 100) {
-            return reject(language === 'es' 
-              ? '⚠️ Precisión GPS muy baja. Asegúrate de estar al aire libre y tener señal GPS fuerte.' 
-              : '⚠️ GPS accuracy too low. Make sure you are outdoors with strong GPS signal.');
-          }
-          
-          resolve({ 
-            lat: pos.coords.latitude, 
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy
-          });
-        },
-        (err) => {
-          if (err.code === 1) {
-            return reject(language === 'es' 
-              ? '❌ Permiso de ubicación denegado. Debes habilitar GPS para fichar.' 
-              : '❌ Location permission denied. You must enable GPS to clock in.');
-          } else if (err.code === 2) {
-            return reject(language === 'es' 
-              ? '❌ GPS no disponible. Verifica que el GPS esté activado.' 
-              : '❌ GPS unavailable. Check that GPS is enabled.');
-          } else {
-            return reject(language === 'es' 
-              ? '❌ Error obteniendo ubicación. Intenta de nuevo.' 
-              : '❌ Error getting location. Try again.');
-          }
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0 // Don't use cached location
-        }
-      );
-    });
+    return getCurrentLocation(language);
   }, [language]);
 
   const handleClockIn = async () => {
@@ -285,10 +230,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(distanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar.`
           : `❌ OUT OF RANGE: You are ${Math.round(distanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock in.`);
         
-        // Notify admins of attempted fraud
+        // Notify admins of attempted fraud (parallel)
         const admins = await base44.entities.User.filter({ role: 'admin' });
-        for (const admin of admins) {
-          sendNotification({
+        await Promise.all(admins.map(admin => sendNotification({
             recipientEmail: admin.email,
             recipientName: admin.full_name,
             type: 'security_alert',
@@ -300,8 +244,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             actionUrl: '/Horarios',
             relatedEntityType: 'timeentry',
             sendEmail: true
-          });
-        }
+          })));
         
         setShowWorkTypeDialog(false);
         return;
@@ -418,8 +361,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         });
         
         const admins = await base44.entities.User.filter({ role: 'admin' });
-        for (const admin of admins) {
-          sendNotification({
+        await Promise.all(admins.map(admin => sendNotification({
             recipientEmail: admin.email,
             recipientName: admin.full_name,
             type: 'approval_required',
@@ -458,10 +400,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
               ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(checkOutDistanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar salida.`
               : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
             
-            // Notify admins
+            // Notify admins (parallel)
             const admins = await base44.entities.User.filter({ role: 'admin' });
-            for (const admin of admins) {
-              sendNotification({
+            await Promise.all(admins.map(admin => sendNotification({
                 recipientEmail: admin.email,
                 recipientName: admin.full_name,
                 type: 'security_alert',
@@ -473,8 +414,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
                 actionUrl: '/Horarios',
                 relatedEntityType: 'timeentry',
                 sendEmail: true
-              });
-            }
+              })));
             return;
           }
 
@@ -501,7 +441,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         employee_name: user.full_name,
         job_id: activeSession.jobId,
         job_name: activeSession.jobName,
-        date: new Date().toISOString().split('T')[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
         check_in: activeSession.checkIn,
         check_out: clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         check_in_latitude: activeSession.location.lat,
@@ -694,7 +634,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       onSave({
         job_id: activeSession.jobId,
         job_name: activeSession.jobName,
-        date: new Date().toISOString().split('T')[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
         check_in: activeSession.checkIn,
         check_out: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         check_in_latitude: activeSession.location.lat,

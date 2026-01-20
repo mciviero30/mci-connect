@@ -6,21 +6,8 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { AlertTriangle, MapPinOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371e3;
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-          Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-  return R * c;
-};
+import { calculateDistance } from '@/components/utils/geolocation';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
   const { language } = useLanguage();
@@ -30,7 +17,7 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
   const checkIntervalRef = useRef(null);
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: Infinity
   });
@@ -85,10 +72,9 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
               priority: 'urgent'
             });
 
-            // Notify admins
+            // Notify admins (parallel)
             const admins = await base44.entities.User.filter({ role: 'admin' });
-            for (const admin of admins) {
-              sendNotification({
+            await Promise.all(admins.map(admin => sendNotification({
                 userEmail: admin.email,
                 type: 'security_alert',
                 title: language === 'es' ? '🚨 Empleado Salió del Geofence' : '🚨 Employee Left Geofence',
@@ -97,8 +83,7 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
                   : `${user.full_name} left ${job.name} area (${Math.round(distance)}m)`,
                 url: '/Horarios',
                 priority: 'high'
-              });
-            }
+              })));
 
             // Auto clock-out after 30 seconds warning
             setTimeout(() => {

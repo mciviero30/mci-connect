@@ -15,7 +15,7 @@ export default function MisHoras() {
   const [editingEntry, setEditingEntry] = useState(null);
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
   const { data: timeEntries = [], isLoading } = useQuery({
     queryKey: ['myTimeEntries', user?.email],
