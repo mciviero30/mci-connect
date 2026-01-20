@@ -846,11 +846,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: auto;
             touch-action: auto;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
           }
 
           #root {
@@ -859,11 +854,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             overflow: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: auto;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
           }
 
           /* Allow text selection in inputs and content areas */
