@@ -98,18 +98,11 @@ export default function CrearFactura() {
     initialData: [],
   });
 
-  const { data: rawItemCatalog = [] } = useQuery({
-    queryKey: ['itemCatalog'],
-    queryFn: () => base44.entities.ItemCatalog.list(),
+  const { data: quoteItems = [] } = useQuery({
+    queryKey: ['quoteItems'],
+    queryFn: () => base44.entities.QuoteItem.list(),
     initialData: [],
   });
-
-  // Normalize catalog items to use item_name instead of name
-  const itemCatalog = rawItemCatalog.map(item => ({
-    ...item,
-    item_name: item.name || item.item_name,
-    unit: item.uom || item.unit || 'pcs'
-  }));
 
   const { data: companySettings } = useQuery({
     queryKey: ['companySettings'],
@@ -329,8 +322,8 @@ export default function CrearFactura() {
   const handleRefreshPrices = () => {
     if (!window.confirm(
       language === 'es'
-        ? '¿Actualizar precios desde el catálogo?\n\nEsto actualizará los precios de todos los items que estén en el catálogo. Las cantidades no cambiarán.'
-        : 'Update prices from catalog?\n\nThis will update prices for all items in the catalog. Quantities will not change.'
+        ? '¿Actualizar desde el catálogo?\n\nEsto actualizará precios y tiempos de instalación. Las cantidades no cambiarán.'
+        : 'Update from catalog?\n\nThis will update prices and installation times. Quantities will not change.'
     )) {
       return;
     }
@@ -338,11 +331,12 @@ export default function CrearFactura() {
     const updatedItems = formData.items.map(item => {
       if (!item.item_name) return item;
       
-      const catalogItem = itemCatalog.find(ci => ci.item_name === item.item_name);
+      const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
       if (catalogItem) {
         return {
           ...item,
           unit_price: catalogItem.unit_price || item.unit_price,
+          installation_time: catalogItem.installation_time || item.installation_time,
           total: (item.quantity || 0) * (catalogItem.unit_price || item.unit_price)
         };
       }
@@ -352,11 +346,11 @@ export default function CrearFactura() {
     setFormData({ ...formData, items: updatedItems });
     
     toast.success(
-      language === 'es' ? 'Precios actualizados' : 'Prices updated',
+      language === 'es' ? 'Actualizado desde catálogo' : 'Updated from catalog',
       { 
         description: language === 'es' 
-          ? 'Los precios se actualizaron desde el catálogo'
-          : 'Prices have been updated from the catalog'
+          ? 'Precios y tiempos actualizados'
+          : 'Prices and times updated'
       }
     );
   };
@@ -871,12 +865,27 @@ export default function CrearFactura() {
   const canSend = canSendDocument({ approval_status: effectiveApprovalStatus });
 
   return (
-    <div className="p-4 md:p-8 min-h-screen">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
       <div className="max-w-5xl mx-auto">
         <PageHeader
           title={editId ? t('editInvoice') : (billingType === 'time_materials' ? (language === 'es' ? 'Factura T&M' : 'T&M Invoice') : t('newInvoice'))}
           showBack={true}
         />
+
+        {/* Fixed Total Bar */}
+        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl shadow-xl border-2 border-emerald-300">
+          <div className="flex items-center justify-between">
+            <div className="text-white">
+              <p className="text-sm opacity-90">{language === 'es' ? 'Total de la Factura' : 'Invoice Total'}</p>
+              <p className="text-4xl font-bold">${total.toFixed(2)}</p>
+            </div>
+            <div className="text-right text-white text-sm">
+              <p className="opacity-90">{t('subtotal')}: ${subtotal.toFixed(2)}</p>
+              <p className="opacity-90">{t('tax')}: ${tax_amount.toFixed(2)}</p>
+              <p className="text-xs opacity-75 mt-1">{formData.items.length} {language === 'es' ? 'ítems' : 'items'}</p>
+            </div>
+          </div>
+        </div>
 
         {/* T&M Invoice Info Banner */}
         {billingType === 'time_materials' && (
@@ -914,9 +923,9 @@ export default function CrearFactura() {
         {/* Wrap all content in a form. For existing invoices, prevent default submission, as buttons handle mutations. */}
         {/* For new invoices (editId is null), onSubmit will trigger handleSubmit for initial draft creation. */}
         <form onSubmit={editId ? (e) => e.preventDefault() : handleSubmit} className="space-y-6">
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b">
-              <CardTitle>{t('customerInformation')}</CardTitle>
+          <Card className="glass-card shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="text-slate-900">{t('customerInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -989,9 +998,9 @@ export default function CrearFactura() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b">
-              <CardTitle>{t('jobDetails')}</CardTitle>
+          <Card className="glass-card shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="text-slate-900">{t('jobDetails')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -1038,9 +1047,9 @@ export default function CrearFactura() {
           </Card>
 
           {/* Team Selection Card */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b">
-              <CardTitle>{language === 'es' ? 'Equipos Asignados' : 'Assigned Teams'}</CardTitle>
+          <Card className="glass-card shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="text-slate-900">{language === 'es' ? 'Equipos Asignados' : 'Assigned Teams'}</CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -1103,9 +1112,9 @@ export default function CrearFactura() {
             </div>
           )}
 
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b flex flex-row items-center justify-between py-3">
-              <CardTitle className="text-base flex items-center gap-2">
+          <Card className="glass-card shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between py-3">
+              <CardTitle className="text-slate-900 flex items-center gap-2">
                 {t('invoiceItems')}
                 {pricesLocked && (
                   <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-xs">
@@ -1137,7 +1146,7 @@ export default function CrearFactura() {
               <LineItemsEditor 
                 items={formData.items}
                 onItemsChange={(newItems) => setFormData({ ...formData, items: newItems })}
-                catalogItems={itemCatalog}
+                catalogItems={quoteItems}
                 allowCatalogSelect={true}
                 allowReorder={false}
                 onToast={(toastData) => toast[toastData.variant || 'success'](toastData.title, { description: toastData.description })}
@@ -1207,9 +1216,9 @@ export default function CrearFactura() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b">
-              <CardTitle>{t('notesAndTerms')}</CardTitle>
+          <Card className="glass-card shadow-xl border-slate-200">
+            <CardHeader className="border-b border-slate-200">
+              <CardTitle className="text-slate-900">{t('notesAndTerms')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div>
