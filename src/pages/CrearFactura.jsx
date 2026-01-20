@@ -98,11 +98,18 @@ export default function CrearFactura() {
     initialData: [],
   });
 
-  const { data: itemCatalog = [] } = useQuery({
+  const { data: rawItemCatalog = [] } = useQuery({
     queryKey: ['itemCatalog'],
     queryFn: () => base44.entities.ItemCatalog.list(),
     initialData: [],
   });
+
+  // Normalize catalog items to use item_name instead of name
+  const itemCatalog = rawItemCatalog.map(item => ({
+    ...item,
+    item_name: item.name || item.item_name,
+    unit: item.uom || item.unit || 'pcs'
+  }));
 
   const { data: companySettings } = useQuery({
     queryKey: ['companySettings'],
