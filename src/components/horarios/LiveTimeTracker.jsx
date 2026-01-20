@@ -372,8 +372,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
               : `${user.full_name} has worked ${totalHours.toFixed(1)} hours on ${activeSession.jobName}`,
             actionUrl: '/Horarios',
             relatedEntityType: 'timeentry'
-          });
-        }
+          })));
         
         alert(language === 'es'
           ? '❌ Error: Límite máximo de turno (14 horas) excedido. Por favor contacta a tu supervisor.'
