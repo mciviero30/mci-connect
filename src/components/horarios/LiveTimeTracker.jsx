@@ -16,6 +16,8 @@ import { useNotificationService } from '../notifications/NotificationService';
 import GeofenceMonitor from '../time-tracking/GeofenceMonitor';
 import { calculateDistance, getCurrentLocation } from '@/components/utils/geolocation';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
+import { checkGeolocationPermission, markDeniedPromptSeen, hasSeenDeniedPrompt } from '@/components/utils/geolocationPermissions';
+import LocationPermissionPrompt from '@/components/shared/LocationPermissionPrompt';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -44,6 +46,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const [showJobSelector, setShowJobSelector] = useState(false);
   const [showWorkTypeDialog, setShowWorkTypeDialog] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  
+  // PASO 3: GPS Permission state
+  const [showLocationDenied, setShowLocationDenied] = useState(false);
+  const [isBreakAction, setIsBreakAction] = useState(false);
   
   // NEW: Prompt #52 - Work Type and Task Details
   const [workType, setWorkType] = useState('normal');
@@ -146,6 +152,17 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   }, [language]);
 
   const handleClockIn = async () => {
+    // PASO 3: Pre-check GPS permissions BEFORE showing job selector
+    const permission = await checkGeolocationPermission();
+    
+    if (permission === 'denied' && !hasSeenDeniedPrompt()) {
+      setIsBreakAction(false); // Clock in/out BLOCKS
+      setShowLocationDenied(true);
+      markDeniedPromptSeen();
+      return;
+    }
+    
+    // Permission granted or prompt → continue normal flow
     setShowJobSelector(true);
   };
   
@@ -313,6 +330,16 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const handleClockOut = async () => {
     if (!user) {
       setLocationError(language === 'es' ? 'Error: Usuario no cargado. Intenta de nuevo.' : 'Error: User not loaded. Please try again.');
+      return;
+    }
+    
+    // PASO 3: Pre-check GPS permissions BEFORE clock out
+    const permission = await checkGeolocationPermission();
+    
+    if (permission === 'denied' && !hasSeenDeniedPrompt()) {
+      setIsBreakAction(false); // Clock out BLOCKS
+      setShowLocationDenied(true);
+      markDeniedPromptSeen();
       return;
     }
     
@@ -490,6 +517,16 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   };
 
   const handleToggleBreak = async () => {
+    // PASO 3: Pre-check GPS for breaks (non-blocking, just inform)
+    const permission = await checkGeolocationPermission();
+    
+    if (permission === 'denied' && !hasSeenDeniedPrompt()) {
+      setIsBreakAction(true); // Breaks DON'T block
+      setShowLocationDenied(true);
+      markDeniedPromptSeen();
+      // Continue execution - don't return, just show prompt
+    }
+    
     const now = Date.now();
     let updatedSession;
 
@@ -746,6 +783,17 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
   return (
     <>
+      {/* PASO 3: Location Permission Prompt */}
+      {showLocationDenied && (
+        <div className="mb-6">
+          <LocationPermissionPrompt
+            language={language}
+            blocking={!isBreakAction}
+            onDismiss={isBreakAction ? () => setShowLocationDenied(false) : undefined}
+          />
+        </div>
+      )}
+
       {/* Real-time Geofence Monitor */}
       <GeofenceMonitor 
         activeSession={activeSession} 
