@@ -934,7 +934,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
       {/* Main Viewer */}
       <div className="flex-1 flex flex-col bg-slate-100 dark:bg-slate-900">
-        {/* Top Header - High Contrast */}
+        {/* Top Header - High Contrast - FASE A2.1: Version Selector */}
         <div className="flex items-center justify-between p-3 md:p-4 bg-gradient-to-r from-slate-900 to-slate-800 border-b-2 border-slate-700 shadow-xl">
           <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
             <Button 
@@ -944,8 +944,27 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <span className="text-white font-bold text-lg truncate">{plan.name}</span>
+
+            {/* Version Selector - FASE A2.1 */}
+            {allPlans.length > 1 && (
+              <div className="ml-auto mr-4 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-slate-400" />
+                <Select value={plan.id} onValueChange={handleVersionChange}>
+                  <SelectTrigger className="w-32 bg-slate-700 border-slate-600 text-white text-sm h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-600">
+                    {allPlans.sort((a, b) => (b.version_number || b.version || 1) - (a.version_number || a.version || 1)).map((p) => (
+                      <SelectItem key={p.id} value={p.id} className="text-white">
+                        {p.is_active ? '✓' : ''} V{p.version_number || p.version || 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowPins(!showPins)}
