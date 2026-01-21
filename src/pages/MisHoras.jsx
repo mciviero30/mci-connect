@@ -9,6 +9,7 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, 
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function MisHoras() {
   const { t, language } = useLanguage();
@@ -24,6 +25,11 @@ export default function MisHoras() {
       return base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date');
     },
     enabled: !!user,
+    staleTime: 300000, // 5 min - data changes on approval
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const openClockAlert = useMemo(() => {

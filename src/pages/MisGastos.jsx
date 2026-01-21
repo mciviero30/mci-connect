@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import AIExpenseAnalyzer from '../components/gastos/AIExpenseAnalyzer';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function MisGastos() {
   const { t } = useLanguage();
@@ -18,8 +19,12 @@ export default function MisGastos() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: expenses = [], isLoading } = useQuery({
@@ -29,6 +34,11 @@ export default function MisGastos() {
       return base44.entities.Expense.filter({ employee_email: user.email }, '-date');
     },
     enabled: !!user,
+    staleTime: 300000, // 5 min - data changes on approval
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const createMutation = useMutation({
