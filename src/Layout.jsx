@@ -94,6 +94,7 @@ import TaxProfileGate from "@/components/tax/TaxProfileGate";
 import InvitationGate from "@/components/security/InvitationGate";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
+import OfflineBanner from "@/components/resilience/OfflineBanner";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -844,6 +845,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         </ErrorBoundary>
       )}
 
+      <OfflineBanner language={language} />
+      
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
         <style>{`
           /* ============================================ */
