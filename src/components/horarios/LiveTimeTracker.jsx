@@ -18,6 +18,7 @@ import { calculateDistance, getCurrentLocation } from '@/components/utils/geoloc
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { checkGeolocationPermission, markDeniedPromptSeen, hasSeenDeniedPrompt } from '@/components/utils/geolocationPermissions';
 import LocationPermissionPrompt from '@/components/shared/LocationPermissionPrompt';
+import telemetry from '@/components/telemetry/GeofenceTelemetry';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -156,6 +157,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     const permission = await checkGeolocationPermission();
     
     if (permission === 'denied' && !hasSeenDeniedPrompt()) {
+      // PASO 4: Log permission denial (deduplicated)
+      telemetry.log({
+        event_type: 'geolocation_permission_denied',
+        user_email: user?.email || 'unknown',
+        job_id: null,
+        source: 'frontend',
+        metadata: { action: 'clock_in_precheck' }
+      });
+      
       setIsBreakAction(false); // Clock in/out BLOCKS
       setShowLocationDenied(true);
       markDeniedPromptSeen();
@@ -257,6 +267,21 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       const MAX_DISTANCE = job.geofence_radius || 100;
       
       if (distanceMeters > MAX_DISTANCE) {
+        // PASO 4: Log geofence failure (deduplicated)
+        telemetry.log({
+          event_type: 'clock_in_geofence_failed',
+          user_email: user.email,
+          job_id: selectedJobForStart,
+          distance_meters: distanceMeters,
+          accuracy: location.accuracy,
+          source: 'frontend',
+          metadata: { 
+            job_name: job.name,
+            max_distance: MAX_DISTANCE,
+            work_type: workType
+          }
+        });
+        
         setLocationError(language === 'es' 
           ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(distanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar.`
           : `❌ OUT OF RANGE: You are ${Math.round(distanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock in.`);
@@ -337,6 +362,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     const permission = await checkGeolocationPermission();
     
     if (permission === 'denied' && !hasSeenDeniedPrompt()) {
+      // PASO 4: Log permission denial
+      telemetry.log({
+        event_type: 'geolocation_permission_denied',
+        user_email: user?.email || 'unknown',
+        job_id: activeSession?.jobId || null,
+        source: 'frontend',
+        metadata: { action: 'clock_out_precheck' }
+      });
+      
       setIsBreakAction(false); // Clock out BLOCKS
       setShowLocationDenied(true);
       markDeniedPromptSeen();
@@ -436,6 +470,20 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           );
 
           if (checkOutDistanceMeters > MAX_DISTANCE) {
+            // PASO 4: Log geofence failure
+            telemetry.log({
+              event_type: 'clock_out_geofence_failed',
+              user_email: user.email,
+              job_id: activeSession.jobId,
+              distance_meters: checkOutDistanceMeters,
+              accuracy: location.accuracy,
+              source: 'frontend',
+              metadata: { 
+                job_name: job.name,
+                max_distance: MAX_DISTANCE
+              }
+            });
+            
             setLocationError(language === 'es' 
               ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(checkOutDistanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar salida.`
               : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
@@ -521,6 +569,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     const permission = await checkGeolocationPermission();
     
     if (permission === 'denied' && !hasSeenDeniedPrompt()) {
+      // PASO 4: Log permission denial for break
+      telemetry.log({
+        event_type: 'geolocation_permission_denied',
+        user_email: user?.email || 'unknown',
+        job_id: activeSession?.jobId || null,
+        source: 'frontend',
+        metadata: { action: 'break_precheck' }
+      });
+      
       setIsBreakAction(true); // Breaks DON'T block
       setShowLocationDenied(true);
       markDeniedPromptSeen();
@@ -549,6 +606,23 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
         const maxDistance = job.geofence_radius || 100;
         const outsideGeofence = distanceMeters > maxDistance;
+
+        // PASO 4: Log if break outside geofence (deduplicated)
+        if (outsideGeofence) {
+          telemetry.log({
+            event_type: 'break_outside_geofence',
+            user_email: user?.email || activeSession.employee_email || 'unknown',
+            job_id: activeSession.jobId,
+            distance_meters: distanceMeters,
+            accuracy: location.accuracy,
+            source: 'frontend',
+            metadata: { 
+              job_name: job.name,
+              max_distance: maxDistance,
+              break_action: activeSession.onBreak ? 'end' : 'start'
+            }
+          });
+        }
 
         return {
           latitude: location.lat,
@@ -746,6 +820,18 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
   const handleAutoClockOut = async () => {
     if (!activeSession || !user) return;
+
+    // PASO 4: Log auto clock-out event
+    telemetry.log({
+      event_type: 'auto_clock_out_triggered',
+      user_email: user.email,
+      job_id: activeSession.jobId,
+      source: 'frontend',
+      metadata: { 
+        job_name: activeSession.jobName,
+        trigger: 'geofence_exit'
+      }
+    });
 
     try {
       const location = await getLocation();
