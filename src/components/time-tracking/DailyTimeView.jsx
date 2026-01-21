@@ -20,6 +20,11 @@ export default function DailyTimeView({ user, selectedDate, onDateChange }) {
       });
     },
     enabled: !!user,
+    staleTime: 300000, // 5 min - daily entries stable after initial load
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   const statusColors = {

@@ -74,8 +74,8 @@ export default function LiveClock() {
     }
   }, []);
 
+  // PERSIST STATE - separate from interval to prevent recreation
   useEffect(() => {
-    let interval;
     if (clockedInData) {
       const dataToSave = {
         ...clockedInData,
@@ -84,7 +84,15 @@ export default function LiveClock() {
         currentBreak
       };
       localStorage.setItem('clockedInData', JSON.stringify(dataToSave));
-      
+    } else {
+      localStorage.removeItem('clockedInData');
+    }
+  }, [clockedInData, breaks, totalBreakTime, currentBreak]);
+
+  // TIMER - stable deps, no localStorage writes in hot path
+  useEffect(() => {
+    let interval;
+    if (clockedInData) {
       interval = setInterval(() => {
         const now = Date.now();
         setElapsedTime(now - clockedInData.startTime);
@@ -94,11 +102,9 @@ export default function LiveClock() {
           setCurrentBreak(prev => ({ ...prev, elapsed: breakElapsed }));
         }
       }, 1000);
-    } else {
-      localStorage.removeItem('clockedInData');
     }
     return () => clearInterval(interval);
-  }, [clockedInData, breaks, totalBreakTime, currentBreak]);
+  }, [clockedInData, currentBreak]); // REDUCED DEPS - only what interval uses
 
   const getLocation = () => {
     return new Promise((resolve, reject) => {

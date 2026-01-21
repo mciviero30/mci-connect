@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -60,6 +60,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const { data: jobs } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    staleTime: 300000, // 5 min - jobs don't change frequently during session
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -101,8 +106,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   }, [activeSession]);
 
   // NEW: Check for clock open from previous day and send notification
+  // USE REF to prevent multiple notifications on re-renders
+  const notificationSentRef = useRef(false);
+  
   useEffect(() => {
-    if (activeSession && user) {
+    if (activeSession && user && !notificationSentRef.current) {
       const sessionDate = new Date(activeSession.startTime);
       const today = new Date();
       
@@ -123,9 +131,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           relatedEntityType: 'timeentry',
           sendEmail: true // Send email for urgent cases
         });
+        notificationSentRef.current = true;
       }
     }
-  }, [activeSession, user, sendNotification, language]);
+    
+    // Reset ref when session changes
+    if (!activeSession) {
+      notificationSentRef.current = false;
+    }
+  }, [activeSession?.startTime, user?.email]); // STABLE DEPS - only primitives
 
   const getLocation = useCallback(() => {
     return getCurrentLocation(language);
