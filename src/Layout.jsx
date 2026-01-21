@@ -272,10 +272,10 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
         );
       })}
     </Accordion>
-  );
-};
+    );
+    });
 
-const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
+    const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
   console.log('[LayoutContent] user prop:', user);
   const location = useLocation();
   const navigate = useNavigate();
