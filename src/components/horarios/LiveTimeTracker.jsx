@@ -19,6 +19,7 @@ import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { checkGeolocationPermission, markDeniedPromptSeen, hasSeenDeniedPrompt } from '@/components/utils/geolocationPermissions';
 import LocationPermissionPrompt from '@/components/shared/LocationPermissionPrompt';
 import telemetry from '@/components/telemetry/GeofenceTelemetry';
+import { usePerformanceMonitor } from '@/components/field/hooks/usePerformanceMonitor';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -39,6 +40,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   } catch (e) {
     // Fallback if useLanguage fails
   }
+  
+  // FASE 10: Performance monitoring (only in field mode)
+  usePerformanceMonitor('LiveTimeTracker', true);
   
   const storageKey = `liveTimeTracker_${trackingType}`;
 
