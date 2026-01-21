@@ -99,6 +99,15 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const [lastTouchDistance, setLastTouchDistance] = useState(null);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
+  // FASE A2.1: Fetch all plan versions for this job
+  const { data: allPlans = [] } = useQuery({
+    queryKey: ['field-plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
   // Fetch measurements data
   const { data: horizontalMeasurements = [] } = useQuery({
     queryKey: FIELD_QUERY_KEYS.FIELD_DIMENSIONS(jobId),
