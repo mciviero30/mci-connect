@@ -15,7 +15,6 @@ export function useEnhancedOfflineSync() {
   const [queueSize, setQueueSize] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   // Monitor online status
   useEffect(() => {
