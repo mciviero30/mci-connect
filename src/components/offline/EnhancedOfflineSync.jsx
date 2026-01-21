@@ -117,7 +117,7 @@ export function useEnhancedOfflineSync() {
     }
 
     setIsSyncing(false);
-  }, [isSyncing, queryClient]);
+  }, [isSyncing, queryClient, toast]);
 
   // Cache data for offline access
   const cacheData = useCallback((key, data) => {
