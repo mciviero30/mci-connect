@@ -13,6 +13,7 @@ import FieldStressTest from '@/components/field/performance/FieldStressTest';
 import OfflineSyncValidator from '@/components/field/offline/OfflineSyncValidator';
 import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
+import { usePerformanceMonitor } from '@/components/field/hooks/usePerformanceMonitor';
 
 export default function FieldProject() {
   // HOOKS BEFORE ANY LOGIC
@@ -27,6 +28,9 @@ export default function FieldProject() {
   
   // Debug mode detection
   const isDebugMode = useFieldDebugMode(state.currentUser);
+
+  // FASE 10: Performance monitoring (production, non-intrusive)
+  usePerformanceMonitor('FieldProject', true);
 
   // CRITICAL: Set Field Mode on mount, clear on unmount
   useEffect(() => {
