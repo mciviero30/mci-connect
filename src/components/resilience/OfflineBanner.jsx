@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { WifiOff, Wifi } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { telemetry } from "@/components/resilience/TelemetryService";
 
 /**
  * Non-intrusive offline indicator banner
@@ -15,6 +16,10 @@ export default function OfflineBanner({ language = 'en' }) {
     const handleOnline = () => {
       setIsOnline(true);
       setShowReconnected(true);
+      
+      // Log reconnection for sync analysis
+      telemetry.logNetworkChange(true);
+      
       // Auto-hide reconnected message after 3 seconds
       setTimeout(() => setShowReconnected(false), 3000);
     };

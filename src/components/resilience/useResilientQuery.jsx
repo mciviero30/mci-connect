@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { telemetry } from "./TelemetryService";
 
 /**
  * Enhanced useQuery with intelligent retry logic and network awareness
@@ -19,6 +20,8 @@ import { useEffect, useState } from "react";
  */
 export function useResilientQuery(options) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const retryCountRef = useRef(0);
+  const lastErrorRef = useRef(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -60,11 +63,28 @@ export function useResilientQuery(options) {
 
   const query = useQuery({
     ...options,
-    retry: shouldRetry,
+    retry: (failureCount, error) => {
+      retryCountRef.current = failureCount;
+      lastErrorRef.current = error;
+      return shouldRetry(failureCount, error);
+    },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // Disable automatic refetch when window regains focus if offline
     refetchOnWindowFocus: isOnline ? options.refetchOnWindowFocus : false,
   });
+
+  // Log when retry is exhausted (async, after render)
+  useEffect(() => {
+    if (query.isError && retryCountRef.current > 0) {
+      // Retry was attempted but still failed - this is a REAL error
+      telemetry.logRetryExhausted(
+        lastErrorRef.current,
+        options.queryKey,
+        retryCountRef.current,
+        options.context || ''
+      );
+    }
+  }, [query.isError, options.queryKey, options.context]);
 
   return {
     ...query,
