@@ -3,8 +3,9 @@ import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
-  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain
+  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain, Clock
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
