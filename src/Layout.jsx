@@ -939,10 +939,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error }) =>
             background: rgba(30, 58, 138, 0.3);
           }
 
-          @media (max-width: 1024px) {
-            * {
-              -webkit-tap-highlight-color: transparent;
-            }
+          /* Universal tap highlight suppression */
+          * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+          }
+          
+          /* Allow callout for links and inputs */
+          a, input, textarea, select {
+            -webkit-touch-callout: default;
           }
         `}</style>
 

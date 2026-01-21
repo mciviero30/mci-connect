@@ -72,10 +72,6 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
                      ? 'text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/80 dark:bg-blue-900/30' 
                      : 'text-slate-700 dark:text-slate-400'
                  }`}
-                 style={{ 
-                   WebkitTapHighlightColor: 'transparent',
-                   WebkitTouchCallout: 'none'
-                 }}
                >
                 <div className="relative">
                   <item.icon className={`w-6 h-6 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
@@ -95,10 +91,7 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
           {/* More Menu */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-400 min-h-[60px] min-w-[60px] rounded-xl active:scale-90 active:bg-slate-100/50 dark:active:bg-slate-800 transition-all duration-150" style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitTouchCallout: 'none'
-              }}>
+              <button className="flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-400 min-h-[60px] min-w-[60px] rounded-xl active:scale-90 active:bg-slate-100/50 dark:active:bg-slate-800 transition-all duration-150">
                 <Menu className="w-6 h-6" strokeWidth={2} />
                 <span className="text-[11px] font-semibold truncate max-w-full px-1">More</span>
               </button>
@@ -130,10 +123,6 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
                                   ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
                                   : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-200 active:bg-slate-100 dark:active:bg-slate-800'
                               }`}
-                              style={{ 
-                                WebkitTapHighlightColor: 'transparent',
-                                WebkitTouchCallout: 'none'
-                              }}
                             >
                               <div className="flex items-center gap-3">
                                 <item.icon className="w-6 h-6" strokeWidth={2.5} />
