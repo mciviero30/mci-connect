@@ -22,6 +22,7 @@ import MeasurementOverlay from './overlays/MeasurementOverlay.jsx';
 import LayerControls from './overlays/LayerControls.jsx';
 import MeasurementDetailDialog from './overlays/MeasurementDetailDialog.jsx';
 import MeasurementLegend from './overlays/MeasurementLegend.jsx';
+import ScaleCalibrationDialog from './ScaleCalibrationDialog.jsx';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 
 // Constants for retry logic
@@ -61,6 +62,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   });
   const [selectedMeasurement, setSelectedMeasurement] = useState(null);
   const [selectedMeasurementType, setSelectedMeasurementType] = useState(null);
+  
+  // Scale calibration state
+  const [showScaleDialog, setShowScaleDialog] = useState(false);
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrationPoints, setCalibrationPoints] = useState([]);
   
   // Loading states
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
@@ -675,6 +681,24 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     // Don't place pin if we just finished dragging the view
     if (hasDragged || dragDistance > 5) return;
     
+    // Handle scale calibration click
+    if (isCalibrating) {
+      const rect = imageRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      
+      setCalibrationPoints(prev => {
+        const newPoints = [...prev, { px, py }];
+        if (newPoints.length > 2) {
+          return [newPoints[newPoints.length - 2], newPoints[newPoints.length - 1]];
+        }
+        return newPoints;
+      });
+      return;
+    }
+    
     if (activeTool !== 'pin' && !isPlacingPin) return;
     
     const rect = imageRef.current?.getBoundingClientRect();
@@ -708,9 +732,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     { id: 'divider3', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'divider4', type: 'divider' },
+    !isClientView && { id: 'scale', icon: Crosshair, label: 'Set Scale', action: () => { setShowScaleDialog(true); setIsCalibrating(true); }, hideForClient: true },
+    { id: 'divider5', type: 'divider' },
     { id: 'ai', icon: Brain, label: 'AI Learning', action: () => setShowAILearning(prev => !prev), badge: hasNewAIPatterns },
     { id: 'filter', icon: Search, label: 'Filters (F)', action: () => setShowFilters(prev => !prev) },
-  ];
+  ].filter(Boolean);
 
   const handleTaskCreated = async (newTaskId) => {
     setPendingPinPosition(null);
@@ -766,6 +792,18 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
       setSelectedMeasurementType(null);
     } catch (error) {
       console.error('Error deleting measurement:', error);
+    }
+  };
+
+  const handleCalibrationComplete = async (scaleData) => {
+    try {
+      await base44.entities.Plan.update(plan.id, scaleData);
+      queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
+      setShowScaleDialog(false);
+      setIsCalibrating(false);
+      setCalibrationPoints([]);
+    } catch (error) {
+      console.error('Error saving scale:', error);
     }
   };
 
@@ -1183,6 +1221,22 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         }}
         onDelete={handleDeleteMeasurement}
         canEdit={!isClientView}
+      />
+
+      {/* Scale Calibration Dialog */}
+      <ScaleCalibrationDialog
+        open={showScaleDialog}
+        onOpenChange={(open) => {
+          setShowScaleDialog(open);
+          if (!open) {
+            setIsCalibrating(false);
+            setCalibrationPoints([]);
+          }
+        }}
+        onCalibrationComplete={handleCalibrationComplete}
+        calibrationPoints={calibrationPoints}
+        imageSize={imageSize}
+        isCalibrating={isCalibrating}
       />
     </div>
     </TooltipProvider>
