@@ -53,6 +53,8 @@ export function usePerformanceMonitor(componentName, enabled = true) {
     const visibilityCheck = () => document.visibilityState === 'visible';
     if (!visibilityCheck()) return;
 
+    let rafId = requestAnimationFrame(() => {});
+    
     const measureFps = () => {
       const state = stateRef.current;
       const now = performance.now();
@@ -92,7 +94,7 @@ export function usePerformanceMonitor(componentName, enabled = true) {
       rafId = requestAnimationFrame(measureFps);
     };
 
-    let rafId = requestAnimationFrame(measureFps);
+    rafId = requestAnimationFrame(measureFps);
 
     return () => cancelAnimationFrame(rafId);
   }, [enabled]);
