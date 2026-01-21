@@ -46,6 +46,11 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: () => base44.entities.User.list('full_name'),
+    staleTime: 1800000, // 30 min - employee list rarely changes
+    gcTime: 3600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -53,6 +58,11 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list(),
+    staleTime: 600000, // 10 min - jobs change occasionally
+    gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: []
   });
 
@@ -73,9 +83,10 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
       return base44.entities.TimeEntry.create(data);
     },
-    onSuccess: () => {
+    onSuccess: (newEntry) => {
+      // SCOPED invalidation - only invalidate affected user's data
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries', newEntry.employee_email] });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] }); // Invalidate current user's entries too
       setShowDialog(false); // Assuming a dialog exists for creation
       toast.success(t('timeEntryCreated', { defaultValue: 'Time entry created successfully!' }));
     },
@@ -92,8 +103,9 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       ready_for_payment: true
     }),
     onSuccess: async (_, entry) => {
+      // SCOPED invalidation - only invalidate affected user's data
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries', entry.employee_email] });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       toast.success(t('approved'));
       
       try {
@@ -147,9 +159,13 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
         last_modified: new Date().toISOString()
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, { entryId }) => {
+      // SCOPED invalidation - find entry to get employee_email
+      const entry = timeEntries.find(e => e.id === entryId);
+      if (entry) {
+        queryClient.invalidateQueries({ queryKey: ['myTimeEntries', entry.employee_email] });
+      }
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       toast.success(language === 'es' ? 'Entrada actualizada correctamente' : 'Entry updated successfully');
       setEditDialogOpen(false);
       setEditingEntry(null);
@@ -162,8 +178,9 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   const rejectMutation = useMutation({
     mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { status: 'rejected' }),
     onSuccess: async (_, entry) => {
+      // SCOPED invalidation - only invalidate affected user's data
+      queryClient.invalidateQueries({ queryKey: ['myTimeEntries', entry.employee_email] });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       toast.success(t('rejected'));
       
       try {
@@ -256,6 +273,9 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
     setIsApprovingAll(true);
     try {
+      // Collect unique employee emails for scoped invalidation
+      const affectedEmployees = new Set();
+      
       for (const entry of pendingEntries) {
         await base44.entities.TimeEntry.update(entry.id, { 
           status: 'approved',
@@ -263,14 +283,19 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
           is_locked: true,
           ready_for_payment: true
         });
+        affectedEmployees.add(entry.employee_email);
         try {
           await notifyTimesheetStatus(entry, 'approved', null);
         } catch (error) {
           console.error(`Failed to send notification for entry ${entry.id}:`, error);
         }
       }
+      
+      // SCOPED invalidation - only invalidate affected users
+      affectedEmployees.forEach(email => {
+        queryClient.invalidateQueries({ queryKey: ['myTimeEntries', email] });
+      });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       alert(language === 'es' 
         ? `✅ ${pendingEntries.length} entradas aprobadas - Listas para Pago` 
         : `✅ ${pendingEntries.length} entries approved - Ready for Payment`
