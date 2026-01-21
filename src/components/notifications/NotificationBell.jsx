@@ -18,7 +18,7 @@ export default function NotificationBell({ user }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Fetch system alerts
+  // Fetch system alerts - OPTIMIZED: Only refetch when dropdown is open
   const { data: alerts = [] } = useQuery({
     queryKey: ['system-alerts', user?.email],
     queryFn: async () => {
@@ -31,10 +31,14 @@ export default function NotificationBell({ user }) {
       ).slice(0, 20);
     },
     enabled: !!user?.email,
-    refetchInterval: 30000,
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+    refetchInterval: isOpen ? 30000 : false, // Only poll when open
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
-  // Fetch legacy notifications
+  // Fetch legacy notifications - OPTIMIZED: Only refetch when dropdown is open
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', user?.email],
     queryFn: async () => {
@@ -44,7 +48,11 @@ export default function NotificationBell({ user }) {
       return allNotifs;
     },
     enabled: !!user?.email,
-    refetchInterval: 30000,
+    staleTime: 60000, // 1 minute
+    gcTime: 300000, // 5 minutes
+    refetchInterval: isOpen ? 30000 : false, // Only poll when open
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const markAlertAsReadMutation = useMutation({

@@ -153,6 +153,9 @@ export default function Dashboard() {
     enabled: !!user?.email && needsEmployeeData,
     staleTime: 600000,
     gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -171,6 +174,9 @@ export default function Dashboard() {
     enabled: !!user?.email && needsExpenseData,
     staleTime: 600000,
     gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -186,6 +192,9 @@ export default function Dashboard() {
     enabled: !!user?.email && needsEmployeeData,
     staleTime: 600000,
     gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -230,6 +239,9 @@ export default function Dashboard() {
     enabled: !!user?.email && needsAssignmentData,
     staleTime: 600000,
     gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -239,6 +251,9 @@ export default function Dashboard() {
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
     staleTime: 1800000,
     gcTime: 3600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -248,6 +263,9 @@ export default function Dashboard() {
     enabled: isAdmin && widgets.some(w => w.type === 'total-hours'),
     staleTime: 900000,
     gcTime: 1800000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -257,6 +275,9 @@ export default function Dashboard() {
     enabled: isAdmin && needsExpenseData,
     staleTime: 600000,
     gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -266,6 +287,9 @@ export default function Dashboard() {
     enabled: needsRecognitionData,
     staleTime: 900000,
     gcTime: 1800000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -278,6 +302,9 @@ export default function Dashboard() {
     enabled: !!user?.email && !isAdmin,
     staleTime: 1800000,
     gcTime: 3600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
@@ -287,6 +314,9 @@ export default function Dashboard() {
     enabled: isAdmin && widgets.some(w => w.type === 'pending-timesheets'),
     staleTime: 300000,
     gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     initialData: [],
   });
 
