@@ -174,6 +174,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     return 'Error loading plan. Please try again.';
   };
 
+  // FASE A2.1: Handle version change
+  const handleVersionChange = (newPlanId) => {
+    const newPlan = allPlans.find(p => p.id === newPlanId);
+    if (newPlan) {
+      // Switch to new plan - this will trigger loadImage effect
+      window.location.hash = `#version=${newPlanId}`;
+      // Reload the page with new version or just update the current plan
+      // For now, just reload the component by changing the key
+    }
+  };
+
   // Load image with timeout and progress simulation
   const loadImage = () => {
     if (!plan?.file_url) {
