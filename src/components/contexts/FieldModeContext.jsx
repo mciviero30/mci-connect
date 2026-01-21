@@ -61,14 +61,20 @@ export const UIProvider = ({ children }) => {
   // Computed: sidebar should be hidden if Field OR Focus mode
   const shouldHideSidebar = isFieldMode || isFocusMode;
 
-  const value = {
+  // Memoize toggleFocusMode to prevent unnecessary re-renders
+  const toggleFocusMode = React.useCallback(() => {
+    setIsFocusMode(prev => !prev);
+  }, []);
+
+  // Memoize context value to prevent re-renders when values haven't changed
+  const value = React.useMemo(() => ({
     isFieldMode,
     setIsFieldMode,
     isFocusMode,
     setIsFocusMode,
-    toggleFocusMode: () => setIsFocusMode(prev => !prev),
+    toggleFocusMode,
     shouldHideSidebar,
-  };
+  }), [isFieldMode, isFocusMode, shouldHideSidebar, toggleFocusMode]);
 
   return (
     <UIContext.Provider value={value}>

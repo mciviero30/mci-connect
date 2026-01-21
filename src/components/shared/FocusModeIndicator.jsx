@@ -4,7 +4,7 @@ import { Maximize2, Minimize2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 
-export default function FocusModeIndicator({ isActive, onExit }) {
+const FocusModeIndicator = React.memo(function FocusModeIndicator({ isActive, onExit }) {
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -44,4 +44,6 @@ export default function FocusModeIndicator({ isActive, onExit }) {
         </button>
     </motion.div>
   );
-}
+});
+
+export default FocusModeIndicator;

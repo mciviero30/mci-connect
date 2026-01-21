@@ -129,7 +129,7 @@ const ThemeToggle = () => {
   );
 };
 
-const SidebarNavigation = ({ navigation, location, pendingExpenses, sidebarContentRef }) => {
+const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, location, pendingExpenses, sidebarContentRef }) {
   const { setOpenMobile } = useSidebar();
   const navigate = useNavigate();
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
