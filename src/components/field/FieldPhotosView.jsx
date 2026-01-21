@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Upload, X, Expand, Trash2, Download, ArrowLeftRight, Camera, MapPin, CheckCircle2 } from 'lucide-react';
+import { FIELD_QUERY_KEYS, FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,12 +15,14 @@ import MobilePhotoCapture from './MobilePhotoCapture.jsx';
 import BeforeAfterPhotoManager from './BeforeAfterPhotoManager.jsx';
 import { updateFieldQueryData } from './config/fieldQueryConfig';
 
-export default function FieldPhotosView({ jobId }) {
+export default function FieldPhotosView({ jobId, plans = [] }) {
   const [showUpload, setShowUpload] = useState(false);
   const [showMobileCapture, setShowMobileCapture] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [newPhoto, setNewPhoto] = useState({ file_url: '', caption: '', location: '' });
+  const [pinningPhoto, setPinningPhoto] = useState(null);
+  const [selectedPlanForPin, setSelectedPlanForPin] = useState(null);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const queryClient = useQueryClient();
@@ -46,6 +49,19 @@ export default function FieldPhotosView({ jobId }) {
       updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) => 
         old ? old.filter(p => p.id !== variables) : old
       );
+      setSelectedPhoto(null);
+    },
+  });
+
+  const updatePhotoMutation = useMutation({
+    mutationFn: (data) => base44.entities.Photo.update(data.id, data.updates),
+    onSuccess: (_, variables) => {
+      // Scoped optimistic update
+      updateFieldQueryData(queryClient, jobId, 'PHOTOS', (old) =>
+        old ? old.map(p => p.id === variables.id ? {...p, ...variables.updates} : p) : old
+      );
+      setPinningPhoto(null);
+      setSelectedPlanForPin(null);
       setSelectedPhoto(null);
     },
   });
@@ -277,32 +293,46 @@ export default function FieldPhotosView({ jobId }) {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <a href={selectedPhoto.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm" className="border-slate-700 text-slate-300 hover:bg-slate-800 min-h-[44px]">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </Button>
-                  </a>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      if (confirm('Delete this photo? This cannot be undone.')) {
-                        deletePhotoMutation.mutate(selectedPhoto.id);
-                      }
-                    }}
-                    disabled={deletePhotoMutation.isPending}
-                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 min-h-[52px] touch-manipulation active:scale-95 font-semibold"
-                  >
-                    {deletePhotoMutation.isPending ? (
-                      <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin mr-2" />
-                    ) : (
-                      <Trash2 className="w-5 h-5 mr-2" />
-                    )}
-                    Delete
-                  </Button>
-                </div>
+                <div className="flex gap-2 flex-wrap">
+                   {plans && plans.length > 0 && (
+                     <Button 
+                       variant="outline"
+                       size="sm"
+                       onClick={() => {
+                         setPinningPhoto(selectedPhoto);
+                         setSelectedPhoto(null);
+                       }}
+                       className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10 min-h-[44px] font-semibold"
+                     >
+                       <MapPin className="w-4 h-4 mr-2" />
+                       Pin to Plan
+                     </Button>
+                   )}
+                   <a href={selectedPhoto.file_url} target="_blank" rel="noopener noreferrer">
+                     <Button variant="outline" size="sm" className="border-slate-700 text-slate-300 hover:bg-slate-800 min-h-[44px]">
+                       <Download className="w-4 h-4 mr-2" />
+                       Download
+                     </Button>
+                   </a>
+                   <Button 
+                     variant="outline" 
+                     size="sm"
+                     onClick={() => {
+                       if (confirm('Delete this photo? This cannot be undone.')) {
+                         deletePhotoMutation.mutate(selectedPhoto.id);
+                       }
+                     }}
+                     disabled={deletePhotoMutation.isPending}
+                     className="border-red-500/50 text-red-400 hover:bg-red-500/10 min-h-[52px] touch-manipulation active:scale-95 font-semibold"
+                   >
+                     {deletePhotoMutation.isPending ? (
+                       <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin mr-2" />
+                     ) : (
+                       <Trash2 className="w-5 h-5 mr-2" />
+                     )}
+                     Delete
+                   </Button>
+                 </div>
               </div>
             </>
           )}
@@ -318,6 +348,116 @@ export default function FieldPhotosView({ jobId }) {
           setShowMobileCapture(false);
         }}
       />
-    </div>
-  );
-}
+
+      {/* Photo Pin Selector Dialog */}
+      <Dialog open={!!pinningPhoto} onOpenChange={(open) => {
+        if (!open) {
+          setPinningPhoto(null);
+          setSelectedPlanForPin(null);
+        }
+      }}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-lg">Select Plan to Pin Photo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            {plans && plans.length > 0 ? (
+              plans.map(plan => (
+                <Button
+                  key={plan.id}
+                  onClick={() => setSelectedPlanForPin(plan)}
+                  className={`w-full text-left justify-start h-auto py-3 px-4 rounded-lg transition-all ${
+                    selectedPlanForPin?.id === plan.id
+                      ? 'bg-gradient-to-r from-orange-600 to-yellow-500 text-black border-2 border-white'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">📄</span>
+                    <div>
+                      <p className="font-semibold">{plan.name}</p>
+                      <p className="text-xs opacity-75">v{plan.version || 1}</p>
+                    </div>
+                  </div>
+                </Button>
+              ))
+            ) : (
+              <p className="text-slate-400 text-center py-4">No plans available</p>
+            )}
+          </div>
+          <div className="flex gap-2 pt-4 border-t border-slate-700">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPinningPhoto(null);
+                setSelectedPlanForPin(null);
+              }}
+              className="flex-1 border-slate-700 text-slate-300"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedPlanForPin && pinningPhoto) {
+                  setSelectedPlanForPin(null);
+                  // Signal to open BlueprintViewer in placement mode
+                }
+              }}
+              disabled={!selectedPlanForPin}
+              className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Next
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Photo Placement Mode - in BlueprintViewer */}
+      {pinningPhoto && selectedPlanForPin && (
+        <div className="fixed inset-0 z-50 bg-black/95">
+          <div className="absolute top-4 left-4 z-50 bg-slate-900 border-2 border-orange-500 rounded-xl p-4 max-w-sm">
+            <p className="text-white font-bold text-sm mb-2">Click on the plan to place photo</p>
+            <p className="text-slate-300 text-xs">{pinningPhoto.caption || 'Photo'}</p>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div 
+              className="w-full h-full flex items-center justify-center cursor-crosshair"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+                updatePhotoMutation.mutate({
+                  id: pinningPhoto.id,
+                  updates: {
+                    plan_id: selectedPlanForPin.id,
+                    plan_x: Math.max(0, Math.min(100, x)),
+                    plan_y: Math.max(0, Math.min(100, y)),
+                    plan_page: 1
+                  }
+                });
+              }}
+            >
+              <img
+                src={selectedPlanForPin.file_url}
+                alt={selectedPlanForPin.name}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </div>
+          <div className="absolute top-4 right-4 z-50">
+            <Button
+              onClick={() => {
+                setPinningPhoto(null);
+                setSelectedPlanForPin(null);
+              }}
+              className="bg-slate-800 hover:bg-slate-700 text-white border-2 border-slate-600 min-h-[44px] min-w-[44px]"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      )}
+      </div>
+      );
+      }
