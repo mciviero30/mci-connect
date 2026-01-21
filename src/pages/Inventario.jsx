@@ -15,7 +15,8 @@ import {
   Trash2,
   ArrowDown,
   ArrowUp,
-  History
+  History,
+  DollarSign
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
