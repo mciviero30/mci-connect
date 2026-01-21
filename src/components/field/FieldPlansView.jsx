@@ -133,16 +133,16 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       if (progressInterval) clearInterval(progressInterval);
       setUploadProgress(100);
       
-      // Immediately create the plan after successful upload
+      // FASE A2.1: Use backend function for versioning
       const planName = newPlan.name || file.name.split('.')[0];
-      await createPlanMutation.mutateAsync({
+      const { plan } = await base44.functions.invoke('uploadPlanVersion', {
         job_id: jobId,
         name: planName,
         file_url: file_url,
         order: plans.length,
       });
       
-      toast.success('Plan uploaded successfully');
+      toast.success(`Plan version ${plan.version_number || plan.version} created`);
       setNewPlan({ name: '', file: null, fileSize: 0 });
       setUploadProgress(0);
     } catch (error) {
