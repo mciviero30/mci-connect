@@ -20,12 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const BottomNav = ({ user, pendingExpenses, navigation }) => {
+const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigation }) {
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = React.useState(false);
 
-  // Main navigation items for bottom bar
-  const mainNavItems = [
+  // Memoize navigation items to prevent recreation
+  const mainNavItems = React.useMemo(() => [
     { 
       title: 'Dashboard', 
       url: createPageUrl("Dashboard"), 
@@ -51,10 +51,10 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
       badge: pendingExpenses > 0 ? pendingExpenses : null,
       color: 'from-amber-500 to-amber-600'
     },
-  ];
+  ], [pendingExpenses]);
 
-  // Check if current page is active
-  const isActive = (url) => location.pathname === url;
+  // Memoize isActive to prevent recreation
+  const isActive = React.useCallback((url) => location.pathname === url, [location.pathname]);
 
   return (
     <>
@@ -148,6 +148,6 @@ const BottomNav = ({ user, pendingExpenses, navigation }) => {
       <div className="md:hidden h-20" />
     </>
   );
-};
+});
 
 export default BottomNav;
