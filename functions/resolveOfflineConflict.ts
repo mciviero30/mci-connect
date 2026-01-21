@@ -170,30 +170,51 @@ Deno.serve(async (req) => {
     for (const conflictingEntry of conflicts) {
       const resolution = resolveConflict(currentEntry, conflictingEntry);
       
+      const now = new Date().toISOString();
+
       if (resolution.shouldDiscard) {
-        // Current entry should be discarded
+        // Current entry is loser - mark it (NO DELETE)
         await base44.asServiceRole.entities.TimeEntry.update(currentEntry.id, {
           conflict_detected: true,
+          is_conflict_winner: false,
+          conflict_lost_to: conflictingEntry.id,
           conflict_resolution_strategy: resolution.strategy,
-          conflict_resolved_at: new Date().toISOString(),
-          conflict_details: resolution.details
+          conflict_resolved_at: now,
+          conflict_details: `Superseded by entry ${conflictingEntry.id}: ${resolution.details}`
+        });
+
+        // Mark conflicting entry as winner
+        await base44.asServiceRole.entities.TimeEntry.update(conflictingEntry.id, {
+          conflict_detected: true,
+          is_conflict_winner: true,
+          conflict_resolution_strategy: resolution.strategy,
+          conflict_resolved_at: now,
+          conflict_details: `Resolved against entry ${currentEntry.id}: ${resolution.details}`
         });
 
         finalResolution = resolution;
-        break; // Stop processing, entry discarded
+        break; // Stop processing, entry marked as loser
       }
 
       if (resolution.shouldDeleteConflicting) {
-        // Delete conflicting entry (loser)
-        await base44.asServiceRole.entities.TimeEntry.delete(conflictingEntry.id);
+        // Conflicting entry is loser - mark it (NO DELETE)
+        await base44.asServiceRole.entities.TimeEntry.update(conflictingEntry.id, {
+          conflict_detected: true,
+          is_conflict_winner: false,
+          conflict_lost_to: currentEntry.id,
+          conflict_resolution_strategy: resolution.strategy,
+          conflict_resolved_at: now,
+          conflict_details: `Superseded by entry ${currentEntry.id}: ${resolution.details}`
+        });
       }
 
-      // Mark current entry with conflict resolution
+      // Mark current entry as winner
       await base44.asServiceRole.entities.TimeEntry.update(currentEntry.id, {
         conflict_detected: true,
+        is_conflict_winner: true,
         conflict_resolution_strategy: resolution.strategy,
-        conflict_resolved_at: new Date().toISOString(),
-        conflict_details: resolution.details
+        conflict_resolved_at: now,
+        conflict_details: `Resolved against entry ${conflictingEntry.id}: ${resolution.details}`
       });
 
       finalResolution = resolution;
