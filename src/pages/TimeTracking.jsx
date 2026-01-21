@@ -15,6 +15,7 @@ import WeeklyTimeView from "@/components/time-tracking/WeeklyTimeView";
 import TimeReportsView from "@/components/time-tracking/TimeReportsView";
 import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView";
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
+import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 
 export default function TimeTracking() {
   const toast = useToast();
@@ -221,8 +222,12 @@ export default function TimeTracking() {
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
-      <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
+    <SectionErrorBoundary 
+      section={language === 'es' ? 'Control de Tiempo' : 'Time Tracking'} 
+      language={language}
+    >
+      <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
+        <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
         {/* Header - Mobile Optimized */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
           <div className="flex items-center gap-3">
@@ -317,8 +322,8 @@ export default function TimeTracking() {
             </TabsContent>
           )}
         </Tabs>
+        </div>
       </div>
-    </div>
     </SectionErrorBoundary>
   );
 }
