@@ -36,7 +36,7 @@ export function useEnhancedOfflineSync() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [toast]);
 
   // Load queue size
   useEffect(() => {
