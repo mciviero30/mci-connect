@@ -319,5 +319,6 @@ export default function TimeTracking() {
         </Tabs>
       </div>
     </div>
+    </SectionErrorBoundary>
   );
 }

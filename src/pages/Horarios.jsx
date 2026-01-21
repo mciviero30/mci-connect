@@ -9,6 +9,7 @@ import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import TimeEntryList from "../components/horarios/TimeEntryList";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
+import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 
 export default function Horarios() {
   const { t, language } = useLanguage();
@@ -51,42 +52,47 @@ export default function Horarios() {
   }, [timeEntries]);
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] pb-20 md:pb-0">
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        <PageHeader
-          title={language === 'es' ? 'Revisión de Fichajes' : 'Timesheet Review'}
-          description={language === 'es' 
-            ? 'Auditoría y Aprobación de Horas Trabajadas para Nómina' 
-            : 'Audit and Approval of Worked Hours for Payroll'}
-          icon={Clock}
-        />
-
-        <StatsSummaryGrid 
-          stats={[
-            { label: t('pending'), value: pendingEntries.length, icon: Clock, gradient: 'soft-amber-gradient' },
-            { label: language === 'es' ? 'Horas Pendientes' : 'Pending Hours', value: `${totalPendingHours.toFixed(1)}h`, icon: Clock, gradient: 'soft-pink-gradient' },
-            { label: t('approved'), value: approvedEntries.length, icon: Clock, gradient: 'soft-green-gradient' },
-            { label: language === 'es' ? 'Horas Aprobadas' : 'Approved Hours', value: `${totalApprovedHours.toFixed(1)}h`, icon: Clock, gradient: 'soft-cyan-gradient' }
-          ]}
-          loading={isLoading}
-        />
-
-        <TimeEntryList 
-          timeEntries={timeEntries} 
-          isAdmin={isAdmin} 
-          loading={isLoading}
-        />
-
-        {hasNextPage && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
-            totalLoaded={totalLoaded}
-            language={language}
+    <SectionErrorBoundary 
+      section={language === 'es' ? 'Horarios' : 'Time Tracking'} 
+      language={language}
+    >
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#181818] pb-20 md:pb-0">
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
+          <PageHeader
+            title={language === 'es' ? 'Revisión de Fichajes' : 'Timesheet Review'}
+            description={language === 'es' 
+              ? 'Auditoría y Aprobación de Horas Trabajadas para Nómina' 
+              : 'Audit and Approval of Worked Hours for Payroll'}
+            icon={Clock}
           />
-        )}
+
+          <StatsSummaryGrid 
+            stats={[
+              { label: t('pending'), value: pendingEntries.length, icon: Clock, gradient: 'soft-amber-gradient' },
+              { label: language === 'es' ? 'Horas Pendientes' : 'Pending Hours', value: `${totalPendingHours.toFixed(1)}h`, icon: Clock, gradient: 'soft-pink-gradient' },
+              { label: t('approved'), value: approvedEntries.length, icon: Clock, gradient: 'soft-green-gradient' },
+              { label: language === 'es' ? 'Horas Aprobadas' : 'Approved Hours', value: `${totalApprovedHours.toFixed(1)}h`, icon: Clock, gradient: 'soft-cyan-gradient' }
+            ]}
+            loading={isLoading}
+          />
+
+          <TimeEntryList 
+            timeEntries={timeEntries} 
+            isAdmin={isAdmin} 
+            loading={isLoading}
+          />
+
+          {hasNextPage && (
+            <LoadMoreButton 
+              onLoadMore={loadMore}
+              hasMore={hasNextPage}
+              isLoading={isFetchingNextPage}
+              totalLoaded={totalLoaded}
+              language={language}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </SectionErrorBoundary>
   );
 }
