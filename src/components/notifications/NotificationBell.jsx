@@ -171,7 +171,7 @@ export default function NotificationBell({ user }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9998] lg:hidden"
+              className="fixed inset-0 z-50 lg:hidden pointer-events-none"
               onClick={() => setIsOpen(false)}
             />
 
@@ -180,7 +180,7 @@ export default function NotificationBell({ user }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="fixed top-20 right-4 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[9999] overflow-hidden"
+              className="fixed top-20 right-4 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[55] overflow-hidden pointer-events-auto"
             >
               {/* Header */}
               <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-slate-800">
