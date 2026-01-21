@@ -448,7 +448,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         }
       }
 
-      // CRITICAL FIX: Include ALL required TimeEntry fields + Job linkage
+      // Check if any breaks require review
+      const breaksRequireReview = (activeSession.breaks || []).some(b => 
+        b.location_unknown || b.start_outside_geofence || b.end_outside_geofence
+      );
+
+      // CRITICAL FIX: Include ALL required TimeEntry fields + Job linkage + Break geofence
       onSave({
         employee_email: user.email,
         employee_name: user.full_name,
@@ -472,6 +477,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         geofence_distance_meters: activeSession.distanceMeters,
         requires_location_review: false,
         exceeds_max_hours: false,
+        breaks_require_review: breaksRequireReview, // NEW: Break compliance flag
       });
 
       localStorage.removeItem(storageKey);
@@ -483,14 +489,52 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     }
   };
 
-  const handleToggleBreak = () => {
+  const handleToggleBreak = async () => {
     const now = Date.now();
     let updatedSession;
+
+    // GEOFENCE HARDENING PASO 2: Registrar ubicación en breaks (no bloqueante)
+    const captureBreakLocation = async () => {
+      try {
+        const location = await getCurrentLocation(language);
+        const job = jobs.find(j => j.id === activeSession.jobId);
+        
+        if (!job?.latitude || !job?.longitude) {
+          return { location_unknown: true };
+        }
+
+        const distanceMeters = calculateDistance(
+          location.lat,
+          location.lng,
+          job.latitude,
+          job.longitude
+        );
+
+        const maxDistance = job.geofence_radius || 100;
+        const outsideGeofence = distanceMeters > maxDistance;
+
+        return {
+          latitude: location.lat,
+          longitude: location.lng,
+          accuracy: location.accuracy,
+          distance_meters: Math.round(distanceMeters),
+          outside_geofence: outsideGeofence,
+          location_unknown: false,
+        };
+      } catch (error) {
+        // Silent failure - location not available
+        console.log('[Break Location] GPS unavailable:', error);
+        return { location_unknown: true };
+      }
+    };
 
     if (activeSession.onBreak) {
       // End break
       const breakTime = now - activeSession.breakStartTime;
       const durationMinutes = Math.floor(breakTime / (1000 * 60));
+      
+      // Capture location silently (non-blocking)
+      const endLocation = await captureBreakLocation();
       
       // Update last break in breaks array
       const breaks = [...(activeSession.breaks || [])];
@@ -498,6 +542,17 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       if (lastBreak && !lastBreak.end_time) {
         lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         lastBreak.duration_minutes = durationMinutes;
+        
+        // Add end location data (PASO 2)
+        if (endLocation.location_unknown) {
+          lastBreak.location_unknown = true;
+        } else {
+          lastBreak.end_latitude = endLocation.latitude;
+          lastBreak.end_longitude = endLocation.longitude;
+          lastBreak.end_accuracy = endLocation.accuracy;
+          lastBreak.end_distance_meters = endLocation.distance_meters;
+          lastBreak.end_outside_geofence = endLocation.outside_geofence;
+        }
       }
       
       updatedSession = {
@@ -509,13 +564,29 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       };
     } else {
       // Start break
+      // Capture location silently (non-blocking)
+      const startLocation = await captureBreakLocation();
+      
       const breaks = [...(activeSession.breaks || [])];
-      breaks.push({
+      const newBreak = {
         type: 'lunch',
         start_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
         end_time: null,
-        duration_minutes: 0
-      });
+        duration_minutes: 0,
+      };
+      
+      // Add start location data (PASO 2)
+      if (startLocation.location_unknown) {
+        newBreak.location_unknown = true;
+      } else {
+        newBreak.start_latitude = startLocation.latitude;
+        newBreak.start_longitude = startLocation.longitude;
+        newBreak.start_accuracy = startLocation.accuracy;
+        newBreak.start_distance_meters = startLocation.distance_meters;
+        newBreak.start_outside_geofence = startLocation.outside_geofence;
+      }
+      
+      breaks.push(newBreak);
       
       updatedSession = {
         ...activeSession,
