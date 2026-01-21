@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
+import { telemetry } from '@/components/resilience/TelemetryService';
 
 /**
  * Strategic Error Boundary for critical sections
@@ -38,6 +39,9 @@ class SectionErrorBoundary extends React.Component {
       componentStack: errorInfo?.componentStack,
       timestamp: new Date().toISOString()
     });
+    
+    // Log to telemetry (async, non-blocking, deduplicated)
+    telemetry.logErrorBoundary(error, errorInfo, section);
     
     // Increment error count to detect error loops
     this.setState(prev => ({ 
