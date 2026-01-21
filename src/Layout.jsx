@@ -275,13 +275,32 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
     );
     });
 
-    const LayoutContent = ({ children, currentPageName, user, isLoading, error }) => {
+    // Wrapper to ensure useUI is called within UIProvider
+const LayoutContentWrapper = ({ children, currentPageName, user, isLoading, error }) => {
+  // This component is guaranteed to be inside UIProvider
+  const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
+  
+  return (
+    <LayoutContent 
+      children={children}
+      currentPageName={currentPageName}
+      user={user}
+      isLoading={isLoading}
+      error={error}
+      isFieldMode={isFieldMode}
+      isFocusMode={isFocusMode}
+      toggleFocusMode={toggleFocusMode}
+      shouldHideSidebar={shouldHideSidebar}
+    />
+  );
+};
+
+const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar }) => {
   console.log('[LayoutContent] user prop:', user);
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
-  const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
@@ -1198,9 +1217,9 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
               <InvitationGate user={user}>
                 <AgreementGate>
                   <TaxProfileGate>
-                    <LayoutContent currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                    <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
                       {children}
-                    </LayoutContent>
+                    </LayoutContentWrapper>
                   </TaxProfileGate>
                 </AgreementGate>
               </InvitationGate>
