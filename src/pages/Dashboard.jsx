@@ -50,6 +50,7 @@ import GiveKudosDialog from "../components/recognition/GiveKudosDialog";
 import QuickActions from "../components/dashboard/QuickActions";
 import { useUIVisibility, DebugUI, AdminOnlyUI } from "@/components/policies/UIVisibilityWrapper";
 import FieldWorkIndicator from "@/components/dashboard/FieldWorkIndicator";
+import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
