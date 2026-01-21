@@ -291,17 +291,19 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                     
-                    {/* Version Badge */}
-                    <div className="absolute top-2 left-2 flex gap-2">
-                      <div className="bg-slate-900/80 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border border-slate-700">
-                        {plan.is_latest ? '✅ Latest' : `V${plan.version || 1}`}
-                      </div>
-                      {plan.is_locked && (
-                        <div className="bg-red-500/80 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border border-red-400">
-                          🔒 Locked
-                        </div>
-                      )}
-                    </div>
+                    {/* Version Badge - FASE A2.1 */}
+                     <div className="absolute top-2 left-2 flex gap-2">
+                       <div className={`backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border ${
+                         plan.is_active ? 'bg-green-500/80 border-green-400' : 'bg-slate-900/80 border-slate-700'
+                       }`}>
+                         {plan.is_active ? '✅ Active' : `V${plan.version_number || plan.version || 1}`}
+                       </div>
+                       {plan.is_locked && (
+                         <div className="bg-red-500/80 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border border-red-400">
+                           🔒 Locked
+                         </div>
+                       )}
+                     </div>
 
                     {taskCount > 0 && (
                       <div className="absolute top-2 right-2 flex gap-2">
