@@ -134,6 +134,27 @@ Deno.serve(async (req) => {
       requires_location_review: !backendValidated || hasDiscrepancy,
     });
 
+    // PASO 4: Log backend discrepancy (deduplicated via telemetry)
+    if (hasDiscrepancy) {
+      // Telemetry structure matches frontend (for future aggregation)
+      console.log('[🎯 Geofence Telemetry]', {
+        event_type: 'geofence_backend_discrepancy',
+        user_email: timeEntry.employee_email,
+        job_id: job.id,
+        distance_meters: Math.round(checkInDistance),
+        source: 'backend',
+        timestamp: new Date().toISOString(),
+        metadata: {
+          job_name: job.name,
+          frontend_validated: frontendValidated,
+          backend_validated: backendValidated,
+          check_in_distance: Math.round(checkInDistance),
+          check_out_distance: checkOutDistance ? Math.round(checkOutDistance) : null,
+          max_distance: maxDistance
+        }
+      });
+    }
+
     // LOG RESULTS (for audit trail)
     console.log('[Geofence Backend Validation]', {
       timeEntryId: timeEntry.id,
