@@ -62,7 +62,7 @@ export function useEnhancedOfflineSync() {
     setQueueSize(queue.length);
     
     toast.info('Operación guardada - Se sincronizará cuando haya conexión');
-  }, []);
+  }, [toast]);
 
   // Sync queue
   const syncQueue = useCallback(async () => {
