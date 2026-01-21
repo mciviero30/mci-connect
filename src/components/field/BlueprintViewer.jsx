@@ -23,6 +23,7 @@ import LayerControls from './overlays/LayerControls.jsx';
 import MeasurementDetailDialog from './overlays/MeasurementDetailDialog.jsx';
 import MeasurementLegend from './overlays/MeasurementLegend.jsx';
 import ScaleCalibrationDialog from './ScaleCalibrationDialog.jsx';
+import { usePerformanceMonitor } from './hooks/usePerformanceMonitor';
 import { FIELD_QUERY_KEYS } from '@/components/field/fieldQueryKeys';
 
 // Constants for retry logic
@@ -32,6 +33,10 @@ const LOAD_TIMEOUT_MS = 30000;
 
 export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientView = false, clientEmail, clientName }) {
   const queryClient = useQueryClient();
+  
+  // FASE 10: Performance monitoring
+  usePerformanceMonitor('BlueprintViewer', !isClientView);
+  
   const [zoom, setZoom] = useState(0.3); // Optimized initial zoom
   const [position, setPosition] = useState({ x: 60, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
