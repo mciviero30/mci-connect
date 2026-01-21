@@ -14,44 +14,15 @@ export default function MobileOptimizations() {
     };
     
     const handleTouchMove = (e) => {
-      const y = e.touches[0].pageY;
-      
-      // Only prevent pull-to-refresh at the DOCUMENT level, not in scrollable containers
-      if (window.scrollY === 0 && y > startY && (y - startY) > 10) {
-        const target = e.target;
-        
-        // Use data attribute selector safely - no Tailwind classes
-        let element = target;
-        let hasScrollableParent = false;
-        
-        while (element && element !== document.body) {
-          if (element.hasAttribute && element.hasAttribute('data-scrollable')) {
-            hasScrollableParent = true;
-            break;
-          }
-          element = element.parentElement;
-        }
-        
-        if (!hasScrollableParent) {
-          e.preventDefault();
-        }
-      }
+      // REMOVED: No longer preventing pull-to-refresh
+      // Let browser handle scroll naturally
     };
     
     document.body.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.body.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.body.addEventListener('touchmove', handleTouchMove, { passive: true });
     
-    // Prevent zoom on double tap
-    let lastTouchEnd = 0;
-    const handleTouchEnd = (e) => {
-      const now = Date.now();
-      if (now - lastTouchEnd <= 300) {
-        e.preventDefault();
-      }
-      lastTouchEnd = now;
-    };
-    
-    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+    // Double-tap zoom handled by viewport meta (maximum-scale=1)
+    // No need for touch event blocking
     
     // Add viewport meta for mobile (Prompt #80)
     const viewport = document.querySelector('meta[name="viewport"]');
@@ -183,7 +154,6 @@ export default function MobileOptimizations() {
     return () => {
       document.body.removeEventListener('touchstart', handleTouchStart);
       document.body.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
       if (style.parentNode) {
         style.parentNode.removeChild(style);
       }

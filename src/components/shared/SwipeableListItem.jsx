@@ -2,9 +2,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Trash2, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const SWIPE_THRESHOLD = 30; // Reduced threshold for faster response
+const SWIPE_THRESHOLD = 30;
 const ACTION_WIDTH = 120;
-const TOUCH_PASSIVE_OPTIONS = { passive: true };
 
 export default function SwipeableListItem({
   id,
@@ -19,15 +18,15 @@ export default function SwipeableListItem({
   const containerRef = useRef(null);
   const isMobileRef = useRef(window.innerWidth < 768);
 
-  const handleTouchStart = useCallback((e) => {
-    if (!isMobileRef.current) return;
-    touchStartX.current = e.touches[0].clientX;
+  const handlePointerDown = useCallback((e) => {
+    if (!isMobileRef.current || e.pointerType === 'mouse') return;
+    touchStartX.current = e.clientX;
   }, []);
 
-  const handleTouchEnd = useCallback((e) => {
-    if (!isMobileRef.current) return;
+  const handlePointerUp = useCallback((e) => {
+    if (!isMobileRef.current || e.pointerType === 'mouse') return;
 
-    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndX = e.clientX;
     const diff = touchStartX.current - touchEndX;
 
     // Swipe left > threshold = show actions
@@ -54,22 +53,29 @@ export default function SwipeableListItem({
     <motion.div
       ref={containerRef}
       className="relative overflow-hidden bg-white"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      style={{ touchAction: 'pan-y' }}
     >
       {/* Acciones - Fondo */}
       {isSwiped && (
         <div className="absolute inset-y-0 right-0 flex w-[120px] bg-gradient-to-l from-red-600 to-red-500 md:hidden">
           <button
-            onClick={handleEdit}
-            className="flex-1 flex items-center justify-center text-white active:bg-blue-700 transition-colors duration-75"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit();
+            }}
+            className="flex-1 flex items-center justify-center text-white active:bg-blue-700 transition-colors duration-75 pointer-events-auto"
             title="Edit"
           >
             <Edit2 className="w-5 h-5" />
           </button>
           <button
-            onClick={handleDelete}
-            className="flex-1 flex items-center justify-center text-white active:bg-red-700 transition-colors duration-75"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+            className="flex-1 flex items-center justify-center text-white active:bg-red-700 transition-colors duration-75 pointer-events-auto"
             title="Delete"
           >
             <Trash2 className="w-5 h-5" />
