@@ -10,6 +10,7 @@ import { useState, useEffect, useRef } from 'react';
 export function useBlueprintDiffOverlay(isEnabled, currentImageUrl, compareImageUrl, imageSize) {
   const [changeRegions, setChangeRegions] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [changeCount, setChangeCount] = useState(0);
   const canvasRefCurrent = useRef(null);
   const canvasRefCompare = useRef(null);
 
@@ -87,11 +88,13 @@ export function useBlueprintDiffOverlay(isEnabled, currentImageUrl, compareImage
         }
 
         setChangeRegions(regions);
+        setChangeCount(regions.length);
         setIsProcessing(false);
 
       } catch (error) {
         console.error('Error detecting changes:', error);
         setChangeRegions([]);
+        setChangeCount(0);
         setIsProcessing(false);
       }
     };
@@ -101,10 +104,11 @@ export function useBlueprintDiffOverlay(isEnabled, currentImageUrl, compareImage
     // Cleanup
     return () => {
       setChangeRegions([]);
+      setChangeCount(0);
     };
   }, [isEnabled, currentImageUrl, compareImageUrl, imageSize.width, imageSize.height]);
 
-  return { changeRegions, isProcessing };
+  return { changeRegions, isProcessing, changeCount };
 }
 
 // Helper: Load image

@@ -66,8 +66,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   // FASE A2.3: Change markers state (visual-only, temporary)
   const [showChangeMarkers, setShowChangeMarkers] = useState(false);
   
+  // FASE A2.4: Navigation state
+  const [currentChangeIndex, setCurrentChangeIndex] = useState(0);
+  
   // FASE A2.3: Use diff overlay hook
-  const { changeRegions, isProcessing: isDiffProcessing } = useBlueprintDiffOverlay(
+  const { changeRegions, isProcessing: isDiffProcessing, changeCount } = useBlueprintDiffOverlay(
     isComparing && showChangeMarkers,
     pdfCanvas || plan.file_url,
     comparePlanCanvas,
@@ -826,8 +829,38 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
       // Desactivar comparación
       setComparePlanCanvas(null);
       setCompareWithPlanId(null);
+      setShowChangeMarkers(false);
+      setCurrentChangeIndex(0);
     }
     setIsComparing(!isComparing);
+  };
+
+  // FASE A2.4: Navigate to specific change
+  const navigateToChange = (index) => {
+    if (!changeRegions || changeRegions.length === 0 || index < 0 || index >= changeRegions.length) return;
+    
+    const region = changeRegions[index];
+    const centerX = region.x + region.width / 2;
+    const centerY = region.y + region.height / 2;
+    
+    // Calculate position to center the change region
+    const targetX = -(centerX / 100) * imageSize.width * 1.5 + containerSize.width / 2;
+    const targetY = -(centerY / 100) * imageSize.height * 1.5 + containerSize.height / 2;
+    
+    setPosition({ x: targetX, y: targetY });
+    setZoom(1.5);
+    setCurrentChangeIndex(index);
+  };
+
+  // FASE A2.4: Navigation handlers
+  const handlePrevChange = () => {
+    const newIndex = currentChangeIndex > 0 ? currentChangeIndex - 1 : changeRegions.length - 1;
+    navigateToChange(newIndex);
+  };
+
+  const handleNextChange = () => {
+    const newIndex = currentChangeIndex < changeRegions.length - 1 ? currentChangeIndex + 1 : 0;
+    navigateToChange(newIndex);
   };
 
   // FASE A2.2: Handle compare version change
@@ -1252,14 +1285,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                     {changeRegions.map((region, idx) => (
                       <div
                         key={idx}
-                        className="absolute"
+                        className={`absolute transition-all ${idx === currentChangeIndex ? 'ring-2 ring-orange-500' : ''}`}
                         style={{
                           left: `${region.x}%`,
                           top: `${region.y}%`,
                           width: `${region.width}%`,
                           height: `${region.height}%`,
-                          backgroundColor: 'rgba(255, 165, 0, 0.25)',
-                          border: '1px solid rgba(255, 140, 0, 0.5)',
+                          backgroundColor: idx === currentChangeIndex ? 'rgba(255, 165, 0, 0.4)' : 'rgba(255, 165, 0, 0.25)',
+                          border: idx === currentChangeIndex ? '2px solid rgba(255, 140, 0, 0.8)' : '1px solid rgba(255, 140, 0, 0.5)',
                           mixBlendMode: 'multiply'
                         }}
                       />
@@ -1347,6 +1380,40 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-xl shadow-lg text-sm flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" />
             Detecting changes...
+          </div>
+        )}
+
+        {/* FASE A2.4: Change Summary + Navigation */}
+        {isComparing && showChangeMarkers && !isDiffProcessing && changeCount > 0 && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-900 to-slate-800 border-2 border-orange-500 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-orange-400" />
+              <span className="text-sm font-bold">{changeCount} change{changeCount !== 1 ? 's' : ''}</span>
+            </div>
+            
+            <div className="h-5 w-px bg-slate-600" />
+            
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handlePrevChange}
+                size="sm"
+                className="bg-slate-700 hover:bg-slate-600 text-white h-8 w-8 p-0 rounded-lg"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              
+              <span className="text-xs text-slate-400 min-w-[40px] text-center">
+                {currentChangeIndex + 1} / {changeCount}
+              </span>
+              
+              <Button
+                onClick={handleNextChange}
+                size="sm"
+                className="bg-slate-700 hover:bg-slate-600 text-white h-8 w-8 p-0 rounded-lg"
+              >
+                <ArrowLeft className="w-4 h-4 rotate-180" />
+              </Button>
+            </div>
           </div>
         )}
 
