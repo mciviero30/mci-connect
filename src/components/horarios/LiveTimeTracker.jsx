@@ -20,6 +20,7 @@ import { checkGeolocationPermission, markDeniedPromptSeen, hasSeenDeniedPrompt }
 import LocationPermissionPrompt from '@/components/shared/LocationPermissionPrompt';
 import telemetry from '@/components/telemetry/GeofenceTelemetry';
 import { usePerformanceMonitor } from '@/components/field/hooks/usePerformanceMonitor';
+import { buildUserQuery } from '@/components/utils/userResolution';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -80,13 +81,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   });
 
   // Fetch today's scheduled shift for validation
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: todayAssignments = [] } = useQuery({
-    queryKey: ['today-assignments', user?.email],
+    queryKey: ['today-assignments', user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
       const today = new Date().toISOString().split('T')[0];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       return base44.entities.ScheduleShift.filter({
-        employee_email: user.email,
+        ...query,
         date: today,
       });
     },
