@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBlueprintDiffOverlay } from './hooks/useBlueprintDiffOverlay';
+import { useChangeImpactContext } from './hooks/useChangeImpactContext';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -75,6 +76,28 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     pdfCanvas || plan.file_url,
     comparePlanCanvas,
     imageSize
+  );
+
+  // FASE A2.5: Get active change block
+  const activeChangeBlock = (isComparing && showChangeMarkers && changeRegions.length > 0) 
+    ? changeRegions[currentChangeIndex] 
+    : null;
+
+  // FASE A2.5: Detect impacted elements
+  const { data: allPhotos = [] } = useQuery({
+    queryKey: ['field-photos', jobId],
+    queryFn: () => base44.entities.Photo.filter({ job_id: jobId }),
+    enabled: !!jobId && isComparing,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
+  const impactContext = useChangeImpactContext(
+    activeChangeBlock,
+    filteredTasks,
+    allPhotos,
+    [...horizontalMeasurements, ...verticalMeasurements, ...benchmarks],
+    5 // threshold padding
   );
   
   // Measurement overlay state
@@ -1414,6 +1437,30 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                 <ArrowLeft className="w-4 h-4 rotate-180" />
               </Button>
             </div>
+
+            {/* FASE A2.5: Impact Summary */}
+            {(impactContext.counts.tasks > 0 || impactContext.counts.photos > 0 || impactContext.counts.measurements > 0) && (
+              <>
+                <div className="h-5 w-px bg-slate-600" />
+                <div className="flex items-center gap-2 text-xs">
+                  {impactContext.counts.tasks > 0 && (
+                    <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                      {impactContext.counts.tasks} task{impactContext.counts.tasks !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                  {impactContext.counts.photos > 0 && (
+                    <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      {impactContext.counts.photos} photo{impactContext.counts.photos !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                  {impactContext.counts.measurements > 0 && (
+                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/30">
+                      {impactContext.counts.measurements} dim{impactContext.counts.measurements !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 
