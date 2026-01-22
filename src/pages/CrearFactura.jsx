@@ -465,13 +465,13 @@ export default function CrearFactura() {
       // Step 3: Build final data with generated number + approval workflow
       const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
       
-      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      // WRITE GUARD — STRICT MODE for Invoice (blocks without user_id)
       const finalData = {
         ...normalizedData,
         invoice_number,
         status: 'draft',
         approval_status: approvalStatus,
-        created_by_user_id: user?.id, // NEW: Enforce user_id
+        created_by_user_id: user?.id,
         created_by_role: user?.position || user?.role || '',
         ...(approvalStatus === 'approved' && {
           approved_by: user.email,
@@ -479,11 +479,16 @@ export default function CrearFactura() {
         })
       };
 
+      // STRICT MODE: Block if user_id missing
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating Invoice without user_id', {
+        console.error('[WRITE GUARD] 🚫 STRICT MODE: Blocking Invoice without user_id', {
           email: user?.email,
           invoice_number
         });
+        
+        throw new Error(language === 'es'
+          ? '🔒 Identidad de usuario requerida. Por favor cierra sesión y vuelve a iniciar sesión antes de crear facturas.'
+          : '🔒 User identity required. Please logout and login again before creating invoices.');
       }
 
       console.log('Final invoice data (normalized):', finalData);

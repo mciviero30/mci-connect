@@ -44,23 +44,27 @@ export default function MisGastos() {
     refetchOnReconnect: false,
   });
 
-  // WRITE GUARD — user_id required for new records (legacy tolerated)
+  // WRITE GUARD — STRICT MODE for Expense (blocks without user_id)
   const createMutation = useMutation({
     mutationFn: (data) => {
       // Enforce employee_user_id on new expense
       const writeData = {
         ...data,
-        employee_user_id: user?.id, // NEW: user_id enforcement
+        employee_user_id: user?.id,
         employee_email: user.email,
         employee_name: user.full_name,
         status: 'pending',
       };
 
+      // STRICT MODE: Block if user_id missing
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating Expense without user_id', {
-          email: user?.email,
-          hasUserId: !!user?.id
+        console.error('[WRITE GUARD] 🚫 STRICT MODE: Blocking Expense without user_id', {
+          email: user?.email
         });
+        
+        throw new Error(t('language') === 'es'
+          ? '🔒 Identidad de usuario requerida. Por favor cierra sesión y vuelve a iniciar sesión.'
+          : '🔒 User identity required. Please logout and login again.');
       }
 
       return base44.entities.Expense.create(writeData);

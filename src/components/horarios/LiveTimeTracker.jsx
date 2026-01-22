@@ -535,9 +535,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         b.location_unknown || b.start_outside_geofence || b.end_outside_geofence
       );
 
-      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      // WRITE GUARD — STRICT MODE for TimeEntry (blocks without user_id)
       const timeEntryData = {
-        user_id: user?.id, // NEW: Enforce user_id
+        user_id: user?.id,
         employee_email: user.email,
         employee_name: user.full_name,
         job_id: activeSession.jobId,
@@ -563,11 +563,17 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         breaks_require_review: breaksRequireReview,
       };
 
+      // STRICT MODE: Block if user_id missing
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating TimeEntry without user_id', {
+        console.error('[WRITE GUARD] 🚫 STRICT MODE: Blocking TimeEntry without user_id', {
           email: user?.email,
           job: activeSession.jobName
         });
+        
+        setLocationError(language === 'es'
+          ? '🔒 Error de identidad. Cierra sesión y vuelve a iniciar sesión antes de registrar horas.'
+          : '🔒 Identity error. Please logout and login again before logging hours.');
+        return;
       }
 
       onSave(timeEntryData);
@@ -855,9 +861,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       const endTime = Date.now();
       const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
 
-      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      // WRITE GUARD — STRICT MODE for TimeEntry (blocks without user_id)
       const autoClockOutData = {
-        user_id: user?.id, // NEW: Enforce user_id
+        user_id: user?.id,
         employee_email: user.email,
         employee_name: user.full_name,
         job_id: activeSession.jobId,
@@ -879,11 +885,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         exceeds_max_hours: false,
       };
 
+      // STRICT MODE: Block if user_id missing (silent failure for auto clock-out)
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Auto clock-out without user_id', {
+        console.error('[WRITE GUARD] 🚫 STRICT MODE: Auto clock-out blocked without user_id', {
           email: user?.email,
           job: activeSession.jobName
         });
+        // Don't throw - just fail silently and keep session active
+        return;
       }
 
       onSave(autoClockOutData);

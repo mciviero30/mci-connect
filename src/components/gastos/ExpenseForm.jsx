@@ -112,7 +112,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     // Convert amount to float
     const finalAmount = parseFloat(formData.amount || '0');
 
-    // WRITE GUARD — user_id required for new records (legacy tolerated)
+    // WRITE GUARD — STRICT MODE for Expense (blocks without user_id)
     const baseData = {
       ...formData,
       amount: finalAmount,
@@ -120,15 +120,25 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
       job_name: job?.name,
     };
 
-    // Enforce employee_user_id for new Expense records
-    const guardedData = enforceUserIdOnWrite(
-      baseData,
-      currentUser,
-      'Expense',
-      'employee_user_id'
-    );
+    try {
+      // Enforce employee_user_id for new Expense records (STRICT)
+      const guardedData = enforceUserIdOnWrite(
+        baseData,
+        currentUser,
+        'Expense',
+        'employee_user_id'
+      );
 
-    onSubmit(guardedData);
+      onSubmit(guardedData);
+    } catch (error) {
+      if (error.code === 'USER_ID_REQUIRED') {
+        alert(language === 'es'
+          ? '🔒 Identidad de usuario requerida.\n\nPor favor cierra sesión y vuelve a iniciar sesión.\n\nSi el problema persiste, contacta a tu administrador.'
+          : '🔒 User identity required.\n\nPlease logout and login again.\n\nIf the issue persists, contact your admin.');
+      } else {
+        throw error;
+      }
+    }
   };
 
   // NEW: Account category options (Prompt #59)

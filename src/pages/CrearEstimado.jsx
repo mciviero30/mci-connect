@@ -307,13 +307,13 @@ export default function CrearEstimado() {
       // Step 3: Build final data with generated number + approval workflow
       const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
       
-      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      // WRITE GUARD — STRICT MODE for Quote (blocks without user_id)
       const finalData = {
         ...normalizedData,
         quote_number,
         status: 'draft',
         approval_status: approvalStatus,
-        created_by_user_id: user?.id, // NEW: Enforce user_id
+        created_by_user_id: user?.id,
         created_by_role: user?.position || user?.role || '',
         ...(approvalStatus === 'approved' && {
           approved_by: user.email,
@@ -321,11 +321,16 @@ export default function CrearEstimado() {
         })
       };
 
+      // STRICT MODE: Block if user_id missing
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating Quote without user_id', {
+        console.error('[WRITE GUARD] 🚫 STRICT MODE: Blocking Quote without user_id', {
           email: user?.email,
           quote_number
         });
+        
+        throw new Error(language === 'es'
+          ? '🔒 Identidad de usuario requerida. Por favor cierra sesión y vuelve a iniciar sesión antes de crear estimados.'
+          : '🔒 User identity required. Please logout and login again before creating quotes.');
       }
 
       console.log('Final quote data (normalized):', finalData);
