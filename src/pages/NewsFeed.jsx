@@ -115,13 +115,22 @@ export default function NewsFeed() {
     }
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const handleLike = (post) => {
     const likes = post.likes || [];
-    const hasLiked = likes.includes(user.email);
+    // Check like by user_id or email
+    const userIdentifier = user?.id || user?.email;
+    const hasLiked = likes.some(like => {
+      // Like can be stored as user_id or email
+      return like === userIdentifier || like === user?.email || like === user?.id;
+    });
     
     likeMutation.mutate({
       postId: post.id,
-      likes: hasLiked ? likes.filter(email => email !== user.email) : [...likes, user.email]
+      // Store user_id if available, otherwise email (for backward compatibility)
+      likes: hasLiked 
+        ? likes.filter(like => like !== userIdentifier && like !== user?.email && like !== user?.id)
+        : [...likes, userIdentifier]
     });
   };
 
@@ -301,8 +310,9 @@ export default function NewsFeed() {
 
         <div className="space-y-6">
           {posts.map(post => {
+            // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
             const likes = post.likes || [];
-            const hasLiked = likes.includes(user?.email);
+            const hasLiked = likes.some(like => like === user?.id || like === user?.email);
             const priorityColors = {
               normal: 'badge-soft-blue',
               important: 'badge-soft-amber',

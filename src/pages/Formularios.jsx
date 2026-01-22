@@ -69,7 +69,14 @@ export default function Formularios() {
     });
   };
 
-  const mySubmissions = submissions.filter(s => s.submitted_by_email === user?.email);
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  const mySubmissions = submissions.filter(s => {
+    // Match by user_id first, fallback to email
+    if (s.submitted_by_user_id && user?.id) {
+      return s.submitted_by_user_id === user.id;
+    }
+    return s.submitted_by_email === user?.email;
+  });
 
   const availableTemplates = templates.filter(t => 
     t.active && (!t.assigned_to || t.assigned_to.includes(user?.email) || isAdmin)

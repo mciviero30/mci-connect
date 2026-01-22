@@ -537,17 +537,25 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     
     // Mark messages as read when viewing
+    // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
     if (messages && messages.length > 0 && user) {
-      const unreadMessages = messages.filter(msg => 
-        msg.sender_email !== user.email && 
-        (!msg.read_by || !msg.read_by.includes(user.email))
-      );
+      const unreadMessages = messages.filter(msg => {
+        // Don't mark own messages as read
+        const isOwnMessage = msg.sender_user_id ? msg.sender_user_id === user.id : msg.sender_email === user.email;
+        if (isOwnMessage) return false;
+        
+        // Check if already read by user (by user_id or email)
+        const readBy = msg.read_by || [];
+        return !readBy.includes(user.id) && !readBy.includes(user.email);
+      });
       
       unreadMessages.forEach(msg => {
         const readBy = msg.read_by || [];
-        if (!readBy.includes(user.email)) {
+        // Store user_id if available, otherwise email
+        const identifier = user.id || user.email;
+        if (!readBy.includes(identifier)) {
           base44.entities.ChatMessage.update(msg.id, {
-            read_by: [...readBy, user.email]
+            read_by: [...readBy, identifier]
           }).catch(err => console.error('Error marking message as read:', err));
         }
       });
@@ -902,11 +910,15 @@ export default function Chat() {
                   </div>
                 )}
                 
-                {filteredMessages.map((msg) => (
+                {/* Dual-Key Read via userResolution — user_id preferred, email fallback (legacy) */}
+                {filteredMessages.map((msg) => {
+                  const isMe = msg.sender_user_id ? msg.sender_user_id === user?.id : msg.sender_email === user?.email;
+                  
+                  return (
                   <UniversalMessageBubble
                     key={msg.id}
                     message={msg}
-                    isMe={msg.sender_email === user?.email}
+                    isMe={isMe}
                     onReply={setReplyingTo}
                     onReaction={handleReaction}
                     onEdit={handleEditMessage}
@@ -915,7 +927,8 @@ export default function Chat() {
                     language={language}
                     isDark={false}
                   />
-                ))}
+                );
+                })}
                 
                 <TypingIndicator users={typingUsers} />
                 <div ref={messagesEndRef} />

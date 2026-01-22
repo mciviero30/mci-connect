@@ -280,18 +280,26 @@ export default function UniversalChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     
+    // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
     // Mark messages as read
     if (messages.length > 0 && currentUser) {
-      const unreadMessages = messages.filter(msg => 
-        msg.sender_email !== currentUser.email && 
-        (!msg.read_by || !msg.read_by.includes(currentUser.email))
-      );
+      const unreadMessages = messages.filter(msg => {
+        // Don't mark own messages as read
+        const isOwnMessage = msg.sender_user_id ? msg.sender_user_id === currentUser.id : msg.sender_email === currentUser.email;
+        if (isOwnMessage) return false;
+        
+        // Check if already read by user (by user_id or email)
+        const readBy = msg.read_by || [];
+        return !readBy.includes(currentUser.id) && !readBy.includes(currentUser.email);
+      });
       
       unreadMessages.forEach(msg => {
         const readBy = msg.read_by || [];
-        if (!readBy.includes(currentUser.email)) {
+        // Store user_id if available, otherwise email
+        const identifier = currentUser.id || currentUser.email;
+        if (!readBy.includes(identifier)) {
           base44.entities.ChatMessage.update(msg.id, {
-            read_by: [...readBy, currentUser.email]
+            read_by: [...readBy, identifier]
           }).catch(() => {});
         }
       });
@@ -390,11 +398,15 @@ export default function UniversalChat({
           </div>
         )}
 
-        {filteredMessages.map((msg) => (
+        {filteredMessages.map((msg) => {
+          // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+          const isMe = msg.sender_user_id ? msg.sender_user_id === currentUser?.id : msg.sender_email === currentUser?.email;
+          
+          return (
           <UniversalMessageBubble
             key={msg.id}
             message={msg}
-            isMe={msg.sender_email === currentUser?.email}
+            isMe={isMe}
             onReply={setReplyingTo}
             onReaction={(msgId, reaction) => reactionMutation.mutate({ messageId: msgId, reaction })}
             onEdit={handleEdit}
@@ -404,7 +416,8 @@ export default function UniversalChat({
             isDark={isDark}
             density={viewDensity}
           />
-        ))}
+        );
+        })}
 
         <div ref={messagesEndRef} />
       </div>
