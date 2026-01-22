@@ -11,6 +11,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import AIExpenseAnalyzer from '../components/gastos/AIExpenseAnalyzer';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function MisGastos() {
   const { t } = useLanguage();
@@ -27,27 +28,43 @@ export default function MisGastos() {
     refetchOnWindowFocus: false,
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: expenses = [], isLoading } = useQuery({
-    queryKey: ['myExpenses', user?.email],
+    queryKey: ['myExpenses', user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
-      return base44.entities.Expense.filter({ employee_email: user.email }, '-date');
+      const query = buildUserQuery(user, 'employee_user_id', 'employee_email');
+      return base44.entities.Expense.filter(query, '-date');
     },
     enabled: !!user,
-    staleTime: 300000, // 5 min - data changes on approval
+    staleTime: 300000,
     gcTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
 
+  // WRITE GUARD — user_id required for new records (legacy tolerated)
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Expense.create({
-      ...data,
-      employee_email: user.email,
-      employee_name: user.full_name,
-      status: 'pending',
-    }),
+    mutationFn: (data) => {
+      // Enforce employee_user_id on new expense
+      const writeData = {
+        ...data,
+        employee_user_id: user?.id, // NEW: user_id enforcement
+        employee_email: user.email,
+        employee_name: user.full_name,
+        status: 'pending',
+      };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating Expense without user_id', {
+          email: user?.email,
+          hasUserId: !!user?.id
+        });
+      }
+
+      return base44.entities.Expense.create(writeData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myExpenses'] });
       setShowForm(false);
