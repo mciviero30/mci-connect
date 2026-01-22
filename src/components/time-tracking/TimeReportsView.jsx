@@ -9,6 +9,7 @@ import { Download, FileText } from "lucide-react";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function TimeReportsView({ user }) {
   const { language } = useLanguage();
@@ -16,11 +17,13 @@ export default function TimeReportsView({ user }) {
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: entries = [], isLoading, refetch } = useQuery({
-    queryKey: ['reportTimeEntries', user?.email, startDate, endDate],
+    queryKey: ['reportTimeEntries', user?.id, user?.email, startDate, endDate],
     queryFn: async () => {
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       return await base44.entities.TimeEntry.filter({
-        employee_email: user.email,
+        ...query,
         date: { $gte: startDate, $lte: endDate }
       });
     },
