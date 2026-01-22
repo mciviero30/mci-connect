@@ -326,13 +326,24 @@ function CreateRFIDialog({ open, onClose, jobs, user }) {
     
     const selectedJob = jobs.find(j => j.id === formData.job_id);
     
-    createMutation.mutate({
+    // WRITE GUARD — user_id required for new records (legacy tolerated)
+    const writeData = {
       ...formData,
       job_name: selectedJob?.name,
+      requested_by_user_id: user?.id, // NEW: Enforce user_id
       requested_by: user?.email,
       requested_by_name: user?.full_name,
       status: 'draft'
-    });
+    };
+
+    if (!user?.id) {
+      console.warn('[WRITE GUARD] ⚠️ Creating RFI without user_id', {
+        email: user?.email,
+        job: selectedJob?.name
+      });
+    }
+
+    createMutation.mutate(writeData);
   };
 
   return (

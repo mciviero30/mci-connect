@@ -77,16 +77,27 @@ export default function CrearIncidentePage() {
         }
       }
 
-      return base44.entities.SafetyIncident.create({
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      const writeData = {
         ...data,
         incident_number,
+        reported_by_user_id: user?.id, // NEW: Enforce user_id
         reported_by: user.email,
         reported_by_name: user.full_name,
         photos: uploadedPhotos,
         witnesses,
         latitude,
         longitude,
-      });
+      };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating SafetyIncident without user_id', {
+          email: user?.email,
+          incident_number
+        });
+      }
+
+      return base44.entities.SafetyIncident.create(writeData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['safetyIncidents'] });

@@ -100,7 +100,10 @@ export default function AssignmentDialog({
 
     if (shift) {
       const employee = (employees || []).find(e => e.email === selectedEmployees[0]);
+      
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
       const shiftData = {
+        user_id: employee?.id, // NEW: Enforce user_id on update
         employee_email: selectedEmployees[0] || '',
         employee_name: employee?.full_name || selectedEmployees[0] || '',
         job_id: jobId || '',
@@ -115,6 +118,12 @@ export default function AssignmentDialog({
         custom_color: customColor,
         status: shift.status || 'scheduled'
       };
+      
+      if (!employee?.id && !shift.user_id) {
+        console.warn('[WRITE GUARD] ⚠️ Updating ScheduleShift without user_id', {
+          email: selectedEmployees[0]
+        });
+      }
       
       onSubmit(shiftData);
       
@@ -148,9 +157,13 @@ export default function AssignmentDialog({
       const dateStr = format(currentDate, 'yyyy-MM-dd');
       
       if (isAppointment) {
+        const employee = (employees || []).find(e => e.email === selectedEmployees[0]);
+        
+        // WRITE GUARD — user_id required for new records (legacy tolerated)
         shiftsToCreate.push({
+          user_id: employee?.id, // NEW: Enforce user_id
           employee_email: selectedEmployees[0] || '',
-          employee_name: (employees || []).find(e => e.email === selectedEmployees[0])?.full_name || '',
+          employee_name: employee?.full_name || '',
           job_id: jobId || '',
           job_name: selectedJob?.name || '',
           shift_title: shiftTitle,
@@ -163,10 +176,19 @@ export default function AssignmentDialog({
           custom_color: customColor,
           status: 'scheduled'
         });
+        
+        if (!employee?.id) {
+          console.warn('[WRITE GUARD] ⚠️ Creating ScheduleShift (appointment) without user_id', {
+            email: selectedEmployees[0]
+          });
+        }
       } else {
         for (const email of selectedEmployees) {
           const employee = (employees || []).find(e => e.email === email);
+          
+          // WRITE GUARD — user_id required for new records (legacy tolerated)
           shiftsToCreate.push({
+            user_id: employee?.id, // NEW: Enforce user_id
             employee_email: email,
             employee_name: employee?.full_name || email,
             job_id: jobId,
@@ -181,6 +203,12 @@ export default function AssignmentDialog({
             custom_color: customColor,
             status: 'scheduled'
           });
+          
+          if (!employee?.id) {
+            console.warn('[WRITE GUARD] ⚠️ Creating ScheduleShift (job work) without user_id', {
+              email
+            });
+          }
         }
       }
       

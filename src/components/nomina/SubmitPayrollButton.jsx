@@ -17,17 +17,21 @@ export default function SubmitPayrollButton({ employee, weekStart, weekEnd, payr
 
   const submitMutation = useMutation({
     mutationFn: async () => {
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
       const data = {
+        user_id: employee?.id, // NEW: Enforce user_id
         employee_email: employee.email,
         employee_name: employee.full_name,
-        week_start: format(weekStart, 'yyyy-MM-dd'),
+        week_start_date: format(weekStart, 'yyyy-MM-dd'),
+        week_start: format(weekStart, 'yyyy-MM-dd'), // Legacy field
         week_end: format(weekEnd, 'yyyy-MM-dd'),
         regular_hours: payrollData.regularHours || 0,
         overtime_hours: payrollData.overtimeHours || 0,
         driving_hours: payrollData.drivingHours || 0,
         driving_miles: payrollData.drivingMiles || 0,
         per_diem_amount: payrollData.perDiemAmount || 0,
-        work_pay: payrollData.workPay || 0,
+        total_work_pay: payrollData.workPay || 0,
+        work_pay: payrollData.workPay || 0, // Legacy field
         driving_pay: payrollData.drivingPay || 0,
         reimbursements: payrollData.reimbursements || 0,
         total_pay: payrollData.totalPay || 0,
@@ -35,6 +39,13 @@ export default function SubmitPayrollButton({ employee, weekStart, weekEnd, payr
         submitted_date: new Date().toISOString(),
         notes
       };
+
+      if (!existingPayroll && !employee?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating WeeklyPayroll without user_id', {
+          email: employee?.email,
+          week: format(weekStart, 'yyyy-MM-dd')
+        });
+      }
 
       if (existingPayroll) {
         await base44.entities.WeeklyPayroll.update(existingPayroll.id, data);

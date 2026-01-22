@@ -75,13 +75,24 @@ export default function CrearChangeOrderPage() {
         })
       );
 
-      return base44.entities.ChangeOrder.create({
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      const writeData = {
         ...data,
         change_order_number,
+        requested_by_user_id: user?.id, // NEW: Enforce user_id
         requested_by: user.email,
         requested_by_name: user.full_name,
         attachments: uploadedAttachments,
-      });
+      };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating ChangeOrder without user_id', {
+          email: user?.email,
+          change_order_number
+        });
+      }
+
+      return base44.entities.ChangeOrder.create(writeData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['changeOrders'] });

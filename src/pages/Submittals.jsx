@@ -335,15 +335,26 @@ function CreateSubmittalDialog({ open, onClose, jobs, user }) {
     
     const selectedJob = jobs.find(j => j.id === formData.job_id);
     
-    createMutation.mutate({
+    // WRITE GUARD — user_id required for new records (legacy tolerated)
+    const writeData = {
       ...formData,
       job_name: selectedJob?.name,
+      submitted_by_user_id: user?.id, // NEW: Enforce user_id
       submitted_by: user?.email,
       submitted_by_name: user?.full_name,
       status: 'draft',
       revision_number: 1,
       ball_in_court: 'contractor'
-    });
+    };
+
+    if (!user?.id) {
+      console.warn('[WRITE GUARD] ⚠️ Creating Submittal without user_id', {
+        email: user?.email,
+        job: selectedJob?.name
+      });
+    }
+
+    createMutation.mutate(writeData);
   };
 
   return (

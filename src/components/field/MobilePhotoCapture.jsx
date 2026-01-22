@@ -136,11 +136,22 @@ export default function MobilePhotoCapture({
             file: capturedImage.file 
           });
           
-          // Then create photo record
-          return await base44.entities.Photo.create({
+          // WRITE GUARD — user_id required for new records (legacy tolerated)
+          const { data: currentUser } = await base44.auth.me().catch(() => ({ data: null }));
+          
+          const writeData = {
             ...photoData,
             file_url,
-          });
+            uploaded_by_user_id: currentUser?.id, // NEW: Enforce user_id
+          };
+
+          if (!currentUser?.id) {
+            console.warn('[WRITE GUARD] ⚠️ Creating Photo without user_id (offline?)', {
+              jobId
+            });
+          }
+
+          return await base44.entities.Photo.create(writeData);
         },
         draftKey: `photo_${jobId}`,
         onProgress: setSaveProgress,
