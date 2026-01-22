@@ -464,17 +464,27 @@ export default function CrearFactura() {
 
       // Step 3: Build final data with generated number + approval workflow
       const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
+      
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
       const finalData = {
         ...normalizedData,
         invoice_number,
         status: 'draft',
         approval_status: approvalStatus,
+        created_by_user_id: user?.id, // NEW: Enforce user_id
         created_by_role: user?.position || user?.role || '',
         ...(approvalStatus === 'approved' && {
           approved_by: user.email,
           approved_at: new Date().toISOString()
         })
       };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating Invoice without user_id', {
+          email: user?.email,
+          invoice_number
+        });
+      }
 
       console.log('Final invoice data (normalized):', finalData);
       
