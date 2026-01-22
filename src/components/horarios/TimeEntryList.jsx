@@ -400,12 +400,15 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   };
 
   // Group entries by employee for breakdown
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const employeeBreakdown = filteredEntries.reduce((acc, entry) => {
-    const empEmail = entry.employee_email;
-    if (!acc[empEmail]) {
-      acc[empEmail] = {
+    // Group by user_id if available, otherwise fallback to email
+    const key = entry.user_id || entry.employee_email;
+    if (!acc[key]) {
+      acc[key] = {
         name: entry.employee_name,
-        email: empEmail,
+        email: entry.employee_email,
+        user_id: entry.user_id,
         totalHours: 0,
         regularHours: 0,
         overtimeHours: 0,
@@ -415,7 +418,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     }
     
     const hours = entry.hours_worked || 0;
-    acc[empEmail].totalHours += hours;
+    acc[key].totalHours += hours;
     
     // Calculate regular vs OT (assuming 40h/week threshold)
     if (acc[empEmail].regularHours < 40) {

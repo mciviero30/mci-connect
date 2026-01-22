@@ -41,12 +41,15 @@ export default function ManagerApprovalView() {
     },
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const groupedEntries = pendingEntries.reduce((acc, entry) => {
-    const key = entry.employee_email;
+    // Group by user_id if available, otherwise fallback to email
+    const key = entry.user_id || entry.employee_email;
     if (!acc[key]) {
       acc[key] = {
         employee_name: entry.employee_name,
         employee_email: entry.employee_email,
+        user_id: entry.user_id,
         entries: []
       };
     }

@@ -8,14 +8,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 export default function TeamTimeView({ entries, jobs, employees }) {
   const { language } = useLanguage();
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const employeeStats = useMemo(() => {
     const stats = {};
     
     entries.forEach(entry => {
-      const email = entry.employee_email;
-      if (!stats[email]) {
-        stats[email] = {
-          email,
+      // Group by user_id if available, otherwise fallback to email
+      const key = entry.user_id || entry.employee_email;
+      if (!stats[key]) {
+        stats[key] = {
+          email: entry.employee_email,
+          user_id: entry.user_id,
           name: entry.employee_name,
           totalHours: 0,
           normalHours: 0,
@@ -24,13 +27,13 @@ export default function TeamTimeView({ entries, jobs, employees }) {
         };
       }
       
-      stats[email].totalHours += entry.hours_worked || 0;
+      stats[key].totalHours += entry.hours_worked || 0;
       if (entry.hour_type === 'overtime') {
-        stats[email].overtimeHours += entry.hours_worked || 0;
+        stats[key].overtimeHours += entry.hours_worked || 0;
       } else {
-        stats[email].normalHours += entry.hours_worked || 0;
+        stats[key].normalHours += entry.hours_worked || 0;
       }
-      stats[email].entries.push(entry);
+      stats[key].entries.push(entry);
     });
 
     return Object.values(stats).sort((a, b) => b.totalHours - a.totalHours);
@@ -52,7 +55,9 @@ export default function TeamTimeView({ entries, jobs, employees }) {
       }
       
       stats[jobId].totalHours += entry.hours_worked || 0;
-      stats[jobId].employees.add(entry.employee_email);
+      // Dual-Key Read: count unique users by user_id or email
+      const uniqueKey = entry.user_id || entry.employee_email;
+      stats[jobId].employees.add(uniqueKey);
     });
 
     return Object.values(stats)
