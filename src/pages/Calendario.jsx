@@ -453,12 +453,17 @@ export default function Calendario() {
     return format(currentDate, 'MMMM yyyy');
   };
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const filteredShifts = shifts.filter(shift => {
     if (eventTypeFilter !== 'all' && shift.shift_type !== eventTypeFilter) {
       return false;
     }
-    if (employeeFilter !== 'all' && shift.employee_email !== employeeFilter) {
-      return false;
+    // Match employee by user_id first, fallback to email
+    if (employeeFilter !== 'all') {
+      const employeeMatch = shift.user_id 
+        ? shift.user_id === employeeFilter 
+        : shift.employee_email === employeeFilter;
+      if (!employeeMatch) return false;
     }
     if (jobFilter !== 'all' && shift.job_id !== jobFilter) {
       return false;
@@ -507,7 +512,9 @@ export default function Calendario() {
 
   const workload = calculateWorkload();
 
-  const uniqueEmployees = [...new Set(shifts.map(s => s.employee_email).filter(Boolean))];
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  // Use user_id to prevent duplicates, fallback to email
+  const uniqueEmployees = [...new Set(shifts.map(s => s.user_id || s.employee_email).filter(Boolean))];
   const uniqueJobs = [...new Set(shifts.map(s => s.job_id).filter(Boolean))];
 
   return (
@@ -630,11 +637,12 @@ export default function Calendario() {
                       <SelectItem value="all">
                         {language === 'es' ? 'Todos los Empleados' : 'All Employees'}
                       </SelectItem>
-                      {uniqueEmployees.map(email => {
-                        const emp = employees.find(e => e.email === email);
+                      {uniqueEmployees.map(identifier => {
+                        // identifier can be user_id or email
+                        const emp = employees.find(e => e.id === identifier || e.email === identifier);
                         return (
-                          <SelectItem key={email} value={email}>
-                            {emp?.full_name || email}
+                          <SelectItem key={identifier} value={identifier}>
+                            {emp?.full_name || identifier}
                           </SelectItem>
                         );
                       })}

@@ -181,6 +181,7 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
     return match ? parseInt(match[1], 10) : 999999;
   }, []);
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   // Memoized filter and sort - prevents re-computation on every render
   const filteredTasks = useMemo(() => {
     return tasks
@@ -189,11 +190,14 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
         const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
         const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
         const matchesType = taskTypeFilter === 'all' || task.task_type === taskTypeFilter;
-        const matchesUser = !showMyTasks || task.assigned_to === user?.email;
+        // Match by user_id first, fallback to email
+        const matchesUser = !showMyTasks || (
+          task.assigned_to_user_id ? task.assigned_to_user_id === user?.id : task.assigned_to === user?.email
+        );
         return matchesSearch && matchesStatus && matchesPriority && matchesType && matchesUser;
       })
       .sort((a, b) => getWallNumber(a.title) - getWallNumber(b.title));
-  }, [tasks, searchTerm, statusFilter, priorityFilter, taskTypeFilter, showMyTasks, user?.email, getWallNumber]);
+  }, [tasks, searchTerm, statusFilter, priorityFilter, taskTypeFilter, showMyTasks, user?.id, user?.email, getWallNumber]);
 
   const columns = [
     { id: 'pending', label: 'Assigned', color: 'red', emoji: '📋' },
