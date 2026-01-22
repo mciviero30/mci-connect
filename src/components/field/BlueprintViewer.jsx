@@ -3,7 +3,7 @@ import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
-  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain, Clock
+  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain, Clock, Layers
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const [cursorPosition, setCursorPosition] = useState(null);
   const [showAILearning, setShowAILearning] = useState(false);
   const [hasNewAIPatterns, setHasNewAIPatterns] = useState(false);
+  
+  // FASE A2.2: Comparison state (read-only)
+  const [isComparing, setIsComparing] = useState(false);
+  const [compareWithPlanId, setCompareWithPlanId] = useState(null);
+  const [comparePlanCanvas, setComparePlanCanvas] = useState(null);
   
   // Measurement overlay state
   const [layers, setLayers] = useState({
@@ -182,6 +187,55 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
       window.location.hash = `#version=${newPlanId}`;
       // Reload the page with new version or just update the current plan
       // For now, just reload the component by changing the key
+    }
+  };
+
+  // FASE A2.2: Load comparison plan (read-only overlay)
+  const loadComparePlan = async (comparePlanId) => {
+    const comparePlan = allPlans.find(p => p.id === comparePlanId);
+    if (!comparePlan || !comparePlan.file_url) return;
+
+    try {
+      if (isPdfFile(comparePlan.file_url)) {
+        // Load PDF comparison plan
+        if (!window.pdfjsLib) return;
+        const loadingTask = window.pdfjsLib.getDocument(comparePlan.file_url);
+        const pdf = await loadingTask.promise;
+        const scale = 2.0;
+        const canvases = [];
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          canvases.push(canvas);
+        }
+
+        const totalHeight = canvases.reduce((sum, c) => sum + c.height, 0);
+        const maxWidth = Math.max(...canvases.map(c => c.width));
+        const combinedCanvas = document.createElement('canvas');
+        combinedCanvas.width = maxWidth;
+        combinedCanvas.height = totalHeight;
+        const ctx = combinedCanvas.getContext('2d');
+
+        let currentY = 0;
+        canvases.forEach(canvas => {
+          ctx.drawImage(canvas, 0, currentY);
+          currentY += canvas.height;
+        });
+
+        setComparePlanCanvas(combinedCanvas.toDataURL('image/jpeg', 0.92));
+      } else {
+        // For images, just set the URL
+        setComparePlanCanvas(comparePlan.file_url);
+      }
+    } catch (error) {
+      console.error('Error loading comparison plan:', error);
+      setComparePlanCanvas(null);
     }
   };
 
@@ -747,6 +801,29 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     setCursorPosition(null);
   };
 
+  // FASE A2.2: Handle compare toggle
+  const handleCompareToggle = () => {
+    if (!isComparing) {
+      // Activar comparación - usar previous_plan_id por defecto
+      const defaultCompare = plan.previous_plan_id || allPlans.find(p => p.id !== plan.id)?.id;
+      if (defaultCompare) {
+        setCompareWithPlanId(defaultCompare);
+        loadComparePlan(defaultCompare);
+      }
+    } else {
+      // Desactivar comparación
+      setComparePlanCanvas(null);
+      setCompareWithPlanId(null);
+    }
+    setIsComparing(!isComparing);
+  };
+
+  // FASE A2.2: Handle compare version change
+  const handleCompareVersionChange = (newCompareId) => {
+    setCompareWithPlanId(newCompareId);
+    loadComparePlan(newCompareId);
+  };
+
   // Toolbar items
   const toolbarItems = [
     { id: 'fullscreen', icon: Maximize2, label: 'Fullscreen', action: handleReset },
@@ -758,6 +835,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     { id: 'divider3', type: 'divider' },
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'divider4', type: 'divider' },
+    !isClientView && allPlans.length > 1 && { id: 'compare', icon: Layers, label: 'Compare Versions', action: handleCompareToggle, isActive: isComparing },
     !isClientView && { id: 'scale', icon: Crosshair, label: 'Set Scale', action: () => { setShowScaleDialog(true); setIsCalibrating(true); }, hideForClient: true },
     { id: 'divider5', type: 'divider' },
     { id: 'ai', icon: Brain, label: 'AI Learning', action: () => setShowAILearning(prev => !prev), badge: hasNewAIPatterns },
@@ -843,7 +921,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
             return <div key={item.id} className="my-1 mx-2 border-t-2 border-slate-600" />;
           }
           
-          const isActive = item.tool && activeTool === item.id;
+          const isActive = (item.tool && activeTool === item.id) || item.isActive;
           return (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
@@ -963,6 +1041,25 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                 </Select>
               </div>
             )}
+
+            {/* FASE A2.2: Compare Version Selector (when comparing) */}
+            {isComparing && allPlans.length > 1 && (
+              <div className="flex items-center gap-2 ml-2">
+                <Layers className="w-4 h-4 text-orange-400" />
+                <Select value={compareWithPlanId || ''} onValueChange={handleCompareVersionChange}>
+                  <SelectTrigger className="w-32 bg-orange-600 border-orange-500 text-white text-sm h-9">
+                    <SelectValue placeholder="Compare with..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-600">
+                    {allPlans.filter(p => p.id !== plan.id).sort((a, b) => (b.version_number || b.version || 1) - (a.version_number || a.version || 1)).map((p) => (
+                      <SelectItem key={p.id} value={p.id} className="text-white">
+                        V{p.version_number || p.version || 1}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -1067,6 +1164,25 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
               }}
             >
               <div className="relative" style={{ minWidth: '100px', minHeight: '100px' }}>
+                {/* FASE A2.2: Comparison overlay (background) */}
+                {isComparing && comparePlanCanvas && (
+                  <img 
+                    src={comparePlanCanvas}
+                    alt="Compare version"
+                    style={{ 
+                      maxWidth: 'none', 
+                      maxHeight: 'none',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      opacity: 0.35,
+                      pointerEvents: 'none',
+                      filter: 'grayscale(20%)'
+                    }}
+                    draggable={false}
+                  />
+                )}
+
                 {isPdfFile(plan.file_url) ? (
                   pdfCanvas ? (
                     <>
@@ -1074,7 +1190,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                         ref={imageRef}
                         src={pdfCanvas}
                         alt={plan.name}
-                        style={{ maxWidth: 'none', maxHeight: 'none' }}
+                        style={{ maxWidth: 'none', maxHeight: 'none', position: 'relative', zIndex: 1 }}
                         onClick={handleImageClick}
                         onLoad={handleImageLoad}
                         draggable={false}
@@ -1100,6 +1216,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                     src={plan.file_url}
                     alt={plan.name}
                     className="max-w-none"
+                    style={{ position: 'relative', zIndex: 1 }}
                     onClick={handleImageClick}
                     onLoad={handleImageLoad}
                     draggable={false}
