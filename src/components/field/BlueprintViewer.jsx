@@ -8,6 +8,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBlueprintDiffOverlay } from './hooks/useBlueprintDiffOverlay';
 import { useChangeImpactContext } from './hooks/useChangeImpactContext';
+import { useSuggestedActions } from './hooks/useSuggestedActions';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -99,6 +100,21 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     [...horizontalMeasurements, ...verticalMeasurements, ...benchmarks],
     5 // threshold padding
   );
+
+  // FASE A2.6: Generate suggested actions
+  const suggestedActions = useSuggestedActions(activeChangeBlock, impactContext);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+
+  // Navigate to element from suggestion
+  const handleSuggestionClick = (suggestion) => {
+    if (!suggestion.targetX || !suggestion.targetY) return;
+    
+    const targetX = -(suggestion.targetX / 100) * imageSize.width * 1.5 + containerSize.width / 2;
+    const targetY = -(suggestion.targetY / 100) * imageSize.height * 1.5 + containerSize.height / 2;
+    
+    setPosition({ x: targetX, y: targetY });
+    setZoom(1.5);
+  };
   
   // Measurement overlay state
   const [layers, setLayers] = useState({
@@ -1461,6 +1477,81 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                 </div>
               </>
             )}
+          </div>
+        )}
+
+        {/* FASE A2.6: Suggested Actions Panel */}
+        {isComparing && showChangeMarkers && !isDiffProcessing && suggestedActions.length > 0 && showSuggestions && (
+          <div className="absolute top-20 right-4 bg-slate-900 border-2 border-yellow-500 rounded-2xl shadow-2xl p-4 max-w-xs">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-yellow-400" />
+                <span className="text-sm font-bold text-white">Suggested Actions</span>
+                <Badge className="bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs">
+                  {suggestedActions.length}
+                </Badge>
+              </div>
+              <Button
+                onClick={() => setShowSuggestions(false)}
+                size="sm"
+                variant="ghost"
+                className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {suggestedActions.map((action) => {
+                const severityColors = {
+                  high: 'border-red-500/50 bg-red-500/10',
+                  medium: 'border-yellow-500/50 bg-yellow-500/10',
+                  low: 'border-blue-500/50 bg-blue-500/10'
+                };
+
+                const icons = {
+                  task: CheckCircle2,
+                  horizontal: Move,
+                  vertical: Move,
+                  benchmark: MapPin,
+                  photo: Eye
+                };
+
+                const Icon = icons[action.type] || CheckCircle2;
+
+                return (
+                  <button
+                    key={action.id}
+                    onClick={() => handleSuggestionClick(action)}
+                    className={`w-full text-left p-2 rounded-lg border ${severityColors[action.severity]} hover:bg-slate-800 transition-all text-xs text-white`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{action.label}</p>
+                        <p className="text-slate-400 text-[10px] mt-0.5 line-clamp-2">
+                          {action.suggestedAction}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* FASE A2.6: Toggle Suggestions (when hidden) */}
+        {isComparing && showChangeMarkers && !isDiffProcessing && suggestedActions.length > 0 && !showSuggestions && (
+          <div className="absolute top-20 right-4">
+            <Button
+              onClick={() => setShowSuggestions(true)}
+              size="sm"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Suggestions ({suggestedActions.length})
+            </Button>
           </div>
         )}
 
