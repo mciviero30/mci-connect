@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,6 +13,7 @@ import SubmitPayrollButton from "./SubmitPayrollButton";
 import ApprovePayrollButton from "./ApprovePayrollButton";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle } from "lucide-react";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function EmployeePayrollDetail({ employee, initialWeekStart, initialWeekEnd, onClose }) {
   const { t } = useLanguage();
@@ -32,27 +32,43 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
     initialData: [],
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries } = useQuery({
-    queryKey: ['timeEntries', employee.email],
-    queryFn: () => base44.entities.TimeEntry.filter({ employee_email: employee.email }),
+    queryKey: ['timeEntries', employee.id, employee.email],
+    queryFn: () => {
+      const query = buildUserQuery(employee, 'user_id', 'employee_email');
+      return base44.entities.TimeEntry.filter(query);
+    },
     initialData: [],
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: drivingLogs } = useQuery({
-    queryKey: ['drivingLogs', employee.email],
-    queryFn: () => base44.entities.DrivingLog.filter({ employee_email: employee.email }),
+    queryKey: ['drivingLogs', employee.id, employee.email],
+    queryFn: () => {
+      const query = buildUserQuery(employee, 'user_id', 'employee_email');
+      return base44.entities.DrivingLog.filter(query);
+    },
     initialData: [],
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: expenses } = useQuery({
-    queryKey: ['expenses', employee.email],
-    queryFn: () => base44.entities.Expense.filter({ employee_email: employee.email }),
+    queryKey: ['expenses', employee.id, employee.email],
+    queryFn: () => {
+      const query = buildUserQuery(employee, 'user_id', 'employee_email');
+      return base44.entities.Expense.filter(query);
+    },
     initialData: [],
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: weeklyPayrolls } = useQuery({
-    queryKey: ['weeklyPayrolls', employee.email],
-    queryFn: () => base44.entities.WeeklyPayroll.filter({ employee_email: employee.email }),
+    queryKey: ['weeklyPayrolls', employee.id, employee.email],
+    queryFn: () => {
+      const query = buildUserQuery(employee, 'user_id', 'employee_email');
+      return base44.entities.WeeklyPayroll.filter(query);
+    },
     initialData: []
   });
 

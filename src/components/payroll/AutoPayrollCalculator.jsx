@@ -5,14 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Car, Receipt, Award, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 import { startOfWeek, endOfWeek, parseISO, isWithinInterval, differenceInMinutes } from 'date-fns';
+import { buildUserQuery } from '@/components/utils/userResolution';
 
-export default function AutoPayrollCalculator({ employeeEmail, weekStart, weekEnd }) {
+export default function AutoPayrollCalculator({ employeeEmail, employeeId, weekStart, weekEnd }) {
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  // Note: This component receives both employeeEmail and employeeId from parent
+  const employeeUser = { id: employeeId, email: employeeEmail };
+  
   // Fetch all payment sources
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['time-entries', employeeEmail, weekStart],
+    queryKey: ['time-entries', employeeId, employeeEmail, weekStart],
     queryFn: async () => {
+      const query = buildUserQuery(employeeUser, 'user_id', 'employee_email');
       const entries = await base44.entities.TimeEntry.filter({ 
-        employee_email: employeeEmail,
+        ...query,
         status: 'approved'
       });
       return entries.filter(e => {
@@ -21,14 +27,15 @@ export default function AutoPayrollCalculator({ employeeEmail, weekStart, weekEn
         return isWithinInterval(entryDate, { start: parseISO(weekStart), end: parseISO(weekEnd) });
       });
     },
-    enabled: !!employeeEmail && !!weekStart
+    enabled: !!(employeeEmail || employeeId) && !!weekStart
   });
 
   const { data: drivingLogs = [] } = useQuery({
-    queryKey: ['driving-logs', employeeEmail, weekStart],
+    queryKey: ['driving-logs', employeeId, employeeEmail, weekStart],
     queryFn: async () => {
+      const query = buildUserQuery(employeeUser, 'user_id', 'employee_email');
       const logs = await base44.entities.DrivingLog.filter({ 
-        employee_email: employeeEmail,
+        ...query,
         status: 'approved'
       });
       return logs.filter(e => {
@@ -37,14 +44,15 @@ export default function AutoPayrollCalculator({ employeeEmail, weekStart, weekEn
         return isWithinInterval(entryDate, { start: parseISO(weekStart), end: parseISO(weekEnd) });
       });
     },
-    enabled: !!employeeEmail && !!weekStart
+    enabled: !!(employeeEmail || employeeId) && !!weekStart
   });
 
   const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses', employeeEmail, weekStart],
+    queryKey: ['expenses', employeeId, employeeEmail, weekStart],
     queryFn: async () => {
+      const query = buildUserQuery(employeeUser, 'user_id', 'employee_email');
       const exps = await base44.entities.Expense.filter({ 
-        employee_email: employeeEmail,
+        ...query,
         status: 'approved',
         payment_method: 'personal'
       });
@@ -54,16 +62,22 @@ export default function AutoPayrollCalculator({ employeeEmail, weekStart, weekEn
         return isWithinInterval(entryDate, { start: parseISO(weekStart), end: parseISO(weekEnd) });
       });
     },
-    enabled: !!employeeEmail && !!weekStart
+    enabled: !!(employeeEmail || employeeId) && !!weekStart
   });
 
   const { data: employee } = useQuery({
-    queryKey: ['employee', employeeEmail],
+    queryKey: ['employee', employeeId, employeeEmail],
     queryFn: async () => {
+      // Try user_id first
+      if (employeeId) {
+        const users = await base44.entities.User.filter({ id: employeeId });
+        if (users[0]) return users[0];
+      }
+      // Fallback to email
       const users = await base44.entities.User.filter({ email: employeeEmail });
       return users[0];
     },
-    enabled: !!employeeEmail
+    enabled: !!(employeeEmail || employeeId)
   });
 
   // Calculate payroll breakdown
