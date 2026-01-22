@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useBlueprintDiffOverlay } from './hooks/useBlueprintDiffOverlay';
 import { useChangeImpactContext } from './hooks/useChangeImpactContext';
 import { useSuggestedActions } from './hooks/useSuggestedActions';
+import { useChangeReviewExport } from './hooks/useChangeReviewExport';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -114,6 +115,45 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     
     setPosition({ x: targetX, y: targetY });
     setZoom(1.5);
+  };
+
+  // FASE A2.7: Export review
+  const { exportReview } = useChangeReviewExport();
+  const [isExporting, setIsExporting] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity
+  });
+
+  const { data: currentJob } = useQuery({
+    queryKey: ['field-job', jobId],
+    queryFn: () => base44.entities.Job.filter({ id: jobId }).then(jobs => jobs[0]),
+    enabled: !!jobId && isComparing,
+    staleTime: Infinity
+  });
+
+  const handleExportReview = async () => {
+    setIsExporting(true);
+    try {
+      const comparePlan = allPlans.find(p => p.id === compareWithPlanId);
+      await exportReview({
+        projectName: currentJob?.name || 'Project',
+        planName: plan.name,
+        currentVersion: plan.version_number || plan.version || 1,
+        compareVersion: comparePlan?.version_number || comparePlan?.version || 1,
+        changeCount,
+        impactContext,
+        suggestedActions,
+        canvasElement: imageRef.current,
+        userName: currentUser?.full_name || currentUser?.email || 'User'
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
   
   // Measurement overlay state
@@ -921,6 +961,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     { id: 'divider4', type: 'divider' },
     !isClientView && allPlans.length > 1 && { id: 'compare', icon: Layers, label: 'Compare Versions', action: handleCompareToggle, isActive: isComparing },
     !isClientView && isComparing && { id: 'changes', icon: Sparkles, label: 'Show Changes', action: () => setShowChangeMarkers(prev => !prev), isActive: showChangeMarkers },
+    !isClientView && isComparing && changeCount > 0 && { id: 'export', icon: Printer, label: 'Export Review', action: handleExportReview },
     !isClientView && { id: 'scale', icon: Crosshair, label: 'Set Scale', action: () => { setShowScaleDialog(true); setIsCalibrating(true); }, hideForClient: true },
     { id: 'divider5', type: 'divider' },
     { id: 'ai', icon: Brain, label: 'AI Learning', action: () => setShowAILearning(prev => !prev), badge: hasNewAIPatterns },
@@ -1007,11 +1048,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           }
           
           const isActive = (item.tool && activeTool === item.id) || item.isActive;
+          const isDisabled = item.id === 'export' && isExporting;
+
           return (
             <Tooltip key={item.id}>
               <TooltipTrigger asChild>
                 <button
                   onClick={() => {
+                    if (isDisabled) return;
                     if (item.tool) {
                       setActiveTool(item.id);
                       if (item.id === 'pin') {
@@ -1026,20 +1070,22 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                       }
                     }
                   }}
+                  disabled={isDisabled}
                   className={`mx-1 min-w-[48px] min-h-[48px] rounded-xl transition-all relative touch-manipulation active:scale-95 flex items-center justify-center ${
+                    isDisabled ? 'opacity-50 cursor-not-allowed bg-slate-800' :
                     isActive 
                       ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black shadow-xl shadow-orange-500/40 border-2 border-orange-400' 
                       : 'text-slate-300 active:bg-slate-700 bg-slate-800 hover:bg-slate-700'
                   }`}
                 >
-                  <item.icon className="w-6 h-6" />
+                  <item.icon className={`w-6 h-6 ${isExporting && item.id === 'export' ? 'animate-spin' : ''}`} />
                   {item.badge && (
                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-slate-800" />
                   )}
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" className="bg-slate-800 border-slate-600 text-white">
-                <p>{item.label}</p>
+                <p>{isExporting && item.id === 'export' ? 'Exporting...' : item.label}</p>
               </TooltipContent>
             </Tooltip>
           );
