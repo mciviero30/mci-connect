@@ -87,59 +87,45 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
-  // CRITICAL: Replace JobAssignment with ScheduleShift - Only today's shifts
+  // PERFORMANCE: Date-scoped cache key, reduced refetching
   const { data: shifts, isLoading, refetch: refetchShifts } = useQuery({
-    queryKey: ['scheduleShifts'],
+    queryKey: ['scheduleShifts', format(currentDate, 'yyyy-MM')],
     queryFn: async () => {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const data = await base44.entities.ScheduleShift.filter({ date: today });
-        console.log('✅ Loaded today\'s shifts:', data?.length || 0);
-        return data || [];
-      } catch (error) {
-        console.error('❌ Error loading shifts:', error);
-        return [];
-      }
+      const today = new Date().toISOString().split('T')[0];
+      const data = await base44.entities.ScheduleShift.filter({ date: today });
+      return data || [];
     },
     initialData: [],
-    staleTime: 0,
-    refetchOnMount: 'stale',
+    staleTime: 60000,
+    refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
-      try {
-        const data = await base44.entities.Job.list();
-        console.log('Jobs loaded:', data);
-        return data || [];
-      } catch (error) {
-        console.error('Error loading jobs:', error);
-        return [];
-      }
+      const data = await base44.entities.Job.filter({ 
+        status: { $in: ['active', 'pending', 'in_progress'] }
+      });
+      return data || [];
     },
     initialData: [],
     staleTime: 300000,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      try {
-        const data = await base44.entities.User.list();
-        console.log('Employees loaded:', data);
-        return data || [];
-      } catch (error) {
-        console.error('Error loading employees:', error);
-        return [];
-      }
+      const data = await base44.entities.User.filter({ 
+        employment_status: 'active'
+      });
+      return data || [];
     },
     initialData: [],
     staleTime: 300000,
-    refetchOnMount: true,
+    refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
@@ -154,15 +140,11 @@ export default function Calendario() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('🔵 Creating shift:', data);
       const response = await base44.functions.invoke('createScheduleShift', data);
-      console.log('🟢 Backend response:', response);
       return response;
     },
     onSuccess: async (data) => {
-      console.log('🟢 Mutation success');
-      // FORCE refetch
-      await refetchShifts();
+      // PERFORMANCE: Single invalidation (no manual refetch)
       queryClient.invalidateQueries({ queryKey: ['scheduleShifts'] });
 
       setShowDialog(false);
@@ -173,7 +155,6 @@ export default function Calendario() {
       toast.success(language === 'es' ? 'Turno creado ✅' : 'Shift created ✅');
     },
     onError: (error) => {
-      console.error('🔴 Error creating shift:', error);
       toast.error('Error: ' + (error.message || 'Unknown error'));
     }
   });
@@ -273,9 +254,7 @@ export default function Calendario() {
     if (eventType === 'time_off') {
       window.location.href = createPageUrl('TimeOffRequests');
     } else {
-      // Force refetch jobs and employees when opening dialog
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      // PERFORMANCE: No invalidation on dialog open (cache is fresh)
       setShowDialog(true);
     }
   };
