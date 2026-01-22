@@ -14,19 +14,23 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
     queryFn: async () => {
       const allRecognitions = await base44.entities.Recognition.list('-created_date', 200);
       
-      // Group by employee and sum points
+      // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+      // Group by employee and sum points (use user_id to prevent duplicates)
       const employeeScores = {};
       allRecognitions.forEach(rec => {
-        if (!employeeScores[rec.employee_email]) {
-          employeeScores[rec.employee_email] = {
+        // Group by user_id if available, otherwise fallback to email
+        const key = rec.employee_user_id || rec.employee_email;
+        if (!employeeScores[key]) {
+          employeeScores[key] = {
             email: rec.employee_email,
+            user_id: rec.employee_user_id,
             name: rec.employee_name,
             totalPoints: 0,
             recognitionCount: 0
           };
         }
-        employeeScores[rec.employee_email].totalPoints += rec.points || 0;
-        employeeScores[rec.employee_email].recognitionCount += 1;
+        employeeScores[key].totalPoints += rec.points || 0;
+        employeeScores[key].recognitionCount += 1;
       });
 
       // Convert to array and sort
@@ -87,7 +91,13 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
   return (
     <div className="space-y-3">
       {recognitions.map((employee, index) => {
-        const employeeData = employees.find(e => e.email === employee.email);
+        // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+        const employeeData = employees.find(e => {
+          if (employee.user_id && e.id) {
+            return e.id === employee.user_id;
+          }
+          return e.email === employee.email;
+        });
         const rank = index + 1;
         const color = rankColors[Math.min(index, 4)];
         const icon = rankIcons[Math.min(index, 4)];
