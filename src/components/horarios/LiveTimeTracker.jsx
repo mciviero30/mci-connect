@@ -535,8 +535,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         b.location_unknown || b.start_outside_geofence || b.end_outside_geofence
       );
 
-      // CRITICAL FIX: Include ALL required TimeEntry fields + Job linkage + Break geofence
-      onSave({
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      const timeEntryData = {
+        user_id: user?.id, // NEW: Enforce user_id
         employee_email: user.email,
         employee_name: user.full_name,
         job_id: activeSession.jobId,
@@ -559,8 +560,17 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         geofence_distance_meters: activeSession.distanceMeters,
         requires_location_review: false,
         exceeds_max_hours: false,
-        breaks_require_review: breaksRequireReview, // NEW: Break compliance flag
-      });
+        breaks_require_review: breaksRequireReview,
+      };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating TimeEntry without user_id', {
+          email: user?.email,
+          job: activeSession.jobName
+        });
+      }
+
+      onSave(timeEntryData);
 
       localStorage.removeItem(storageKey);
       setActiveSession(null);
@@ -845,7 +855,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       const endTime = Date.now();
       const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
 
-      onSave({
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      const autoClockOutData = {
+        user_id: user?.id, // NEW: Enforce user_id
+        employee_email: user.email,
+        employee_name: user.full_name,
         job_id: activeSession.jobId,
         job_name: activeSession.jobName,
         date: format(new Date(), 'yyyy-MM-dd'),
@@ -859,11 +873,20 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         lunch_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
         work_type: activeSession.workType,
         task_details: activeSession.taskDetails,
-        geofence_validated: false, // Auto clock-out due to geofence exit
+        geofence_validated: false,
         geofence_distance_meters: activeSession.distanceMeters,
-        requires_location_review: true, // Flagged for review
+        requires_location_review: true,
         exceeds_max_hours: false,
-      });
+      };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Auto clock-out without user_id', {
+          email: user?.email,
+          job: activeSession.jobName
+        });
+      }
+
+      onSave(autoClockOutData);
 
       localStorage.removeItem(storageKey);
       setActiveSession(null);
