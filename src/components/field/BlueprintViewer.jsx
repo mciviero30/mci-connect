@@ -3,9 +3,10 @@ import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { 
   ArrowLeft, Plus, ZoomIn, ZoomOut, Maximize2, AlertTriangle, RefreshCw, Loader2, Move,
-  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain, Clock, Layers
+  MapPin, Link2, Pencil, Square, Printer, Type, Eraser, Circle, MousePointer, Undo2, Eye, EyeOff, Search, Crosshair, CheckCircle2, Brain, Clock, Layers, Sparkles
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useBlueprintDiffOverlay } from './hooks/useBlueprintDiffOverlay';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -61,6 +62,17 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const [isComparing, setIsComparing] = useState(false);
   const [compareWithPlanId, setCompareWithPlanId] = useState(null);
   const [comparePlanCanvas, setComparePlanCanvas] = useState(null);
+  
+  // FASE A2.3: Change markers state (visual-only, temporary)
+  const [showChangeMarkers, setShowChangeMarkers] = useState(false);
+  
+  // FASE A2.3: Use diff overlay hook
+  const { changeRegions, isProcessing: isDiffProcessing } = useBlueprintDiffOverlay(
+    isComparing && showChangeMarkers,
+    pdfCanvas || plan.file_url,
+    comparePlanCanvas,
+    imageSize
+  );
   
   // Measurement overlay state
   const [layers, setLayers] = useState({
@@ -836,6 +848,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     { id: 'select', icon: MousePointer, label: 'Select', tool: true },
     { id: 'divider4', type: 'divider' },
     !isClientView && allPlans.length > 1 && { id: 'compare', icon: Layers, label: 'Compare Versions', action: handleCompareToggle, isActive: isComparing },
+    !isClientView && isComparing && { id: 'changes', icon: Sparkles, label: 'Show Changes', action: () => setShowChangeMarkers(prev => !prev), isActive: showChangeMarkers },
     !isClientView && { id: 'scale', icon: Crosshair, label: 'Set Scale', action: () => { setShowScaleDialog(true); setIsCalibrating(true); }, hideForClient: true },
     { id: 'divider5', type: 'divider' },
     { id: 'ai', icon: Brain, label: 'AI Learning', action: () => setShowAILearning(prev => !prev), badge: hasNewAIPatterns },
@@ -1226,6 +1239,34 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
                     }}
                   />
                 )}
+                {/* FASE A2.3: Change Markers Overlay */}
+                {isComparing && showChangeMarkers && changeRegions.length > 0 && (
+                  <div 
+                    className="absolute top-0 left-0 pointer-events-none"
+                    style={{ 
+                      width: '100%', 
+                      height: '100%',
+                      zIndex: 5
+                    }}
+                  >
+                    {changeRegions.map((region, idx) => (
+                      <div
+                        key={idx}
+                        className="absolute"
+                        style={{
+                          left: `${region.x}%`,
+                          top: `${region.y}%`,
+                          width: `${region.width}%`,
+                          height: `${region.height}%`,
+                          backgroundColor: 'rgba(255, 165, 0, 0.25)',
+                          border: '1px solid rgba(255, 140, 0, 0.5)',
+                          mixBlendMode: 'multiply'
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {/* Measurement Overlay */}
                 <MeasurementOverlay
                   measurements={horizontalMeasurements}
@@ -1298,6 +1339,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-600 to-yellow-500 text-black px-6 py-3 rounded-2xl shadow-2xl text-base font-bold flex items-center gap-3 border-2 border-white/50 animate-pulse">
             <Crosshair className="w-6 h-6" />
             Tap to Place Pin
+          </div>
+        )}
+
+        {/* FASE A2.3: Processing indicator for change detection */}
+        {isDiffProcessing && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-xl shadow-lg text-sm flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Detecting changes...
           </div>
         )}
 
