@@ -136,12 +136,20 @@ export default function Empleados() {
     initialData: []
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const employeeProgress = useMemo(() => {
     if (!employees.length || !onboardingForms.length) return {};
     
     const progressMap = {};
     employees.forEach(emp => {
-      const empForms = onboardingForms.filter(f => f.employee_email === emp.email && f.status === 'completed');
+      // Match by user_id first, then fallback to email
+      const empForms = onboardingForms.filter(f => {
+        if (emp.id && f.user_id) {
+          return f.user_id === emp.id && f.status === 'completed';
+        }
+        // Legacy email fallback
+        return f.employee_email === emp.email && f.status === 'completed';
+      });
       const completed = empForms.length;
       const total = 4;
       const percentage = Math.round((completed / total) * 100);

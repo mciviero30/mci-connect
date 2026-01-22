@@ -22,6 +22,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { canViewSensitiveEmployeeData, maskSSN, getSensitiveFieldDisplay } from "@/components/utils/employeeSecurity";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -37,27 +38,39 @@ export default function MyProfile() {
   // Check if user can view sensitive data
   const canViewSensitive = canViewSensitiveEmployeeData(user);
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: myCertifications = [] } = useQuery({
-    queryKey: ['myCertifications', user?.email],
-    queryFn: () => base44.entities.Certification.filter({ employee_email: user.email }),
-    enabled: !!user?.email,
+    queryKey: ['myCertifications', user?.id, user?.email],
+    queryFn: () => {
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.Certification.filter(query);
+    },
+    enabled: !!user,
     initialData: []
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: myRecognitions = [] } = useQuery({
-    queryKey: ['myRecognitions', user?.email],
-    queryFn: () => base44.entities.Recognition.filter({ employee_email: user.email }, '-created_date', 5),
-    enabled: !!user?.email,
+    queryKey: ['myRecognitions', user?.id, user?.email],
+    queryFn: () => {
+      const query = buildUserQuery(user, 'employee_user_id', 'employee_email');
+      return base44.entities.Recognition.filter(query, '-created_date', 5);
+    },
+    enabled: !!user,
     initialData: []
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: myAlerts = [] } = useQuery({
-    queryKey: ['myCertificationAlerts', user?.email],
-    queryFn: () => base44.entities.CertificationAlert.filter({ 
-      employee_email: user.email,
-      acknowledged: false 
-    }),
-    enabled: !!user?.email,
+    queryKey: ['myCertificationAlerts', user?.id, user?.email],
+    queryFn: () => {
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.CertificationAlert.filter({ 
+        ...query,
+        acknowledged: false 
+      });
+    },
+    enabled: !!user,
     initialData: []
   });
 
