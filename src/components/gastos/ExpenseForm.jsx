@@ -5,14 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Save, Upload, Receipt, ExternalLink } from "lucide-react"; // Removed Camera, Sparkles, Loader2
+import { X, Save, Upload, Receipt, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation } from "@tanstack/react-query"; // Added useMutation
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { differenceInDays, format } from "date-fns"; // Added format (but per-diem related logic is removed, so 'format' might become unused)
-// import { Badge } from "@/components/ui/badge"; // Badge is no longer needed if AI related UI is removed
+import { differenceInDays, format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-// import AIExpenseCategorizer from './AIExpenseCategorizer'; // AIExpenseCategorizer is no longer used
+import { enforceUserIdOnWrite } from "@/components/utils/writeGuards";
 
 const categories = [
   { value: "travel", label: "Viajes", labelEn: "Travel" },
@@ -93,6 +92,11 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
   // Remove calculatePerDiemTotal function
   // const calculatePerDiemTotal = () => { /* ... */ };
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const job = jobs?.find(j => j.id === formData.job_id);
@@ -108,12 +112,23 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     // Convert amount to float
     const finalAmount = parseFloat(formData.amount || '0');
 
-    onSubmit({
+    // WRITE GUARD — user_id required for new records (legacy tolerated)
+    const baseData = {
       ...formData,
       amount: finalAmount,
-      status: expense?.status || "pending", // Keep existing status if editing
-      job_name: job?.name, // Ensure job_name is passed
-    });
+      status: expense?.status || "pending",
+      job_name: job?.name,
+    };
+
+    // Enforce employee_user_id for new Expense records
+    const guardedData = enforceUserIdOnWrite(
+      baseData,
+      currentUser,
+      'Expense',
+      'employee_user_id'
+    );
+
+    onSubmit(guardedData);
   };
 
   // NEW: Account category options (Prompt #59)
