@@ -106,7 +106,7 @@ function generateChecksum(data) {
 
 /**
  * Get pending operations (ordered by sequence number)
- * HARDENED: Order preserved to prevent out-of-order sync
+ * HARDENED: Order preserved, backoff respected
  */
 export async function getPendingOperations() {
   const db = await initQueue();
@@ -114,17 +114,27 @@ export async function getPendingOperations() {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([QUEUE_STORE], 'readonly');
     const store = transaction.objectStore(QUEUE_STORE);
-    const index = store.index('status');
-    const request = index.getAll('pending');
+    const request = store.getAll();
     
     request.onsuccess = () => {
-      const operations = request.result || [];
+      const allOps = request.result || [];
+      
+      // Filter: pending or pending_retry (if retry window passed)
+      const now = Date.now();
+      const operations = allOps.filter(op => {
+        if (op.status === 'pending') return true;
+        if (op.status === 'pending_retry') {
+          // Check if backoff window passed
+          return !op.retry_after || now >= op.retry_after;
+        }
+        return false;
+      });
       
       // Sort by sequence_number to preserve order
       operations.sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
       
       if (import.meta.env?.DEV && operations.length > 0) {
-        console.log(`[Queue] 📋 ${operations.length} pending operations (ordered)`);
+        console.log(`[Queue] 📋 ${operations.length} operations ready to sync (ordered)`);
       }
       
       resolve(operations);
@@ -164,7 +174,8 @@ export async function markOperationComplete(operationId, serverId) {
 }
 
 /**
- * Mark operation as failed
+ * Mark operation as failed with exponential backoff
+ * HARDENING: Prevents retry storms
  */
 export async function markOperationFailed(operationId, errorMessage) {
   const db = await initQueue();
@@ -177,14 +188,35 @@ export async function markOperationFailed(operationId, errorMessage) {
     getRequest.onsuccess = () => {
       const operation = getRequest.result;
       if (operation) {
-        operation.status = 'failed';
+        operation.retry_count = (operation.retry_count || 0) + 1;
         operation.error_message = errorMessage;
-        operation.retry_count += 1;
-        operation.failed_at = Date.now();
+        operation.last_retry_at = Date.now();
         
-        // Retry logic: mark as pending if retry count < 3
-        if (operation.retry_count < 3) {
-          operation.status = 'pending';
+        // HARDENING: Exponential backoff - next retry after 2^n seconds
+        const backoffMs = Math.min(1000 * Math.pow(2, operation.retry_count), 60000);
+        operation.retry_after = Date.now() + backoffMs;
+        
+        // Mark as failed permanently after max retries
+        if (operation.retry_count >= 5) {
+          operation.status = 'failed_permanent';
+          operation.failed_at = Date.now();
+          
+          if (import.meta.env?.DEV) {
+            console.error('[Queue] ❌ Operation failed permanently after 5 retries:', {
+              operationId,
+              entity: operation.entity_type,
+              error: errorMessage
+            });
+          }
+        } else {
+          operation.status = 'pending_retry';
+          
+          if (import.meta.env?.DEV) {
+            console.warn(`[Queue] ⚠️ Retry ${operation.retry_count}/5 after ${backoffMs}ms:`, {
+              operationId,
+              entity: operation.entity_type
+            });
+          }
         }
         
         const putRequest = store.put(operation);

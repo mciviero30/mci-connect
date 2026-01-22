@@ -19,6 +19,55 @@ export function useSyncQueue() {
 const STORAGE_KEY = 'mci_sync_queue';
 const MAX_RETRIES = 3;
 
+// HARDENING: Check for duplicate create operations
+const checkForDuplicate = async (item) => {
+  try {
+    const { entity, data, user_id } = item;
+    
+    // TimeEntry: match by user + job + date + check_in
+    if (entity === 'TimeEntry' && user_id && data.date && data.check_in) {
+      const recent = await base44.entities.TimeEntry.filter({
+        user_id: user_id,
+        date: data.date,
+        job_id: data.job_id
+      }, '-created_date', 5);
+      
+      return recent.find(e => e.check_in === data.check_in) || null;
+    }
+    
+    // Expense: match by user + amount + date
+    if (entity === 'Expense' && user_id && data.date) {
+      const recent = await base44.entities.Expense.filter({
+        employee_user_id: user_id,
+        date: data.date
+      }, '-created_date', 10);
+      
+      return recent.find(e => 
+        Math.abs(e.amount - data.amount) < 0.01 &&
+        e.category === data.category
+      ) || null;
+    }
+    
+    // ScheduleShift: match by user + date + job + start_time
+    if (entity === 'ScheduleShift' && user_id && data.date) {
+      const recent = await base44.entities.ScheduleShift.filter({
+        user_id: user_id,
+        date: data.date
+      }, '-created_date', 5);
+      
+      return recent.find(e =>
+        e.job_id === data.job_id &&
+        e.start_time === data.start_time
+      ) || null;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('[Duplicate Check] Error:', error);
+    return null; // Safe: allow create on error
+  }
+};
+
 export function SyncQueueProvider({ children }) {
   const [queue, setQueue] = useState([]);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -56,24 +105,36 @@ export function SyncQueueProvider({ children }) {
       return null;
     }
 
+    const queueId = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    
+    // HARDENING: Generate idempotency key for creates
+    const idempotencyKey = operation.operation === 'create'
+      ? `${operation.entity}_${currentUser?.id || currentUser?.email}_${queueId}`
+      : null;
+
     // Store entity ID separately from queue ID
     const queueItem = {
-      queueId: Date.now() + Math.random(),
+      queueId,
+      idempotencyKey,
       entityId: operation.entityId, // REAL entity ID for update/delete
       timestamp: new Date().toISOString(),
       retries: 0,
+      maxRetries: 5,
+      lastRetryAt: null,
       entity: operation.entity,
       operation: operation.operation,
       data: operation.data,
       user_email: currentUser?.email,
+      user_id: currentUser?.id,
       user_name: currentUser?.full_name,
       role_priority: getRolePriority(currentUser),
+      status: 'pending'
     };
 
     setQueue(prev => [...prev, queueItem]);
-    console.log('📴 Offline: Added to sync queue:', queueItem);
+    console.log('📴 Offline: Added to sync queue:', { queueId, entity: operation.entity, idempotencyKey });
     
-    return queueItem.queueId;
+    return queueId;
   }, []);
 
   // Process queue with conflict detection
@@ -148,24 +209,57 @@ export function SyncQueueProvider({ children }) {
         continue;
       }
 
-      // NO CONFLICT: Process normally
+      // NO CONFLICT: Process normally with exponential backoff
       for (const item of items) {
+        // HARDENING: Exponential backoff
+        if (item.retries > 0 && item.lastRetryAt) {
+          const backoffMs = Math.min(1000 * Math.pow(2, item.retries), 60000); // Max 60s
+          const elapsed = Date.now() - new Date(item.lastRetryAt).getTime();
+          if (elapsed < backoffMs) {
+            console.log(`⏳ Backoff active: ${backoffMs - elapsed}ms remaining for ${item.queueId}`);
+            continue; // Skip this item, will retry later
+          }
+        }
+
         try {
+          // IDEMPOTENCY: Check for duplicates on create
+          if (item.operation === 'create' && item.idempotencyKey) {
+            const duplicate = await checkForDuplicate(item);
+            if (duplicate) {
+              console.log('⚠️ Duplicate detected, skipping create:', item.idempotencyKey);
+              setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
+              results.success++;
+              continue;
+            }
+          }
+
           await executeOperation(item);
           setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
           results.success++;
-          console.log('✅ Synced:', item.entity, item.operation);
+          console.log('✅ Synced:', item.entity, item.operation, item.queueId);
         } catch (error) {
-          console.error('❌ Sync failed:', item, error);
+          console.error('❌ Sync failed:', item.queueId, error.message);
           
-          if (item.retries < MAX_RETRIES) {
+          const maxRetries = item.maxRetries || MAX_RETRIES;
+          
+          if (item.retries < maxRetries) {
             setQueue(prev => prev.map(i => 
               i.queueId === item.queueId 
-                ? { ...i, retries: i.retries + 1, lastError: error.message }
+                ? { 
+                    ...i, 
+                    retries: i.retries + 1, 
+                    lastRetryAt: new Date().toISOString(),
+                    lastError: error.message,
+                    status: 'pending_retry'
+                  }
                 : i
             ));
           } else {
-            setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
+            setQueue(prev => prev.map(i =>
+              i.queueId === item.queueId
+                ? { ...i, status: 'failed_permanent', lastError: error.message }
+                : i
+            ));
             results.failed++;
             results.errors.push({ item, error: error.message });
           }
@@ -224,16 +318,29 @@ export function SyncQueueProvider({ children }) {
     }
   };
 
-  // Sync when coming online
+  // Sync when coming online + app resume
   useEffect(() => {
     const handleOnline = () => {
       console.log('📡 Connection restored, processing queue...');
       setTimeout(() => processQueue(), 1000);
     };
 
+    const handleVisibilityChange = () => {
+      // App resumed from background
+      if (document.visibilityState === 'visible' && navigator.onLine && queue.length > 0) {
+        console.log('📱 App resumed, checking sync queue...');
+        setTimeout(() => processQueue(), 500);
+      }
+    };
+
     window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [processQueue]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [processQueue, queue.length]);
 
   // Listen for service worker sync events
   useEffect(() => {

@@ -10,6 +10,69 @@ import { Wifi, WifiOff, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react
 const QUEUE_KEY = 'offline_mutation_queue';
 const CACHE_KEY = 'offline_cache_data';
 
+// HARDENING: Helper to check for duplicate creates
+const checkDuplicate = async (entity, data, idempotencyKey) => {
+  try {
+    // For TimeEntry, check last 24h by user
+    if (entity === 'TimeEntry' && data.user_id) {
+      const today = new Date().toISOString().split('T')[0];
+      const recent = await base44.entities.TimeEntry.filter({
+        user_id: data.user_id,
+        date: today
+      }, '-created_date', 10);
+      
+      // Match by job_id + check_in time (within 1 minute)
+      const match = recent.find(e => {
+        if (e.job_id !== data.job_id) return false;
+        if (!e.check_in || !data.check_in) return false;
+        const diff = Math.abs(
+          new Date(`2000-01-01T${e.check_in}`).getTime() - 
+          new Date(`2000-01-01T${data.check_in}`).getTime()
+        );
+        return diff < 60000; // Within 1 minute
+      });
+      
+      return match || null;
+    }
+    
+    // For Expense, check by amount + date + user
+    if (entity === 'Expense' && data.employee_user_id) {
+      const recent = await base44.entities.Expense.filter({
+        employee_user_id: data.employee_user_id,
+        date: data.date
+      }, '-created_date', 20);
+      
+      const match = recent.find(e => 
+        Math.abs(e.amount - data.amount) < 0.01 && 
+        e.category === data.category &&
+        Math.abs(new Date(e.created_date).getTime() - Date.now()) < 300000 // Within 5 min
+      );
+      
+      return match || null;
+    }
+    
+    // For ScheduleShift, check by user + job + date + start_time
+    if (entity === 'ScheduleShift' && data.user_id) {
+      const recent = await base44.entities.ScheduleShift.filter({
+        user_id: data.user_id,
+        date: data.date
+      }, '-created_date', 10);
+      
+      const match = recent.find(e =>
+        e.job_id === data.job_id &&
+        e.start_time === data.start_time
+      );
+      
+      return match || null;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('[Idempotency Check] Error:', error);
+    return null; // On error, allow create (safe)
+  }
+};
+
 export function useEnhancedOfflineSync() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [queueSize, setQueueSize] = useState(0);
@@ -50,13 +113,23 @@ export function useEnhancedOfflineSync() {
     return () => clearInterval(interval);
   }, []);
 
-  // Queue mutation
+  // Queue mutation with idempotency key
   const queueMutation = useCallback((operation) => {
     const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+    const queueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    
+    // HARDENING: Generate idempotency key for creates
+    const idempotencyKey = operation.operation === 'create'
+      ? `${operation.entity}_${queueId}`
+      : null;
+    
     queue.push({
       ...operation,
+      queueId,
+      idempotencyKey,
       timestamp: new Date().toISOString(),
-      id: `${Date.now()}-${Math.random()}`,
+      retryCount: 0,
+      status: 'pending'
     });
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
     setQueueSize(queue.length);
@@ -64,7 +137,7 @@ export function useEnhancedOfflineSync() {
     toast.info('Operación guardada - Se sincronizará cuando haya conexión');
   }, [toast]);
 
-  // Sync queue
+  // Sync queue with exponential backoff & idempotency
   const syncQueue = useCallback(async () => {
     if (isSyncing || !navigator.onLine) return;
 
@@ -80,25 +153,65 @@ export function useEnhancedOfflineSync() {
     let failedQueue = [];
 
     for (const item of queue) {
+      // HARDENING: Skip if retry limit exceeded
+      if (item.retryCount >= 3) {
+        console.error('[Offline Sync] Max retries exceeded:', item);
+        failedQueue.push({ ...item, status: 'failed_permanent' });
+        continue;
+      }
+
+      // HARDENING: Exponential backoff check
+      if (item.retryCount > 0 && item.lastRetryAt) {
+        const backoffMs = Math.min(1000 * Math.pow(2, item.retryCount), 30000);
+        const elapsed = Date.now() - new Date(item.lastRetryAt).getTime();
+        if (elapsed < backoffMs) {
+          failedQueue.push(item); // Not ready to retry yet
+          continue;
+        }
+      }
+
       try {
-        const { entity, operation, data } = item;
+        const { entity, operation, data, idempotencyKey } = item;
+
+        // IDEMPOTENCY: Check if create already exists
+        if (operation === 'create' && idempotencyKey) {
+          const existing = await checkDuplicate(entity, data, idempotencyKey);
+          if (existing) {
+            console.log('[Offline Sync] Skipping duplicate create:', idempotencyKey);
+            successCount++;
+            continue; // Skip, already created
+          }
+        }
 
         switch (operation) {
           case 'create':
             await base44.entities[entity].create(data);
             break;
           case 'update':
+            if (!item.recordId) throw new Error('Update requires recordId');
             await base44.entities[entity].update(item.recordId, data);
             break;
           case 'delete':
+            if (!item.recordId) throw new Error('Delete requires recordId');
             await base44.entities[entity].delete(item.recordId);
             break;
         }
 
         successCount++;
+        
+        // Log success
+        console.log('[Offline Sync] ✅ Synced:', { entity, operation, queueId: item.queueId });
       } catch (error) {
-        console.error('Error syncing mutation:', error);
-        failedQueue.push(item);
+        console.error('[Offline Sync] ❌ Failed:', item, error);
+        
+        // Increment retry count with timestamp
+        failedQueue.push({
+          ...item,
+          retryCount: item.retryCount + 1,
+          lastRetryAt: new Date().toISOString(),
+          lastError: error.message,
+          status: 'pending_retry'
+        });
       }
     }
 
@@ -113,7 +226,12 @@ export function useEnhancedOfflineSync() {
       toast.success(`${successCount} operaciones sincronizadas`);
     }
     if (failedQueue.length > 0) {
-      toast.error(`${failedQueue.length} operaciones fallaron`);
+      const permanentFails = failedQueue.filter(i => i.status === 'failed_permanent').length;
+      if (permanentFails > 0) {
+        toast.error(`${permanentFails} operaciones fallaron permanentemente`);
+      } else {
+        toast.warning(`${failedQueue.length} operaciones reintentarán pronto`);
+      }
     }
 
     setIsSyncing(false);

@@ -21,18 +21,25 @@ let currentSyncStatus = SYNC_STATUS.IDLE;
 let syncListeners = [];
 
 /**
- * Start sync process
+ * Start sync process with network-aware retry
+ * HARDENING: Only sync if truly online, respect backoff
  */
 export async function startSync(base44Client, user) {
   if (currentSyncStatus === SYNC_STATUS.SYNCING) {
-    console.log('Sync already in progress');
+    console.log('[Sync] Already in progress, skipping');
     return { skipped: true };
+  }
+  
+  // HARDENING: Verify network is truly available
+  if (!navigator.onLine) {
+    console.log('[Sync] Offline - skipping sync');
+    return { skipped: true, reason: 'offline' };
   }
   
   try {
     updateSyncStatus(SYNC_STATUS.SYNCING);
     
-    // Get pending operations
+    // Get pending operations (respects backoff)
     const operations = await getPendingOperations();
     
     if (operations.length === 0) {
@@ -40,7 +47,7 @@ export async function startSync(base44Client, user) {
       return { success: true, synced: 0 };
     }
     
-    console.log(`Starting sync: ${operations.length} operations`);
+    console.log(`[Sync] Starting: ${operations.length} operations`);
     
     // Batch operations by entity type
     const batches = batchOperations(operations);
@@ -48,15 +55,25 @@ export async function startSync(base44Client, user) {
     const results = {
       success: [],
       failed: [],
-      conflicts: []
+      conflicts: [],
+      skipped: []
     };
     
-    // Process batches
+    // Process batches sequentially (preserve order)
     for (const batch of batches) {
       const batchResult = await processBatch(batch, base44Client, user);
       results.success.push(...batchResult.success);
       results.failed.push(...batchResult.failed);
       results.conflicts.push(...batchResult.conflicts);
+    }
+    
+    // Log summary
+    if (import.meta.env?.DEV) {
+      console.log('[Sync] Summary:', {
+        synced: results.success.length,
+        failed: results.failed.length,
+        conflicts: results.conflicts.length
+      });
     }
     
     updateSyncStatus(SYNC_STATUS.IDLE);
@@ -70,7 +87,7 @@ export async function startSync(base44Client, user) {
     };
     
   } catch (error) {
-    console.error('Sync failed:', error);
+    console.error('[Sync] Fatal error:', error);
     updateSyncStatus(SYNC_STATUS.ERROR);
     throw error;
   }
