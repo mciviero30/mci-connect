@@ -704,7 +704,7 @@ export default function Chat() {
                             <p className={`font-bold text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.name}</p>
                             {isActive && <p className="text-xs text-[#507DB4]/70 dark:text-[#6B9DD8]/70 font-semibold mt-0.5">Active channel</p>}
                           </div>
-                          <ChatUnreadBadge userEmail={user?.email} groupId={group.id} />
+                          <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={group.id} />
                         </button>
                       );
                     })}
@@ -737,7 +737,7 @@ export default function Chat() {
                                 {group.members.length} members
                               </p>
                             </div>
-                            <ChatUnreadBadge userEmail={user?.email} groupId={`group_${group.id}`} />
+                            <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={`group_${group.id}`} />
                           </button>
                         );
                       })}
