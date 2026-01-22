@@ -19,6 +19,7 @@ import { notifyTimesheetStatus } from '../notifications/notificationHelpers';
 import { canCreateTimeEntry } from "../trabajos/JobStatusValidator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/toast";
+import { resolveUser, resolveDisplayName } from "@/components/utils/userResolution";
 
 export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEntry, isAdmin = false, loading }) {
   const { t, language } = useLanguage();
@@ -369,7 +370,15 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     document.body.removeChild(link);
   };
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const getEmployeeName = (entry) => {
+    // Try user_id first
+    if (entry.user_id) {
+      const employee = employees.find(e => e.id === entry.user_id);
+      if (employee) return getDisplayName(employee);
+    }
+    
+    // Legacy fallback: email match
     const employee = employees.find(e => e.email === entry.employee_email);
     if (employee) {
       return getDisplayName(employee);

@@ -16,6 +16,7 @@ import TimeReportsView from "@/components/time-tracking/TimeReportsView";
 import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView";
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function TimeTracking() {
   const toast = useToast();
@@ -44,34 +45,38 @@ export default function TimeTracking() {
     ['manager', 'CEO', 'supervisor', 'administrator'].includes(user?.position) ||
     user?.department === 'HR';
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   // Get today's active time entry
   const { data: todayEntry } = useQuery({
-    queryKey: ['todayTimeEntry', user?.email],
+    queryKey: ['todayTimeEntry', user?.id, user?.email],
     queryFn: async () => {
-      if (!user?.email) return null;
+      if (!user) return null;
       const today = format(new Date(), 'yyyy-MM-dd');
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       const entries = await base44.entities.TimeEntry.filter({
-        employee_email: user.email,
+        ...query,
         date: today
       });
       return entries?.find(e => !e.check_out) || null;
     },
-    enabled: !!user?.email,
+    enabled: !!user,
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   // Get this week's entries for summary
   const { data: weekEntries = [] } = useQuery({
-    queryKey: ['weekTimeEntries', user?.email, selectedDate],
+    queryKey: ['weekTimeEntries', user?.id, user?.email, selectedDate],
     queryFn: async () => {
-      if (!user?.email) return [];
+      if (!user) return [];
       const start = format(startOfWeek(selectedDate), 'yyyy-MM-dd');
       const end = format(endOfWeek(selectedDate), 'yyyy-MM-dd');
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       return await base44.entities.TimeEntry.filter({
-        employee_email: user.email,
+        ...query,
         date: { $gte: start, $lte: end }
       }) || [];
     },
-    enabled: !!user?.email,
+    enabled: !!user,
   });
 
   // Clock In mutation - used by LiveTimeTracker
