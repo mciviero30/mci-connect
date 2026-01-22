@@ -135,14 +135,25 @@ export default function Manejo() {
       const hourlyRate = user?.hourly_rate || 25;
       const totalAmount = (miles * ratePerMile) + (hours * hourlyRate);
 
-      return base44.entities.DrivingLog.create({
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
+      const writeData = {
         ...data,
+        user_id: user?.id, // NEW: Enforce user_id
         employee_email: user.email, 
         employee_name: user.full_name,
         rate_per_mile: ratePerMile,
         total_amount: totalAmount,
         status: 'pending'
-      });
+      };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating DrivingLog without user_id', {
+          email: user?.email,
+          miles
+        });
+      }
+
+      return base44.entities.DrivingLog.create(writeData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['myMileageLogs']);

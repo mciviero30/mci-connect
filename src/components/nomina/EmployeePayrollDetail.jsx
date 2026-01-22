@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle } from "lucide-react";
 import { buildUserQuery } from "@/components/utils/userResolution";
 
+// NOTE: WeeklyPayroll write guards applied in SubmitPayrollButton component
+
 export default function EmployeePayrollDetail({ employee, initialWeekStart, initialWeekEnd, onClose }) {
   const { t } = useLanguage();
   const queryClient = useQueryClient();

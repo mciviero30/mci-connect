@@ -10,6 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/toast';
 import { getDisplayName } from '@/components/utils/nameHelpers';
+import { enforceMultiUserAttribution } from '@/components/utils/writeGuards';
 
 const RECOGNITION_CATEGORIES = [
   { value: 'teamwork', label: 'Teamwork', icon: '🤝', color: 'from-blue-500 to-cyan-500', points: 10, defaultMessage: 'Thank you for being such a great team player! Your collaboration and support make our team stronger.' },
@@ -107,7 +108,8 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
     const category = RECOGNITION_CATEGORIES.find(c => c.value === selectedCategory);
     const finalMessage = message.trim() || category.defaultMessage;
     
-    createRecognitionMutation.mutate({
+    // WRITE GUARD — Multi-user attribution (receiver + giver)
+    const baseData = {
       employee_email: selectedEmployee.email,
       employee_name: selectedEmployee.full_name,
       recognition_type: selectedCategory,
@@ -118,7 +120,19 @@ export default function GiveKudosDialog({ open, onOpenChange, prefillData = null
       points: category.points,
       is_public: true,
       date: new Date().toISOString().split('T')[0]
-    });
+    };
+
+    const guardedData = enforceMultiUserAttribution(
+      baseData,
+      currentUser,
+      'Recognition',
+      [
+        { userIdField: 'employee_user_id', emailField: 'employee_email', sourceUserId: selectedEmployee.id },
+        { userIdField: 'given_by_user_id', emailField: 'given_by_email', sourceUserId: currentUser.id }
+      ]
+    );
+
+    createRecognitionMutation.mutate(guardedData);
   };
 
   const filteredEmployees = employees.filter(emp => {
