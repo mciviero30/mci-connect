@@ -37,6 +37,8 @@ import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
 import { useToast } from "@/components/ui/toast";
 import { DragDropContext } from '@hello-pangea/dnd';
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { useMemo, useCallback } from 'react';
 
 export default function Calendario() {
   const { t, language } = useLanguage();
@@ -80,7 +82,7 @@ export default function Calendario() {
   const [showConflicts, setShowConflicts] = useState(false);
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
@@ -203,19 +205,19 @@ export default function Calendario() {
     }
   });
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (view === 'day') setCurrentDate(addDays(currentDate, -1));
     else if (view === 'week') setCurrentDate(subWeeks(currentDate, 1));
     else setCurrentDate(subMonths(currentDate, 1));
-  };
+  }, [view, currentDate]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (view === 'day') setCurrentDate(addDays(currentDate, 1));
     else if (view === 'week') setCurrentDate(addWeeks(currentDate, 1));
     else setCurrentDate(addMonths(currentDate, 1));
-  };
+  }, [view, currentDate]);
 
-  const handleToday = () => setCurrentDate(new Date());
+  const handleToday = useCallback(() => setCurrentDate(new Date()), []);
 
   const handleDeleteAllExceptLast = async () => {
     if (shifts.length <= 1) {
@@ -422,7 +424,7 @@ export default function Calendario() {
     updateMutation.mutate({ id: shiftId, data: updatedData });
   };
 
-  const getDateRange = () => {
+  const getDateRange = useMemo(() => {
     if (view === 'day') return format(currentDate, 'MMMM d, yyyy');
     if (view === 'week') {
       const start = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -430,28 +432,30 @@ export default function Calendario() {
       return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
     }
     return format(currentDate, 'MMMM yyyy');
-  };
+  }, [view, currentDate]);
 
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  const filteredShifts = shifts.filter(shift => {
-    if (eventTypeFilter !== 'all' && shift.shift_type !== eventTypeFilter) {
-      return false;
-    }
-    // Match employee by user_id first, fallback to email
-    if (employeeFilter !== 'all') {
-      const employeeMatch = shift.user_id 
-        ? shift.user_id === employeeFilter 
-        : shift.employee_email === employeeFilter;
-      if (!employeeMatch) return false;
-    }
-    if (jobFilter !== 'all' && shift.job_id !== jobFilter) {
-      return false;
-    }
-    return true;
-  });
+  // PERFORMANCE: Memoize filtered shifts
+  const filteredShifts = useMemo(() => {
+    return shifts.filter(shift => {
+      if (eventTypeFilter !== 'all' && shift.shift_type !== eventTypeFilter) {
+        return false;
+      }
+      // Match employee by user_id first, fallback to email
+      if (employeeFilter !== 'all') {
+        const employeeMatch = shift.user_id 
+          ? shift.user_id === employeeFilter 
+          : shift.employee_email === employeeFilter;
+        if (!employeeMatch) return false;
+      }
+      if (jobFilter !== 'all' && shift.job_id !== jobFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [shifts, eventTypeFilter, employeeFilter, jobFilter]);
 
-  // Calculate workload for current period
-  const calculateWorkload = () => {
+  // PERFORMANCE: Memoize workload calculation
+  const workload = useMemo(() => {
     let start, end;
     if (view === 'day') {
       start = new Date(currentDate);
@@ -487,14 +491,18 @@ export default function Calendario() {
     }, 0);
 
     return { totalEvents, jobWork, appointments, timeOffs, totalEstimatedHours };
-  };
+  }, [filteredShifts, currentDate, view]);
 
-  const workload = calculateWorkload();
-
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  // Use user_id to prevent duplicates, fallback to email
-  const uniqueEmployees = [...new Set(shifts.map(s => s.user_id || s.employee_email).filter(Boolean))];
-  const uniqueJobs = [...new Set(shifts.map(s => s.job_id).filter(Boolean))];
+  // PERFORMANCE: Memoize unique employees/jobs for filters
+  const uniqueEmployees = useMemo(() => 
+    [...new Set(shifts.map(s => s.user_id || s.employee_email).filter(Boolean))],
+    [shifts]
+  );
+  
+  const uniqueJobs = useMemo(() => 
+    [...new Set(shifts.map(s => s.job_id).filter(Boolean))],
+    [shifts]
+  );
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>

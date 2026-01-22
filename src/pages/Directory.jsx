@@ -13,14 +13,17 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createPageUrl } from '@/utils';
 import { resolveUser, resolveDisplayName } from '@/components/utils/userResolution';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
+import { useMemo } from 'react';
 
 export default function Directory() {
   const [searchTerm, setSearchTerm] = useState('');
   const { t } = useLanguage();
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
+    staleTime: 300000
   });
   
   // ROLE-BASED ACCESS: Admin and Manager see all employees
@@ -44,28 +47,36 @@ export default function Directory() {
     staleTime: 30000,
   });
 
-  const employees = directoryEntries.length > 0 
-    ? directoryEntries.map(d => ({
-        id: d.id,
-        email: d.employee_email,
-        full_name: d.full_name,
-        first_name: d.first_name,
-        last_name: d.last_name,
-        position: d.position,
-        department: d.department,
-        phone: d.phone,
-        team_name: d.team_name,
-        profile_photo_url: d.profile_photo_url
-      }))
-    : usersBackup;
+  // PERFORMANCE: Memoize employees transformation
+  const employees = useMemo(() => 
+    directoryEntries.length > 0 
+      ? directoryEntries.map(d => ({
+          id: d.id,
+          email: d.employee_email,
+          full_name: d.full_name,
+          first_name: d.first_name,
+          last_name: d.last_name,
+          position: d.position,
+          department: d.department,
+          phone: d.phone,
+          team_name: d.team_name,
+          profile_photo_url: d.profile_photo_url
+        }))
+      : usersBackup,
+    [directoryEntries, usersBackup]
+  );
 
   const isLoading = directoryLoading || usersLoading;
 
-  const filteredEmployees = employees.filter(emp =>
-    getDisplayName(emp)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.position?.toLowerCase().includes(searchTerm.toLowerCase())
+  // PERFORMANCE: Memoize filtered employees
+  const filteredEmployees = useMemo(() => 
+    employees.filter(emp =>
+      getDisplayName(emp)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.position?.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+    [employees, searchTerm]
   );
 
   if (!user) {

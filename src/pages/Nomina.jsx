@@ -16,6 +16,8 @@ import DateRangeFilter from "../components/reportes/DateRangeFilter";
 import AutoPayrollCalculator from "../components/payroll/AutoPayrollCalculator";
 import PaystubGenerator from "../components/payroll/PaystubGenerator";
 import { Loader2 } from "lucide-react";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { useMemo, useCallback } from 'react';
 
 export default function Nomina() {
   const { t, language } = useLanguage();
@@ -36,9 +38,9 @@ export default function Nomina() {
   const weekEnd = dateRange.end;
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000
   });
 
   // PERFORMANCE: Single aggregated query instead of 7 separate entities
@@ -73,28 +75,33 @@ export default function Nomina() {
 
   // PERFORMANCE: Use backend-aggregated data (no client filtering)
 
-  const filteredPayrollData = (payrollData || []).filter((p) =>
-    p.employee.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.employee.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  // PERFORMANCE: Memoize filtered payroll
+  const filteredPayrollData = useMemo(() =>
+    (payrollData || []).filter((p) =>
+      p.employee.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.employee.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [payrollData, searchQuery]
   );
 
-  const totals = {
+  // PERFORMANCE: Memoize totals calculation
+  const totals = useMemo(() => ({
     normalHours: filteredPayrollData.reduce((sum, p) => sum + p.normalHours, 0),
     overtimeHours: filteredPayrollData.reduce((sum, p) => sum + p.overtimeHours, 0),
     drivingHours: filteredPayrollData.reduce((sum, p) => sum + p.drivingHours, 0),
     perDiemAmount: filteredPayrollData.reduce((sum, p) => sum + p.perDiemAmount, 0),
-    bonusAmount: filteredPayrollData.reduce((sum, p) => sum + p.bonusAmount, 0), // NEW
+    bonusAmount: filteredPayrollData.reduce((sum, p) => sum + p.bonusAmount, 0),
     workPay: filteredPayrollData.reduce((sum, p) => sum + p.workPay, 0),
     drivingPay: filteredPayrollData.reduce((sum, p) => sum + p.drivingPay, 0),
     reimbursements: filteredPayrollData.reduce((sum, p) => sum + p.reimbursements, 0),
     totalPay: filteredPayrollData.reduce((sum, p) => sum + p.totalPay, 0)
-  };
+  }), [filteredPayrollData]);
 
-  const handlePrint = () => {
+  const handlePrint = useCallback(() => {
     window.print();
-  };
+  }, []);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const csvData = [
       ['Employee', 'Normal Hours', 'Overtime Hours', 'Driving Hours', 'Miles', 'Work Days', 'Per Diem', 'Work Pay', 'Driving Pay', 'Reimbursements', 'Bonus', 'Total Pay', 'Status'], // Added Bonus column
       ...filteredPayrollData.map((p) => {
@@ -124,7 +131,7 @@ export default function Nomina() {
     a.href = url;
     a.download = `payroll_${format(weekStart, 'yyyy-MM-dd')}_${format(weekEnd, 'yyyy-MM-dd')}.csv`;
     a.click();
-  };
+  }, [filteredPayrollData, weekStart, weekEnd, statusConfig, t]);
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">

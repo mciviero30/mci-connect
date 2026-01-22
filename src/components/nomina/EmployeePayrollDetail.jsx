@@ -14,6 +14,7 @@ import ApprovePayrollButton from "./ApprovePayrollButton";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle } from "lucide-react";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import { useMemo, useCallback } from 'react';
 
 // NOTE: WeeklyPayroll write guards applied in SubmitPayrollButton component
 
@@ -96,9 +97,13 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
     }
   });
 
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  const weekDays = useMemo(() => 
+    eachDayOfInterval({ start: weekStart, end: weekEnd }),
+    [weekStart, weekEnd]
+  );
 
-  const getDayData = (date) => {
+  // PERFORMANCE: Memoize getDayData function
+  const getDayData = useCallback((date) => {
     // FILTER BY APPROVED STATUS
     const workEntries = timeEntries.filter(e =>
       isSameDay(new Date(e.date), date) && e.status === 'approved'
@@ -125,28 +130,28 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
       workEntries,
       drivingEntry,
       perDiemExpenses,
-      personalExpenses, // Changed from otherExpenses
+      personalExpenses,
       totalWorkHours,
       drivingHours: drivingEntry?.hours || 0,
       drivingMiles: drivingEntry?.miles || 0,
       perDiemAmount: perDiemExpenses.reduce((sum, p) => sum + (p.amount || 0), 0),
-      reimbursementsAmount: personalExpenses.reduce((sum, e) => sum + (e.amount || 0), 0) // Changed from expensesAmount
+      reimbursementsAmount: personalExpenses.reduce((sum, e) => sum + (e.amount || 0), 0)
     };
-  };
+  }, [timeEntries, drivingLogs, expenses]);
 
   const [editingEntry, setEditingEntry] = useState(null);
   const [formData, setFormData] = useState({});
 
-  const handleEdit = (entry, type) => {
+  const handleEdit = useCallback((entry, type) => {
     setEditingEntry({ ...entry, type });
     setFormData({
       ...entry,
       check_in: entry.check_in?.substring(0, 5) || '',
       check_out: entry.check_out?.substring(0, 5) || ''
     });
-  };
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!editingEntry) return;
 
     const calculateHours = () => {
@@ -180,48 +185,66 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
 
     setEditingEntry(null);
     setFormData({});
-  };
+  }, [editingEntry, formData, updateTimeMutation, updateDrivingMutation]);
 
   const hourlyRate = employee.hourly_rate || 25;
 
-  // CALCULATE WEEKLY TOTALS
-  const weekTotals = weekDays.reduce((acc, date) => {
-    const day = getDayData(date);
+  // PERFORMANCE: Memoize weekly totals calculation
+  const weekTotals = useMemo(() => 
+    weekDays.reduce((acc, date) => {
+      const day = getDayData(date);
+      return {
+        totalWorkHours: acc.totalWorkHours + day.totalWorkHours,
+        drivingHours: acc.drivingHours + day.drivingHours,
+        drivingMiles: acc.drivingMiles + day.drivingMiles,
+        perDiem: acc.perDiem + day.perDiemAmount,
+        reimbursements: acc.reimbursements + day.reimbursementsAmount
+      };
+    }, { totalWorkHours: 0, drivingHours: 0, drivingMiles: 0, perDiem: 0, reimbursements: 0 }),
+    [weekDays, getDayData]
+  );
+
+  // PERFORMANCE: Memoize pay calculations
+  const payCalculations = useMemo(() => {
+    // OVERTIME = only after 40h of WORK (not including driving)
+    const regularHours = Math.min(weekTotals.totalWorkHours, 40);
+    const overtimeHours = Math.max(0, weekTotals.totalWorkHours - 40);
+
+    // Calculate pays
+    const regularPay = regularHours * hourlyRate;
+    const overtimePay = overtimeHours * hourlyRate * 1.5;
+    const workPay = regularPay + overtimePay;
+
+    // DRIVING: hours at normal rate, miles at $0.60/mi
+    const drivingHoursPay = weekTotals.drivingHours * hourlyRate;
+    const mileagePay = weekTotals.drivingMiles * 0.60;
+    const totalDrivingPay = drivingHoursPay + mileagePay;
+
+    const totalPay = workPay + totalDrivingPay + weekTotals.perDiem + weekTotals.reimbursements;
+
     return {
-      totalWorkHours: acc.totalWorkHours + day.totalWorkHours,
-      drivingHours: acc.drivingHours + day.drivingHours,
-      drivingMiles: acc.drivingMiles + day.drivingMiles,
-      perDiem: acc.perDiem + day.perDiemAmount,
-      reimbursements: acc.reimbursements + day.reimbursementsAmount
+      regularHours,
+      overtimeHours,
+      regularPay,
+      overtimePay,
+      workPay,
+      drivingHoursPay,
+      mileagePay,
+      totalDrivingPay,
+      totalPay
     };
-  }, { totalWorkHours: 0, drivingHours: 0, drivingMiles: 0, perDiem: 0, reimbursements: 0 });
-
-  // OVERTIME = only after 40h of WORK (not including driving)
-  const regularHours = Math.min(weekTotals.totalWorkHours, 40);
-  const overtimeHours = Math.max(0, weekTotals.totalWorkHours - 40);
-
-  // Calculate pays
-  const regularPay = regularHours * hourlyRate;
-  const overtimePay = overtimeHours * hourlyRate * 1.5;
-  const workPay = regularPay + overtimePay;
-
-  // DRIVING: hours at normal rate, miles at $0.60/mi
-  const drivingHoursPay = weekTotals.drivingHours * hourlyRate;
-  const mileagePay = weekTotals.drivingMiles * 0.60; // $0.60 per mile
-  const totalDrivingPay = drivingHoursPay + mileagePay;
-
-  const totalPay = workPay + totalDrivingPay + weekTotals.perDiem + weekTotals.reimbursements;
+  }, [weekTotals, hourlyRate]);
 
   const payrollData = {
-    regularHours: regularHours,
-    overtimeHours: overtimeHours,
+    regularHours: payCalculations.regularHours,
+    overtimeHours: payCalculations.overtimeHours,
     drivingHours: weekTotals.drivingHours,
     drivingMiles: weekTotals.drivingMiles,
     perDiemAmount: weekTotals.perDiem,
-    workPay: workPay,
-    drivingPay: totalDrivingPay,
+    workPay: payCalculations.workPay,
+    drivingPay: payCalculations.totalDrivingPay,
     reimbursements: weekTotals.reimbursements,
-    totalPay: totalPay
+    totalPay: payCalculations.totalPay
   };
 
   const statusConfig = {
@@ -324,23 +347,23 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
             <div>
               <p className="text-sm text-slate-400">{t('regularHours')}</p>
-              <p className="text-2xl font-bold text-emerald-400">{regularHours.toFixed(2)}h</p>
-              <p className="text-xs text-slate-500 mt-1">${regularPay.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-emerald-400">{payCalculations.regularHours.toFixed(2)}h</p>
+              <p className="text-xs text-slate-500 mt-1">${payCalculations.regularPay.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">{t('overtimeHours')}</p>
-              <p className="text-2xl font-bold text-amber-400">{overtimeHours.toFixed(2)}h</p>
-              <p className="text-xs text-slate-500 mt-1">${overtimePay.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-amber-400">{payCalculations.overtimeHours.toFixed(2)}h</p>
+              <p className="text-xs text-slate-500 mt-1">${payCalculations.overtimePay.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">{t('drivingHours')}</p>
               <p className="text-2xl font-bold text-blue-400">{weekTotals.drivingHours.toFixed(2)}h</p>
-              <p className="text-xs text-slate-500 mt-1">${drivingHoursPay.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 mt-1">${payCalculations.drivingHoursPay.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">Millas</p>
               <p className="text-2xl font-bold text-cyan-400">{weekTotals.drivingMiles.toFixed(0)} mi</p>
-              <p className="text-xs text-slate-500 mt-1">${mileagePay.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 mt-1">${payCalculations.mileagePay.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">{t('perDiem')}</p>
@@ -352,7 +375,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
             </div>
             <div className="col-span-2">
               <p className="text-sm text-slate-400">{t('totalPay')}</p>
-              <p className="text-3xl font-bold text-emerald-400">${totalPay.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-emerald-400">${payCalculations.totalPay.toFixed(2)}</p>
             </div>
           </div>
         </CardContent>
