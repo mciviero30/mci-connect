@@ -35,8 +35,11 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
     return 'Event';
   };
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const isMyShift = (shift) => {
-    return currentUser && shift.employee_email === currentUser.email;
+    if (!currentUser) return false;
+    // Match by user_id first, fallback to email
+    return shift.user_id ? shift.user_id === currentUser.id : shift.employee_email === currentUser.email;
   };
 
   return (

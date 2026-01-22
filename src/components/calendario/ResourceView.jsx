@@ -25,17 +25,20 @@ export default function ResourceView({
 
   const activeEmployees = employees.filter(e => e.employment_status === 'active');
 
-  const getShiftsForCell = (employeeEmail, date) => {
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  const getShiftsForCell = (employeeIdentifier, date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return shifts.filter(s => 
-      s.employee_email === employeeEmail && 
-      s.date === dateStr
-    );
+    // employeeIdentifier can be user_id or email
+    return shifts.filter(s => {
+      const matchesEmployee = s.user_id ? s.user_id === employeeIdentifier : s.employee_email === employeeIdentifier;
+      return matchesEmployee && s.date === dateStr;
+    });
   };
 
-  const getTotalHours = (employeeEmail) => {
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  const getTotalHours = (employeeIdentifier) => {
     return weekDays.reduce((total, day) => {
-      const dayShifts = getShiftsForCell(employeeEmail, day);
+      const dayShifts = getShiftsForCell(employeeIdentifier, day);
       return total + dayShifts.reduce((sum, s) => {
         if (!s.start_time || !s.end_time) return sum;
         const [startH, startM] = s.start_time.split(':').map(Number);
@@ -82,9 +85,13 @@ export default function ResourceView({
           </div>
 
           {/* Rows */}
-          {activeEmployees.map(employee => (
+          {activeEmployees.map(employee => {
+            // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+            const employeeIdentifier = employee.id || employee.email;
+            
+            return (
             <div
-              key={employee.email}
+              key={employee.id || employee.email}
               className="grid grid-cols-[200px_repeat(7,1fr)_80px] border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50"
             >
               {/* Employee info */}
@@ -108,7 +115,7 @@ export default function ResourceView({
 
               {/* Day cells */}
               {weekDays.map((day, idx) => {
-                const cellShifts = getShiftsForCell(employee.email, day);
+                const cellShifts = getShiftsForCell(employeeIdentifier, day);
                 const dateStr = format(day, 'yyyy-MM-dd');
 
                 return (
@@ -148,11 +155,12 @@ export default function ResourceView({
               {/* Total hours */}
               <div className="p-3 text-center">
                 <span className="font-semibold text-slate-900 dark:text-white">
-                  {getTotalHours(employee.email).toFixed(1)}h
+                  {getTotalHours(employeeIdentifier).toFixed(1)}h
                 </span>
               </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       </ScrollArea>
     </Card>

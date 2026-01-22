@@ -37,7 +37,12 @@ export default function AgendaView({
       return a.start_time.localeCompare(b.start_time);
     });
 
-  const isMyShift = (shift) => shift.employee_email === currentUser?.email;
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  const isMyShift = (shift) => {
+    if (!currentUser) return false;
+    // Match by user_id first, fallback to email
+    return shift.user_id ? shift.user_id === currentUser.id : shift.employee_email === currentUser.email;
+  };
 
   return (
     <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
